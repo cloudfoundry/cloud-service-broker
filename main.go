@@ -15,7 +15,7 @@
 package main
 
 import (
-	"github.com/GoogleCloudPlatform/gcp-service-broker/cmd"
+	"github.com/pivotal/cloud-service-broker/cmd"
 )
 
 func main() {

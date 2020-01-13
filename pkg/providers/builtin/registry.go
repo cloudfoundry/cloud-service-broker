@@ -15,21 +15,21 @@
 package builtin
 
 import (
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/bigquery"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/bigtable"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/cloudsql"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/dataflow"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/datastore"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/dialogflow"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/filestore"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/firestore"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/ml"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/pubsub"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/redis"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/spanner"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/stackdriver"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/storage"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/bigquery"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/bigtable"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/cloudsql"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/dataflow"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/datastore"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/dialogflow"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/filestore"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/firestore"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/ml"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/pubsub"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/redis"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/spanner"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/stackdriver"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/storage"
 )
 
 // NOTE(josephlewis42) unless there are extenuating circumstances, as of 2019

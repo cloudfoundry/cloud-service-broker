@@ -19,7 +19,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

@@ -20,7 +20,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/brokerpak"
+	"github.com/pivotal/cloud-service-broker/pkg/brokerpak"
 	"github.com/spf13/cobra"
 )
 

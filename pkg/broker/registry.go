@@ -19,8 +19,8 @@ import (
 	"log"
 	"sort"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/toggles"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/pkg/toggles"
+	"github.com/pivotal/cloud-service-broker/utils"
 )
 
 var (

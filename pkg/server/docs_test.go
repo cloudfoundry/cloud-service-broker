@@ -20,7 +20,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin"
 	"github.com/gorilla/mux"
 )
 

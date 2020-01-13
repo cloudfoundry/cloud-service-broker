@@ -5,9 +5,9 @@ import (
 	context "context"
 	sync "sync"
 
-	models "github.com/GoogleCloudPlatform/gcp-service-broker/db_service/models"
-	broker "github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
-	varcontext "github.com/GoogleCloudPlatform/gcp-service-broker/pkg/varcontext"
+	models "github.com/pivotal/cloud-service-broker/db_service/models"
+	broker "github.com/pivotal/cloud-service-broker/pkg/broker"
+	varcontext "github.com/pivotal/cloud-service-broker/pkg/varcontext"
 	brokerapi "github.com/pivotal-cf/brokerapi"
 )
 

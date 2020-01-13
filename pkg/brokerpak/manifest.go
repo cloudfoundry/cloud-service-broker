@@ -21,10 +21,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/tf"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/validation"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils/stream"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils/ziputil"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/tf"
+	"github.com/pivotal/cloud-service-broker/pkg/validation"
+	"github.com/pivotal/cloud-service-broker/utils/stream"
+	"github.com/pivotal/cloud-service-broker/utils/ziputil"
 
 	getter "github.com/hashicorp/go-getter"
 )

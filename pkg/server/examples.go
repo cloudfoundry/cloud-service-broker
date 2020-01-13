@@ -25,8 +25,8 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/client"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/pivotal/cloud-service-broker/pkg/client"
 )
 
 func GetAllCompleteServiceExamples(registry broker.BrokerRegistry) ([]client.CompleteServiceExample, error) {

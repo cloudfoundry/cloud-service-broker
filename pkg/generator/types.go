@@ -25,8 +25,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/validation"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/pivotal/cloud-service-broker/pkg/validation"
 )
 
 // CatalogDocumentation generates markdown documentation for the service catalog

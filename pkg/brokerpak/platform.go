@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/validation"
+	"github.com/pivotal/cloud-service-broker/pkg/validation"
 )
 
 // Platform holds an os/architecture pair.

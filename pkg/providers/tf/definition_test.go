@@ -19,8 +19,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/varcontext"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal-cf/brokerapi"
 )
 

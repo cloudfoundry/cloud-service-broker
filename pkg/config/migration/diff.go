@@ -14,7 +14,7 @@
 
 package migration
 
-import "github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+import "github.com/pivotal/cloud-service-broker/utils"
 
 // Diff holds the difference between two strings.
 type Diff struct {

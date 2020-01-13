@@ -21,10 +21,10 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/db_service/models"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/validation"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/varcontext"
+	"github.com/pivotal/cloud-service-broker/db_service/models"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/pivotal/cloud-service-broker/pkg/validation"
+	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/jwt"

@@ -79,7 +79,7 @@ Add these to the `env` section of `manifest.yml`
 
 #### [Optional environment variables](#optional-env)
 
-See [the customization documentation](https://github.com/GoogleCloudPlatform/gcp-service-broker/blob/master/docs/customization.md)
+See [the customization documentation](https://github.com/pivotal/cloud-service-broker/blob/master/docs/customization.md)
 for instructions about providing database name and port overrides, SSL certificates, custom service plans, and more.
 
 #### [Push the service broker to CF and enable services](#push)

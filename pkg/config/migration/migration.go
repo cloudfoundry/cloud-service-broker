@@ -20,7 +20,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/utils"
 )
 
 // Migration holds the information necessary to modify the values in the tile.

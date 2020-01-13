@@ -25,8 +25,8 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils/stream"
+	"github.com/pivotal/cloud-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/utils/stream"
 	getter "github.com/hashicorp/go-getter"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"

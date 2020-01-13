@@ -5,9 +5,9 @@ import (
 	context "context"
 	sync "sync"
 
-	models "github.com/GoogleCloudPlatform/gcp-service-broker/db_service/models"
-	base "github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/base"
-	varcontext "github.com/GoogleCloudPlatform/gcp-service-broker/pkg/varcontext"
+	models "github.com/pivotal/cloud-service-broker/db_service/models"
+	base "github.com/pivotal/cloud-service-broker/pkg/providers/builtin/base"
+	varcontext "github.com/pivotal/cloud-service-broker/pkg/varcontext"
 )
 
 type FakeServiceAccountManager struct {

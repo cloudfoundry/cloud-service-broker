@@ -20,9 +20,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/client"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/server"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/pkg/client"
+	"github.com/pivotal/cloud-service-broker/pkg/server"
+	"github.com/pivotal/cloud-service-broker/utils"
 )
 
 var (

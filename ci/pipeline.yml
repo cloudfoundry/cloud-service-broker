@@ -9,7 +9,7 @@ resources:
   - name: gcp-service-broker
     type: git
     source:
-      uri: https://github.com/GoogleCloudPlatform/gcp-service-broker.git
+      uri: https://github.com/pivotal/cloud-service-broker.git
       branch: ((code_branch))
       ignore_paths:
         - ci/*
@@ -17,7 +17,7 @@ resources:
   - name: gcp-service-broker-ci
     type: git
     source:
-      uri: https://github.com/GoogleCloudPlatform/gcp-service-broker.git
+      uri: https://github.com/pivotal/cloud-service-broker.git
       branch: ((ci_branch))
       paths:
         - ci/*

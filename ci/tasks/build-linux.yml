@@ -14,6 +14,6 @@ run:
   path: go.ash
   args: ['build', '-o', '../client-linux/gcp-service-broker-linux']
 params:
-  PROJECT_ROOT: github.com/GoogleCloudPlatform/gcp-service-broker
+  PROJECT_ROOT: github.com/pivotal/cloud-service-broker
   GOOS: linux
   GOARCH: amd64

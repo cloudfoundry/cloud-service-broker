@@ -81,7 +81,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  - The broker uses a Pivotal library affected by [CVE-2018-15759](https://pivotal.io/security/cve-2018-15759). Until the library is updated, it's recommended that you not run the service broker on a public network. If you must run it on a public network, make it accessible through a proxy that supports fail2ban.
 
 ### Added
- - The ability to enable/disable services based on product lifecycle tags. See [#340](https://github.com/GoogleCloudPlatform/gcp-service-broker/pull/340) for context.
+ - The ability to enable/disable services based on product lifecycle tags. See [#340](https://github.com/pivotal/cloud-service-broker/pull/340) for context.
  - Preview support for Firestore.
  - Preview support for Dialogflow.
  - Preview support for Stackdriver Metrics.
@@ -155,7 +155,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 and Service objects are defined individually by setting environment variables like `GOOGLE_<SERVICE_NAME>`
 - You no longer have to specify service information in the manifest.
 - **Breaking** The Cloud Storage plan `reduced_availability` was changed to `reduced-availability` to be compliant with the spec and work with Kubernetes.
-- Tables are created only if they do not exist on migration, fixing [#194](https://github.com/GoogleCloudPlatform/gcp-service-broker/issues/194).
+- Tables are created only if they do not exist on migration, fixing [#194](https://github.com/pivotal/cloud-service-broker/issues/194).
 - The broker now adheres to Open Service Broker API version 2.13.
 - Improved ORM migrations and test coverage with SQLite3.
 

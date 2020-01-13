@@ -20,10 +20,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/toggles"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin"
+	"github.com/pivotal/cloud-service-broker/pkg/toggles"
+	"github.com/pivotal/cloud-service-broker/utils"
 	yaml "gopkg.in/yaml.v2"
 )
 

@@ -21,11 +21,11 @@ import (
 	"path/filepath"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/tf"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/tf/wrapper"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/varcontext"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/tf"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/tf/wrapper"
+	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
+	"github.com/pivotal/cloud-service-broker/utils"
 	"github.com/spf13/cast"
 )
 

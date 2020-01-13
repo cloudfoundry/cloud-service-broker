@@ -26,7 +26,7 @@ import (
 	"sync"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/utils"
 )
 
 // DefaultInstanceName is the default name of an instance of a particular module.

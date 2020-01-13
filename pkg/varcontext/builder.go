@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/validation"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/varcontext/interpolation"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/pkg/validation"
+	"github.com/pivotal/cloud-service-broker/pkg/varcontext/interpolation"
+	"github.com/pivotal/cloud-service-broker/utils"
 	multierror "github.com/hashicorp/go-multierror"
 	"github.com/spf13/cast"
 )

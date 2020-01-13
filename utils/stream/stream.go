@@ -23,7 +23,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/utils"
 	multierror "github.com/hashicorp/go-multierror"
 	yaml "gopkg.in/yaml.v2"
 )

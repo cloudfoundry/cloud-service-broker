@@ -21,8 +21,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/db_service/models"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
+	"github.com/pivotal/cloud-service-broker/db_service/models"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
 	"github.com/pivotal-cf/brokerapi"
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"

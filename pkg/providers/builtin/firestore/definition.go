@@ -16,9 +16,9 @@ package firestore
 
 import (
 	"code.cloudfoundry.org/lager"
-	accountmanagers "github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/account_managers"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/base"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
+	accountmanagers "github.com/pivotal/cloud-service-broker/pkg/providers/builtin/account_managers"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/base"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
 	"github.com/pivotal-cf/brokerapi"
 	"golang.org/x/oauth2/jwt"
 )

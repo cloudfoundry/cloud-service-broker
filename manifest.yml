@@ -20,5 +20,5 @@ applications:
   memory: 1G
   buildpack: go_buildpack
   env:
-    GOPACKAGENAME: github.com/GoogleCloudPlatform/gcp-service-broker
+    GOPACKAGENAME: github.com/pivotal/cloud-service-broker
     GOVERSION: go1.12

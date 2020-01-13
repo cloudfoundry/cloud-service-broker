@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/config/migration"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/pkg/config/migration"
+	"github.com/pivotal/cloud-service-broker/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	yaml "gopkg.in/yaml.v2"

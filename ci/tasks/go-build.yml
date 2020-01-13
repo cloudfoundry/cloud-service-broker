@@ -15,4 +15,4 @@ run:
   path: go.ash
   args: ['build', '-o', '../gsb-bin/gcp-service-broker']
 params:
-  PROJECT_ROOT: github.com/GoogleCloudPlatform/gcp-service-broker
+  PROJECT_ROOT: github.com/pivotal/cloud-service-broker

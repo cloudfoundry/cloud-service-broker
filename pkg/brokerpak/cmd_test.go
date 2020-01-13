@@ -23,8 +23,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/tf"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils/stream"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/tf"
+	"github.com/pivotal/cloud-service-broker/utils/stream"
 )
 
 func fakeBrokerpak() (string, error) {

@@ -17,9 +17,9 @@ package dataflow
 import (
 	"context"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/base"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/db_service/models"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/varcontext"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/base"
+	"github.com/pivotal/cloud-service-broker/db_service/models"
+	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal-cf/brokerapi"
 )
 
