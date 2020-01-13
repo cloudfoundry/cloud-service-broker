@@ -25,7 +25,7 @@ package toggles
 import (
 	"sort"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/utils"
 	"github.com/spf13/viper"
 )
 

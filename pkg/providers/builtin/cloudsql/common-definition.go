@@ -15,10 +15,10 @@
 package cloudsql
 
 import (
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
-	accountmanagers "github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/account_managers"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/validation"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/varcontext"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	accountmanagers "github.com/pivotal/cloud-service-broker/pkg/providers/builtin/account_managers"
+	"github.com/pivotal/cloud-service-broker/pkg/validation"
+	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 )
 
 const (

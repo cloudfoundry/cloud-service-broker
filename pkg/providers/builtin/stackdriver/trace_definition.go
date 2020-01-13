@@ -15,8 +15,8 @@
 package stackdriver
 
 import (
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
-	accountmanagers "github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/account_managers"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	accountmanagers "github.com/pivotal/cloud-service-broker/pkg/providers/builtin/account_managers"
 	"github.com/pivotal-cf/brokerapi"
 )
 

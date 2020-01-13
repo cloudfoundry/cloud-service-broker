@@ -1,4 +1,4 @@
-module github.com/GoogleCloudPlatform/gcp-service-broker
+module github.com/pivotal/cloud-service-broker
 
 go 1.13
 

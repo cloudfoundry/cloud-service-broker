@@ -29,7 +29,7 @@ If you:
 * Set a custom environment variable to change the name of the database:
   * You can now set it in the database form of the PCF tile.
 * Use a BigQuery billing export for chargebacks:
-  * Read the [billing docs](https://github.com/GoogleCloudPlatform/gcp-service-broker/blob/master/docs/billing.md) to understand how labels are automatically applied to services now.
+  * Read the [billing docs](https://github.com/pivotal/cloud-service-broker/blob/master/docs/billing.md) to understand how labels are automatically applied to services now.
 
 ### v3.X to 5.0
 

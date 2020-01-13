@@ -14,6 +14,6 @@ run:
   path: go.ash
   args: ['build', '-o', '../client-darwin/gcp-service-broker-darwin']
 params:
-  PROJECT_ROOT: github.com/GoogleCloudPlatform/gcp-service-broker
+  PROJECT_ROOT: github.com/pivotal/cloud-service-broker
   GOOS: darwin
   GOARCH: amd64

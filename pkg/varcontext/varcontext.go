@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/utils"
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cast"
 )

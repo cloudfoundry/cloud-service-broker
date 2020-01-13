@@ -17,8 +17,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/generator"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin"
+	"github.com/pivotal/cloud-service-broker/pkg/generator"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin"
 	"github.com/spf13/cobra"
 )
 

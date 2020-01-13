@@ -15,7 +15,7 @@
 package account_managers
 
 import (
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/utils"
 	cloudresourcemanager "google.golang.org/api/cloudresourcemanager/v1"
 )
 

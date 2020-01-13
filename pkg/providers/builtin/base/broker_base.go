@@ -18,9 +18,9 @@ import (
 	"context"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/db_service/models"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin/account_managers"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/varcontext"
+	"github.com/pivotal/cloud-service-broker/db_service/models"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/account_managers"
+	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 
 	"golang.org/x/oauth2/jwt"
 )

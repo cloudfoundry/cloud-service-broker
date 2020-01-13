@@ -19,7 +19,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/server/fakes"
+	"github.com/pivotal/cloud-service-broker/pkg/server/fakes"
 	"github.com/pivotal-cf/brokerapi"
 )
 

@@ -20,9 +20,9 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/tf"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils/stream"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils/ziputil"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/tf"
+	"github.com/pivotal/cloud-service-broker/utils/stream"
+	"github.com/pivotal/cloud-service-broker/utils/ziputil"
 )
 
 // BrokerPakReader reads bundled together Terraform and service definitions.

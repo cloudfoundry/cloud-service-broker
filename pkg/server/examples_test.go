@@ -21,8 +21,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/client"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin"
+	"github.com/pivotal/cloud-service-broker/pkg/client"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin"
 )
 
 // Sanity check to make sure GetAllCompleteServiceExamples returns a result

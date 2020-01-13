@@ -17,10 +17,10 @@ package brokers
 import (
 	"fmt"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/brokerpak"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/builtin"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/pivotal/cloud-service-broker/pkg/brokerpak"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin"
+	"github.com/pivotal/cloud-service-broker/utils"
 	"golang.org/x/oauth2/jwt"
 )
 

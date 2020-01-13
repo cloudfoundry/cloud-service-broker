@@ -12,4 +12,4 @@ run:
   path: go.ash
   args: ['test', '-v', './...', '-tags=service_broker']
 params:
-  PROJECT_ROOT: github.com/GoogleCloudPlatform/gcp-service-broker
+  PROJECT_ROOT: github.com/pivotal/cloud-service-broker

@@ -14,7 +14,7 @@
 
 FROM golang:1.11-alpine AS build
 
-WORKDIR /go/src/github.com/GoogleCloudPlatform/gcp-service-broker
+WORKDIR /go/src/github.com/pivotal/cloud-service-broker
 COPY . .
 
 RUN CGO_ENABLED=0 go build -o /bin/gcp-service-broker
@@ -26,7 +26,7 @@ RUN apk --update add ca-certificates
 FROM scratch
 
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=build /go/src/github.com/GoogleCloudPlatform/gcp-service-broker /src
+COPY --from=build /go/src/github.com/pivotal/cloud-service-broker /src
 COPY --from=build /bin/gcp-service-broker /bin/gcp-service-broker
 
 ENV PORT 8080

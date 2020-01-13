@@ -19,8 +19,8 @@ import (
 	"log"
 	"text/template"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/config/migration"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils"
+	"github.com/pivotal/cloud-service-broker/pkg/config/migration"
+	"github.com/pivotal/cloud-service-broker/utils"
 )
 
 const (
@@ -30,7 +30,7 @@ const (
 	stemcellVersion = "170.82"
 
 	buildpack     = "go_buildpack"
-	goPackageName = "github.com/GoogleCloudPlatform/gcp-service-broker"
+	goPackageName = "github.com/pivotal/cloud-service-broker"
 	goVersion     = "go1.12"
 
 	copyrightHeader = `# Copyright the Service Broker Project Authors. All rights reserved.

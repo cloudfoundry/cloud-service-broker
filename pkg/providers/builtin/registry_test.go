@@ -19,7 +19,7 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
 )
 
 func TestBuiltinBrokerRegistry(t *testing.T) {

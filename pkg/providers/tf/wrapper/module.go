@@ -17,7 +17,7 @@ package wrapper
 import (
 	"sort"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/validation"
+	"github.com/pivotal/cloud-service-broker/pkg/validation"
 	"github.com/hashicorp/hcl"
 )
 

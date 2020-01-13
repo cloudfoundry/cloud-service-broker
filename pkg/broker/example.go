@@ -14,7 +14,7 @@
 
 package broker
 
-import "github.com/GoogleCloudPlatform/gcp-service-broker/pkg/validation"
+import "github.com/pivotal/cloud-service-broker/pkg/validation"
 
 // ServiceExample holds example configurations for a service that _should_
 // work.

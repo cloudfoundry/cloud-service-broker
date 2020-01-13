@@ -18,7 +18,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/validation"
+	"github.com/pivotal/cloud-service-broker/pkg/validation"
 )
 
 func TestNewExampleManifest(t *testing.T) {

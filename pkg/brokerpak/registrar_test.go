@@ -22,9 +22,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/providers/tf"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/varcontext"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/tf"
+	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 )
 
 func TestNewRegistrar(t *testing.T) {

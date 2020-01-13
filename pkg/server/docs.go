@@ -19,8 +19,8 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/generator"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/pivotal/cloud-service-broker/pkg/generator"
 	"github.com/gorilla/mux"
 	"github.com/russross/blackfriday"
 )

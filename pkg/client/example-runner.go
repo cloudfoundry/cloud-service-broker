@@ -26,7 +26,7 @@ import (
 
 	"github.com/pivotal-cf/brokerapi"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/pkg/broker"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
 )
 
 // RunExamplesForService runs all the examples for a given service name against

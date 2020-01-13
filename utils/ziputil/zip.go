@@ -23,7 +23,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/GoogleCloudPlatform/gcp-service-broker/utils/stream"
+	"github.com/pivotal/cloud-service-broker/utils/stream"
 )
 
 // List writes a ls -la style listing of the zipfile to the given writer.

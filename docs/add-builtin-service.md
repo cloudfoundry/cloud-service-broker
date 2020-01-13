@@ -8,7 +8,7 @@ This doc will cover how to add and test a built-in service to the GCP service br
 
 ## Overview
 
-For the purposes of this tutorial, let’s say that the example service we want to add is [Google Memorystore for Redis](https://cloud.google.com/memorystore/). An example pull request can be found [here](https://github.com/GoogleCloudPlatform/gcp-service-broker/pull/477/files).
+For the purposes of this tutorial, let’s say that the example service we want to add is [Google Memorystore for Redis](https://cloud.google.com/memorystore/). An example pull request can be found [here](https://github.com/pivotal/cloud-service-broker/pull/477/files).
 
 As you can see from the Redis example, you will generally be updating 3 files:
 
