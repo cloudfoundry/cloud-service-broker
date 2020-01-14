@@ -24,7 +24,6 @@ import (
 	"github.com/pivotal/cloud-service-broker/db_service"
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
 	"github.com/pivotal/cloud-service-broker/pkg/brokerpak"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin"
 	"github.com/pivotal/cloud-service-broker/pkg/server"
 	"github.com/pivotal/cloud-service-broker/pkg/toggles"
 	"github.com/pivotal/cloud-service-broker/utils"
@@ -106,7 +105,7 @@ func serve() {
 func serveDocs() {
 	logger := utils.NewLogger("cloud-service-broker")
 	// init broker
-	registry := builtin.BuiltinBrokerRegistry()
+	registry := broker.BrokerRegistry{}
 	if err := brokerpak.RegisterAll(registry); err != nil {
 		logger.Error("loading brokerpaks", err)
 	}
