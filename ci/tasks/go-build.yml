@@ -5,7 +5,7 @@ image_resource:
   source:
     repository: gcr.io/cloud-builders/go
 inputs:
-- name: gcp-service-broker
+- name: cloud-service-broker
   path: broker-source
 outputs:
 - name: compiled-broker
@@ -13,6 +13,6 @@ outputs:
 run:
   dir: broker-source
   path: go.ash
-  args: ['build', '-o', '../gsb-bin/gcp-service-broker']
+  args: ['build', '-o', '../gsb-bin/cloud-service-broker']
 params:
   PROJECT_ROOT: github.com/pivotal/cloud-service-broker

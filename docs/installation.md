@@ -83,7 +83,7 @@ See [the customization documentation](https://github.com/pivotal/cloud-service-b
 for instructions about providing database name and port overrides, SSL certificates, custom service plans, and more.
 
 #### [Push the service broker to CF and enable services](#push)
-1. `cf push gcp-service-broker`
+1. `cf push cloud-service-broker`
 1. `cf create-service-broker <service broker name> <username> <password> <service broker url>`
 1. (for all applicable services, e.g.) `cf enable-service-access google-pubsub`
 

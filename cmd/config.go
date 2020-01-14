@@ -52,7 +52,7 @@ Precidence is in the order:
 
 You can show the known coonfiguration values using:
 
-  ./gcp-service-broker config show
+  ./cloud-service-broker config show
 `,
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
@@ -81,7 +81,7 @@ You can show the known coonfiguration values using:
 
 You can combine this command with the --config flag to translate configurations:
 
-  GSB_DB_PASSWORD=pass gcp-service-broker --config in.json config write out.toml
+  GSB_DB_PASSWORD=pass cloud-service-broker --config in.json config write out.toml
 
 out.toml:
 

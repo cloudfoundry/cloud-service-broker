@@ -194,12 +194,12 @@ Examples: []broker.ServiceExample{
 },
 ```
 
-From your command line, inside the gcp-service-broker folder, run:
+From your command line, inside the cloud-service-broker folder, run:
 
 1. `go build`
-2. To serve: `./gcp-service-broker --config ../minimal.yml serve`
+2. To serve: `./cloud-service-broker --config ../minimal.yml serve`
 
    You can view the auto-generated docs from your `ServiceDefinition` at http://localhost:8000/docs.
-3. In a separate terminal, to run examples: `./gcp-service-broker --config config.yml client run-examples --service-name ${SERVICE_NAME}`
+3. In a separate terminal, to run examples: `./cloud-service-broker --config config.yml client run-examples --service-name ${SERVICE_NAME}`
 
    The `${SERVICE_NAME}` should be the `Name` field specified in the `ServiceDefinition`.

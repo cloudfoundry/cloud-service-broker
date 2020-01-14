@@ -37,19 +37,19 @@ endif
 test: deps-go-binary
 	$(GO) test -v ./... -tags=service_broker
 
-./build/gcp-service-broker.linux:
-	GOARCH=amd64 GOOS=linux $(GO) build -o ./build/gcp-service-broker.linux
+./build/cloud-service-broker.linux:
+	GOARCH=amd64 GOOS=linux $(GO) build -o ./build/cloud-service-broker.linux
 
-./build/gcp-service-broker.darwin:
-	GOARCH=amd64 GOOS=darwin $(GO) build -o ./build/gcp-service-broker.darwin
+./build/cloud-service-broker.darwin:
+	GOARCH=amd64 GOOS=darwin $(GO) build -o ./build/cloud-service-broker.darwin
 
 .PHONY: build
-build: deps-go-binary ./build/gcp-service-broker.linux ./build/gcp-service-broker.darwin
-	./build/gcp-service-broker.$(OSFAMILY) generate tile > ./tile.yml
-	./build/gcp-service-broker.$(OSFAMILY) generate manifest > ./manifest.yml
-	./build/gcp-service-broker.$(OSFAMILY) generate customization > docs/customization.md
-	./build/gcp-service-broker.$(OSFAMILY) generate use --destination-dir="docs/"
-	./build/gcp-service-broker.$(OSFAMILY) generate use > docs/use.md
+build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin
+	./build/cloud-service-broker.$(OSFAMILY) generate tile > ./tile.yml
+	./build/cloud-service-broker.$(OSFAMILY) generate manifest > ./manifest.yml
+	./build/cloud-service-broker.$(OSFAMILY) generate customization > docs/customization.md
+	./build/cloud-service-broker.$(OSFAMILY) generate use --destination-dir="docs/"
+	./build/cloud-service-broker.$(OSFAMILY) generate use > docs/use.md
 
 .PHONY: clean
 clean: deps-go-binary
@@ -100,5 +100,5 @@ endif
 check-env-vars: root-service-account-json security-user-name security-user-password db-host db-username db-password
 
 .PHONY: run
-run: check-env-vars ./build/gcp-service-broker.$(OSFAMILY)
-	./build/gcp-service-broker.$(OSFAMILY) serve
+run: check-env-vars ./build/cloud-service-broker.$(OSFAMILY)
+	./build/cloud-service-broker.$(OSFAMILY) serve

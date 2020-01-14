@@ -375,8 +375,8 @@ func (ee *exampleExecutor) LogTestInfo() {
 	log.Printf("Running Example: %s\n", ee.Name)
 
 	ips := fmt.Sprintf("--instanceid %q --planid %q --serviceid %q", ee.InstanceId, ee.PlanId, ee.ServiceId)
-	log.Printf("gcp-service-broker client provision %s --params %q\n", ips, ee.ProvisionParams)
-	log.Printf("gcp-service-broker client bind %s --bindingid %q --params %q\n", ips, ee.BindingId, ee.BindParams)
-	log.Printf("gcp-service-broker client unbind %s --bindingid %q\n", ips, ee.BindingId)
-	log.Printf("gcp-service-broker client deprovision %s\n", ips)
+	log.Printf("cloud-service-broker client provision %s --params %q\n", ips, ee.ProvisionParams)
+	log.Printf("cloud-service-broker client bind %s --bindingid %q --params %q\n", ips, ee.BindingId, ee.BindParams)
+	log.Printf("cloud-service-broker client unbind %s --bindingid %q\n", ips, ee.BindingId)
+	log.Printf("cloud-service-broker client deprovision %s\n", ips)
 }

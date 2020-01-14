@@ -20,4 +20,4 @@ const Version = "5.0.0"
 // This custom user agent string is added to provision calls so that Google can track the aggregated use of this tool
 // We can better advocate for devoting resources to supporting cloud foundry and this service broker if we can show
 // good usage statistics for it, so if you feel the need to fork this repo, please leave this string in place!
-const CustomUserAgent = "cf-gcp-service-broker " + Version
+const CustomUserAgent = "cf-cloud-service-broker " + Version

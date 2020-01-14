@@ -5,10 +5,10 @@ image_resource:
   source:
     repository: alpine
 inputs:
-- name: gcp-service-broker
-- name: gcp-service-broker-ci
+- name: cloud-service-broker
+- name: cloud-service-broker-ci
 - name: compiled-broker
 outputs:
 - name: metadata
 run:
-  path: gcp-service-broker-ci/ci/tasks/metadata.sh
+  path: cloud-service-broker-ci/ci/tasks/metadata.sh

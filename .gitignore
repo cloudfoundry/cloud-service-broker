@@ -4,7 +4,7 @@
 *.DS_Store
 *.brokerpak
 *.sqlite3
-gcp-service-broker
+cloud-service-broker
 product/
 release/
 tile-history.yml

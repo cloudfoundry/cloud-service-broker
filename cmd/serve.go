@@ -68,7 +68,7 @@ func init() {
 }
 
 func serve() {
-	logger := utils.NewLogger("gcp-service-broker")
+	logger := utils.NewLogger("cloud-service-broker")
 	db := db_service.New(logger)
 
 	// init broker
@@ -104,7 +104,7 @@ func serve() {
 }
 
 func serveDocs() {
-	logger := utils.NewLogger("gcp-service-broker")
+	logger := utils.NewLogger("cloud-service-broker")
 	// init broker
 	registry := builtin.BuiltinBrokerRegistry()
 	if err := brokerpak.RegisterAll(registry); err != nil {
@@ -115,7 +115,7 @@ func serveDocs() {
 }
 
 func startServer(registry broker.BrokerRegistry, db *sql.DB, brokerapi http.Handler) {
-	logger := utils.NewLogger("gcp-service-broker")
+	logger := utils.NewLogger("cloud-service-broker")
 
 	router := mux.NewRouter()
 

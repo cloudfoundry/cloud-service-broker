@@ -5,14 +5,14 @@ image_resource:
   source:
     repository: gcr.io/cloud-builders/go
 inputs:
-- name: gcp-service-broker
+- name: cloud-service-broker
   path: broker-source
 outputs:
 - name: client-windows
 run:
   dir: broker-source
   path: go.ash
-  args: ['build', '-o', '../client-windows/gcp-service-broker-windows.exe']
+  args: ['build', '-o', '../client-windows/cloud-service-broker-windows.exe']
 params:
   PROJECT_ROOT: github.com/pivotal/cloud-service-broker
   GOOS: windows

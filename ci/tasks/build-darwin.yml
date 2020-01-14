@@ -5,14 +5,14 @@ image_resource:
   source:
     repository: gcr.io/cloud-builders/go
 inputs:
-- name: gcp-service-broker
+- name: cloud-service-broker
   path: broker-source
 outputs:
 - name: client-darwin
 run:
   dir: broker-source
   path: go.ash
-  args: ['build', '-o', '../client-darwin/gcp-service-broker-darwin']
+  args: ['build', '-o', '../client-darwin/cloud-service-broker-darwin']
 params:
   PROJECT_ROOT: github.com/pivotal/cloud-service-broker
   GOOS: darwin
