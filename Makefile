@@ -48,8 +48,6 @@ build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-b
 	./build/cloud-service-broker.$(OSFAMILY) generate tile > ./tile.yml
 	./build/cloud-service-broker.$(OSFAMILY) generate manifest > ./manifest.yml
 	./build/cloud-service-broker.$(OSFAMILY) generate customization > docs/customization.md
-	./build/cloud-service-broker.$(OSFAMILY) generate use --destination-dir="docs/"
-	./build/cloud-service-broker.$(OSFAMILY) generate use > docs/use.md
 
 .PHONY: clean
 clean: deps-go-binary

@@ -19,7 +19,6 @@ import (
 
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
 	"github.com/pivotal/cloud-service-broker/pkg/brokerpak"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin"
 	"github.com/pivotal/cloud-service-broker/utils"
 	"golang.org/x/oauth2/jwt"
 )
@@ -41,7 +40,7 @@ func NewBrokerConfigFromEnv() (*BrokerConfig, error) {
 		return nil, err
 	}
 
-	registry := builtin.BuiltinBrokerRegistry()
+	registry := broker.BrokerRegistry{}
 	if err := brokerpak.RegisterAll(registry); err != nil {
 		return nil, fmt.Errorf("Error loading brokerpaks: %v", err)
 	}

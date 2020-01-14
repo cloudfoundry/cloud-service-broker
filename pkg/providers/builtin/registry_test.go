@@ -15,7 +15,6 @@
 package builtin
 
 import (
-	"reflect"
 	"sort"
 	"testing"
 
@@ -24,24 +23,6 @@ import (
 
 func TestBuiltinBrokerRegistry(t *testing.T) {
 	builtinServiceNames := []string{
-		"google-bigquery",
-		"google-bigtable",
-		"google-cloudsql-mysql",
-		"google-cloudsql-postgres",
-		"google-dataflow",
-		"google-datastore",
-		"google-dialogflow",
-		"google-filestore",
-		"google-firestore",
-		"google-memorystore-redis",
-		"google-ml-apis",
-		"google-pubsub",
-		"google-spanner",
-		"google-stackdriver-debugger",
-		"google-stackdriver-monitoring",
-		"google-stackdriver-profiler",
-		"google-stackdriver-trace",
-		"google-storage",
 	}
 
 	sort.Strings(builtinServiceNames)
@@ -62,7 +43,7 @@ func TestBuiltinBrokerRegistry(t *testing.T) {
 		}
 
 		sort.Strings(actual)
-		if !reflect.DeepEqual(builtinServiceNames, actual) {
+		if len(actual) > 0 {
 			t.Errorf("Expected service names: %v, got: %v", builtinServiceNames, actual)
 		}
 	})

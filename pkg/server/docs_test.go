@@ -15,45 +15,42 @@
 package server
 
 import (
-	"bytes"
-	"net/http"
-	"net/http/httptest"
 	"testing"
-
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin"
-	"github.com/gorilla/mux"
 )
 
 func TestNewDocsHandler(t *testing.T) {
-	registry := builtin.BuiltinBrokerRegistry()
-	router := mux.NewRouter()
-	// Test that the handler sets the correct header and contains some imporant
-	// strings that will indicate (but not prove!) that the rendering was correct.
-	AddDocsHandler(router, registry)
-	request := httptest.NewRequest(http.MethodGet, "/docs", nil)
-	w := httptest.NewRecorder()
+	//
+	// save in case we want to test broker pack docs
+	//
+	// registry := builtin.BuiltinBrokerRegistry()
+	// router := mux.NewRouter()
+	// // Test that the handler sets the correct header and contains some imporant
+	// // strings that will indicate (but not prove!) that the rendering was correct.
+	// AddDocsHandler(router, registry)
+	// request := httptest.NewRequest(http.MethodGet, "/docs", nil)
+	// w := httptest.NewRecorder()
 
-	router.ServeHTTP(w, request)
+	// router.ServeHTTP(w, request)
 
-	if w.Code != http.StatusOK {
-		t.Errorf("Expected response code: %d got: %d", http.StatusOK, w.Code)
-	}
+	// if w.Code != http.StatusOK {
+	// 	t.Errorf("Expected response code: %d got: %d", http.StatusOK, w.Code)
+	// }
 
-	contentType := w.Header().Get("Content-Type")
-	if contentType != "text/html" {
-		t.Errorf("Expected text/html content type got: %q", contentType)
-	}
+	// contentType := w.Header().Get("Content-Type")
+	// if contentType != "text/html" {
+	// 	t.Errorf("Expected text/html content type got: %q", contentType)
+	// }
 
-	importantStrings := []string{"<html", "bootstrap.min.css"}
-	for _, svc := range registry.GetAllServices() {
-		importantStrings = append(importantStrings, svc.Name)
-	}
+	// importantStrings := []string{"<html", "bootstrap.min.css"}
+	// for _, svc := range registry.GetAllServices() {
+	// 	importantStrings = append(importantStrings, svc.Name)
+	// }
 
-	body := w.Body.Bytes()
+	// body := w.Body.Bytes()
 
-	for _, is := range importantStrings {
-		if !bytes.Contains(body, []byte(is)) {
-			t.Errorf("Expected body to contain the string %q", is)
-		}
-	}
+	// for _, is := range importantStrings {
+	// 	if !bytes.Contains(body, []byte(is)) {
+	// 		t.Errorf("Expected body to contain the string %q", is)
+	// 	}
+	// }
 }

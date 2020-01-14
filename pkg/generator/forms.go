@@ -21,9 +21,7 @@ import (
 	"strings"
 
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin"
 	"github.com/pivotal/cloud-service-broker/pkg/toggles"
-	"github.com/pivotal/cloud-service-broker/utils"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -86,57 +84,12 @@ func GenerateForms() TileFormsSections {
 			generateDatabaseForm(),
 			generateBrokerpakForm(),
 			generateFeatureFlagForm(),
-			generateDefaultOverrideForm(),
 		},
 
-		ServicePlanForms: append(generateServicePlanForms(), brokerpakConfigurationForm()),
+		ServicePlanForms: []Form{ brokerpakConfigurationForm() },
 	}
 }
 
-// generateDefaultOverrideForm generates a form for users to override the
-// defaults in a plan.
-func generateDefaultOverrideForm() Form {
-	builtinServices := builtin.BuiltinBrokerRegistry()
-
-	formElements := []FormProperty{}
-	for _, svc := range builtinServices.GetAllServices() {
-		entry, err := svc.CatalogEntry()
-		if err != nil {
-			log.Fatalf("Error getting catalog entry for service %s, %v", svc.Name, err)
-		}
-
-		if !svc.IsRoleWhitelistEnabled() {
-			continue
-		}
-
-		provisionForm := FormProperty{
-			Name:         strings.ToLower(utils.PropertyToEnv(svc.ProvisionDefaultOverrideProperty())),
-			Label:        fmt.Sprintf("Provision default override %s instances.", entry.Metadata.DisplayName),
-			Description:  "A JSON object with key/value pairs. Keys MUST be the name of a user-defined provision property and values are the alternative default.",
-			Type:         "text",
-			Default:      "{}",
-			Configurable: true,
-		}
-		formElements = append(formElements, provisionForm)
-
-		bindForm := FormProperty{
-			Name:         strings.ToLower(utils.PropertyToEnv(svc.BindDefaultOverrideProperty())),
-			Label:        fmt.Sprintf("Bind default override %s instances.", entry.Metadata.DisplayName),
-			Description:  "A JSON object with key/value pairs. Keys MUST be the name of a user-defined bind property and values are the alternative default.",
-			Type:         "text",
-			Default:      "{}",
-			Configurable: true,
-		}
-		formElements = append(formElements, bindForm)
-	}
-
-	return Form{
-		Name:        "default_override",
-		Label:       "Default Overrides",
-		Description: "Override the default values your users get when provisioning.",
-		Properties:  formElements,
-	}
-}
 
 // generateDatabaseForm generates the form for configuring database settings.
 func generateDatabaseForm() Form {
@@ -192,30 +145,6 @@ func generateFeatureFlagForm() Form {
 		Description: "Service broker feature flags.",
 		Properties:  formEntries,
 	}
-}
-
-// generateServicePlanForms generates customized service plan forms for all
-// registered services that have the ability to customize their variables.
-func generateServicePlanForms() []Form {
-	builtinServices := builtin.BuiltinBrokerRegistry()
-	out := []Form{}
-
-	for _, svc := range builtinServices.GetAllServices() {
-		planVars := svc.PlanVariables
-
-		if planVars == nil || len(planVars) == 0 {
-			continue
-		}
-
-		form, err := generateServicePlanForm(svc)
-		if err != nil {
-			log.Fatalf("Error generating form for %+v, %s", form, err)
-		}
-
-		out = append(out, form)
-	}
-
-	return out
 }
 
 // generateServicePlanForm creates a form for adding additional service plans

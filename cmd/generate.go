@@ -18,7 +18,6 @@ import (
 	"fmt"
 
 	"github.com/pivotal/cloud-service-broker/pkg/generator"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin"
 	"github.com/spf13/cobra"
 )
 
@@ -32,28 +31,6 @@ func init() {
 		},
 	}
 	rootCmd.AddCommand(generateCmd)
-
-	var useDestinationDir string
-	useCmd := &cobra.Command{
-		Use:   "use",
-		Short: "Generate use markdown file",
-		Long: `Generates the use.md file with:
-
-	 * details about what each service is
-	 * available parameters
-
-	`,
-		Run: func(cmd *cobra.Command, args []string) {
-			if useDestinationDir == "" {
-				fmt.Println(generator.CatalogDocumentation(builtin.BuiltinBrokerRegistry()))
-			} else {
-				generator.CatalogDocumentationToDir(builtin.BuiltinBrokerRegistry(), useDestinationDir)
-			}
-
-		},
-	}
-	useCmd.Flags().StringVar(&useDestinationDir, "destination-dir", "", "Destination directory to generate usage docs about all available broker classes")
-	generateCmd.AddCommand(useCmd)
 
 	generateCmd.AddCommand(&cobra.Command{
 		Use:   "customization",

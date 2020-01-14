@@ -16,20 +16,6 @@ package builtin
 
 import (
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/bigquery"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/bigtable"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/cloudsql"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/dataflow"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/datastore"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/dialogflow"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/filestore"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/firestore"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/ml"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/pubsub"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/redis"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/spanner"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/stackdriver"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/storage"
 )
 
 // NOTE(josephlewis42) unless there are extenuating circumstances, as of 2019
@@ -46,22 +32,4 @@ func BuiltinBrokerRegistry() broker.BrokerRegistry {
 
 // RegisterBuiltinBrokers adds the built-in brokers to the given registry.
 func RegisterBuiltinBrokers(registry broker.BrokerRegistry) {
-	registry.Register(ml.ServiceDefinition())
-	registry.Register(bigquery.ServiceDefinition())
-	registry.Register(bigtable.ServiceDefinition())
-	registry.Register(cloudsql.MysqlServiceDefinition())
-	registry.Register(cloudsql.PostgresServiceDefinition())
-	registry.Register(dataflow.ServiceDefinition())
-	registry.Register(datastore.ServiceDefinition())
-	registry.Register(dialogflow.ServiceDefinition())
-	registry.Register(firestore.ServiceDefinition())
-	registry.Register(pubsub.ServiceDefinition())
-	registry.Register(redis.ServiceDefinition())
-	registry.Register(spanner.ServiceDefinition())
-	registry.Register(stackdriver.StackdriverDebuggerServiceDefinition())
-	registry.Register(stackdriver.StackdriverMonitoringServiceDefinition())
-	registry.Register(stackdriver.StackdriverProfilerServiceDefinition())
-	registry.Register(stackdriver.StackdriverTraceServiceDefinition())
-	registry.Register(storage.ServiceDefinition())
-	registry.Register(filestore.ServiceDefinition())
 }
