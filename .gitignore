@@ -11,3 +11,4 @@ tile-history.yml
 ci/parameters.yml
 ci/vars.yml
 config.yml
+build/
