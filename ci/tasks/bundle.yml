@@ -5,8 +5,8 @@ image_resource:
   source:
     repository: alpine
 inputs:
-- name: gcp-service-broker-ci
-- name: gcp-service-broker
+- name: cloud-service-broker-ci
+- name: cloud-service-broker
 - name: metadata
 - name: tiles
 - name: client-linux
@@ -15,4 +15,4 @@ inputs:
 outputs:
 - name: bundle
 run:
-  path: gcp-service-broker-ci/ci/tasks/bundle.sh
+  path: cloud-service-broker-ci/ci/tasks/bundle.sh

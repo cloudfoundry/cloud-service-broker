@@ -40,7 +40,7 @@ your needs.
 
 To start building a pack, create a new directory and within it run init:
 
-	gcp-service-broker pak init my-pak
+	cloud-service-broker pak init my-pak
 
 You'll get a new pack with a manifest and example service definition.
 Define the architectures and Terraform plugins you need in your manifest along
@@ -50,7 +50,7 @@ files.
 When you're done, you can build the bundle which will download the sources,
 Terraform resources, and pack them together.
 
-	gcp-service-broker pak build my-pak
+	cloud-service-broker pak build my-pak
 
 This will produce a pack:
 
@@ -58,12 +58,12 @@ This will produce a pack:
 
 You can run validation on an existing pack you created or downloaded:
 
-	gcp-service-broker pak validate my-pak.brokerpak
+	cloud-service-broker pak validate my-pak.brokerpak
 
 You can also list information about the pack which includes metadata,
 dependencies, services it provides, and the contents.
 
-	gcp-service-broker pak info my-pak.brokerpak
+	cloud-service-broker pak info my-pak.brokerpak
 
 `,
 		Run: func(cmd *cobra.Command, args []string) {

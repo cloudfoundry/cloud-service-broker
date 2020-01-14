@@ -6,7 +6,7 @@ resource_types:
       repository: frodenas/gcs-resource
 
 resources:
-  - name: gcp-service-broker
+  - name: cloud-service-broker
     type: git
     source:
       uri: https://github.com/pivotal/cloud-service-broker.git
@@ -14,7 +14,7 @@ resources:
       ignore_paths:
         - ci/*
 
-  - name: gcp-service-broker-ci
+  - name: cloud-service-broker-ci
     type: git
     source:
       uri: https://github.com/pivotal/cloud-service-broker.git
@@ -27,36 +27,36 @@ resources:
     source:
       bucket: ((artifacts_bucket_name))
       json_key: ((artifacts_json_key))
-      regexp: gcp-service-broker-(.*).pivotal
+      regexp: cloud-service-broker-(.*).pivotal
 
 jobs:
   - name: unit-test
     plan:
       - aggregate:
-        - get: gcp-service-broker
+        - get: cloud-service-broker
           trigger: true
           params: {depth: 1}
-        - get: gcp-service-broker-ci
+        - get: cloud-service-broker-ci
           params: {depth: 1}
       - task: test
-        file: gcp-service-broker-ci/ci/tasks/go-test.yml
+        file: cloud-service-broker-ci/ci/tasks/go-test.yml
       - task: build
-        file: gcp-service-broker-ci/ci/tasks/go-build.yml
+        file: cloud-service-broker-ci/ci/tasks/go-build.yml
 
   - name: integration
     serial: true
     plan:
       - aggregate:
-        - get: gcp-service-broker
+        - get: cloud-service-broker
           trigger: true
           passed: [unit-test]
           params: {depth: 1}
-        - get: gcp-service-broker-ci
+        - get: cloud-service-broker-ci
           params: {depth: 1}
       - task: build
-        file: gcp-service-broker-ci/ci/tasks/go-build.yml
+        file: cloud-service-broker-ci/ci/tasks/go-build.yml
       - task: osb-integration-tests
-        file: gcp-service-broker-ci/ci/tasks/osb-integration-tests.yml
+        file: cloud-service-broker-ci/ci/tasks/osb-integration-tests.yml
         params:
           ROOT_SERVICE_ACCOUNT_JSON: ((integration_test_service_account_json))
           DB_USERNAME: ((integration_test_db_username))
@@ -68,26 +68,26 @@ jobs:
   - name: release
     plan:
       - aggregate:
-        - get: gcp-service-broker
+        - get: cloud-service-broker
           trigger: true
           passed: [integration]
           params: {depth: 1}
-        - get: gcp-service-broker-ci
+        - get: cloud-service-broker-ci
           params: {depth: 1}
       - task: build
-        file: gcp-service-broker-ci/ci/tasks/go-build.yml
+        file: cloud-service-broker-ci/ci/tasks/go-build.yml
       - task: metadata
-        file: gcp-service-broker-ci/ci/tasks/metadata.yml
+        file: cloud-service-broker-ci/ci/tasks/metadata.yml
       - task: build-tile
-        file: gcp-service-broker-ci/ci/tasks/build-tile.yml
+        file: cloud-service-broker-ci/ci/tasks/build-tile.yml
       - task: build-darwin
-        file: gcp-service-broker-ci/ci/tasks/build-darwin.yml
+        file: cloud-service-broker-ci/ci/tasks/build-darwin.yml
       - task: build-linux
-        file: gcp-service-broker-ci/ci/tasks/build-linux.yml
+        file: cloud-service-broker-ci/ci/tasks/build-linux.yml
       - task: build-windows
-        file: gcp-service-broker-ci/ci/tasks/build-windows.yml
+        file: cloud-service-broker-ci/ci/tasks/build-windows.yml
       - task: bundle
-        file: gcp-service-broker-ci/ci/tasks/bundle.yml
+        file: cloud-service-broker-ci/ci/tasks/bundle.yml
       - put: release
         params:
           file: bundle/*.zip

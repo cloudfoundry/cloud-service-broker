@@ -1,1 +1,1 @@
-web: gcp-service-broker
+web: cloud-service-broker

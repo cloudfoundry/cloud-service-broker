@@ -5,7 +5,7 @@ image_resource:
   source:
     repository: gcr.io/cloud-builders/go
 inputs:
-- name: gcp-service-broker
+- name: cloud-service-broker
   path: src
 run:
   dir: src

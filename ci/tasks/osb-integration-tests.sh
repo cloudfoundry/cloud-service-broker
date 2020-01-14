@@ -15,10 +15,10 @@ export SECURITY_USER_PASSWORD=password
 export PORT=8080
 
 echo "Running brokerpak tests"
-./gcp-service-broker pak test
+./cloud-service-broker pak test
 
 echo "Starting server"
-./gcp-service-broker serve &
+./cloud-service-broker serve &
 
 sleep 5
-./gcp-service-broker client run-examples
+./cloud-service-broker client run-examples

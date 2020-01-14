@@ -10,10 +10,10 @@
 
 - [ ] Update version in `utils/version.go`.
 - [ ] Run `go build`.
-- [ ] Run `./gcp-service-broker generate tile > tile.yml`.
-- [ ] Run `./gcp-service-broker generate manifest > manifest.yml`.
-- [ ] Run `./gcp-service-broker generate use --destination-dir="docs/"`.
-- [ ] Run `./gcp-service-broker generate customization > docs/customization.md`.
+- [ ] Run `./cloud-service-broker generate tile > tile.yml`.
+- [ ] Run `./cloud-service-broker generate manifest > manifest.yml`.
+- [ ] Run `./cloud-service-broker generate use --destination-dir="docs/"`.
+- [ ] Run `./cloud-service-broker generate customization > docs/customization.md`.
 - [ ] Update the `CHANGELOG.md` to match the new version.
 - [ ] Commit the changes on the new branch.
 
@@ -39,7 +39,7 @@
 - [ ] Ensure the release version is consistent on the tile and documentation.
 - [ ] Create a [new release on PivNet](network.pivotal.io) as an Admin Only release.
 - [ ] Upload the tile and OSDF files that were staged to GitHub.
-- [ ] Check that the tile passes the tests in the [build dashboard](https://tile-dashboard.cfapps.io/tiles/gcp-service-broker).
+- [ ] Check that the tile passes the tests in the [build dashboard](https://tile-dashboard.cfapps.io/tiles/cloud-service-broker).
 
 ## Upgrade the documentation
 
@@ -51,5 +51,5 @@
 - [ ] Fill out the [release form](https://docs.google.com/forms/d/e/1FAIpQLSctLGMU8iOuwq6NqDYI65aMhJ7widDQGo9SawDG0b8TFfq7Ag/viewform).
 - [ ] An ISV Program Manager will make the release available to "All Users" after review. Partner Admins can make the release available to "Admin Users".
 - [ ] Merge the release branch once done.
-- [ ] Make a release announcement in the gcp-service-broker Google Group like [this one](https://groups.google.com/forum/#!topic/gcp-service-broker/7Ae9D2B1AzE).
+- [ ] Make a release announcement in the cloud-service-broker Google Group like [this one](https://groups.google.com/forum/#!topic/cloud-service-broker/7Ae9D2B1AzE).
 - [ ] Submit an issue to https://github.com/cf-platform-eng/gcp-pcf-quickstart to update the GCP PCF quickstart.

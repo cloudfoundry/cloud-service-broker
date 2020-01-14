@@ -15,10 +15,10 @@
 # limitations under the License.
 
 set -eux
-go build -o gcp-service-broker
+go build -o cloud-service-broker
 
-./gcp-service-broker generate tile > tile.yml
-./gcp-service-broker generate manifest > manifest.yml
-./gcp-service-broker generate customization > docs/customization.md
-./gcp-service-broker generate use --destination-dir="docs/"
-./gcp-service-broker generate use > docs/use.md
+./cloud-service-broker generate tile > tile.yml
+./cloud-service-broker generate manifest > manifest.yml
+./cloud-service-broker generate customization > docs/customization.md
+./cloud-service-broker generate use --destination-dir="docs/"
+./cloud-service-broker generate use > docs/use.md

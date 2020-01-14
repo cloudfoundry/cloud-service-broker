@@ -5,14 +5,14 @@ image_resource:
   source:
     repository: gcr.io/cloud-builders/go
 inputs:
-- name: gcp-service-broker
+- name: cloud-service-broker
   path: broker-source
 outputs:
 - name: client-linux
 run:
   dir: broker-source
   path: go.ash
-  args: ['build', '-o', '../client-linux/gcp-service-broker-linux']
+  args: ['build', '-o', '../client-linux/cloud-service-broker-linux']
 params:
   PROJECT_ROOT: github.com/pivotal/cloud-service-broker
   GOOS: linux

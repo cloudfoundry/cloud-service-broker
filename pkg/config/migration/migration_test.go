@@ -155,7 +155,7 @@ func TestNoOp(t *testing.T) {
               "type": "string",
               "configurable": true,
               "credential": false,
-              "value": "gcp-service-broker-space",
+              "value": "cloud-service-broker-space",
               "optional": false
             }
           }
@@ -164,7 +164,7 @@ func TestNoOp(t *testing.T) {
 			Migration: NoOp(),
 			ExpectedEnv: map[string]string{
 				"ORG":   "system",
-				"SPACE": "gcp-service-broker-space",
+				"SPACE": "cloud-service-broker-space",
 			},
 		},
 		"empty": {

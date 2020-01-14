@@ -17,7 +17,7 @@ FROM golang:1.11-alpine AS build
 WORKDIR /go/src/github.com/pivotal/cloud-service-broker
 COPY . .
 
-RUN CGO_ENABLED=0 go build -o /bin/gcp-service-broker
+RUN CGO_ENABLED=0 go build -o /bin/cloud-service-broker
 
 # Get latest CA certs
 FROM alpine:latest as certs
@@ -27,7 +27,7 @@ FROM scratch
 
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build /go/src/github.com/pivotal/cloud-service-broker /src
-COPY --from=build /bin/gcp-service-broker /bin/gcp-service-broker
+COPY --from=build /bin/cloud-service-broker /bin/cloud-service-broker
 
 ENV PORT 8080
 EXPOSE 8080/tcp
@@ -35,5 +35,5 @@ EXPOSE 8080/tcp
 WORKDIR /tmp
 WORKDIR /
 
-ENTRYPOINT ["/bin/gcp-service-broker"]
+ENTRYPOINT ["/bin/cloud-service-broker"]
 CMD ["help"]

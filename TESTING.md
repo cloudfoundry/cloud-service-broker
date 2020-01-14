@@ -9,12 +9,12 @@ By executing the examples as an OSB client, it also ensures the service broker i
 
 To run the suite of end-to-end tests:
 
-1. Start an instance of the broker `./gcp-service-broker serve`.
-2. In a separate window, run the examples: `./gcp-service-broker client run-examples`
+1. Start an instance of the broker `./cloud-service-broker serve`.
+2. In a separate window, run the examples: `./cloud-service-broker client run-examples`
 3. Wait for the examples to run and check the exit code. Exit codes other than 0 mean the end-to-end tests failed.
 
 You can also target specific services in the end-to-end tests using the `--service-name` flag.
-See `./gcp-service-broker client run-examples --help` for more details.
+See `./cloud-service-broker client run-examples --help` for more details.
 
 ## Database Setup
 
@@ -42,7 +42,7 @@ It will dump a database table as JSON to stdout.
 You can dump: `bindings`, `instances`, `migrations`, and `provisions`.
 
 ```
-$ ./gcp-service-broker --config test.yaml show provisions
+$ ./cloud-service-broker --config test.yaml show provisions
 [
     {
         "ID": 1,
@@ -60,7 +60,7 @@ $ ./gcp-service-broker --config test.yaml show provisions
 Rather than setting environment variables to run the broker you can use the
 settings file below and just set the service account JSON as an environment variable:
 
-    ROOT_SERVICE_ACCOUNT_JSON=$(cat service-account.json) ./gcp-service-broker serve --config testconfig.yml
+    ROOT_SERVICE_ACCOUNT_JSON=$(cat service-account.json) ./cloud-service-broker serve --config testconfig.yml
 
 
 
@@ -84,8 +84,8 @@ api:
 
 Create unbind commands for all bindings:
 
-  ./gcp-service-broker show bindings | jq --raw-output '.[] | "./gcp-service-broker client unbind --bindingid \(.BindingId) --instanceid \(.ServiceInstanceId) --planid \(.PlanId) --serviceid \(.ServiceId)"'
+  ./cloud-service-broker show bindings | jq --raw-output '.[] | "./cloud-service-broker client unbind --bindingid \(.BindingId) --instanceid \(.ServiceInstanceId) --planid \(.PlanId) --serviceid \(.ServiceId)"'
 
 Create deprovision commands for all bindings:
 
-  ./gcp-service-broker show instances | jq --raw-output '.[] | "./gcp-service-broker client deprovision --instanceid \(.ID) --serviceid \(.ServiceId) --planid \(.PlanId)"'
+  ./cloud-service-broker show instances | jq --raw-output '.[] | "./cloud-service-broker client deprovision --instanceid \(.ID) --serviceid \(.ServiceId) --planid \(.PlanId)"'

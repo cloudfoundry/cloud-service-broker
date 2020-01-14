@@ -27,13 +27,13 @@ import (
 var cfgFile string
 
 var rootCmd = &cobra.Command{
-	Use:   "gcp-service-broker",
+	Use:   "cloud-service-broker",
 	Short: "GCP Service Broker is an OSB compatible service broker",
 	Long:  `An OSB compatible service broker for Google Cloud Platform.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("WARNING: In the future running the broker from the root")
 		fmt.Println("WARNING: command will show help instead.")
-		fmt.Println("WARNING: Update your scripts to run gcp-service-broker serve")
+		fmt.Println("WARNING: Update your scripts to run cloud-service-broker serve")
 
 		serve()
 	},

@@ -18,4 +18,4 @@ jobs:
       script: ./hack/verify-generated.sh
     - stage: build
       name: build docker image
-      script: docker build -t gcp-service-broker .
+      script: docker build -t cloud-service-broker .

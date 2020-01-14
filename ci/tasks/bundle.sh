@@ -12,8 +12,8 @@ export REVISION="$(cat metadata/revision)"
 mkdir staging
 
 echo "Staging files from the source"
-cp gcp-service-broker/CHANGELOG.md staging/
-cp gcp-service-broker/OSDF*.txt staging/
+cp cloud-service-broker/CHANGELOG.md staging/
+cp cloud-service-broker/OSDF*.txt staging/
 
 echo "Staging files from metadata"
 cp metadata/version staging/
@@ -30,4 +30,4 @@ cp client-linux/* staging/clients
 cp client-windows/* staging/clients
 
 echo "Creating release"
-zip bundle/gcp-service-broker-$CURRENT_VERSION-$REVISION.zip -r staging/*
+zip bundle/cloud-service-broker-$CURRENT_VERSION-$REVISION.zip -r staging/*

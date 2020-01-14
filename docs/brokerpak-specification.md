@@ -26,7 +26,7 @@ drwxr-xr-x  0         src
 ```
 
 You can create, inspect, validate, document and test brokerpaks using the `pak` sub-command.
-Run the command `gcp-service-broker pak help` for more information about creating a pak.
+Run the command `cloud-service-broker pak help` for more information about creating a pak.
 
 ## Manifest
 
