@@ -173,6 +173,7 @@ func RunExample(client *Client, serviceExample CompleteServiceExample) error {
 	if err := broker.ValidateVariablesAgainstSchema(credentialsEntry, serviceExample.ExpectedOutput); err != nil {
 
 		log.Printf("Error: results don't match JSON Schema: %v", err)
+		log.Printf("Schema: %v\n, Actual: %v", serviceExample.ExpectedOutput, credentialsEntry)
 		return err
 	}
 

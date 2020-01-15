@@ -116,7 +116,7 @@ provision:
     constraints:
       maxLength: 222
       minLength: 3
-      pattern: ^[A-Za-z0-9_\.]+$
+      pattern: ^[A-Za-z0-9_\.\-]+$
   - required: true
     field_name: name
     type: string
