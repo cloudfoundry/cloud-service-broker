@@ -1,0 +1,18 @@
+packversion: 1
+name: google-services
+version: 1.0.0
+metadata:
+  author: VMware
+platforms:
+- os: darwin
+  arch: amd64
+terraform_binaries:
+- name: terraform
+  version: 0.11.9
+  source: https://releases.hashicorp.com/terraform/0.11.9/terraform_0.11.9_darwin_amd64.zip
+- name: terraform-provider-google
+  version: 1.19.0
+  source: https://github.com/terraform-providers/terraform-provider-google/archive/v1.19.0.zip
+service_definitions:
+- dataproc.yml
+- google-redis.yml

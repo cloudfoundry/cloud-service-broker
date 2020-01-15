@@ -20,6 +20,8 @@ GOIMPORTS=$(GOTOOLS) goimports
 HAS_GO_IMPORTS=true
 endif
 
+SRC = $(shell find . -name "*.go" | grep -v "_test\." )
+
 .PHONY: deps-go-binary
 deps-go-binary:
 	echo "Expect: $(GO-VER)" && \
@@ -37,10 +39,10 @@ endif
 test: deps-go-binary
 	$(GO) test -v ./... -tags=service_broker
 
-./build/cloud-service-broker.linux:
+./build/cloud-service-broker.linux: $(SRC)
 	GOARCH=amd64 GOOS=linux $(GO) build -o ./build/cloud-service-broker.linux
 
-./build/cloud-service-broker.darwin:
+./build/cloud-service-broker.darwin: $(SRC)
 	GOARCH=amd64 GOOS=darwin $(GO) build -o ./build/cloud-service-broker.darwin
 
 .PHONY: build
