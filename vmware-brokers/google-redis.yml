@@ -136,6 +136,7 @@ provision:
     enum:
       "": most recent version
       REDIS_3_2: Redis 3.2
+      REDIS_4_0: Redis 4.0
   - field_name: host
     type: string
     details: Hostname or IP address of the exposed Redis endpoint used by clients to connect to the service.
