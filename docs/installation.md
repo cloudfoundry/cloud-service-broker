@@ -2,7 +2,7 @@
 
 See [this YouTube video](https://www.youtube.com/watch?v=8nc4624K91A&list=PLIivdWyY5sqKJ48ycao632rEDuVbFm8yJ&index=3) for a demo of installing and using the broker.
 
-Requires Go 1.8 and the associated buildpack.
+Requires Go 1.13 and the associated buildpack.
 
 * [Installing as a Pivotal Ops Manager tile](http://docs.pivotal.io/partners/gcp-sb/index.html)
 * [Installing as a Cloud Foundry Application](#cf)
