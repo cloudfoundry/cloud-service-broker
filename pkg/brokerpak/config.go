@@ -32,7 +32,7 @@ import (
 const (
 	// BuiltinPakLocation is the file-system location to load brokerpaks from to
 	// make them look builtin.
-	BuiltinPakLocation      = "/usr/share/cloud-service-broker/builtin-brokerpaks"
+	BuiltinPakLocation      = "./vmware-brokers"
 	brokerpakSourcesKey     = "brokerpak.sources"
 	brokerpakConfigKey      = "brokerpak.config"
 	brokerpakBuiltinPathKey = "brokerpak.builtin.path"
@@ -137,7 +137,8 @@ func NewServerConfigFromEnv() (*ServerConfig, error) {
 	// Builtin paks fail validation because they reference the local filesystem
 	// but do work.
 	if loadBuiltinToggle.IsActive() {
-		log.Println("loading builtin brokerpaks")
+		log.Println("loading builtin brokerpaks1")
+		log.Printf("listing brokerpaks at %v", viper.GetString(brokerpakBuiltinPathKey))
 		paks, err := ListBrokerpaks(viper.GetString(brokerpakBuiltinPathKey))
 		if err != nil {
 			return nil, fmt.Errorf("couldn't load builtin brokerpaks: %v", err)
@@ -161,8 +162,12 @@ func ListBrokerpaks(directory string) ([]string, error) {
 		if err != nil {
 			return err
 		}
-
+		log.Printf("examining file %v", path)
 		if filepath.Ext(path) == ".brokerpak" {
+			path, err := filepath.Abs(path)
+			if err != nil {
+				return fmt.Errorf("couldn't turn dir %q into abs path: %v", path, err)
+			}			
 			paks = append(paks, path)
 		}
 
