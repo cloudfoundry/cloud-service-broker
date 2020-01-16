@@ -35,9 +35,13 @@ ifndef HAS_GO_IMPORTS
 	go get -u golang.org/x/tools/cmd/goimports
 endif
 
-.PHONY: test
-test: deps-go-binary
+.PHONY: test-units
+test-units: deps-go-binary
 	$(GO) test -v ./... -tags=service_broker
+
+.PHONY: test-acceptance security-user-name security-user-password
+test-acceptance: ./build/cloud-service-broker.$(OSFAMILY)
+	./build/cloud-service-broker.$(OSFAMILY) client run-examples
 
 ./build/cloud-service-broker.linux: $(SRC)
 	GOARCH=amd64 GOOS=linux $(GO) build -o ./build/cloud-service-broker.linux
@@ -46,9 +50,18 @@ test: deps-go-binary
 	GOARCH=amd64 GOOS=darwin $(GO) build -o ./build/cloud-service-broker.darwin
 
 .PHONY: build
-build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin
+build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin vmware-brokers/google-services-1.0.0.brokerpak
+
+.PHONY: package
+package: ./build/cloud-service-broker.$(OSFAMILY) ./tile.yml ./manifest.yml docs/customization.md
+
+./tile.yml:
 	./build/cloud-service-broker.$(OSFAMILY) generate tile > ./tile.yml
+
+./manifest.yml:
 	./build/cloud-service-broker.$(OSFAMILY) generate manifest > ./manifest.yml
+
+docs/customization.md:
 	./build/cloud-service-broker.$(OSFAMILY) generate customization > docs/customization.md
 
 .PHONY: clean
@@ -100,5 +113,8 @@ endif
 check-env-vars: root-service-account-json security-user-name security-user-password db-host db-username db-password
 
 .PHONY: run
-run: check-env-vars ./build/cloud-service-broker.$(OSFAMILY)
+run: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) vmware-brokers/google-services-1.0.0.brokerpak
 	./build/cloud-service-broker.$(OSFAMILY) serve
+
+vmware-brokers/google-services-1.0.0.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./vmware-brokers/*.yml
+	cd ./vmware-brokers && ../build/cloud-service-broker.$(OSFAMILY) pak build
