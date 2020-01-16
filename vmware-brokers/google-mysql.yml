@@ -107,7 +107,7 @@ provision:
       password = "${random_password.password.result}"
     }
 
-    output service_tier { value = "${google_sql_database_instance.instance.settings.tier}" }
+    output service_tier { value = "${var.service_tier}" }
     output name { value = "${google_sql_database.database.name}" }
     output hostname { value = "${google_sql_database_instance.instance.first_ip_address}" }
     output port { value = "3306" }
@@ -125,7 +125,7 @@ provision:
       db-n1-standard-1: standard-1 instance
   - field_name: name
     type: string
-    details: The name of the database.    
+    details: The name of the database.
   - field_name: hostname
     type: string
     details: Hostname or IP address of the exposed mysql endpoint used by clients to connect to the service.
