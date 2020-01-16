@@ -112,8 +112,8 @@ endif
 .PHONY: check-env-vars
 check-env-vars: root-service-account-json security-user-name security-user-password db-host db-username db-password
 
-.PHONY: run
-run: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) vmware-brokers/google-services-1.0.0.brokerpak
+.PHONY: run-broker
+run-broker: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) vmware-brokers/google-services-1.0.0.brokerpak
 	./build/cloud-service-broker.$(OSFAMILY) serve
 
 vmware-brokers/google-services-1.0.0.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./vmware-brokers/*.yml

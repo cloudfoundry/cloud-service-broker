@@ -137,8 +137,6 @@ func NewServerConfigFromEnv() (*ServerConfig, error) {
 	// Builtin paks fail validation because they reference the local filesystem
 	// but do work.
 	if loadBuiltinToggle.IsActive() {
-		log.Println("loading builtin brokerpaks1")
-		log.Printf("listing brokerpaks at %v", viper.GetString(brokerpakBuiltinPathKey))
 		paks, err := ListBrokerpaks(viper.GetString(brokerpakBuiltinPathKey))
 		if err != nil {
 			return nil, fmt.Errorf("couldn't load builtin brokerpaks: %v", err)

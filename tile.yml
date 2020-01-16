@@ -47,7 +47,8 @@ packages:
 - name: cloud-service-broker
   type: app-broker
   manifest:
-    buildpack: go_buildpack
+    buildpacks: 
+    - go_buildpack
     path: /tmp/cloud-service-broker.zip
     env:
       GOPACKAGENAME: github.com/pivotal/cloud-service-broker
