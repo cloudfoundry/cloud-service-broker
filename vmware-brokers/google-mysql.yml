@@ -1,0 +1,159 @@
+# Copyright 2018 the Service Broker Project Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+version: 1
+name: google-mysql
+id: b9f3d4f3-8716-4179-8b7c-e80bd5bccb31
+description: Mysql is a fully managed service for the
+  Google Cloud Platform.
+display_name: Google Cloud Mysql
+image_url: https://cloud.google.com/_static/images/cloud/products/logos/svg/sql.svg
+documentation_url: https://cloud.google.com/sql/docs/mysql/
+support_url: https://cloud.google.com/support/
+tags: [gcp, mysql, preview]
+plans:
+- name: db-small
+  id: 8cd49e5b-c5a5-463e-8f54-a3e005348310
+  description: 'Instance properties: 1 CPU, 3.75 GB RAM, 30 GB storage.'
+  display_name: "db-small"
+  properties:
+    service_tier: db-n1-standard-1
+provision:
+  plan_inputs:
+  - field_name: service_tier
+    required: true
+    type: string
+    details: The service tier of the instance.
+    enum:
+      db-n1-standard-1: standard-1 instance
+  user_inputs:
+  - field_name: instance_name
+    type: string
+    details: Name for your mysql instance
+    default: vsb-mysql-${request.instance_id}
+    constraints:
+      maxLength: 98
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$
+  - field_name: db_name
+    type: string
+    details: Name for your database
+    default: vsb-db
+    constraints:
+      maxLength: 64
+  - field_name: region
+    type: string
+    details: The region of the mysql instance.
+    default: us-central1
+    constraints:
+      examples:
+      - us-central1
+      - asia-northeast1
+      pattern: ^[A-Za-z][-a-z0-9A-Z]+$
+  computed_inputs:
+  - name: labels
+    default: ${json.marshal(request.default_labels)}
+    overwrite: true
+    type: object
+  template: |-
+    variable service_tier { type = "string" }
+    variable instance_name { type = "string" }
+    variable db_name { type = "string" }
+    variable region { type = "string" }
+    variable labels { type = "map" }
+
+    resource "google_sql_database_instance" "instance" {
+      name             = "${var.instance_name}"
+      database_version = "MYSQL_5_6"
+      region           = "${var.region}"
+
+      settings {
+        # Second-generation instance tiers are based on the machine
+        # type. See argument reference below.
+        tier = "${var.service_tier}"
+      }
+    }
+
+    resource "google_sql_database" "database" {
+      name     = "${var.db_name}"
+      instance = "${google_sql_database_instance.instance.name}"
+    }
+
+    resource "random_string" "username" {
+      length = 16
+      special = false
+    }
+
+    resource "random_password" "password" {
+      length = 16
+      special = true
+      override_special = "_%@"
+    }
+
+    resource "google_sql_user" "user" {
+      name     = "${random_string.username.result}"
+      instance = "${google_sql_database_instance.instance.name}"
+      password = "${random_password.password.result}"
+    }
+
+    output service_tier { value = "${google_sql_database_instance.instance.settings.tier}" }
+    output name { value = "${google_sql_database.database.name}" }
+    output hostname { value = "${google_sql_database_instance.instance.first_ip_address}" }
+    output port { value = "3306" }
+    output username { value = "${google_sql_user.user.name}" }
+    output password { value = "${google_sql_user.user.password}" }
+    output uri { value = "mysql://${google_sql_user.user.name}:${google_sql_user.user.password}@${google_sql_database_instance.instance.name}:3306/${google_sql_database.database.name}" }
+    output jdbcUrl { value = "jdbc:mysql://${google_sql_user.user.name}:${google_sql_user.user.password}@${google_sql_database_instance.instance.name}:3306/${google_sql_database.database.name}" }
+
+  outputs:
+  - required: true
+    field_name: service_tier
+    type: string
+    details: The service tier of the instance.
+    enum:
+      db-n1-standard-1: standard-1 instance
+  - field_name: name
+    type: string
+    details: The name of the database.    
+  - field_name: hostname
+    type: string
+    details: Hostname or IP address of the exposed mysql endpoint used by clients to connect to the service.
+  - field_name: port
+    type: string
+    details: The port number of the exposed mysql instance.
+  - field_name: username
+    type: string
+    details: The username to authenticate to the database instance.
+  - field_name: password
+    type: string
+    details: The password to authenticate to the database instance.
+  - field_name: uri
+    type: string
+    details: The uri to connect to the database instance and database.
+  - field_name: jdbcUrl
+    type: string
+    details: The jdbc url to connect to the database instance and database.
+
+bind:
+  plan_inputs: []
+  user_inputs: []
+  computed_inputs: []
+  template: ''
+  outputs: []
+examples:
+- name: db-small configuration
+  description: Create a small mysql instance
+  plan_id: 8cd49e5b-c5a5-463e-8f54-a3e005348310
+  provision_params: {}
+  bind_params: {}

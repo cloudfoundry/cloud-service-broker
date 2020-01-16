@@ -14,5 +14,4 @@ terraform_binaries:
   version: 1.19.0
   source: https://github.com/terraform-providers/terraform-provider-google/archive/v1.19.0.zip
 service_definitions:
-- dataproc.yml
-- google-redis.yml
+- google-mysql.yml
