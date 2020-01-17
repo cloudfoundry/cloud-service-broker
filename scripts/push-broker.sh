@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
 set +x # Hide secrets
+set -o nounset
+set -o errexit
+set -o pipefail
 
 cf push --no-start
 
@@ -14,4 +17,4 @@ cf bind-service "${APP_NAME}" csb-sql
 
 cf start "${APP_NAME}"
 
-cf create-service-broker cloud-service-broker "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://cloud-service-broker.cfapps.io --space-scoped
+cf create-service-broker cloud-service-broker "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs) --space-scoped || echo "broker already registered"
