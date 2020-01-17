@@ -61,6 +61,10 @@ provision:
       - us-central1
       - asia-northeast1
       pattern: ^[A-Za-z][-a-z0-9A-Z]+$
+  - field_name: authorized_network
+    type: string
+    details:  The name of the Google Compute Engine network to which the instance is connected. If left unspecified, the network named 'default' will be used.
+    default: default      
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
@@ -72,6 +76,11 @@ provision:
     variable db_name { type = "string" }
     variable region { type = "string" }
     variable labels { type = "map" }
+    variable authorized_network { type = "string" }
+
+    data "google_compute_network" "authorized-network" {
+      name = "${var.authorized_network}"
+    }    
 
     resource "google_sql_database_instance" "instance" {
       name             = "${var.instance_name}"
@@ -82,6 +91,11 @@ provision:
         # Second-generation instance tiers are based on the machine
         # type. See argument reference below.
         tier = "${var.service_tier}"
+        user_labels = "${var.labels}"
+        ip_configuration {
+          ipv4_enabled    = false
+          private_network = "${data.google_compute_network.authorized-network.self_link}"
+        }
       }
     }
 
@@ -113,8 +127,8 @@ provision:
     output port { value = "3306" }
     output username { value = "${google_sql_user.user.name}" }
     output password { value = "${google_sql_user.user.password}" }
-    output uri { value = "mysql://${google_sql_user.user.name}:${google_sql_user.user.password}@${google_sql_database_instance.instance.name}:3306/${google_sql_database.database.name}" }
-    output jdbcUrl { value = "jdbc:mysql://${google_sql_user.user.name}:${google_sql_user.user.password}@${google_sql_database_instance.instance.name}:3306/${google_sql_database.database.name}" }
+    output uri { value = "mysql://${google_sql_user.user.name}:${google_sql_user.user.password}@${google_sql_database_instance.instance.first_ip_address}:3306/${google_sql_database.database.name}" }
+    output jdbcUrl { value = "jdbc:mysql://${google_sql_database_instance.instance.first_ip_address}\\${google_sql_database.database.name}:3306?user=${google_sql_user.user.name};password=${google_sql_user.user.password};useSSL=false" }
 
   outputs:
   - required: true

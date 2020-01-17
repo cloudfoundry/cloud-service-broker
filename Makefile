@@ -50,7 +50,7 @@ test-acceptance: ./build/cloud-service-broker.$(OSFAMILY)
 	GOARCH=amd64 GOOS=darwin $(GO) build -o ./build/cloud-service-broker.darwin
 
 .PHONY: build
-build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin vmware-brokers/google-services-1.0.0.brokerpak
+build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin
 
 .PHONY: package
 package: ./build/cloud-service-broker.$(OSFAMILY) ./tile.yml ./manifest.yml docs/customization.md
@@ -118,3 +118,7 @@ run-broker: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) vmware-broke
 
 vmware-brokers/google-services-1.0.0.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./vmware-brokers/*.yml
 	cd ./vmware-brokers && ../build/cloud-service-broker.$(OSFAMILY) pak build
+
+.PHONY: push-broker
+push-broker: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) vmware-brokers/google-services-1.0.0.brokerpak
+	./scripts/push-broker.sh
