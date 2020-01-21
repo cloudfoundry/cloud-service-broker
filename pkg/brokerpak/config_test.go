@@ -16,6 +16,7 @@ package brokerpak
 
 import (
 	"fmt"
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -246,6 +247,9 @@ func TestListBrokerpaks(t *testing.T) {
 				return
 			}
 
+			for n := range tc.expectedPaks {
+				tc.expectedPaks[n], _ = filepath.Abs(tc.expectedPaks[n])
+			}
 			if !reflect.DeepEqual(tc.expectedPaks, paks) {
 				t.Fatalf("expected paks: %v got: %v", tc.expectedPaks, paks)
 			}
