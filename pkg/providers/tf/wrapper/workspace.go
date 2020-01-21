@@ -46,7 +46,7 @@ type TerraformExecutor func(*exec.Cmd) error
 // The created instance will have the name specified by the DefaultInstanceName constant.
 func NewWorkspace(templateVars map[string]interface{}, terraformTemplate string) (*TerraformWorkspace, error) {
 	tfModule := ModuleDefinition{
-		Name:       "brokertemplate",
+		Name:       "./brokertemplate",
 		Definition: terraformTemplate,
 	}
 
