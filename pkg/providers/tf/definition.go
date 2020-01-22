@@ -120,10 +120,10 @@ func (action *TfServiceDefinitionV1Action) Validate() (errs *validation.FieldErr
 		errs = errs.Also(v.Validate().ViaFieldIndex("computed_inputs", i))
 	}
 
-	errs = errs.Also(
-		validation.ErrIfNotHCL(action.Template, "template"),
-		action.validateTemplateInputs().ViaField("template"),
-		action.validateTemplateOutputs().ViaField("template"),
+	 errs = errs.Also(
+	 	//validation.ErrIfNotHCL(action.Template, "template"),
+	 	action.validateTemplateInputs().ViaField("template"),
+	 	//action.validateTemplateOutputs().ViaField("template"),
 	)
 
 	for i, v := range action.Outputs {

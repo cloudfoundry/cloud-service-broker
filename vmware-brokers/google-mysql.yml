@@ -71,37 +71,49 @@ provision:
     overwrite: true
     type: object
   template: |-
-    variable service_tier { type = "string" }
-    variable instance_name { type = "string" }
-    variable db_name { type = "string" }
-    variable region { type = "string" }
-    variable labels { type = "map" }
-    variable authorized_network { type = "string" }
+    variable service_tier { type = string }
+    variable instance_name { type = string }
+    variable db_name { type = string }
+    variable region { type = string }
+    variable labels { type = map }
+    variable authorized_network { type = string }
 
     data "google_compute_network" "authorized-network" {
-      name = "${var.authorized_network}"
+      name = var.authorized_network
     }    
 
+    data "google_compute_subnetwork" "authorized-subnets" {
+      for_each = data.google_compute_network.authorized-network.subnetworks_self_links
+      self_link = each.value
+      region = var.region
+    }
+
     resource "google_sql_database_instance" "instance" {
-      name             = "${var.instance_name}"
+      name             = var.instance_name
       database_version = "MYSQL_5_6"
-      region           = "${var.region}"
+      region           = var.region
 
       settings {
         # Second-generation instance tiers are based on the machine
         # type. See argument reference below.
-        tier = "${var.service_tier}"
-        user_labels = "${var.labels}"
+        tier = var.service_tier
+        user_labels = var.labels
         ip_configuration {
-          ipv4_enabled    = false
-          private_network = "${data.google_compute_network.authorized-network.self_link}"
+
+          dynamic "authorized_networks" {
+            for_each = data.google_compute_subnetwork.authorized-subnets
+
+            content {
+              value = each.ip_cidr_range
+            }
+          }
         }
       }
     }
 
     resource "google_sql_database" "database" {
-      name     = "${var.db_name}"
-      instance = "${google_sql_database_instance.instance.name}"
+      name     = var.db_name
+      instance = google_sql_database_instance.instance.name
     }
 
     resource "random_string" "username" {
@@ -116,9 +128,9 @@ provision:
     }
 
     resource "google_sql_user" "user" {
-      name     = "${random_string.username.result}"
-      instance = "${google_sql_database_instance.instance.name}"
-      password = "${random_password.password.result}"
+      name     = random_string.username.result
+      instance = google_sql_database_instance.instance.name
+      password = random_password.password.result
     }
 
     output service_tier { value = "${var.service_tier}" }
