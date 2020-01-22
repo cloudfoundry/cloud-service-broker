@@ -15,10 +15,12 @@
 package wrapper
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/pivotal/cloud-service-broker/pkg/validation"
-	"github.com/hashicorp/hcl"
+	"github.com/hashicorp/hcl2/gohcl"
+	"github.com/hashicorp/hcl2/hclparse"
 )
 
 // ModuleDefinition represents a module in a Terraform workspace.
@@ -38,24 +40,31 @@ func (module *ModuleDefinition) Validate() (errs *validation.FieldError) {
 	)
 }
 
+func (module *ModuleDefinition) decode() (terraformModuleHcl, error) {
+	defn := terraformModuleHcl{}
+	parser := hclparse.NewParser()
+	f, parseDiags := parser.ParseHCL([]byte(module.Definition), "")
+	if parseDiags.HasErrors() {
+		return defn, fmt.Errorf(parseDiags.Error())
+	}
+	if err := gohcl.DecodeBody(f.Body, nil, &defn ); err != nil {
+		return defn, err
+	}
+	return defn, nil
+}
+
 // Inputs gets the input parameter names for the module.
 func (module *ModuleDefinition) Inputs() ([]string, error) {
-	defn := terraformModuleHcl{}
-	if err := hcl.Decode(&defn, module.Definition); err != nil {
-		return nil, err
-	}
+	defn, err := module.decode()
 
-	return sortedKeys(defn.Inputs), nil
+	return sortedKeys(defn.Inputs), err
 }
 
 // Outputs gets the output parameter names for the module.
 func (module *ModuleDefinition) Outputs() ([]string, error) {
-	defn := terraformModuleHcl{}
-	if err := hcl.Decode(&defn, module.Definition); err != nil {
-		return nil, err
-	}
+	defn, err := module.decode()
 
-	return sortedKeys(defn.Outputs), nil
+	return sortedKeys(defn.Outputs), err
 }
 
 func sortedKeys(m map[string]interface{}) []string {

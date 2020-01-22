@@ -98,7 +98,7 @@ SECTION 6: Mozilla Public License 2.0 (no copyleft exception)
 
    >>> github.com/hashicorp/go-getter-bd1edc22f8ea9d71b87fbdc0c07f0afb77ae39b6
    >>> github.com/hashicorp/go-multierror-886a7fbe3eb1c874d46f623bfa70af45f425b3d1
-   >>> github.com/hashicorp/hcl-8cb6e5b959231cc1119e43259c4a608f9c51a241
+   >>> github.com/hashicorp/hcl/v2/hcl-8cb6e5b959231cc1119e43259c4a608f9c51a241
 
 
 
@@ -8174,9 +8174,9 @@ Exhibit B - “Incompatible With Secondary Licenses” Notice
 
 
 
->>> github.com/hashicorp/hcl-8cb6e5b959231cc1119e43259c4a608f9c51a241
+>>> github.com/hashicorp/hcl/v2/hcl-8cb6e5b959231cc1119e43259c4a608f9c51a241
 
-Contents of: github.com/hashicorp/hcl/LICENSE@8cb6e5b959231cc1119e43259c4a608f9c51a241
+Contents of: github.com/hashicorp/hcl/v2/hcl/LICENSE@8cb6e5b959231cc1119e43259c4a608f9c51a241
 
 Mozilla Public License, version 2.0
 

@@ -10,11 +10,11 @@ platforms:
   arch: amd64
 terraform_binaries:
 - name: terraform
-  version: 0.11.9
-  source: https://releases.hashicorp.com/terraform/0.11.9/terraform_0.11.9_darwin_amd64.zip
+  version: 0.12.19
+  source: https://releases.hashicorp.com/terraform/0.12.19/terraform_0.12.19_darwin_amd64.zip
 - name: terraform
-  version: 0.11.9
-  source: https://github.com/hashicorp/terraform/archive/v0.11.9.zip  
+  version: 0.12.19
+  source: https://github.com/hashicorp/terraform/archive/v0.12.19.zip  
 - name: terraform-provider-google
   version: 2.20.0
   source: https://github.com/terraform-providers/terraform-provider-google/archive/v2.20.0.zip

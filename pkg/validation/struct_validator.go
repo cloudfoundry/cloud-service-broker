@@ -20,7 +20,7 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/hashicorp/hcl"
+	"github.com/hashicorp/hcl2/hclparse"
 )
 
 var (
@@ -32,7 +32,8 @@ var (
 
 // ErrIfNotHCL returns an error if the value is not valid HCL.
 func ErrIfNotHCL(value string, field string) *FieldError {
-	if _, err := hcl.Parse(value); err == nil {
+	parser := hclparse.NewParser()
+	if _, err := parser.ParseHCL([]byte(value), ""); err == nil {
 		return nil
 	}
 
