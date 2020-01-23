@@ -1,5 +1,6 @@
 .envrc
 .idea/
+.vscode/
 *.coverprofile
 *.DS_Store
 *.brokerpak

@@ -82,11 +82,10 @@ provision:
       name = var.authorized_network
     }    
 
-    data "google_compute_subnetwork" "authorized-subnets" {
-      for_each = data.google_compute_network.authorized-network.subnetworks_self_links
-      self_link = each.value
-      region = var.region
-    }
+    #data "google_compute_subnetwork" "authorized-subnets" {
+    #  for_each = toset(data.google_compute_network.authorized-network.subnetworks_self_links)
+    #  self_link = each.value
+    #}
 
     resource "google_sql_database_instance" "instance" {
       name             = var.instance_name
@@ -98,15 +97,17 @@ provision:
         # type. See argument reference below.
         tier = var.service_tier
         user_labels = var.labels
+        
         ip_configuration {
+          private_network = data.google_compute_network.authorized-network.self_link
 
-          dynamic "authorized_networks" {
-            for_each = data.google_compute_subnetwork.authorized-subnets
-
-            content {
-              value = each.ip_cidr_range
-            }
-          }
+          #dynamic "authorized_networks" {
+          #  for_each = data.google_compute_subnetwork.authorized-subnets
+          #  iterator = subnet
+          #  content {
+          #    value = subnet.value.ip_cidr_range
+          #  }
+          #}
         }
       }
     }
