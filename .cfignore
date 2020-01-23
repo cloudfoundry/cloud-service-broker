@@ -1,3 +1,7 @@
 product/
 release/
 integration_tests/
+build/
+.git/
+docs/
+
