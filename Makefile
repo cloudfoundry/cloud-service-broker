@@ -68,6 +68,7 @@ docs/customization.md:
 clean: deps-go-binary
 	$(GO) clean --modcache
 	rm -rf ./build
+	rm vmware-brokers/google-services-1.0.0.brokerpak
 
 .PHONY: lint
 lint: deps-goimports
