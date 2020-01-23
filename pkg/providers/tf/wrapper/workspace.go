@@ -178,7 +178,7 @@ func (workspace *TerraformWorkspace) initializeFs() error {
 			return err
 		}
 
-		if err := ioutil.WriteFile(path.Join(workspace.dir, instance.InstanceName+".tf"), contents, 0755); err != nil {
+		if err := ioutil.WriteFile(path.Join(workspace.dir, instance.InstanceName+".tf.json"), contents, 0755); err != nil {
 			return err
 		}
 	}
