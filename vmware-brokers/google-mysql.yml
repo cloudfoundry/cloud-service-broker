@@ -83,8 +83,12 @@ provision:
     }    
 
     data "google_compute_subnetwork" "authorized-subnets" {
-      for_each = toset(google_compute_network.authorized-network.subnetworks_self_links)
+      for_each = toset(data.google_compute_network.authorized-network.subnetworks_self_links)
       self_link = each.value
+    }
+
+    locals {
+      authorized_subnet_cidrs = [ for subnet in data.google_compute_subnetwork.authorized-subnets: subnet.ip_cidr_range if subnet.region == var.region ]
     }
 
     resource "google_sql_database_instance" "instance" {
@@ -99,13 +103,15 @@ provision:
         user_labels = var.labels
         
         ip_configuration {
-          private_network = data.google_compute_network.authorized-network.self_link
-
+          #private_network = data.google_compute_network.authorized-network.self_link
+          ipv4_enabled    = true
           dynamic "authorized_networks" {
-            for_each = data.google_compute_subnetwork.authorized-subnets
-            iterator = subnet
+            for_each = local.authorized_subnet_cidrs
+            iterator = authorized_subnet_cidr
+
             content {
-              value = subnet.value.ip_cidr_range
+              name  = "${var.authorized_network}-${authorized_subnet_cidr.key}"
+              value = authorized_subnet_cidr.value
             }
           }
         }
@@ -141,8 +147,7 @@ provision:
     output username { value = "${google_sql_user.user.name}" }
     output password { value = "${google_sql_user.user.password}" }
     output uri { value = "mysql://${google_sql_user.user.name}:${google_sql_user.user.password}@${google_sql_database_instance.instance.first_ip_address}:3306/${google_sql_database.database.name}" }
-    output jdbcUrl { value = "jdbc:mysql://${google_sql_database_instance.instance.first_ip_address}\\${google_sql_database.database.name}:3306?user=${google_sql_user.user.name};password=${google_sql_user.user.password};useSSL=false" }
-
+    output jdbcUrl { value = "jdbc:mysql://${google_sql_database_instance.instance.first_ip_address}\\${google_sql_database.database.name}:3306?user=${google_sql_user.user.name};password=${google_sql_user.user.password};useSSL=false" }    
   outputs:
   - required: true
     field_name: service_tier
