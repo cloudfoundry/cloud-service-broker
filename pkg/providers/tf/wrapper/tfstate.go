@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	supportedTfStateVersion = 3
+	supportedTfStateVersion = 4
 )
 
 // NewTfstate deserializes a tfstate file.

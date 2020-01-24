@@ -60,11 +60,7 @@ provision:
       examples:
       - us-central1
       - asia-northeast1
-      pattern: ^[A-Za-z][-a-z0-9A-Z]+$
-  - field_name: authorized_network
-    type: string
-    details:  The name of the Google Compute Engine network to which the instance is connected. If left unspecified, the network named 'default' will be used.
-    default: default      
+      pattern: ^[A-Za-z][-a-z0-9A-Z]+$     
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
@@ -76,20 +72,6 @@ provision:
     variable db_name { type = string }
     variable region { type = string }
     variable labels { type = map }
-    variable authorized_network { type = string }
-
-    data "google_compute_network" "authorized-network" {
-      name = var.authorized_network
-    }    
-
-    data "google_compute_subnetwork" "authorized-subnets" {
-      for_each = toset(data.google_compute_network.authorized-network.subnetworks_self_links)
-      self_link = each.value
-    }
-
-    locals {
-      authorized_subnet_cidrs = [ for subnet in data.google_compute_subnetwork.authorized-subnets: subnet.ip_cidr_range if subnet.region == var.region ]
-    }
 
     resource "google_sql_database_instance" "instance" {
       name             = var.instance_name
@@ -103,17 +85,7 @@ provision:
         user_labels = var.labels
         
         ip_configuration {
-          #private_network = data.google_compute_network.authorized-network.self_link
           ipv4_enabled    = true
-          dynamic "authorized_networks" {
-            for_each = local.authorized_subnet_cidrs
-            iterator = authorized_subnet_cidr
-
-            content {
-              name  = "${var.authorized_network}-${authorized_subnet_cidr.key}"
-              value = authorized_subnet_cidr.value
-            }
-          }
         }
       }
     }
