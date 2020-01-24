@@ -18,7 +18,7 @@ import "fmt"
 
 func ExampleNewTfstate_Good() {
 	state := `{
-    "version": 3,
+    "version": 4,
     "terraform_version": "0.11.10",
     "serial": 2,
     "modules": [
@@ -45,7 +45,7 @@ func ExampleNewTfstate_Good() {
 
 func ExampleNewTfstate_BadVersion() {
 	state := `{
-    "version": 4,
+    "version": 5,
     "terraform_version": "0.11.10",
     "serial": 2,
     "modules": [
@@ -61,12 +61,12 @@ func ExampleNewTfstate_BadVersion() {
 	_, err := NewTfstate([]byte(state))
 	fmt.Printf("%v", err)
 
-	// Output: unsupported tfstate version: 4
+	// Output: unsupported tfstate version: 5
 }
 
 func ExampleTfstate_GetModule() {
 	state := `{
-    "version": 3,
+    "version": 4,
     "terraform_version": "0.11.10",
     "serial": 2,
     "modules": [
