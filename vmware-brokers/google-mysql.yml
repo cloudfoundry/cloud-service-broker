@@ -25,7 +25,7 @@ tags: [gcp, mysql, preview]
 plans:
 - name: db-small
   id: 8cd49e5b-c5a5-463e-8f54-a3e005348310
-  description: 'Instance properties: 1 CPU, 3.75 GB RAM, 30 GB storage.'
+  description: 'Instance properties: 1 CPU, 3.75 GB RAM, 10 GB storage.'
   display_name: "db-small"
   properties:
     service_tier: db-n1-standard-1

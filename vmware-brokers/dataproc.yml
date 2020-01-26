@@ -73,34 +73,34 @@ provision:
     overwrite: true
     type: object
   template: |-
-    variable worker_machine_type {type = "string"}
-    variable master_machine_type {type = "string"}
-    variable worker_count {type = "string"}
-    variable master_count {type = "string"}
-    variable preemptible_count {type = "string"}
+    variable worker_machine_type {type = string}
+    variable master_machine_type {type = string}
+    variable worker_count {type = string}
+    variable master_count {type = string}
+    variable preemptible_count {type = string}
 
-    variable name {type = "string"}
-    variable region {type = "string"}
-    variable labels {type = "map"}
+    variable name {type = string}
+    variable region {type = string}
+    variable labels {type = map}
 
     resource "google_dataproc_cluster" "cluster" {
-      name   = "${var.name}"
-      region = "${var.region}"
-      labels = "${var.labels}"
+      name   = var.name
+      region = var.region
+      labels = var.labels
 
       cluster_config {
         master_config {
-          num_instances = "${var.master_count}"
-          machine_type  = "${var.master_machine_type}"
+          num_instances = var.master_count
+          machine_type  = var.master_machine_type
         }
 
         worker_config {
-          num_instances = "${var.worker_count}"
-          machine_type  = "${var.worker_machine_type}"
+          num_instances = var.worker_count
+          machine_type  = var.worker_machine_type
         }
 
         preemptible_worker_config {
-          num_instances = "${var.preemptible_count}"
+          num_instances = var.preemptible_count
         }
       }
     }
@@ -132,20 +132,20 @@ bind:
     default: ${instance.details["bucket_name"]}
     overwrite: true
   template: |-
-    variable service_account_name {type = "string"}
-    variable bucket {type = "string"}
+    variable service_account_name {type = string}
+    variable bucket {type = string}
 
     resource "google_service_account" "account" {
-      account_id = "${var.service_account_name}"
-      display_name = "${var.service_account_name}"
+      account_id = var.service_account_name
+      display_name = var.service_account_name
     }
 
     resource "google_service_account_key" "key" {
-      service_account_id = "${google_service_account.account.name}"
+      service_account_id = google_service_account.account.name
     }
 
     resource "google_storage_bucket_iam_member" "member" {
-      bucket = "${var.bucket}"
+      bucket = var.bucket
       role   = "roles/storage.objectAdmin"
       member = "serviceAccount:${google_service_account.account.email}"
     }
