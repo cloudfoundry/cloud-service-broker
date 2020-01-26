@@ -25,7 +25,7 @@ tags: [gcp, mysql, preview]
 plans:
 - name: db-small
   id: 8cd49e5b-c5a5-463e-8f54-a3e005348310
-  description: 'Instance properties: 1 CPU, 3.75 GB RAM, 30 GB storage.'
+  description: 'Instance properties: 1 CPU, 3.75 GB RAM, 10 GB storage.'
   display_name: "db-small"
   properties:
     service_tier: db-n1-standard-1
@@ -60,48 +60,39 @@ provision:
       examples:
       - us-central1
       - asia-northeast1
-      pattern: ^[A-Za-z][-a-z0-9A-Z]+$
-  - field_name: authorized_network
-    type: string
-    details:  The name of the Google Compute Engine network to which the instance is connected. If left unspecified, the network named 'default' will be used.
-    default: default      
+      pattern: ^[A-Za-z][-a-z0-9A-Z]+$     
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
   template: |-
-    variable service_tier { type = "string" }
-    variable instance_name { type = "string" }
-    variable db_name { type = "string" }
-    variable region { type = "string" }
-    variable labels { type = "map" }
-    variable authorized_network { type = "string" }
-
-    data "google_compute_network" "authorized-network" {
-      name = "${var.authorized_network}"
-    }    
+    variable service_tier { type = string }
+    variable instance_name { type = string }
+    variable db_name { type = string }
+    variable region { type = string }
+    variable labels { type = map }
 
     resource "google_sql_database_instance" "instance" {
-      name             = "${var.instance_name}"
+      name             = var.instance_name
       database_version = "MYSQL_5_6"
-      region           = "${var.region}"
+      region           = var.region
 
       settings {
         # Second-generation instance tiers are based on the machine
         # type. See argument reference below.
-        tier = "${var.service_tier}"
-        user_labels = "${var.labels}"
+        tier = var.service_tier
+        user_labels = var.labels
+        
         ip_configuration {
-          ipv4_enabled    = false
-          private_network = "${data.google_compute_network.authorized-network.self_link}"
+          ipv4_enabled    = true
         }
       }
     }
 
     resource "google_sql_database" "database" {
-      name     = "${var.db_name}"
-      instance = "${google_sql_database_instance.instance.name}"
+      name     = var.db_name
+      instance = google_sql_database_instance.instance.name
     }
 
     resource "random_string" "username" {
@@ -116,9 +107,9 @@ provision:
     }
 
     resource "google_sql_user" "user" {
-      name     = "${random_string.username.result}"
-      instance = "${google_sql_database_instance.instance.name}"
-      password = "${random_password.password.result}"
+      name     = random_string.username.result
+      instance = google_sql_database_instance.instance.name
+      password = random_password.password.result
     }
 
     output service_tier { value = "${var.service_tier}" }
@@ -128,8 +119,7 @@ provision:
     output username { value = "${google_sql_user.user.name}" }
     output password { value = "${google_sql_user.user.password}" }
     output uri { value = "mysql://${google_sql_user.user.name}:${google_sql_user.user.password}@${google_sql_database_instance.instance.first_ip_address}:3306/${google_sql_database.database.name}" }
-    output jdbcUrl { value = "jdbc:mysql://${google_sql_database_instance.instance.first_ip_address}\\${google_sql_database.database.name}:3306?user=${google_sql_user.user.name};password=${google_sql_user.user.password};useSSL=false" }
-
+    output jdbcUrl { value = "jdbc:mysql://${google_sql_database_instance.instance.first_ip_address}\\${google_sql_database.database.name}:3306?user=${google_sql_user.user.name};password=${google_sql_user.user.password};useSSL=false" }    
   outputs:
   - required: true
     field_name: service_tier

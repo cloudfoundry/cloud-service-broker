@@ -46,7 +46,7 @@ type TerraformExecutor func(*exec.Cmd) error
 // The created instance will have the name specified by the DefaultInstanceName constant.
 func NewWorkspace(templateVars map[string]interface{}, terraformTemplate string) (*TerraformWorkspace, error) {
 	tfModule := ModuleDefinition{
-		Name:       "./brokertemplate",
+		Name:       "brokertemplate",
 		Definition: terraformTemplate,
 	}
 
@@ -159,6 +159,8 @@ func (workspace *TerraformWorkspace) initializeFs() error {
 		workspace.dir = dir
 	}
 
+	outputs := make(map[string][]string)
+
 	// write the modulesTerraformWorkspace
 	for _, module := range workspace.Modules {
 		parent := path.Join(workspace.dir, module.Name)
@@ -169,16 +171,22 @@ func (workspace *TerraformWorkspace) initializeFs() error {
 		if err := ioutil.WriteFile(path.Join(parent, "definition.tf"), []byte(module.Definition), 0755); err != nil {
 			return err
 		}
+
+		var err error
+		if outputs[module.Name], err = module.Outputs(); err != nil {
+			return err
+		}
 	}
 
 	// write the instances
 	for _, instance := range workspace.Instances {
-		contents, err := instance.MarshalDefinition()
+		output := outputs[instance.ModuleName]
+		contents, err := instance.MarshalDefinition(output)
 		if err != nil {
 			return err
 		}
 
-		if err := ioutil.WriteFile(path.Join(workspace.dir, instance.InstanceName+".tf"), contents, 0755); err != nil {
+		if err := ioutil.WriteFile(path.Join(workspace.dir, instance.InstanceName+".tf.json"), contents, 0755); err != nil {
 			return err
 		}
 	}
@@ -228,14 +236,7 @@ func (workspace *TerraformWorkspace) Outputs(instance string) (map[string]interf
 	}
 
 	// All root project modules get put under the "root" namespace
-	module := state.GetModule("root", instance)
-
-	// Terraform prunes modules with no contents, so we return blank results.
-	if module == nil {
-		return map[string]interface{}{}, nil
-	}
-
-	return module.GetOutputs(), nil
+	return state.GetOutputs(), nil
 }
 
 // Validate runs `terraform Validate` on this workspace.
