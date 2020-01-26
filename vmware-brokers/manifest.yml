@@ -26,6 +26,4 @@ terraform_binaries:
   source: https://releases.hashicorp.com/terraform-provider-random/2.2.1/terraform-provider-random_2.2.1_linux_amd64.zip
 service_definitions:
 - google-redis.yml
-- dataproc.yml
-- cloud-storage.yml
 - google-mysql.yml
