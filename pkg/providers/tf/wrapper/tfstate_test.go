@@ -18,21 +18,31 @@ import "fmt"
 
 func ExampleNewTfstate_Good() {
 	state := `{
-    "version": 3,
-    "terraform_version": "0.11.10",
+    "version": 4,
+    "terraform_version": "0.12.20",
     "serial": 2,
-    "modules": [
+    "outputs": {
+        "hostname": {
+          "value": "brokertemplate.instance.hostname",
+          "type": "string"
+        }
+    },
+    "resources": [
         {
-            "path": ["root"],
-            "outputs": {},
-            "resources": {},
-            "depends_on": []
+          "module": "module.instance",
+          "mode": "managed",
+          "type": "google_sql_database",
+          "name": "database",
+          "provider": "provider.google",
+          "instances": []
         },
         {
-            "path": ["root", "instance"],
-            "outputs": {},
-            "resources": {},
-            "depends_on": []
+          "module": "module.instance",
+          "mode": "managed",
+          "type": "google_sql_database_instance",
+          "name": "instance",
+          "provider": "provider.google",
+          "instances": []
         }
     ]
   }`
@@ -45,15 +55,23 @@ func ExampleNewTfstate_Good() {
 
 func ExampleNewTfstate_BadVersion() {
 	state := `{
-    "version": 4,
-    "terraform_version": "0.11.10",
+    "version": 5,
+    "terraform_version": "0.12.20",
     "serial": 2,
-    "modules": [
+    "outputs": {
+        "hostname": {
+          "value": "brokertemplate.instance.hostname",
+          "type": "string"
+        }
+    },
+    "resources": [
         {
-            "path": ["root"],
-            "outputs": {},
-            "resources": {},
-            "depends_on": []
+          "module": "module.instance",
+          "mode": "managed",
+          "type": "google_sql_database",
+          "name": "database",
+          "provider": "provider.google",
+          "instances": []
         }
     ]
   }`
@@ -61,34 +79,34 @@ func ExampleNewTfstate_BadVersion() {
 	_, err := NewTfstate([]byte(state))
 	fmt.Printf("%v", err)
 
-	// Output: unsupported tfstate version: 4
+	// Output: unsupported tfstate version: 5
 }
 
-func ExampleTfstate_GetModule() {
+func ExampleTfstate_GetOutputs() {
 	state := `{
-    "version": 3,
-    "terraform_version": "0.11.10",
+    "version": 4,
+    "terraform_version": "0.12.20",
     "serial": 2,
-    "modules": [
+    "outputs": {
+        "hostname": {
+          "value": "somehost",
+          "type": "string"
+        }
+    },
+    "resources": [
         {
-            "path": ["root", "instance"],
-            "outputs": {
-                "Name": {
-                    "sensitive": false,
-                    "type": "string",
-                    "value": "pcf-binding-ex351277"
-                }
-            },
-            "resources": {},
-            "depends_on": []
+          "module": "module.instance",
+          "mode": "managed",
+          "type": "google_sql_database",
+          "name": "database",
+          "provider": "provider.google",
+          "instances": []
         }
     ]
   }`
 
 	tfstate, _ := NewTfstate([]byte(state))
-	fmt.Printf("%v\n", tfstate.GetModule("does-not-exist"))
-	fmt.Printf("%v\n", tfstate.GetModule("root", "instance"))
+	fmt.Printf("%v\n", tfstate.GetOutputs())
 
-	// Output: <nil>
-	// [module: root/instance with 1 outputs]
+	// Output: map[hostname:somehost]
 }

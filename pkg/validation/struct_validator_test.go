@@ -42,12 +42,9 @@ func ExampleErrIfNotHCL() {
 		region      = "us-central1"
 	}`, "my-field") == nil)
 
-	fmt.Println("Good JSON is nil:", ErrIfNotHCL(`{"a":42, "s":"foo"}`, "my-field") == nil)
-
 	fmt.Println("Bad:", ErrIfNotHCL("google storage", "my-field"))
 
 	// Output: Good HCL is nil: true
-	// Good JSON is nil: true
 	// Bad: invalid HCL: my-field
 }
 

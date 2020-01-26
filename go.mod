@@ -20,8 +20,9 @@ require (
 	github.com/hashicorp/go-multierror v1.0.0
 	github.com/hashicorp/go-safetemp v1.0.0
 	github.com/hashicorp/go-version v1.0.0
-	github.com/hashicorp/hcl v1.0.0
-	github.com/hashicorp/hil v0.0.0-20170627220502-fa9f258a9250
+	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/hashicorp/hcl2 v0.0.0-20191002203319-fb75b3253c80
+	github.com/hashicorp/hil v0.0.0-20190212132231-97b3a9cdfa93
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
 	github.com/inconshreveable/mousetrap v1.0.0
 	github.com/jinzhu/gorm v1.9.1
@@ -32,7 +33,7 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.1
 	github.com/mitchellh/go-homedir v1.0.0
 	github.com/mitchellh/go-testing-interface v1.0.0
-	github.com/mitchellh/mapstructure v1.0.0
+	github.com/mitchellh/mapstructure v1.1.2
 	github.com/mitchellh/reflectwalk v1.0.0
 	github.com/pelletier/go-toml v1.2.0
 	github.com/pivotal-cf/brokerapi v4.2.1+incompatible
@@ -64,5 +65,5 @@ require (
 	google.golang.org/genproto v0.0.0-20190502173448-54afdca5d873
 	google.golang.org/grpc v1.23.1
 	gopkg.in/sourcemap.v1 v1.0.5
-	gopkg.in/yaml.v2 v2.2.1
+	gopkg.in/yaml.v2 v2.2.2
 )

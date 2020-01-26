@@ -15,10 +15,12 @@
 package wrapper
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/pivotal/cloud-service-broker/pkg/validation"
-	"github.com/hashicorp/hcl"
+	"github.com/hashicorp/hcl2/hcl"
+	"github.com/hashicorp/hcl2/hclparse"
 )
 
 // ModuleDefinition represents a module in a Terraform workspace.
@@ -38,30 +40,52 @@ func (module *ModuleDefinition) Validate() (errs *validation.FieldError) {
 	)
 }
 
-// Inputs gets the input parameter names for the module.
-func (module *ModuleDefinition) Inputs() ([]string, error) {
-	defn := terraformModuleHcl{}
-	if err := hcl.Decode(&defn, module.Definition); err != nil {
-		return nil, err
+func (module *ModuleDefinition) decode() (hcl.Blocks, error) {
+	parser := hclparse.NewParser()
+	f, diags := parser.ParseHCL([]byte(module.Definition), "")
+	if diags.HasErrors() {
+		return hcl.Blocks{}, fmt.Errorf(diags.Error())
+	}
+	schema := hcl.BodySchema{
+		Blocks: []hcl.BlockHeaderSchema{
+			hcl.BlockHeaderSchema{
+				Type: "variable",
+				LabelNames: []string{"type"},
+			},
+			hcl.BlockHeaderSchema{
+				Type: "output",
+				LabelNames: []string{"value"},
+			},
+		},
+	}
+	content, _, diags := f.Body.PartialContent(&schema)
+	if diags.HasErrors() {
+		return hcl.Blocks{}, fmt.Errorf(diags.Error())
 	}
 
-	return sortedKeys(defn.Inputs), nil
+	return content.Blocks, nil
+}
+
+// Inputs gets the input parameter names for the module.
+func (module *ModuleDefinition) Inputs() ([]string, error) {
+	blocks, err := module.decode()
+
+	return sortedKeys(blocks.OfType("variable")), err	
 }
 
 // Outputs gets the output parameter names for the module.
 func (module *ModuleDefinition) Outputs() ([]string, error) {
-	defn := terraformModuleHcl{}
-	if err := hcl.Decode(&defn, module.Definition); err != nil {
-		return nil, err
-	}
+	blocks, err := module.decode()
 
-	return sortedKeys(defn.Outputs), nil
+	return sortedKeys(blocks.OfType("output")), err
 }
 
-func sortedKeys(m map[string]interface{}) []string {
+func sortedKeys(m hcl.Blocks) []string {
 	var keys []string
-	for key, _ := range m {
-		keys = append(keys, key)
+	for _, block := range m {
+		for _, lable := range block.Labels {
+			keys = append(keys, lable)
+		}
 	}
 
 	sort.Slice(keys, func(i int, j int) bool { return keys[i] < keys[j] })
@@ -73,6 +97,6 @@ func sortedKeys(m map[string]interface{}) []string {
 //
 // See https://www.terraform.io/docs/modules/create.html for their structure.
 type terraformModuleHcl struct {
-	Inputs  map[string]interface{} `hcl:"variable"`
-	Outputs map[string]interface{} `hcl:"output"`
+	Inputs  map[string]interface{} //`hcl:"variable"`
+	Outputs map[string]interface{} //`hcl:"output"`
 }

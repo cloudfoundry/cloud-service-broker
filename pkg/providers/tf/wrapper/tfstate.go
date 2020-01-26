@@ -17,12 +17,10 @@ package wrapper
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
-	"strings"
 )
 
 const (
-	supportedTfStateVersion = 3
+	supportedTfStateVersion = 4
 )
 
 // NewTfstate deserializes a tfstate file.
@@ -42,35 +40,14 @@ func NewTfstate(stateFile []byte) (*Tfstate, error) {
 // Tfstate is a struct that can help us deserialize the tfstate JSON file.
 type Tfstate struct {
 	Version int             `json:"version"`
-	Modules []TfstateModule `json:"modules"`
-}
-
-// GetModule gets a module at a given path or nil if none exists for that path.
-func (state *Tfstate) GetModule(path ...string) *TfstateModule {
-	for _, module := range state.Modules {
-		if reflect.DeepEqual(module.Path, path) {
-			return &module
-		}
-	}
-
-	return nil
-}
-
-type TfstateModule struct {
-	Path    []string `json:"path"`
 	Outputs map[string]struct {
 		Type  string      `json:"type"`
 		Value interface{} `json:"value"`
 	} `json:"outputs"`
 }
 
-func (module *TfstateModule) String() string {
-	path := strings.Join(module.Path, "/")
-	return fmt.Sprintf("[module: %s with %d outputs]", path, len(module.Outputs))
-}
-
 // GetOutputs gets the key/value outputs defined for a module.
-func (module *TfstateModule) GetOutputs() map[string]interface{} {
+func (module *Tfstate) GetOutputs() map[string]interface{} {
 	out := make(map[string]interface{})
 
 	for outputName, tfOutput := range module.Outputs {
