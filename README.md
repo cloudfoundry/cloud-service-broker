@@ -59,6 +59,7 @@ There are make targets for most common dev tasks.
 `make run-broker` | builds broker and broker pak and starts broker
 `make test-acceptance` | runs broker [client run-examples](./TESTING.md) tests
 `make clean` | removes binaries and built broker paks
+`make push-broker` | will push and register the broker in PAS
 
 ## Support
 
