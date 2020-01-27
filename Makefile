@@ -39,8 +39,8 @@ endif
 test-units: deps-go-binary
 	$(GO) test -v ./... -tags=service_broker
 
-.PHONY: test-acceptance security-user-name security-user-password
-test-acceptance: ./build/cloud-service-broker.$(OSFAMILY)
+.PHONY: test-acceptance 
+test-acceptance: ./build/cloud-service-broker.$(OSFAMILY) security-user-name security-user-password
 	./build/cloud-service-broker.$(OSFAMILY) client run-examples
 
 ./build/cloud-service-broker.linux: $(SRC)

@@ -11,23 +11,10 @@ The service broker uses [Terraform](https://www.terraform.io/) to provision serv
 
 The service broker provides support for:
 
-* [GCP BigQuery](https://cloud.google.com/bigquery/)
-* [GCP Bigtable](https://cloud.google.com/bigtable/)
-* [GCP Cloud SQL](https://cloud.google.com/sql/)
-* [GCP Cloud Storage](https://cloud.google.com/storage/)
-* [GCP Dataflow](https://cloud.google.com/dataflow/) (preview)
-* [GCP Dataproc](https://cloud.google.com/dataproc/docs/overview) (preview)
-* [GCP Datastore](https://cloud.google.com/datastore/)
-* [GCP Dialogflow](https://cloud.google.com/dialogflow-enterprise/) (preview)
-* [GCP Firestore](https://cloud.google.com/firestore/) (preview)
-* [GCP Memorystore for Redis](https://cloud.google.com/memorystore/docs/redis/) (preview)
-* [GCP ML APIs](https://cloud.google.com/ml/)
-* [GCP PubSub](https://cloud.google.com/pubsub/)
-* [GCP Spanner](https://cloud.google.com/spanner/)
-* [GCP Stackdriver Debugger](https://cloud.google.com/debugger/)
-* [GCP Stackdriver Monitoring](https://cloud.google.com/monitoring/) (preview)
-* [GCP Stackdriver Trace](https://cloud.google.com/trace/)
-* [GCP Stackdriver Profiler](https://cloud.google.com/profiler/)
+| GCP | Azure | AWS |
+|-----|-------| ----|
+|[GCP Cloud SQL](https://cloud.google.com/sql/)||
+|[GCP Memorystore for Redis](https://cloud.google.com/memorystore/docs/redis/)||
 
 ## Installation
 
@@ -58,12 +45,17 @@ It supports the following sub-commands:
  * `help` - Help about any command.
  * `serve` - Start the service broker.
 
-## Testing
+## Development
 
-Pull requests are unit-tested with Travis. You can run the same tests Travis does using `go test ./...`.
+There are make targets for most common dev tasks.
 
-Integration tests are run on a private [Concourse](https://concourse-ci.org/) pipeline for all changes to the `master` branch.
-You can set up your own pipeline using the sources in the `ci` directory if you like.
+| command | action |
+|---------|--------|
+`make build` | builds broker into `./build`
+`make test-units` | runs unit tests
+`make run-broker` | builds broker and broker pak and starts broker
+`make test-acceptance` | runs broker [client run-examples](./TESTING.md) tests
+`make clean` | removes binaries and built broker paks
 
 ## Support
 

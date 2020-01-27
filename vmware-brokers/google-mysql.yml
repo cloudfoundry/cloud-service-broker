@@ -38,13 +38,6 @@ provision:
     details: The service tier of the instance.
     enum:
       db-n1-standard-1: standard-1 instance
-  - field_name: mysql_version
-    required: true
-    type: string
-    details: The version for the mysql instance.
-    enum:
-      MYSQL_5_6: Mysql 5.6
-      MYSQL_5_7: Mysql 5.7
   user_inputs:
   - field_name: instance_name
     type: string
@@ -60,6 +53,14 @@ provision:
     default: vsb-db
     constraints:
       maxLength: 64
+  - field_name: mysql_version
+    required: true
+    type: string
+    details: The version for the mysql instance.
+    default: MYSQL_5_7
+    enum:
+      MYSQL_5_6: Mysql 5.6
+      MYSQL_5_7: Mysql 5.7
   - field_name: region
     type: string
     details: The region of the mysql instance.
