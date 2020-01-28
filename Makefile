@@ -113,9 +113,13 @@ endif
 .PHONY: check-env-vars
 check-env-vars: root-service-account-json security-user-name security-user-password db-host db-username db-password
 
-.PHONY: run-broker
-run-broker: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
+.PHONY: run-broker-gcp
+run-broker-gcp: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
 	./build/cloud-service-broker.$(OSFAMILY) serve
+
+.PHONY: run-broker-azure
+run-broker-azure: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
+	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
 
 gcp-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./gcp-brokerpak/*.yml
 	cd ./gcp-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
