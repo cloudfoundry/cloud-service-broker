@@ -68,7 +68,8 @@ docs/customization.md:
 clean: deps-go-binary
 	$(GO) clean --modcache
 	rm -rf ./build
-	rm vmware-brokers/google-services-1.0.0.brokerpak
+	rm gcp-brokerpak/*.brokerpak
+	rm azure-brokerpak/*.brokerpak
 
 .PHONY: lint
 lint: deps-goimports
@@ -115,7 +116,7 @@ check-env-vars: root-service-account-json security-user-name security-user-passw
 
 .PHONY: run-broker-gcp
 run-broker-gcp: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
-	./build/cloud-service-broker.$(OSFAMILY) serve
+	GSB_BROKERPAK_BUILTIN_PATH=./gcp-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
 
 .PHONY: run-broker-azure
 run-broker-azure: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
