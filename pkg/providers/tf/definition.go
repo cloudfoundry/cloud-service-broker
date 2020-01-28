@@ -16,6 +16,7 @@ package tf
 
 import (
 	"fmt"
+	"os"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
@@ -24,7 +25,6 @@ import (
 	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal/cloud-service-broker/utils"
 	"github.com/pivotal-cf/brokerapi"
-	"golang.org/x/oauth2/jwt"
 )
 
 // TfServiceDefinitionV1 is the first version of user defined services.
@@ -45,6 +45,7 @@ type TfServiceDefinitionV1 struct {
 
 	// Internal SHOULD be set to true for Google maintained services.
 	Internal bool `yaml:"-"`
+	RequiredEnvVars   []string					  
 }
 
 // TfServiceDefinitionV1Plan represents a service plan in a human-friendly format
@@ -235,10 +236,26 @@ func (tfb *TfServiceDefinitionV1) Validate() (errs *validation.FieldError) {
 	return errs
 }
 
+func (tfb *TfServiceDefinitionV1) resolveEnvVars() (map[string]string, error) {
+	vars := make(map[string]string)
+	for _, v := range tfb.RequiredEnvVars {
+		var ok bool
+		if vars[v], ok = os.LookupEnv(v); !ok {
+			return vars, fmt.Errorf(fmt.Sprintf("missing required env var %s", v))
+		}
+	}
+	return vars, nil
+}
+
 // ToService converts the flat TfServiceDefinitionV1 into a broker.ServiceDefinition
 // that the registry can use.
 func (tfb *TfServiceDefinitionV1) ToService(executor wrapper.TerraformExecutor) (*broker.ServiceDefinition, error) {
 	if err := tfb.Validate(); err != nil {
+		return nil, err
+	}
+
+	envVars, err := tfb.resolveEnvVars()
+	if err != nil {
 		return nil, err
 	}
 
@@ -293,8 +310,8 @@ func (tfb *TfServiceDefinitionV1) ToService(executor wrapper.TerraformExecutor) 
 		BindOutputVariables:   append(tfb.ProvisionSettings.Outputs, tfb.BindSettings.Outputs...),
 		PlanVariables:         append(tfb.ProvisionSettings.PlanInputs, tfb.BindSettings.PlanInputs...),
 		Examples:              tfb.Examples,
-		ProviderBuilder: func(projectId string, auth *jwt.Config, logger lager.Logger) broker.ServiceProvider {
-			jobRunner := NewTfJobRunnerForProject(projectId)
+		ProviderBuilder: func(logger lager.Logger) broker.ServiceProvider {
+			jobRunner := NewTfJobRunnerForProject(envVars)
 			jobRunner.Executor = executor
 			return NewTerraformProvider(jobRunner, logger, constDefn)
 		},

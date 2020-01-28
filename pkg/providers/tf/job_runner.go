@@ -35,19 +35,13 @@ const (
 
 // NewTfJobRunerFromEnv creates a new TfJobRunner with default configuration values.
 func NewTfJobRunerFromEnv() (*TfJobRunner, error) {
-	projectId, err := utils.GetDefaultProjectId()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewTfJobRunnerForProject(projectId), nil
+	return NewTfJobRunnerForProject(map[string]string{}), nil
 }
 
 // Construct a new JobRunner for the given project.
-func NewTfJobRunnerForProject(projectId string) *TfJobRunner {
+func NewTfJobRunnerForProject(envVars map[string]string) *TfJobRunner {
 	return &TfJobRunner{
-		ProjectId:      projectId,
-		ServiceAccount: utils.GetServiceAccountJson(),
+		EnvVars: envVars,
 	}
 }
 
@@ -62,9 +56,9 @@ func NewTfJobRunnerForProject(projectId string) *TfJobRunner {
 // The TfJobRunner keeps track of the workspace and the Terraform state file so
 // subsequent commands will operate on the same structure.
 type TfJobRunner struct {
-	ProjectId      string
-	ServiceAccount string
-
+	// EnvVars is a list of environment variables that should be included in executor 
+	// env (usually Terraform provider credentials)
+	EnvVars map[string]string
 	// Executor holds a custom executor that will be called when commands are run.
 	Executor wrapper.TerraformExecutor
 }
@@ -112,15 +106,7 @@ func (runner *TfJobRunner) hydrateWorkspace(ctx context.Context, deployment *mod
 		return nil, err
 	}
 
-	// TODO(josephlewis42) don't assume every pak needs Google specific creds
-	// GOOGLE_CREDENTIALS needs to be set to the JSON key and GOOGLE_PROJECT
-	// needs to be set to the project
-	env := map[string]string{
-		"GOOGLE_CREDENTIALS": runner.ServiceAccount,
-		"GOOGLE_PROJECT":     runner.ProjectId,
-	}
-
-	ws.Executor = wrapper.CustomEnvironmentExecutor(env, runner.Executor)
+	ws.Executor = wrapper.CustomEnvironmentExecutor(runner.EnvVars, runner.Executor)
 
 	logger := utils.NewLogger("job-runner")
 	logger.Info("wrapping", lager.Data{

@@ -32,7 +32,7 @@ import (
 const (
 	// BuiltinPakLocation is the file-system location to load brokerpaks from to
 	// make them look builtin.
-	BuiltinPakLocation      = "./vmware-brokers"
+	BuiltinPakLocation      = "./gcp-brokerpak"
 	brokerpakSourcesKey     = "brokerpak.sources"
 	brokerpakConfigKey      = "brokerpak.config"
 	brokerpakBuiltinPathKey = "brokerpak.builtin.path"

@@ -114,12 +114,15 @@ endif
 check-env-vars: root-service-account-json security-user-name security-user-password db-host db-username db-password
 
 .PHONY: run-broker
-run-broker: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) vmware-brokers/google-services-1.0.0.brokerpak
+run-broker: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
 	./build/cloud-service-broker.$(OSFAMILY) serve
 
-vmware-brokers/google-services-1.0.0.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./vmware-brokers/*.yml
-	cd ./vmware-brokers && ../build/cloud-service-broker.$(OSFAMILY) pak build
+gcp-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./gcp-brokerpak/*.yml
+	cd ./gcp-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
+
+azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml
+	cd ./azure-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
 .PHONY: push-broker
-push-broker: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) vmware-brokers/google-services-1.0.0.brokerpak
+push-broker: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
 	./scripts/push-broker.sh

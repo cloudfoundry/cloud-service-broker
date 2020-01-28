@@ -64,6 +64,7 @@ func (pak *BrokerPakReader) Services() ([]tf.TfServiceDefinitionV1, error) {
 			return nil, err
 		}
 
+		tmp.RequiredEnvVars = manifest.RequiredEnvVars
 		services = append(services, tmp)
 	}
 
