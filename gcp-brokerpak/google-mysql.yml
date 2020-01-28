@@ -93,7 +93,7 @@ provision:
     }
 
     resource "google_compute_global_address" "private_ip_address" {
-      name          = "private-ip-address-${var.instance_name}"
+      name          = "priv-ip-addr-${var.instance_name}"
       purpose       = "VPC_PEERING"
       address_type  = "INTERNAL"
       prefix_length = 24
@@ -154,7 +154,7 @@ provision:
     output username { value = "${google_sql_user.user.name}" }
     output password { value = "${google_sql_user.user.password}" }
     output uri { value = "mysql://${google_sql_user.user.name}:${google_sql_user.user.password}@${google_sql_database_instance.instance.first_ip_address}:3306/${google_sql_database.database.name}" }
-    output jdbcUrl { value = "jdbc:mysql://${google_sql_database_instance.instance.first_ip_address}:3306/${google_sql_database.database.name}?user=${google_sql_user.user.name};password=${google_sql_user.user.password};useSSL=false" }
+    output jdbcUrl { value = "jdbc:mysql://${google_sql_database_instance.instance.first_ip_address}:3306/${google_sql_database.database.name}?user=${google_sql_user.user.name}\u0026password=${google_sql_user.user.password}\u0026useSSL=false" }
   outputs:
   - required: true
     field_name: service_tier
