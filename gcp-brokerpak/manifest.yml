@@ -1,6 +1,6 @@
 packversion: 1
 name: google-services
-version: 1.0.0
+version: 0.1.0
 metadata:
   author: VMware
 platforms:
@@ -24,6 +24,9 @@ terraform_binaries:
 - name: terraform-provider-random
   version: 2.2.1
   source: https://releases.hashicorp.com/terraform-provider-random/2.2.1/terraform-provider-random_2.2.1_linux_amd64.zip
+required_env_vars:
+- GOOGLE_CREDENTIALS
+- GOOGLE_PROJECT
 service_definitions:
 - google-redis.yml
 - google-mysql.yml

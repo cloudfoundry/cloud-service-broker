@@ -16,13 +16,13 @@ package storage
 
 import (
 	"code.cloudfoundry.org/lager"
+	"os"
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
 	accountmanagers "github.com/pivotal/cloud-service-broker/pkg/providers/builtin/account_managers"
 	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/base"
 	"github.com/pivotal/cloud-service-broker/pkg/validation"
 	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal-cf/brokerapi"
-	"golang.org/x/oauth2/jwt"
 )
 
 const StorageName = "google-storage"
@@ -209,8 +209,8 @@ func ServiceDefinition() *broker.ServiceDefinition {
 			},
 		},
 		BindComputedVariables: accountmanagers.ServiceAccountBindComputedVariables(),
-		ProviderBuilder: func(projectId string, auth *jwt.Config, logger lager.Logger) broker.ServiceProvider {
-			bb := base.NewBrokerBase(projectId, auth, logger)
+		ProviderBuilder: func(logger lager.Logger) broker.ServiceProvider {
+			bb := base.NewBrokerBase(os.Getenv("GOOGLE_CLOUD_PROJECT"), logger)
 			return &StorageBroker{BrokerBase: bb}
 		},
 		IsBuiltin: true,

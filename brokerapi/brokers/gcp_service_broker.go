@@ -22,7 +22,6 @@ import (
 
 	"code.cloudfoundry.org/lager"
 	"github.com/pivotal-cf/brokerapi"
-	"golang.org/x/oauth2/jwt"
 	"google.golang.org/api/googleapi"
 
 	"encoding/json"
@@ -42,8 +41,6 @@ var (
 // GCPServiceBroker is a brokerapi.ServiceBroker that can be used to generate an OSB compatible service broker.
 type GCPServiceBroker struct {
 	registry  broker.BrokerRegistry
-	jwtConfig *jwt.Config
-	projectId string
 
 	Logger lager.Logger
 }
@@ -53,8 +50,6 @@ type GCPServiceBroker struct {
 func New(cfg *BrokerConfig, logger lager.Logger) (*GCPServiceBroker, error) {
 	return &GCPServiceBroker{
 		registry:  cfg.Registry,
-		jwtConfig: cfg.HttpConfig,
-		projectId: cfg.ProjectId,
 		Logger:    logger,
 	}, nil
 }
@@ -86,7 +81,7 @@ func (gcpBroker *GCPServiceBroker) getDefinitionAndProvider(serviceId string) (*
 		return nil, nil, err
 	}
 
-	providerBuilder := defn.ProviderBuilder(gcpBroker.projectId, gcpBroker.jwtConfig, gcpBroker.Logger)
+	providerBuilder := defn.ProviderBuilder(gcpBroker.Logger)
 	return defn, providerBuilder, nil
 }
 

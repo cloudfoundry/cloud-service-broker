@@ -28,7 +28,6 @@ import (
 	"github.com/pivotal/cloud-service-broker/utils"
 	"github.com/pivotal-cf/brokerapi"
 	"github.com/spf13/viper"
-	"golang.org/x/oauth2/jwt"
 )
 
 var enableCatalogSchemas = toggles.Features.Toggle("enable-catalog-schemas", false, `Enable generating JSONSchema for the service catalog.`)
@@ -58,7 +57,7 @@ type ServiceDefinition struct {
 	DefaultRoleWhitelist       []string
 
 	// ProviderBuilder creates a new provider given the project, auth, and logger.
-	ProviderBuilder func(projectId string, auth *jwt.Config, logger lager.Logger) ServiceProvider
+	ProviderBuilder func(plogger lager.Logger) ServiceProvider
 
 	// IsBuiltin is true if the service is built-in to the platform.
 	IsBuiltin bool

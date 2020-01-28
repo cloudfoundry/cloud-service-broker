@@ -21,8 +21,6 @@ import (
 	"github.com/pivotal/cloud-service-broker/db_service/models"
 	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/account_managers"
 	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
-
-	"golang.org/x/oauth2/jwt"
 )
 
 //go:generate counterfeiter . ServiceAccountManager
@@ -34,16 +32,14 @@ type ServiceAccountManager interface {
 
 // NewBrokerBase creates a new broker base and account manager it uses from the
 // given settings.
-func NewBrokerBase(projectId string, auth *jwt.Config, logger lager.Logger) BrokerBase {
+func NewBrokerBase(projectId string, logger lager.Logger) BrokerBase {
 	saManager := &account_managers.ServiceAccountManager{
-		HttpConfig: auth,
 		ProjectId:  projectId,
 		Logger:     logger,
 	}
 
 	return BrokerBase{
 		AccountManager: saManager,
-		HttpConfig:     auth,
 		ProjectId:      projectId,
 		Logger:         logger,
 	}
@@ -56,7 +52,6 @@ type BrokerBase struct {
 	MergedInstanceCredsMixin
 
 	AccountManager ServiceAccountManager
-	HttpConfig     *jwt.Config
 	ProjectId      string
 	Logger         lager.Logger
 }

@@ -38,7 +38,6 @@ import (
 	"code.cloudfoundry.org/lager"
 
 	"github.com/jinzhu/gorm"
-	"golang.org/x/oauth2/jwt"
 )
 
 // InstanceState holds the lifecycle state of a provisioned service instance.
@@ -133,7 +132,7 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 		},
 	}
 
-	stub.ServiceDefinition.ProviderBuilder = func(projectId string, auth *jwt.Config, logger lager.Logger) broker.ServiceProvider {
+	stub.ServiceDefinition.ProviderBuilder = func(logger lager.Logger) broker.ServiceProvider {
 		return stub.Provider
 	}
 

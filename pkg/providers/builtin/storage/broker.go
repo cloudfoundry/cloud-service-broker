@@ -120,8 +120,8 @@ func (b *StorageBroker) Deprovision(ctx context.Context, bucket models.ServiceIn
 
 func (b *StorageBroker) createClient(ctx context.Context) (*googlestorage.Client, error) {
 	co := option.WithUserAgent(utils.CustomUserAgent)
-	ct := option.WithTokenSource(b.HttpConfig.TokenSource(ctx))
-	storageService, err := googlestorage.NewClient(ctx, co, ct)
+	//ct := option.WithTokenSource(b.HttpConfig.TokenSource(ctx))
+	storageService, err := googlestorage.NewClient(ctx, co/*, ct*/)
 	if err != nil {
 		return nil, fmt.Errorf("Couldn't instantiate Cloud Storage API client: %s", err)
 	}

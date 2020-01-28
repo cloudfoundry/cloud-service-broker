@@ -43,6 +43,7 @@ type Manifest struct {
 	TerraformResources []TerraformResource `yaml:"terraform_binaries"`
 	ServiceDefinitions []string            `yaml:"service_definitions"`
 	Parameters         []ManifestParameter `yaml:"parameters"`
+	RequiredEnvVars	   []string            `yaml:"required_env_vars"`
 }
 
 var _ validation.Validatable = (*Manifest)(nil)

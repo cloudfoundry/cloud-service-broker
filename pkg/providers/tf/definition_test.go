@@ -16,6 +16,8 @@ package tf
 
 import (
 	"reflect"
+	"os"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -176,6 +178,7 @@ func TestTfServiceDefinitionV1_ToService(t *testing.T) {
 		SupportUrl:       "https://example.com/support",
 		DocumentationUrl: "https://example.com/docs",
 		Plans:            []TfServiceDefinitionV1Plan{},
+		RequiredEnvVars: []string{"EXAMPLE_ENV_VAR"},
 
 		ProvisionSettings: TfServiceDefinitionV1Action{
 			PlanInputs: []broker.BrokerVariable{
@@ -217,6 +220,16 @@ func TestTfServiceDefinitionV1_ToService(t *testing.T) {
 	}
 
 	service, err := definition.ToService(nil)
+	if err == nil {
+		t.Fatal(fmt.Errorf("Expected 'missing required env var EXAMPLE_ENV_VAR"))
+	}
+	if err.Error() != "missing required env var EXAMPLE_ENV_VAR" {
+		t.Fatal(err)
+	}
+
+	os.Setenv("EXAMPLE_ENV_VAR", "example value")
+	defer os.Unsetenv("EXAMPLE_ENV_VAR")
+	service, err = definition.ToService(nil)
 	if err != nil {
 		t.Fatal(err)
 	}

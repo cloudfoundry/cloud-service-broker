@@ -11,6 +11,8 @@ export ARM_CLIENT_SECRET=$(lpass show --notes "Shared-CF Platform Engineering/Az
 
 export GCP_SERVICE_ACCOUNT_JSON=$(lpass show --notes "Shared-CF Platform Engineering/pks cluster management gcp service account")
 export ROOT_SERVICE_ACCOUNT_JSON="${GCP_SERVICE_ACCOUNT_JSON}"
+export GOOGLE_CREDENTIALS="${GCP_SERVICE_ACCOUNT_JSON}"
+export GOOGLE_PROJECT=$(echo ${GOOGLE_CREDENTIALS} | jq -r .project_id)
 
 export SECURITY_USER_NAME=brokeruser
 export SECURITY_USER_PASSWORD=brokeruserpassword
