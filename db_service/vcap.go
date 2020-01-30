@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -113,7 +114,7 @@ func ParseVcapServices(vcapServicesData string) (VcapService, error) {
 // whether a given string array arr contains string key
 func contains(arr []string, key string) bool {
 	for _, n := range arr {
-		if key == n {
+		if strings.ToLower(key) == strings.ToLower(n) {
 			return true
 		}
 	}
