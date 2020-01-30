@@ -75,10 +75,42 @@ clean: deps-go-binary
 lint: deps-goimports
 	git ls-files | grep '.go$$' | xargs $(GOIMPORTS) -l -w
 
-.PHONY: root-service-account-json
-root-service-account-json:
-ifndef ROOT_SERVICE_ACCOUNT_JSON
-	$(error variable ROOT_SERVICE_ACCOUNT_JSON not defined)
+
+
+.PHONY: run-broker-gcp
+run-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
+	GSB_BROKERPAK_BUILTIN_PATH=./gcp-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
+
+.PHONY: run-broker-azure
+run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
+	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
+
+gcp-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./gcp-brokerpak/*.yml
+	cd ./gcp-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
+
+azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml
+	cd ./azure-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
+
+.PHONY: push-broker-gcp
+push-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
+	GSB_BROKERPAK_BUILTIN_PATH=./gcp-brokerpak ./scripts/push-broker.sh
+
+.PHONY: push-broker-azure
+push-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
+	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./scripts/push-broker.sh
+
+# env vars checks
+
+.PHONY: google-credentials
+google-credentials:
+ifndef GOOGLE_CREDENTIALS
+	$(error variable GOOGLE_CREDENTIALS not defined)
+endif
+
+.PHONY: google-project
+google-project:
+ifndef GOOGLE_PROJECT
+	$(error variable GOOGLE_PROJECT not defined)
 endif
 
 .PHONY: security-user-name
@@ -111,23 +143,32 @@ ifndef DB_PASSWORD
 	$(error variable DB_PASSWORD not defined)
 endif
 
-.PHONY: check-env-vars
-check-env-vars: root-service-account-json security-user-name security-user-password db-host db-username db-password
+.PHONY: arm-subscription-id
+arm-subscription-id:
+ifndef ARM_SUBSCRIPTION_ID
+	$(error variable ARM_SUBSCRIPTION_ID not defined)
+endif
 
-.PHONY: run-broker-gcp
-run-broker-gcp: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./gcp-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
+.PHONY: arm-tenant-id
+arm-tenant-id:
+ifndef ARM_TENANT_ID
+	$(error variable ARM_TENANT_ID not defined)
+endif
 
-.PHONY: run-broker-azure
-run-broker-azure: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
+.PHONY: arm-client-id
+arm-client-id:
+ifndef ARM_CLIENT_ID
+	$(error variable ARM_CLIENT_ID not defined)
+endif
 
-gcp-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./gcp-brokerpak/*.yml
-	cd ./gcp-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
+.PHONY: arm-client-secret
+arm-client-secret:
+ifndef ARM_CLIENT_SECRET
+	$(error variable ARM_CLIENT_SECRET not defined)
+endif
 
-azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml
-	cd ./azure-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
+.PHONY: check-gcp-env-vars
+check-gcp-env-vars: google-credentials google-project security-user-name security-user-password db-host db-username db-password
 
-.PHONY: push-broker
-push-broker: check-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
-	./scripts/push-broker.sh
+.PHONY: check-azure-env-vars
+check-gcp-env-vars: arm-subuscription-id arm-tenant-id arm-client-id arm-client-secret security-user-name security-user-password db-host db-username db-password
