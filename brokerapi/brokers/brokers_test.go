@@ -156,7 +156,6 @@ func newStubbedBroker(t *testing.T, registry broker.BrokerRegistry) (broker *GCP
 	}
 
 	config := &BrokerConfig{
-		ProjectId: "stub-project",
 		Registry:  registry,
 	}
 
