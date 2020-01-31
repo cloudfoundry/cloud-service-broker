@@ -75,7 +75,9 @@ clean: deps-go-binary
 lint: deps-goimports
 	git ls-files | grep '.go$$' | xargs $(GOIMPORTS) -l -w
 
-
+.PHONY:	test-brokerpak-azure
+test-brokerpak-azure:
+	docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
 
 .PHONY: run-broker-gcp
 run-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
