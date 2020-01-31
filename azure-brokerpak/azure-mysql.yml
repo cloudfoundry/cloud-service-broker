@@ -99,7 +99,7 @@ provision:
     }
 
     resource "azurerm_mysql_server" "instance" {
-       name                = var.db_name
+       name                = var.instance_name
        location            = azurerm_resource_group.azure-msyql.location
        resource_group_name = azurerm_resource_group.azure-msyql.name
        sku_name = "B_Gen5_2"
@@ -117,7 +117,11 @@ provision:
     }
 
     resource "azurerm_mysql_database" "instance-db" {
+<<<<<<< HEAD
         name                = replace(var.instance_name,"-","_")
+=======
+        name                = var.db_name
+>>>>>>> 6695df839cee9977a878e14b1e21f8014dc85248
         resource_group_name = azurerm_resource_group.azure-msyql.name
         server_name         = azurerm_mysql_server.instance.name
         charset             = "utf8"
@@ -129,8 +133,13 @@ provision:
     output port { value = 3306 }
     output username { value = "${azurerm_mysql_server.instance.administrator_login}" }
     output password { value = "${azurerm_mysql_server.instance.administrator_login_password}" }
+<<<<<<< HEAD
     output uri { value = "mysql://${azurerm_mysql_server.instance.administrator_login}:${azurerm_mysql_server.instance.administrator_login_password}@${azurerm_mysql_server.instance.name}.mysql.database.azure.com:3306/${azurerm_mysql_database.instance-db.name}" }
     output jdbcUrl { value = "jdbc:mysql://${azurerm_mysql_server.instance.name}.mysql.database.azure.com:3306/${azurerm_mysql_database.instance-db.name}?user=${azurerm_mysql_server.instance.administrator_login};password=${azurerm_mysql_server.instance.administrator_login_password};useSSL=false" }
+=======
+    output uri { value = "mysql://${azurerm_mysql_server.instance.administrator_login}:${azurerm_mysql_server.instance.administrator_login_password}@${azurerm_mysql_server.instance.fqdn}:3306/${azurerm_mysql_database.instance-db.name}" }
+    output jdbcUrl { value = "jdbc:mysql://${azurerm_mysql_server.instance.fqdn}:3306/${azurerm_mysql_database.instance-db.name}?user=${azurerm_mysql_server.instance.administrator_login}\u0026password=${azurerm_mysql_server.instance.administrator_login_password}\u0026useSSL=false" }
+>>>>>>> 6695df839cee9977a878e14b1e21f8014dc85248
 
   outputs:
   - field_name: name
