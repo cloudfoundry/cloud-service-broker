@@ -26,7 +26,7 @@ SRC = $(shell find . -name "*.go" | grep -v "_test\." )
 deps-go-binary:
 	echo "Expect: $(GO-VER)" && \
 		echo "Actual: $$($(GO) version)" && \
-	 	go version | grep $(GO-VER) > /dev/null
+	 	$(GO) version | grep $(GO-VER) > /dev/null
 
 HAS_GO_IMPORTS := $(shell command -v goimports;)
 
