@@ -41,14 +41,14 @@ provision:
   - field_name: instance_name
     type: string
     details: Name for your mysql instance
-    default: vsb-mysql-${request.instance_id}
+    default: vsb-redis-${request.instance_id}
     constraints:
       maxLength: 98
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
   - field_name: location
     type: string
-    details: The region of the mysql instance.
+    details: The region of the Redis instance.
     default: West US
     constraints:
       examples:

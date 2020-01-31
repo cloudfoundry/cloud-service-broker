@@ -13,7 +13,7 @@ The service broker provides support for:
 
 | GCP | Azure | AWS |
 |-----|-------| ----|
-|[GCP Cloud SQL](https://cloud.google.com/sql/)||
+|[GCP Cloud SQL](https://cloud.google.com/sql/)|Azure Mysql|
 |[GCP Memorystore for Redis](https://cloud.google.com/memorystore/docs/redis/)||
 
 ## Installation
@@ -56,10 +56,12 @@ There are make targets for most common dev tasks.
 |---------|--------|
 `make build` | builds broker into `./build`
 `make test-units` | runs unit tests
-`make run-broker` | builds broker and broker pak and starts broker
+`make run-broker-gcp` | builds broker and broker pak and starts broker for gcp
+`make run-broker-azure` | builds broker and broker pak and starts broker for azure
 `make test-acceptance` | runs broker [client run-examples](./TESTING.md) tests
 `make clean` | removes binaries and built broker paks
-`make push-broker` | will push and register the broker in PAS
+`make push-broker-gcp` | will push and register the broker in PAS for GCP
+`make push-broker-azure` | will push and register the broker in PAS for Azure
 
 ## Support
 
