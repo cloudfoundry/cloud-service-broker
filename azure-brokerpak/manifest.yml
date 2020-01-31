@@ -30,8 +30,8 @@ required_env_variables:
 - ARM_CLIENT_ID
 - ARM_CLIENT_SECRET
 service_definitions:
-- azure-mysql.yml
 - azure-redis.yml
+- azure-mysql.yml
 
 
 
