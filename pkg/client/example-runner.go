@@ -204,7 +204,7 @@ func retry(timeout, period time.Duration, function func() (tryAgain bool, err er
 }
 
 func pollUntilFinished(client *Client, instanceId string) error {
-	return retry(15*time.Minute, 15*time.Second, func() (bool, error) {
+	return retry(30*time.Minute, 15*time.Second, func() (bool, error) {
 		log.Println("Polling for async job")
 
 		resp := client.LastOperation(instanceId)
