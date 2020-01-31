@@ -117,7 +117,7 @@ provision:
     }
 
     resource "azurerm_mysql_database" "instance-db" {
-        name                = var.instance_name
+        name                = replace(var.instance_name,"-","_")
         resource_group_name = azurerm_resource_group.azure-msyql.name
         server_name         = azurerm_mysql_server.instance.name
         charset             = "utf8"
@@ -125,12 +125,12 @@ provision:
     }
   
     output name { value = "${azurerm_mysql_database.instance-db.name}" }
-    output hostname { value = "${azurerm_mysql_server.instance.fqdn}" }
+    output hostname { value = "${azurerm_mysql_server.instance.name}.mysql.database.azure.com" }
     output port { value = 3306 }
     output username { value = "${azurerm_mysql_server.instance.administrator_login}" }
     output password { value = "${azurerm_mysql_server.instance.administrator_login_password}" }
-    output uri { value = "mysql://${azurerm_mysql_server.instance.administrator_login}:${azurerm_mysql_server.instance.administrator_login_password}@${azurerm_mysql_server.instance.fqdn}:3306/${azurerm_mysql_database.instance-db.name}" }
-    output jdbcUrl { value = "jdbc:mysql://${azurerm_mysql_server.instance.fqdn}:3306/${azurerm_mysql_database.instance-db.name}?user=${azurerm_mysql_server.instance.administrator_login};password=${azurerm_mysql_server.instance.administrator_login_password};useSSL=false" }
+    output uri { value = "mysql://${azurerm_mysql_server.instance.administrator_login}:${azurerm_mysql_server.instance.administrator_login_password}@${azurerm_mysql_server.instance.name}.mysql.database.azure.com:3306/${azurerm_mysql_database.instance-db.name}" }
+    output jdbcUrl { value = "jdbc:mysql://${azurerm_mysql_server.instance.name}.mysql.database.azure.com:3306/${azurerm_mysql_database.instance-db.name}?user=${azurerm_mysql_server.instance.administrator_login};password=${azurerm_mysql_server.instance.administrator_login_password};useSSL=false" }
 
   outputs:
   - field_name: name
