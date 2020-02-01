@@ -131,10 +131,10 @@ provision:
     output name { value = "${azurerm_mysql_database.instance-db.name}" }
     output hostname { value = "${azurerm_mysql_server.instance.fqdn}" }
     output port { value = 3306 }
-    output username { value = "${azurerm_mysql_server.instance.administrator_login}" }
+    output username { value = "${azurerm_mysql_server.instance.administrator_login}@${azurerm_mysql_server.instance.name}" }
     output password { value = "${azurerm_mysql_server.instance.administrator_login_password}" }
-    output uri { value = "mysql://${azurerm_mysql_server.instance.administrator_login}:${azurerm_mysql_server.instance.administrator_login_password}@${azurerm_mysql_server.instance.fqdn}:3306/${azurerm_mysql_database.instance-db.name}" }
-    output jdbcUrl { value = "jdbc:mysql://${azurerm_mysql_server.instance.fqdn}:3306/${azurerm_mysql_database.instance-db.name}?user=${azurerm_mysql_server.instance.administrator_login}\u0026password=${azurerm_mysql_server.instance.administrator_login_password}\u0026useSSL=false" }
+    output uri { value = "mysql://${azurerm_mysql_server.instance.administrator_login}%40${azurerm_mysql_server.instance.administrator_login_password}@${azurerm_mysql_server.instance.fqdn}:3306/${azurerm_mysql_database.instance-db.name}" }
+    output jdbcUrl { value = "jdbc:mysql://${azurerm_mysql_server.instance.fqdn}:3306/${azurerm_mysql_database.instance-db.name}?user=${azurerm_mysql_server.instance.administrator_login}%40${azurerm_mysql_server.instance.name}\u0026password=${azurerm_mysql_server.instance.administrator_login_password}\u0026verifyServerCertificate=true\u0026useSSL=true\u0026requireSSL=false" }
   outputs:
   - field_name: name
     type: string
