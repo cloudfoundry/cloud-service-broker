@@ -88,6 +88,7 @@ provision:
     resource "random_string" "username" {
       length = 16
       special = false
+      number = false
     }
 
     resource "random_string" "servername" {
@@ -112,7 +113,7 @@ provision:
         geo_redundant_backup  = "Disabled"
         }
 
-        administrator_login          = "vsb-username"
+        administrator_login          = random_string.username.result
         administrator_login_password = random_password.password.result
         version                      = var.mysql_version
         ssl_enforcement              = "Disabled"
@@ -127,6 +128,14 @@ provision:
         charset             = "utf8"
         collation           = "utf8_unicode_ci"
     }
+
+    resource "azurerm_mysql_firewall_rule" "allow_azure" {
+      name                = format("firewall-%s", lower(random_string.servername.result))
+      resource_group_name = azurerm_resource_group.azure-msyql.name
+      server_name         = azurerm_mysql_server.instance.name
+      start_ip_address    = "0.0.0.0"
+      end_ip_address      = "0.0.0.0"
+    }    
   
     output name { value = "${azurerm_mysql_database.instance-db.name}" }
     output hostname { value = "${azurerm_mysql_server.instance.fqdn}" }
@@ -134,7 +143,7 @@ provision:
     output username { value = "${azurerm_mysql_server.instance.administrator_login}@${azurerm_mysql_server.instance.name}" }
     output password { value = "${azurerm_mysql_server.instance.administrator_login_password}" }
     output uri { value = format("mysql://%s:%s@%s:3306/%s", azurerm_mysql_server.instance.administrator_login, azurerm_mysql_server.instance.administrator_login_password, azurerm_mysql_server.instance.fqdn, azurerm_mysql_database.instance-db.name) }
-    output jdbcUrl { value = format("jdbc:mysql://%s:3306/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=true\u0026requireSSL=false", azurerm_mysql_server.instance.fqdn, azurerm_mysql_database.instance-db.name, urlencode("${azurerm_mysql_server.instance.administrator_login}@${azurerm_mysql_server.instance.name}"), azurerm_mysql_server.instance.administrator_login_password) }
+    output jdbcUrl { value = format("jdbc:mysql://%s:3306/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=true\u0026requireSSL=false\u0026serverTimezone=UTC", azurerm_mysql_server.instance.fqdn, azurerm_mysql_database.instance-db.name, urlencode("${azurerm_mysql_server.instance.administrator_login}@${azurerm_mysql_server.instance.name}"), azurerm_mysql_server.instance.administrator_login_password) }
   outputs:
   - field_name: name
     type: string
