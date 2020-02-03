@@ -173,4 +173,4 @@ endif
 check-gcp-env-vars: google-credentials google-project security-user-name security-user-password db-host db-username db-password
 
 .PHONY: check-azure-env-vars
-check-gcp-env-vars: arm-subuscription-id arm-tenant-id arm-client-id arm-client-secret security-user-name security-user-password db-host db-username db-password
+check-azure-env-vars: arm-subuscription-id arm-tenant-id arm-client-id arm-client-secret security-user-name security-user-password db-host db-username db-password
