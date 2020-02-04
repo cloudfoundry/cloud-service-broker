@@ -138,7 +138,7 @@ provision:
     resource "random_password" "password" {
       length = 16
       special = true
-      override_special = "_%@"
+      override_special = "_@"
     }
 
     resource "google_sql_user" "user" {
@@ -153,8 +153,20 @@ provision:
     output port { value = 3306 }
     output username { value = "${google_sql_user.user.name}" }
     output password { value = "${google_sql_user.user.password}" }
-    output uri { value = "mysql://${google_sql_user.user.name}:${google_sql_user.user.password}@${google_sql_database_instance.instance.first_ip_address}:3306/${google_sql_database.database.name}" }
-    output jdbcUrl { value = "jdbc:mysql://${google_sql_database_instance.instance.first_ip_address}:3306/${google_sql_database.database.name}?user=${google_sql_user.user.name}\u0026password=${google_sql_user.user.password}\u0026useSSL=false" }
+    output uri { 
+      value = format("mysql://%s:%s@%s:3306/%s", 
+                      google_sql_user.user.name, 
+                      google_sql_user.user.password, 
+                      google_sql_database_instance.instance.first_ip_address, 
+                      google_sql_database.database.name) 
+    }
+    output jdbcUrl { 
+      value = format("jdbc:mysql://%s:3306/%s?user=%s\u0026password=%s\u0026useSSL=false", 
+                      google_sql_database_instance.instance.first_ip_address, 
+                      google_sql_database.database.name, 
+                      google_sql_user.user.name, 
+                      google_sql_user.user.password) 
+    }
   outputs:
   - required: true
     field_name: service_tier
