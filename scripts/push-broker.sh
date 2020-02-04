@@ -1,13 +1,25 @@
 #!/usr/bin/env bash
 
 set +x # Hide secrets
-set -o nounset
 set -o errexit
 set -o pipefail
 
 cf push --no-start
 
 APP_NAME=cloud-service-broker
+
+if [[ -z ${SECURITY_USER_NAME} ]]; then
+  echo "Missing SECURITY_USER_NAME variable"
+  exit 1
+fi
+
+if [[ -z ${SECURITY_USER_PASSWORD} ]]; then
+  echo "Missing SECURITY_USER_PASSWORD variable"
+  exit 1
+fi
+
+cf set-env "${APP_NAME}" SECURITY_USER_PASSWORD "${SECURITY_USER_PASSWORD}"
+cf set-env "${APP_NAME}" SECURITY_USER_NAME "${SECURITY_USER_NAME}"
 
 if [[ ${GOOGLE_CREDENTIALS} ]]; then
   cf set-env "${APP_NAME}" GOOGLE_CREDENTIALS "${GOOGLE_CREDENTIALS}"
@@ -33,8 +45,13 @@ if [[ ${ARM_CLIENT_SECRET} ]]; then
   cf set-env "${APP_NAME}" ARM_CLIENT_SECRET "${ARM_CLIENT_SECRET}"
 fi
 
-cf set-env "${APP_NAME}" SECURITY_USER_PASSWORD "${SECURITY_USER_PASSWORD}"
-cf set-env "${APP_NAME}" SECURITY_USER_NAME "${SECURITY_USER_NAME}"
+if [[ ${AWS_ACCESS_KEY_ID} ]]; then
+  cf set-env "${APP_NAME}" ARM_CLIENT_SECRET "${AWS_ACCESS_KEY_ID}"
+fi
+
+if [[ ${AWS_SECRET_ACCESS_KEY} ]]; then
+  cf set-env "${APP_NAME}" ARM_CLIENT_SECRET "${AWS_SECRET_ACCESS_KEY}"
+fi
 
 if [[ ${GSB_BROKERPAK_BUILTIN_PATH} ]]; then
   cf set-env "${APP_NAME}" GSB_BROKERPAK_BUILTIN_PATH "${GSB_BROKERPAK_BUILTIN_PATH}"
