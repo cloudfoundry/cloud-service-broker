@@ -88,9 +88,9 @@ provision:
   
     output name { value = "${azurerm_redis_cache.redis.name}" }
     output hostname { value = "${azurerm_redis_cache.redis.hostname}" }
-    output port { value = azurerm_redis_cache.redis.ssl_port }
-    output authkey { value = "${azurerm_redis_cache.redis.primary_access_key}" }
-    output uri { value = "redisis://${azurerm_redis_cache.redis.primary_access_key}@${azurerm_redis_cache.redis.hostname}:${azurerm_redis_cache.redis.ssl_port}" }
+    output port { value = azurerm_redis_cache.redis.port }
+    output password { value = "${azurerm_redis_cache.redis.primary_access_key}" }
+    output tls_port { value = "${azurerm_redis_cache.redis.ssl_port}" }
 
   outputs:
   - field_name: name
@@ -102,12 +102,13 @@ provision:
   - field_name: port
     type: integer
     details: The port number of the exposed redis instance.
-  - field_name: authkey
+  - field_name: tls_port
+    type: integer
+    details: The tls_port number of the exposed redis instance.  
+  - field_name: password
     type: string
-    details: The authkey to authenticate to the redis instance.
-  - field_name: uri
-    type: string
-    details: The uri to connect to the redis instance and redis.
+    details: The password to authenticate to the redis instance.
+ 
 bind:
   plan_inputs: []
   user_inputs: []
