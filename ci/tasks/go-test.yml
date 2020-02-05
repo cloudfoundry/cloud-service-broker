@@ -11,4 +11,4 @@ inputs:
 run:
   dir: src
   path: make
-  args: ['test-acceptance']
+  args: ['test-units']
