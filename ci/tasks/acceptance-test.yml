@@ -4,8 +4,7 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: golang
-    tag: "1.13"
+    repository: amidos/dcind
 inputs:
 - name: pre-release
 - name: broker-pak
@@ -20,10 +19,9 @@ run:
   args:    
     - -exc
     - |
-      ls pre-release
-      ls broker-pak
-      ls version
-      env | grep ARM
+      source /docker-lib.sh
+      start_docker
+      
 outputs:
   - name: build
     path: cloud-service-broker/build
