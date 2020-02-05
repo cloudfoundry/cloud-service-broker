@@ -22,6 +22,10 @@ endif
 
 SRC = $(shell find . -name "*.go" | grep -v "_test\." )
 
+VERSION := $(or $(VERSION), dev)
+
+LDFLAGS="-X github.com/pivotal/cloud-service-broker/utils.Version=$(VERSION)"
+
 .PHONY: deps-go-binary
 deps-go-binary:
 	echo "Expect: $(GO-VER)" && \
@@ -44,10 +48,10 @@ test-acceptance: ./build/cloud-service-broker.$(OSFAMILY) security-user-name sec
 	./build/cloud-service-broker.$(OSFAMILY) client run-examples
 
 ./build/cloud-service-broker.linux: $(SRC)
-	GOARCH=amd64 GOOS=linux $(GO) build -o ./build/cloud-service-broker.linux
+	GOARCH=amd64 GOOS=linux $(GO) build -o ./build/cloud-service-broker.linux -ldflags ${LDFLAGS}
 
 ./build/cloud-service-broker.darwin: $(SRC)
-	GOARCH=amd64 GOOS=darwin $(GO) build -o ./build/cloud-service-broker.darwin
+	GOARCH=amd64 GOOS=darwin $(GO) build -o ./build/cloud-service-broker.darwin -ldflags ${LDFLAGS}
 
 .PHONY: build
 build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin
