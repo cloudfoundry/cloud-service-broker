@@ -8,13 +8,16 @@ image_resource:
     tag: "1.13"
 inputs:
 - name: cloud-service-broker
-  path: broker-source
 - name: version
 run:
-  dir: broker-source
+  dir: cloud-service-broker
   path: /bin/bash
   args:    
     - -exc
     - |
-      export VERSION=$(cat version/version)
+      export VERSION=$(cat ../version/version)
       make build
+outputs:
+  - name: build
+    path: cloud-service-broker/build
+
