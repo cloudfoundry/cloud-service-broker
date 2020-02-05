@@ -16,8 +16,9 @@ run:
   args:    
     - -exc
     - |
-      export VERSION=$(cat ../version/version)
-      make build
+      ls pre-release
+      ls broker-pak
+      ls version
 outputs:
   - name: build
     path: cloud-service-broker/build
