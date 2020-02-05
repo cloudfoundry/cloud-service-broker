@@ -214,7 +214,7 @@ func pollUntilFinished(client *Client, instanceId string) error {
 
 		if resp.StatusCode != 200 {
 			log.Printf("Bad status code %d, needed 200", resp.StatusCode)
-			return true, nil
+			return false, fmt.Errorf("Broker responded with statuscode %v", resp.StatusCode)
 		}
 
 		var responseBody map[string]string
