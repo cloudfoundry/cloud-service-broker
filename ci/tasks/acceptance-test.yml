@@ -10,8 +10,12 @@ inputs:
 - name: pre-release
 - name: broker-pak
 - name: version
+params:
+  ARM_SUBSCRIPTION_ID: 
+  ARM_TENANT_ID:
+  ARM_CLIENT_ID:
+  ARM_CLIENT_SECRET:
 run:
-  dir: cloud-service-broker
   path: /bin/bash
   args:    
     - -exc
@@ -19,6 +23,7 @@ run:
       ls pre-release
       ls broker-pak
       ls version
+      env | grep ARM
 outputs:
   - name: build
     path: cloud-service-broker/build
