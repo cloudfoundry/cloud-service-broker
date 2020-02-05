@@ -1,3 +1,9 @@
+## Fly login
+`fly --target hushhouse login --concourse-url https://hush-house.pivotal.io --team-name PE`
+
+## Push pipeline
+`fly -t hushhouse set-pipeline --pipeline cloud-service-broker --config ci/pipeline.yml`
+
 ## Credhub configuration
 
 The following parameters should be set in the `/concourse/cf` keyspace of the
