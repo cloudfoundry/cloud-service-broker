@@ -21,7 +21,3 @@ run:
     - |
       source /docker-lib.sh
       start_docker
-      
-outputs:
-  - name: build
-    path: cloud-service-broker/build
