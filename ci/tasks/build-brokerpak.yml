@@ -9,5 +9,9 @@ inputs:
 - name: broker-pak
 run:
   dir: broker-pak
-  path: ../release/cloud-service-broker.linux
-  args: ["pak", "build"]   
+  path: /bin/bash
+  args: 
+  - -exc
+  - |
+    chmod +x ../release/cloud-service-broker.linux
+    ../release/cloud-service-broker.linux pak build   
