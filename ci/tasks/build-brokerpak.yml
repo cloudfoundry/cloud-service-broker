@@ -3,8 +3,7 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: golang
-    tag: "1.13"
+    repository: alpine
 inputs:
 - name: release
 - name: broker-pak
@@ -13,7 +12,7 @@ params:
   BROKERPAKDIR:
 run:
   dir: broker-pak
-  path: /bin/bash
+  path: /bin/sh
   args: 
   - -exc
   - |
