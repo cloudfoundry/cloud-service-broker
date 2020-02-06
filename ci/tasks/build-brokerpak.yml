@@ -4,6 +4,7 @@ image_resource:
   type: docker-image
   source:
     repository: ubuntu
+    tag: latest
 inputs:
 - name: release
 - name: broker-pak
