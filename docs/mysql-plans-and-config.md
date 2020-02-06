@@ -1,5 +1,5 @@
-# MYSQL Plans and Config
-These are the default plans and configuration options for MYSQL across the supported cloud platforms (AWS, Azure and GCP.)
+# MySQL plans and Config
+These are the default plans and configuration options for MySQL across the supported cloud platforms (AWS, Azure and GCP.)
 
 ## Plans
 
@@ -18,7 +18,7 @@ These are the default plans and configuration options for MYSQL across the suppo
 
 ### Azure Notes
 CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-vcore-resource-limits-single-databases) as follows:
-|       |          |
+| Plan  | Sku      |
 |-------|----------|
 | small | B_Gen5_2 |
 | medium | GP_Gen5_4 |
@@ -26,7 +26,7 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 
 ### AWS Notes
 CPU/memory size mapped into [AWS instance types](https://aws.amazon.com/ec2/instance-types/) as follows:
-|       |          |
+| Plan  | Instance type |
 |-------|----------|
 | small | t3.medium |
 | medium | t3.xlarge |
@@ -34,7 +34,7 @@ CPU/memory size mapped into [AWS instance types](https://aws.amazon.com/ec2/inst
 
 ### GCP Notes
 CPU/memory size mapped into [GCP tiers](https://cloud.google.com/sql/pricing#2nd-gen-pricing) as follows:
-|       |          |
+| Plan  | Tier     |
 |-------|----------|
 | small | db-n1-standard-2 |
 | medium | db-n1-standard-4 |
