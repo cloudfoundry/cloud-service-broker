@@ -22,7 +22,7 @@ run:
     cd ${BROKERPAKDIR}
     mv manifest.yml manifest.yml.orig
     sed "s/^version:.*/version: ${VERSION}/" < manifest.yml.orig > manifest.yml
-    ls -al .
+    lsb_release  -a
     ../../release/cloud-service-broker.linux pak build  
 outputs:
 - name: brokerpak-dir
