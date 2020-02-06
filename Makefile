@@ -48,7 +48,7 @@ test-acceptance: ./build/cloud-service-broker.$(OSFAMILY) security-user-name sec
 	./build/cloud-service-broker.$(OSFAMILY) client run-examples
 
 ./build/cloud-service-broker.linux: $(SRC)
-	GOARCH=amd64 GOOS=linux $(GO) build -o ./build/cloud-service-broker.linux -ldflags ${LDFLAGS}
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux $(GO) build -o ./build/cloud-service-broker.linux -ldflags ${LDFLAGS}
 
 ./build/cloud-service-broker.darwin: $(SRC)
 	GOARCH=amd64 GOOS=darwin $(GO) build -o ./build/cloud-service-broker.darwin -ldflags ${LDFLAGS}
