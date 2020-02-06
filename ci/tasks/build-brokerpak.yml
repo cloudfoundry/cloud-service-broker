@@ -8,6 +8,8 @@ image_resource:
 inputs:
 - name: release
 - name: broker-pak
+params:
+  BROKERPAKDIR:
 run:
   dir: broker-pak
   path: /bin/bash
@@ -15,4 +17,5 @@ run:
   - -exc
   - |
     chmod +x ../release/cloud-service-broker.linux
-    ../release/cloud-service-broker.linux pak build   
+    cd ${BROKERPAKDIR}
+    ../../release/cloud-service-broker.linux pak build   
