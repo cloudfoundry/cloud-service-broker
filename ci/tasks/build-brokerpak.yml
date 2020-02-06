@@ -8,6 +8,7 @@ image_resource:
 inputs:
 - name: release
 - name: broker-pak
+- name: version
 params:
   BROKERPAKDIR:
 run:
@@ -17,5 +18,10 @@ run:
   - -exc
   - |
     chmod +x ../release/cloud-service-broker.linux
+    export VERSION=$(cat ../version/version)
     cd ${BROKERPAKDIR}
-    ../../release/cloud-service-broker.linux pak build   
+    sed -i .bak "s/^version:.*/version: ${VERSION}/" manifest.yml
+    ../../release/cloud-service-broker.linux pak build  
+outputs:
+- name: brokerpak-dir
+  path: broker-pak/$BROKERPAKDIR
