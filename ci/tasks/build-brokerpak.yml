@@ -17,12 +17,14 @@ run:
   - -exc
   - |
     chmod +x ../release/cloud-service-broker.linux
+    ls -al ../release
     export VERSION=$(cat ../version/version)
     cd ${BROKERPAKDIR}
     mv manifest.yml manifest.yml.orig
     sed "s/^version:.*/version: ${VERSION}/" < manifest.yml.orig > manifest.yml
     ls ..
     ls ../..
+    ls -al ../../release    
     ../../release/cloud-service-broker.linux pak build  
 outputs:
 - name: brokerpak-dir
