@@ -1,0 +1,157 @@
+# Copyright 2018 the Service Broker Project Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+version: 1
+name: aws-mysql
+id: fa22af0f-3637-4a36-b8a7-cfc61168a3e0
+description: Amazon RDS for MySQL
+display_name: Amazon RDS for MySQL
+image_url: https://pbs.twimg.com/profile_images/930941244724854784/noZmA1hr_400x400.jpg
+documentation_url: https://aws.amazon.com/rds/mysql/resources/?nc=sn&loc=5
+support_url: https://aws.amazon.com/rds/mysql/resources/?nc=sn&loc=5
+tags: [aws, mysql, preview]
+plans:
+- name: micro
+  id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
+  description: 'On-Demand DB Instances let you pay for compute capacity by the hour your DB instance runs with no long-term commitments.'
+  display_name: "micro"
+  properties:
+    service_tier: db.t2.micro
+    mysql_version: 5.7
+provision:
+  plan_inputs:
+  - field_name: service_tier
+    required: true
+    type: string
+    details: The service tier of the instance.
+    enum:
+      db.t2.micro: Micro Instance
+  - field_name: mysql_version
+    required: true
+    type: string
+    details: The version for the mysql instance.
+    enum:
+      mysql_version: 5.7
+  user_inputs:
+  - field_name: instance_name
+    type: string
+    details: Name for your mysql instance
+    default: vsb-mysql-${request.instance_id}
+    constraints:
+      maxLength: 98
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$
+  - field_name: db_name
+    type: string
+    details: Name for your database
+    default: vsbdb
+    constraints:
+      maxLength: 64
+  - field_name: region
+    type: string
+    details: The region of the mysql instance.
+    default: us-west-2
+    constraints:
+      examples:
+      - us-west-2
+      pattern: ^[A-Za-z][-a-z0-9A-Z ]+$
+  computed_inputs:
+  - name: labels
+    default: ${json.marshal(request.default_labels)}
+    overwrite: true
+    type: object
+  template: |-
+    variable service_tier { type = string }
+    variable instance_name { type = string }
+    variable db_name { type = string }
+    variable mysql_version { type = string }
+    variable region { type = string }
+    variable labels { type = map }
+
+    provider "aws" {
+      version = "~> 2.0"
+      region  = var.region
+    }    
+
+    resource "random_string" "username" {
+      length = 16
+      special = false
+    }
+
+    resource "random_password" "password" {
+      length = 16
+      special = false 
+      // https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.Constraints
+      override_special = "$#%"
+    }
+
+    resource "aws_db_instance" "default" {
+      allocated_storage    = 20
+      storage_type         = "gp2"
+      skip_final_snapshot  = true
+      engine               = "mysql"
+      engine_version       = var.mysql_version
+      instance_class       = var.service_tier
+      identifier           = var.instance_name
+      name                 = var.db_name
+      username             = random_string.username.result
+      password             = random_password.password.result
+      parameter_group_name = "default.mysql5.7"
+      tags                 = var.labels
+    }
+
+
+  
+    output name { value = "${aws_db_instance.default.name}" }
+    output hostname { value = "${aws_db_instance.default.address}" }
+    output port { value = 3306 }
+    output username { value = "${aws_db_instance.default.username}" }
+    output password { value = "${aws_db_instance.default.password}" }
+    output uri { value = "mysql://${aws_db_instance.default.username}:${aws_db_instance.default.password}@${aws_db_instance.default.address}:3306/${aws_db_instance.default.name}" }
+    output jdbcUrl { value = "jdbc:mysql://${aws_db_instance.default.address}:3306/${aws_db_instance.default.name}?user=${aws_db_instance.default.username};password=${aws_db_instance.default.password};useSSL=false" }
+
+  outputs:
+  - field_name: name
+    type: string
+    details: The name of the database.
+  - field_name: hostname
+    type: string
+    details: Hostname or IP address of the exposed mysql endpoint used by clients to connect to the service.
+  - field_name: port
+    type: integer
+    details: The port number of the exposed mysql instance.
+  - field_name: username
+    type: string
+    details: The username to authenticate to the database instance.
+  - field_name: password
+    type: string
+    details: The password to authenticate to the database instance.
+  - field_name: uri
+    type: string
+    details: The uri to connect to the database instance and database.
+  - field_name: jdbcUrl
+    type: string
+    details: The jdbc url to connect to the database instance and database.
+bind:
+  plan_inputs: []
+  user_inputs: []
+  computed_inputs: []
+  template: ''
+  outputs: []
+examples:
+- name: micro configuration v5.7
+  description: Create a micro mysql v5.6 instance
+  plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
+  provision_params: {}
+  bind_params: {}

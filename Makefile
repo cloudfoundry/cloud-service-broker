@@ -79,13 +79,20 @@ clean: deps-go-binary
 lint: deps-goimports
 	git ls-files | grep '.go$$' | xargs $(GOIMPORTS) -l -w
 
-.PHONY:	test-brokerpak-azure
-test-brokerpak-azure:
-	docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
 
 .PHONY: run-broker-gcp
 run-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
 	GSB_BROKERPAK_BUILTIN_PATH=./gcp-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
+
+.PHONY: push-broker-gcp
+push-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
+	GSB_BROKERPAK_BUILTIN_PATH=./gcp-brokerpak ./scripts/push-broker.sh	
+
+# Azure broker
+
+.PHONY:	test-brokerpak-azure
+test-brokerpak-azure:
+	docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
 
 .PHONY: run-broker-azure
 run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
@@ -97,13 +104,22 @@ gcp-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./gcp-broker
 azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml
 	cd ./azure-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
-.PHONY: push-broker-gcp
-push-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./gcp-brokerpak ./scripts/push-broker.sh
 
 .PHONY: push-broker-azure
 push-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
 	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./scripts/push-broker.sh
+
+# AWS broker 
+.PHONY: aws-brokerpak
+aws-brokerpak: aws-brokerpak/*.brokerpak
+
+aws-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./aws-brokerpak/*.yml
+	cd ./aws-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
+
+.PHONY: run-broker-aws 
+run-broker-aws: check-aws-env-vars ./build/cloud-service-broker.$(OSFAMILY) aws-brokerpak/*.brokerpak
+	GSB_BROKERPAK_BUILTIN_PATH=./aws-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
+
 
 # env vars checks
 
@@ -173,8 +189,23 @@ ifndef ARM_CLIENT_SECRET
 	$(error variable ARM_CLIENT_SECRET not defined)
 endif
 
+.PHONY: aws_access_key_id
+aws_access_key_id:
+ifndef AWS_ACCESS_KEY_ID
+	$(error variable AWS_ACCESS_KEY_ID not defined)
+endif
+
+.PHONY: aws_secret_access_key
+aws_secret_access_key:
+ifndef AWS_SECRET_ACCESS_KEY
+	$(error variable AWS_SECRET_ACCESS_KEY not defined)
+endif
+
 .PHONY: check-gcp-env-vars
 check-gcp-env-vars: google-credentials google-project security-user-name security-user-password db-host db-username db-password
 
 .PHONY: check-azure-env-vars
 check-azure-env-vars: arm-subscription-id arm-tenant-id arm-client-id arm-client-secret security-user-name security-user-password db-host db-username db-password
+
+.PHONY: check-aws-env-vars
+check-aws-env-vars: aws_access_key_id aws_secret_access_key security-user-password db-host db-username db-password
