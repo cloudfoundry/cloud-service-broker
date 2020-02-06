@@ -18,6 +18,7 @@ These are the default plans and configuration options for MySQL across the suppo
 
 ### Azure Notes
 CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-vcore-resource-limits-single-databases) as follows:
+
 | Plan  | Sku      |
 |-------|----------|
 | small | B_Gen5_2 |
@@ -26,6 +27,7 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 
 ### AWS Notes
 CPU/memory size mapped into [AWS instance types](https://aws.amazon.com/ec2/instance-types/) as follows:
+
 | Plan  | Instance type |
 |-------|----------|
 | small | t3.medium |
@@ -34,6 +36,7 @@ CPU/memory size mapped into [AWS instance types](https://aws.amazon.com/ec2/inst
 
 ### GCP Notes
 CPU/memory size mapped into [GCP tiers](https://cloud.google.com/sql/pricing#2nd-gen-pricing) as follows:
+
 | Plan  | Tier     |
 |-------|----------|
 | small | db-n1-standard-2 |
