@@ -31,7 +31,6 @@ run:
       export PORT=8080
       export GSB_BROKERPAK_BUILTIN_PATH=broker-pak
       export DB_HOST=localhost
-      ls -al ./release
       ./release/cloud-service-broker.linux serve &
       ./release/cloud-service-broker.linux client run-examples
 
