@@ -14,6 +14,7 @@ params:
   ARM_TENANT_ID:
   ARM_CLIENT_ID:
   ARM_CLIENT_SECRET:
+  BROKERPAKDIR:
 run:
   path: /bin/bash
   args:    
@@ -29,8 +30,11 @@ run:
       sleep 60
       chmod +x release/cloud-service-broker.linux
       export PORT=8080
-      export GSB_BROKERPAK_BUILTIN_PATH=broker-pak
+      export GSB_BROKERPAK_BUILTIN_PATH=broker-pak/${BROKERPAKDIR}
       export DB_HOST=localhost
+      ls .
+      ls broker-pak
+      ls broker-pak/${BROKERPAKDIR}
       ./release/cloud-service-broker.linux serve &
       sleep 5
       ./release/cloud-service-broker.linux client run-examples
