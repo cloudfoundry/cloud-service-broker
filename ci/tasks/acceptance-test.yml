@@ -6,7 +6,7 @@ image_resource:
   source:
     repository: amidos/dcind
 inputs:
-- name: pre-release
+- name: release
 - name: broker-pak
 - name: version
 params:
