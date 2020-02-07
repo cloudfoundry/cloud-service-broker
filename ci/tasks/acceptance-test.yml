@@ -30,7 +30,7 @@ run:
       chmod +x release/cloud-service-broker.linux
       export PORT=8080
       export GSB_BROKERPAK_BUILTIN_PATH=broker-pak
-      export DB_HOST=localhost
+      export DB_HOST=127.0.0.1
       ./release/cloud-service-broker.linux serve &
       sleep 5
       ./release/cloud-service-broker.linux client run-examples
