@@ -11,7 +11,7 @@ These are the default plans and configuration options for MySQL across the suppo
 
 ## Configuration Options
 
-The following options can be configured across all supported platforms. Notes below document any platform specific information that mapping that might be required.
+The following options can be configured across all supported platforms. Notes below document any platform specific information for mapping that might be required.
 
 | Option Name | Values | Default |
 |-------------|--------|---------|
@@ -52,3 +52,18 @@ CPU/memory size mapped into [GCP tiers](https://cloud.google.com/sql/pricing#2nd
 
 TODO: document how core count is mapped to a GCP tier.
 
+## Binding Credentials
+
+The binding credentials for MySQL have the following shape:
+
+```
+{
+    "name" : "database name",
+    "hostname" : "database server host",
+    "port" : "database server port",
+    "username" : "authentication user name",
+    "password" : "authentication password",
+    "uri" : "database connection URI",
+    "jdbcUrl" : "jdbc format connection URI"
+}
+```

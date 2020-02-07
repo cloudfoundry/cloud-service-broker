@@ -1,4 +1,4 @@
-# Redis plans and Config
+# Redis Plans and Config
 These are the default plans and configuration options for Redis across the supported cloud platforms (AWS, Azure and GCP.)
 
 ## Plans
@@ -11,7 +11,7 @@ These are the default plans and configuration options for Redis across the suppo
 
 ## Configuration Options
 
-The following options can be configured across all supported platforms. Notes below document any platform specific information that mapping that might be required.
+The following options can be configured across all supported platforms. Notes below document any platform specific information for mapping that might be required.
 
 | Option Name | Values | Default |
 |-------------|--------|---------|
@@ -48,3 +48,15 @@ Cache size mapped into [Azure sku's for Redis](https://azure.microsoft.com/en-us
 | large | Basic | C5 |
 
 TODO: document how cache_size is mapped to an Azure cache name
+
+## Binding Credentials
+
+The binding credentials for Redis have the following shape:
+
+```
+{
+    "host" : "redis server hostname",
+    "port" : "redis server port",
+    "password" : "authentication password"
+}
+```
