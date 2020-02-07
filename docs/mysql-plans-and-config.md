@@ -17,7 +17,7 @@ The following options can be configured across all supported platforms. Notes be
 |-------------|--------|---------|
 | version     | 3.6, 3.7| 3.7    |
 | storage_gb  | 5 - 4096| 5      |
-| cores       | 1,2,4,8,16,32,64  | 1      |
+| cores       | 1,2,4,8,16,32,64 | 1      |
 
 ### Azure Notes
 CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-vcore-resource-limits-single-databases) as follows:

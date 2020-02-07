@@ -9,6 +9,13 @@ These are the default plans and configuration options for Redis across the suppo
 | medium | min 4GB | no |
 | large | min 16GB | no |
 
+## Configuration Options
+
+The following options can be configured across all supported platforms. Notes below document any platform specific information that mapping that might be required.
+
+| Option Name | Values | Default |
+|-------------|--------|---------|
+| cache_size  | 1,2,4,8,16,32,64 | 1    |
 
 ### GCP Notes
 Cache size mapped into [GCP memory store tiers](https://cloud.google.com/memorystore/pricing) as follows:
@@ -29,7 +36,7 @@ Cache size mapped into [AWS ElastiCash node types](https://aws.amazon.com/elasti
 | medium | cache.m5.large |
 | large | cache.r4.xlarge |
 
-TODO: document how cache size is mapped to an AWS node type
+TODO: document how cache_size is mapped to an AWS node type
 
 ### Azure Notes
 Cache size mapped into [Azure sku's for Redis](https://azure.microsoft.com/en-us/pricing/details/cache/) as follows:
@@ -40,4 +47,4 @@ Cache size mapped into [Azure sku's for Redis](https://azure.microsoft.com/en-us
 | medium | Basic | C3 |
 | large | Basic | C5 |
 
-TODO: document how cache size is mapped to an Azure cache name
+TODO: document how cache_size is mapped to an Azure cache name
