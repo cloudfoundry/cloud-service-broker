@@ -21,15 +21,16 @@ run:
     - |
       source /docker-lib.sh
       start_docker
-      DB_USERNAME=broker
-      DB_PASSWORD=brokerpass
-      DB_NAME=servicebroker
+      export DB_USERNAME=broker
+      export DB_PASSWORD=brokerpass
+      export DB_NAME=servicebroker
 
       docker run --rm -p 3306:3306 --name test-mysql -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE="${DB_NAME}" -e MYSQL_USER="${USERNAME}" -e MYSQL_PASSWORD="${PASSWORD}" -d mysql:5.7
       sleep 10
       chmod +x release/cloud-service-broker.linux
-      PORT=8080
-      GSB_BROKERPAK_BUILTIN_PATH=broker-pak
+      export PORT=8080
+      export GSB_BROKERPAK_BUILTIN_PATH=broker-pak
+      export DB_HOST=localhost
       ls -al ./release
       ./release/cloud-service-broker.linux serve &
       ./release/cloud-service-broker.linux client run-examples
