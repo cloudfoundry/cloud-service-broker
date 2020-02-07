@@ -25,12 +25,12 @@ run:
       export DB_PASSWORD=brokerpass
       export DB_NAME=servicebroker
 
-      docker run --rm -p 3306:3306 --name test-mysql -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE="${DB_NAME}" -e MYSQL_USER="${USERNAME}" -e MYSQL_PASSWORD="${PASSWORD}" -d mysql:5.7
+      docker run --rm --network host --name test-mysql -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE="${DB_NAME}" -e MYSQL_USER="${USERNAME}" -e MYSQL_PASSWORD="${PASSWORD}" -d mysql:5.7
       sleep 60
       chmod +x release/cloud-service-broker.linux
       export PORT=8080
       export GSB_BROKERPAK_BUILTIN_PATH=broker-pak
-      export DB_HOST=127.0.0.1
+      export DB_HOST=localhost
       ./release/cloud-service-broker.linux serve &
       sleep 5
       ./release/cloud-service-broker.linux client run-examples
