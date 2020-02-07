@@ -30,6 +30,6 @@ run:
       chmod +x release/cloud-service-broker.linux
       PORT=8080
       GSB_BROKERPAK_BUILTIN_PATH=broker-pak
-      release/cloud-service-broker serve &
-      release/cloud-service-broker client run-examples
+      release/cloud-service-broker.linux serve &
+      release/cloud-service-broker.linux client run-examples
 
