@@ -1,4 +1,4 @@
-# MySQL plans and Config
+# MySQL Plans and Config
 These are the default plans and configuration options for MySQL across the supported cloud platforms (AWS, Azure and GCP.)
 
 ## Plans
@@ -11,10 +11,13 @@ These are the default plans and configuration options for MySQL across the suppo
 
 ## Configuration Options
 
+The following options can be configured across all supported platforms. Notes below document any platform specific information that mapping that might be required.
+
 | Option Name | Values | Default |
 |-------------|--------|---------|
 | version     | 3.6, 3.7| 3.7    |
 | storage_gb  | 5 - 4096| 5      |
+| cores       | 1,2,4,8,16,32,64  | 1      |
 
 ### Azure Notes
 CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-vcore-resource-limits-single-databases) as follows:
@@ -25,6 +28,8 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 | medium | GP_Gen5_4 |
 | large | MO_Gen5_8 |
 
+TODO: document how core count is mapped to an Azure sku.
+
 ### AWS Notes
 CPU/memory size mapped into [AWS instance types](https://aws.amazon.com/ec2/instance-types/) as follows:
 
@@ -34,6 +39,8 @@ CPU/memory size mapped into [AWS instance types](https://aws.amazon.com/ec2/inst
 | medium | t3.xlarge |
 | large | t3a.2xlarge |
 
+TODO: document how core count is mapped to an AWS instance type.
+
 ### GCP Notes
 CPU/memory size mapped into [GCP tiers](https://cloud.google.com/sql/pricing#2nd-gen-pricing) as follows:
 
@@ -42,4 +49,6 @@ CPU/memory size mapped into [GCP tiers](https://cloud.google.com/sql/pricing#2nd
 | small | db-n1-standard-2 |
 | medium | db-n1-standard-4 |
 | large | db-n1-standard-8 |
+
+TODO: document how core count is mapped to a GCP tier.
 
