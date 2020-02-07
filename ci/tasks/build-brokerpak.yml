@@ -24,4 +24,4 @@ run:
     ../../release/cloud-service-broker.linux pak build  
 outputs:
 - name: brokerpak-dir
-  path: broker-pak/$BROKERPAKDIR
+  path: broker-pak
