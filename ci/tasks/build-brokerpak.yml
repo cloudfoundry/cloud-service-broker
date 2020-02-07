@@ -12,7 +12,7 @@ params:
   BROKERPAKDIR:
 run:
   dir: broker-pak
-  path: /bin/bash
+  path: /bin/sh
   args: 
   - -exc
   - |
