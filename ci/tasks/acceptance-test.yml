@@ -32,5 +32,6 @@ run:
       export GSB_BROKERPAK_BUILTIN_PATH=broker-pak
       export DB_HOST=localhost
       ./release/cloud-service-broker.linux serve &
+      sleep 5
       ./release/cloud-service-broker.linux client run-examples
 
