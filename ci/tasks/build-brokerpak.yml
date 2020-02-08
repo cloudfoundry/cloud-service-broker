@@ -8,8 +8,6 @@ inputs:
 - name: release
 - name: broker-pak
 - name: version
-params:
-  BROKERPAKDIR:
 run:
   dir: broker-pak
   path: /bin/sh
