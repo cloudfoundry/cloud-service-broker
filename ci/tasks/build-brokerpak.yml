@@ -5,21 +5,20 @@ image_resource:
   source:
     repository: alpine
 inputs:
-- name: release
-- name: broker-pak
-- name: version
+- name: broker
+- name: brokerpak
+- name: brokerpak-version
 run:
   dir: broker-pak
   path: /bin/sh
   args: 
   - -exc
   - |
-    chmod +x ../release/cloud-service-broker.linux
-    export VERSION=$(cat ../version/version)
-    cd ${BROKERPAKDIR}
-    mv manifest.yml manifest.yml.orig
-    sed "s/^version:.*/version: ${VERSION}/" < manifest.yml.orig > manifest.yml
-    ../../release/cloud-service-broker.linux pak build  
+    export VERSION=$(cat ../brokerpak-version/version)
+    mkdir -p brokerpak
+    cd brokerpak
+    sed "s/^version:.*/version: ${VERSION}/" < ../${BROKERPAKDIR}/manifest.yml > ./manifest.yml
+    ../../broker/cloud-service-broker.linux pak build
 outputs:
-- name: brokerpak-dir
-  path: broker-pak
+- name: brokerpak-output
+  path: brokerpak/brokerpak
