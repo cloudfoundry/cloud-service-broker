@@ -17,8 +17,8 @@ run:
     export VERSION=$(cat ../brokerpak-version/version)
     mkdir -p brokerpak
     cd brokerpak
+    cp ../${BROKERPAKDIR}/*.yml .
     sed "s/^version:.*/version: ${VERSION}/" < ../${BROKERPAKDIR}/manifest.yml > ./manifest.yml
-    ls ../../brokerbuild
     ../../brokerbuild/cloud-service-broker.linux pak build
 outputs:
 - name: brokerpak-output
