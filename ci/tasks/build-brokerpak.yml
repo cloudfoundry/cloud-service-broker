@@ -9,7 +9,7 @@ inputs:
 - name: brokerpak
 - name: brokerpak-version
 run:
-  dir: broker-pak
+  dir: brokerpak
   path: /bin/sh
   args: 
   - -exc
