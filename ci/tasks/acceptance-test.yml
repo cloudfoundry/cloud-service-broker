@@ -6,15 +6,8 @@ image_resource:
   source:
     repository: amidos/dcind
 inputs:
-- name: release
-- name: broker-pak
-- name: version
-params:
-  ARM_SUBSCRIPTION_ID: 
-  ARM_TENANT_ID:
-  ARM_CLIENT_ID:
-  ARM_CLIENT_SECRET:
-  BROKERPAKDIR:
+- name: broker
+- name: brokerpak
 run:
   path: /bin/bash
   args:    
@@ -28,11 +21,10 @@ run:
 
       docker run --rm --network host --name test-mysql -e MYSQL_ROOT_PASSWORD=${DB_PASSWORD} -e MYSQL_DATABASE="${DB_NAME}" -d mysql:5.7
       sleep 45
-      chmod +x release/cloud-service-broker.linux
       export PORT=8080
-      export GSB_BROKERPAK_BUILTIN_PATH=broker-pak/${BROKERPAKDIR}
+      export GSB_BROKERPAK_BUILTIN_PATH=brokerpak
       export DB_HOST=localhost
-      ./release/cloud-service-broker.linux serve &
+      ./broker/build/cloud-service-broker.linux serve &
       sleep 5
-      ./release/cloud-service-broker.linux client run-examples
+      ./broker/build/cloud-service-broker.linux client run-examples
 
