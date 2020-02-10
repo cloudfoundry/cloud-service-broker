@@ -18,7 +18,7 @@ run:
     mkdir -p brokerpak
     cd brokerpak
     sed "s/^version:.*/version: ${VERSION}/" < ../${BROKERPAKDIR}/manifest.yml > ./manifest.yml
-    ../../broker/cloud-service-broker.linux pak build
+    ../../broker/build/cloud-service-broker.linux pak build
 outputs:
 - name: brokerpak-output
   path: brokerpak/brokerpak
