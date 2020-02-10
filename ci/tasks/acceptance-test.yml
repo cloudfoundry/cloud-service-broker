@@ -6,7 +6,7 @@ image_resource:
   source:
     repository: amidos/dcind
 inputs:
-- name: broker
+- name: brokerbuild
 - name: brokerpak
 run:
   path: /bin/bash
@@ -24,7 +24,7 @@ run:
       export PORT=8080
       export GSB_BROKERPAK_BUILTIN_PATH=brokerpak
       export DB_HOST=localhost
-      ./broker/build/cloud-service-broker.linux serve &
+      ./brokerbuild/cloud-service-broker.linux serve &
       sleep 5
-      ./broker/build/cloud-service-broker.linux client run-examples
+      ./brokerbuild/cloud-service-broker.linux client run-examples
 

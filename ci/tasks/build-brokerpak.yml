@@ -5,7 +5,7 @@ image_resource:
   source:
     repository: alpine
 inputs:
-- name: broker
+- name: brokerbuild
 - name: brokerpak
 - name: brokerpak-version
 run:
@@ -18,7 +18,8 @@ run:
     mkdir -p brokerpak
     cd brokerpak
     sed "s/^version:.*/version: ${VERSION}/" < ../${BROKERPAKDIR}/manifest.yml > ./manifest.yml
-    ../../broker/build/cloud-service-broker.linux pak build
+    ls ../../brokerbuild
+    ../../brokerbuild/cloud-service-broker.linux pak build
 outputs:
 - name: brokerpak-output
   path: brokerpak/brokerpak
