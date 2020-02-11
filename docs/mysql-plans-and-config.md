@@ -5,9 +5,9 @@ These are the default plans and configuration options for MySQL across the suppo
 
 | Plan | Version | CPUs | Memory Size | Disk Size |
 |------|---------|------|-------------|-----------|
-|Small | 3.7     | 2    | min 4GB     | 5GB       |
-|Medium| 3.7     | 4    | min 8GB     | 10GB      |
-|Large | 3.7     | 8    | min 16GB    | 20GB      |
+|Small | 5.7     | 2    | min 4GB     | 5GB       |
+|Medium| 5.7     | 4    | min 8GB     | 10GB      |
+|Large | 5.7     | 8    | min 16GB    | 20GB      |
 
 ## Configuration Options
 
@@ -15,7 +15,7 @@ The following options can be configured across all supported platforms. Notes be
 
 | Option Name | Values | Default |
 |-------------|--------|---------|
-| version     | 3.6, 3.7| 3.7    |
+| version     | 5.6, 5.7| 5.7    |
 | storage_gb  | 5 - 4096| 5      |
 | cores       | 1,2,4,8,16,32,64 | 1      |
 
@@ -27,6 +27,12 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 | small | B_Gen5_2 |
 | medium | GP_Gen5_4 |
 | large | MO_Gen5_8 |
+
+#### Azure specific config parameters
+
+| Parameter | Value |
+|-----------|--------|
+| location  | Azure region to deploy service instance |
 
 TODO: document how core count is mapped to an Azure sku.
 
