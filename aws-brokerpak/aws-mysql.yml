@@ -22,27 +22,57 @@ documentation_url: https://aws.amazon.com/rds/mysql/resources/?nc=sn&loc=5
 support_url: https://aws.amazon.com/rds/mysql/resources/?nc=sn&loc=5
 tags: [aws, mysql, preview]
 plans:
-- name: micro
+- name: small
   id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
-  description: 'On-Demand DB Instances let you pay for compute capacity by the hour your DB instance runs with no long-term commitments.'
-  display_name: "micro"
+  description: 'MySQL v5.7, minumum 2 cores, minumum 4GB ram, 5GB storage'
+  display_name: "small"
   properties:
-    service_tier: db.t2.micro
+    cores: 2
     mysql_version: 5.7
+    storage_gb: 5
+- name: medium
+  id: f2ae0bb7-6921-43b7-bae7-6d1fe1c5d1c6
+  description: 'MySQL v5.7, minumum 4 cores, minumum 8GB ram, 10GB storage'
+  display_name: "medium"
+  properties:
+    cores: 4
+    mysql_version: 5.7
+    storage_gb: 10
+- name: large
+  id: a5fea013-e87f-488f-969d-1cf038881b57
+  description: 'MySQL v5.7, minumum 8 cores, minumum 16GB ram, 20GB storage'
+  display_name: "large"
+  properties:
+    cores: 8
+    mysql_version: 5.7
+    storage_gb: 20
 provision:
   plan_inputs:
-  - field_name: service_tier
+  - field_name: cores
     required: true
-    type: string
-    details: The service tier of the instance.
-    enum:
-      db.t2.micro: Micro Instance
+    type: integer
+    details: Minimum number of cores for service instance.
+    default: 2
+    constraints:
+      maximum: 64
+      minimum: 1
+      multipleOf: 2
   - field_name: mysql_version
     required: true
     type: string
     details: The version for the mysql instance.
-    enum:
-      mysql_version: 5.7
+    default: 5.7
+    enum: 
+      5.6: MySQL v5.6
+      5.7: MySQL v5.7
+  - field_name: storage_gb
+    required: true
+    type: number
+    details: Size of storage volume for service instance.
+    defualt: 5
+    constraints:
+      maximum: 4096
+      minumum: 5
   user_inputs:
   - field_name: instance_name
     type: string
@@ -62,22 +92,41 @@ provision:
     type: string
     details: The region of the mysql instance.
     default: us-west-2
-    constraints:
-      examples:
-      - us-west-2
-      pattern: ^[A-Za-z][-a-z0-9A-Z ]+$
+    enum: 
+      us-east-2 : us-east-2
+      us-east-1 : us-east-1
+      us-west-1 : us-west-1
+      us-west-2 : us-west-2
+      ap-east-1 : ap-east-1
+      ap-south-1 : ap-south-1
+      ap-northeast-3 : ap-northeast-3
+      ap-northeast-2 : ap-northeast-2
+      ap-southeast-1 : ap-southeast-1
+      ap-southeast-2 : ap-southeast-2
+      ap-northeast-1 : ap-northeast-1
+      ca-central-1 : ca-central-1
+      cn-north-1 : cn-north-1
+      cn-northwest-1 : cn-northwest-1
+      eu-central-1 : eu-central-1
+      eu-west-1 : eu-west-1
+      eu-west-2 : eu-west-2
+      eu-west-3 : eu-west-3
+      eu-north-1 : eu-north-1
+      me-south-1 : me-south-1
+      sa-east-1 : sa-east-1
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
   template: |-
-    variable service_tier { type = string }
+    variable cores { type = number }
     variable instance_name { type = string }
     variable db_name { type = string }
     variable mysql_version { type = string }
     variable region { type = string }
     variable labels { type = map }
+    variable storage_gb { type = number }
 
     provider "aws" {
       version = "~> 2.0"
@@ -87,6 +136,7 @@ provision:
     resource "random_string" "username" {
       length = 16
       special = false
+      number = false
     }
 
     resource "random_password" "password" {
@@ -96,23 +146,39 @@ provision:
       override_special = "$#%"
     }
 
+    locals {
+      instance_types = {
+        // https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html
+        1 = "db.m1.medium"
+        2 = "db.t2.medium"
+        4 = "db.m4.xlarge"
+        8 = "db.m4.2xlarge"
+        16 = "db.m4.4xlarge"
+        32 = "db.m5.8xlarge"
+        64 = "db.m5.16xlarge"
+      }   
+
+      parameter_group_names = {
+        "5.6" = "default.mysql5.6"
+        "5.7" = "default.mysql5.7"
+      }
+    }
+
     resource "aws_db_instance" "default" {
-      allocated_storage    = 20
+      allocated_storage    = var.storage_gb
       storage_type         = "gp2"
       skip_final_snapshot  = true
       engine               = "mysql"
       engine_version       = var.mysql_version
-      instance_class       = var.service_tier
+      instance_class       = local.instance_types[var.cores]
       identifier           = var.instance_name
       name                 = var.db_name
       username             = random_string.username.result
       password             = random_password.password.result
-      parameter_group_name = "default.mysql5.7"
+      parameter_group_name = local.parameter_group_names[var.mysql_version]
       tags                 = var.labels
     }
-
-
-  
+ 
     output name { value = "${aws_db_instance.default.name}" }
     output hostname { value = "${aws_db_instance.default.address}" }
     output port { value = 3306 }
@@ -150,8 +216,23 @@ bind:
   template: ''
   outputs: []
 examples:
-- name: micro configuration v5.7
-  description: Create a micro mysql v5.6 instance
+- name: small configuration
+  description: Create a small mysql instance
   plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
+  provision_params: {}
+  bind_params: {}
+- name: small configuration v5.6 50gb storage
+  description: Create a small mysql v5.6 instance with 50gb storage
+  plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
+  provision_params: { "mysql_version": "5.6", "storage_gb": 50 }
+  bind_params: {}
+- name: medium configuration
+  description: Create a medium mysql instance
+  plan_id: f2ae0bb7-6921-43b7-bae7-6d1fe1c5d1c6
+  provision_params: {}
+  bind_params: {}
+- name: large configuration
+  description: Create a large mysql instance
+  plan_id: a5fea013-e87f-488f-969d-1cf038881b57
   provision_params: {}
   bind_params: {}
