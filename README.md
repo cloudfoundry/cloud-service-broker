@@ -13,8 +13,8 @@ The service broker provides support for:
 
 | GCP | Azure | AWS |
 |-----|-------| ----|
-|[GCP Cloud SQL](https://cloud.google.com/sql/)|Azure Mysql|
-|[GCP Memorystore for Redis](https://cloud.google.com/memorystore/docs/redis/)||
+|[GCP Cloud SQL (MySQL)](https://cloud.google.com/sql/)|[Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/?&ef_id=EAIaIQobChMImtPm8_DK5wIVgf5kCh1lEAqOEAAYASABEgIwjfD_BwE:G:s&OCID=AID2000128_SEM_VfuRONbO&MarinID=VfuRONbO_307794721357_azure%20mysql_e_c_Qml9BhwJ_46775457259_kwd-310296951725&lnkd=Google_Azure_Brand&gclid=EAIaIQobChMImtPm8_DK5wIVgf5kCh1lEAqOEAAYASABEgIwjfD_BwE)|[Amazon RDS for MySQL](https://aws.amazon.com/rds/mysql/)|
+|[GCP Memorystore for Redis](https://cloud.google.com/memorystore/docs/redis/)|[Azure Cache for Redis](https://azure.microsoft.com/en-us/services/cache/?&ef_id=EAIaIQobChMIzc-t2vHK5wIVsh-tBh3Z8wteEAAYASAAEgJ0cvD_BwE:G:s&OCID=AID2000128_SEM_SeUFPHct&MarinID=SeUFPHct_287547165334_azure%20redis_e_c__46775456859_kwd-310342681850&lnkd=Google_Azure_Brand&gclid=EAIaIQobChMIzc-t2vHK5wIVsh-tBh3Z8wteEAAYASAAEgJ0cvD_BwE)|
 
 ## Installation
 
@@ -58,6 +58,7 @@ There are make targets for most common dev tasks.
 `make test-units` | runs unit tests
 `make run-broker-gcp` | builds broker and broker pak and starts broker for gcp
 `make run-broker-azure` | builds broker and broker pak and starts broker for azure
+`make run-broker-aws` | builds broker and broker pak and starts broker for aws
 `make test-acceptance` | runs broker [client run-examples](./TESTING.md) tests
 `make clean` | removes binaries and built broker paks
 `make push-broker-gcp` | will push and register the broker in PAS for GCP
@@ -66,7 +67,6 @@ There are make targets for most common dev tasks.
 ## Support
 
 [File a GitHub issue](https://github.com/pivotal/cloud-service-broker/issues) for functional issues or feature requests.
-
 
 ## Contributing
 
