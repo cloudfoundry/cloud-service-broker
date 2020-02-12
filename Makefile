@@ -120,6 +120,21 @@ aws-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./aws-broker
 run-broker-aws: check-aws-env-vars ./build/cloud-service-broker.$(OSFAMILY) aws-brokerpak/*.brokerpak
 	GSB_BROKERPAK_BUILTIN_PATH=./aws-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
 
+.PHONY: run-broker-aws-docker
+run-broker-aws-docker: check-aws-env-vars ./build/cloud-service-broker.linux aws-brokerpak/*.brokerpak
+	GSB_BROKERPAK_BUILTIN_PATH=/broker/aws-brokerpak \
+	DB_HOST=host.docker.internal \
+	docker run --rm -p 8080:8080 -v $(PWD):/broker \
+	-e GSB_BROKERPAK_BUILTIN_PATH \
+	-e DB_HOST \
+	-e DB_USERNAME \
+	-e DB_PASSWORD \
+	-e PORT \
+	-e SECURITY_USER_NAME \
+	-e SECURITY_USER_PASSWORD \
+	-e AWS_ACCESS_KEY_ID \
+    -e AWS_SECRET_ACCESS_KEY \
+	alpine /broker/build/cloud-service-broker.linux serve
 
 # env vars checks
 
