@@ -15,7 +15,7 @@ The following options can be configured across all supported platforms. Notes be
 
 | Option Name | Values | Default |
 |-------------|--------|---------|
-| version     | 5.6, 5.7| 5.7    |
+| mysql_version | 5.6, 5.7| 5.7    |
 | storage_gb  | 5 - 4096| 5      |
 | cores       | 1,2,4,8,16,32,64 | 1      |
 
@@ -37,15 +37,25 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 TODO: document how core count is mapped to an Azure sku.
 
 ### AWS Notes
-CPU/memory size mapped into [AWS instance types](https://aws.amazon.com/ec2/instance-types/) as follows:
+CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) as follows:
 
 | Plan  | Instance type |
 |-------|----------|
-| small | t3.medium |
-| medium | t3.xlarge |
-| large | t3a.2xlarge |
+| small | db.t2.medium |
+| medium | db.m4.xlarge |
+| large | db.m4.2xlarge |
 
-TODO: document how core count is mapped to an AWS instance type.
+#### Core to instance type mapping
+
+| Cores | Instance type |
+|-------|---------------|
+| 1     | db.m1.medium  |
+| 2     | db.t2.medium  |
+| 4     | db.m4.xlarge  |
+| 8     | db.m4.2xlarge |
+| 16    | db.m4.4xlarge |
+| 32    | db.m5.8xlarge |
+| 64    | db.m5.16xlarge|
 
 ### GCP Notes
 CPU/memory size mapped into [GCP tiers](https://cloud.google.com/sql/pricing#2nd-gen-pricing) as follows:
