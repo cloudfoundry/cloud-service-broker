@@ -22,19 +22,26 @@ The following options can be configured across all supported platforms. Notes be
 ### Azure Notes
 CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-vcore-resource-limits-single-databases) as follows:
 
-| Plan  | Sku      |
-|-------|----------|
-| small | B_Gen5_2 |
-| medium | GP_Gen5_4 |
-| large | MO_Gen5_8 |
+| Plan  | Sku      | Memory | Storage | vCores |
+|-------|----------|--------|---------|--------|
+| small | B_Gen5_2 | 4GB | 50GB | 2 |
+| medium | GP_Gen5_4 | 10GB | 200GB | 4 |
+| large | MO_Gen5_8 | 20GB | 500GB | 8 |
 
 #### Azure specific config parameters
 
 | Parameter | Value |
 |-----------|--------|
-| location  | Azure region to deploy service instance |
+| region  | Azure region to deploy service instance |
+Note: Currently MySQL is not available in all regions. The enum in the YML lists all the valid regions as of 2/12/2020
 
-TODO: document how core count is mapped to an Azure sku.
+Each of the so-called Pricing Tiers in Azure has a min and max cores:
+| Pricing Tier | Max vCores |
+|--------------|------------|
+| Basic | 2 |
+| General Purpose | 64 |
+| Memory Optimized | 32 |
+
 
 ### AWS Notes
 CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) as follows:

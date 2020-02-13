@@ -22,31 +22,71 @@ documentation_url: https://docs.microsoft.com/en-us/azure/mysql/
 support_url: https://docs.microsoft.com/en-us/azure/mysql/
 tags: [azure, mysql, preview]
 plans:
-- name: Basic
+- name: Small
   id: 828e324e-6b34-4f50-b224-9b956dd2d1b7
-  description: 'Mysql v5.6. Instance properties: 1, 2 vCores, 2 GB RAM, 5 GB storage.'
-  display_name: "Basic"
+  description: 'Mysql v5.7. Instance properties: 2 vCores, 4 GB RAM, 50 GB storage.'
+  display_name: "Small"
   properties:
-    service_tier: Basic
+    pricing_tier: B
+    vcores: 2
+    storage: 50
     mysql_version: 5.7
+- name: Medium
+  id: 9eb836dd-4B90-4cF7-bc06-1986103802d3
+  description: 'Mysql v5.7. Instance properties: 4 vCores, 20 GB RAM, 200 GB storage.'
+  display_name: "Medium"
+  properties:
+    pricing_tier: GP
+    vcores: 4
+    storage: 200    
+    mysql_version: 5.7
+- name: Large
+  id: 6f8Ea44c-6840-4b0b-9068-f0cd9b17437c
+  description: 'Mysql v5.7. Instance properties: 8 vCores, 80 GB RAM, 500 GB storage.'
+  display_name: "Large"
+  properties:
+    pricing_tier: MO
+    vcores: 8
+    storage: 500    
+    mysql_version: 5.7    
 provision:
   plan_inputs:
-  - field_name: service_tier
+  - field_name: pricing_tier
     required: true
     type: string
     details: The service tier of the instance.
     enum:
-      Basic: Basic instance
+      B: Basic 
+      GP: General Purpose
+      MO: Memory Optimized
+  - field_name: vcores
+    required: false
+    type: integer
+    default: 2
+    details: Number vcores for the instance (upto the maximum allowed for the service tier)
+    constraints:
+      maximum: 64
+      minimum: 1
+      multipleOf: 2
+  - field_name: storage
+    required: false
+    default: 50
+    details: Storage allocated to the database instance in GB
+    constraints:
+      maximum: 16384
+      minimum: 5      
   - field_name: mysql_version
     required: true
     type: string
-    details: The version for the mysql instance.
+    details: The version for the MySQL instance.
     enum:
-      mysql_version: 5.7
+      5.6: MySQL v5.6
+      5.7: MySQL v5.7
+      8.0: MySQL v8.0
   user_inputs:
   - field_name: instance_name
     type: string
-    details: Name for your mysql instance
+    details: Name for your MySQL instance
     default: vsb-mysql-${request.instance_id}
     constraints:
       maxLength: 98
@@ -58,19 +98,58 @@ provision:
     default: vsb-db
     constraints:
       maxLength: 64
-  - field_name: location
+  - field_name: region
     type: string
     details: The region of the mysql instance.
-    default: West US
-    constraints:
-      examples:
-      - West US
-      pattern: ^[A-Za-z][-a-z0-9A-Z ]+$
+    default: westus
+    enum:
+      eastasia: East Asia
+      southeastasia: South East Asia
+      centralus: Central US
+      eastus: East US
+      eastus2: East US 2
+      westus: West US
+      northcentralus: North Central US
+      southcentralus: South Central US
+      northeurope: North Europe
+      westeurope: West Europe
+      japanwest: Japan West
+      japaneast: Japan East
+      brazilsouth: Brazil South
+      australiaeast: Australia East
+      australiasoutheast: Australia South East
+      australiacentral: Australia Central
+      australiacentral2: Australia Central 2
+      southindia: South India
+      centralindia: Central India
+      westindia: West India
+      canadacentral: Canada Central
+      canadaeast: Canada East
+      uksouth: UK South
+      ukwest: UK West
+      westcentralus: West Central US
+      westus2: West US 2
+      koreacentral: Korea Central
+      koreasouth: Korea South
+      francecentral: France Central
+      uaenorth: UAE North
+      southafricanorth: South Africa North
+      southafricawest: South Africa West
+      germanycentral: Germany Central
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
+  - name: location
+    default: ${json.marshal(request.region)}
+    overwrite: true
+    type: string
+  - name: service_tier
+    # Pseudo-code provided below. Don't know the exact syntax for concatenation
+    default: ${json.marshal(request.plans.pricing_tier) + '_Gen5_' + json.marshal(request.plans.vcores)}
+    type: "string"
+    overwrite: true
   template: |-
     variable service_tier { type = string }
     variable instance_name { type = string }
