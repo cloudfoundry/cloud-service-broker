@@ -77,7 +77,7 @@ provision:
       pattern: ^[A-Za-z][-a-z0-9A-Z]+$
   - field_name: authorized_network
     type: string
-    details:  The name of the Google Compute Engine network to which the instance is connected. If left unspecified, the network named 'default' will be used.
+    details: The name of the Google Compute Engine network to which the instance is connected. If left unspecified, the network named 'default' will be used.
     default: default
   computed_inputs:
   - name: labels
