@@ -79,6 +79,14 @@ clean: deps-go-binary
 lint: deps-goimports
 	git ls-files | grep '.go$$' | xargs $(GOIMPORTS) -l -w
 
+# GCP broker
+
+.PHONY:	lint-brokerpak-gcp
+lint-brokerpak-gcp:
+	docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/gcp-brokerpak
+
+gcp-brokerpak/*.brokerpak: lint-brokerpak-gcp ./build/cloud-service-broker.$(OSFAMILY) ./gcp-brokerpak/*.yml
+	cd ./gcp-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
 .PHONY: run-broker-gcp
 run-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
@@ -87,6 +95,22 @@ run-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-
 .PHONY: push-broker-gcp
 push-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
 	GSB_BROKERPAK_BUILTIN_PATH=./gcp-brokerpak ./scripts/push-broker.sh	
+
+.PHONY: run-broker-gcp-docker
+run-broker-gcp-docker: check-gcp-env-vars ./build/cloud-service-broker.linux gcp-brokerpak/*.brokerpak
+	GSB_BROKERPAK_BUILTIN_PATH=/broker/gcp-brokerpak \
+	DB_HOST=host.docker.internal \
+	docker run --rm -p 8080:8080 -v $(PWD):/broker \
+	-e GSB_BROKERPAK_BUILTIN_PATH \
+	-e DB_HOST \
+	-e DB_USERNAME \
+	-e DB_PASSWORD \
+	-e PORT \
+	-e SECURITY_USER_NAME \
+	-e SECURITY_USER_PASSWORD \
+	-e GOOGLE_CREDENTIALS \
+	-e GOOGLE_PROJECT \
+	alpine /broker/build/cloud-service-broker.linux serve	
 
 # Azure broker
 
@@ -98,12 +122,8 @@ test-brokerpak-azure:
 run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
 	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
 
-gcp-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./gcp-brokerpak/*.yml
-	cd ./gcp-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
-
-azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml
+azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml test-brokerpak-azure
 	cd ./azure-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
-
 
 .PHONY: push-broker-azure
 push-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
