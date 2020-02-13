@@ -57,7 +57,16 @@ CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/
 | 32    | db.m5.8xlarge |
 | 64    | db.m5.16xlarge|
 
+#### AWS specific config parameters
+
+| Parameter | Value |
+|-----------|--------|
+| region  | [AWS region](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) to deploy service instance |
+
 ### GCP Notes
+
+MySQL minimum storage size is 10GB.
+
 CPU/memory size mapped into [GCP tiers](https://cloud.google.com/sql/pricing#2nd-gen-pricing) as follows:
 
 | Plan  | Tier     |
@@ -66,7 +75,24 @@ CPU/memory size mapped into [GCP tiers](https://cloud.google.com/sql/pricing#2nd
 | medium | db-n1-standard-4 |
 | large | db-n1-standard-8 |
 
-TODO: document how core count is mapped to a GCP tier.
+#### Core to service tier mapping
+
+| Cores | Service Tier |
+|-------|---------------|
+| 1     | db-n1-standard-1  |
+| 2     | db-n1-standard-2  |
+| 4     | db-n1-standard-4  |
+| 8     | db-n1-standard-8  |
+| 16    | db-n1-standard-16  |
+| 32    | db-n1-standard-32  |
+| 64    | db-n1-standard-64  |
+
+#### GCP specific config parameters
+
+| Parameter | Value |
+|-----------|--------|
+| region  | [GCP region](https://cloud.google.com/compute/docs/regions-zones) to deploy service instance into |
+| authorized_network | compute network to connect the instance to |
 
 ## Binding Credentials
 
