@@ -28,8 +28,8 @@ plans:
   display_name: "Small"
   properties:
     pricing_tier: B
-    vcores: 2
-    storage: 50
+    cores: 2
+    storage_gb: 50
     mysql_version: 5.7
 - name: Medium
   id: 9eb836dd-4B90-4cF7-bc06-1986103802d3
@@ -37,8 +37,8 @@ plans:
   display_name: "Medium"
   properties:
     pricing_tier: GP
-    vcores: 4
-    storage: 200    
+    cores: 4
+    storage_gb: 200    
     mysql_version: 5.7
 - name: Large
   id: 6f8Ea44c-6840-4b0b-9068-f0cd9b17437c
@@ -46,8 +46,8 @@ plans:
   display_name: "Large"
   properties:
     pricing_tier: MO
-    vcores: 8
-    storage: 500    
+    cores: 8
+    storage_gb: 500    
     mysql_version: 5.7    
 provision:
   plan_inputs:
@@ -59,7 +59,7 @@ provision:
       B: Basic 
       GP: General Purpose
       MO: Memory Optimized
-  - field_name: vcores
+  - field_name: cores
     required: false
     type: integer
     default: 2
@@ -68,7 +68,8 @@ provision:
       maximum: 64
       minimum: 1
       multipleOf: 2
-  - field_name: storage
+  - field_name: storage_gb
+    type: integer
     required: false
     default: 50
     details: Storage allocated to the database instance in GB
@@ -141,26 +142,18 @@ provision:
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
-  - name: location
-    default: ${json.marshal(request.region)}
-    overwrite: true
-    type: string
-  - name: service_tier
-    # Pseudo-code provided below. Don't know the exact syntax for concatenation
-    default: ${json.marshal(request.plans.pricing_tier) + '_Gen5_' + json.marshal(request.plans.vcores)}
-    type: "string"
-    overwrite: true
   template: |-
-    variable service_tier { type = string }
     variable instance_name { type = string }
     variable db_name { type = string }
     variable mysql_version { type = string }
-    variable location { type = string }
+    variable region { type = string }
     variable labels { type = map }
-
+    variable pricing_tier { type = string }
+    variable cores {type = string }
+    variable storage_gb {type = string }
     resource "azurerm_resource_group" "azure-msyql" {
       name     = var.instance_name
-      location = var.location
+      location = var.region
       tags     = var.labels
     }
 
@@ -181,22 +174,23 @@ provision:
     }
 
     resource "azurerm_mysql_server" "instance" {
-       name                = lower(random_string.servername.result)
-       location            = azurerm_resource_group.azure-msyql.location
-       resource_group_name = azurerm_resource_group.azure-msyql.name
-       sku_name = "B_Gen5_2"
+      name                = lower(random_string.servername.result)
+      location            = azurerm_resource_group.azure-msyql.location
+      resource_group_name = azurerm_resource_group.azure-msyql.name
+      sku_name = format("%s_Gen5_%d", var.pricing_tier, var.cores)
 
-        storage_profile {
-        storage_mb            = 5120
-        backup_retention_days = 7
-        geo_redundant_backup  = "Disabled"
-        }
 
-        administrator_login          = random_string.username.result
-        administrator_login_password = random_password.password.result
-        version                      = var.mysql_version
-        ssl_enforcement              = "Disabled"
-        tags                         = var.labels
+      storage_profile {
+      storage_mb            = var.storage_gb * 1024
+      backup_retention_days = 7
+      geo_redundant_backup  = "Disabled"
+      }
+
+      administrator_login          = random_string.username.result
+      administrator_login_password = random_password.password.result
+      version                      = var.mysql_version
+      ssl_enforcement              = "Disabled"
+      tags                         = var.labels
     }
 
     resource "azurerm_mysql_database" "instance-db" {
