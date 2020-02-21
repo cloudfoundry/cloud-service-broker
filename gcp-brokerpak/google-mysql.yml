@@ -205,7 +205,7 @@ provision:
       override_special = "_@"
     }
 
-    resource "google_sql_user" "user" {
+    resource "google_sql_user" "admin_user" {
       name     = random_string.username.result
       instance = google_sql_database_instance.instance.name
       password = random_password.password.result
@@ -214,22 +214,8 @@ provision:
     output name { value = "${google_sql_database.database.name}" }
     output hostname { value = "${google_sql_database_instance.instance.first_ip_address}" }
     output port { value = 3306 }
-    output username { value = "${google_sql_user.user.name}" }
-    output password { value = "${google_sql_user.user.password}" }
-    output uri { 
-      value = format("mysql://%s:%s@%s:3306/%s", 
-                      google_sql_user.user.name, 
-                      google_sql_user.user.password, 
-                      google_sql_database_instance.instance.first_ip_address, 
-                      google_sql_database.database.name) 
-    }
-    output jdbcUrl { 
-      value = format("jdbc:mysql://%s:3306/%s?user=%s\u0026password=%s\u0026useSSL=false", 
-                      google_sql_database_instance.instance.first_ip_address, 
-                      google_sql_database.database.name, 
-                      google_sql_user.user.name, 
-                      google_sql_user.user.password) 
-    }
+    output username { value = "${google_sql_user.admin_user.name}" }
+    output password { value = "${google_sql_user.admin_user.password}" }
   outputs:
   - field_name: name
     type: string
@@ -246,18 +232,99 @@ provision:
   - field_name: password
     type: string
     details: The password to authenticate to the database instance.
+bind:
+  plan_inputs: []
+  user_inputs: []
+  computed_inputs:
+  - name: mysql_db_name
+    type: string
+    default: ${instance.details["name"]}
+    overwrite: true
+  - name: mysql_hostname
+    type: string
+    default: ${instance.details["hostname"]}
+    overwrite: true
+  - name: mysql_port
+    type: integer
+    default: ${instance.details["port"]}
+    overwrite: true
+  - name: admin_username
+    type: string
+    default: ${instance.details["username"]}
+    overwrite: true
+  - name: admin_password
+    type: string
+    default: ${instance.details["password"]}
+    overwrite: true
+  template: |-
+    variable mysql_db_name { type = string }
+    variable mysql_hostname { type = string }
+    variable mysql_port { type = number }
+    variable admin_username { type = string }
+    variable admin_password { type = string }
+
+    provider "mysql" {
+      endpoint = format("%s:%d", var.mysql_hostname, var.mysql_port)
+      username = var.admin_username
+      password = var.admin_password
+    }
+
+    resource "random_string" "username" {
+      length = 16
+      special = false
+    }
+
+    resource "random_password" "password" {
+      length = 16
+      special = true
+      override_special = "_@"
+    }    
+
+    resource "mysql_user" "newuser" {
+      user               = random_string.username.result
+      host               = var.mysql_hostname
+      plaintext_password = random_password.password.result
+    }
+
+    resource "mysql_grant" "newuser" {
+      user       = mysql_user.newuser.user
+      host       = mysql_user.newuser.host
+      database   = var.mysql_db_name
+      privileges = ["ALL"]
+    }
+
+    output username { value = random_string.username.result }
+    output password { value = random_password.password.result }
+    output uri { 
+      value = format("mysql://%s:%s@%s:%d/%s", 
+                      random_string.username.result, 
+                      random_password.password.result, 
+                      var.mysql_hostname, 
+                      var.mysql_port,
+                      var.mysql_db_name) 
+    }
+    output jdbcUrl { 
+      value = format("jdbc:mysql://%s:%d/%s?user=%s\u0026password=%s\u0026useSSL=false", 
+                      var.mysql_hostname, 
+                      var.mysql_port,
+                      var.mysql_db_name, 
+                      random_string.username.result, 
+                      random_password.password.result) 
+    }
+
+  outputs: 
+  - field_name: username
+    type: string
+    details: The username to authenticate to the database instance.
+  - field_name: password
+    type: string
+    details: The password to authenticate to the database instance.  
   - field_name: uri
     type: string
     details: The uri to connect to the database instance and database.
   - field_name: jdbcUrl
     type: string
-    details: The jdbc url to connect to the database instance and database.
-bind:
-  plan_inputs: []
-  user_inputs: []
-  computed_inputs: []
-  template: ''
-  outputs: []
+    details: The jdbc url to connect to the database instance and database.    
 examples:
 - name: small configuration
   description: Create a small mysql instance
