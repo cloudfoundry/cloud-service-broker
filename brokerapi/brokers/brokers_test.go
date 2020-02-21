@@ -120,7 +120,7 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 			ProvisionsAsyncStub:   func() bool { return isAsync },
 			DeprovisionsAsyncStub: func() bool { return isAsync },
 			ProvisionStub: func(ctx context.Context, vc *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
-				return models.ServiceInstanceDetails{OtherDetails: "{\"mynameis\": \"instancename\"}"}, nil
+				return models.ServiceInstanceDetails{OtherDetails: "{\"mynameis\": \"instancename\", \"foo\": \"baz\" }"}, nil
 			},
 			BindStub: func(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error) {
 				return map[string]interface{}{"foo": "bar"}, nil
@@ -184,6 +184,17 @@ func assertEqual(t *testing.T, message string, expected, actual interface{}) {
 
 	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf("Error: %s Expected: %#v Actual: %#v", message, expected, actual)
+	}
+}
+
+
+// assertEqual does a reflect.DeepEqual on the values and if they're different
+// reports the message and the values.
+func assertTrue(t *testing.T, message string, val bool) {
+	t.Helper()
+
+	if !val {
+		t.Errorf("Error: %s was not true", message)
 	}
 }
 
@@ -417,6 +428,17 @@ func TestGCPServiceBroker_Bind(t *testing.T) {
 				req.RawParameters = json.RawMessage("{invalid json")
 				_, err := broker.Bind(context.Background(), fakeInstanceId, fakeBindingId, req, true)
 				assertEqual(t, "errors should match", ErrInvalidUserInput, err)
+			},
+		},
+		"bind-variables-override-instance-variables": {
+			ServiceState: StateProvisioned,
+			Check: func(t *testing.T, broker *GCPServiceBroker, stub *serviceStub) {
+				req := stub.BindDetails()
+				bindResult, err := broker.Bind(context.Background(), fakeInstanceId, "override-params", req, true)
+				failIfErr(t, "binding", err)
+				credMap, ok := bindResult.Credentials.(map[string]interface{})
+				assertTrue(t, "bind result credentials should be a map", ok)			
+				assertEqual(t, "credential overridden", "bar", credMap["foo"].(string))	
 			},
 		},
 	}
