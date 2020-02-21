@@ -78,8 +78,8 @@ type MergedInstanceCredsMixin struct{}
 // information in the instance details to get a full set of connection details.
 func (b *MergedInstanceCredsMixin) BuildInstanceCredentials(ctx context.Context, bindRecord models.ServiceBindingCredentials, instanceRecord models.ServiceInstanceDetails) (*brokerapi.Binding, error) {
 	vc, err := varcontext.Builder().
-		MergeJsonObject(json.RawMessage(bindRecord.OtherDetails)).
 		MergeJsonObject(json.RawMessage(instanceRecord.OtherDetails)).
+		MergeJsonObject(json.RawMessage(bindRecord.OtherDetails)).
 		Build()
 	if err != nil {
 		return nil, err
