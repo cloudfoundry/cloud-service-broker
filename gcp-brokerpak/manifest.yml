@@ -18,6 +18,9 @@ terraform_binaries:
 - name: terraform-provider-random
   version: 2.2.1
   source: https://releases.hashicorp.com/terraform-provider-random/2.2.1/terraform-provider-random_2.2.1_linux_amd64.zip
+- name: terraform-provider-mysql
+  version: 1.9.0
+  source: https://github.com/terraform-providers/terraform-provider-mysql/archive/v1.9.0.zip
 required_env_vars:
 - GOOGLE_CREDENTIALS
 - GOOGLE_PROJECT
