@@ -282,18 +282,18 @@ bind:
 
     resource "mysql_user" "newuser" {
       user               = random_string.username.result
-      host               = var.mysql_hostname
       plaintext_password = random_password.password.result
+      host = "%"
     }
 
     resource "mysql_grant" "newuser" {
       user       = mysql_user.newuser.user
-      host       = mysql_user.newuser.host
       database   = var.mysql_db_name
+      host = mysql_user.newuser.host
       privileges = ["ALL"]
     }
 
-    output username { value = random_string.username.result }
+    output username { value = mysql_user.newuser.user }
     output password { value = random_password.password.result }
     output uri { 
       value = format("mysql://%s:%s@%s:%d/%s", 
@@ -308,7 +308,7 @@ bind:
                       var.mysql_hostname, 
                       var.mysql_port,
                       var.mysql_db_name, 
-                      random_string.username.result, 
+                      mysql_user.newuser.user, 
                       random_password.password.result) 
     }
 
