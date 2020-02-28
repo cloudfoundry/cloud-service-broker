@@ -148,12 +148,14 @@ func RunExample(client *Client, serviceExample CompleteServiceExample) error {
 		return err
 	}
 
-	bindResponse, err := executor.Bind()
-	if err != nil {
-		return err
-	}
-
-	if err := executor.Unbind(); err != nil {
+	bindResponse, bindErr := executor.Bind()
+	if bindErr != nil {
+		if serviceExample.BindCanFail {
+			log.Printf("WARNING: bind failed: %v, but marked 'can fail' so treated as warning.", bindErr)
+		} else {
+			return bindErr
+		}
+	} else if err := executor.Unbind(); err != nil {
 		return err
 	}
 
@@ -161,20 +163,21 @@ func RunExample(client *Client, serviceExample CompleteServiceExample) error {
 		return err
 	}
 
-	// Check that the binding response has the same fields as expected
-	var binding brokerapi.Binding
-	err = json.Unmarshal(bindResponse, &binding)
-	if err != nil {
-		return err
-	}
+	if bindErr == nil {
+		// Check that the binding response has the same fields as expected
+		var binding brokerapi.Binding
+		err = json.Unmarshal(bindResponse, &binding)
+		if err != nil {
+			return err
+		}
 
-	credentialsEntry := binding.Credentials.(map[string]interface{})
+		credentialsEntry := binding.Credentials.(map[string]interface{})
 
-	if err := broker.ValidateVariablesAgainstSchema(credentialsEntry, serviceExample.ExpectedOutput); err != nil {
-
-		log.Printf("Error: results don't match JSON Schema: %v", err)
-		log.Printf("Schema: %v\n, Actual: %v", serviceExample.ExpectedOutput, credentialsEntry)
-		return err
+		if err := broker.ValidateVariablesAgainstSchema(credentialsEntry, serviceExample.ExpectedOutput); err != nil {
+			log.Printf("Error: results don't match JSON Schema: %v", err)
+			log.Printf("Schema: %v\n, Actual: %v", serviceExample.ExpectedOutput, credentialsEntry)
+			return err
+		}
 	}
 
 	return nil
