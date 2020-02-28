@@ -179,11 +179,11 @@ func (m *Manifest) packDefinitions(tmp, base string) error {
 		}
 
 		if err := defn.ProvisionSettings.LoadTemplate(); err != nil {
-			return fmt.Errorf("couldn't load provision template %s: %v", err)
+			return fmt.Errorf("couldn't load provision template %s: %v", defn.ProvisionSettings.TemplateRef, err)
 		}
 
 		if err := defn.BindSettings.LoadTemplate(); err != nil {
-			return fmt.Errorf("couldn't load bind template %s: %v", err)
+			return fmt.Errorf("couldn't load bind template %s: %v", defn.BindSettings.TemplateRef, err)
 		}
 
 		defn.ProvisionSettings.TemplateRef = ""
