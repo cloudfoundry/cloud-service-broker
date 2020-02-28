@@ -196,6 +196,7 @@ func TestTfServiceDefinitionV1_ToService(t *testing.T) {
 				},
 			},
 			Computed: []varcontext.DefaultVariable{{Name: "computed-input-provision", Default: ""}},
+			TemplateRef: "testdata/provision.tf",
 		},
 
 		BindSettings: TfServiceDefinitionV1Action{

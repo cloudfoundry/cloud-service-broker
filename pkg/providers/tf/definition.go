@@ -16,6 +16,7 @@ package tf
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"code.cloudfoundry.org/lager"
@@ -103,9 +104,26 @@ type TfServiceDefinitionV1Action struct {
 	Computed   []varcontext.DefaultVariable `yaml:"computed_inputs"`
 	Template   string                       `yaml:"template"`
 	Outputs    []broker.BrokerVariable      `yaml:"outputs"`
+	TemplateRef string						`yaml:"template_ref"`
 }
 
 var _ validation.Validatable = (*TfServiceDefinitionV1Action)(nil)
+
+// load template ref into template if provided
+func (action *TfServiceDefinitionV1Action) LoadTemplate() error {
+	if action.TemplateRef == "" {
+		return nil
+	}
+	buff, err := ioutil.ReadFile(action.TemplateRef)
+
+	if err != nil {
+		return err
+	}
+
+	action.Template = string(buff)
+
+	return nil
+}
 
 // Validate implements validation.Validatable.
 func (action *TfServiceDefinitionV1Action) Validate() (errs *validation.FieldError) {
@@ -121,7 +139,11 @@ func (action *TfServiceDefinitionV1Action) Validate() (errs *validation.FieldErr
 		errs = errs.Also(v.Validate().ViaFieldIndex("computed_inputs", i))
 	}
 
-	 errs = errs.Also(
+	if action.TemplateRef != "" {
+		errs = errs.Also(validation.ErrIfBlank(action.Template, "template not loaded from templat ref"))
+	}
+
+	errs = errs.Also(
 	 	validation.ErrIfNotHCL(action.Template, "template"),
 	 	action.validateTemplateInputs().ViaField("template"),
 	 	action.validateTemplateOutputs().ViaField("template"),
@@ -247,9 +269,23 @@ func (tfb *TfServiceDefinitionV1) resolveEnvVars() (map[string]string, error) {
 	return vars, nil
 }
 
+func (tfb *TfServiceDefinitionV1) loadTemplates() error {
+	err := tfb.BindSettings.LoadTemplate()
+
+	if err == nil {
+		err = tfb.ProvisionSettings.LoadTemplate()
+	}
+
+	return err
+}
+
 // ToService converts the flat TfServiceDefinitionV1 into a broker.ServiceDefinition
 // that the registry can use.
 func (tfb *TfServiceDefinitionV1) ToService(executor wrapper.TerraformExecutor) (*broker.ServiceDefinition, error) {
+	if err := tfb.loadTemplates(); err != nil {
+		return nil, err
+	}
+
 	if err := tfb.Validate(); err != nil {
 		return nil, err
 	}
