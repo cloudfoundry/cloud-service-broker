@@ -2,7 +2,6 @@
 
 set -o errexit
 set -o pipefail
-set -o nounset
 
 if [ -z "$1" ]; then
     echo "No environment argument supplied, should be one of 'gcp', 'azure' or 'aws'"
@@ -13,6 +12,8 @@ if [[ -z ${env} ]]; then
   echo 'Missing environment variable ($env) pointing to smith environment file'
   exit 1
 fi
+
+set -o nounset
 
 export PCF_NETWORK=$(cat $env | jq -r .service_network_name)
 
