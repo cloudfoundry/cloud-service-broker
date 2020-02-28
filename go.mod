@@ -8,6 +8,9 @@ require (
 	github.com/aws/aws-sdk-go v1.15.88
 	github.com/beorn7/perks v1.0.1
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d
+	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e // indirect
+	github.com/drewolson/testflight v1.0.0 // indirect
+	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-sql-driver/mysql v1.4.0
 	github.com/golang/protobuf v1.3.2
@@ -27,7 +30,9 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.0
 	github.com/jinzhu/gorm v1.9.1
 	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a
+	github.com/jinzhu/now v1.1.1 // indirect
 	github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8
+	github.com/lib/pq v1.3.0 // indirect
 	github.com/magiconair/properties v1.8.0
 	github.com/mattn/go-sqlite3 v1.9.0
 	github.com/matttproud/golang_protobuf_extensions v1.0.1
@@ -35,6 +40,7 @@ require (
 	github.com/mitchellh/go-testing-interface v1.0.0
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/mitchellh/reflectwalk v1.0.0
+	github.com/pborman/uuid v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.2.0
 	github.com/pivotal-cf/brokerapi v4.2.1+incompatible
 	github.com/pkg/errors v0.8.1
