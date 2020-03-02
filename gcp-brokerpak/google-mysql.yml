@@ -124,6 +124,7 @@ provision:
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
+<<<<<<< HEAD
   template: |-
     variable cores { type = number }
     variable authorized_network { type = string }
@@ -230,6 +231,9 @@ provision:
                       google_sql_user.user.name, 
                       google_sql_user.user.password) 
     }
+=======
+  template_ref: terraform/provision-mysql.tf 
+>>>>>>> [#171504309] support packing with template references
   outputs:
   - field_name: name
     type: string
@@ -246,6 +250,41 @@ provision:
   - field_name: password
     type: string
     details: The password to authenticate to the database instance.
+<<<<<<< HEAD
+=======
+bind:
+  plan_inputs: []
+  user_inputs: []
+  computed_inputs:
+  - name: mysql_db_name
+    type: string
+    default: ${instance.details["name"]}
+    overwrite: true
+  - name: mysql_hostname
+    type: string
+    default: ${instance.details["hostname"]}
+    overwrite: true
+  - name: mysql_port
+    type: integer
+    default: ${instance.details["port"]}
+    overwrite: true
+  - name: admin_username
+    type: string
+    default: ${instance.details["username"]}
+    overwrite: true
+  - name: admin_password
+    type: string
+    default: ${instance.details["password"]}
+    overwrite: true
+  template_ref: terraform/bind-mysql.tf
+  outputs: 
+  - field_name: username
+    type: string
+    details: The username to authenticate to the database instance.
+  - field_name: password
+    type: string
+    details: The password to authenticate to the database instance.  
+>>>>>>> [#171504309] support packing with template references
   - field_name: uri
     type: string
     details: The uri to connect to the database instance and database.
