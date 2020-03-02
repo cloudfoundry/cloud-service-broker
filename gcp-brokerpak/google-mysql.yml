@@ -264,18 +264,22 @@ examples:
   plan_id: 8809fe67-99b5-48dd-a6dd-890ee45e86be
   provision_params: {}
   bind_params: {}
+  bind_can_fail: true
 - name: small configuration v5.6 50gb storage
   description: Create a small mysql v5.6 instance with 50gb storage
   plan_id: 8809fe67-99b5-48dd-a6dd-890ee45e86be
   provision_params: { "mysql_version": "5.6", "storage_gb": 50 }
   bind_params: {}
+  bind_can_fail: true
 - name: medium configuration
   description: Create a medium mysql instance
   plan_id: 753accb8-52a7-4673-8216-ffc539351aea
   provision_params: {}
   bind_params: {}
+  bind_can_fail: true
 - name: large configuration
   description: Create a large mysql instance
   plan_id: 8f8fc4ab-2b37-41da-bc6a-e915497dac33
   provision_params: {}
   bind_params: {}
+  bind_can_fail: true
