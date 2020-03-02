@@ -1,3 +1,4 @@
+// Copyright (c) 2020-Present Pivotal Software, Inc. All Rights Reserved.
 // Copyright 2018 the Service Broker Project Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -165,6 +166,8 @@ func (m *Manifest) packDefinitions(tmp, base string) error {
 	// users can place definitions in any directory structure they like, even
 	// above the current directory so we standardize their location and names
 	// for the zip to avoid collisions
+	//
+	// provision and bind templates are loaded from any template ref and packed inline
 	manifestCopy := *m
 
 	var servicePaths []string
@@ -175,12 +178,23 @@ func (m *Manifest) packDefinitions(tmp, base string) error {
 			return fmt.Errorf("couldn't parse %s: %v", sd, err)
 		}
 
-		packedName := fmt.Sprintf("service%d-%s.yml", i, defn.Name)
-		log.Printf("\t%s/%s -> %s/definitions/%s\n", base, sd, tmp, packedName)
-		if err := stream.Copy(stream.FromFile(base, sd), stream.ToFile(tmp, "definitions", packedName)); err != nil {
-			return err
+		if err := defn.ProvisionSettings.LoadTemplate(); err != nil {
+			return fmt.Errorf("couldn't load provision template %s: %v", err)
 		}
 
+		if err := defn.BindSettings.LoadTemplate(); err != nil {
+			return fmt.Errorf("couldn't load bind template %s: %v", err)
+		}
+
+		defn.ProvisionSettings.TemplateRef = ""
+		defn.BindSettings.TemplateRef = ""
+	
+		packedName := fmt.Sprintf("service%d-%s.yml", i, defn.Name)
+		log.Printf("\t%s/%s -> %s/definitions/%s\n", base, sd, tmp, packedName)
+		if err := stream.Copy(stream.FromYaml(defn), stream.ToFile(tmp, "definitions", packedName)); err != nil {
+			return err
+		}
+		
 		servicePaths = append(servicePaths, "definitions/"+packedName)
 	}
 
