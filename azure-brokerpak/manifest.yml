@@ -32,6 +32,6 @@ required_env_variables:
 service_definitions:
 - azure-redis.yml
 - azure-mysql.yml
-
+- azure-mssql.yml
 
 
