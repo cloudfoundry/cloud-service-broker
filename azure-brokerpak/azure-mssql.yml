@@ -27,7 +27,7 @@ plans:
   description: 'SQL Server latest version. Instance properties: General Purpose - Serverless ; 0.5 - 2 cores ; Max Memory: 6gb ; 50 GB storage ; auto-pause enabled after 1 hour of inactivity'
   display_name: "Small"
   properties:
-    pricing_tier: GP_Serverless
+    pricing_tier: GP_S
     cores: 2
     storage_gb: 50
 - name: Medium
@@ -35,7 +35,7 @@ plans:
   description: 'SQL Server latest version. Instance properties: General Purpose - Provisioned ; Provisioned Capacity ; 8 cores ; 200 GB storage'
   display_name: "Medium"
   properties:
-    pricing_tier: GP_Provisioned
+    pricing_tier: GP
     cores: 8
     storage_gb: 200
 - name: Large
