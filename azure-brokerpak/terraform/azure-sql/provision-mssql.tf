@@ -2,6 +2,9 @@ variable server_name { type = string }
 variable db_name { type = string }
 variable region { type = string }
 variable labels { type = map }
+variable pricing_tier { type = string }
+variable cores { type = number }
+variable storage_gb { type = number }
 
 resource "random_string" "username" {
   length = 16
@@ -35,7 +38,17 @@ resource "azurerm_sql_database" "azure_sql_db" {
   resource_group_name = azurerm_resource_group.azure_sql.name
   location            = var.region
   server_name         = azurerm_sql_server.azure_sql_db_server.name
+  requested_service_objective_name = format("%s_Gen5_%d", var.pricing_tier, var.cores)
+  max_size_bytes      = var.storage_gb * 1024 * 1024 * 1024
   tags = var.labels
+}
+
+resource "azurerm_sql_firewall_rule" "example" {
+  name                = "FirewallRule1"
+  resource_group_name = azurerm_resource_group.azure_sql.name
+  server_name         = azurerm_sql_server.azure_sql_db_server.name
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "0.0.0.0"
 }
 
 output "sqldbName" {value = "${azurerm_sql_database.azure_sql_db.name}"}
