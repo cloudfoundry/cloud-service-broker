@@ -45,6 +45,7 @@ plans:
   properties:
     pricing_tier: HS
     cores: 24
+    storage_gb: 500
 - name: Extra Large
   id: a94f7192-5cba-11ea-8b5a-00155d7cdd25
   description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 80 cores ; 1 TB storage ; 1 read replica; Auto-failover group enabled'
@@ -60,21 +61,21 @@ provision:
     type: string
     details: The service tier of the instance.
     enum:
-      GP_Serverless: General Purpose tier - Serverless pricing model
-      GP_Provisioned: General Purpose tier - Provisioned pricing model
+      GP_S: General Purpose tier - Serverless pricing model
+      GP: General Purpose tier - Provisioned pricing model
       HS: Hyperscale tier
       BC: Business Critical tier
   - field_name: cores
     required: false
-    type: integer
+    type: number
     default: 2
     details: Number vcores for the instance (upto the maximum allowed for the service tier)
     constraints:
-      maximum: 64
+      maximum: 80
       minimum: 1
       multipleOf: 2
   - field_name: storage_gb
-    type: integer
+    type: number
     required: false
     default: 50
     details: Storage allocated to the database instance in GB
@@ -187,8 +188,23 @@ bind:
   template: ''
   outputs: []
 examples:
+- name: azuresql-db-small configuration
+  description: Create a small Azure SQL Database
+  plan_id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
+  provision_params: {}
+  bind_params: {}
 - name: azuresql-db-medium configuration
   description: Create a medium Azure SQL Database
   plan_id: 9295b05a-58c9-11ea-b9df-00155d2c938f
+  provision_params: {}
+  bind_params: {}
+- name: azuresql-db-large configuration
+  description: Create a large Azure SQL Database
+  plan_id: 9dc5e814-58c9-11ea-9e77-00155d2c938f
+  provision_params: {}
+  bind_params: {}
+- name: azuresql-db-xlarge configuration
+  description: Create an extra large Azure SQL Database
+  plan_id: a94f7192-5cba-11ea-8b5a-00155d7cdd25
   provision_params: {}
   bind_params: {}
