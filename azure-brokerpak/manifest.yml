@@ -24,6 +24,9 @@ terraform_binaries:
 - name: terraform-provider-random
   version: 2.2.1
   source: https://releases.hashicorp.com/terraform-provider-random/2.2.1/terraform-provider-random_2.2.1_linux_amd64.zip
+- name: terraform-provider-mysql
+  version: 1.9.0
+  source: https://releases.hashicorp.com/terraform-provider-mysql/1.9.0/terraform-provider-mysql_1.9.0_linux_amd64.zip 
 required_env_variables:
 - ARM_SUBSCRIPTION_ID
 - ARM_TENANT_ID
