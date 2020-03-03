@@ -55,11 +55,8 @@ fi
 
 cf delete-service -f "${NAME}"
 
-cf service "${NAME}"
-
-while [ $? -eq 0 ]; do
+while cf service "${NAME}" | grep "delete in progress"; do
     sleep 15
-    cf service "${NAME}"
 done
 
 exit ${RESULT}
