@@ -81,7 +81,7 @@ provision:
     constraints:
       maximum: 4096
       minimum: 5      
-user_inputs:
+  user_inputs:
   - field_name: server_name
     type: string
     details: Name for your Azure SQL Server
@@ -177,8 +177,8 @@ user_inputs:
   - field_name: password
     type: string
     details: The password to authenticate to the database server.
-  - field_name: username
-    type: uri
+  - field_name: uri
+    type: string
     details: The uri to connect to the database server and database.
 bind:
   plan_inputs: []
