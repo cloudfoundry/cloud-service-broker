@@ -9,7 +9,7 @@ if [ -z "$1" ]; then
 fi
 
 if [ -z "$2" ]; then
-    echo "No plane argument supplied"
+    echo "No plan argument supplied"
     exit 1
 fi
 
@@ -29,23 +29,37 @@ while [ $? -eq 0 ]; do
     sleep 15
     cf service "${NAME}" | grep "create in progress"
 done
-set -e
 
 APP=spring-music
 
-cf bind-service "${APP}" "${NAME}"
+RESULT=0
+if cf bind-service "${APP}" "${NAME}"; then
+  if cf restart "${APP}"; then
+    echo "successfully bound and restarted ${APP}"
+  else
+    RESULT=$?
+    echo "Failed to restart ${APP}: ${RESULT}"
+    cf logs "${APP}" --recent
+  fi
+else
+  RESULT=$?
+  echo "Failed to bind-service ${APP} to ${NAME}: ${RESULT}"
+fi  
 
-cf restart "${APP}"
-
-cf unbind-service "${APP}" "${NAME}"
+if cf unbind-service "${APP}" "${NAME}"; then
+  echo "successfully bound and restarted ${APP}"
+else
+  RESULT=$?
+  echo "failed to unbind-service ${APP} ${NAME}"
+fi
 
 cf delete-service -f "${NAME}"
 
 cf service "${NAME}"
 
-set +e
 while [ $? -eq 0 ]; do
     sleep 15
     cf service "${NAME}"
 done
-set -e
+
+exit ${RESULT}
