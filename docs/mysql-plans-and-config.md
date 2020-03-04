@@ -18,7 +18,7 @@ The following options can be configured across all supported platforms. Notes be
 | mysql_version | 5.6, 5.7| 5.7    |
 | storage_gb  | 5 - 4096| 5      |
 | cores       | 1,2,4,8,16,32,64 | 1      |
-
+ 
 ### Azure Notes
 CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-vcore-resource-limits-single-databases) as follows:
 
@@ -42,6 +42,9 @@ Each of the so-called Pricing Tiers in Azure has a min and max cores:
 | General Purpose | 64 |
 | Memory Optimized | 32 |
 
+| Parameter | Value |
+|-----------|--------|
+| authorized_network  | Subnet ID (the long version) of the VNET/Subnet that is attached to this instance to allow remote access. By default no VNETs are allowed access. |
 
 ### AWS Notes
 CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) as follows:
