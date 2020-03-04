@@ -23,3 +23,4 @@ applications:
   env:
     GOPACKAGENAME: github.com/pivotal/cloud-service-broker
     GOVERSION: go1.13
+  random-route: true
