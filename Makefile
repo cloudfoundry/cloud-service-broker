@@ -119,15 +119,33 @@ test-brokerpak-azure:
 	docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
 
 .PHONY: run-broker-azure
-run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
+run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak test-brokerpak-azure
 	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
 
-azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml test-brokerpak-azure
+azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml
 	cd ./azure-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
 .PHONY: push-broker-azure
 push-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
 	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./scripts/push-broker.sh
+
+.PHONY: run-broker-azure-docker
+run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux azure-brokerpak/*.brokerpak test-brokerpak-azure
+	GSB_BROKERPAK_BUILTIN_PATH=/broker/azure-brokerpak \
+	DB_HOST=host.docker.internal \
+	docker run --rm -p 8080:8080 -v $(PWD):/broker \
+	-e GSB_BROKERPAK_BUILTIN_PATH \
+	-e DB_HOST \
+	-e DB_USERNAME \
+	-e DB_PASSWORD \
+	-e PORT \
+	-e SECURITY_USER_NAME \
+	-e SECURITY_USER_PASSWORD \
+	-e ARM_SUBSCRIPTION_ID \
+	-e ARM_TENANT_ID \
+	-e ARM_CLIENT_ID \
+	-e ARM_CLIENT_SECRET \
+	alpine /broker/build/cloud-service-broker.linux serve	
 
 # AWS broker 
 .PHONY: aws-brokerpak
