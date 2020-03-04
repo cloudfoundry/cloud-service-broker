@@ -39,14 +39,6 @@ plans:
     cores: 8
     storage_gb: 200
 - name: Large
-  id: 2cb46552-20ba-4558-b4b0-ded5b2c0296b
-  description: 'SQL Server latest version. Instance properties: Hyperscale ; Provisioned Capacity ; 24 cores ; Unlimited Storage ; 2 read replica ; Auto-failover group enabled'
-  display_name: "Large"
-  properties:
-    pricing_tier: HS
-    cores: 24
-    storage_gb: 500
-- name: Extra Large
   id: 605a7a26-b1dd-4ce5-a382-4233e98469a8
   description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 80 cores ; 1 TB storage ; 1 read replica; Auto-failover group enabled'
   display_name: "XLarge"
@@ -63,7 +55,6 @@ provision:
     enum:
       GP_S: General Purpose tier - Serverless pricing model
       GP: General Purpose tier - Provisioned pricing model
-      HS: Hyperscale tier
       BC: Business Critical tier
   - field_name: cores
     required: false
@@ -233,23 +224,18 @@ bind:
   template: ''
   outputs: []
 examples:
-- name: azuresql-db-small configuration
-  description: Create a small Azure SQL Database
+- name: failover group azuresql-db-small configuration
+  description: Create a small Azure SQL Database failover group 
   plan_id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
   provision_params: {}
   bind_params: {}
-- name: azuresql-db-medium configuration
-  description: Create a medium Azure SQL Database
+- name: failover group azuresql-db-medium configuration
+  description: Create a medium Azure SQL Database failover group 
   plan_id: c5e8ec57-ab5a-4bbf-ac6d-5075a97ed1a5
   provision_params: {}
   bind_params: {}
-- name: azuresql-db-large configuration
-  description: Create a large Azure SQL Database
-  plan_id: 2cb46552-20ba-4558-b4b0-ded5b2c0296b
-  provision_params: {}
-  bind_params: {}
-- name: azuresql-db-xlarge configuration
-  description: Create an extra large Azure SQL Database
+- name: failover group azuresql-db-large configuration
+  description: Create a large Azure SQL Database failover group 
   plan_id: 605a7a26-b1dd-4ce5-a382-4233e98469a8
   provision_params: {}
   bind_params: {}
