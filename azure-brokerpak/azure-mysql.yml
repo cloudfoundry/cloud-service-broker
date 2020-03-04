@@ -325,7 +325,7 @@ bind:
                       var.mysql_db_name) 
     }
     output jdbcUrl { 
-      value = format("jdbc:mysql://%s:%d/%s?user=%s\u0026password=%s\u0026useSSL=false", 
+      value = format("jdbc:mysql://%s:%s/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=true\u0026requireSSL=false\u0026serverTimezone=UTC", 
                       var.mysql_hostname, 
                       var.mysql_port,
                       var.mysql_db_name, 
