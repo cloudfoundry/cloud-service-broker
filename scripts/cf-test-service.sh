@@ -39,6 +39,7 @@ if cf bind-service "${APP}" "${NAME}"; then
   else
     RESULT=$?
     echo "Failed to restart ${APP}: ${RESULT}"
+    cf env "${APP}"
     cf logs "${APP}" --recent
   fi
 else
