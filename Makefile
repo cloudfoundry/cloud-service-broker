@@ -114,15 +114,12 @@ run-broker-gcp-docker: check-gcp-env-vars ./build/cloud-service-broker.linux gcp
 
 # Azure broker
 
-.PHONY:	test-brokerpak-azure
-test-brokerpak-azure:
-	docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
-
 .PHONY: run-broker-azure
-run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak test-brokerpak-azure
+run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
 	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
 
-azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml
+azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml ./azure-brokerpak/terraform/*/*.tf
+	docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
 	cd ./azure-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
 .PHONY: push-broker-azure
@@ -130,7 +127,7 @@ push-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY)
 	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./scripts/push-broker.sh
 
 .PHONY: run-broker-azure-docker
-run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux azure-brokerpak/*.brokerpak test-brokerpak-azure
+run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux azure-brokerpak/*.brokerpak
 	GSB_BROKERPAK_BUILTIN_PATH=/broker/azure-brokerpak \
 	DB_HOST=host.docker.internal \
 	docker run --rm -p 8080:8080 -v $(PWD):/broker \
@@ -145,7 +142,7 @@ run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux
 	-e ARM_TENANT_ID \
 	-e ARM_CLIENT_ID \
 	-e ARM_CLIENT_SECRET \
-	alpine /broker/build/cloud-service-broker.linux serve	
+	alpine /broker/build/cloud-service-broker.linux serve --config /broker/plans.yaml
 
 # AWS broker 
 .PHONY: aws-brokerpak
