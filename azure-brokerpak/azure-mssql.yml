@@ -145,6 +145,9 @@ provision:
   - field_name: sqldbName
     type: string
     details: The name of the database.
+  - field_name: sqldbResourceGroup
+    type: string
+    details: Azure resource group for the database server and database.
   - field_name: sqlServerName
     type: string
     details: Hostname of the Azure SQL Server
