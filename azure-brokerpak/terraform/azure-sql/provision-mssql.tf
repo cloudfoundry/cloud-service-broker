@@ -35,7 +35,7 @@ resource "azurerm_sql_server" "azure_sql_db_server" {
 
 resource "azurerm_sql_database" "azure_sql_db" {
   name                = var.db_name
-  resource_group_name = azurerm_resource_group.azure_sql.name
+  resource_group_name = azurerm_sql_server.azure_sql_db_server.resource_group_name
   location            = var.region
   server_name         = azurerm_sql_server.azure_sql_db_server.name
   requested_service_objective_name = format("%s_Gen5_%d", var.pricing_tier, var.cores)
@@ -52,6 +52,7 @@ resource "azurerm_sql_firewall_rule" "example" {
 }
 
 output "sqldbName" {value = "${azurerm_sql_database.azure_sql_db.name}"}
+output "sqldbResourceGroup" {value = "${azurerm_sql_server.azure_sql_db_server.resource_group_name}"}
 output "sqlServerName" {value = "${azurerm_sql_server.azure_sql_db_server.name}"}
 output "sqlServerFullyQualifiedDomainName" {value = "${azurerm_sql_server.azure_sql_db_server.fully_qualified_domain_name}"}
 output "databaseLogin" {value = "${random_string.username.result}"}
