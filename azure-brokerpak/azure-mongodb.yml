@@ -28,21 +28,18 @@ plans:
   display_name: "Small"
   properties:
     request_units: 400
-    regions: westus2
 - name: Medium
   id: 6a28ad34-534c-11ea-9bac-00155da9789e
   description: 'Cosmos DB API for MongoDB with 1,000 request units'
   display_name: "Medium"
   properties:
     request_units: 1000
-    regions: westus2
 - name: Large
   id: 72227eac-534c-11ea-b7ca-00155da9789e
   description: 'Cosmos DB API for MongoDB with 10,000 request units'
   display_name: "Large"
   properties:
     request_units: 10000
-    regions: westus2
 provision:
   plan_inputs:
   - field_name: request_units
@@ -89,8 +86,6 @@ provision:
     default: uniqueKey
   - field_name: regions
     type: string
-    constraints:
-      minLength: 1
     details: A comma separated list of regions for the Cosmos DB account.  The first region is the default write region
     default: West US 2
     # enum:
