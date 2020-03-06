@@ -187,9 +187,44 @@ provision:
 bind:
   plan_inputs: []
   user_inputs: []
-  computed_inputs: []
-  template: ''
-  outputs: []
+  computed_inputs:
+  - name: mssql_db_name
+    type: string
+    default: ${instance.details["name"]}
+    overwrite: true
+  - name: mssql_hostname
+    type: string
+    default: ${instance.details["hostname"]}
+    overwrite: true
+  - name: mssql_port
+    type: integer
+    default: ${instance.details["port"]}
+    overwrite: true
+  - name: admin_username
+    type: string
+    default: ${instance.details["username"]}
+    overwrite: true
+  - name: admin_password
+    type: string
+    default: ${instance.details["password"]}
+    overwrite: true
+  template_ref: terraform/azure-sql/bind-mssql.tf
+  outputs:
+  - field_name: username
+    type: string
+    details: The username to authenticate to the database instance.
+  - field_name: password
+    type: string
+    details: The password to authenticate to the database instance.  
+  - field_name: uri
+    type: string
+    details: The uri to connect to the database instance and database.
+  - field_name: jdbcUrl
+    type: string
+    details: The jdbc url to connect to the database instance and database.    
+  - field_name: jdbcUrlForAuditingEnabled
+    type: string
+    details: The audit enabled JDBC URL to connect to the database server and database.    
 examples:
 - name: azuresql-db-small configuration
   description: Create a small Azure SQL Database
