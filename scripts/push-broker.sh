@@ -46,11 +46,11 @@ if [[ ${ARM_CLIENT_SECRET} ]]; then
 fi
 
 if [[ ${AWS_ACCESS_KEY_ID} ]]; then
-  cf set-env "${APP_NAME}" ARM_CLIENT_SECRET "${AWS_ACCESS_KEY_ID}"
+  cf set-env "${APP_NAME}" AWS_ACCESS_KEY_ID "${AWS_ACCESS_KEY_ID}"
 fi
 
 if [[ ${AWS_SECRET_ACCESS_KEY} ]]; then
-  cf set-env "${APP_NAME}" ARM_CLIENT_SECRET "${AWS_SECRET_ACCESS_KEY}"
+  cf set-env "${APP_NAME}" AWS_SECRET_ACCESS_KEY "${AWS_SECRET_ACCESS_KEY}"
 fi
 
 if [[ ${GSB_BROKERPAK_BUILTIN_PATH} ]]; then
@@ -61,4 +61,6 @@ cf bind-service "${APP_NAME}" csb-sql
 
 cf start "${APP_NAME}"
 
-cf create-service-broker cloud-service-broker "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs) --space-scoped || echo "broker already registered"
+BROKER_NAME=csb-$USER
+
+cf create-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs) --space-scoped || echo "broker already registered"
