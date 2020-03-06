@@ -45,7 +45,7 @@ Cache size mapped into [Azure sku's for Redis](https://azure.microsoft.com/en-us
 | Plan | Sku | Family | Capacity | Memory Size | HA | 
 |------|--------|-----|------------| ------------| ---- |
 | small | Basic | C | 1 | 1GB | no |
-| medium | Basic | C | 3 | 13GB | no |
+| medium | Basic | C | 3 | 6GB | no |
 | large | Basic | C | 5 | 26GB | no |
 
 #### High Availability Plans:
@@ -53,7 +53,7 @@ Cache size mapped into [Azure sku's for Redis](https://azure.microsoft.com/en-us
 | Plan | Sku | Family | Capacity | Memory Size | HA | 
 |------|--------|-----|------------| ------------| ---- |
 | ha-small | Standard | C | 1 | 1GB | yes |
-| ha-medium | Standard | C | 3 | 13GB | yes |
+| ha-medium | Standard | C | 3 | 6GB | yes |
 | ha-large | Standard | C | 5 | 26GB | yes |
 
 #### Notes
