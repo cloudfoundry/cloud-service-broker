@@ -171,8 +171,33 @@ bind:
   template: ''
   outputs: []
 examples:
-- name: Redis cache
-  description: Redis is a fully managed service for the Azure Platform
-  plan_id: a38bfe6c-fa91-4002-8820-6c31bbd66446
+- name: redis-cache-small
+  description: Small redis cache
+  plan_id: 6B9CA24E-1DEC-4E6F-8C8A-DC6E11AB5BEF
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-medium
+  description: Medium redis cache
+  plan_id: 6B272C43-2116-4483-9A99-DE9262C0A7D6
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-large
+  description: Large redis cache
+  plan_id: C3E34ABC-A820-457C-B723-1C342EF42C50
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-ha-small
+  description: HA small redis cache
+  plan_id: D27A8E60-3724-49D1-B668-44B03D99B3B3
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-ha-medium
+  description: HA medium redis cache
+  plan_id: 421B932A-B86F-48A3-97E4-64BB13D3EC13
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-ha-large
+  description: HA large redis cache
+  plan_id: E919B281-9661-465D-82CF-0A0A6E1F195A
   provision_params: {}
   bind_params: {}
