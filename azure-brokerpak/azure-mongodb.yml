@@ -1,0 +1,205 @@
+# Copyright 2018 the Service Broker Project Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+version: 1
+name: azure-mongodb
+id: e5d2898e-534a-11ea-a4e8-00155da9789e
+description: The Cosmos DB service implements wire protocols for MongoDB.  Azure Cosmos DB is Microsoft's globally distributed, multi-model database service for mission-critical application
+display_name: Azure Cosmos DB's API for MongoDB
+image_url: https://azurecomcdn.azureedge.net/cvt-d09489c6661f16b0396f43f6be09db6e0a95b35e61aedbd2c0f30217ac43408c/images/page/services/cosmosdb/dev-03-mongodb.svg
+documentation_url: https://docs.microsoft.com/en-us/azure/cosmos-db/mongodb-introduction
+support_url: https://docs.microsoft.com/en-us/azure/cosmos-db/faq
+tags: [azure, mongodb, preview]
+plans:
+- name: Small
+  id: 4ba45322-534c-11ea-b346-00155da9789e
+  description: 'Cosmos DB API for MongoDB with 400 request units'
+  display_name: "Small"
+  properties:
+    request_units: 400
+    regions: westus2
+- name: Medium
+  id: 6a28ad34-534c-11ea-9bac-00155da9789e
+  description: 'Cosmos DB API for MongoDB with 1,000 request units'
+  display_name: "Medium"
+  properties:
+    request_units: 1000
+    regions: westus2
+- name: Large
+  id: 72227eac-534c-11ea-b7ca-00155da9789e
+  description: 'Cosmos DB API for MongoDB with 10,000 request units'
+  display_name: "Large"
+  properties:
+    request_units: 10000
+    regions: westus2
+provision:
+  plan_inputs:
+  - field_name: request_units
+    required: true
+    type: integer
+    details: The throughput of the MongoDB collection (RU/s). Must be set in increments of 100. The minimum value is 400.
+    constraints:
+      maximum: 100000
+      minimum: 400
+      multipleOf: 100
+  user_inputs:
+  - field_name: instance_prefix
+    type: string
+    details: Prefix that will be used to generate a random instance_name if instance_name is not provided.
+    default: psb-mongodb
+    constraints:
+      maxLength: 18
+      minLength: 1
+      pattern: ^[a-z][a-z0-9-]+$
+  - field_name: instance_name
+    type: string
+    details: Name for your Cosmos DB with API for MongoDB instance
+    default: null
+    constraints:
+      maxLength: 31
+      minLength: 3
+      pattern: ^[a-z][a-z0-9-]+$ #^[-\w\._\(\)]+$
+  - field_name: db_name
+    type: string
+    details: Name for your Cosmos DB database with API for Mongo DB
+    default: default_db
+    constraints:
+      maxLength: 255
+      pattern: ^[a-z][a-z0-9-_]*$
+  - field_name: collection_name
+    type: string
+    details: Name for your collection
+    default: default_collection
+    constraints:
+      maxLength: 255
+  - field_name: shard_key
+    type: string
+    details: Name for your shard key
+    default: uniqueKey
+  - field_name: regions
+    type: string
+    constraints:
+      minLength: 1
+    details: A comma separated list of regions for the Cosmos DB account.  The first region is the default write region
+    default: West US 2
+    # enum:
+    #   eastasia: East Asia
+    #   southeastasia: South East Asia
+    #   centralus: Central US
+    #   eastus: East US
+    #   eastus2: East US 2
+    #   westus: West US
+    #   northcentralus: North Central US
+    #   southcentralus: South Central US
+    #   northeurope: North Europe
+    #   westeurope: West Europe
+    #   japanwest: Japan West
+    #   japaneast: Japan East
+    #   brazilsouth: Brazil South
+    #   australiaeast: Australia East
+    #   australiasoutheast: Australia South East
+    #   australiacentral: Australia Central
+    #   australiacentral2: Australia Central 2
+    #   southindia: South India
+    #   centralindia: Central India
+    #   westindia: West India
+    #   canadacentral: Canada Central
+    #   canadaeast: Canada East
+    #   uksouth: UK South
+    #   ukwest: UK West
+    #   westcentralus: West Central US
+    #   westus2: West US 2
+    #   koreacentral: Korea Central
+    #   koreasouth: Korea South
+    #   francecentral: France Central
+    #   francesouth: France South
+    #   uaenorth: UAE North
+    #   uaecentral: UAE Central
+    #   southafricanorth: South Africa North
+    #   southafricawest: South Africa West
+    #   germanycentral: Germany Central
+    #   germanynorth: Germany North
+    #   germanynortheast: Germany North East
+    #   germanywestcentral: Germany West Central
+    #   switzerlandnorth: Switzerland North
+    #   switzerlandwest: Switzerland West
+    #   norwayeast: Norway East
+    #   norwaywest: Norway West
+    #   usgovtexas: US Gov Texas
+    #   usgovvirginia: US Gov Virginia
+    #   usgovarizona: US Gov Arizona
+    #   usdodcentral: US DoD Central
+    #   usdodeast: US DoD East
+  - field_name: ip_range_filter
+    type: string
+    details: CosmosDB Firewall Support. This value specifies the set of IP addresses or IP address ranges in CIDR form to be included as the allowed list of client IP's for a given database account. IP addresses/ranges must be comma separated and must not contain any spaces. 0.0.0.0 allows access from Azure networks.  An empty string "" allows access from all public networks.
+    default: "0.0.0.0"
+  - field_name: consistency_level
+    type: string
+    default: Session
+    details: The Consistency Level to use for this CosmosDB Account - can be either BoundedStaleness, Eventual, Session, Strong or ConsistentPrefix
+    enum:
+      Strong: Strong
+      BoundedStaleness: BoundedStaleness
+      Session: Session
+      ConsistentPrefix: ConsistentPrefix
+      Eventual: Eventual
+  - field_name: max_interval_in_seconds
+    type: integer
+    details: (Optional) When used with the Bounded Staleness consistency level, this value represents the time amount of staleness (in seconds) tolerated. Accepted range for this value is 5 - 86400 (1 day). Defaults to 5. Required when consistency_level is set to BoundedStaleness.
+    default: 5
+    constraints:
+      minimum: 5
+      maximum: 86400
+  - field_name: max_staleness_prefix 
+    type: integer
+    details: (Optional) When used with the Bounded Staleness consistency level, this value represents the number of stale requests tolerated. Accepted range for this value is 10 – 2147483647. Defaults to 100. Required when consistency_level is set to BoundedStaleness.
+    default: 100
+    constraints:
+      minimum: 10
+      maximum: 2147483647
+  - field_name: enable_multiple_write_locations
+    type: boolean
+    default: false
+    details: Enable multi-master support for this Cosmos DB account.
+  - field_name: enable_automatic_failover
+    type: boolean
+    default: false
+    details: Enable automatic fail over for this Cosmos DB account.
+  computed_inputs:
+  - name: labels
+    default: ${json.marshal(request.default_labels)}
+    overwrite: true
+    type: object
+  template_ref: terraform/azure-mongodb/azure-mongodb.tf
+  outputs:
+  - field_name: uri
+    type: string
+    details: The primary master mongodb uri of the Cosmos DB Mongo Collection.
+bind:
+  plan_inputs: []
+  user_inputs: []
+  computed_inputs: []
+  template: ''
+  outputs: []
+examples:
+- name: spring-music-mongo-db
+  description: Create a small cosmos db with Mongo API for the spring music sample app
+  plan_id: 4ba45322-534c-11ea-b346-00155da9789e
+  provision_params: {
+    db_name: 'musicdb',
+    collection_name: 'album',
+    shard_key: '_id'
+  }
+  bind_params: {}
