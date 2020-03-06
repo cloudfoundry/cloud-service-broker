@@ -29,6 +29,7 @@ required_env_variables:
 service_definitions:
 - azure-redis.yml
 - azure-mysql.yml
+- azure-mongodb.yml
 - azure-mssql.yml
 - azure-mssql-failover.yml
 
