@@ -229,8 +229,6 @@ provision:
     output port { value = 3306 }
     output username { value = "${azurerm_mysql_server.instance.administrator_login}@${azurerm_mysql_server.instance.name}" }
     output password { value = "${azurerm_mysql_server.instance.administrator_login_password}" }
-    output uri { value = format("mysql://%s:%s@%s:3306/%s", azurerm_mysql_server.instance.administrator_login, azurerm_mysql_server.instance.administrator_login_password, azurerm_mysql_server.instance.fqdn, azurerm_mysql_database.instance-db.name) }
-    output jdbcUrl { value = format("jdbc:mysql://%s:3306/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=true\u0026requireSSL=false\u0026serverTimezone=UTC", azurerm_mysql_server.instance.fqdn, azurerm_mysql_database.instance-db.name, urlencode("${azurerm_mysql_server.instance.administrator_login}@${azurerm_mysql_server.instance.name}"), azurerm_mysql_server.instance.administrator_login_password) }
   outputs:
   - field_name: name
     type: string
@@ -247,12 +245,6 @@ provision:
   - field_name: password
     type: string
     details: The password to authenticate to the database instance.
-  - field_name: uri
-    type: string
-    details: The uri to connect to the database instance and database.
-  - field_name: jdbcUrl
-    type: string
-    details: The jdbc url to connect to the database instance and database.
 bind:
   plan_inputs: []
   user_inputs: []
@@ -314,22 +306,22 @@ bind:
       privileges = ["ALL"]
     }
     
-    output username { value = mysql_user.newuser.user }
+    output username { value = "${random_string.username.result}@${var.mysql_hostname}" }
     output password { value = random_password.password.result }
     output uri { 
       value = format("mysql://%s:%s@%s:%d/%s", 
-                      random_string.username.result, 
+                      "${random_string.username.result}@${var.mysql_hostname}" , 
                       random_password.password.result, 
                       var.mysql_hostname, 
                       var.mysql_port,
                       var.mysql_db_name) 
     }
     output jdbcUrl { 
-      value = format("jdbc:mysql://%s:%d/%s?user=%s\u0026password=%s\u0026useSSL=false", 
+      value = format("jdbc:mysql://%s:%s/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=true\u0026requireSSL=false\u0026serverTimezone=UTC", 
                       var.mysql_hostname, 
                       var.mysql_port,
                       var.mysql_db_name, 
-                      mysql_user.newuser.user, 
+                      "${random_string.username.result}@${var.mysql_hostname}", 
                       random_password.password.result) 
     }  
   outputs: 
