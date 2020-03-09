@@ -499,8 +499,10 @@ func TestGCPServiceBroker_LastOperation(t *testing.T) {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *GCPServiceBroker, stub *serviceStub) {
 				stub.Provider.PollInstanceReturns(false, &googleapi.Error{Code: 503})
-				status, _ := broker.LastOperation(context.Background(), fakeInstanceId, brokerapi.PollDetails{OperationData: "operationtoken"})
+				status, err := broker.LastOperation(context.Background(), fakeInstanceId, brokerapi.PollDetails{OperationData: "operationtoken"})
+				failIfErr(t, "checking last operation", err)
 				assertEqual(t, "retryable errors should result in in-progress state", brokerapi.InProgress, status.State)
+				assertEqual(t, "description should be error string", "googleapi: got HTTP response code 503 with body: ", status.Description)
 			},
 		},
 		"poll-returns-failure": {
@@ -508,8 +510,10 @@ func TestGCPServiceBroker_LastOperation(t *testing.T) {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *GCPServiceBroker, stub *serviceStub) {
 				stub.Provider.PollInstanceReturns(false, errors.New("not-retryable"))
-				status, _ := broker.LastOperation(context.Background(), fakeInstanceId, brokerapi.PollDetails{OperationData: "operationtoken"})
+				status, err := broker.LastOperation(context.Background(), fakeInstanceId, brokerapi.PollDetails{OperationData: "operationtoken"})
+				failIfErr(t, "checking last operation", err)
 				assertEqual(t, "non-retryable errors should result in a failure state", brokerapi.Failed, status.State)
+				assertEqual(t, "description should be error string", "not-retryable", status.Description)
 			},
 		},
 		"poll-returns-not-done": {

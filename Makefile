@@ -74,6 +74,7 @@ clean: deps-go-binary
 	rm -rf ./build
 	rm gcp-brokerpak/*.brokerpak
 	rm azure-brokerpak/*.brokerpak
+	rm aws-brokerpak/*.brokerpak
 
 .PHONY: lint
 lint: deps-goimports
