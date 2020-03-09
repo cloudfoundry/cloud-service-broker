@@ -5,6 +5,8 @@ image_resource:
   type: docker-image
   source:
     repository: amidos/dcind
+params:
+  SERVICE_NAME:    
 inputs:
 - name: brokerbuild
 - name: brokerpak
@@ -26,5 +28,9 @@ run:
       export DB_HOST=localhost
       ./brokerbuild/cloud-service-broker.linux serve &
       sleep 5
-      ./brokerbuild/cloud-service-broker.linux client run-examples
+      if [ -z "$SERVICE_NAME" ]; then
+        ./brokerbuild/cloud-service-broker.linux client run-examples 
+      else
+        ./brokerbuild/cloud-service-broker.linux client run-examples --service-name "${SERVICE_NAME}"
+      fi
 
