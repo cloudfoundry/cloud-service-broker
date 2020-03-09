@@ -346,5 +346,9 @@ func DefaultExecutor(c *exec.Cmd) error {
 		"error":  err,
 	})
 
-	return err
+	if err != nil {
+		return fmt.Errorf("Failed executing terraform: %v - %s", err, string(output))
+	}
+
+	return nil
 }
