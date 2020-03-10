@@ -22,7 +22,7 @@ documentation_url: https://docs.microsoft.com/en-us/azure/mysql/
 support_url: https://docs.microsoft.com/en-us/azure/mysql/
 tags: [azure, mysql, preview]
 plans:
-- name: Small
+- name: small
   id: 828e324e-6b34-4f50-b224-9b956dd2d1b7
   description: 'Mysql v5.7. Instance properties: 2 vCores, 4 GB RAM, 50 GB storage.'
   display_name: "Small"
@@ -31,7 +31,7 @@ plans:
     cores: 2
     storage_gb: 50
     mysql_version: 5.7
-- name: Medium
+- name: medium
   id: 9eb836dd-4B90-4cF7-bc06-1986103802d3
   description: 'Mysql v5.7. Instance properties: 4 vCores, 20 GB RAM, 200 GB storage.'
   display_name: "Medium"
@@ -40,7 +40,7 @@ plans:
     cores: 4
     storage_gb: 200    
     mysql_version: 5.7
-- name: Large
+- name: large
   id: 6f8Ea44c-6840-4b0b-9068-f0cd9b17437c
   description: 'Mysql v5.7. Instance properties: 8 vCores, 80 GB RAM, 500 GB storage.'
   display_name: "Large"
@@ -146,92 +146,7 @@ provision:
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
-  template: |-
-    variable instance_name { type = string }
-    variable db_name { type = string }
-    variable mysql_version { type = string }
-    variable region { type = string }
-    variable labels { type = map }
-    variable pricing_tier { type = string }
-    variable cores {type = string }
-    variable storage_gb {type = string }
-    variable authorized_network {type = string}
-    resource "azurerm_resource_group" "azure-msyql" {
-      name     = var.instance_name
-      location = var.region
-      tags     = var.labels
-    }
-
-    resource "random_string" "username" {
-      length = 16
-      special = false
-      number = false
-    }
-
-    resource "random_string" "servername" {
-      length = 8
-      special = false
-    }
-
-    resource "random_password" "password" {
-      length = 31
-      override_special = "~!@#$%^&*()_-+={}[]/<>,.;?':|"
-      min_upper = 2
-      min_lower = 2
-      min_special = 2
-    }
-
-    resource "azurerm_mysql_server" "instance" {
-      name                = lower(random_string.servername.result)
-      location            = azurerm_resource_group.azure-msyql.location
-      resource_group_name = azurerm_resource_group.azure-msyql.name
-      sku_name = format("%s_Gen5_%d", var.pricing_tier, var.cores)
-
-
-      storage_profile {
-      storage_mb            = var.storage_gb * 1024
-      backup_retention_days = 7
-      geo_redundant_backup  = "Disabled"
-      }
-
-      administrator_login          = random_string.username.result
-      administrator_login_password = random_password.password.result
-      version                      = var.mysql_version
-      ssl_enforcement              = "Disabled"
-      tags                         = var.labels
-    }
-
-    resource "azurerm_mysql_database" "instance-db" {
-        name                = var.db_name
-
-        resource_group_name = azurerm_resource_group.azure-msyql.name
-        server_name         = azurerm_mysql_server.instance.name
-        charset             = "utf8"
-        collation           = "utf8_unicode_ci"
-    }
-
-    resource "azurerm_mysql_virtual_network_rule" "allow_subnet_id" {
-      name                = format("subnetrule-%s", lower(random_string.servername.result))
-      resource_group_name = azurerm_resource_group.azure-msyql.name
-      server_name         = azurerm_mysql_server.instance.name
-      subnet_id           = var.authorized_network
-      count = "${var.authorized_network != "default" ? 1 : 0}"      
-    }
-
-    resource "azurerm_mysql_firewall_rule" "allow_azure" {
-      name                = format("firewall-%s", lower(random_string.servername.result))
-      resource_group_name = azurerm_resource_group.azure-msyql.name
-      server_name         = azurerm_mysql_server.instance.name
-      start_ip_address    = "0.0.0.0"
-      end_ip_address      = "0.0.0.0"
-      count = "${var.authorized_network == "default" ? 1 : 0}"       
-    }    
-  
-    output name { value = "${azurerm_mysql_database.instance-db.name}" }
-    output hostname { value = "${azurerm_mysql_server.instance.fqdn}" }
-    output port { value = 3306 }
-    output username { value = "${azurerm_mysql_server.instance.administrator_login}@${azurerm_mysql_server.instance.name}" }
-    output password { value = "${azurerm_mysql_server.instance.administrator_login_password}" }
+  template_ref: terraform/azure-mysql/provision-mysql.tf
   outputs:
   - field_name: name
     type: string
@@ -272,63 +187,7 @@ bind:
       type: string
       default: ${instance.details["password"]}
       overwrite: true
-  template: |-
-    variable mysql_db_name { type = string }
-    variable mysql_hostname { type = string }
-    variable mysql_port { type = number }
-    variable admin_username { type = string }
-    variable admin_password { type = string }
-    
-    provider "mysql" {
-      endpoint = format("%s:%d", var.mysql_hostname, var.mysql_port)
-      username = var.admin_username
-      password = var.admin_password
-    }
-    
-    resource "random_string" "username" {
-      length = 16
-      special = false
-    }
-    
-    resource "random_password" "password" {
-      length = 31
-      override_special = "~!@#$%^&*()_-+={}[]/<>,.;?':|"
-      min_upper = 2
-      min_lower = 2
-      min_special = 2
-    }    
-    
-    resource "mysql_user" "newuser" {
-      user               = random_string.username.result
-      plaintext_password = random_password.password.result
-      host = "%"
-    }
-    
-    resource "mysql_grant" "newuser" {
-      user       = mysql_user.newuser.user
-      database   = var.mysql_db_name
-      host = mysql_user.newuser.host
-      privileges = ["ALL"]
-    }
-    
-    output username { value = "${random_string.username.result}@${var.mysql_hostname}" }
-    output password { value = random_password.password.result }
-    output uri { 
-      value = format("mysql://%s:%s@%s:%d/%s", 
-                      "${random_string.username.result}@${var.mysql_hostname}" , 
-                      random_password.password.result, 
-                      var.mysql_hostname, 
-                      var.mysql_port,
-                      var.mysql_db_name) 
-    }
-    output jdbcUrl { 
-      value = format("jdbc:mysql://%s:%s/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=true\u0026requireSSL=false\u0026serverTimezone=UTC", 
-                      var.mysql_hostname, 
-                      var.mysql_port,
-                      var.mysql_db_name, 
-                      "${random_string.username.result}@${var.mysql_hostname}", 
-                      random_password.password.result) 
-    }  
+  template_ref: terraform/azure-mysql/bind-mysql.tf
   outputs: 
     - field_name: username
       type: string
