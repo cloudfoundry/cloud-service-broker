@@ -403,7 +403,6 @@ func (gcpBroker *GCPServiceBroker) LastOperation(ctx context.Context, instanceID
 
 	done, err := serviceProvider.PollInstance(ctx, *instance)
 
-	fmt.Printf("serviceProvider.PollInstance() returned %v, %v\n", done, err)
 	if err != nil {
 		// this is a retryable error
 		if gerr, ok := err.(*googleapi.Error); ok {
@@ -411,7 +410,7 @@ func (gcpBroker *GCPServiceBroker) LastOperation(ctx context.Context, instanceID
 				return brokerapi.LastOperation{State: brokerapi.InProgress, Description: err.Error()}, nil
 			}
 		}
-		fmt.Printf("serviceProvider.PollInstance() returning failed\n")
+
 		// This is not a retryable error. Return fail
 		return brokerapi.LastOperation{State: brokerapi.Failed, Description: err.Error()}, nil
 	}

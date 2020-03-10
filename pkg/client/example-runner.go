@@ -53,9 +53,10 @@ func RunExamplesForService(allExamples []CompleteServiceExample, client *Client,
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			example := <- examples
-			if err := RunExample(client, example); err != nil {
-				errors <- err
+			for example := range examples {
+				if err := RunExample(client, example); err != nil {
+					errors <- err
+				}
 			}
 		}()
 	}
