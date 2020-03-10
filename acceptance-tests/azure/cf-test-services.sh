@@ -7,6 +7,6 @@ set -o nounset
 
 cf marketplace
 
-../../scripts/cf-test-service.sh azure-mysql Small
+../../scripts/cf-test-service.sh azure-mysql small
 ../../scripts/cf-test-service.sh azure-redis small
 
