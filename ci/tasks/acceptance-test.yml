@@ -7,6 +7,7 @@ image_resource:
     repository: amidos/dcind
 params:
   SERVICE_NAME:    
+  PARALLEL_JOB_COUNT: 1
 inputs:
 - name: brokerbuild
 - name: brokerpak
@@ -29,8 +30,8 @@ run:
       ./brokerbuild/cloud-service-broker.linux serve &
       sleep 5
       if [ -z "$SERVICE_NAME" ]; then
-        ./brokerbuild/cloud-service-broker.linux client run-examples 
+        ./brokerbuild/cloud-service-broker.linux client run-examples -j "${PARALLEL_JOB_COUNT}"
       else
-        ./brokerbuild/cloud-service-broker.linux client run-examples --service-name "${SERVICE_NAME}"
+        ./brokerbuild/cloud-service-broker.linux client run-examples --service-name "${SERVICE_NAME}" -j "${PARALLEL_JOB_COUNT}"
       fi
 

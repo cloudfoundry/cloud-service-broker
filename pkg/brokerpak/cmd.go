@@ -184,7 +184,7 @@ func RunExamples(pack string) error {
 		return err
 	}
 
-	return client.RunExamplesForService(allExamples, apiClient, "", "")
+	return client.RunExamplesForService(allExamples, apiClient, "", "", 1)
 }
 
 // Docs generates the markdown usage docs for the given pack and writes them to stdout.

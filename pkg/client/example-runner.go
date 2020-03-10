@@ -22,6 +22,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/pivotal-cf/brokerapi"
@@ -33,17 +34,40 @@ import (
 // the service broker pointed to by client. All examples in the registry get run
 // if serviceName is blank. If exampleName is non-blank then only the example
 // with the given name is run.
-func RunExamplesForService(allExamples []CompleteServiceExample, client *Client, serviceName, exampleName string) error {
+func RunExamplesForService(allExamples []CompleteServiceExample, client *Client, serviceName, exampleName string, jobCount int) error {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	for _, completeServiceExample := range FilterMatchingServiceExamples(allExamples, serviceName, exampleName) {
-		if err := RunExample(client, completeServiceExample); err != nil {
-			return err
+	examples := make(chan CompleteServiceExample)
+	errors := make(chan error)
+	wg := &sync.WaitGroup{}
+
+	go func() {
+		defer close(examples)
+		for _, completeServiceExample := range FilterMatchingServiceExamples(allExamples, serviceName, exampleName) {
+			examples <- completeServiceExample		
 		}
+	}()
+
+	for i:=0; i<jobCount; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			example := <- examples
+			if err := RunExample(client, example); err != nil {
+				errors <- err
+			}
+		}()
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(errors)
+	}()
+
+	err := <- errors
+
+	return err
 
 }
 
