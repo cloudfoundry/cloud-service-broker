@@ -30,6 +30,8 @@ service_definitions:
 - azure-redis.yml
 - azure-mysql.yml
 - azure-mongodb.yml
+- azure-eventhubs.yml
+
 
 
 
