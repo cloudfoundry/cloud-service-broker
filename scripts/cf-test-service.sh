@@ -20,7 +20,12 @@ NAME="${SERVICE}-${PLAN}-$$"
 
 set -o nounset
 
-cf create-service "${SERVICE}" "${PLAN}" "${NAME}" $@
+if [ -z "$1" ]; then
+  cf create-service "${SERVICE}" "${PLAN}" "${NAME}"
+else
+  echo $@
+  cf create-service "${SERVICE}" "${PLAN}" "${NAME}" -c "$@"
+fi
 
 set +e
 while cf service "${NAME}" | grep "create in progress"; do
