@@ -18,14 +18,13 @@ PLAN=$1; shift
 
 NAME="${SERVICE}-${PLAN}-$$"
 
-set -o nounset
-
 if [ -z "$1" ]; then
   cf create-service "${SERVICE}" "${PLAN}" "${NAME}"
 else
-  echo $@
   cf create-service "${SERVICE}" "${PLAN}" "${NAME}" -c "$@"
 fi
+
+set -o nounset
 
 set +e
 while cf service "${NAME}" | grep "create in progress"; do
