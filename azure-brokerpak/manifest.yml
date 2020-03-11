@@ -21,6 +21,9 @@ terraform_binaries:
 - name: terraform-provider-mysql
   version: 1.9.0
   source: https://releases.hashicorp.com/terraform-provider-mysql/1.9.0/terraform-provider-mysql_1.9.0_linux_amd64.zip 
+- name: terraform-provider-null
+  version: 2.1.0
+  source: https://releases.hashicorp.com/terraform-provider-null/2.1.0/terraform-provider-null_2.1.0_linux_amd64.zip
 - name: terraform-provider-sqlserver
   version: 0.2.1
   source: https://github.com/geekmuse/terraform-provider-sqlserver/archive/v0.2.1.zip
