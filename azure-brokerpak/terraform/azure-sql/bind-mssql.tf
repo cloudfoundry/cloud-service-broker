@@ -4,13 +4,6 @@ variable mssql_port { type = number }
 variable admin_username { type = string }
 variable admin_password { type = string }
 
-provider "sqlserver" {
-  address = var.mssql_hostname
-  port = var.mssql_port
-  username = var.admin_username
-  password = var.admin_password
-}
-
 resource "random_string" "username" {
   length = 16
   special = false
@@ -20,12 +13,36 @@ resource "random_password" "password" {
   length = 64
   special = true
   override_special = "_@!$#%"
+  depends_on = [random_string.username]
 }    
 
-resource "sqlserver_login" "newuser" {
-  name             = random_string.username.result
-  password         = random_password.password.result
-  default_database = var.mssql_db_name
+resource "null_resource" "create-sql-login" {
+
+  provisioner "local-exec" {
+    command = "sqlcmd -S ${var.mssql_hostname} -U ${var.admin_username} -P ${var.admin_password} -d master -Q \"CREATE LOGIN ${random_string.username.result} with PASSWORD='${random_string.password.result}'\"" 
+
+  }
+
+    provisioner "local-exec" {
+	when = destroy
+    command = "sqlcmd -S ${var.mssql_hostname} -U ${var.admin_username} -P ${var.admin_password} -d master -Q \"DROP LOGIN ${random_string.username.result}\""
+  }
+  depends_on = [random_password.password]
+}
+
+resource "null_resource" "create-sql-user-and-permissions" {
+
+  provisioner "local-exec" {
+    command = "sqlcmd -S ${var.mssql_hostname} -U ${var.admin_username} -P ${var.admin_password} -d ${var.mssql_db_name} -Q \"CREATE USER ${random_string.username.result} from LOGIN ${random_string.username.result};ALTER ROLE db_owner ADD MEMBER ${random_string.username.result};\"" 
+
+  }
+
+    provisioner "local-exec" {
+	when = destroy
+    command = "sqlcmd -S ${var.mssql_hostname} -U ${var.admin_username} -P ${var.admin_password} -d ${var.mssql_db_name} -Q \"ALTER ROLE db_owner DROP MEMBER ${random_string.username.result};DROP USER ${random_string.username.result};\""
+  }
+
+  depends_on = [null_resource.create-sql-login]
 }
 
 output username { value = random_string.username.result }
