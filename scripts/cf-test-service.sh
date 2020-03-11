@@ -13,21 +13,18 @@ if [ -z "$2" ]; then
     exit 1
 fi
 
-SERVICE=$1
-PLAN=$2
+SERVICE=$1; shift
+PLAN=$1; shift
 
 NAME="${SERVICE}-${PLAN}-$$"
 
 set -o nounset
 
-cf create-service "${SERVICE}" "${PLAN}" "${NAME}"
-
-cf service "${NAME}" | grep "create in progress"
+cf create-service "${SERVICE}" "${PLAN}" "${NAME}" $@
 
 set +e
-while [ $? -eq 0 ]; do
-    sleep 15
-    cf service "${NAME}" | grep "create in progress"
+while cf service "${NAME}" | grep "create in progress"; do
+    sleep 30
 done
 
 APP=spring-music
@@ -35,7 +32,15 @@ APP=spring-music
 RESULT=0
 if cf bind-service "${APP}" "${NAME}"; then
   if cf restart "${APP}"; then
-    echo "successfully bound and restarted ${APP}"
+    sleep 10
+    if cf app "${APP}" | grep running; then
+      echo "successfully bound and restarted ${APP}"
+    else
+      RESULT=$?
+      echo "Failed to restart ${APP}: ${RESULT}"
+      cf env "${APP}"
+      cf logs "${APP}" --recent
+    fi
   else
     RESULT=$?
     echo "Failed to restart ${APP}: ${RESULT}"
@@ -57,7 +62,7 @@ fi
 cf delete-service -f "${NAME}"
 
 while cf service "${NAME}" | grep "delete in progress"; do
-    sleep 15
+    sleep 30
 done
 
 exit ${RESULT}
