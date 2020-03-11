@@ -66,10 +66,10 @@ func RunExamplesForService(allExamples []CompleteServiceExample, client *Client,
 		close(errors)
 	}()
 
-	err := <- errors
+	var err error
+	for err = range errors {}
 
 	return err
-
 }
 
 // RunExamplesFromFile reads a json-encoded list of CompleteServiceExamples.
@@ -253,10 +253,14 @@ func pollUntilFinished(client *Client, instanceId string) error {
 
 		state := responseBody["state"]
 		eq := state == string(brokerapi.Succeeded)
+
+		if state == string(brokerapi.Failed) {
+			log.Printf("Last operation for %q was %q: %s\n", instanceId, state, responseBody["description"])
+			return false, fmt.Errorf(responseBody["description"])
+		}
+
 		log.Printf("Last operation for %q was %q\n", instanceId, state)
-
 		return !eq, nil
-
 	})
 }
 
