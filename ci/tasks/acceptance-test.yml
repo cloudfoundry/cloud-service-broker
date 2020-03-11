@@ -28,7 +28,7 @@ run:
       export GSB_BROKERPAK_BUILTIN_PATH=brokerpak
       export DB_HOST=localhost
       ./brokerbuild/cloud-service-broker.linux serve &
-      sleep 5
+      sleep 10
       if [ -z "$SERVICE_NAME" ]; then
         ./brokerbuild/cloud-service-broker.linux client run-examples -j "${PARALLEL_JOB_COUNT}"
       else
