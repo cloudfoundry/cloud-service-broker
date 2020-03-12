@@ -281,7 +281,7 @@ func newExampleExecutor(client *Client, serviceExample CompleteServiceExample) (
 		Name:       fmt.Sprintf("%s/%s", serviceExample.ServiceName, serviceExample.ServiceExample.Name),
 		ServiceId:  serviceExample.ServiceId,
 		PlanId:     serviceExample.ServiceExample.PlanId,
-		InstanceId: fmt.Sprintf("ex%d", testid),
+		InstanceId: fmt.Sprintf("ex%d-%s", testid, os.ExpandEnv("${USER}")),
 		BindingId:  fmt.Sprintf("ex%d", testid),
 
 		ProvisionParams: provisionParams,
