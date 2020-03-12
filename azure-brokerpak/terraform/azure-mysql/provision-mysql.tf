@@ -7,6 +7,7 @@ variable pricing_tier { type = string }
 variable cores {type = string }
 variable storage_gb {type = string }
 variable authorized_network {type = string}
+
 resource "azurerm_resource_group" "azure-msyql" {
   name     = var.instance_name
   location = var.region
@@ -26,7 +27,7 @@ resource "random_string" "servername" {
 
 resource "random_password" "password" {
   length = 31
-  override_special = "~!$^&()_-+={}[]/<>,.|"
+  override_special = "~_-."
   min_upper = 2
   min_lower = 2
   min_special = 2
