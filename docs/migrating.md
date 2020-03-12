@@ -19,12 +19,9 @@ This strategy may be used when removing dependencies on legacy brokers is a prio
 
 To accomplish this, this procedure purges the service instance metadata and creates a new user provided service with the same binding credentials.  This will allow the bound apps to connect to the cloud resources created by the legacy service broker, but while being bound to user provided service that do not have a dependency on the legacy service broker.  Following these proceedures the service instance must be managed manually.
 
-* First, copy the binding credentials and tags from the existing legacy service instance using `cf env $APP_NAME`
-	*  Copy `credentials` json of the service to file named `credentials.json`.
-	*  Copy the comma separated list of `tags` from the existing service.
-* Create a [user provided service](https://docs.cloudfoundry.org/devguide/services/user-provided.html) using the copied metadata that will be used to connect to the existing cloud resources.
+* A [script is provided](../scripts/migrate-to-user-provided-service.sh) that automates some of the process of migrating from a legacy service broker service instance to a [user provided service instance](https://docs.cloudfoundry.org/devguide/services/user-provided.html).  Please run the following command to create a user provider service with the same tags and binding credentials as an existing legacy service instance.
 	```bash
-	cf cups $NEW_SERVICE_NAME -p credentials.json  -t "tag1","tag2"
+	./scripts/migrate-to-user-provided-service.sh $APP_NAME $OLD_SERVICE_NAME $NEW_SERVICE_NAME
 	```
 * Bind the new user-provided service to the app
 	```bash
