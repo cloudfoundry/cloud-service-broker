@@ -325,7 +325,7 @@ func CustomTerraformExecutor(tfBinaryPath, tfPluginDir string, wrapped Terraform
 		allArgs := append([]string{subCommand}, subCommandArgs...)
 		newCmd := exec.Command(tfBinaryPath, allArgs...)
 		newCmd.Dir = c.Dir
-		newCmd.Env = c.Env
+		newCmd.Env = append(c.Env, fmt.Sprintf("PATH=%s:%s", tfPluginDir, os.ExpandEnv("${PATH}")))
 		return wrapped(newCmd)
 	}
 }
