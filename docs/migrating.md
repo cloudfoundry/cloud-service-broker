@@ -5,12 +5,27 @@ This page describes strategies for migrating from legacy service brokers to the 
 
 ## Migration Strategies
 The following strategies can be used to migrate off of a legacy service broker.
-* If you want to [migrate to cloud service broker](#migrating-to-cloud-service-broker), unbind &amp; deprovision the legacy service and provision &amp; bind the equivalent services using cloud service broker with the appropriate brokerpak.
+* If you want to migrate to cloud service broker, unbind &amp; deprovision the legacy service and provision &amp; bind the equivalent services using cloud service broker with the appropriate brokerpak.  See detailed instructions on how to [migrate to cloud service broker](#migrating-to-cloud-service-broker).
 	* Note that unbinding and deprovisioning a service in a legacy broker may be destructive to the underlying resources.
 	* For a service which has existing data that you want to preserve, use manual steps to backup and restore into new service.
-* If the equivalent services in cloud service broker are not present or different than current services broker then you may create [user provided services that are mapped to the existing resources](#migating-to-user-provided-services).
+* If the equivalent services in cloud service broker are not present or different than current services broker then you may create user provided services that are mapped to the existing resources. See detailed instructions on how to [migrate to a user provided service](#migating-to-user-provided-services).
 
 After all services have been migrated, you can `cf delete-service-broker <SERVICE_BROKER_NAME>`, if you installed using tile, you can delete tile from OpsManager.
+
+## Migrating to cloud service broker
+This migration strategy should be used when there is an equivalent service provided by the cloud service broker brokerpak or when the application can be updated to use a new service provided by the cloud service broker. 
+> **_WARNING:_** This migration strategy is destructive to the legacy service instance's resources and data.  Manual steps must be taken to backup/restore data if the new service instance needs to preserve the existing data.
+
+```bash
+cf create-service $NEW_SERVICE_TYPE $PLAN_NAME $NEW_SERVICE_NAME
+cf bind-service $APP_NAME $NEW_SERVICE_NAME
+
+# Run backup/restore scripts if needed to new service.
+
+cf unbind-service $APP_NAME $OLD_SERVICE_NAME
+cf delete-service $OLD_SERVICE_NAME
+cf restage $APP_NAME
+```
 
 ## Migating to user-provided services 
 This strategy may be used when removing dependencies on legacy brokers is a priority or when a breaking change to the platform has caused a legacy broker to stop functioning.  The goal of this strategy is to preserve the existing cloud resources, but to remove the metadata that ties this service instance to a legacy service broker.
@@ -35,19 +50,4 @@ To accomplish this, this procedure purges the service instance metadata and crea
 	```bash 
 	cf restage $APP_NAME
 	```
-
-## Migrating to cloud service broker
-This migration strategy should be used when there is an equivalent service provided by the cloud service broker brokerpak or when the application can be updated to use a new service provided by the cloud service broker. 
-> **_WARNING:_** This migration strategy is destructive to the legacy service instance's resources and data.  Manual steps must be taken to backup/restore data if the new service instance needs to preserve the existing data.
-
-```bash
-cf create-service $NEW_SERVICE_TYPE $PLAN_NAME $NEW_SERVICE_NAME
-cf bind-service $APP_NAME $NEW_SERVICE_NAME
-
-# Run backup/restore scripts if needed to new service.
-
-cf unbind-service $APP_NAME $OLD_SERVICE_NAME
-cf delete-service $OLD_SERVICE_NAME
-cf restage $APP_NAME
-```
 
