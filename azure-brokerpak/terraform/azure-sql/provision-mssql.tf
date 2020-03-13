@@ -14,7 +14,7 @@ resource "random_string" "username" {
 resource "random_password" "password" {
   length = 64
   special = true
-  override_special = "_@!$#%"
+  override_special = "_@#"
 }
 
 resource "azurerm_resource_group" "azure_sql" {
