@@ -10,7 +10,7 @@ The following strategies can be used to migrate off of a legacy service broker.
 	* For a service which has existing data that you want to preserve, use manual steps to backup and restore into new service.
 * If the equivalent services in cloud service broker are not present or different than current services broker then you may create user provided services that are mapped to the existing resources. See detailed instructions on how to [migrate to a user provided service](#migating-to-user-provided-services).
 
-After all services have been migrated, you can `cf delete-service-broker <SERVICE_BROKER_NAME>`, if you installed using tile, you can delete tile from OpsManager.
+After all services have been migrated, you can `cf delete-service-broker $SERVICE_BROKER_NAME`, if you installed using tile, you can delete tile from OpsManager.
 
 ## Migrating to cloud service broker
 This migration strategy should be used when there is an equivalent service provided by the cloud service broker brokerpak or when the application can be updated to use a new service provided by the cloud service broker. 
