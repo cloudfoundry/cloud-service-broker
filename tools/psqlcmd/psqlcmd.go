@@ -21,7 +21,7 @@ var query string
 var err error
 func main() {
 	if len(os.Args) < 6 {
-		log.Fatal("Usage: psqlcmd <hostname> <port> <username> <password> <database> <qyery>");
+		log.Fatal("Usage: psqlcmd <hostname> <port> <username> <password> <database> <query>");
 	}
 	server = os.Args[1]
 	port, err = strconv.Atoi(os.Args[2])
