@@ -24,10 +24,12 @@ terraform_binaries:
 - name: terraform-provider-null
   version: 2.1.0
   source: https://releases.hashicorp.com/terraform-provider-null/2.1.0/terraform-provider-null_2.1.0_linux_amd64.zip
-- name: terraform-provider-sqlserver
-  version: 0.2.1
-  source: https://github.com/geekmuse/terraform-provider-sqlserver/archive/v0.2.1.zip
-  url_template: /Users/ebilling/Documents/code/service-brokers/terraform-provider-sqlserver/build/${name}_${version}_${os}_${arch}.zip
+- name: psqlcmd
+  version: 1.0.0
+  source: https://packages.microsoft.com/config/rhel/7/packages-microsoft-prod.rpm
+  url_template: /Users/sujit/repos/cloud-service-broker/tools/psqlcmd/psqlcmd.zip
+
+
 required_env_variables:
 - ARM_SUBSCRIPTION_ID
 - ARM_TENANT_ID
@@ -39,6 +41,3 @@ service_definitions:
 - azure-mysql.yml
 - azure-mssql.yml
 - azure-mssql-failover.yml
-- azure-mssql-db.yml
-
-
