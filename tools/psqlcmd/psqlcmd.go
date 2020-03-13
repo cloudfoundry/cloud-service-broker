@@ -12,11 +12,11 @@ import (
 
 var db *sql.DB
 
-var server = "pivotal.database.windows.net"
-var port = 1433
-var user = "pivotal"
-var password = "Password123456"
-var database = "master"
+var server string
+var port int
+var user string
+var password string
+var database string
 var query string
 var err error
 func main() {
