@@ -1,0 +1,5 @@
+---
+applications:
+- name: spring-music-validator
+  command: node index.js
+  random-route: true  
