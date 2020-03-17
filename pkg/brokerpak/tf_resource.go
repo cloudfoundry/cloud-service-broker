@@ -15,6 +15,8 @@
 package brokerpak
 
 import (
+	"net/url"
+	"path/filepath"
 	"strings"
 
 	"github.com/pivotal/cloud-service-broker/pkg/validation"
@@ -52,12 +54,31 @@ func (tr *TerraformResource) Validate() (errs *validation.FieldError) {
 	)
 }
 
+func isURL(path string) bool {
+	_, err := url.ParseRequestURI(path)
+	if err != nil {
+		return false
+	}
+
+	u, err := url.Parse(path)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return false
+	}
+
+	return true
+}
+
 // Url constructs a download URL based on a platform.
 func (tr *TerraformResource) Url(platform Platform) string {
 	replacer := strings.NewReplacer("${name}", tr.Name, "${version}", tr.Version, "${os}", platform.Os, "${arch}", platform.Arch)
-	url := tr.UrlTemplate
-	if url == "" {
+	var url string
+	
+	if tr.UrlTemplate == "" {
 		url = HashicorpUrlTemplate
+	} else if isURL(tr.UrlTemplate) {
+		url = tr.UrlTemplate
+	} else {
+		url, _ = filepath.Abs(tr.UrlTemplate)
 	}
 
 	return replacer.Replace(url)

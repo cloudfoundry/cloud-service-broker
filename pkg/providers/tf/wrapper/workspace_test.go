@@ -123,6 +123,8 @@ func TestCustomTerraformExecutor(t *testing.T) {
 	}
 
 	for tn, tc := range cases {
+		tc.Input.Env = []string{"PATH=/foo", "ENV1=bar"}
+		tc.Expected.Env = []string{"PATH=/foo", "ENV1=bar", "PATH=/path/to/terraform-plugins:/foo"}
 		t.Run(tn, func(t *testing.T) {
 			actual := exec.Command("!actual-never-got-called!")
 
@@ -135,6 +137,10 @@ func TestCustomTerraformExecutor(t *testing.T) {
 
 			if actual.Path != tc.Expected.Path {
 				t.Errorf("path wasn't updated, expected: %q, actual: %q", tc.Expected.Path, actual.Path)
+			}
+
+			if !reflect.DeepEqual(actual.Env, tc.Expected.Env) {
+				t.Errorf("env wasn't updated, expected: %q, actual: %q", tc.Expected.Env, actual.Env)
 			}
 
 			if !reflect.DeepEqual(actual.Args, tc.Expected.Args) {

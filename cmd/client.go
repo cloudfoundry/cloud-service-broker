@@ -92,7 +92,7 @@ user-defined plans.
 		return client.Provision(instanceId, serviceId, planId, json.RawMessage(parametersJson))
 	})
 
-	deprovisionCmd := newClientCommand("deprovision", "Derovision a service", func(client *client.Client) *client.BrokerResponse {
+	deprovisionCmd := newClientCommand("deprovision", "Deprovision a service", func(client *client.Client) *client.BrokerResponse {
 		return client.Deprovision(instanceId, serviceId, planId)
 	})
 
