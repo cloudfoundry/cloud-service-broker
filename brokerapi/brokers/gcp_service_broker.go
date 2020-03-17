@@ -402,15 +402,17 @@ func (gcpBroker *GCPServiceBroker) LastOperation(ctx context.Context, instanceID
 	lastOperationType := instance.OperationType
 
 	done, err := serviceProvider.PollInstance(ctx, *instance)
+
 	if err != nil {
 		// this is a retryable error
 		if gerr, ok := err.(*googleapi.Error); ok {
 			if gerr.Code == 503 {
-				return brokerapi.LastOperation{State: brokerapi.InProgress}, err
+				return brokerapi.LastOperation{State: brokerapi.InProgress, Description: err.Error()}, nil
 			}
 		}
+
 		// This is not a retryable error. Return fail
-		return brokerapi.LastOperation{State: brokerapi.Failed}, err
+		return brokerapi.LastOperation{State: brokerapi.Failed, Description: err.Error()}, nil
 	}
 
 	if !done {

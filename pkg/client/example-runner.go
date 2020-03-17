@@ -22,6 +22,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/pivotal-cf/brokerapi"
@@ -33,18 +34,42 @@ import (
 // the service broker pointed to by client. All examples in the registry get run
 // if serviceName is blank. If exampleName is non-blank then only the example
 // with the given name is run.
-func RunExamplesForService(allExamples []CompleteServiceExample, client *Client, serviceName, exampleName string) error {
+func RunExamplesForService(allExamples []CompleteServiceExample, client *Client, serviceName, exampleName string, jobCount int) error {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	for _, completeServiceExample := range FilterMatchingServiceExamples(allExamples, serviceName, exampleName) {
-		if err := RunExample(client, completeServiceExample); err != nil {
-			return err
+	examples := make(chan CompleteServiceExample)
+	errors := make(chan error)
+	wg := &sync.WaitGroup{}
+
+	go func() {
+		defer close(examples)
+		for _, completeServiceExample := range FilterMatchingServiceExamples(allExamples, serviceName, exampleName) {
+			examples <- completeServiceExample		
 		}
+	}()
+
+	for i:=0; i<jobCount; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for example := range examples {
+				if err := RunExample(client, example); err != nil {
+					errors <- err
+				}
+			}
+		}()
 	}
 
-	return nil
+	go func() {
+		wg.Wait()
+		close(errors)
+	}()
 
+	var err error
+	for err = range errors {}
+
+	return err
 }
 
 // RunExamplesFromFile reads a json-encoded list of CompleteServiceExamples.
@@ -207,7 +232,7 @@ func retry(timeout, period time.Duration, function func() (tryAgain bool, err er
 }
 
 func pollUntilFinished(client *Client, instanceId string) error {
-	return retry(30*time.Minute, 15*time.Second, func() (bool, error) {
+	return retry(45*time.Minute, 30*time.Second, func() (bool, error) {
 		log.Println("Polling for async job")
 
 		resp := client.LastOperation(instanceId)
@@ -228,10 +253,14 @@ func pollUntilFinished(client *Client, instanceId string) error {
 
 		state := responseBody["state"]
 		eq := state == string(brokerapi.Succeeded)
+
+		if state == string(brokerapi.Failed) {
+			log.Printf("Last operation for %q was %q: %s\n", instanceId, state, responseBody["description"])
+			return false, fmt.Errorf(responseBody["description"])
+		}
+
 		log.Printf("Last operation for %q was %q\n", instanceId, state)
-
 		return !eq, nil
-
 	})
 }
 
@@ -252,7 +281,7 @@ func newExampleExecutor(client *Client, serviceExample CompleteServiceExample) (
 		Name:       fmt.Sprintf("%s/%s", serviceExample.ServiceName, serviceExample.ServiceExample.Name),
 		ServiceId:  serviceExample.ServiceId,
 		PlanId:     serviceExample.ServiceExample.PlanId,
-		InstanceId: fmt.Sprintf("ex%d", testid),
+		InstanceId: fmt.Sprintf("ex%d-%s", testid, os.ExpandEnv("${USER}")),
 		BindingId:  fmt.Sprintf("ex%d", testid),
 
 		ProvisionParams: provisionParams,

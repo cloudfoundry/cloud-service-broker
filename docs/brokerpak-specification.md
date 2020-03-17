@@ -48,15 +48,16 @@ and which services it will provide.
 | terraform_binaries* | array of Terraform resource | The list of Terraform providers and Terraform that'll be bundled with the brokerpak. |
 | service_definitions* | array of string | Each entry points to a file relative to the manifest that defines a service as part of the brokerpak. |
 | parameters | array of parameter | These values are set as environment variables when Terraform is executed. |
+| required_env_variables | array of string | These are the required environment variables that will be passed through to the terraform execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution.
 
 #### Platform object
 
 The platform OS and architecture follow Go's naming scheme.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| os* | string | The operating system of the platoform. |
-| arch* | string | The architecture of the platform. |
+| Field | Type | Description | Valid Values |
+| --- | --- | --- | --- |
+| os* | string | The operating system of the platform. | `linux`, `darwin` |
+| arch* | string | The architecture of the platform. | `"386"`, `amd64` |
 
 #### Terraform resource object
 
@@ -94,8 +95,8 @@ platforms:
   arch: amd64
 terraform_binaries:
 - name: terraform
-  version: 0.11.9
-  source: https://github.com/hashicorp/terraform/archive/v0.11.9.zip
+  version: 0.12.21
+  source: https://github.com/hashicorp/terraform/archive/v0.12.21.zip
 - name: terraform-provider-google
   version: 1.19.0
   source: https://github.com/terraform-providers/terraform-provider-google/archive/v1.19.0.zip
@@ -155,6 +156,7 @@ provision or bind action, and the inputs and outputs to that template.
 | user_inputs | array of variable | Defines constraints and settings for the variables users provide as part of their request. |
 | computed_inputs | array of computed variable | Defines default values or overrides that are executed before the template is run. |
 | template | string | The complete HCL of the Terraform template to execute. |
+| template_uri | string | A path to HCL of the Terraform template to execute. If present, this will be used to populate the `template` field. |
 | outputs | array of variable | Defines constraints and settings for the outputs of the Terraform template. This MUST match the Terraform outputs and the constraints WILL be used as part of integration testing. |
 
 #### Variable object
@@ -222,9 +224,8 @@ provision:
     details: The username to create
   computed_inputs: []
   template: |-
-    variable domain {type = "string"}
-    variable username {type = "string"}
-
+    variable domain {type = string}
+    variable username {type = "string}
     output email {value = "${var.username}@${var.domain}"}
 
   outputs:

@@ -222,7 +222,7 @@ type TerraformDeploymentV1 struct {
 	LastOperationState string
 
 	// LastOperationMessage is a description that can be passed back to the user.
-	LastOperationMessage string
+	LastOperationMessage string `sql:"type:text"`
 }
 
 // TableName returns a consistent table name (`tf_deployment`) for gorm so
