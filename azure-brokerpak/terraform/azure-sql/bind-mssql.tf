@@ -7,7 +7,7 @@ variable admin_password { type = string }
 resource "random_string" "username" {
   length = 16
   special = false
-
+  number = false
 }
 
 resource "random_password" "password" {
@@ -23,7 +23,7 @@ resource "null_resource" "create-sql-login" {
     command = "psqlcmd ${var.mssql_hostname} ${var.mssql_port} ${var.admin_username} ${var.admin_password} master \"CREATE LOGIN [${random_string.username.result}] with PASSWORD='${random_password.password.result}'\"" 
   }
 
-    provisioner "local-exec" {
+  provisioner "local-exec" {
 	  when = destroy
     command = "psqlcmd ${var.mssql_hostname} ${var.mssql_port} ${var.admin_username} ${var.admin_password} master \"DROP LOGIN [${random_string.username.result}]\""
   }
@@ -34,10 +34,9 @@ resource "null_resource" "create-sql-user-and-permissions" {
 
   provisioner "local-exec" {
     command = "psqlcmd ${var.mssql_hostname} ${var.mssql_port} ${var.admin_username} ${var.admin_password} ${var.mssql_db_name} \"CREATE USER [${random_string.username.result}] from LOGIN ${random_string.username.result};ALTER ROLE db_owner ADD MEMBER [${random_string.username.result}];\"" 
-
   }
 
-    provisioner "local-exec" {
+  provisioner "local-exec" {
 	  when = destroy
     command = "psqlcmd ${var.mssql_hostname} ${var.mssql_port} ${var.admin_username} ${var.admin_password} ${var.mssql_db_name} \"ALTER ROLE db_owner DROP MEMBER [${random_string.username.result}];DROP USER [${random_string.username.result}];\""
   }
