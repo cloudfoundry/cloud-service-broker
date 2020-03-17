@@ -5,10 +5,12 @@ go 1.13
 require (
 	cloud.google.com/go v0.45.1
 	code.cloudfoundry.org/lager v1.1.0
+	github.com/Azure/azure-sdk-for-go v36.2.0+incompatible
+	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
 	github.com/aws/aws-sdk-go v1.25.3
 	github.com/beorn7/perks v1.0.1
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d
-	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e // indirect
+	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e
 	github.com/drewolson/testflight v1.0.0 // indirect
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/fsnotify/fsnotify v1.4.7
