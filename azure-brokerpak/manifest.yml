@@ -10,8 +10,8 @@ platforms:
   arch: amd64
 terraform_binaries:
 - name: terraform
-  version: 0.12.21
-  source: https://github.com/hashicorp/terraform/archive/v0.12.21.zip  
+  version: 0.12.23
+  source: https://github.com/hashicorp/terraform/archive/v0.12.23.zip  
 - name: terraform-provider-azurerm
   version: 1.44.0
   source: https://github.com/terraform-providers/terraform-provider-azurerm/archive/v1.44.0.zip
@@ -41,3 +41,9 @@ service_definitions:
 - azure-mysql.yml
 - azure-mssql.yml
 - azure-mssql-failover.yml
+- azure-mongodb.yml
+- azure-eventhubs.yml
+
+
+
+

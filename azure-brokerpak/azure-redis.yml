@@ -22,20 +22,79 @@ documentation_url: https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/
 support_url: https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/
 tags: [azure, redis, preview]
 plans:
-- name: STANDARD
-  id: a38bfe6c-fa91-4002-8820-6c31bbd66446
-  description: 'Production ready cache with master/slave replication.'
-  display_name: "Standard"
+- name: small
+  id: 6B9CA24E-1DEC-4E6F-8C8A-DC6E11AB5BEF
+  description: 'A basic plan with 1GB cache and no failover. High Availability is not provided.'
+  display_name: "Small"
   properties:
-    service_tier: STANDARD
+    sku_name: Basic
+    family: C
+    capacity: 1    
+- name: medium
+  id: 6B272C43-2116-4483-9A99-DE9262C0A7D6
+  description: 'A basic plan with 6GB cache and no failover. High Availability is not provided.'
+  display_name: "Medium"
+  properties:
+    sku_name: Basic
+    family: C
+    capacity: 3
+- name: large
+  id: C3E34ABC-A820-457C-B723-1C342EF42C50
+  description: 'A basic plan with 26GB cache and no failover. High Availability is not provided.'
+  display_name: "Large"
+  properties:
+    sku_name: Basic
+    family: C
+    capacity: 5
+- name: ha-small
+  id: D27A8E60-3724-49D1-B668-44B03D99B3B3
+  description: 'A standard plan with 1GB cache with high availability and no failover.'
+  display_name: "High Availability Small"
+  properties:
+    sku_name: Standard
+    family: C
+    capacity: 1      
+- name: ha-medium
+  id: 421B932A-B86F-48A3-97E4-64BB13D3EC13
+  description: 'A standard plan with 6GB cache with high availability and no failover.'
+  display_name: "High Availability Medium"
+  properties:
+    sku_name: Standard
+    family: C
+    capacity: 3
+- name: ha-large
+  id: E919B281-9661-465D-82CF-0A0A6E1F195A
+  description: 'A standard plan with 26GB cache with high availability and no failover.'
+  display_name: "High Availability Large"
+  properties:
+    sku_name: Standard
+    family: C
+    capacity: 5          
 provision:
   plan_inputs:
-  - field_name: service_tier
-    required: true
+  - field_name: sku_name
+    required: false
     type: string
-    details: The service tier of the instance.
+    details: The SKU of Redis to use.
     enum:
-      STANDARD: Standard instance
+      Basic: Basic
+      Standard: Standard
+      Premium: Premium
+  - field_name: family
+    required: false
+    type: string
+    details: The SKU family/pricing group to use.
+    enum:
+      C: Basic/Standard
+      P: Premium
+  - field_name: capacity
+    required: false
+    type: integer
+    details: The size of the Redis cache to deploy. 
+    default: 1
+    constraints:
+      maximum: 6
+      minimum: 0
   user_inputs:
   - field_name: instance_name
     type: string
@@ -45,7 +104,7 @@ provision:
       maxLength: 98
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
-  - field_name: location
+  - field_name: region
     type: string
     details: The region of the Redis instance.
     default: West US
@@ -59,30 +118,26 @@ provision:
     overwrite: true
     type: object
   template: |-
-    variable service_tier { type = string }
+    variable sku_name { type = string }
+    variable family { type = string }
+    variable capacity { type = string }
     variable instance_name { type = string }
-    variable location { type = string }
+    variable region { type = string }
     variable labels { type = map }
 
     resource "azurerm_resource_group" "azure-redis" {
       name     = var.instance_name
-      location = var.location
+      location = var.region
       tags     = var.labels
     }
 
-    resource "random_string" "suffix" {
-      length  = 6
-      special = false
-      upper   = false
-    }
-
     resource "azurerm_redis_cache" "redis" {
-      name = var.instance_name
-      capacity            = 1
-      family              = "C"
+      name                = var.instance_name
+      sku_name            = var.sku_name
+      family              = var.family
+      capacity            = var.capacity
       location            = azurerm_resource_group.azure-redis.location
       resource_group_name = azurerm_resource_group.azure-redis.name
-      sku_name            = var.service_tier
       tags                = var.labels
     }
   
@@ -116,8 +171,33 @@ bind:
   template: ''
   outputs: []
 examples:
-- name: Redis cache
-  description: Redis is a fully managed service for the Azure Platform
-  plan_id: a38bfe6c-fa91-4002-8820-6c31bbd66446
+- name: redis-cache-small
+  description: Small redis cache
+  plan_id: 6B9CA24E-1DEC-4E6F-8C8A-DC6E11AB5BEF
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-medium
+  description: Medium redis cache
+  plan_id: 6B272C43-2116-4483-9A99-DE9262C0A7D6
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-large
+  description: Large redis cache
+  plan_id: C3E34ABC-A820-457C-B723-1C342EF42C50
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-ha-small
+  description: HA small redis cache
+  plan_id: D27A8E60-3724-49D1-B668-44B03D99B3B3
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-ha-medium
+  description: HA medium redis cache
+  plan_id: 421B932A-B86F-48A3-97E4-64BB13D3EC13
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-ha-large
+  description: HA large redis cache
+  plan_id: E919B281-9661-465D-82CF-0A0A6E1F195A
   provision_params: {}
   bind_params: {}

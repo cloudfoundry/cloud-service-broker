@@ -16,14 +16,23 @@ package interpolation
 
 import (
 	"reflect"
+	"sync"
 
 	"github.com/hashicorp/hil"
 	"github.com/hashicorp/hil/ast"
 )
 
+// there seems to be a race condition in the hil functions, 
+// specifically github.com/hashicorp/hil.registerBuiltins(), so 
+// synchronize use
+var hilMutex sync.Mutex
+
 // Eval evaluates the tempate string using hil https://github.com/hashicorp/hil
 // with the given variables that can be accessed form the string.
 func Eval(templateString string, variables map[string]interface{}) (interface{}, error) {
+	hilMutex.Lock()
+	defer hilMutex.Unlock()
+
 	tree, err := hil.Parse(templateString)
 	if err != nil {
 		return nil, err
@@ -56,6 +65,9 @@ func Eval(templateString string, variables map[string]interface{}) (interface{},
 // IsHILExpression returns true if the template is a HIL expression and false
 // otherwise.
 func IsHILExpression(template string) bool {
+	hilMutex.Lock()
+	defer hilMutex.Unlock()
+
 	tree, err := hil.Parse(template)
 	if err != nil {
 		return false

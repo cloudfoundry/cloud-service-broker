@@ -5,6 +5,9 @@ image_resource:
   type: docker-image
   source:
     repository: amidos/dcind
+params:
+  SERVICE_NAME:    
+  PARALLEL_JOB_COUNT: 1
 inputs:
 - name: brokerbuild
 - name: brokerpak
@@ -25,6 +28,10 @@ run:
       export GSB_BROKERPAK_BUILTIN_PATH=brokerpak
       export DB_HOST=localhost
       ./brokerbuild/cloud-service-broker.linux serve &
-      sleep 5
-      ./brokerbuild/cloud-service-broker.linux client run-examples
+      sleep 10
+      if [ -z "$SERVICE_NAME" ]; then
+        ./brokerbuild/cloud-service-broker.linux client run-examples -j "${PARALLEL_JOB_COUNT}"
+      else
+        ./brokerbuild/cloud-service-broker.linux client run-examples --service-name "${SERVICE_NAME}" -j "${PARALLEL_JOB_COUNT}"
+      fi
 

@@ -350,11 +350,34 @@ func DefaultExecutor(c *exec.Cmd) error {
 		"args": c.Args,
 		"dir":  c.Dir,
 	})
-	output, err := c.CombinedOutput()
+	stderr, err := c.StderrPipe()
+	if err != nil {
+		return fmt.Errorf("Failed to get stderr pipe for terraform execution: %v", err)
+	}
+
+	stdout, err := c.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("Failed to get stdout pipe for terraform execution: %v", err)
+	}
+
+	if err := c.Start(); err != nil {
+		return fmt.Errorf("Failed to execute terraform: %v", err)
+	}
+
+	output, _ := ioutil.ReadAll(stdout)
+	errors, _ := ioutil.ReadAll(stderr)
+
+	err = c.Wait();
+
 	logger.Info("results", lager.Data{
 		"output": string(output),
+		"errors": string(errors),
 		"error":  err,
 	})
 
-	return err
+	if err != nil {
+		return fmt.Errorf("%s %v", strings.ReplaceAll(string(errors),"\n", ""),err)
+	}
+
+	return nil
 }

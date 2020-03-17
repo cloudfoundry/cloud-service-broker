@@ -35,6 +35,7 @@ var (
 	serviceName string
 	exampleName string
 	fileName    string
+	exampleJobCount int
 )
 
 func init() {
@@ -130,7 +131,7 @@ user-defined plans.
 				if err := client.RunExamplesFromFile(apiClient, fileName, serviceName, exampleName); err != nil {
 					log.Fatalf("Error executing examples from file: %v", err)
 				}
-			} else if err := client.RunExamplesForService(server.GetExamplesFromServer(), apiClient, serviceName, exampleName); err != nil {
+			} else if err := client.RunExamplesForService(server.GetExamplesFromServer(), apiClient, serviceName, exampleName, exampleJobCount); err != nil {
 				log.Fatalf("Error executing examples: %v", err)
 			}
 
@@ -159,6 +160,7 @@ user-defined plans.
 	runExamplesCmd.Flags().StringVarP(&serviceName, "service-name", "", "", "name of the service to run tests for")
 	runExamplesCmd.Flags().StringVarP(&exampleName, "example-name", "", "", "only run examples matching this name")
 	runExamplesCmd.Flags().StringVarP(&fileName, "filename", "", "", "json file that contains list of CompleteServiceExamples")
+	runExamplesCmd.Flags().IntVarP(&exampleJobCount, "jobs", "j", 1, "number of parallel client examples to run concurrently")
 }
 
 func newClientCommand(use, short string, run func(*client.Client) *client.BrokerResponse) *cobra.Command {

@@ -5,6 +5,9 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-../../scripts/cf-test-service.sh azure-mysql Small
-../../scripts/cf-test-service.sh azure-redis STANDARD
-../../scripts/cf-test-service.sh azure-mssql Small
+cf marketplace
+
+../cf-test-spring-music.sh azure-mysql small
+../cf-test-spring-music.sh azure-redis small
+../cf-test-spring-music.sh azure-mongodb small '{"db_name": "musicdb", "collection_name": "album", "shard_key": "_id"}'
+

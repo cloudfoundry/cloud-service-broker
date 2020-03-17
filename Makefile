@@ -74,6 +74,7 @@ clean: deps-go-binary
 	rm -rf ./build
 	rm gcp-brokerpak/*.brokerpak
 	rm azure-brokerpak/*.brokerpak
+	rm aws-brokerpak/*.brokerpak
 
 .PHONY: lint
 lint: deps-goimports
@@ -142,7 +143,7 @@ run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux
 	-e ARM_TENANT_ID \
 	-e ARM_CLIENT_ID \
 	-e ARM_CLIENT_SECRET \
-	alpine /broker/build/cloud-service-broker.linux serve --config /broker/plans.yaml
+	alpine /broker/build/cloud-service-broker.linux serve
 
 # AWS broker 
 .PHONY: aws-brokerpak
