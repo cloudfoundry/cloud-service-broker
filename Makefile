@@ -123,7 +123,7 @@ test-brokerpak-azure:
 run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak test-brokerpak-azure
 	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
 
-azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml
+azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml ./azure-brokerpak/terraform/*/*.tf
 	cd ./azure-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
 .PHONY: push-broker-azure
@@ -146,7 +146,7 @@ run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux
 	-e ARM_TENANT_ID \
 	-e ARM_CLIENT_ID \
 	-e ARM_CLIENT_SECRET \
-	alpine /broker/build/cloud-service-broker.linux serve	
+	alpine /broker/build/cloud-service-broker.linux serve
 
 # AWS broker 
 .PHONY: aws-brokerpak
