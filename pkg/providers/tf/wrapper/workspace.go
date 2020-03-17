@@ -307,6 +307,16 @@ func CustomEnvironmentExecutor(environment map[string]string, wrapped TerraformE
 	}
 }
 
+func updatePath(vars []string, path string) string {
+	for _, envVar := range vars {
+		varPair := strings.Split(envVar, "=")
+		if strings.TrimSpace(varPair[0]) == "PATH" && len(varPair) > 1 {
+			return fmt.Sprintf("PATH=%s:%s", path, strings.TrimSpace(varPair[1]))
+		}
+	}
+	return fmt.Sprintf("PATH=%s", path)
+}
+
 // CustomTerraformExecutor executes a custom Terraform binary that uses plugins
 // from a given plugin directory rather than the Terraform that's on the PATH
 // which will download provider binaries from the web.
@@ -325,7 +335,7 @@ func CustomTerraformExecutor(tfBinaryPath, tfPluginDir string, wrapped Terraform
 		allArgs := append([]string{subCommand}, subCommandArgs...)
 		newCmd := exec.Command(tfBinaryPath, allArgs...)
 		newCmd.Dir = c.Dir
-		newCmd.Env = c.Env
+		newCmd.Env = append(c.Env, updatePath(c.Env, tfPluginDir))
 		return wrapped(newCmd)
 	}
 }
