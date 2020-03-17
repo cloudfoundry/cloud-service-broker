@@ -115,15 +115,12 @@ run-broker-gcp-docker: check-gcp-env-vars ./build/cloud-service-broker.linux gcp
 
 # Azure broker
 
-.PHONY:	test-brokerpak-azure
-test-brokerpak-azure:
-	docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
-
 .PHONY: run-broker-azure
-run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak test-brokerpak-azure
-	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
+run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
+	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve | tee broker.log
 
-azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml ./azure-brokerpak/terraform/*/*.tf
+azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml ./azure-brokerpak/terraform/*/*.tf /Users/ebilling/Documents/code/service-brokers/terraform-provider-sqlserver/build/*.zip
+	docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
 	cd ./azure-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
 .PHONY: push-broker-azure
@@ -131,7 +128,7 @@ push-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY)
 	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./scripts/push-broker.sh
 
 .PHONY: run-broker-azure-docker
-run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux azure-brokerpak/*.brokerpak test-brokerpak-azure
+run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux azure-brokerpak/*.brokerpak
 	GSB_BROKERPAK_BUILTIN_PATH=/broker/azure-brokerpak \
 	DB_HOST=host.docker.internal \
 	docker run --rm -p 8080:8080 -v $(PWD):/broker \
