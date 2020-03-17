@@ -16,6 +16,9 @@ package brokerpak
 
 import (
 	"errors"
+	"path/filepath"
+	"fmt"
+	"os"
 	"testing"
 
 	"github.com/pivotal/cloud-service-broker/pkg/validation"
@@ -39,6 +42,66 @@ func TestTerraformResource_Validate(t *testing.T) {
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
 			tc.Assert(t)
+		})
+	}
+}
+
+func TestTerraformResource_Url(t *testing.T) {
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Errorf("Unable to get current working dir %v", err)
+	}
+	cases := map[string]struct {
+		Resource	TerraformResource
+		Plat        Platform
+		ExpectedURL string
+	}{
+		"default": {
+			Resource: TerraformResource{
+				Name: "foo",
+				Version: "1.0",
+				Source: "github.com/myproject",
+			},
+			Plat: Platform{
+				Os: "my_os",
+				Arch: "my_arch",
+			},
+			ExpectedURL: fmt.Sprintf("https://releases.hashicorp.com/%s/%s/%s_%s_%s_%s.zip","foo", "1.0", "foo", "1.0", "my_os", "my_arch"),
+		},
+		"custom": {
+			Resource: TerraformResource{
+				Name: "foo",
+				Version: "1.0",
+				Source: "github.com/myproject",
+				UrlTemplate: "https://myproject/${name}_${version}_${os}_${arch}",
+			},
+			Plat: Platform{
+				Os: "my_os",
+				Arch: "my_arch",
+			},
+			ExpectedURL: fmt.Sprintf("https://myproject/%s_%s_%s_%s","foo", "1.0", "my_os", "my_arch"),
+		},
+		"handles_relative_path": {
+			Resource: TerraformResource{
+				Name: "foo",
+				Version: "1.0",
+				Source: "github.com/myproject",
+				UrlTemplate: "../test_path",
+			},
+			Plat: Platform{
+				Os: "my_os",
+				Arch: "my_arch",
+			},
+			ExpectedURL: fmt.Sprintf("%s/test_path", filepath.Dir(wd)),			
+		},
+	}
+
+	for tn, tc := range cases {
+		t.Run(tn, func(t *testing.T) {
+			url := tc.Resource.Url(tc.Plat)
+			if url != tc.ExpectedURL {
+				t.Errorf("Expected URL to be %v, got %v", tc.ExpectedURL, url)
+			}
 		})
 	}
 }

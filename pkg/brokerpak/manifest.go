@@ -151,7 +151,6 @@ func (m *Manifest) packBinaries(tmp string) error {
 	for _, platform := range m.Platforms {
 		platformPath := filepath.Join(tmp, "bin", platform.Os, platform.Arch)
 		for _, resource := range m.TerraformResources {
-
 			log.Println("\t", resource.Url(platform), "->", platformPath)
 			if err := getter.GetAny(platformPath, resource.Url(platform)); err != nil {
 				return err

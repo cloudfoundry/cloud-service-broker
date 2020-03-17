@@ -112,6 +112,10 @@ func (g *gsGetter) GetFile(dst string, u *url.URL) error {
 	return stream.Copy(stream.FromReadCloser(reader), stream.ToFile(dst))
 }
 
+func (g *gsGetter) SetClient(_ *getter.Client) {
+
+}
+
 func (gsGetter) objectAt(client *storage.Client, u *url.URL) *storage.ObjectHandle {
 	return client.Bucket(u.Hostname()).Object(strings.TrimPrefix(u.Path, "/"))
 }
