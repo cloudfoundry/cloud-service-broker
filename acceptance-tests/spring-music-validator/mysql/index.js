@@ -26,6 +26,7 @@ function mysqlShowTables(con) {
         })
     })
 }
+
 function mysqlQuerySpringMusic(con) {
     return new Promise((resolve, reject) => {
         con.query("SELECT * from album", (err, result, fields) => {

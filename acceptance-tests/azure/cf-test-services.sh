@@ -7,7 +7,7 @@ set -o nounset
 
 cf marketplace
 
-../../scripts/cf-test-service.sh azure-mysql small
-../../scripts/cf-test-service.sh azure-redis small
-../../scripts/cf-test-service.sh azure-mongodb small '{"db_name": "musicdb", "collection_name": "album", "shard_key": "_id"}'
+../cf-test-spring-music.sh azure-mysql small
+../cf-test-spring-music.sh azure-redis small
+../cf-test-spring-music.sh azure-mongodb small '{"db_name": "musicdb", "collection_name": "album", "shard_key": "_id"}'
 

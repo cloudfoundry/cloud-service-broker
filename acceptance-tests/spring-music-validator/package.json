@@ -13,7 +13,9 @@
   "author": "Ernie Billing",
   "license": "Apache-2.0",
   "dependencies": {
+    "mongodb": "^3.5.5",
     "mysql": "^2.18.1",
+    "redis": "^3.0.2",
     "restify": "^8.5.1",
     "vcap_services": "^0.7.1"
   }
