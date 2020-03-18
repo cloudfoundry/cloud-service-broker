@@ -19,6 +19,7 @@ run:
   args:    
     - -exc
     - |
+      apt-get update -y
       apt-get install -y zip
       if [ ! -z "${BROKER_PAK_DIR}" ]; then
         export BROKERPAK_VERSION=$(cat ../brokerpak-version/version)
