@@ -121,7 +121,7 @@ run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) 
 
 build-azure-brokerpak: azure-brokerpak/*.brokerpak
 
-azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml ./azure-brokerpak/terraform/*/*.tf /Users/ebilling/Documents/code/service-brokers/terraform-provider-sqlserver/build/*.zip ./build/psqlcmd_*.zip
+azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml ./azure-brokerpak/terraform/*/*.tf ./build/psqlcmd_*.zip
 	docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
 	cd ./azure-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
