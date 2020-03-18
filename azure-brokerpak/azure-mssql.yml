@@ -22,7 +22,7 @@ documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/
 support_url: https://docs.microsoft.com/en-us/azure/sql-database/
 tags: [azure, mssql, sqlserver, preview]
 plans:
-- name: Small
+- name: small
   id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
   description: 'SQL Server latest version. Instance properties: General Purpose - Serverless ; 0.5 - 2 cores ; Max Memory: 6gb ; 50 GB storage ; auto-pause enabled after 1 hour of inactivity'
   display_name: "Small"
@@ -30,7 +30,7 @@ plans:
     pricing_tier: GP_S
     cores: 2
     storage_gb: 50
-- name: Medium
+- name: medium
   id: 9295b05a-58c9-11ea-b9df-00155d2c938f
   description: 'SQL Server latest version. Instance properties: General Purpose - Provisioned ; Provisioned Capacity ; 8 cores ; 200 GB storage'
   display_name: "Medium"
@@ -38,7 +38,7 @@ plans:
     pricing_tier: GP
     cores: 8
     storage_gb: 200
-- name: Large
+- name: large
   id: 9dc5e814-58c9-11ea-9e77-00155d2c938f
   description: 'SQL Server latest version. Instance properties: Hyperscale ; Provisioned Capacity ; 24 cores ; Unlimited Storage ; 2 read replica ; Auto-failover group enabled'
   display_name: "Large"
@@ -46,10 +46,10 @@ plans:
     pricing_tier: HS
     cores: 24
     storage_gb: 500
-- name: Extra Large
+- name: extra-large
   id: a94f7192-5cba-11ea-8b5a-00155d7cdd25
   description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 80 cores ; 1 TB storage ; 1 read replica; Auto-failover group enabled'
-  display_name: "XLarge"
+  display_name: "Extra Large"
   properties:
     pricing_tier: BC
     cores: 40
@@ -226,22 +226,22 @@ bind:
     type: string
     details: The audit enabled JDBC URL to connect to the database server and database.    
 examples:
-- name: azuresql-db-small configuration
+- name: azuresql-db-small-configuration
   description: Create a small Azure SQL Database
   plan_id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
   provision_params: {}
   bind_params: {}
-- name: azuresql-db-medium configuration
+- name: azuresql-db-medium-configuration
   description: Create a medium Azure SQL Database
   plan_id: 9295b05a-58c9-11ea-b9df-00155d2c938f
   provision_params: {}
   bind_params: {}
-- name: azuresql-db-large configuration
+- name: azuresql-db-large-configuration
   description: Create a large Azure SQL Database
   plan_id: 9dc5e814-58c9-11ea-9e77-00155d2c938f
   provision_params: {}
   bind_params: {}
-- name: azuresql-db-xlarge configuration
+- name: azuresql-db-xlarge-configuration
   description: Create an extra large Azure SQL Database
   plan_id: a94f7192-5cba-11ea-8b5a-00155d7cdd25
   provision_params: {}
