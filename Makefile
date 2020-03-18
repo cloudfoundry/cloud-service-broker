@@ -70,11 +70,12 @@ docs/customization.md:
 
 .PHONY: clean
 clean: deps-go-binary
-	$(GO) clean --modcache
-	rm -rf ./build
-	rm gcp-brokerpak/*.brokerpak
-	rm azure-brokerpak/*.brokerpak
-	rm aws-brokerpak/*.brokerpak
+	-$(GO) clean --modcache
+	-rm -rf ./build
+	-rm gcp-brokerpak/*.brokerpak
+	-rm azure-brokerpak/*.brokerpak
+	-rm aws-brokerpak/*.brokerpak
+	-cd tools/psqlcmd; $(MAKE) clean
 
 .PHONY: lint
 lint: deps-goimports
@@ -83,10 +84,10 @@ lint: deps-goimports
 # GCP broker
 
 .PHONY:	lint-brokerpak-gcp
-lint-brokerpak-gcp:
-	docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/gcp-brokerpak
+build-gcp-brokerpak: gcp-brokerpak/*.brokerpak
 
-gcp-brokerpak/*.brokerpak: lint-brokerpak-gcp ./build/cloud-service-broker.$(OSFAMILY) ./gcp-brokerpak/*.yml
+gcp-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./gcp-brokerpak/*.yml
+	# docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/gcp-brokerpak
 	cd ./gcp-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
 .PHONY: run-broker-gcp
@@ -122,7 +123,7 @@ run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) 
 build-azure-brokerpak: azure-brokerpak/*.brokerpak
 
 azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml ./azure-brokerpak/terraform/*/*.tf ./build/psqlcmd_*.zip
-	docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
+	# docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
 	cd ./azure-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
 .PHONY: push-broker-azure
@@ -154,7 +155,10 @@ run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux
 .PHONY: aws-brokerpak
 aws-brokerpak: aws-brokerpak/*.brokerpak
 
+build-aws-brokerpak: aws-brokerpak/*.brokerpak
+
 aws-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./aws-brokerpak/*.yml
+	# docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/aws-brokerpak
 	cd ./aws-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
 .PHONY: run-broker-aws 
