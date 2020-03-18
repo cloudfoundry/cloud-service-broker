@@ -137,7 +137,7 @@ func TestTfServiceDefinitionV1Plan_ToPlan(t *testing.T) {
 				Description: "Builds emails for example.com.",
 				Bullets:     []string{"information point 1", "information point 2", "some caveat here"},
 				Free:        false,
-				Properties: map[string]string{
+				Properties: map[string]interface{}{
 					"domain": "example.com",
 				},
 			},
@@ -152,7 +152,7 @@ func TestTfServiceDefinitionV1Plan_ToPlan(t *testing.T) {
 						DisplayName: "example.com email builder",
 					},
 				},
-				ServiceProperties: map[string]string{"domain": "example.com"}},
+				ServiceProperties: map[string]interface{}{"domain": "example.com"}},
 		},
 	}
 

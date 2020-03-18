@@ -58,7 +58,7 @@ type TfServiceDefinitionV1Plan struct {
 	DisplayName        string                 `yaml:"display_name"`
 	Bullets            []string               `yaml:"bullets,omitempty"`
 	Free               bool                   `yaml:"free,omitempty"`
-	Properties         map[string]string      `yaml:"properties"`
+	Properties         map[string]interface{} `yaml:"properties"`
 	ProvisionOverrides map[string]interface{} `yaml:"provision_overrides,omitempty"`
 	BindOverrides      map[string]interface{} `yaml:"bind_overrides,omitempty"`
 }
@@ -383,7 +383,7 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 				Description: "Builds emails for example.com.",
 				Bullets:     []string{"information point 1", "information point 2", "some caveat here"},
 				Free:        false,
-				Properties: map[string]string{
+				Properties: map[string]interface{}{
 					"domain":                 "example.com",
 					"password_special_chars": `@/ \"?`,
 				},
