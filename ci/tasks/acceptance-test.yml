@@ -6,11 +6,11 @@ image_resource:
   source:
     repository: amidos/dcind
 params:
-  SERVICE_NAME:    
+  SERVICE_NAME:
+  GSB_BROKERPAK_BUILTIN_PATH:
   PARALLEL_JOB_COUNT: 1
 inputs:
 - name: brokerbuild
-- name: brokerpak
 run:
   path: /bin/bash
   args:    
@@ -25,13 +25,12 @@ run:
       docker run --rm --network host --name test-mysql -e MYSQL_ROOT_PASSWORD=${DB_PASSWORD} -e MYSQL_DATABASE="${DB_NAME}" -d mysql:5.7
       sleep 45
       export PORT=8080
-      export GSB_BROKERPAK_BUILTIN_PATH=brokerpak
       export DB_HOST=localhost
-      ./brokerbuild/cloud-service-broker.linux serve &
+      ./brokerbuild/build/cloud-service-broker.linux serve &
       sleep 10
       if [ -z "$SERVICE_NAME" ]; then
-        ./brokerbuild/cloud-service-broker.linux client run-examples -j "${PARALLEL_JOB_COUNT}"
+        ./brokerbuild/build/cloud-service-broker.linux client run-examples -j "${PARALLEL_JOB_COUNT}"
       else
-        ./brokerbuild/cloud-service-broker.linux client run-examples --service-name "${SERVICE_NAME}" -j "${PARALLEL_JOB_COUNT}"
+        ./brokerbuild/build/cloud-service-broker.linux client run-examples --service-name "${SERVICE_NAME}" -j "${PARALLEL_JOB_COUNT}"
       fi
 
