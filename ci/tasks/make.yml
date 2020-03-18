@@ -9,16 +9,24 @@ image_resource:
 inputs:
 - name: cloud-service-broker
 - name: version
+- name: brokerpak-version
 params:
   MAKE_TARGET: build
+  BROKER_PAK_DIR: 
 run:
   dir: cloud-service-broker
   path: /bin/bash
   args:    
     - -exc
     - |
+      if [ ! -z "${BROKER_PAK_DIR}"]; then
+        export BROKERPAK_VERSION=$(cat ../brokerpak-version/version)
+        mv ${BROKER_PAK_DIR}/manifest.yml ${BROKER_PAK_DIR}/manifest.yml.orig
+        sed "s/^version:.*/version: ${BROKERPAK_VERSION}/" < ${BROKER_PAK_DIR}/manifest.yml.orig > ${BROKER_PAK_DIR}/manifest.yml
+      fi
       export VERSION=$(cat ../version/version)
       make ${MAKE_TARGET}
+
 outputs:
   - name: build
     path: cloud-service-broker
