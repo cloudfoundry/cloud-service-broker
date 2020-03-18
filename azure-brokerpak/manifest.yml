@@ -25,17 +25,14 @@ terraform_binaries:
   version: 2.1.0
   source: https://releases.hashicorp.com/terraform-provider-null/2.1.0/terraform-provider-null_2.1.0_linux_amd64.zip
 - name: psqlcmd
-  version: 1.0.0
+  version: 0.1.0
   source: https://packages.microsoft.com/config/rhel/7/packages-microsoft-prod.rpm
-  url_template: /Users/sujit/repos/cloud-service-broker/tools/psqlcmd/psqlcmd.zip
-
-
+  url_template: ../build/${name}_${version}_${os}_${arch}.zip
 required_env_variables:
 - ARM_SUBSCRIPTION_ID
 - ARM_TENANT_ID
 - ARM_CLIENT_ID
 - ARM_CLIENT_SECRET
-- TF_LOG
 service_definitions:
 - azure-redis.yml
 - azure-mysql.yml
