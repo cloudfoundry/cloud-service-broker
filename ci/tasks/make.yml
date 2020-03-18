@@ -1,0 +1,24 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: golang
+    tag: "1.13"
+inputs:
+- name: cloud-service-broker
+- name: version
+params:
+  MAKE_TARGET: build
+run:
+  dir: cloud-service-broker
+  path: /bin/bash
+  args:    
+    - -exc
+    - |
+      export VERSION=$(cat ../version/version)
+      make ${MAKE_TARGET}
+outputs:
+  - name: build
+    path: cloud-service-broker

@@ -119,7 +119,9 @@ run-broker-gcp-docker: check-gcp-env-vars ./build/cloud-service-broker.linux gcp
 run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
 	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve | tee broker.log
 
-azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml ./azure-brokerpak/terraform/*/*.tf /Users/ebilling/Documents/code/service-brokers/terraform-provider-sqlserver/build/*.zip
+build-azure-brokerpak: azure-brokerpak/*.brokerpak
+
+azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml ./azure-brokerpak/terraform/*/*.tf /Users/ebilling/Documents/code/service-brokers/terraform-provider-sqlserver/build/*.zip ./build/psqlcmd_*.zip
 	docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
 	cd ./azure-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
@@ -144,6 +146,9 @@ run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux
 	-e ARM_CLIENT_ID \
 	-e ARM_CLIENT_SECRET \
 	alpine /broker/build/cloud-service-broker.linux serve
+
+./build/psqlcmd_*.zip: 
+	cd tools/psqlcmd; $(MAKE) build
 
 # AWS broker 
 .PHONY: aws-brokerpak

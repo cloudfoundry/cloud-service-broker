@@ -34,12 +34,12 @@ ifndef HAS_GO_IMPORTS
 endif
 
 .PHONY: build
-build: build/$(EXE_NAME)_$(VERSION)_linux_amd64.zip build/$(EXE_NAME)_$(VERSION)_darwin_amd64.zip
+build: ../../build/$(EXE_NAME)_$(VERSION)_linux_amd64.zip ../../build/$(EXE_NAME)_$(VERSION)_darwin_amd64.zip
 
-build/$(EXE_NAME)_$(VERSION)_linux_amd64.zip: build/linux/$(EXE_NAME)
+../../build/$(EXE_NAME)_$(VERSION)_linux_amd64.zip: build/linux/$(EXE_NAME)
 	zip -j -r $@ $<
 
-build/$(EXE_NAME)_$(VERSION)_darwin_amd64.zip: build/darwin/$(EXE_NAME)
+../../build/$(EXE_NAME)_$(VERSION)_darwin_amd64.zip: build/darwin/$(EXE_NAME)
 	zip -j -r $@ $<
 
 build/linux/$(EXE_NAME): $(SRC)
