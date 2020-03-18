@@ -13,6 +13,7 @@ inputs:
 - name: brokerbuild
 run:
   path: /bin/bash
+  dir: brokerbuild
   args:    
     - -exc
     - |
@@ -26,11 +27,12 @@ run:
       sleep 45
       export PORT=8080
       export DB_HOST=localhost
-      ./brokerbuild/build/cloud-service-broker.linux serve &
+      echo "Using brokerpak dir ${GSB_BROKERPAK_BUILTIN_PATH}"
+      ./build/cloud-service-broker.linux serve &
       sleep 10
       if [ -z "$SERVICE_NAME" ]; then
-        ./brokerbuild/build/cloud-service-broker.linux client run-examples -j "${PARALLEL_JOB_COUNT}"
+        ./build/cloud-service-broker.linux client run-examples -j "${PARALLEL_JOB_COUNT}"
       else
-        ./brokerbuild/build/cloud-service-broker.linux client run-examples --service-name "${SERVICE_NAME}" -j "${PARALLEL_JOB_COUNT}"
+        ./build/cloud-service-broker.linux client run-examples --service-name "${SERVICE_NAME}" -j "${PARALLEL_JOB_COUNT}"
       fi
 
