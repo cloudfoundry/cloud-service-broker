@@ -10,12 +10,15 @@ variable storage_gb { type = number }
 resource "random_string" "username" {
   length = 16
   special = false
+  number = false
 }
 
 resource "random_password" "password" {
-  length = 16
-  special = true
-  override_special = "_@"
+  length = 64
+  override_special = "~_-."
+  min_upper = 2
+  min_lower = 2
+  min_special = 2
 }
 
 resource "azurerm_resource_group" "azure_sql" {
@@ -133,29 +136,8 @@ locals {
 output "sqldbName" {value = "${azurerm_sql_database.azure_sql_db.name}"}
 output "sqlServerName" {value = "${azurerm_sql_failover_group.failover_group.name}"}
 output "sqlServerFullyQualifiedDomainName" {value = local.serverFQDN}
-output "databaseLogin" {value = "${random_string.username.result}"}
-output "databaseLoginPassword" {value = "${random_password.password.result}"}
-output "jdbcUrl" {
-    value = format("jdbc:sqlserver://%s:1433;database=%s;user=%s;password=%s;Encrypt=true;TrustServerCertificate=false;HostNameInCertificate=*.database.windows.net;loginTimeout=30", 
-                   local.serverFQDN, 
-                   azurerm_sql_database.azure_sql_db.name,
-                   random_string.username.result, 
-                   random_password.password.result)
-}
-output "jdbcUrlForAuditingEnabled" {
-    value = format("jdbc:sqlserver://%s:1433;database=%s;user=%s;password=%s;Encrypt=true;TrustServerCertificate=false;HostNameInCertificate=*.database.windows.net;loginTimeout=30", 
-                   local.serverFQDN, 
-                   azurerm_sql_database.azure_sql_db.name, 
-                   random_string.username.result, 
-                   random_password.password.result)
-}
 output "hostname" {value = "${azurerm_sql_failover_group.failover_group.name}"}
 output "port" {value = 1433}
 output "name" {value = "${azurerm_sql_database.azure_sql_db.name}"}
 output "username" {value = "${random_string.username.result}"}
 output "password" {value = "${random_password.password.result}"}
-output "uri" {
-    value = format("mssql://%s:1433/%s?encrypt=true&TrustServerCertificate=false&HostNameInCertificate=*.database.windows.net", 
-                    local.serverFQDN, 
-                    azurerm_sql_database.azure_sql_db.name)
-}
