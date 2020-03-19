@@ -9,6 +9,7 @@ variable storage_gb { type = number }
 resource "random_string" "username" {
   length = 16
   special = false
+  number = false
 }
 
 resource "random_password" "password" {

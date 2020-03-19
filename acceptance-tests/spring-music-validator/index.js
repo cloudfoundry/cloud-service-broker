@@ -3,6 +3,7 @@ const vcapServices = require('vcap_services');
 const testMysql = require('./mysql')
 const testRedis = require('./redis')
 const testMongodb = require('./mongodb')
+const testSqlserver = require('./sqlserver')
 
 function runServer(content) {
     const server = restify.createServer();
@@ -19,7 +20,8 @@ function runServer(content) {
 let tests = [
     { tag: 'mysql', testFunc: testMysql },
     { tag: 'redis', testFunc: testRedis },
-    { tag: 'mongodb', testFunc: testMongodb }
+    { tag: 'mongodb', testFunc: testMongodb },
+    { tag: 'sqlserver', testFunc: testSqlserver }
 ]
 
 let credentials = vcapServices.findCredentials({ instance: { tags: tests[0].tag } });
