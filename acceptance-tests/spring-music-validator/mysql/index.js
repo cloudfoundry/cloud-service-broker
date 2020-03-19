@@ -1,10 +1,10 @@
-var mysql = require('mysql');
+const mysql = require('mysql');
 
 // reject with error
 // resolve with connection
 function connectMysql(params) {
     return new Promise((resolve, reject) => {
-        let con = mysql.createConnection(params)
+        var con = mysql.createConnection(params)
         con.connect(err => {
             if (err) {
                 reject(err)
