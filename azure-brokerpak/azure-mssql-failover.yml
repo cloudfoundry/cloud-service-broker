@@ -22,7 +22,7 @@ documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-datab
 support_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
 tags: [azure, mssql, sqlserver, dr, failover, preview]
 plans:
-- name: Small
+- name: small
   id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
   description: 'SQL Server latest version. Instance properties: General Purpose - Serverless ; 0.5 - 2 cores ; Max Memory: 6gb ; 50 GB storage ; auto-pause enabled after 1 hour of inactivity'
   display_name: "Small"
@@ -30,7 +30,7 @@ plans:
     pricing_tier: GP_S
     cores: 2
     storage_gb: 50
-- name: Medium
+- name: medium
   id: c5e8ec57-ab5a-4bbf-ac6d-5075a97ed1a5
   description: 'SQL Server latest version. Instance properties: General Purpose - Provisioned ; Provisioned Capacity ; 8 cores ; 200 GB storage'
   display_name: "Medium"
@@ -38,7 +38,7 @@ plans:
     pricing_tier: GP
     cores: 8
     storage_gb: 200
-- name: Large
+- name: large
   id: 605a7a26-b1dd-4ce5-a382-4233e98469a8
   description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 80 cores ; 1 TB storage ; 1 read replica; Auto-failover group enabled'
   display_name: "XLarge"
@@ -187,18 +187,6 @@ provision:
   - field_name: sqlServerFullyQualifiedDomainName
     type: string
     details: The fully qualifief domain name (FQDN) of the Azure SQL Server
-  - field_name: databaseLogin
-    type: string
-    details: The username to authenticate to the database server.
-  - field_name: databaseLoginPassword
-    type: string
-    details: The password to authenticate to the database server.
-  - field_name: jdbcUrl
-    type: string
-    details: The JDBC URL to connect to the database server and database.
-  - field_name: jdbcUrlForAuditingEnabled
-    type: string
-    details: The audit enabled JDBC URL to connect to the database server and database.
   - field_name: hostname
     type: string
     details: Hostname of the Azure SQL Server
@@ -214,27 +202,65 @@ provision:
   - field_name: password
     type: string
     details: The password to authenticate to the database server.
-  - field_name: uri
-    type: string
-    details: The uri to connect to the database server and database.
 bind:
   plan_inputs: []
   user_inputs: []
-  computed_inputs: []
-  template: ''
-  outputs: []
+  computed_inputs:
+  - name: mssql_db_name
+    type: string
+    default: ${instance.details["name"]}
+    overwrite: true
+  - name: mssql_hostname
+    type: string
+    default: ${instance.details["hostname"]}
+    overwrite: true
+  - name: mssql_port
+    type: integer
+    default: ${instance.details["port"]}
+    overwrite: true
+  - name: admin_username
+    type: string
+    default: ${instance.details["username"]}
+    overwrite: true
+  - name: admin_password
+    type: string
+    default: ${instance.details["password"]}
+    overwrite: true
+  template_ref: terraform/azure-sql/bind-mssql.tf
+  outputs:
+  - field_name: username
+    type: string
+    details: The username to authenticate to the database instance.
+  - field_name: password
+    type: string
+    details: The password to authenticate to the database instance.  
+  - field_name: uri
+    type: string
+    details: The uri to connect to the database instance and database.
+  - field_name: jdbcUrl
+    type: string
+    details: The jdbc url to connect to the database instance and database.    
+  - field_name: jdbcUrlForAuditingEnabled
+    type: string
+    details: The audit enabled JDBC URL to connect to the database server and database.    
+  - field_name: databaseLogin
+    type: string
+    details: The username to authenticate to the database server.
+  - field_name: databaseLoginPassword
+    type: string
+    details: The password to authenticate to the database server.    
 examples:
-- name: failover group azuresql-db-small configuration
+- name: failover group azuresql-db-small-configuration
   description: Create a small Azure SQL Database failover group 
   plan_id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
   provision_params: {}
   bind_params: {}
-- name: failover group azuresql-db-medium configuration
+- name: failover group azuresql-db-medium-configuration
   description: Create a medium Azure SQL Database failover group 
   plan_id: c5e8ec57-ab5a-4bbf-ac6d-5075a97ed1a5
   provision_params: {}
   bind_params: {}
-- name: failover group azuresql-db-large configuration
+- name: failover group azuresql-db-large-configuration
   description: Create a large Azure SQL Database failover group 
   plan_id: 605a7a26-b1dd-4ce5-a382-4233e98469a8
   provision_params: {}

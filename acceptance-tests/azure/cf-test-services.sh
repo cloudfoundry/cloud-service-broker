@@ -11,4 +11,5 @@ cf marketplace
 ../cf-test-spring-music.sh azure-redis small
 ../cf-test-spring-music.sh azure-mongodb small '{"db_name": "musicdb", "collection_name": "album", "shard_key": "_id"}'
 ../cf-test-spring-music.sh azure-mssql small
+../cf-test-spring-music.sh azure-mssql-failover-group small
 

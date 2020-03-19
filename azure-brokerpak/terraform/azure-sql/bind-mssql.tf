@@ -70,3 +70,6 @@ output "uri" {
                  var.mssql_port,
                  var.mssql_db_name)
 }
+output "databaseLogin" {value = random_string.username.result}
+output "databaseLoginPassword" {value = random_password.password.result}
+
