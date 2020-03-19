@@ -37,7 +37,26 @@ module.exports = async function (credentials, runServer) {
         content += JSON.stringify(result.rows)
         return Promise.resolve(result.connection)    
     }).then(() => {
+
         return connectSqlserver(credentials.uri)
+    }).then((pool) => {
+        return sqlserverShowTables(pool)
+    }).then((result) => {
+        content += JSON.stringify(result.tables)
+        return Promise.resolve(result.pool)
+    }).then((pool) => {
+        return sqlserverQuerySpringMusic(pool)
+    }).then((result) => {
+        content += JSON.stringify(result.rows)
+        return Promise.resolve(result.connection)
+    }).then(() => {
+
+        return connectSqlserver({
+            server: credentials.sqlServerFullyQualifiedDomainName,
+            user: credentials.databaseLogin,
+            password: credentials.databaseLoginPassword,
+            database: credentials.sqldbName
+        })
     }).then((pool) => {
         return sqlserverShowTables(pool)
     }).then((result) => {

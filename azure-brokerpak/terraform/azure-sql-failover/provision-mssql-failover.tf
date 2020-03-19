@@ -133,11 +133,11 @@ resource "azurerm_sql_firewall_rule" "server2" {
 locals {
     serverFQDN = format("%s.database.windows.net", azurerm_sql_failover_group.failover_group.name)
 }
-output "sqldbName" {value = "${azurerm_sql_database.azure_sql_db.name}"}
-output "sqlServerName" {value = "${azurerm_sql_failover_group.failover_group.name}"}
+output "sqldbName" {value = azurerm_sql_database.azure_sql_db.name}
+output "sqlServerName" {value = azurerm_sql_failover_group.failover_group.name}
 output "sqlServerFullyQualifiedDomainName" {value = local.serverFQDN}
-output "hostname" {value = "${azurerm_sql_failover_group.failover_group.name}"}
+output "hostname" {value = local.serverFQDN}
 output "port" {value = 1433}
-output "name" {value = "${azurerm_sql_database.azure_sql_db.name}"}
-output "username" {value = "${random_string.username.result}"}
-output "password" {value = "${random_password.password.result}"}
+output "name" {value = azurerm_sql_database.azure_sql_db.name}
+output "username" {value = random_string.username.result}
+output "password" {value = random_password.password.result}

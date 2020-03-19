@@ -142,30 +142,18 @@ provision:
     overwrite: true
     type: object
   outputs:
-  - field_name: sqldbName
-    type: string
-    details: The name of the database.
   - field_name: sqldbResourceGroup
     type: string
     details: Azure resource group for the database server and database.
+  - field_name: sqldbName
+    type: string
+    details: The name of the database.
   - field_name: sqlServerName
     type: string
     details: Hostname of the Azure SQL Server
   - field_name: sqlServerFullyQualifiedDomainName
     type: string
-    details: The fully qualifief domain name (FQDN) of the Azure SQL Server
-  - field_name: databaseLogin
-    type: string
-    details: The username to authenticate to the database server.
-  - field_name: databaseLoginPassword
-    type: string
-    details: The password to authenticate to the database server.
-  - field_name: jdbcUrl
-    type: string
-    details: The JDBC URL to connect to the database server and database.
-  - field_name: jdbcUrlForAuditingEnabled
-    type: string
-    details: The audit enabled JDBC URL to connect to the database server and database.
+    details: The fully qualifief domain name (FQDN) of the Azure SQL Server    
   - field_name: hostname
     type: string
     details: Hostname of the Azure SQL Server
@@ -181,9 +169,6 @@ provision:
   - field_name: password
     type: string
     details: The password to authenticate to the database server.
-  - field_name: uri
-    type: string
-    details: The uri to connect to the database server and database.
 bind:
   plan_inputs: []
   user_inputs: []
@@ -225,6 +210,12 @@ bind:
   - field_name: jdbcUrlForAuditingEnabled
     type: string
     details: The audit enabled JDBC URL to connect to the database server and database.    
+  - field_name: databaseLogin
+    type: string
+    details: The username to authenticate to the database server.
+  - field_name: databaseLoginPassword
+    type: string
+    details: The password to authenticate to the database server.
 examples:
 - name: azuresql-db-small-configuration
   description: Create a small Azure SQL Database
