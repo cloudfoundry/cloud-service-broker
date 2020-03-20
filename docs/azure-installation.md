@@ -26,7 +26,7 @@ If a MySQL instance needs to be manually provisioned, it must be accessible to a
 - `DB_USERNAME`
 - `DB_PASSWORD`
 
-## Step by Step The Quick Way
+## Step By Step The Quick Way
 Maybe the simplest way is to create the state database with MASB and then use the Makefile to deploy and register the broker.
 
 ### Requirements
@@ -43,15 +43,9 @@ The `cf` CLI has been used to authenticate with a foundation (`cf api` and `cf l
 ### Clone the Repo
 The following commands will clone the service broker repository and cd into the resulting directory.
 ```bash
-git clone https://github.com/pivotal/cloud-service-broker.git
-cd cloud-service-broker
+git clone https://github.com/pivotal/"${APP_NAME}".git
+cd "${APP_NAME}"
 ```
-### Create a MySQL instance with MASB
-The following command will create a basic MySQL database instance named `csb-sql`
-```bash
-cf create-service azure-mysqldb basic1 csb-sql
-```
-
 ### Set Required Environment Variables
 Collect the Azure service credentials for your account and set them as environment variables:
 ```bash
@@ -65,19 +59,68 @@ Generate username and password for the broker - Cloud Foundry will use these cre
 export SECURITY_USER_NAME=someusername
 export SECURITY_USER_PASSWORD=somepassword
 ```
+### Create a MySQL instance with MASB
+The following command will create a basic MySQL database instance named `csb-sql`
+```bash
+cf create-service azure-mysqldb basic1 csb-sql
+```
 ### Use the Makefile to Deploy the Broker
 There is a make target that will build the broker and brokerpak and deploy to and register with Cloud Foundry as a space scoped broker. This will be local and private to the org and space your `cf` CLI is targeting.
 ```bash
 make push-broker-azure
 ```
-Once this completes, the output from `cf marketplace` should inlude:
+Once this completes, the output from `cf marketplace` should include:
 ```
-azure-mongodb                small, medium, large                                                                                                                                                                                                                      The Cosmos DB service implements wire protocols for MongoDB.  Azure Cosmos DB is Microsoft's globally distributed, multi-model database service for mission-critical application
-azure-mssql                  small, medium, large, extra-large                                                                                                                                                                                                         Azure SQL Database is a fully managed service for the Azure Platform
-azure-mssql-db               small, medium, large, extra-large                                                                                                                                                                                                         Manage Azure SQL Databases on pre-provisioned database servers
-azure-mssql-failover-group   small, medium, large                                                                                                                                                                                                                      Manages auto failover group for managed Azure SQL on the Azure Platform
-azure-mssql-server           standard                                                                                                                                                                                                                                  Azure SQL Server (no database attached)
-azure-mysql                  small, medium, large                                                                                                                                                                                                                      Mysql is a fully managed service for the Azure Platform
-azure-redis                  small, medium, large, ha-small, ha-medium, ha-large                                                                                                                                                                                       Redis is a fully managed service for the Azure Platform
+azure-mongodb                small, medium, large                        The Cosmos DB service implements wire protocols for MongoDB.  Azure Cosmos DB is Microsoft's globally distributed, multi-model database service for mission-critical application
+azure-mssql                  small, medium, large, extra-large           Azure SQL Database is a fully managed service for the Azure Platform
+azure-mssql-db               small, medium, large, extra-large           Manage Azure SQL Databases on pre-provisioned database servers
+azure-mssql-failover-group   small, medium, large                        Manages auto failover group for managed Azure SQL on the Azure Platform
+azure-mssql-server           standard                                    Azure SQL Server (no database attached)
+azure-mysql                  small, medium,                              Mysql is a fully managed service for the Azure Platform
+azure-redis                  small, medium, large, ha-small, ha-medium,  Redis is a fully managed service for the Azure Platform
+```
+## Step By Step Slightly Harder Way
+
+Requirements and assumptions are the same as above. Follow instructions for the first two steps above ([Clone the Repo](#Clone-the-Repo) and [Set Required Environment Variables](Set-Required-Environment-Variables))
+
+### Create a MySQL Database
+Its an exercise for the reader to create a MySQL server somewhere that a `cf push`ed app can access. Set the following environment variables with information about that MySQL instance:
+```bash
+export DB_HOST=mysql server host
+export DB_USERNAME=mysql server username
+export DB_PASSWORD=mysql server password
 ```
 
+### Build the Broker and Brokerpak
+Use the makefile to build the broker executable and brokerpak.
+```bash
+make build-azure-brokerpak
+```
+### Pushing the Broker
+All the steps to push and register the broker:
+```
+APP_NAME=cloud-service-broker
+
+cf push --no-start
+
+cf set-env "${APP_NAME}" SECURITY_USER_PASSWORD "${SECURITY_USER_PASSWORD}"
+cf set-env "${APP_NAME}" SECURITY_USER_NAME "${SECURITY_USER_NAME}"
+
+cf set-env "${APP_NAME}" ARM_SUBSCRIPTION_ID "${ARM_SUBSCRIPTION_ID}"
+cf set-env "${APP_NAME}" ARM_TENANT_ID "${ARM_TENANT_ID}"
+cf set-env "${APP_NAME}" ARM_CLIENT_ID "${ARM_CLIENT_ID}"
+cf set-env "${APP_NAME}" ARM_CLIENT_SECRET "${ARM_CLIENT_SECRET}"
+
+cf set-env "${APP_NAME}" DB_HOST "${DB_HOST}"
+cf set-env "${APP_NAME}" DB_USERNAME "${DB_USERNAME}"
+cf set-env "${APP_NAME}" DB_PASSWORD "${DB_PASSWORD}"
+
+cf set-env "${APP_NAME}" GSB_BROKERPAK_BUILTIN_PATH ./azure-brokerpak
+
+cf start "${APP_NAME}"
+
+BROKER_NAME=csb-$USER
+
+cf create-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs) --space-scoped || cf update-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs)
+```
+Once these steps are complete, the output from `cf marketplace` should resemble the same as above.
