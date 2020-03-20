@@ -38,6 +38,8 @@ service_definitions:
 - azure-mssql-failover.yml
 - azure-mongodb.yml
 - azure-eventhubs.yml
+- azure-mssql-db.yml
+- azure-mssql-server.yml
 
 
 
