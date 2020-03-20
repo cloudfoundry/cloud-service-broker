@@ -3,7 +3,8 @@ variable instance_name { type = string }
 variable db_name { type = string }
 variable collection_name { type = string }
 variable request_units {type = number }
-variable regions { type = string }
+variable failover_locations {type = list(string) }
+variable region { type = string }
 variable shard_key { type = string }
 variable ip_range_filter { type = string }
 variable enable_automatic_failover { 
@@ -29,9 +30,7 @@ variable max_staleness_prefix {
 
 variable labels { type = map }
 
-locals {
-  region_list = split(",",var.regions)
-}
+
 
 resource "random_string" "account_id" {
 	upper = false
@@ -43,7 +42,7 @@ resource "random_string" "account_id" {
 
 resource "azurerm_resource_group" "rg" {
 	name     = coalesce(var.instance_name, "${var.instance_prefix}-${random_string.account_id.result}")
-	location = local.region_list[0]
+	location = var.region
 	tags     = var.labels
 }
 
@@ -61,10 +60,10 @@ resource "azurerm_cosmosdb_account" "mongo-account" {
 	}
 
 	dynamic "geo_location" {
-		for_each = local.region_list
+		for_each = var.failover_locations
 		content {
 				location = geo_location.value
-				failover_priority = index(local.region_list,geo_location.value)
+				failover_priority = index(var.failover_locations,geo_location.value)
 		}
 	}
 

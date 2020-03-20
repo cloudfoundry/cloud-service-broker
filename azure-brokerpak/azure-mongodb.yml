@@ -28,18 +28,21 @@ plans:
   display_name: "Small"
   properties:
     request_units: 400
+    failover_locations: ["Central US", "East US 2"]
 - name: medium
   id: 6a28ad34-534c-11ea-9bac-00155da9789e
   description: 'Cosmos DB API for MongoDB with 1,000 request units'
   display_name: "Medium"
   properties:
     request_units: 1000
+    failover_locations: ["Central US", "East US 2"]
 - name: large
   id: 72227eac-534c-11ea-b7ca-00155da9789e
   description: 'Cosmos DB API for MongoDB with 10,000 request units'
   display_name: "Large"
   properties:
     request_units: 10000
+    failover_locations: ["Central US", "East US 2"]
 provision:
   plan_inputs:
   - field_name: request_units
@@ -50,6 +53,10 @@ provision:
       maximum: 100000
       minimum: 400
       multipleOf: 100
+  - field_name: failover_locations
+    required: false
+    type: array
+    details: A list of location for the Cosmos DB account.  The first region is the default write region
   user_inputs:
   - field_name: instance_prefix
     type: string
@@ -84,58 +91,10 @@ provision:
     type: string
     details: Name for your shard key
     default: uniqueKey
-  - field_name: regions
+  - field_name: region
     type: string
-    details: A comma separated list of regions for the Cosmos DB account.  The first region is the default write region
+    details: Specifies the supported Azure location where the resource exists. 
     default: West US 2
-    # enum:
-    #   eastasia: East Asia
-    #   southeastasia: South East Asia
-    #   centralus: Central US
-    #   eastus: East US
-    #   eastus2: East US 2
-    #   westus: West US
-    #   northcentralus: North Central US
-    #   southcentralus: South Central US
-    #   northeurope: North Europe
-    #   westeurope: West Europe
-    #   japanwest: Japan West
-    #   japaneast: Japan East
-    #   brazilsouth: Brazil South
-    #   australiaeast: Australia East
-    #   australiasoutheast: Australia South East
-    #   australiacentral: Australia Central
-    #   australiacentral2: Australia Central 2
-    #   southindia: South India
-    #   centralindia: Central India
-    #   westindia: West India
-    #   canadacentral: Canada Central
-    #   canadaeast: Canada East
-    #   uksouth: UK South
-    #   ukwest: UK West
-    #   westcentralus: West Central US
-    #   westus2: West US 2
-    #   koreacentral: Korea Central
-    #   koreasouth: Korea South
-    #   francecentral: France Central
-    #   francesouth: France South
-    #   uaenorth: UAE North
-    #   uaecentral: UAE Central
-    #   southafricanorth: South Africa North
-    #   southafricawest: South Africa West
-    #   germanycentral: Germany Central
-    #   germanynorth: Germany North
-    #   germanynortheast: Germany North East
-    #   germanywestcentral: Germany West Central
-    #   switzerlandnorth: Switzerland North
-    #   switzerlandwest: Switzerland West
-    #   norwayeast: Norway East
-    #   norwaywest: Norway West
-    #   usgovtexas: US Gov Texas
-    #   usgovvirginia: US Gov Virginia
-    #   usgovarizona: US Gov Arizona
-    #   usdodcentral: US DoD Central
-    #   usdodeast: US DoD East
   - field_name: ip_range_filter
     type: string
     details: CosmosDB Firewall Support. This value specifies the set of IP addresses or IP address ranges in CIDR form to be included as the allowed list of client IP's for a given database account. IP addresses/ranges must be comma separated and must not contain any spaces. 0.0.0.0 allows access from Azure networks.  An empty string "" allows access from all public networks.
