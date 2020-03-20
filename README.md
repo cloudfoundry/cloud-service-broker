@@ -31,7 +31,7 @@ If you're upgrading, check the [upgrade guide](https://github.com/pivotal/cloud-
 For operators: see [docs/customization.md](https://github.com/pivotal/cloud-service-broker/blob/master/docs/customization.md) for details about configuring the service broker.
 
 For developers: see [docs/use.md](https://github.com/pivotal/cloud-service-broker/blob/master/docs/use.md) for information about creating and binding specific GCP services with the broker.
-Complete Spring Boot sample applications which use services can be found in the [service-broker-samples repository](https://github.com/GoogleCloudPlatform/service-broker-samples).
+
 
 You can get documentation specific to your install from the `/docs` endpoint of your deployment.
 
@@ -73,4 +73,4 @@ There are make targets for most common dev tasks.
 
 See [the contributing file](https://github.com/pivotal/cloud-service-broker/blob/master/CONTRIBUTING.md) for more information.
 
-This is not an officially supported Google product.
+This is not an officially supported VMware product.

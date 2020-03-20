@@ -3,7 +3,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+## 0.1.0 [Unreleased]
 
+### Updated
+Terraform 1.11 to 1.12
+
+### Removed
+All legacy broker services
+
+### Added
+
+Brokerpak based support for:
+- GCP
+  - Mysql
+  - Redis
+- AWS
+  - Mysql
+  - Redis
+- Azure
+  - Mysql
+  - Redis
+  - SQL Server
+  - MongoDB
+  - EventHub
+
+### Fixed
+Brokerpak bind output variables override provision time variables
 
 ## Historical - from the [Google repo.](https://github.com/GoogleCloudPlatform/gcp-service-broker)
 
