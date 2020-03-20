@@ -12,14 +12,11 @@ GCP labels have a more restricted character set than the Service Broker so unsup
 
 ## Support
 
-The following resources support these automatically generated labels:
-
- * BigQuery
- * CloudSQL (PostgreSQL and MySQL)
- * Cloud Storage
- * Spanner
+All brokerpaks should support these billing tags.
 
 ## Usage
 
-You can use these labels with the [BigQuery Billing Export](https://cloud.google.com/billing/docs/how-to/bq-examples)
+### GCP
+
+On GCP, you can use these labels with the [BigQuery Billing Export](https://cloud.google.com/billing/docs/how-to/bq-examples)
 to create reports about which organizations and spaces are incurring cost in your GCP project.
