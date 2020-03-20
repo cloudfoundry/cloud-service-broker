@@ -77,7 +77,7 @@ provision:
   - field_name: server_name
     type: string
     details: Name for your Azure SQL Server
-    default: vsb-azsql-${request.instance_id}
+    default: vsb-azsql-fog-${request.instance_id}
     constraints:
       maxLength: 63
       minLength: 6

@@ -1,0 +1,123 @@
+# Copyright 2018 the Service Broker Project Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+version: 1
+name: azure-mssql-server
+id: a0ab0f36-f8e1-4045-8ddb-1918d2ceafe4
+description: Azure SQL Server (no database attached)
+display_name: Azure SQL Server
+image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquaretransparent1.png
+documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/
+support_url: https://docs.microsoft.com/en-us/azure/sql-database/
+tags: [azure, preview]
+plans:
+- name: standard
+  id: 1aab10e2-ca79-4755-855a-6073a739d2e0
+  description: 'Stand alone SQL Server'
+  display_name: "Standard"
+provision:
+  plan_inputs: []
+  user_inputs:
+  - field_name: server_name
+    type: string
+    details: Name for your Azure SQL Server
+    default: vsb-azsql-svr-${request.instance_id}
+    constraints:
+      maxLength: 63
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$
+  - field_name: region
+    type: string
+    details: The region of the Azure SQL Database
+    default: westus
+    enum:
+      eastasia: East Asia
+      southeastasia: South East Asia
+      centralus: Central US
+      eastus: East US
+      eastus2: East US 2
+      westus: West US
+      northcentralus: North Central US
+      southcentralus: South Central US
+      northeurope: North Europe
+      westeurope: West Europe
+      japanwest: Japan West
+      japaneast: Japan East
+      brazilsouth: Brazil South
+      australiaeast: Australia East
+      australiasoutheast: Australia South East
+      australiacentral: Australia Central
+      australiacentral2: Australia Central 2
+      southindia: South India
+      centralindia: Central India
+      westindia: West India
+      canadacentral: Canada Central
+      canadaeast: Canada East
+      uksouth: UK South
+      ukwest: UK West
+      westcentralus: West Central US
+      westus2: West US 2
+      koreacentral: Korea Central
+      koreasouth: Korea South
+      francecentral: France Central
+      uaenorth: UAE North
+      southafricanorth: South Africa North
+      southafricawest: South Africa West
+      germanycentral: Germany Central
+  template_ref: terraform/azure-mssql-server/mssql-server-provision.tf 
+  computed_inputs:
+  - name: labels
+    default: ${json.marshal(request.default_labels)}
+    overwrite: true
+    type: object
+  outputs:
+  - field_name: sqldbResourceGroup
+    type: string
+    details: Azure resource group for the database server and database.
+  - field_name: sqlServerName
+    type: string
+    details: Hostname of the Azure SQL Server
+  - field_name: sqlServerFullyQualifiedDomainName
+    type: string
+    details: The fully qualifief domain name (FQDN) of the Azure SQL Server    
+  - field_name: databaseLogin
+    type: string
+    details: The username to authenticate to the database server.
+  - field_name: databaseLoginPassword
+    type: string
+    details: The password to authenticate to the database server.    
+  - field_name: hostname
+    type: string
+    details: Hostname of the Azure SQL Server
+  - field_name: port
+    type: integer
+    details: The port number to connect to the database on
+  - field_name: username
+    type: string
+    details: The username to authenticate to the database server.
+  - field_name: password
+    type: string
+    details: The password to authenticate to the database server.
+bind:
+  plan_inputs: []
+  user_inputs: []
+  computed_inputs: []
+  outputs: []
+examples:
+- name: azuresql-db-server-standard
+  description: Create a standard Azure SQL Database Server
+  plan_id: 1aab10e2-ca79-4755-855a-6073a739d2e0
+  provision_params: {}
+  bind_params: {}
+

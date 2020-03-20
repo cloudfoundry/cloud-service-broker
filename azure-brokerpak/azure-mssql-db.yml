@@ -21,7 +21,39 @@ image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquare
 documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/
 support_url: https://docs.microsoft.com/en-us/azure/sql-database/
 tags: [azure, mssql, sqlserver, preview]
-plans: []
+plans:
+- name: small
+  id: fd07d12b-94f8-4f69-bd5b-e2c4e84fafc1
+  description: 'SQL Server latest version. Instance properties: General Purpose - Serverless ; 0.5 - 2 cores ; Max Memory: 6gb ; 50 GB storage ; auto-pause enabled after 1 hour of inactivity'
+  display_name: "Small"
+  properties:
+    pricing_tier: GP_S
+    cores: 2
+    storage_gb: 50
+- name: medium
+  id: 3ee14bce-33e8-4d02-9850-023a66bfe120
+  description: 'SQL Server latest version. Instance properties: General Purpose - Provisioned ; Provisioned Capacity ; 8 cores ; 200 GB storage'
+  display_name: "Medium"
+  properties:
+    pricing_tier: GP
+    cores: 8
+    storage_gb: 200
+- name: large
+  id: 8f1c9c7b-80b2-49c3-9365-a3a059df9907
+  description: 'SQL Server latest version. Instance properties: Hyperscale ; Provisioned Capacity ; 24 cores ; Unlimited Storage ; 2 read replica ; Auto-failover group enabled'
+  display_name: "Large"
+  properties:
+    pricing_tier: HS
+    cores: 24
+    storage_gb: 500
+- name: extra-large
+  id: 09096759-58a8-41d0-96bf-39b02a0e4104
+  description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 80 cores ; 1 TB storage ; 1 read replica; Auto-failover group enabled'
+  display_name: "Extra Large"
+  properties:
+    pricing_tier: BC
+    cores: 40
+    storage_gb: 1024
 provision:
   plan_inputs:
   - field_name: pricing_tier
@@ -50,6 +82,13 @@ provision:
     constraints:
       maximum: 4096
       minimum: 5      
+  user_inputs:    
+  - field_name: db_name
+    type: string
+    details: Name for your database
+    default: vsb-db-${request.instance_id}
+    constraints:
+      maxLength: 64
   - field_name: server_name
     type: string
     details: Existing MSSQL server name
@@ -70,13 +109,6 @@ provision:
       maxLength: 90
       minLength: 6
       pattern: ^[a-z][a-z0-9-()_\.]+$    
-  user_inputs:    
-  - field_name: db_name
-    type: string
-    details: Name for your database
-    default: vsb-db-${request.instance_id}
-    constraints:
-      maxLength: 64
   template_ref: terraform/azure-sql-db/provision-mssql-db.tf 
   computed_inputs:
   - name: labels
@@ -84,27 +116,15 @@ provision:
     overwrite: true
     type: object
   outputs:
-  - field_name: sqldbName
-    type: string
-    details: The name of the database.
   - field_name: sqlServerName
     type: string
     details: Hostname of the Azure SQL Server
+  - field_name: sqldbName
+    type: string
+    details: The name of the database.    
   - field_name: sqlServerFullyQualifiedDomainName
     type: string
     details: The fully qualifief domain name (FQDN) of the Azure SQL Server
-  - field_name: databaseLogin
-    type: string
-    details: The username to authenticate to the database server.
-  - field_name: databaseLoginPassword
-    type: string
-    details: The password to authenticate to the database server.
-  - field_name: jdbcUrl
-    type: string
-    details: The JDBC URL to connect to the database server and database.
-  - field_name: jdbcUrlForAuditingEnabled
-    type: string
-    details: The audit enabled JDBC URL to connect to the database server and database.
   - field_name: hostname
     type: string
     details: Hostname of the Azure SQL Server
@@ -120,13 +140,51 @@ provision:
   - field_name: password
     type: string
     details: The password to authenticate to the database server.
-  - field_name: uri
-    type: string
-    details: The uri to connect to the database server and database.
 bind:
   plan_inputs: []
   user_inputs: []
-  computed_inputs: []
-  template: ''
-  outputs: []      
+  computed_inputs:
+  - name: mssql_db_name
+    type: string
+    default: ${instance.details["name"]}
+    overwrite: true
+  - name: mssql_hostname
+    type: string
+    default: ${instance.details["hostname"]}
+    overwrite: true
+  - name: mssql_port
+    type: integer
+    default: ${instance.details["port"]}
+    overwrite: true
+  - name: admin_username
+    type: string
+    default: ${instance.details["username"]}
+    overwrite: true
+  - name: admin_password
+    type: string
+    default: ${instance.details["password"]}
+    overwrite: true
+  template_ref: terraform/azure-sql/bind-mssql.tf
+  outputs:
+  - field_name: username
+    type: string
+    details: The username to authenticate to the database instance.
+  - field_name: password
+    type: string
+    details: The password to authenticate to the database instance.  
+  - field_name: uri
+    type: string
+    details: The uri to connect to the database instance and database.
+  - field_name: jdbcUrl
+    type: string
+    details: The jdbc url to connect to the database instance and database.    
+  - field_name: jdbcUrlForAuditingEnabled
+    type: string
+    details: The audit enabled JDBC URL to connect to the database server and database.    
+  - field_name: databaseLogin
+    type: string
+    details: The username to authenticate to the database server.
+  - field_name: databaseLoginPassword
+    type: string
+    details: The password to authenticate to the database server. 
 

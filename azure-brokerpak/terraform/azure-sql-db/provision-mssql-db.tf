@@ -23,32 +23,15 @@ resource "azurerm_sql_database" "azure_sql_db" {
   tags = var.labels
 }
 
-output "sqldbName" {value = "${azurerm_sql_database.azure_sql_db.name}"}
-output "sqlServerName" {value = "${data.azurerm_sql_server.azure_sql_db_server.name}"}
-output "sqlServerFullyQualifiedDomainName" {value = "${data.azurerm_sql_server.azure_sql_db_server.fqdn}"}
-output "databaseLogin" {value = "${var.admin_username}"}
-output "databaseLoginPassword" {value = "${var.admin_password}"}
-output "jdbcUrl" {
-    value = format("jdbc:sqlserver://%s:1433;database=%s;user=%s;password=%s;Encrypt=true;TrustServerCertificate=false;HostNameInCertificate=*.database.windows.net;loginTimeout=30", 
-                   data.azurerm_sql_server.azure_sql_db_server.fqdn,
-                   azurerm_sql_database.azure_sql_db.name, 
-                   var.admin_username, 
-                   var.admin_password)
+locals {
+    serverFQDN = data.azurerm_sql_server.azure_sql_db_server.fqdn
 }
-output "jdbcUrlForAuditingEnabled" {
-    value = format("jdbc:sqlserver://%s:1433;database=%s;user=%s;password=%s;Encrypt=true;TrustServerCertificate=false;HostNameInCertificate=*.database.windows.net;loginTimeout=30", 
-                   data.azurerm_sql_server.azure_sql_db_server.fqdn, 
-                   azurerm_sql_database.azure_sql_db.name, 
-                   var.admin_username, 
-                   var.admin_password)
-}
-output "hostname" {value = "${data.azurerm_sql_server.azure_sql_db_server.name}"}
+
+output "sqldbName" {value = azurerm_sql_database.azure_sql_db.name}
+output "sqlServerName" {value = data.azurerm_sql_server.azure_sql_db_server.name}
+output "sqlServerFullyQualifiedDomainName" {value = local.serverFQDN}
+output "hostname" {value = local.serverFQDN}
 output "port" {value = 1433}
-output "name" {value = "${azurerm_sql_database.azure_sql_db.name}"}
-output "username" {value = "${var.admin_username}"}
-output "password" {value = "${var.admin_password}"}
-output "uri" {
-    value = format("mssql://%s:1433/%s?encrypt=true&TrustServerCertificate=false&HostNameInCertificate=*.database.windows.net", 
-                   data.azurerm_sql_server.azure_sql_db_server.fqdn, 
-                   azurerm_sql_database.azure_sql_db.name)
-}
+output "name" {value = azurerm_sql_database.azure_sql_db.name}
+output "username" {value = var.admin_username}
+output "password" {value = var.admin_password}
