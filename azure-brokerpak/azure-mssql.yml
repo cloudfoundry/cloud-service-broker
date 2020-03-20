@@ -222,18 +222,22 @@ examples:
   plan_id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
   provision_params: {}
   bind_params: {}
+  bind_can_fail: true  
 - name: azuresql-db-medium-configuration
   description: Create a medium Azure SQL Database
   plan_id: 9295b05a-58c9-11ea-b9df-00155d2c938f
   provision_params: {}
   bind_params: {}
+  bind_can_fail: true  
 - name: azuresql-db-large-configuration
   description: Create a large Azure SQL Database
   plan_id: 9dc5e814-58c9-11ea-9e77-00155d2c938f
   provision_params: {}
   bind_params: {}
+  bind_can_fail: true  
 - name: azuresql-db-xlarge-configuration
   description: Create an extra large Azure SQL Database
   plan_id: a94f7192-5cba-11ea-8b5a-00155d7cdd25
   provision_params: {}
   bind_params: {}
+  bind_can_fail: true  
