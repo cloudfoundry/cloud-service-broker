@@ -56,7 +56,12 @@ func Pack(directory string) (string, error) {
 		return "", err
 	}
 
-	packname := fmt.Sprintf("%s-%s.brokerpak", manifest.Name, manifest.Version)
+	version, ok := os.LookupEnv(manifest.Version)
+
+	if !ok {
+		version = manifest.Version
+	}
+	packname := fmt.Sprintf("%s-%s.brokerpak", manifest.Name, version)
 	return packname, manifest.Pack(directory, packname)
 }
 

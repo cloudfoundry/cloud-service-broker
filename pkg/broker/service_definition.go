@@ -268,14 +268,14 @@ func (svc *ServiceDefinition) UserDefinedPlans() ([]ServicePlan, error) {
 			return []ServicePlan{}, err
 		}
 
-		plan.ServiceProperties = make(map[string]string)
+		plan.ServiceProperties = make(map[string]interface{})
 		if err := json.Unmarshal(remainder, &plan.ServiceProperties); err != nil {
 			return []ServicePlan{}, err
 		}
 
 		// reading from a tile we need to move their GUID to an ID field
 		if plan.ID == "" {
-			plan.ID = plan.ServiceProperties["guid"]
+			plan.ID, _ = plan.ServiceProperties["guid"].(string)
 		}
 
 		if err := svc.validatePlan(plan); err != nil {

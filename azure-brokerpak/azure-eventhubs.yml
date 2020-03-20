@@ -17,7 +17,7 @@ name: azure-eventhubs
 id: 40b751ac-624d-11ea-8354-f38aff407636
 description: Simple, secure, and scalable real-time data ingestion
 display_name: Event Hubs
-image_url: https://azurecomcdn.azureedge.net/cvt-d09489c6661f16b0396f43f6be09db6e0a95b35e61aedbd2c0f30217ac43408c/images/page/services/cosmosdb/dev-03-mongodb.svg
+image_url: https://docs.microsoft.com/en-us/azure/event-hubs/media/index/event-hubs.svg
 documentation_url: https://azure.microsoft.com/en-us/services/event-hubs/
 support_url: https://azure.microsoft.com/en-us/support/options/
 tags: [azure, eventhubs, Event Hubs, Azure, preview]

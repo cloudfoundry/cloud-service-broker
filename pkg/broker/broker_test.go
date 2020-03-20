@@ -332,7 +332,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 
 	cases := map[string]struct {
 		UserParams         string
-		ServiceProperties  map[string]string
+		ServiceProperties  map[string]interface{}
 		DefaultOverride    string
 		ProvisionOverrides map[string]interface{}
 		ExpectedError      error
@@ -340,7 +340,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 	}{
 		"empty": {
 			UserParams:        "",
-			ServiceProperties: map[string]string{},
+			ServiceProperties: map[string]interface{}{},
 			ExpectedContext: map[string]interface{}{
 				"location":      "us",
 				"name":          "name-us",
@@ -349,7 +349,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 		},
 		"service has missing param": {
 			UserParams:        "",
-			ServiceProperties: map[string]string{"maybe-missing": "custom"},
+			ServiceProperties: map[string]interface{}{"maybe-missing": "custom"},
 			ExpectedContext: map[string]interface{}{
 				"location":      "us",
 				"name":          "name-us",
@@ -358,7 +358,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 		},
 		"location gets truncated": {
 			UserParams:        `{"location": "averylonglocation"}`,
-			ServiceProperties: map[string]string{},
+			ServiceProperties: map[string]interface{}{},
 			ExpectedContext: map[string]interface{}{
 				"location":      "averylongl",
 				"name":          "name-averylonglocation",
@@ -367,7 +367,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 		},
 		"user location and name": {
 			UserParams:        `{"location": "eu", "name":"foo"}`,
-			ServiceProperties: map[string]string{},
+			ServiceProperties: map[string]interface{}{},
 			ExpectedContext: map[string]interface{}{
 				"location":      "eu",
 				"name":          "foo",
@@ -376,7 +376,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 		},
 		"user tries to overwrite service var": {
 			UserParams:        `{"location": "eu", "name":"foo", "service-provided":"test"}`,
-			ServiceProperties: map[string]string{"service-provided": "custom"},
+			ServiceProperties: map[string]interface{}{"service-provided": "custom"},
 			ExpectedContext: map[string]interface{}{
 				"location":         "eu",
 				"name":             "foo",
@@ -387,7 +387,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 		"operator defaults override computed defaults": {
 			UserParams:        "",
 			DefaultOverride:   `{"location":"eu"}`,
-			ServiceProperties: map[string]string{},
+			ServiceProperties: map[string]interface{}{},
 			ExpectedContext: map[string]interface{}{
 				"location":      "eu",
 				"name":          "name-eu",
@@ -397,7 +397,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 		"user values override operator defaults": {
 			UserParams:        `{"location":"nz"}`,
 			DefaultOverride:   `{"location":"eu"}`,
-			ServiceProperties: map[string]string{},
+			ServiceProperties: map[string]interface{}{},
 			ExpectedContext: map[string]interface{}{
 				"location":      "nz",
 				"name":          "name-nz",
@@ -407,7 +407,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 		"operator defaults are not evaluated": {
 			UserParams:        `{"location":"us"}`,
 			DefaultOverride:   `{"name":"foo-${location}"}`,
-			ServiceProperties: map[string]string{},
+			ServiceProperties: map[string]interface{}{},
 			ExpectedContext: map[string]interface{}{
 				"location":      "us",
 				"name":          "foo-${location}",
@@ -421,7 +421,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 		"provision_overrides override user params but not computed defaults": {
 			UserParams:         `{"location":"us"}`,
 			DefaultOverride:    "{}",
-			ServiceProperties:  map[string]string{},
+			ServiceProperties:  map[string]interface{}{},
 			ProvisionOverrides: map[string]interface{}{"location": "eu"},
 			ExpectedContext: map[string]interface{}{
 				"location":      "eu",
@@ -459,7 +459,7 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 					ID:   "builtin-plan",
 					Name: "Builtin!",
 				},
-				ServiceProperties: map[string]string{
+				ServiceProperties: map[string]interface{}{
 					"service-property": "operator-set",
 				},
 			},
