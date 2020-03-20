@@ -255,13 +255,16 @@ examples:
   plan_id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
   provision_params: {}
   bind_params: {}
+  bind_can_fail: true  
 - name: failover group azuresql-db-medium-configuration
   description: Create a medium Azure SQL Database failover group 
   plan_id: c5e8ec57-ab5a-4bbf-ac6d-5075a97ed1a5
   provision_params: {}
   bind_params: {}
+  bind_can_fail: true  
 - name: failover group azuresql-db-large-configuration
   description: Create a large Azure SQL Database failover group 
   plan_id: 605a7a26-b1dd-4ce5-a382-4233e98469a8
   provision_params: {}
   bind_params: {}
+  bind_can_fail: true  
