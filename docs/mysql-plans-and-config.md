@@ -28,6 +28,8 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 | medium | GP_Gen5_4 | 10GB | 200GB | 4 |
 | large | MO_Gen5_8 | 20GB | 500GB | 8 |
 
+> Note that the maximum vCores is dependant on the Service Tier. B_ = Basic, GP_ = General Puspose and MO_ = Memory Optimized. See below for details.
+
 #### Azure specific config parameters
 
 | Parameter | Value |
