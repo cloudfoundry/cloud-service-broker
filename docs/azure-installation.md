@@ -136,7 +136,7 @@ The following tools are needed on your workstation:
 
 ### Fetch A Broker and Azure Brokerpak
 
-Download a release from https://github.com/pivotal/cloud-service-broker/releases. Find the latest release matching the name pattern `sb-0.0.1-rc.XXX-azure-0.0.1-rc.YY`. This will have a tested broker and brokerpak that have been tested together. Follow the hyperlink into that release and download `cloud-servic-broker` and `azure-services-0.0.1-rc.YY.brokerpak` into the same directory on your workstation.
+Download a release from https://github.com/pivotal/cloud-service-broker/releases. Find the latest release matching the name pattern `sb-0.0.1-rc.XXX-azure-0.0.1-rc.YY`. This will have a broker and brokerpak that have been tested together. Follow the hyperlink into that release and download `cloud-servic-broker` and `azure-services-0.0.1-rc.YY.brokerpak` into the same directory on your workstation.
 
 ### Create a MySQL Database
 Its an exercise for the reader to create a MySQL server somewhere that a `cf push`ed app can access. The database connection values (hostname, user name and password) will be needed in the next step. It is also necessary to create a database named `servicebroker` within that server (use your favorite tool to connect to the MySQL server and issue `CREATE DATABASE servicebroker;`).
