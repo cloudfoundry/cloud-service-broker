@@ -5,7 +5,7 @@ The broker service and the Azure brokerpak can be pushed and registered on a fou
 ## Requirements
 
 ### CloudFoundry running on Azure.
-The Azure brokerpak services are provisioned with firewall rules that only allow internal connectivity. This allows `cf pushed` applications access, while denying any public access.
+The Azure brokerpak services are provisioned with firewall rules that only allow internal connectivity. This allows `cf push`ed applications access, while denying any public access.
 
 ### Azure Service Credentials
 The services need to be provisioned in the same Azure account that the foundation is running in. To do this, the broker needs the following credentials to manage resources within that account:
@@ -26,10 +26,133 @@ If a MySQL instance needs to be manually provisioned, it must be accessible to a
 - `DB_USERNAME`
 - `DB_PASSWORD`
 
-## Step By Step The Quick Way
-Maybe the simplest way is to create the state database with MASB and then use the Makefile to deploy and register the broker.
+It is also necessary to create a database named `servicebroker` within that server (use your favorite tool to connect to the MySQL server and issue `CREATE DATABASE servicebroker;`).
+
+## Step By Step From a Pre-build Release with a Bound MySQL Instance
+
+Fetch a pre-built broker and brokerpak and bind it to a `cf create-service` managed MySQL.
 
 ### Requirements
+
+The following tools are needed on your workstation:
+- [cf cli](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
+
+
+### Assumptions
+
+The `cf` CLI has been used to authenticate with a foundation (`cf api` and `cf login`,) and an org and space have been targeted (`cf target`)
+
+### Fetch A Broker and Azure Brokerpak
+
+Download a release from https://github.com/pivotal/cloud-service-broker/releases. Find the latest release matching the name pattern `sb-0.0.1-rc.XXX-azure-0.0.1-rc.YY`. This will have a broker and brokerpak that have been tested together. Follow the hyperlink into that release and download `cloud-servic-broker` and `azure-services-0.0.1-rc.YY.brokerpak` into the same directory on your workstation.
+
+### Create a MySQL instance with MASB
+The following command will create a basic MySQL database instance named `csb-sql`
+```bash
+cf create-service azure-mysqldb basic1 csb-sql
+```
+### Build Config File
+To avoid putting any sensitive information in environment variables, a config file can be used.
+
+Create a file named `config.yml` in the same directory the broker and brokerpak have been downloaded to. Its contents should be:
+
+```
+ARM_SUBSCRIPTION_ID: your subscription id
+ARM_TENANT_ID: your tenant id
+ARM_CLIENT_ID: your client id
+ARM_CLIENT_SECRET: your client secret
+
+api:
+  user: someusername
+  password: somepassword
+```
+### Push and Register the Broker
+Push the broker as a binary application:
+```bash
+SECURITY_USER_NAME=someusername
+SECURITY_USER_PASSWORD=somepassword
+APP_NAME=cloud-service-broker
+
+chmod +x cloud-service-broker
+cf push "${APP_NAME}" -c './cloud-service-broker serve --config config.yml' -b binary_buildpack --random-route --no-start
+```
+
+Bind the MySQL database and start the service broker:
+```bash
+cf bind-service cloud-service-broker csb-sql
+cf start "${APP_NAME}"
+```
+Register the service broker:
+```bash
+BROKER_NAME=csb-$USER
+
+cf create-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs) --space-scoped || cf update-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs)
+```
+Once this completes, the output from `cf marketplace` should include:
+```
+azure-mongodb                small, medium, large                        The Cosmos DB service implements wire protocols for MongoDB.  Azure Cosmos DB is Microsoft's globally distributed, multi-model database service for mission-critical application
+azure-mssql                  small, medium, large, extra-large           Azure SQL Database is a fully managed service for the Azure Platform
+azure-mssql-db               small, medium, large, extra-large           Manage Azure SQL Databases on pre-provisioned database servers
+azure-mssql-failover-group   small, medium, large                        Manages auto failover group for managed Azure SQL on the Azure Platform
+azure-mssql-server           standard                                    Azure SQL Server (no database attached)
+azure-mysql                  small, medium,                              Mysql is a fully managed service for the Azure Platform
+azure-redis                  small, medium, large, ha-small, ha-medium,  Redis is a fully managed service for the Azure Platform
+```
+
+## Step By Step From a Pre-built Release with a Manually Provisioned MySQL Instance
+
+Fetch a pre-built broker and brokerpak and configure with a manually provisioned MySQL instance.
+
+Requirements and assumptions are the same as above. Follow instructions above to [fetch the broker and brokerpak](#Fetch-A-Broker-and-Azure-Brokerpak)
+
+### Create a MySQL Database
+Its an exercise for the reader to create a MySQL server somewhere that a `cf push`ed app can access. The database connection values (hostname, user name and password) will be needed in the next step. It is also necessary to create a database named `servicebroker` within that server (use your favorite tool to connect to the MySQL server and issue `CREATE DATABASE servicebroker;`).
+
+### Build Config File
+To avoid putting any sensitive information in environment variables, a config file can be used.
+
+Create a file named `config.yml` in the same directory the broker and brokerpak have been downloaded to. Its contents should be:
+
+```
+ARM_SUBSCRIPTION_ID: your subscription id
+ARM_TENANT_ID: your tenant id
+ARM_CLIENT_ID: your client id
+ARM_CLIENT_SECRET: your client secret
+
+db:
+  host: your mysql host
+  password: your mysql password
+  user: your mysql username
+api:
+  user: someusername
+  password: somepassword
+```
+
+### Push and Register the Broker
+Push the broker as a binary application:
+```bash
+SECURITY_USER_NAME=someusername
+SECURITY_USER_PASSWORD=somepassword
+APP_NAME=cloud-service-broker
+
+chmod +x cloud-service-broker
+cf push "${APP_NAME}" -c './cloud-service-broker serve --config config.yml' -b binary_buildpack --random-route
+```
+
+Register the service broker:
+```bash
+BROKER_NAME=csb-$USER
+
+cf create-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs) --space-scoped || cf update-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs)
+```
+
+Once these steps are complete, the output from `cf marketplace` should resemble the same as above.
+
+## Step By Step From Source with Bound MySQL
+Grab the source code, build and deploy.
+
+### Requirements
+
 The following tools are needed on your workstation:
 - [go 1.13](https://golang.org/dl/)
 - make
@@ -38,15 +161,18 @@ The following tools are needed on your workstation:
 The [MASB](https://github.com/Azure/meta-azure-service-broker) service broker must be installed in your Cloud Foundry foundation.
 
 ### Assumptions
+
 The `cf` CLI has been used to authenticate with a foundation (`cf api` and `cf login`,) and an org and space have been targeted (`cf target`)
 
 ### Clone the Repo
+
 The following commands will clone the service broker repository and cd into the resulting directory.
 ```bash
 git clone https://github.com/pivotal/"${APP_NAME}".git
 cd "${APP_NAME}"
 ```
 ### Set Required Environment Variables
+
 Collect the Azure service credentials for your account and set them as environment variables:
 ```bash
 export ARM_SUBSCRIPTION_ID=your subscription id
@@ -60,6 +186,7 @@ export SECURITY_USER_NAME=someusername
 export SECURITY_USER_PASSWORD=somepassword
 ```
 ### Create a MySQL instance with MASB
+
 The following command will create a basic MySQL database instance named `csb-sql`
 ```bash
 cf create-service azure-mysqldb basic1 csb-sql
@@ -69,16 +196,8 @@ There is a make target that will build the broker and brokerpak and deploy to an
 ```bash
 make push-broker-azure
 ```
-Once this completes, the output from `cf marketplace` should include:
-```
-azure-mongodb                small, medium, large                        The Cosmos DB service implements wire protocols for MongoDB.  Azure Cosmos DB is Microsoft's globally distributed, multi-model database service for mission-critical application
-azure-mssql                  small, medium, large, extra-large           Azure SQL Database is a fully managed service for the Azure Platform
-azure-mssql-db               small, medium, large, extra-large           Manage Azure SQL Databases on pre-provisioned database servers
-azure-mssql-failover-group   small, medium, large                        Manages auto failover group for managed Azure SQL on the Azure Platform
-azure-mssql-server           standard                                    Azure SQL Server (no database attached)
-azure-mysql                  small, medium,                              Mysql is a fully managed service for the Azure Platform
-azure-redis                  small, medium, large, ha-small, ha-medium,  Redis is a fully managed service for the Azure Platform
-```
+Once these steps are complete, the output from `cf marketplace` should resemble the same as above.
+
 ## Step By Step Slightly Harder Way
 
 Requirements and assumptions are the same as above. Follow instructions for the first two steps above ([Clone the Repo](#Clone-the-Repo) and [Set Required Environment Variables](Set-Required-Environment-Variables))
@@ -125,57 +244,17 @@ cf create-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_US
 ```
 Once these steps are complete, the output from `cf marketplace` should resemble the same as above.
 
-## Step By Step From a Pre-built Release
+## Uninstalling the Broker
+First, make sure there are all service instances created with `cf create-service` have been destroyed with `cf delete-service` otherwise removing the broker will fail.
 
-There are pre-built packages that can be used, no need to build the broker locally.
-
-### Requirements
-
-The following tools are needed on your workstation:
-- [cf cli](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
-
-### Fetch A Broker and Azure Brokerpak
-
-Download a release from https://github.com/pivotal/cloud-service-broker/releases. Find the latest release matching the name pattern `sb-0.0.1-rc.XXX-azure-0.0.1-rc.YY`. This will have a broker and brokerpak that have been tested together. Follow the hyperlink into that release and download `cloud-servic-broker` and `azure-services-0.0.1-rc.YY.brokerpak` into the same directory on your workstation.
-
-### Create a MySQL Database
-Its an exercise for the reader to create a MySQL server somewhere that a `cf push`ed app can access. The database connection values (hostname, user name and password) will be needed in the next step. It is also necessary to create a database named `servicebroker` within that server (use your favorite tool to connect to the MySQL server and issue `CREATE DATABASE servicebroker;`).
-
-### Build Config File
-To avoid putting any sensitive information in environment variables, a config file can be used.
-
-Create a file named `config.yml` in the same directory the broker and brokerpak have been downloaded to. Its contents should be:
-
-```
-ARM_SUBSCRIPTION_ID: your subscription id
-ARM_TENANT_ID: your tenant id
-ARM_CLIENT_ID: your client id
-ARM_CLIENT_SECRET: your client secret
-
-db:
-  host: your mysql host
-  password: your mysql password
-  user: your mysql username
-api:
-  user: someusername
-  password: somepassword
-```
-
-### Push and Register the Broker
-Push the broker as a binary application:
+### Unregister the Broker
 ```bash
-SECURITY_USER_NAME=someusername
-SECURITY_USER_PASSWORD=somepassword
-APP_NAME=cloud-service-broker
-
-chmod +x cloud-service-broker
-cf push "${APP_NAME}" -c './cloud-service-broker serve --config config.yml' -b binary_buildpack --random-route
+cf delete-service-broker csb-$USER
 ```
 
-Register the service broker:
+### Uninstall the Broker
 ```bash
-BROKER_NAME=csb-$USER
-
-cf create-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs) --space-scoped || cf update-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs)
+cf delete cloud-service-broker
 ```
-Once these steps are complete, the output from `cf marketplace` should resemble the same as above.
+
+
