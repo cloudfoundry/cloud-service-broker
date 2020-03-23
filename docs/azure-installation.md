@@ -84,7 +84,7 @@ azure-redis                  small, medium, large, ha-small, ha-medium,  Redis i
 Requirements and assumptions are the same as above. Follow instructions for the first two steps above ([Clone the Repo](#Clone-the-Repo) and [Set Required Environment Variables](Set-Required-Environment-Variables))
 
 ### Create a MySQL Database
-Its an exercise for the reader to create a MySQL server somewhere that a `cf push`ed app can access. Set the following environment variables with information about that MySQL instance:
+Its an exercise for the reader to create a MySQL server somewhere that a `cf push`ed app can access. It is also necessary to create a database named `servicebroker` within that server (use your favorite tool to connect to the MySQL server and issue `CREATE DATABASE servicebroker;`). Set the following environment variables with information about that MySQL instance:
 ```bash
 export DB_HOST=mysql server host
 export DB_USERNAME=mysql server username
@@ -98,7 +98,7 @@ make build-azure-brokerpak
 ```
 ### Pushing the Broker
 All the steps to push and register the broker:
-```
+```bash
 APP_NAME=cloud-service-broker
 
 cf push --no-start
@@ -119,6 +119,61 @@ cf set-env "${APP_NAME}" GSB_BROKERPAK_BUILTIN_PATH ./azure-brokerpak
 
 cf start "${APP_NAME}"
 
+BROKER_NAME=csb-$USER
+
+cf create-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs) --space-scoped || cf update-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs)
+```
+Once these steps are complete, the output from `cf marketplace` should resemble the same as above.
+
+## Step By Step From a Pre-built Release
+
+There are pre-built packages that can be used, no need to build the broker locally.
+
+### Requirements
+
+The following tools are needed on your workstation:
+- [cf cli](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
+
+### Fetch A Broker and Azure Brokerpak
+
+Download a release from https://github.com/pivotal/cloud-service-broker/releases. Find the latest release matching the name pattern `sb-0.0.1-rc.XXX-azure-0.0.1-rc.YY`. This will have a tested broker and brokerpak that have been tested together. Follow the hyperlink into that release and download `cloud-servic-broker` and `azure-services-0.0.1-rc.YY.brokerpak` into the same directory on your workstation.
+
+### Create a MySQL Database
+Its an exercise for the reader to create a MySQL server somewhere that a `cf push`ed app can access. The database connection values (hostname, user name and password) will be needed in the next step. It is also necessary to create a database named `servicebroker` within that server (use your favorite tool to connect to the MySQL server and issue `CREATE DATABASE servicebroker;`).
+
+### Build Config File
+To avoid putting any sensitive information in environment variables, a config file can be used.
+
+Create a file named `config.yml` in the same directory the broker and brokerpak have been downloaded to. Its contents should be:
+
+```
+ARM_SUBSCRIPTION_ID: your subscription id
+ARM_TENANT_ID: your tenant id
+ARM_CLIENT_ID: your client id
+ARM_CLIENT_SECRET: your client secret
+
+db:
+  host: your mysql host
+  password: your mysql password
+  user: your mysql username
+api:
+  user: someusername
+  password: somepassword
+```
+
+### Push and Register the Broker
+Push the broker as a binary application:
+```bash
+SECURITY_USER_NAME=someusername
+SECURITY_USER_PASSWORD=somepassword
+APP_NAME=cloud-service-broker
+
+chmod +x cloud-service-broker
+cf push "${APP_NAME}" -c './cloud-service-broker serve --config config.yml' -b binary_buildpack --random-route
+```
+
+Register the service broker:
+```bash
 BROKER_NAME=csb-$USER
 
 cf create-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs) --space-scoped || cf update-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs)
