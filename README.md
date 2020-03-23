@@ -19,19 +19,12 @@ The service broker provides support for:
 
 ## Installation
 
-This application can be installed as either a PCF Ops Man Tile _or_ deployed as a PCF application.
-See the [installation instructions](https://github.com/pivotal/cloud-service-broker/blob/master/docs/installation.md) for a more detailed walkthrough.
-
-## Upgrading
-
-If you're upgrading, check the [upgrade guide](https://github.com/pivotal/cloud-service-broker/blob/master/docs/upgrading.md).
+This service broker can be installed as a CF application.
+See the instructions for [Azure](./docs/azure-installation.md) for a detailed walkthrough.
 
 ## Usage
 
 For operators: see [docs/customization.md](https://github.com/pivotal/cloud-service-broker/blob/master/docs/customization.md) for details about configuring the service broker.
-
-For developers: see [docs/use.md](https://github.com/pivotal/cloud-service-broker/blob/master/docs/use.md) for information about creating and binding specific GCP services with the broker.
-
 
 You can get documentation specific to your install from the `/docs` endpoint of your deployment.
 
