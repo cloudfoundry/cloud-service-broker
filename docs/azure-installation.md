@@ -2,6 +2,8 @@
 
 The broker service and the Azure brokerpak can be pushed and registered on a foundation running on Azure.
 
+Documentation for broker configuration can be found [here](./configuration.md).
+
 ## Requirements
 
 ### CloudFoundry running on Azure.

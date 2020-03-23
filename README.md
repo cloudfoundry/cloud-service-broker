@@ -24,7 +24,9 @@ See the instructions for [Azure](./docs/azure-installation.md) for a detailed wa
 
 ## Usage
 
-For operators: see [docs/customization.md](https://github.com/pivotal/cloud-service-broker/blob/master/docs/customization.md) for details about configuring the service broker.
+For operators: see [docs/configuration.md](./docs/configuration.md) for details about configuring the service broker.
+
+For developers: see [docs/use.md](./docs/use.md) for service options and details.
 
 You can get documentation specific to your install from the `/docs` endpoint of your deployment.
 
