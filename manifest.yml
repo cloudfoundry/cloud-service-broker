@@ -17,6 +17,7 @@
 ---
 applications:
 - name: cloud-service-broker
+  command: cloud-service-broker serve
   memory: 1G
   buildpacks: 
   - go_buildpack

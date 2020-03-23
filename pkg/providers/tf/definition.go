@@ -17,7 +17,6 @@ package tf
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
@@ -26,6 +25,7 @@ import (
 	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal/cloud-service-broker/utils"
 	"github.com/pivotal-cf/brokerapi"
+	"github.com/spf13/viper"
 )
 
 // TfServiceDefinitionV1 is the first version of user defined services.
@@ -46,7 +46,7 @@ type TfServiceDefinitionV1 struct {
 
 	// Internal SHOULD be set to true for Google maintained services.
 	Internal bool `yaml:"-"`
-	RequiredEnvVars   []string					  
+	RequiredEnvVars   []string
 }
 
 // TfServiceDefinitionV1Plan represents a service plan in a human-friendly format
@@ -261,10 +261,11 @@ func (tfb *TfServiceDefinitionV1) Validate() (errs *validation.FieldError) {
 func (tfb *TfServiceDefinitionV1) resolveEnvVars() (map[string]string, error) {
 	vars := make(map[string]string)
 	for _, v := range tfb.RequiredEnvVars {
-		var ok bool
-		if vars[v], ok = os.LookupEnv(v); !ok {
+		viper.BindEnv(v, v)
+		if !viper.IsSet(v) {
 			return vars, fmt.Errorf(fmt.Sprintf("missing required env var %s", v))
 		}
+		vars[v] = viper.GetString(v)
 	}
 	return vars, nil
 }
