@@ -17,7 +17,6 @@ wait_for_service "${MSSQL_SERVER_INSTANCE_NAME}" "create in progress"
 
 RESULT=0
 if cf bind-service spring-music "${MSSQL_SERVER_INSTANCE_NAME}"; then
-    cf env spring-music
     USERNAME=$(cf env spring-music | grep '"databaseLogin":' | sed -e 's/".*": "\(.*\)",/\1/;s/^[[:blank:]]*//')
     PASSWORD=$(cf env spring-music | grep '"databaseLoginPassword":' | sed -e 's/".*": "\(.*\)",/\1/;s/^[[:blank:]]*//')
     SERVER_NAME=$(cf env spring-music | grep '"sqlServerName":' | sed -e 's/".*": "\(.*\)",/\1/;s/^[[:blank:]]*//')

@@ -112,13 +112,13 @@ run-broker-gcp-docker: check-gcp-env-vars ./build/cloud-service-broker.linux gcp
 	-e SECURITY_USER_PASSWORD \
 	-e GOOGLE_CREDENTIALS \
 	-e GOOGLE_PROJECT \
-	alpine /broker/build/cloud-service-broker.linux serve	
+	ubuntu /broker/build/cloud-service-broker.linux serve	
 
 # Azure broker
 
 .PHONY: run-broker-azure
 run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve | tee broker.log
+	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
 
 build-azure-brokerpak: azure-brokerpak/*.brokerpak
 
@@ -146,7 +146,7 @@ run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux
 	-e ARM_TENANT_ID \
 	-e ARM_CLIENT_ID \
 	-e ARM_CLIENT_SECRET \
-	alpine /broker/build/cloud-service-broker.linux serve
+	ubuntu /broker/build/cloud-service-broker.linux serve
 
 ./build/psqlcmd_*.zip: 
 	cd tools/psqlcmd; $(MAKE) build
