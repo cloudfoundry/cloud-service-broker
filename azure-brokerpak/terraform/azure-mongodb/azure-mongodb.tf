@@ -1,3 +1,4 @@
+variable resource_group { type = string }
 variable instance_prefix { type = string }
 variable instance_name { type = string }
 variable db_name { type = string }
@@ -30,8 +31,6 @@ variable max_staleness_prefix {
 
 variable labels { type = map }
 
-
-
 resource "random_string" "account_id" {
 	upper = false
 	special = false
@@ -41,7 +40,7 @@ resource "random_string" "account_id" {
 }
 
 resource "azurerm_resource_group" "rg" {
-	name     = coalesce(var.instance_name, "${var.instance_prefix}-${random_string.account_id.result}")
+	name     = var.resource_group
 	location = var.region
 	tags     = var.labels
 }

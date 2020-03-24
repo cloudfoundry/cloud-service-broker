@@ -1,8 +1,12 @@
+variable resource_group {
+	type = string
+}
+
 variable prefix {
 	 type = string
  }
 
-variable location {
+variable region {
 	type = string
  }
 
@@ -14,12 +18,11 @@ variable eventhub_name {
 }
 variable namespace_name {
 	type = string
-	 default="pcf-namespace"
+	default="pcf-namespace"
 }
 
 variable auto_inflate_enabled {
-  type = bool
-
+  	type = bool
 }
 
 variable partition_count {
@@ -35,11 +38,9 @@ variable labels {
 	default = {}
 }
 
-
 locals{
-tags = merge (var.labels,{"heritage": "cloud-service-broker"})
+	tags = merge (var.labels,{"heritage": "cloud-service-broker"})
 }
-
 
 resource "random_string" "eventhub_id" {
 	upper = false
@@ -58,28 +59,27 @@ resource "random_string" "namespace_id" {
 }
 
 resource "azurerm_resource_group" "rg" {
-  name     =  "${var.prefix}-${random_string.namespace_id.result}"
-	location = var.location
+	name     =  var.resource_group
+	location = var.region
 }
 
 resource "azurerm_eventhub_namespace" "rg-namespace" {
-  name                = coalesce(var.namespace_name, "${var.prefix}-${random_string.namespace_id.result}")
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  sku                 = var.sku
-  capacity            = 1
-  auto_inflate_enabled = var.auto_inflate_enabled
-  tags = local.tags
+	name                 = coalesce(var.namespace_name, "${var.prefix}-${random_string.namespace_id.result}")
+	location             = azurerm_resource_group.rg.location
+	resource_group_name  = azurerm_resource_group.rg.name
+	sku                  = var.sku
+	capacity             = 1
+	auto_inflate_enabled = var.auto_inflate_enabled
+	tags                 = local.tags
 }
 
 resource "azurerm_eventhub" "eventhub" {
-  name                = coalesce(var.eventhub_name, "${var.prefix}-${random_string.eventhub_id.result}")
-  namespace_name      = azurerm_eventhub_namespace.rg-namespace.name
-  resource_group_name = azurerm_resource_group.rg.name
-  partition_count     = var.partition_count
-  message_retention   = var.message_retention
+	name                = coalesce(var.eventhub_name, "${var.prefix}-${random_string.eventhub_id.result}")
+	namespace_name      = azurerm_eventhub_namespace.rg-namespace.name
+	resource_group_name = azurerm_resource_group.rg.name
+	partition_count     = var.partition_count
+	message_retention   = var.message_retention
 }
-
 
 output eventhub_rg_name {value=azurerm_resource_group.rg.name}
 output namespace_name {value=azurerm_eventhub_namespace.rg-namespace.name}

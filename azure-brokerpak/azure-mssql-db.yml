@@ -96,17 +96,17 @@ provision:
       maxLength: 63
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$    
-  - field_name: admin_username
+  - field_name: server_admin_username
     type: string
     details: Existing admin username for server
-  - field_name: admin_password
+  - field_name: server_admin_password
     type: string
     details: Existing admin password for server
-  - field_name: resource_group
+  - field_name: server_resource_group
     type: string
     details: Existing resource group for server
     constraints:
-      maxLength: 90
+      maxLength: 64
       minLength: 6
       pattern: ^[a-z][a-z0-9-()_\.]+$    
   template_ref: terraform/azure-sql-db/provision-mssql-db.tf 

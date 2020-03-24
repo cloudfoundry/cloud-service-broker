@@ -82,6 +82,13 @@ provision:
       maxLength: 63
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
+  - field_name: resource_group
+    details: Name for the resource group for this instance
+    default: rg-${request.instance_id}
+    constraints:
+      maxLength: 64
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$      
   - field_name: db_name
     type: string
     details: Name for your database
