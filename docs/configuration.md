@@ -48,4 +48,58 @@ Brokerpak configuration values:
 | Environment Variable | Config File Value | Type | Description |
 |----------------------|------|-------------|------------------|
 | <tt>GSB_BROKERPAK_BUILTIN_PATH</tt> | brokerpak.builtin.path | string | <p>Path to search for .brokerpak files, default: <code>./</code></p>|
+|<tt>GSB_BROKERPAK_CONFIG</tt>|brokerpak.config| string | JSON global config for broker pak services|
+||service.*service-name*.provision.defaults| string | JSON provision defaults override for *service-name*|
+||services.*service-name*.plans| string | JSON plan collection to augment plans for *service-name*|
+
+### Provision Default Example
+
+The Azure MS SQL DB service (azure-mssql-db) provisions databases on an existing MS SQL server. Configuring the server credentials looks like this:
+```yaml
+service:
+  azure-mssql-db:
+    provision:
+      defaults: '{
+          "server_name": "vsb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5",
+          "admin_username": "KlpWlZCYHEyqdwuf",
+          "admin_password": "KZe-.-rTuhK2ucDCx5UYQJyjsbum65SlC8_LTZg~Klr.2.1Yut-1weBdF1Xk-uo.",
+          "resource_group": "vsb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5"
+        }' 
+```
+
+### Plans Example
+
+The Azure MS SQL DB service (azure-mssql-db) can also have its plans augmented to support more than one existing DB server:
+```yaml
+service:
+  azure-mssql-db:
+    plans: '[
+      {
+        "id":"881de5d9-e078-44e7-bed5-26faadabda3c",
+        "name":"small",
+        "description":"2cores, 10GB storage DB on server vsb-azsql-test-db4",
+        "pricing_tier":"GP",
+        "cores":"2",
+        "storage_gb":"10",
+        "server_name":"vsb-azsql-test-db4",
+        "admin_username":"eqVrU6vcTBvgfiqj",
+        "admin_password":"BI@G9a9nCnXIV4CV",
+        "resource_group":"vsb-azsql-test-db4"
+      },
+      {
+        "id":"1a1de5d9-e078-44e7-bed5-266aadabdaa6",
+        "name":"small",
+        "description":"2cores, 10GB storage DB on server vsb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5",
+        "pricing_tier":"GP",
+        "cores":"2",
+        "storage_gb":"10",
+        "server_name": "vsb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5",
+        "admin_username": "KlpWlZCYHEyqdwuf",
+        "admin_password": "KZe-.-rTuhK2ucDCx5UYQJyjsbum65SlC8_LTZg~Klr.2.1Yut-1weBdF1Xk-uo.",
+        "resource_group": "vsb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5"
+      }
+    ]'
+```
+
+
 

@@ -20,15 +20,15 @@ The following options can be configured across all supported platforms. Notes be
 | cores       | 1,2,4,8,16,32,64 | 1      |
  
 ### Azure Notes
-CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-vcore-resource-limits-single-databases) as follows:
+CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) as follows:
 
-| Plan  | Sku      | Memory | Storage | vCores |
-|-------|----------|--------|---------|--------|
-| small | B_Gen5_2 | 4GB | 50GB | 2 |
-| medium | GP_Gen5_4 | 10GB | 200GB | 4 |
-| large | MO_Gen5_8 | 20GB | 500GB | 8 |
+| Plan   | Sku       | Memory | Storage | vCores |
+|--------|-----------|--------|---------|--------|
+| small  | B_Gen5_2  | 4GB    | 5GB     | 2      |
+| medium | GP_Gen5_4 | 10GB   | 10GB    | 4      |
+| large  | MO_Gen5_8 | 20GB   | 20GB    | 8      |
 
-> Note that the maximum vCores is dependant on the Service Tier. B_ = Basic, GP_ = General Puspose and MO_ = Memory Optimized. See below for details.
+> Note that the maximum vCores is dependant on the Service Tier. B_ = Basic, GP_ = General Purpose and MO_ = Memory Optimized. See below for details.
 
 #### Azure specific config parameters
 
