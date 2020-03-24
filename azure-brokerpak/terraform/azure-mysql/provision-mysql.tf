@@ -1,4 +1,5 @@
 variable instance_name { type = string }
+variable resource_group { type = string }
 variable db_name { type = string }
 variable mysql_version { type = string }
 variable region { type = string }
@@ -9,7 +10,7 @@ variable storage_gb {type = string }
 variable authorized_network {type = string}
 
 resource "azurerm_resource_group" "azure-msyql" {
-  name     = var.instance_name
+  name     = var.resource_group
   location = var.region
   tags     = var.labels
 }

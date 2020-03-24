@@ -74,6 +74,13 @@ provision:
       maxLength: 31
       minLength: 3
       pattern: ^[a-z][a-z0-9-]+$ #^[-\w\._\(\)]+$
+  - field_name: resource_group
+    details: Name for the resource group for this instance
+    default: rg-${request.instance_id}
+    constraints:
+      maxLength: 64
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$      
   - field_name: db_name
     type: string
     details: Name for your Cosmos DB database with API for Mongo DB
@@ -93,8 +100,42 @@ provision:
     default: uniqueKey
   - field_name: region
     type: string
-    details: Specifies the supported Azure location where the resource exists. 
-    default: West US 2
+    details: The region of the mongodb instance.
+    default: westus
+    enum:
+      eastasia: East Asia
+      southeastasia: South East Asia
+      centralus: Central US
+      eastus: East US
+      eastus2: East US 2
+      westus: West US
+      northcentralus: North Central US
+      southcentralus: South Central US
+      northeurope: North Europe
+      westeurope: West Europe
+      japanwest: Japan West
+      japaneast: Japan East
+      brazilsouth: Brazil South
+      australiaeast: Australia East
+      australiasoutheast: Australia South East
+      australiacentral: Australia Central
+      australiacentral2: Australia Central 2
+      southindia: South India
+      centralindia: Central India
+      westindia: West India
+      canadacentral: Canada Central
+      canadaeast: Canada East
+      uksouth: UK South
+      ukwest: UK West
+      westcentralus: West Central US
+      westus2: West US 2
+      koreacentral: Korea Central
+      koreasouth: Korea South
+      francecentral: France Central
+      uaenorth: UAE North
+      southafricanorth: South Africa North
+      southafricawest: South Africa West
+      germanycentral: Germany Central
   - field_name: ip_range_filter
     type: string
     details: CosmosDB Firewall Support. This value specifies the set of IP addresses or IP address ranges in CIDR form to be included as the allowed list of client IP's for a given database account. IP addresses/ranges must be comma separated and must not contain any spaces. 0.0.0.0 allows access from Azure networks.  An empty string "" allows access from all public networks.

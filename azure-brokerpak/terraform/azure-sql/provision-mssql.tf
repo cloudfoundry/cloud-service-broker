@@ -1,4 +1,5 @@
 variable server_name { type = string }
+variable resource_group { type = string }
 variable db_name { type = string }
 variable region { type = string }
 variable labels { type = map }
@@ -21,7 +22,7 @@ resource "random_password" "password" {
 }
 
 resource "azurerm_resource_group" "azure_sql" {
-  name     = var.server_name
+  name     = var.resource_group
   location = var.region
   tags = var.labels
 }

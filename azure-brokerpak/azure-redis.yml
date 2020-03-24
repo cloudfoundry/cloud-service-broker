@@ -104,10 +104,51 @@ provision:
       maxLength: 98
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
+  - field_name: resource_group
+    details: Name for the resource group for this instance
+    default: rg-${request.instance_id}
+    constraints:
+      maxLength: 64
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$
   - field_name: region
     type: string
-    details: The region of the Redis instance.
-    default: West US
+    details: The region of the mysql instance.
+    default: westus
+    enum:
+      eastasia: East Asia
+      southeastasia: South East Asia
+      centralus: Central US
+      eastus: East US
+      eastus2: East US 2
+      westus: West US
+      northcentralus: North Central US
+      southcentralus: South Central US
+      northeurope: North Europe
+      westeurope: West Europe
+      japanwest: Japan West
+      japaneast: Japan East
+      brazilsouth: Brazil South
+      australiaeast: Australia East
+      australiasoutheast: Australia South East
+      australiacentral: Australia Central
+      australiacentral2: Australia Central 2
+      southindia: South India
+      centralindia: Central India
+      westindia: West India
+      canadacentral: Canada Central
+      canadaeast: Canada East
+      uksouth: UK South
+      ukwest: UK West
+      westcentralus: West Central US
+      westus2: West US 2
+      koreacentral: Korea Central
+      koreasouth: Korea South
+      francecentral: France Central
+      uaenorth: UAE North
+      southafricanorth: South Africa North
+      southafricawest: South Africa West
+      germanycentral: Germany Central
     constraints:
       examples:
       - West US
@@ -117,36 +158,7 @@ provision:
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
-  template: |-
-    variable sku_name { type = string }
-    variable family { type = string }
-    variable capacity { type = string }
-    variable instance_name { type = string }
-    variable region { type = string }
-    variable labels { type = map }
-
-    resource "azurerm_resource_group" "azure-redis" {
-      name     = var.instance_name
-      location = var.region
-      tags     = var.labels
-    }
-
-    resource "azurerm_redis_cache" "redis" {
-      name                = var.instance_name
-      sku_name            = var.sku_name
-      family              = var.family
-      capacity            = var.capacity
-      location            = azurerm_resource_group.azure-redis.location
-      resource_group_name = azurerm_resource_group.azure-redis.name
-      tags                = var.labels
-    }
-  
-    output name { value = "${azurerm_redis_cache.redis.name}" }
-    output hostname { value = "${azurerm_redis_cache.redis.hostname}" }
-    output port { value = azurerm_redis_cache.redis.port }
-    output password { value = "${azurerm_redis_cache.redis.primary_access_key}" }
-    output tls_port { value = "${azurerm_redis_cache.redis.ssl_port}" }
-
+  template_ref: ./terraform/azure-redis/redis-provision.tf
   outputs:
   - field_name: name
     type: string
@@ -163,7 +175,6 @@ provision:
   - field_name: password
     type: string
     details: The password to authenticate to the redis instance.
- 
 bind:
   plan_inputs: []
   user_inputs: []

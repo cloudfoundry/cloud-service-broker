@@ -24,9 +24,9 @@ if cf bind-service spring-music "${MSSQL_SERVER_INSTANCE_NAME}"; then
 
     CONFIG="{ \
     \"server_name\":\"${SERVER_NAME}\", \
-    \"admin_username\":\"${USERNAME}\", \
-    \"admin_password\":\"${PASSWORD}\", \
-    \"resource_group\":\"${SERVER_RG}\" \
+    \"server_admin_username\":\"${USERNAME}\", \
+    \"server_admin_password\":\"${PASSWORD}\", \
+    \"server_resource_group\":\"${SERVER_RG}\" \
     }"
 
     echo $CONFIG
