@@ -74,6 +74,8 @@ if bind_service_test spring-music "${SERVICE_INSTANCE_NAME}"; then
 
   bind_service_test spring-music-validator "${SERVICE_INSTANCE_NAME}"
   RESULT=$?
+
+  cf delete -f spring-music-validator
 else
   RESULT=$?
 fi
