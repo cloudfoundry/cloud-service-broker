@@ -41,7 +41,7 @@ plans:
 - name: large
   id: 605a7a26-b1dd-4ce5-a382-4233e98469a8
   description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 80 cores ; 1 TB storage ; 1 read replica; Auto-failover group enabled'
-  display_name: "XLarge"
+  display_name: "Large"
   properties:
     pricing_tier: BC
     cores: 40
