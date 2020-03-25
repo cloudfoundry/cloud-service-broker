@@ -74,9 +74,9 @@ provision:
       maximum: 4096
       minimum: 5      
   user_inputs:
-  - field_name: server_name
+  - field_name: instance_name
     type: string
-    details: Name for your Azure SQL Server
+    details: Name for your Azure SQL Faileover Group
     default: vsb-azsql-fog-${request.instance_id}
     constraints:
       maxLength: 63
@@ -84,11 +84,11 @@ provision:
       pattern: ^[a-z][a-z0-9-]+$
   - field_name: resource_group
     details: Name for the resource group for this instance
-    default: rg-${request.instance_id}
+    default: ''
     constraints:
       maxLength: 64
-      minLength: 6
-      pattern: ^[a-z][a-z0-9-]+$      
+      minLength: 0
+      pattern: ^[a-z][a-z0-9-]+$|^$   
   - field_name: db_name
     type: string
     details: Name for your database
@@ -257,21 +257,21 @@ bind:
     type: string
     details: The password to authenticate to the database server.    
 examples:
-- name: failover group azuresql-db-small-configuration
+- name: failover-group-azuresql-db-small-configuration
   description: Create a small Azure SQL Database failover group 
   plan_id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
   provision_params: {}
   bind_params: {}
   bind_can_fail: true  
-- name: failover group azuresql-db-medium-configuration
+- name: failover-group-azuresql-db-medium-configuration in centralus region
   description: Create a medium Azure SQL Database failover group 
   plan_id: c5e8ec57-ab5a-4bbf-ac6d-5075a97ed1a5
-  provision_params: {}
+  provision_params: { "region": "centralus" }
   bind_params: {}
   bind_can_fail: true  
-- name: failover group azuresql-db-large-configuration
+- name: failover-group-azuresql-db-large-configuration resource group csb-acceptance-test-rg
   description: Create a large Azure SQL Database failover group 
   plan_id: 605a7a26-b1dd-4ce5-a382-4233e98469a8
-  provision_params: {}
+  provision_params: { "resource_group": "csb-acceptance-test-rg" }
   bind_params: {}
   bind_can_fail: true  

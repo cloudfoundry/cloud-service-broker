@@ -29,9 +29,9 @@ plans:
 provision:
   plan_inputs: []
   user_inputs:
-  - field_name: server_name
+  - field_name: instance_name
     type: string
-    details: Name for your Azure SQL Server
+    details: Name for your Azure SQL Server instance
     default: vsb-azsql-svr-${request.instance_id}
     constraints:
       maxLength: 63
@@ -39,11 +39,11 @@ provision:
       pattern: ^[a-z][a-z0-9-]+$
   - field_name: resource_group
     details: Name for the resource group for this instance
-    default: rg-${request.instance_id}
+    default: ''
     constraints:
       maxLength: 64
-      minLength: 6
-      pattern: ^[a-z][a-z0-9-]+$      
+      minLength: 0
+      pattern: ^[a-z][a-z0-9-]+$|^$   
   - field_name: region
     type: string
     details: The region of the Azure SQL Database
@@ -127,4 +127,9 @@ examples:
   plan_id: 1aab10e2-ca79-4755-855a-6073a739d2e0
   provision_params: {}
   bind_params: {}
+- name: azuresql-db-server-standard-rg
+  description: Create a standard Azure SQL Database Server in resource group csb-acceptance-test-rg and region centralus
+  plan_id: 1aab10e2-ca79-4755-855a-6073a739d2e0
+  provision_params: {"resource_group": "csb-acceptance-test-rg", "region": "centralus"}
+  bind_params: {}  
 

@@ -58,29 +58,21 @@ provision:
     type: array
     details: A list of location for the Cosmos DB account.  The first region is the default write region
   user_inputs:
-  - field_name: instance_prefix
-    type: string
-    details: Prefix that will be used to generate a random instance_name if instance_name is not provided.
-    default: psb-mongodb
-    constraints:
-      maxLength: 18
-      minLength: 1
-      pattern: ^[a-z][a-z0-9-]+$
   - field_name: instance_name
     type: string
     details: Name for your Cosmos DB with API for MongoDB instance
-    default: null
+    default: vsb-mongo-${request.instance_id}
     constraints:
       maxLength: 31
       minLength: 3
       pattern: ^[a-z][a-z0-9-]+$ #^[-\w\._\(\)]+$
   - field_name: resource_group
     details: Name for the resource group for this instance
-    default: rg-${request.instance_id}
+    default: ''
     constraints:
       maxLength: 64
-      minLength: 6
-      pattern: ^[a-z][a-z0-9-]+$      
+      minLength: 0
+      pattern: ^[a-z][a-z0-9-]+$|^$
   - field_name: db_name
     type: string
     details: Name for your Cosmos DB database with API for Mongo DB
@@ -196,5 +188,16 @@ examples:
     db_name: 'musicdb',
     collection_name: 'album',
     shard_key: '_id'
+  }
+  bind_params: {}
+- name: spring-music-mongo-db-alternate-rg
+  description: Create a small cosmos db with Mongo API for the spring music sample app
+  plan_id: 4ba45322-534c-11ea-b346-00155da9789e
+  provision_params: {
+    db_name: 'musicdb',
+    collection_name: 'album',
+    shard_key: '_id',
+    resource_group: 'csb-acceptance-test-rg',
+    region: 'westus2'
   }
   bind_params: {}

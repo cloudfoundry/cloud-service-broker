@@ -1,4 +1,4 @@
-variable server_name { type = string }
+variable instance_name { type = string }
 variable resource_group { type = string }
 variable db_name { type = string }
 variable region { type = string }
@@ -7,6 +7,16 @@ variable labels { type = map }
 variable pricing_tier { type = string }
 variable cores { type = number }
 variable storage_gb { type = number }
+
+locals {
+  resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group
+}
+resource "azurerm_resource_group" "azure-sql-fog" {
+  name     = local.resource_group
+  location = var.region
+  tags     = var.labels
+  count    = length(var.resource_group) == 0 ? 1 : 0
+}
 
 resource "random_string" "username" {
   length = 16
@@ -22,15 +32,10 @@ resource "random_password" "password" {
   min_special = 2
 }
 
-resource "azurerm_resource_group" "azure_sql" {
-  name     = var.resource_group
-  location = var.region
-  tags = var.labels
-}
-
 resource "azurerm_sql_server" "primary_azure_sql_db_server" {
-  name                         = format("%s-primary", var.server_name)
-  resource_group_name          = azurerm_resource_group.azure_sql.name
+  depends_on = [ azurerm_resource_group.azure-sql-fog ]
+  name                         = format("%s-primary", var.instance_name)
+  resource_group_name          = local.resource_group
   location                     = var.region
   version                      = "12.0"
   administrator_login          = random_string.username.result
@@ -81,8 +86,9 @@ locals {
 }
 
 resource "azurerm_sql_server" "secondary_sql_db_server" {
-  name                         = format("%s-secondary", var.server_name)
-  resource_group_name          = azurerm_resource_group.azure_sql.name
+  depends_on = [ azurerm_resource_group.azure-sql-fog ]
+  name                         = format("%s-secondary", var.instance_name)
+  resource_group_name          = local.resource_group
   location                     = var.failover_region != "default" ? var.region : local.default_pair[var.region]
   version                      = "12.0"
   administrator_login          = random_string.username.result
@@ -91,8 +97,9 @@ resource "azurerm_sql_server" "secondary_sql_db_server" {
 }
 
 resource "azurerm_sql_database" "azure_sql_db" {
+  depends_on = [ azurerm_resource_group.azure-sql-fog ]
   name                = var.db_name
-  resource_group_name = azurerm_resource_group.azure_sql.name
+  resource_group_name = local.resource_group
   location            = var.region
   server_name         = azurerm_sql_server.primary_azure_sql_db_server.name
   requested_service_objective_name = format("%s_Gen5_%d", var.pricing_tier, var.cores)
@@ -101,8 +108,9 @@ resource "azurerm_sql_database" "azure_sql_db" {
 }
 
 resource "azurerm_sql_failover_group" "failover_group" {
-  name                = var.server_name
-  resource_group_name = azurerm_resource_group.azure_sql.name
+  depends_on = [ azurerm_resource_group.azure-sql-fog ]
+  name                = var.instance_name
+  resource_group_name = local.resource_group
   server_name         = azurerm_sql_server.primary_azure_sql_db_server.name
   databases           = [azurerm_sql_database.azure_sql_db.id]
   partner_servers {
@@ -116,16 +124,18 @@ resource "azurerm_sql_failover_group" "failover_group" {
 }
 
 resource "azurerm_sql_firewall_rule" "server1" {
+  depends_on = [ azurerm_resource_group.azure-sql-fog ]
   name                = "FirewallRule1"
-  resource_group_name = azurerm_resource_group.azure_sql.name
+  resource_group_name = local.resource_group
   server_name         = azurerm_sql_server.primary_azure_sql_db_server.name
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "0.0.0.0"
 }
 
 resource "azurerm_sql_firewall_rule" "server2" {
+  depends_on = [ azurerm_resource_group.azure-sql-fog ]
   name                = "FirewallRule1"
-  resource_group_name = azurerm_resource_group.azure_sql.name
+  resource_group_name = local.resource_group
   server_name         = azurerm_sql_server.secondary_sql_db_server.name
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "0.0.0.0"
