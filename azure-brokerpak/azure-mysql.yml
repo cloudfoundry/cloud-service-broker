@@ -99,7 +99,7 @@ provision:
     constraints:
       maxLength: 64
       minLength: 0
-      pattern: ^[a-z][a-z0-9-]+$|^$      
+      pattern: ^[a-z][a-z0-9-]+$|^$
   - field_name: db_name
     type: string
     details: Name for your database
@@ -222,9 +222,9 @@ examples:
   bind_params: {}
   bind_can_fail: true
 - name: medium
-  description: Create a medium mysql instance
+  description: Create a medium mysql instance in centralus region
   plan_id: 9eb836dd-4B90-4cF7-bc06-1986103802d3
-  provision_params: {}
+  provision_params: { "region": "centralus" }
   bind_params: {}
   bind_can_fail: true
 - name: large

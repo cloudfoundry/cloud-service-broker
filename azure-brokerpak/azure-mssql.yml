@@ -83,9 +83,9 @@ provision:
       maximum: 4096
       minimum: 5      
   user_inputs:
-  - field_name: server_name
+  - field_name: instance_name
     type: string
-    details: Name for your Azure SQL Server
+    details: Name for your Azure SQL Instance
     default: vsb-azsql-${request.instance_id}
     constraints:
       maxLength: 63
@@ -93,11 +93,11 @@ provision:
       pattern: ^[a-z][a-z0-9-]+$
   - field_name: resource_group
     details: Name for the resource group for this instance
-    default: rg-${request.instance_id}
+    default: ''
     constraints:
       maxLength: 64
-      minLength: 6
-      pattern: ^[a-z][a-z0-9-]+$      
+      minLength: 0
+      pattern: ^[a-z][a-z0-9-]+$|^$
   - field_name: db_name
     type: string
     details: Name for your database
@@ -225,15 +225,15 @@ bind:
     details: The password to authenticate to the database server.
 examples:
 - name: azuresql-db-small-configuration
-  description: Create a small Azure SQL Database
+  description: Create a small Azure SQL Database in westcentralus region
   plan_id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
-  provision_params: {}
+  provision_params: {"region": "westcentralus"}
   bind_params: {}
   bind_can_fail: true  
 - name: azuresql-db-medium-configuration
-  description: Create a medium Azure SQL Database
+  description: Create a medium Azure SQL Database in csb-acceptance-test-rg resource group
   plan_id: 9295b05a-58c9-11ea-b9df-00155d2c938f
-  provision_params: {}
+  provision_params: {"resource_group": "csb-acceptance-test-rg"}
   bind_params: {}
   bind_can_fail: true  
 - name: azuresql-db-large-configuration

@@ -106,11 +106,11 @@ provision:
       pattern: ^[a-z][a-z0-9-]+$
   - field_name: resource_group
     details: Name for the resource group for this instance
-    default: rg-${request.instance_id}
+    default: ''
     constraints:
       maxLength: 64
-      minLength: 6
-      pattern: ^[a-z][a-z0-9-]+$
+      minLength: 0
+      pattern: ^[a-z][a-z0-9-]+$|^$
   - field_name: region
     type: string
     details: The region of the mysql instance.
@@ -188,14 +188,14 @@ examples:
   provision_params: {}
   bind_params: {}
 - name: redis-cache-medium
-  description: Medium redis cache
+  description: Medium redis cache in centralus region
   plan_id: 6B272C43-2116-4483-9A99-DE9262C0A7D6
-  provision_params: {}
+  provision_params: { "region": "centralus" }
   bind_params: {}
 - name: redis-cache-large
-  description: Large redis cache
+  description: Large redis cache in csb-acceptance-test-rg resource group
   plan_id: C3E34ABC-A820-457C-B723-1C342EF42C50
-  provision_params: {}
+  provision_params: { "resource_group": "csb-acceptance-test-rg"}
   bind_params: {}
 - name: redis-cache-ha-small
   description: HA small redis cache
