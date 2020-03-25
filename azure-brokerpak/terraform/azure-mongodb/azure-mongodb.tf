@@ -1,5 +1,4 @@
 variable resource_group { type = string }
-variable instance_prefix { type = string }
 variable instance_name { type = string }
 variable db_name { type = string }
 variable collection_name { type = string }
@@ -39,16 +38,22 @@ resource "random_string" "account_id" {
 	length = 12
 }
 
+locals {
+  resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group
+}
+
 resource "azurerm_resource_group" "rg" {
-	name     = var.resource_group
-	location = var.region
-	tags     = var.labels
+  name     = local.resource_group
+  location = var.region
+  tags     = var.labels
+  count    = length(var.resource_group) == 0 ? 1 : 0
 }
 
 resource "azurerm_cosmosdb_account" "mongo-account" {
-	name                = coalesce(var.instance_name, "${var.instance_prefix}-${random_string.account_id.result}")
-	location            = azurerm_resource_group.rg.location
-	resource_group_name = azurerm_resource_group.rg.name
+  	depends_on = [ azurerm_resource_group.rg ]	
+	name                = var.instance_name
+	location            = var.region
+	resource_group_name = local.resource_group
 	offer_type          = "Standard"
 	kind                = "MongoDB"
 
@@ -66,9 +71,10 @@ resource "azurerm_cosmosdb_account" "mongo-account" {
 		}
 	}
 
-	enable_automatic_failover = var.enable_automatic_failover
+	enable_automatic_failover       = var.enable_automatic_failover
 	enable_multiple_write_locations = var.enable_multiple_write_locations
-    ip_range_filter = var.ip_range_filter
+    ip_range_filter                 = var.ip_range_filter
+	tags                            = var.labels	
 }
 
 resource "azurerm_cosmosdb_mongo_database" "mongo-db" {
