@@ -63,9 +63,9 @@ provision:
     details: Name for your Cosmos DB with API for MongoDB instance
     default: vsb-mongo-${request.instance_id}
     constraints:
-      maxLength: 31
-      minLength: 3
-      pattern: ^[a-z][a-z0-9-]+$ #^[-\w\._\(\)]+$
+      maxLength: 98
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$ 
   - field_name: resource_group
     details: Name for the resource group for this instance
     default: ''
