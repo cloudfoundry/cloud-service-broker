@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: azure-mssql-db
+name: csb-azure-mssql-db
 id: 6663f9f1-33c1-4f7d-839c-d4b7682d88cc
 description: Manage Azure SQL Databases on pre-provisioned database servers
 display_name: Azure SQL Database
