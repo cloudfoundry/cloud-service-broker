@@ -35,6 +35,24 @@ bind_service_test() {
   return ${RESULT}
 }
 
+wait_for_service() {
+  SERVICE_NAME=$1
+  OPERATION_IN_PROGRESS=$2
+  while cf service "${SERVICE_NAME}" | grep "${OPERATION_IN_PROGRESS}"; do
+    sleep 30
+  done
+
+  RESULT=0
+  if [[ -n $3 ]]; then
+    RESULT=1
+    if cf service "${SERVICE_NAME}" | grep "$3"; then
+      RESULT=0
+    fi
+  fi
+
+  return ${RESULT}
+}
+
 set -o errexit
 set -o pipefail
 
@@ -59,31 +77,28 @@ else
   cf create-service "${SERVICE}" "${PLAN}" "${SERVICE_INSTANCE_NAME}" -c "$@"
 fi
 
-set -o nounset
-
-set +e
-while cf service "${SERVICE_INSTANCE_NAME}" | grep "create in progress"; do
-    sleep 30
-done
-
 RESULT=0
-if bind_service_test spring-music "${SERVICE_INSTANCE_NAME}"; then
-  export SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if wait_for_service "${SERVICE_INSTANCE_NAME}" "create in progress" "create succeeded"; then
 
-  ( cd "${SCRIPT_DIR}/spring-music-validator" && cf push --no-start )
+  if bind_service_test spring-music "${SERVICE_INSTANCE_NAME}"; then
+    export SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-  bind_service_test spring-music-validator "${SERVICE_INSTANCE_NAME}"
-  RESULT=$?
+    ( cd "${SCRIPT_DIR}/spring-music-validator" && cf push --no-start )
 
-  cf delete -f spring-music-validator
+    bind_service_test spring-music-validator "${SERVICE_INSTANCE_NAME}"
+    RESULT=$?
+
+    cf delete -f spring-music-validator
+  else
+    RESULT=$?
+  fi
 else
-  RESULT=$?
+  echo "Failed creating ${SERVICE_INSTANCE_NAME}"
+  cf service "${SERVICE_INSTANCE_NAME}"
 fi
 
 cf delete-service -f "${SERVICE_INSTANCE_NAME}"
 
-while cf service "${SERVICE_INSTANCE_NAME}" | grep "delete in progress"; do
-    sleep 30
-done
+wait_for_service "${SERVICE_INSTANCE_NAME}" "delete in progress"
 
 exit ${RESULT}
