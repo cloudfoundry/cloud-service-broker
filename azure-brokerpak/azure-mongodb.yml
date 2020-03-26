@@ -69,7 +69,7 @@ provision:
   - field_name: account_name
     type: string
     details: Account name for your Cosmos DB with API for MongoDB instance
-    default: ${request.instance_id}
+    default: vsb${request.instance_id}
     constraints:
       maxLength: 44
       minLength: 6
