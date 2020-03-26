@@ -66,6 +66,14 @@ provision:
       maxLength: 98
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$ 
+  - field_name: account_name
+    type: string
+    details: Account name for your Cosmos DB with API for MongoDB instance
+    default: ${request.instance_id}
+    constraints:
+      maxLength: 44
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$ 
   - field_name: resource_group
     details: Name for the resource group for this instance
     default: ''

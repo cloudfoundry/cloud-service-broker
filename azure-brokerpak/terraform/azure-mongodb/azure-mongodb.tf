@@ -1,5 +1,6 @@
 variable resource_group { type = string }
 variable instance_name { type = string }
+variable account_name { type = string }
 variable db_name { type = string }
 variable collection_name { type = string }
 variable request_units {type = number }
@@ -51,7 +52,7 @@ resource "azurerm_resource_group" "rg" {
 
 resource "azurerm_cosmosdb_account" "mongo-account" {
   	depends_on = [ azurerm_resource_group.rg ]	
-	name                = var.instance_name
+	name                = var.account_name
 	location            = var.region
 	resource_group_name = local.resource_group
 	offer_type          = "Standard"
