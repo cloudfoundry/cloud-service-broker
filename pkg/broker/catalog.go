@@ -53,10 +53,4 @@ type ServicePlan struct {
 // GetServiceProperties gets the plan settings variables as a string->interface map.
 func (sp *ServicePlan) GetServiceProperties() map[string]interface{} {
 	return sp.ServiceProperties
-	// props := make(map[string]interface{})
-	// for k, v := range sp.ServiceProperties {
-	// 	props[k] = v
-	// }
-
-	// return props
 }
