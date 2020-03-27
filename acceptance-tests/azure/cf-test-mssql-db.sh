@@ -11,7 +11,7 @@ wait_for_service() {
 }
 
 MSSQL_SERVER_INSTANCE_NAME="test-mssql-server-$$"
-cf create-service azure-mssql-server standard "${MSSQL_SERVER_INSTANCE_NAME}"
+cf create-service csb-azure-mssql-server standard "${MSSQL_SERVER_INSTANCE_NAME}"
 
 wait_for_service "${MSSQL_SERVER_INSTANCE_NAME}" "create in progress"
 
@@ -31,7 +31,7 @@ if cf bind-service spring-music "${MSSQL_SERVER_INSTANCE_NAME}"; then
 
     echo $CONFIG
 
-    ../cf-test-spring-music.sh azure-mssql-db medium "${CONFIG}"
+    ../cf-test-spring-music.sh csb-azure-mssql-db medium "${CONFIG}"
     RESULT=$?
 
     cf unbind-service spring-music "${MSSQL_SERVER_INSTANCE_NAME}"
