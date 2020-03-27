@@ -32,6 +32,9 @@ import (
 
 var enableCatalogSchemas = toggles.Features.Toggle("enable-catalog-schemas", false, `Enable generating JSONSchema for the service catalog.`)
 
+// GlobalProvisionDefaults viper key for global provision defaults
+const GlobalProvisionDefaults = "provision.defaults"
+
 // ServiceDefinition holds the necessary details to describe an OSB service and
 // provision it.
 type ServiceDefinition struct {
@@ -127,6 +130,10 @@ func (svc *ServiceDefinition) ProvisionDefaultOverrideProperty() string {
 // operator-provided property overrides.
 func (svc *ServiceDefinition) ProvisionDefaultOverrides() map[string]interface{} {
 	return viper.GetStringMap(svc.ProvisionDefaultOverrideProperty())
+}
+
+func ProvisionGlobalDefaults() map[string]interface{}{
+	return viper.GetStringMap(GlobalProvisionDefaults)
 }
 
 // IsRoleWhitelistEnabled returns false if the service has no default whitelist
@@ -339,7 +346,8 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 // 3. Variables overridden in the plan's `provision_overrides` map.
 // 4. User defined variables (in `provision_input_variables` or `bind_input_variables`)
 // 5. Operator default variables loaded from the environment.
-// 6. Default variables (in `provision_input_variables` or `bind_input_variables`).
+// 6. Global operator default variables loaded from the environemnt.
+// 7. Default variables (in `provision_input_variables` or `bind_input_variables`).
 //
 // Loading into the map occurs slightly differently.
 // Default variables and computed_variables get executed by interpolation.
@@ -359,12 +367,13 @@ func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details brok
 
 	builder := varcontext.Builder().
 		SetEvalConstants(constants).
-		MergeMap(svc.ProvisionDefaultOverrides()).
-		MergeJsonObject(details.GetRawParameters()).
-		MergeMap(plan.ProvisionOverrides).
-		MergeDefaults(svc.provisionDefaults()).
-		MergeMap(plan.GetServiceProperties()).
-		MergeDefaults(svc.ProvisionComputedVariables)
+		MergeMap(ProvisionGlobalDefaults()).          // 6
+		MergeMap(svc.ProvisionDefaultOverrides()).    // 5 
+		MergeJsonObject(details.GetRawParameters()).  // 4 
+		MergeMap(plan.ProvisionOverrides).            // 3 
+		MergeDefaults(svc.provisionDefaults()).       // ? 
+		MergeMap(plan.GetServiceProperties()).        // 2 
+		MergeDefaults(svc.ProvisionComputedVariables) // 1 
 
 	return buildAndValidate(builder, svc.ProvisionInputVariables)
 }

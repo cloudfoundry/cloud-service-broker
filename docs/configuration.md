@@ -52,6 +52,20 @@ Brokerpak configuration values:
 ||service.*service-name*.provision.defaults| string | JSON provision defaults override for *service-name*|
 ||services.*service-name*.plans| string | JSON plan collection to augment plans for *service-name*|
 
+### Global Config Example
+
+Services for a given IaaS should have common parameter names for service wide platform resources (like regions)
+
+Azure services support global region and resource group parameters:
+
+```yaml
+provision:
+  defaults: '{
+    "region": "eastus2", 
+    "resource_group": "sb-acceptance-test-rg"
+  }'
+```
+
 ### Provision Default Example
 
 The Azure MS SQL DB service (azure-mssql-db) provisions databases on an existing MS SQL server. Configuring the server credentials looks like this:
