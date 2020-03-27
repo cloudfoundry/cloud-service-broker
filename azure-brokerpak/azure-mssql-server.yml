@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: azure-mssql-server
+name: csb-azure-mssql-server
 id: a0ab0f36-f8e1-4045-8ddb-1918d2ceafe4
 description: Azure SQL Server (no database attached)
 display_name: Azure SQL Server
