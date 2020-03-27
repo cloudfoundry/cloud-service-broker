@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: azure-mysql
+name: csb-azure-mysql
 id: cac4a46b-c4ec-49df-9b11-06457a29d31e
 description: Mysql is a fully managed service for the Azure Platform
 display_name: Azure Database for MySQL servers

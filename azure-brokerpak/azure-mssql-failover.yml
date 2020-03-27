@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: azure-mssql-failover-group
+name: csb-azure-mssql-failover-group
 id: 76d0e602-2b79-4c1e-bbbe-03913a1cfda2
 description: Manages auto failover group for managed Azure SQL on the Azure Platform
 display_name: Azure SQL Failover Group

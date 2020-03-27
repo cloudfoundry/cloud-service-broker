@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: azure-mongodb
+name: csb-azure-mongodb
 id: e5d2898e-534a-11ea-a4e8-00155da9789e
 description: The Cosmos DB service implements wire protocols for MongoDB.  Azure Cosmos DB is Microsoft's globally distributed, multi-model database service for mission-critical application
 display_name: Azure Cosmos DB's API for MongoDB

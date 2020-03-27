@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: azure-mssql
+name: csb-azure-mssql
 id: 2cfcad84-5824-11ea-b0e2-00155d4dfe6c
 description: Azure SQL Database is a fully managed service for the Azure Platform
 display_name: Azure SQL Database - Single Instance
