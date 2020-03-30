@@ -2,7 +2,7 @@
 
 ## Applies to service *csb-azure-mssql-db-failover-group*
 
-*csb-azure-mssql-db-failover-group* manages Azure failover group databases on pre-configured database server pairs.
+*csb-azure-mssql-db-failover-group* manages Azure SQL failover group databases on pre-configured database server pairs.
 
 ## Plans
 
@@ -10,13 +10,13 @@
 |------------|------|--------------|
 |small       | 2    | 50GB         |
 |medium      | 8    | 200GB        |
-|large       | 14   | 1TB          |
+|large       | 40   | 1TB          |
 
 ## Plan Configuration Parameters
 
 The following parameters can be configured.
 
-| Parameter Name | Values              | Default |
+| Parameter Name | Values           | Default |
 |-------------|---------------------|---------|
 | pricing_tier| GP_S, GP, BC        |         |
 | storage_gb  | 5 - 4096            | 50      |

@@ -9,15 +9,15 @@ wait_for_service() {
     sleep 30
   done
 
-  RESULT=0
+  LOCAL_RESULT=0
   if [ $? -gt 2 ]; then
-    RESULT=1
+    LOCAL_RESULT=1
     if cf service "${SERVICE_NAME}" | grep "$3"; then
-      RESULT=0
+      LOCAL_RESULT=0
     fi
   fi
 
-  return ${RESULT}
+  return ${LOCAL_RESULT}
 }
 
 PRIMARY_SERVER_NAME=mssql-server-p-$$

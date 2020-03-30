@@ -43,7 +43,7 @@ resource "azurerm_sql_failover_group" "failover_group" {
 }
 
 locals {
-    serverFQDN = format("%s.database.windows.net", azurerm_sql_failover_group.failover_group.name)
+  serverFQDN = format("%s.database.windows.net", azurerm_sql_failover_group.failover_group.name)
 }
 output "sqldbName" {value = azurerm_sql_database.azure_sql_db.name}
 output "sqlServerName" {value = azurerm_sql_failover_group.failover_group.name}
