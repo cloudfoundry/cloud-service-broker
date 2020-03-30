@@ -8,3 +8,5 @@ General Service notes and documentation:
 Azure Services notes and documentation:
 - [Azure SQL](./mssql-plans-and-config.md)
 - [Azure SQL Failover Groups](./mssql-fog-plans-and-config.md)
+- [Azure SQL Server](./mssql-server-plans-and-config.md)
+- [Azure SQL Failover Groups with Predefined Server Pairs](./mssql-fog-config.md)
