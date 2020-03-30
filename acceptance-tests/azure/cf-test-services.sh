@@ -16,7 +16,7 @@ cf marketplace
 ../cf-create-service-should-fail.sh csb-azure-mongodb medium '{"region":"bogus"}'
 ../cf-create-service-should-fail.sh csb-azure-mongodb medium '{"resource_group":"bogus"}'
 
-../cf-create-service-should-fail.sh csb-azure-mssql medium '{"region":"bogus"}'
+../cf-create-service-should-fail.sh csb-azure-mssql medium '{"location":"bogus"}'
 ../cf-create-service-should-fail.sh csb-azure-mssql medium '{"resource_group":"bogus"}'
 
 ../cf-create-service-should-fail.sh csb-azure-mssql-failover-group medium '{"region":"bogus"}'

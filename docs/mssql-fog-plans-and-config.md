@@ -8,11 +8,11 @@ These are the default plans and configuration options for Azure SQL Failover Gro
 |------------|------|--------------|
 |small       | 2    | 50GB         |
 |medium      | 8    | 200GB        |
-|large       | 14   | 1TB          |
+|large       | 40   | 1TB          |
 
 ## Configuration Options
 
-The following options can be configured.
+The following options may be configured.
 
 | Option Name | Values              | Default |
 |-------------|---------------------|---------|

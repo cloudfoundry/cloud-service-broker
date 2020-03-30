@@ -14,7 +14,7 @@
 
 ## Plan Configuration Parameters
 
-The following parameters can be configured.
+The following parameters may be configured.
 
 | Parameter Name | Values           | Default |
 |-------------|---------------------|---------|

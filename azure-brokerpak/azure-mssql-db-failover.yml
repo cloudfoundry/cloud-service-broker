@@ -150,7 +150,7 @@ bind:
     type: string
     default: ${instance.details["password"]}
     overwrite: true
-  template_ref: terraform/azure-sql/bind-mssql.tf
+  template_ref: terraform/azure-mssql/bind-mssql.tf
   outputs:
   - field_name: username
     type: string
