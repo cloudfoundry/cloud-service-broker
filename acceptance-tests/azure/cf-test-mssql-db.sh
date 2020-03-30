@@ -9,15 +9,15 @@ wait_for_service() {
     sleep 30
   done
 
-  RESULT=0
+  LOCAL_RESULT=0
   if [ $? -gt 2 ]; then
-    RESULT=1
+    LOCAL_RESULT=1
     if cf service "${SERVICE_NAME}" | grep "$3"; then
-      RESULT=0
+      LOCAL_RESULT=0
     fi
   fi
 
-  return ${RESULT}
+  return ${LOCAL_RESULT}
 }
 
 SERVER_NAME=mssql-server-$$
@@ -36,13 +36,17 @@ MSSQL_SERVER_INSTANCE_NAME="test-mssql-server-$$"
 
 RESULT=1
 if cf create-service csb-azure-mssql-server standard "${MSSQL_SERVER_INSTANCE_NAME}" -c "${CONFIG}"; then
-
     if wait_for_service "${MSSQL_SERVER_INSTANCE_NAME}" "create in progress" "create succeeded"; then
-        CONFIG="{ \
-        \"server_name\":\"${SERVER_NAME}\", \
-        \"server_admin_username\":\"${USERNAME}\", \
-        \"server_admin_password\":\"${PASSWORD}\", \
-        \"server_resource_group\":\"${SERVER_RG}\" \
+        CONFIG="{ 
+          \"server\": \"test_server\", \
+          \"server_credentials\": { \
+            \"test_server\": { \
+              \"server_name\":\"${SERVER_NAME}\", \
+              \"admin_username\":\"${USERNAME}\", \
+              \"admin_password\":\"${PASSWORD}\", \
+              \"server_resource_group\":\"${SERVER_RG}\" \
+            } \
+          } \
         }"
 
         echo $CONFIG

@@ -37,6 +37,8 @@ cf marketplace
 
 ./cf-test-mssql-db.sh
 
+./cf-test-mssql-db-fog.sh
+
 
 
 

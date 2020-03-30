@@ -91,10 +91,10 @@ provision:
       maxLength: 64
   - field_name: server_pair
     type: string
-    details: name of server pair from server_credential_pairs to create database upon
+    details: Name of server pair from server_credential_pairs to create database upon
   - field_name: server_credential_pairs
     type: object
-    details: 'JSON hash of failover group name to pair of server credentials. { "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...} '
+    details: 'JSON hash of failover group name to pair of server credentials. { "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}'
   template_ref: terraform/azure-mssql-db-failover/provision-fog-db.tf 
   computed_inputs:
   - name: labels

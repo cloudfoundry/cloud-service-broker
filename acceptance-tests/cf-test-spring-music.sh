@@ -2,37 +2,37 @@
 bind_service_test() {
   APP=$1
   SERVICE_INSTANCE_NAME=$2
-  RESULT=0
+  LOCAL_RESULT=0
   if cf bind-service "${APP}" "${SERVICE_INSTANCE_NAME}"; then
     if cf restart "${APP}"; then
       sleep 10
       if cf app "${APP}" | grep running; then
         echo "successfully bound and restarted ${APP}"
       else
-        RESULT=$?
+        LOCAL_RESULT=$?
         echo "Failed to restart ${APP}: ${RESULT}"
         cf env "${APP}"
         cf logs "${APP}" --recent
       fi
     else
-      RESULT=$?
+      LOCAL_RESULT=$?
       echo "Failed to restart ${APP}: ${RESULT}"
       cf env "${APP}"
       cf logs "${APP}" --recent
     fi
   else
-    RESULT=$?
+    LOCAL_RESULT=$?
     echo "Failed to bind-service ${APP} to ${SERVICE_INSTANCE_NAME}: ${RESULT}"
   fi  
   
   if cf unbind-service "${APP}" "${SERVICE_INSTANCE_NAME}"; then
     echo "successfully bound and restarted ${APP}"
   else
-    RESULT=$?
+    LOCAL_RESULT=$?
     echo "failed to unbind-service ${APP} ${SERVICE_INSTANCE_NAME}"
   fi
 
-  return ${RESULT}
+  return ${LOCAL_RESULT}
 }
 
 wait_for_service() {
@@ -42,15 +42,15 @@ wait_for_service() {
     sleep 30
   done
 
-  RESULT=0
-  if [[ -n $3 ]]; then
-    RESULT=1
+  LOCAL_RESULT=0
+  if [ $? -gt 2 ]; then
+    LOCAL_RESULT=1
     if cf service "${SERVICE_NAME}" | grep "$3"; then
-      RESULT=0
+      LOCAL_RESULT=0
     fi
   fi
 
-  return ${RESULT}
+  return ${LOCAL_RESULT}
 }
 
 set -o errexit
