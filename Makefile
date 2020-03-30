@@ -84,7 +84,7 @@ lint: deps-goimports
 # GCP broker
 
 .PHONY:	lint-brokerpak-gcp
-build-gcp-brokerpak: gcp-brokerpak/*.brokerpak
+build-brokerpak-gcp: gcp-brokerpak/*.brokerpak
 
 gcp-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./gcp-brokerpak/*.yml
 	# docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/gcp-brokerpak
@@ -120,7 +120,7 @@ run-broker-gcp-docker: check-gcp-env-vars ./build/cloud-service-broker.linux gcp
 run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
 	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
 
-build-azure-brokerpak: azure-brokerpak/*.brokerpak
+build-brokerpak-azure: azure-brokerpak/*.brokerpak
 
 azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml ./azure-brokerpak/terraform/*/*.tf ./build/psqlcmd_*.zip
 	# docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
@@ -155,7 +155,7 @@ run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux
 .PHONY: aws-brokerpak
 aws-brokerpak: aws-brokerpak/*.brokerpak
 
-build-aws-brokerpak: aws-brokerpak/*.brokerpak
+build-brokerpak-aws: aws-brokerpak/*.brokerpak
 
 aws-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./aws-brokerpak/*.yml
 	# docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/aws-brokerpak

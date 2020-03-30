@@ -13,17 +13,17 @@
 # limitations under the License.
 ---
 version: 1
-name: csb-azure-mssql-failover-group
-id: 76d0e602-2b79-4c1e-bbbe-03913a1cfda2
-description: Manages auto failover group for managed Azure SQL on the Azure Platform
-display_name: Azure SQL Failover Group
+name: csb-azure-mssql-db-failover-group
+id: d7ba0e8e-4480-4543-a504-b57e1dd1f1ad
+description: Manages auto failover group db's on existing Azure SQL server pairs
+display_name: Azure SQL Failover Group on Existing Server Pairs
 image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquaretransparent1.png
 documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
 support_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
 tags: [azure, mssql, sqlserver, dr, failover, preview]
 plans:
 - name: small
-  id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
+  id: 35a7e882-9e27-4e5a-a292-9c3f3da10873
   description: 'SQL Server latest version. Instance properties: General Purpose - Serverless ; 0.5 - 2 cores ; Max Memory: 6gb ; 50 GB storage ; auto-pause enabled after 1 hour of inactivity'
   display_name: "Small"
   properties:
@@ -31,7 +31,7 @@ plans:
     cores: 2
     storage_gb: 50
 - name: medium
-  id: c5e8ec57-ab5a-4bbf-ac6d-5075a97ed1a5
+  id: b653c8a6-4094-4103-8958-4630a42e1c49
   description: 'SQL Server latest version. Instance properties: General Purpose - Provisioned ; Provisioned Capacity ; 8 cores ; 200 GB storage'
   display_name: "Medium"
   properties:
@@ -39,7 +39,7 @@ plans:
     cores: 8
     storage_gb: 200
 - name: large
-  id: 605a7a26-b1dd-4ce5-a382-4233e98469a8
+  id: 609b668e-0cf8-4512-9f42-ef684c0c8d8d
   description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 80 cores ; 1 TB storage ; 1 read replica; Auto-failover group enabled'
   display_name: "Large"
   properties:
@@ -55,6 +55,7 @@ provision:
     enum:
       GP_S: General Purpose tier - Serverless pricing model
       GP: General Purpose tier - Provisioned pricing model
+      HS: Hyperscale tier
       BC: Business Critical tier
   - field_name: cores
     required: false
@@ -73,7 +74,7 @@ provision:
     constraints:
       maximum: 4096
       minimum: 5      
-  user_inputs:
+  user_inputs:    
   - field_name: instance_name
     type: string
     details: Name for your Azure SQL Faileover Group
@@ -81,116 +82,32 @@ provision:
     constraints:
       maxLength: 63
       minLength: 6
-      pattern: ^[a-z][a-z0-9-]+$
-  - field_name: resource_group
-    details: Name for the resource group for this instance
-    default: ''
-    constraints:
-      maxLength: 64
-      minLength: 0
-      pattern: ^[a-z][a-z0-9-]+$|^$   
+      pattern: ^[a-z][a-z0-9-]+$  
   - field_name: db_name
     type: string
     details: Name for your database
-    default: vsb-db
+    default: vsb-fog-db-${request.instance_id}
     constraints:
       maxLength: 64
-  - field_name: region
+  - field_name: server_pair
     type: string
-    details: The region of the Azure SQL Database
-    default: westus
-    enum:
-      eastasia: East Asia
-      southeastasia: South East Asia
-      centralus: Central US
-      eastus: East US
-      eastus2: East US 2
-      westus: West US
-      northcentralus: North Central US
-      southcentralus: South Central US
-      northeurope: North Europe
-      westeurope: West Europe
-      japanwest: Japan West
-      japaneast: Japan East
-      brazilsouth: Brazil South
-      australiaeast: Australia East
-      australiasoutheast: Australia South East
-      australiacentral: Australia Central
-      australiacentral2: Australia Central 2
-      southindia: South India
-      centralindia: Central India
-      westindia: West India
-      canadacentral: Canada Central
-      canadaeast: Canada East
-      uksouth: UK South
-      ukwest: UK West
-      westcentralus: West Central US
-      westus2: West US 2
-      koreacentral: Korea Central
-      koreasouth: Korea South
-      francecentral: France Central
-      francesouth: France South
-      uaenorth: UAE North
-      uaecentral: UAE Central
-      southafricanorth: South Africa North
-      southafricawest: South Africa West
-      germanycentral: Germany Central
-      germanynortheast: Germany North East
-  - field_name: failover_region
-    type: string
-    details: The region of the Azure SQL Database
-    default: default
-    enum:
-      eastasia: East Asia
-      southeastasia: South East Asia
-      centralus: Central US
-      eastus: East US
-      eastus2: East US 2
-      westus: West US
-      northcentralus: North Central US
-      southcentralus: South Central US
-      northeurope: North Europe
-      westeurope: West Europe
-      japanwest: Japan West
-      japaneast: Japan East
-      brazilsouth: Brazil South
-      australiaeast: Australia East
-      australiasoutheast: Australia South East
-      australiacentral: Australia Central
-      australiacentral2: Australia Central 2
-      southindia: South India
-      centralindia: Central India
-      westindia: West India
-      canadacentral: Canada Central
-      canadaeast: Canada East
-      uksouth: UK South
-      ukwest: UK West
-      westcentralus: West Central US
-      westus2: West US 2
-      koreacentral: Korea Central
-      koreasouth: Korea South
-      francecentral: France Central
-      francesouth: France South
-      uaenorth: UAE North
-      uaecentral: UAE Central
-      southafricanorth: South Africa North
-      southafricawest: South Africa West
-      germanycentral: Germany Central
-      germanynortheast: Germany North East
-      default: Default failover region
-  template_ref: terraform/azure-sql-failover/provision-mssql-failover.tf 
+    details: name of server pair from server_credential_pairs to create database upon
+  - field_name: server_credential_pairs
+    type: object
+    details: 'JSON hash of failover group name to pair of server credentials. { "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...} '
+  template_ref: terraform/azure-mssql-db-failover/provision-fog-db.tf 
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
   outputs:
-  - field_name: sqldbName
-    type: string
-    details: The name of the database.
   - field_name: sqlServerName
     type: string
     details: Hostname of the Azure SQL Server
+  - field_name: sqldbName
+    type: string
+    details: The name of the database.    
   - field_name: sqlServerFullyQualifiedDomainName
     type: string
     details: The fully qualifief domain name (FQDN) of the Azure SQL Server
@@ -255,23 +172,5 @@ bind:
     details: The username to authenticate to the database server.
   - field_name: databaseLoginPassword
     type: string
-    details: The password to authenticate to the database server.    
-examples:
-- name: failover-group-azuresql-db-small-configuration
-  description: Create a small Azure SQL Database failover group 
-  plan_id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
-  provision_params: {}
-  bind_params: {}
-  bind_can_fail: true  
-- name: failover-group-azuresql-db-medium-configuration in centralus region
-  description: Create a medium Azure SQL Database failover group 
-  plan_id: c5e8ec57-ab5a-4bbf-ac6d-5075a97ed1a5
-  provision_params: { "region": "centralus" }
-  bind_params: {}
-  bind_can_fail: true  
-- name: failover-group-azuresql-db-large-configuration resource group csb-acceptance-test-rg
-  description: Create a large Azure SQL Database failover group 
-  plan_id: 605a7a26-b1dd-4ce5-a382-4233e98469a8
-  provision_params: { "resource_group": "csb-acceptance-test-rg" }
-  bind_params: {}
-  bind_can_fail: true  
+    details: The password to authenticate to the database server. 
+

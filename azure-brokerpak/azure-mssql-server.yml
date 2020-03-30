@@ -1,4 +1,4 @@
-# Copyright 2018 the Service Broker Project Authors.
+# Copyright 2020 Pivotal Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,21 @@ provision:
     constraints:
       maxLength: 64
       minLength: 0
-      pattern: ^[a-z][a-z0-9-]+$|^$   
+      pattern: ^[a-z][a-z0-9-]+$|^$
+  - field_name: admin_username
+    details: Name for the resource group for this instance
+    default: ''
+    constraints:
+      maxLength: 32
+      minLength: 0
+      pattern: ^[A-Za-z]+$|^$   
+  - field_name: admin_password
+    details: Name for the resource group for this instance
+    default: ''
+    constraints:
+      maxLength: 64
+      minLength: 0
+      pattern: ^[A-Za-z0-9~_.-]+$|^$               
   - field_name: region
     type: string
     details: The region of the Azure SQL Database
@@ -132,4 +146,8 @@ examples:
   plan_id: 1aab10e2-ca79-4755-855a-6073a739d2e0
   provision_params: {"resource_group": "csb-acceptance-test-rg", "region": "centralus"}
   bind_params: {}  
-
+- name: azuresql-db-server-standard-admin-username-password
+  description: Create a standard Azure SQL Database Server in resource group csb-acceptance-test-rg and region centralus
+  plan_id: 1aab10e2-ca79-4755-855a-6073a739d2e0
+  provision_params: {"instance_name": "a-test-instance", "admin_username": "anadmin", "admin_password": "SomeComp-l1cat3d_Passw0rd"}
+  bind_params: {}  

@@ -1,5 +1,7 @@
 variable instance_name { type = string }
 variable resource_group { type = string }
+variable admin_username { type = string }
+variable admin_password { type = string }
 variable region { type = string }
 variable labels { type = map }
 
@@ -28,14 +30,19 @@ resource "random_password" "password" {
   min_special = 2
 }
 
+locals {
+  admin_password = length(var.admin_password) == 0 ? random_password.password.result : var.admin_password
+  admin_username = length(var.admin_username) == 0 ? random_string.username.result : var.admin_username
+}
+
 resource "azurerm_sql_server" "azure_sql_db_server" {
   depends_on = [ azurerm_resource_group.azure_sql ]
   name                         = var.instance_name
   resource_group_name          = local.resource_group
   location                     = var.region
   version                      = "12.0"
-  administrator_login          = random_string.username.result
-  administrator_login_password = random_password.password.result
+  administrator_login          = local.admin_username
+  administrator_login_password = local.admin_password
   tags = var.labels
 }
 
@@ -53,8 +60,7 @@ output "sqlServerName" {value = azurerm_sql_server.azure_sql_db_server.name}
 output "sqlServerFullyQualifiedDomainName" {value = azurerm_sql_server.azure_sql_db_server.fully_qualified_domain_name}
 output "hostname" {value = azurerm_sql_server.azure_sql_db_server.fully_qualified_domain_name}
 output "port" {value = 1433}
-output "username" {value = random_string.username.result}
-output "password" {value = random_password.password.result}
-output "databaseLogin" {value = random_string.username.result}
-output "databaseLoginPassword" {value = random_password.password.result}
-
+output "username" {value = local.admin_username}
+output "password" {value = local.admin_password}
+output "databaseLogin" {value = local.admin_username}
+output "databaseLoginPassword" {value = local.admin_password}
