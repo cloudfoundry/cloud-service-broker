@@ -1,4 +1,4 @@
-# Copyright 2018 the Service Broker Project Authors.
+# Copyright 2020 Pivotal Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -104,9 +104,9 @@ provision:
     default: vsb-db
     constraints:
       maxLength: 64
-  - field_name: region
+  - field_name: location
     type: string
-    details: The region of the Azure SQL Database
+    details: The location for the Azure SQL Database
     default: westus
     enum:
       eastasia: East Asia
@@ -142,7 +142,7 @@ provision:
       southafricanorth: South Africa North
       southafricawest: South Africa West
       germanycentral: Germany Central
-  template_ref: terraform/azure-sql/provision-mssql.tf 
+  template_ref: terraform/azure-mssql/provision-mssql.tf 
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
@@ -200,7 +200,7 @@ bind:
     type: string
     default: ${instance.details["password"]}
     overwrite: true
-  template_ref: terraform/azure-sql/bind-mssql.tf
+  template_ref: terraform/azure-mssql/bind-mssql.tf
   outputs:
   - field_name: username
     type: string
@@ -225,9 +225,9 @@ bind:
     details: The password to authenticate to the database server.
 examples:
 - name: azuresql-db-small-configuration
-  description: Create a small Azure SQL Database in westcentralus region
+  description: Create a small Azure SQL Database in westcentralus location
   plan_id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
-  provision_params: {"region": "westcentralus"}
+  provision_params: {"location": "westcentralus"}
   bind_params: {}
   bind_can_fail: true  
 - name: azuresql-db-medium-configuration
