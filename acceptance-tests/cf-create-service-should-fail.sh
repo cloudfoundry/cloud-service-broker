@@ -8,7 +8,7 @@ wait_for_service() {
   done
 
   LOCAL_RESULT=0
-  if [[ -n $3 ]]; then
+  if [ $# -gt 2 ]; then
     LOCAL_RESULT=1
     if cf service "${SERVICE_NAME}" | grep "$3"; then
       LOCAL_RESULT=0
