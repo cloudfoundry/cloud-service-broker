@@ -10,7 +10,7 @@ wait_for_service() {
   done
 
   LOCAL_RESULT=0
-  if [ $? -gt 2 ]; then
+  if [ $# -gt 2 ]; then
     LOCAL_RESULT=1
     if cf service "${SERVICE_NAME}" | grep "$3"; then
       LOCAL_RESULT=0
@@ -30,7 +30,7 @@ CONFIG="{ \
     \"admin_username\":\"${USERNAME}\", \
     \"admin_password\":\"${PASSWORD}\", \
     \"resource_group\":\"${SERVER_RG}\", \
-    \"region\":\"westus\" \
+    \"location\":\"westus\" \
     }"
 
 RESULT=1
@@ -43,7 +43,7 @@ if cf create-service csb-azure-mssql-server standard "${MSSQL_SERVER_INSTANCE_NA
         \"admin_username\":\"${USERNAME}\", \
         \"admin_password\":\"${PASSWORD}\", \
         \"resource_group\":\"${SERVER_RG}\", \
-        \"region\":\"eastus\" \
+        \"location\":\"eastus\" \
         }"
 
     MSSQL_SERVER_INSTANCE_NAME=${SECONDARY_SERVER_NAME}

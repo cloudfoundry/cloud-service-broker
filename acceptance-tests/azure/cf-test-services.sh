@@ -6,7 +6,7 @@ set -o nounset
 
 cf marketplace
 
-# bogus region or resource_group should fail
+# bogus location or resource_group should fail
 ../cf-create-service-should-fail.sh csb-azure-mysql medium '{"location":"bogus"}'
 ../cf-create-service-should-fail.sh csb-azure-mysql medium '{"resource_group":"bogus"}'
 
