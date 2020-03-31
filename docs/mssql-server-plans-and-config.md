@@ -2,7 +2,7 @@
 
 ## Applies to service *csb-azure-mssql-server*
 
-*csb-azure-mssql-server* manages stand alone Azure SQL server instances. No databases are created or managed.
+*csb-azure-mssql-server* manages stand alone Azure SQL server instances on Azure (not currently supported on GCP or AWS.) No databases are created or managed.
 
 ## Plans
 

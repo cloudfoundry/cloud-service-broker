@@ -70,7 +70,7 @@ The following parameters plan options
 
 #### Configuration Options
 
-The following parameters may be configured at service provisioning time (`cf create-service csb-azure-redis ... -c '{...}'`)
+The following parameters (as well as those above) may be configured at service provisioning time (`cf create-service csb-azure-redis ... -c '{...}'`)
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|

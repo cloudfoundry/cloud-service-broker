@@ -2,7 +2,7 @@
 
 ## Applies to service *csb-azure-mssql*
 
-These are the default plans and configuration options for Azure SQL on Azure (not supported on GCP or AWS.)
+These are the default plans and configuration options for Azure SQL on Azure (not currently supported on GCP or AWS.)
 
 ## Plans
 
@@ -29,6 +29,8 @@ The following parameters may be configured during service provisioning (`cf crea
 
 | Parameter Name | Type | Description | Default  |
 |----------------|------|-------------|----------|
+| instance_name  |string| service instance name | vsb-azsql-*instance_id* |
+| resource_group |string| resource group for instance | rg-*instance_name* |
 | db_name        |string| database name | vsb-db |
 | location       |string| Azure region to deploy service instance | westus |
 

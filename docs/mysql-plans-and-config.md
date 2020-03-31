@@ -12,8 +12,6 @@ These are the default plans and configuration options for MySQL across the suppo
 
 ## Configuration Options
 
-The following parameters may be configured during service provisioning (`cf create-service vsb-azure-mysql ... -c '{...}'`
-
 The following options can be configured across all supported platforms. Notes below document any platform specific information for mapping that might be required.
 
 | Option Name | Values | Default |
@@ -36,7 +34,7 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 
 #### Azure specific config parameters
 
-The following parameters may be configured during service provisioning (`cf create-service vsb-azure-mysql ... -c '{...}'`
+The following parameters (as well as those above) may be configured during service provisioning (`cf create-service vsb-azure-mysql ... -c '{...}'`
 )
 | Parameter | Description | Default |
 |-----------|-------------|---------|
