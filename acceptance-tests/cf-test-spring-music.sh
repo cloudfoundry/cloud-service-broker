@@ -28,8 +28,13 @@ bind_service_test() {
   if cf unbind-service "${APP}" "${SERVICE_INSTANCE_NAME}"; then
     echo "successfully bound and restarted ${APP}"
   else
-    LOCAL_RESULT=$?
-    echo "failed to unbind-service ${APP} ${SERVICE_INSTANCE_NAME}"
+    sleep 10
+    if cf unbind-service "${APP}" "${SERVICE_INSTANCE_NAME}"; then
+      LOCAL_RESULT=0
+    else
+      LOCAL_RESULT=$?
+      echo "failed to unbind-service ${APP} ${SERVICE_INSTANCE_NAME} after 2 tries"
+    fi
   fi
 
   return ${LOCAL_RESULT}
