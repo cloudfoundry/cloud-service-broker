@@ -2,7 +2,7 @@
 
 ## Applies to service *csb-azure-mssql-db*
 
-*csb-azure-mssql-db* manages Azure SQL databases on pre-configured database servers.
+*csb-azure-mssql-db* manages Azure SQL databases on pre-configured database servers on Azure (not currently supported on GCP or AWS.)
 
 ## Plans
 

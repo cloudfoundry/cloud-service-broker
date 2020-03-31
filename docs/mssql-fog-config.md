@@ -2,7 +2,7 @@
 
 ## Applies to service *csb-azure-mssql-db-failover-group*
 
-*csb-azure-mssql-db-failover-group* manages Azure SQL failover group databases on pre-configured database server pairs.
+*csb-azure-mssql-db-failover-group* manages Azure SQL failover group databases on pre-configured database server pairs on Azure (not currently supported on GCP or AWS.).
 
 ## Plans
 
