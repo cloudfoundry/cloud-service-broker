@@ -111,7 +111,7 @@ provision:
       maxLength: 64
       minLength: 0
       pattern: ^[a-z][a-z0-9-]+$|^$
-  - field_name: region
+  - field_name: location
     type: string
     details: The region of the mysql instance.
     default: westus
@@ -149,10 +149,6 @@ provision:
       southafricanorth: South Africa North
       southafricawest: South Africa West
       germanycentral: Germany Central
-    constraints:
-      examples:
-      - West US
-      pattern: ^[A-Za-z][-a-z0-9A-Z ]+$
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}

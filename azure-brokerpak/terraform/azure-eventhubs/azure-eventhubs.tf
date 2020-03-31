@@ -6,7 +6,7 @@ variable resource_group {
 	type = string
 }
 
-variable region {
+variable location {
 	type = string
 }
 
@@ -40,7 +40,7 @@ locals {
 
 resource "azurerm_resource_group" "rg" {
   name     = local.resource_group
-  location = var.region
+  location = var.location
   tags     = var.labels
   count    = length(var.resource_group) == 0 ? 1 : 0
 }
@@ -48,7 +48,7 @@ resource "azurerm_resource_group" "rg" {
 resource "azurerm_eventhub_namespace" "rg-namespace" {
 	depends_on = [ azurerm_resource_group.rg ]	
 	name                 = var.instance_name
-	location             = var.region
+	location             = var.location
 	resource_group_name  = local.resource_group
 	sku                  = var.sku
 	capacity             = 1

@@ -2,7 +2,7 @@ variable instance_name { type = string }
 variable resource_group { type = string }
 variable db_name { type = string }
 variable mysql_version { type = string }
-variable region { type = string }
+variable location { type = string }
 variable labels { type = map }
 variable pricing_tier { type = string }
 variable cores {type = string }
@@ -15,7 +15,7 @@ locals {
 
 resource "azurerm_resource_group" "azure-msyql" {
   name     = local.resource_group
-  location = var.region
+  location = var.location
   tags     = var.labels
   count    = length(var.resource_group) == 0 ? 1 : 0
 }
@@ -42,7 +42,7 @@ resource "random_password" "password" {
 resource "azurerm_mysql_server" "instance" {
   depends_on = [ azurerm_resource_group.azure-msyql ]
   name                = lower(random_string.servername.result)
-  location            = var.region
+  location            = var.location
   resource_group_name = local.resource_group
   sku_name = format("%s_Gen5_%d", var.pricing_tier, var.cores)
 

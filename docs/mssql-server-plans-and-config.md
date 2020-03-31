@@ -18,7 +18,7 @@ The only plan is *standard*.
 | resource_group | string | resource group for the server | rg-*instance_name* |
 | admin_username | string | admin username for server | randomly generated string |
 | admin_password | string | admin password for server | randomly generated string |
-| region | string | Azure location to create server | westus |
+| location | string | Azure location to create server | westus |
 
 ## Binding Credentials
 

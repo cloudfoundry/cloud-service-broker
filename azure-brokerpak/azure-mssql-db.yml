@@ -95,7 +95,7 @@ provision:
   - field_name: server_credentials
     type: object
     details: 'JSON has of server credentials. { "name":{"server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."},...}'
-  template_ref: terraform/azure-sql-db/provision-mssql-db.tf 
+  template_ref: terraform/azure-mssql-db/provision-mssql-db.tf 
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
