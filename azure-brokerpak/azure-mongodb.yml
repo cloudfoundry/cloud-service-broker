@@ -56,7 +56,7 @@ provision:
   - field_name: failover_locations
     required: false
     type: array
-    details: A list of location for the Cosmos DB account.  The first region is the default write region
+    details: A list of location for the Cosmos DB account.  The first location is the default write location
   user_inputs:
   - field_name: instance_name
     type: string
@@ -98,9 +98,9 @@ provision:
     type: string
     details: Name for your shard key
     default: uniqueKey
-  - field_name: region
+  - field_name: location
     type: string
-    details: The region of the mongodb instance.
+    details: The location of the mongodb instance.
     default: westus
     enum:
       eastasia: East Asia
@@ -206,6 +206,6 @@ examples:
     collection_name: 'album',
     shard_key: '_id',
     resource_group: 'csb-acceptance-test-rg',
-    region: 'westus2'
+    location: 'westus2'
   }
   bind_params: {}

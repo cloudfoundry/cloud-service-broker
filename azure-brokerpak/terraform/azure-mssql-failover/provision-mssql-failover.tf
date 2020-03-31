@@ -1,8 +1,8 @@
 variable instance_name { type = string }
 variable resource_group { type = string }
 variable db_name { type = string }
-variable region { type = string }
-variable failover_region { type = string }
+variable location { type = string }
+variable failover_location { type = string }
 variable labels { type = map }
 variable pricing_tier { type = string }
 variable cores { type = number }
@@ -13,7 +13,7 @@ locals {
 }
 resource "azurerm_resource_group" "azure-sql-fog" {
   name     = local.resource_group
-  location = var.region
+  location = var.location
   tags     = var.labels
   count    = length(var.resource_group) == 0 ? 1 : 0
 }
@@ -36,7 +36,7 @@ resource "azurerm_sql_server" "primary_azure_sql_db_server" {
   depends_on = [ azurerm_resource_group.azure-sql-fog ]
   name                         = format("%s-primary", var.instance_name)
   resource_group_name          = local.resource_group
-  location                     = var.region
+  location                     = var.location
   version                      = "12.0"
   administrator_login          = random_string.username.result
   administrator_login_password = random_password.password.result
@@ -89,7 +89,7 @@ resource "azurerm_sql_server" "secondary_sql_db_server" {
   depends_on = [ azurerm_resource_group.azure-sql-fog ]
   name                         = format("%s-secondary", var.instance_name)
   resource_group_name          = local.resource_group
-  location                     = var.failover_region != "default" ? var.region : local.default_pair[var.region]
+  location                     = var.failover_location != "default" ? var.location : local.default_pair[var.location]
   version                      = "12.0"
   administrator_login          = random_string.username.result
   administrator_login_password = random_password.password.result
@@ -100,7 +100,7 @@ resource "azurerm_sql_database" "azure_sql_db" {
   depends_on = [ azurerm_resource_group.azure-sql-fog ]
   name                = var.db_name
   resource_group_name = local.resource_group
-  location            = var.region
+  location            = var.location
   server_name         = azurerm_sql_server.primary_azure_sql_db_server.name
   requested_service_objective_name = format("%s_Gen5_%d", var.pricing_tier, var.cores)
   max_size_bytes      = var.storage_gb * 1024 * 1024 * 1024

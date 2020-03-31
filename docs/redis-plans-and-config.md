@@ -13,10 +13,6 @@ These are the default plans and configuration options for Redis across the suppo
 
 The following options can be configured across all supported platforms. Notes below document any platform specific information for mapping that might be required.
 
-| Option Name | Values | Default |
-|-------------|--------|---------|
-| cache_size  | 1,2,4,8,16,32,64 | 1    |
-
 ### GCP Notes
 Cache size mapped into [GCP memory store tiers](https://cloud.google.com/memorystore/pricing) as follows:
 
@@ -25,6 +21,10 @@ Cache size mapped into [GCP memory store tiers](https://cloud.google.com/memorys
 | small | Basic           | 1GB |
 | medium | Basic          | 4GB |
 | large | Basic           | 16GB |
+
+| Option Name | Values | Default |
+|-------------|--------|---------|
+| cache_size  | 1,2,4,8,16,32,64 | 1    |
 
 ### AWS Notes
 Cache size mapped into [AWS ElastiCash node types](https://aws.amazon.com/elasticache/pricing/
@@ -38,8 +38,19 @@ Cache size mapped into [AWS ElastiCash node types](https://aws.amazon.com/elasti
 
 TODO: document how cache_size is mapped to an AWS node type
 
-### Azure Notes
+### Azure Notes - applies to *csb-azure-redis*
+
 Cache size mapped into [Azure sku's for Redis](https://azure.microsoft.com/en-us/pricing/details/cache/) as follows:
+
+#### Plan Parameters
+
+The following parameters plan options
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| sku_name | Basic, Standard, Premium | |
+| family | C, P | |
+| capacity | relative size of cache | 1 |
 
 #### Basic Plans:
 | Plan | Sku | Family | Capacity | Memory Size | HA | 
@@ -56,6 +67,17 @@ Cache size mapped into [Azure sku's for Redis](https://azure.microsoft.com/en-us
 | ha-medium | Standard | C | 3 | 6GB | yes |
 | ha-large | Standard | C | 5 | 26GB | yes |
 
+
+#### Configuration Options
+
+The following parameters may be configured at service provisioning time (`cf create-service csb-azure-redis ... -c '{...}'`)
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| instance_name | name of Azure instance to create | vsb-redis-*instance_id* |
+| location  | Azure location to deploy service instance | westus |
+| resource_group | The Azure resource group in which to create the instance | rg-*instance_name* |
+
 #### Notes
 For consuming Azure Redis, the TLS port is used in place of the standard port.  The key for the TLS port is "tls_port".  The standard port is disabled for both the Azure Basic Plans as well as Azure High Availability Plans.
 
@@ -67,6 +89,7 @@ The binding credentials for Redis have the following shape:
 {
     "host" : "redis server hostname",
     "port" : "redis server port",
-    "password" : "authentication password"
+    "password" : "authentication password",
+    "tls_port" : "redis TLS port"
 }
 ```

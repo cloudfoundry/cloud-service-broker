@@ -3,7 +3,7 @@ variable sku_name { type = string }
 variable family { type = string }
 variable capacity { type = string }
 variable instance_name { type = string }
-variable region { type = string }
+variable location { type = string }
 variable labels { type = map }
 
 locals {
@@ -12,7 +12,7 @@ locals {
 
 resource "azurerm_resource_group" "azure-redis" {
   name     = local.resource_group
-  location = var.region
+  location = var.location
   tags     = var.labels
   count    = length(var.resource_group) == 0 ? 1 : 0
 }
@@ -23,7 +23,7 @@ resource "azurerm_redis_cache" "redis" {
   sku_name            = var.sku_name
   family              = var.family
   capacity            = var.capacity
-  location            = var.region
+  location            = var.location
   resource_group_name = local.resource_group
   tags                = var.labels
 }

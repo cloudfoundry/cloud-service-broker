@@ -52,9 +52,9 @@ provision:
       maxLength: 64
       minLength: 0
       pattern: ^[a-z][a-z0-9-]+$|^$
-  - field_name: region
+  - field_name: location
     type: string
-    details: The region of the mysql instance.
+    details: The location of the mysql instance.
     default: westus
     enum:
       eastasia: East Asia
@@ -169,7 +169,7 @@ examples:
   provision_params: {}
   bind_params: {}
 - name: eventhubs-standard
-  description: Simple, secure, and scalable real-time data ingestion standard in region northcentralus and resource group csb-acceptance-test-rg
+  description: Simple, secure, and scalable real-time data ingestion standard in location northcentralus and resource group csb-acceptance-test-rg
   plan_id: 57e330ee-62ed-11ea-825c-23c5737ad688
-  provision_params: {"region": "northcentralus", "resource_group": "csb-acceptance-test-rg"}
+  provision_params: {"location": "northcentralus", "resource_group": "csb-acceptance-test-rg"}
   bind_params: {}

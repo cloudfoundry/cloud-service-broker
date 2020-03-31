@@ -5,7 +5,7 @@ variable db_name { type = string }
 variable collection_name { type = string }
 variable request_units {type = number }
 variable failover_locations {type = list(string) }
-variable region { type = string }
+variable location { type = string }
 variable shard_key { type = string }
 variable ip_range_filter { type = string }
 variable enable_automatic_failover { 
@@ -40,20 +40,20 @@ resource "random_string" "account_id" {
 }
 
 locals {
-  resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group
+	resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group
 }
 
 resource "azurerm_resource_group" "rg" {
-  name     = local.resource_group
-  location = var.region
-  tags     = var.labels
-  count    = length(var.resource_group) == 0 ? 1 : 0
+	name     = local.resource_group
+	location = var.location
+	tags     = var.labels
+	count    = length(var.resource_group) == 0 ? 1 : 0
 }
 
 resource "azurerm_cosmosdb_account" "mongo-account" {
-  	depends_on = [ azurerm_resource_group.rg ]	
+	depends_on = [ azurerm_resource_group.rg ]	
 	name                = var.account_name
-	location            = var.region
+	location            = var.location
 	resource_group_name = local.resource_group
 	offer_type          = "Standard"
 	kind                = "MongoDB"
@@ -74,7 +74,7 @@ resource "azurerm_cosmosdb_account" "mongo-account" {
 
 	enable_automatic_failover       = var.enable_automatic_failover
 	enable_multiple_write_locations = var.enable_multiple_write_locations
-    ip_range_filter                 = var.ip_range_filter
+	ip_range_filter                 = var.ip_range_filter
 	tags                            = var.labels	
 }
 

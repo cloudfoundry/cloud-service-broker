@@ -28,8 +28,8 @@ Except as noted below, configuration is generally the same as [Azure SQL](./mssq
 
 | Parameter | Value | Default |
 |-----------|--------|--------|
-| region  | Azure region to deploy service instance | westus |
-| failover_region | Azure region for failover instance | [default regional pair]([failover_region](https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions#azure-regional-pairs))|
+| location  | Azure location to deploy service instance | westus |
+| failover_location | Azure location for failover instance | [default regional pair]([failover_region](https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions#azure-regional-pairs))|
 
 Note: Currently Azure SQL is not available in all regions. The enum in the YML lists all the valid regions as of 2/12/2020
 

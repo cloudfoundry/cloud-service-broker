@@ -13,16 +13,15 @@ These are the default plans and configuration options for MongoDB across the sup
 
 The following options can be configured across all supported platforms. Notes below document any platform specific information for mapping that might be required.
 
-
 | Option Name     | Value Type   | Values                      | Default |
 |-----------------|--------------|-----------------------------|---------|
-| instance_name   | string       | `^[a-z][a-z0-9-]+$`         | `[instance_prefix]`-`[randomstring]` |
-| instance_prefix | string       | `^[a-z][a-z0-9-]+$`         | `psb-mongodb` |
-| db_name         | string       |                             | `default_db` |
-| collection_name | string       |                             | `default_collection` |
-| shard_key       | string       |                             | `uniqueKey` |
+| instance_name   | string       | `^[a-z][a-z0-9-]+$`         | vsb-mongo-*instance_id* |
+| db_name         | string       |                             | default_db |
+| collection_name | string       |                             | default_collection |
+| shard_key       | string       |                             | uniqueKey |
 
-### Azure Notes
+### Azure Notes - applies to service *csb-azure-mongodb*
+
 Plan sizes mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-vcore-resource-limits-single-databases) as follows:
 
 | Plan   | Request Units      |
@@ -33,10 +32,14 @@ Plan sizes mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/sql-
 
 #### Azure specific config parameters
 
+The following parameters (and those above) may be configured during service provisioning (`cf create-service csb-azure-mongodb ... -c '{...}'`
+
 | Option Name     | Value Type   | Values                      | Default                |
 |-----------------|--------------|-----------------------------|------------------------|
 | request_units   | integer      | Provisioned throughput in [request units](https://docs.microsoft.com/en-us/azure/cosmos-db/request-units). 400-100,000 (multiples of 100)| plan default or `400`    |
-| regions          | string       | Comma separated list of [Azure regions](https://docs.microsoft.com/en-us/azure/cosmos-db/regional-presence) (in failover priority) to deploy service instance.  The first region is the default write-enable region. | `West US 2`   |
+| location        | string       | Azure location of Mongo instance | westus |
+| resource_group  | string       | Resource group for Mongo instance | rg-*instance_name* |
+| failover_locations          | string       | Comma separated list of [Azure regions](https://docs.microsoft.com/en-us/azure/cosmos-db/regional-presence) (in failover priority) to deploy service instance.  The first region is the default write-enable region. |    |
 | ip_range_filter | string | [CosmosDB Firewall Support](https://docs.microsoft.com/en-us/azure/cosmos-db/firewall-support). This value specifies the set of IP addresses or IP address ranges in CIDR form to be included as the allowed list of client IP's for a given database account. IP addresses/ranges must be comma separated and must not contain any spaces. 0.0.0.0 allows access from Azure networks.  An empty string "" allows access from all public networks. | `0.0.0.0` |
 | consistency_level | string | The [Consistency Level](https://docs.microsoft.com/en-us/azure/cosmos-db/consistency-levels) to use for this CosmosDB Account - can be either BoundedStaleness, Eventual, Session, Strong or ConsistentPrefix | `Session` |
 | max_interval_in_seconds | integer | (Optional) When used with the Bounded Staleness consistency level, this value represents the time amount of staleness (in seconds) tolerated. Accepted range for this value is 5 - 86400 (1 day). Defaults to 5. Required when consistency_level is set to BoundedStaleness. | `5` |
