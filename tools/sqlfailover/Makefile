@@ -1,7 +1,6 @@
 SHELL = /bin/bash
 GO-VER = go1.13
 
-
 SRC = $(shell find . -name "*.go" | grep -v "_test\." )
 VERSION=0.1.0
 ifeq ($(USE_GO_CONTAINERS),)
