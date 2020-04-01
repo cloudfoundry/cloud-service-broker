@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	cloud.google.com/go v0.45.1
+	code.cloudfoundry.org/credhub-cli v0.0.0-20200325195429-1faf152db5a4
 	code.cloudfoundry.org/lager v1.1.0
 	github.com/Azure/azure-sdk-for-go v36.2.0+incompatible
 	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
@@ -13,9 +14,9 @@ require (
 	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e
 	github.com/drewolson/testflight v1.0.0 // indirect
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
-	github.com/fsnotify/fsnotify v1.4.7
+	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-sql-driver/mysql v1.4.0
-	github.com/golang/protobuf v1.3.2
+	github.com/golang/protobuf v1.3.5
 	github.com/googleapis/gax-go v2.0.0+incompatible
 	github.com/gorilla/context v1.1.1
 	github.com/gorilla/mux v1.6.2
@@ -35,6 +36,7 @@ require (
 	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a
 	github.com/jinzhu/now v1.1.1 // indirect
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
+	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.3.0 // indirect
 	github.com/magiconair/properties v1.8.0
 	github.com/mattn/go-sqlite3 v1.9.0
@@ -43,6 +45,8 @@ require (
 	github.com/mitchellh/go-testing-interface v1.0.0
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/mitchellh/reflectwalk v1.0.0
+	github.com/onsi/ginkgo v1.12.0
+	github.com/onsi/gomega v1.9.0
 	github.com/pborman/uuid v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.2.0
 	github.com/pivotal-cf/brokerapi v4.2.1+incompatible
@@ -53,6 +57,7 @@ require (
 	github.com/prometheus/procfs v0.0.3
 	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d
 	github.com/russross/blackfriday v1.5.2
+	github.com/sirupsen/logrus v1.2.0
 	github.com/spf13/afero v1.2.1
 	github.com/spf13/cast v1.2.0
 	github.com/spf13/cobra v0.0.3
@@ -64,15 +69,15 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415
 	github.com/xeipuuv/gojsonschema v0.0.0-20180816142147-da425ebb7609
 	go.opencensus.io v0.22.0
-	golang.org/x/net v0.0.0-20191009170851-d66e71096ffb
+	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	golang.org/x/sync v0.0.0-20190423024810-112230192c58
-	golang.org/x/sys v0.0.0-20190804053845-51ab0e2deafa
+	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
+	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
 	golang.org/x/text v0.3.2
 	google.golang.org/api v0.9.0
 	google.golang.org/appengine v1.6.1
 	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55
 	google.golang.org/grpc v1.23.1
 	gopkg.in/sourcemap.v1 v1.0.5
-	gopkg.in/yaml.v2 v2.2.2
+	gopkg.in/yaml.v2 v2.2.8
 )
