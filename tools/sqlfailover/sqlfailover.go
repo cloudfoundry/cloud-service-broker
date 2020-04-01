@@ -1,3 +1,18 @@
+// Portions Copyright 2020 Pivotal Software, Inc.
+// Portions Copyright 2020 Service Broker Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http:#www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package main
 
 import (
@@ -9,7 +24,6 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	_ "github.com/jinzhu/gorm/dialects/mssql"
 )
-
 
 var server string
 var database string
@@ -56,26 +70,29 @@ func main() {
 	database = os.Args[3]
 	// Create auth token from env variables (see here for details https://github.com/Azure/azure-sdk-for-go)
 	authorizer, err := auth.NewAuthorizerFromEnvironment()
-	if err == nil {
-		// Create AzureSQL SDK client
-		dbclient := sqlsdk.NewDatabasesClient(subid)
-		dbclient.Authorizer = authorizer
-		var mode sqlsdk.ReplicaType
-		if os.Args[4] == "primary" {
-			mode = "Primary"
-		}
-		if os.Args[4] == "secondary" {
-			mode = "ReadableSecondary"
-		}
-		ctx := context.Background()
-		future, err := dbclient.Failover(ctx, resgroup, server, database, mode)
-		if err != nil {
-			fmt.Println(err.Error())
-		} else {
-			err = future.WaitForCompletionRef(ctx, dbclient.Client)
-			if err != nil {
-				fmt.Println(err.Error())
-			}
-		}			
+	if err != nil {
+		log.Fatal(err)
 	}
+	// Create AzureSQL SDK client
+	dbclient := sqlsdk.NewDatabasesClient(subid)
+	dbclient.Authorizer = authorizer
+	var mode sqlsdk.ReplicaType
+	if os.Args[4] == "primary" {
+		mode = "Primary"
+	}
+	if os.Args[4] == "secondary" {
+		mode = "ReadableSecondary"
+	}
+	ctx := context.Background()
+	future, err := dbclient.Failover(ctx, resgroup, server, database, mode)
+	if err != nil {
+		fmt.Println("Failed issuing failover command")
+		log.Fatal(err)
+	} else {
+		err = future.WaitForCompletionRef(ctx, dbclient.Client)
+		if err != nil {
+			fmt.Println("Failed waiting for failover command")
+			log.Fatal(err)
+		}
+	}			
 }
