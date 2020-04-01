@@ -17,6 +17,7 @@ var _ = Describe("Config", func() {
 		It("sets defaults", func() {
 			c, err := Parse()
 			Expect(err).To(BeNil())
+			Expect(c).ToNot(BeNil())
 
 			Expect(c.CredStoreConfig.HasCredHubConfig()).To(BeFalse())
 		})
@@ -31,6 +32,7 @@ var _ = Describe("Config", func() {
 
 				c, err := Parse()
 				Expect(err).To(BeNil())
+				Expect(c).ToNot(BeNil())
 
 				Expect(c.CredStoreConfig.HasCredHubConfig()).To(BeTrue())
 

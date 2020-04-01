@@ -11,11 +11,11 @@ import (
 	"github.com/pivotal/cloud-service-broker/pkg/credstore"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
+	"code.cloudfoundry.org/lager"
 )
 
 var _ = Describe("Credhub Store", func() {
-	var logger *logrus.Logger
+	var logger lager.Logger
 
 	var uaaTestServer *httptest.Server
 	var uaaRequest *http.Request
@@ -24,8 +24,7 @@ var _ = Describe("Credhub Store", func() {
 	var chRequest *http.Request
 
 	BeforeEach(func() {
-		logger = logrus.New()
-
+		logger = lager.NewLogger("test")
 		uaaTestServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(`{}`))
 			uaaRequest = r
