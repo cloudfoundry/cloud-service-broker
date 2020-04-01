@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"os"
 	"log"
-	sqlsdk "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v3.0/sql"
+	sqlsdk "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/2018-06-01-preview/sql"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	_ "github.com/jinzhu/gorm/dialects/mssql"
 )
