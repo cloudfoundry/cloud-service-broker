@@ -2,6 +2,7 @@ package credstore
 
 import (
 	"io/ioutil"
+	"fmt"
 	"os"
 
 	"github.com/pivotal/cloud-service-broker/pkg/config"
@@ -11,7 +12,7 @@ import (
 	"code.cloudfoundry.org/credhub-cli/credhub"
 	"code.cloudfoundry.org/credhub-cli/credhub/auth"
 	"code.cloudfoundry.org/credhub-cli/credhub/permissions"
-	"github.com/sirupsen/logrus"
+	"code.cloudfoundry.org/lager"
 )
 
 //go:generate counterfeiter ./ CredStore
@@ -27,12 +28,12 @@ type CredStore interface {
 
 type credhubStore struct {
 	credHubClient *credhub.CredHub
-	logger        *logrus.Logger
+	logger        lager.Logger
 }
 
-func NewCredhubStore(credStoreConfig *config.CredStoreConfig, logger *logrus.Logger) (CredStore, error) {
+func NewCredhubStore(credStoreConfig *config.CredStoreConfig, logger lager.Logger) (CredStore, error) {
 	if os.Getenv("DEV_MODE_ONLY") != "" {
-		logger.Debugf("DEV_MODE_ONLY [%+v] - Creating Mock Credhub", os.Getenv("DEV_MODE_ONLY"))
+		logger.Debug(fmt.Sprintf("DEV_MODE_ONLY [%+v] - Creating Mock Credhub", os.Getenv("DEV_MODE_ONLY")))
 		return &credHubStoreMock{}, nil
 	}
 

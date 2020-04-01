@@ -19,10 +19,12 @@ import (
 
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
 	"github.com/pivotal/cloud-service-broker/pkg/brokerpak"
+	"github.com/pivotal/cloud-service-broker/pkg/config"
 )
 
 type BrokerConfig struct {
 	Registry   broker.BrokerRegistry
+	Config     config.Config
 }
 
 func NewBrokerConfigFromEnv() (*BrokerConfig, error) {
@@ -31,7 +33,13 @@ func NewBrokerConfigFromEnv() (*BrokerConfig, error) {
 		return nil, fmt.Errorf("Error loading brokerpaks: %v", err)
 	}
 
+	config, err := config.Parse()
+	if err != nil {
+		return nil, fmt.Errorf("Failed loading config: %f", err)
+	}
+
 	return &BrokerConfig{
 		Registry:   registry,
+		Config:     *config,
 	}, nil
 }
