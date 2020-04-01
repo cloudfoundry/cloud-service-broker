@@ -18,6 +18,7 @@ The service broker provides support for:
 ||[MongoDB](https://docs.microsoft.com/en-us/azure/cosmos-db/mongodb-introduction) for [CosmosDB](https://azure.microsoft.com/en-us/services/cosmos-db/)||
 ||[Azure SQL](https://docs.microsoft.com/en-us/azure/sql-database/)||
 ||[Azure SQL Failover Groups](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/)||
+||[Azure Eventhubs](https://azure.microsoft.com/en-us/services/event-hubs/)||
 
 ## Installation
 
