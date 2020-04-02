@@ -44,7 +44,7 @@ const credhubClientIdentifier = "csb"
 // ServiceBroker is a brokerapi.ServiceBroker that can be used to generate an OSB compatible service broker.
 type ServiceBroker struct {
 	registry  broker.BrokerRegistry
-	credstore credstore.CredStore
+	Credstore credstore.CredStore
 
 	Logger lager.Logger
 }
@@ -52,19 +52,9 @@ type ServiceBroker struct {
 // New creates a ServiceBroker.
 // Exactly one of ServiceBroker or error will be nil when returned.
 func New(cfg *BrokerConfig, logger lager.Logger) (*ServiceBroker, error) {
-	var cs credstore.CredStore
-
-	if cfg.Config.CredStoreConfig.HasCredHubConfig() {
-		var err error
-		cs, err = credstore.NewCredhubStore( &cfg.Config.CredStoreConfig, logger )
-		if err != nil {
-			return &ServiceBroker{}, err
-		}
-	}
-
 	return &ServiceBroker{
 		registry:  cfg.Registry,
-		credstore: cs,
+		Credstore: cfg.Credstore,
 		Logger:    logger,
 	}, nil
 }
@@ -305,17 +295,17 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 		return brokerapi.Binding{}, err
 	}
 
-	if broker.credstore != nil {
+	if broker.Credstore != nil {
 		credentialName := getCredentialName(broker.getServiceName(serviceDefinition), bindingID)
 
-		_, err := broker.credstore.Put(credentialName, binding.Credentials)
+		_, err := broker.Credstore.Put(credentialName, binding.Credentials)
 		if err != nil {
-			return brokerapi.Binding{}, fmt.Errorf("Bind failure: unable to put credentials in credstore: %v", err)
+			return brokerapi.Binding{}, fmt.Errorf("Bind failure: unable to put credentials in Credstore: %v", err)
 		}
 
-		_, err = broker.credstore.AddPermission(credentialName, "mtls-app:"+details.AppGUID, []string{"read"})
+		_, err = broker.Credstore.AddPermission(credentialName, "mtls-app:"+details.AppGUID, []string{"read"})
 		if err != nil {
-			return brokerapi.Binding{}, fmt.Errorf("Bind failure: Unable to add credstore permissions to app: %v", err)
+			return brokerapi.Binding{}, fmt.Errorf("Bind failure: Unable to add Credstore permissions to app: %v", err)
 		}
 
 		binding.Credentials = map[string]interface{}{
@@ -401,15 +391,15 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return brokerapi.UnbindSpec{}, fmt.Errorf("Error retrieving service instance details: %s", err)
 	}
 
-	if broker.credstore != nil {
+	if broker.Credstore != nil {
 		credentialName := getCredentialName(broker.getServiceName(serviceDefinition), bindingID)
 
-		err = broker.credstore.DeletePermission(credentialName)
+		err = broker.Credstore.DeletePermission(credentialName)
 		if err != nil {
 			broker.Logger.Error(fmt.Sprintf("fail to delete permissions on the key %s", credentialName), err)
 		}
 
-		err := broker.credstore.Delete(credentialName)
+		err := broker.Credstore.Delete(credentialName)
 		if err != nil {
 			return  brokerapi.UnbindSpec{}, err
 		}

@@ -71,7 +71,7 @@ func serve() {
 	db := db_service.New(logger)
 
 	// init broker
-	cfg, err := brokers.NewBrokerConfigFromEnv()
+	cfg, err := brokers.NewBrokerConfigFromEnv(logger)
 	if err != nil {
 		logger.Fatal("Error initializing service broker config: %s", err)
 	}
