@@ -28,6 +28,8 @@ import (
 	"github.com/pivotal/cloud-service-broker/db_service/models"
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
 	"github.com/pivotal/cloud-service-broker/pkg/broker/brokerfakes"
+	"github.com/pivotal/cloud-service-broker/pkg/credstore"
+	"github.com/pivotal/cloud-service-broker/pkg/credstore/credstorefakes"
 	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin"
 	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/base"
 	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/storage"
@@ -141,7 +143,7 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 
 // newStubbedBroker creates a new ServiceBroker with a dummy database for the given registry.
 // It returns the broker and a callback used to clean up the database when done with it.
-func newStubbedBroker(t *testing.T, registry broker.BrokerRegistry) (broker *ServiceBroker, closer func()) {
+func newStubbedBroker(t *testing.T, registry broker.BrokerRegistry, cs credstore.CredStore) (broker *ServiceBroker, closer func()) {
 	// Set up database
 	db, err := gorm.Open("sqlite3", "test.db")
 	if err != nil {
@@ -157,6 +159,7 @@ func newStubbedBroker(t *testing.T, registry broker.BrokerRegistry) (broker *Ser
 
 	config := &BrokerConfig{
 		Registry: registry,
+		Credstore: cs,
 	}
 
 	broker, err = New(config, utils.NewLogger("brokers-test"))
@@ -208,6 +211,7 @@ type BrokerEndpointTestCase struct {
 	// Check is used to validate the state of the world and is where you should
 	// put your test cases.
 	Check func(t *testing.T, broker *ServiceBroker, stub *serviceStub)
+	Credstore credstore.CredStore
 }
 
 // BrokerEndpointTestSuite holds a set of tests for a single endpoint.
@@ -224,7 +228,7 @@ func (cases BrokerEndpointTestSuite) Run(t *testing.T) {
 			registry := broker.BrokerRegistry{}
 			registry.Register(stub.ServiceDefinition)
 
-			broker, closer := newStubbedBroker(t, registry)
+			broker, closer := newStubbedBroker(t, registry, tc.Credstore)
 			defer closer()
 
 			initService(t, tc.ServiceState, broker, stub)
@@ -261,7 +265,7 @@ func initService(t *testing.T, state InstanceState, broker *ServiceBroker, stub 
 
 func TestGCPServiceBroker_Services(t *testing.T) {
 	registry := builtin.BuiltinBrokerRegistry()
-	broker, closer := newStubbedBroker(t, registry)
+	broker, closer := newStubbedBroker(t, registry, nil)
 	defer closer()
 
 	services, err := broker.Services(context.Background())
@@ -402,6 +406,17 @@ func TestGCPServiceBroker_Bind(t *testing.T) {
 				assertEqual(t, "BuildInstanceCredentialsCallCount should match", 1, stub.Provider.BuildInstanceCredentialsCallCount())
 			},
 		},
+		"good-request-with-credstore": {
+			ServiceState: StateBound,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				assertEqual(t, "BindCallCount should match", 1, stub.Provider.BindCallCount())
+				assertEqual(t, "BuildInstanceCredentialsCallCount should match", 1, stub.Provider.BuildInstanceCredentialsCallCount())
+				fcs := broker.Credstore.(*credstorefakes.FakeCredStore)
+				assertEqual(t, "Credstore Put call count should match", 1, fcs.PutCallCount())
+				assertEqual(t, "Credstore AddPermission call count should match", 1, fcs.AddPermissionCallCount())
+			},
+			Credstore: &credstorefakes.FakeCredStore{},
+		},
 		"duplicate-request": {
 			ServiceState: StateBound,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
@@ -440,6 +455,20 @@ func TestGCPServiceBroker_Bind(t *testing.T) {
 				assertEqual(t, "credential overridden", "bar", credMap["foo"].(string))
 			},
 		},
+		"bind-returns-credhub-ref": {
+			ServiceState: StateProvisioned,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				req := stub.BindDetails()
+				bindResult, err := broker.Bind(context.Background(), fakeInstanceId, "override-params", req, true)
+				failIfErr(t, "binding", err)
+				credMap, ok := bindResult.Credentials.(map[string]interface{})
+				assertTrue(t, "bind result credentials should be a map", ok)
+				assertTrue(t, "value foo missing", credMap["foo"] == nil)	
+				assertTrue(t, "cred-hub ref exists", credMap["credhub-ref"] != nil)	
+				assertEqual(t, "cred-hub ref has correct value", "/c/csb/google-storage/override-params/secrets-and-services", credMap["credhub-ref"].(string))		
+			},
+			Credstore: &credstorefakes.FakeCredStore{},
+		},	
 	}
 
 	cases.Run(t)
@@ -450,10 +479,20 @@ func TestGCPServiceBroker_Unbind(t *testing.T) {
 		"good-request": {
 			ServiceState: StateBound,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
-
 				_, err := broker.Unbind(context.Background(), fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
 				failIfErr(t, "unbinding", err)
 			},
+		},
+		"good-request-with-credhub": {
+			ServiceState: StateBound,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				_, err := broker.Unbind(context.Background(), fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
+				failIfErr(t, "unbinding", err)
+				fcs := broker.Credstore.(*credstorefakes.FakeCredStore)
+				assertEqual(t, "Credstore DeletePermission call count should match", 1, fcs.DeletePermissionCallCount())
+				assertEqual(t, "Credstore Delete call count should match", 1, fcs.DeleteCallCount())
+			},
+			Credstore: &credstorefakes.FakeCredStore{},
 		},
 		"multiple-unbinds": {
 			ServiceState: StateUnbound,
