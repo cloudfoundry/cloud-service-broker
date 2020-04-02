@@ -1,4 +1,4 @@
-# Copyright 2018 the Service Broker Project Authors.
+# Copyright 2020 Pivotal Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: azure-mssql-failover-group
+name: csb-azure-mssql-failover-group
 id: 76d0e602-2b79-4c1e-bbbe-03913a1cfda2
 description: Manages auto failover group for managed Azure SQL on the Azure Platform
 display_name: Azure SQL Failover Group
@@ -41,7 +41,7 @@ plans:
 - name: large
   id: 605a7a26-b1dd-4ce5-a382-4233e98469a8
   description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 80 cores ; 1 TB storage ; 1 read replica; Auto-failover group enabled'
-  display_name: "XLarge"
+  display_name: "Large"
   properties:
     pricing_tier: BC
     cores: 40
@@ -74,23 +74,30 @@ provision:
       maximum: 4096
       minimum: 5      
   user_inputs:
-  - field_name: server_name
+  - field_name: instance_name
     type: string
-    details: Name for your Azure SQL Server
+    details: Name for your Azure SQL Faileover Group
     default: vsb-azsql-fog-${request.instance_id}
     constraints:
       maxLength: 63
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
+  - field_name: resource_group
+    details: Name for the resource group for this instance
+    default: ''
+    constraints:
+      maxLength: 64
+      minLength: 0
+      pattern: ^[a-z][a-z0-9-]+$|^$   
   - field_name: db_name
     type: string
     details: Name for your database
     default: vsb-db
     constraints:
       maxLength: 64
-  - field_name: region
+  - field_name: location
     type: string
-    details: The region of the Azure SQL Database
+    details: The location of the primary Azure SQL Server
     default: westus
     enum:
       eastasia: East Asia
@@ -129,9 +136,9 @@ provision:
       southafricawest: South Africa West
       germanycentral: Germany Central
       germanynortheast: Germany North East
-  - field_name: failover_region
+  - field_name: failover_location
     type: string
-    details: The region of the Azure SQL Database
+    details: The location of the failover Azure SQL server
     default: default
     enum:
       eastasia: East Asia
@@ -170,8 +177,8 @@ provision:
       southafricawest: South Africa West
       germanycentral: Germany Central
       germanynortheast: Germany North East
-      default: Default failover region
-  template_ref: terraform/azure-sql-failover/provision-mssql-failover.tf 
+      default: Default failover location
+  template_ref: terraform/azure-mssql-failover/provision-mssql-failover.tf 
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
@@ -226,7 +233,7 @@ bind:
     type: string
     default: ${instance.details["password"]}
     overwrite: true
-  template_ref: terraform/azure-sql/bind-mssql.tf
+  template_ref: terraform/azure-mssql/bind-mssql.tf
   outputs:
   - field_name: username
     type: string
@@ -250,21 +257,21 @@ bind:
     type: string
     details: The password to authenticate to the database server.    
 examples:
-- name: failover group azuresql-db-small-configuration
+- name: failover-group-azuresql-db-small-configuration
   description: Create a small Azure SQL Database failover group 
   plan_id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
   provision_params: {}
   bind_params: {}
   bind_can_fail: true  
-- name: failover group azuresql-db-medium-configuration
+- name: failover-group-azuresql-db-medium-configuration in centralus location
   description: Create a medium Azure SQL Database failover group 
   plan_id: c5e8ec57-ab5a-4bbf-ac6d-5075a97ed1a5
-  provision_params: {}
+  provision_params: { "location": "centralus" }
   bind_params: {}
   bind_can_fail: true  
-- name: failover group azuresql-db-large-configuration
+- name: failover-group-azuresql-db-large-configuration resource group csb-acceptance-test-rg
   description: Create a large Azure SQL Database failover group 
   plan_id: 605a7a26-b1dd-4ce5-a382-4233e98469a8
-  provision_params: {}
+  provision_params: { "resource_group": "csb-acceptance-test-rg" }
   bind_params: {}
   bind_can_fail: true  

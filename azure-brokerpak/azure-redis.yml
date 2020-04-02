@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: azure-redis
+name: csb-azure-redis
 id: 349d89ac-2051-468b-b10f-9f537cc580c0
 description: Redis is a fully managed service for the Azure Platform
 display_name: Azure Cache for Redis
@@ -104,49 +104,57 @@ provision:
       maxLength: 98
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
-  - field_name: region
-    type: string
-    details: The region of the Redis instance.
-    default: West US
+  - field_name: resource_group
+    details: Name for the resource group for this instance
+    default: ''
     constraints:
-      examples:
-      - West US
-      pattern: ^[A-Za-z][-a-z0-9A-Z ]+$
+      maxLength: 64
+      minLength: 0
+      pattern: ^[a-z][a-z0-9-]+$|^$
+  - field_name: location
+    type: string
+    details: The region of the mysql instance.
+    default: westus
+    enum:
+      eastasia: East Asia
+      southeastasia: South East Asia
+      centralus: Central US
+      eastus: East US
+      eastus2: East US 2
+      westus: West US
+      northcentralus: North Central US
+      southcentralus: South Central US
+      northeurope: North Europe
+      westeurope: West Europe
+      japanwest: Japan West
+      japaneast: Japan East
+      brazilsouth: Brazil South
+      australiaeast: Australia East
+      australiasoutheast: Australia South East
+      australiacentral: Australia Central
+      australiacentral2: Australia Central 2
+      southindia: South India
+      centralindia: Central India
+      westindia: West India
+      canadacentral: Canada Central
+      canadaeast: Canada East
+      uksouth: UK South
+      ukwest: UK West
+      westcentralus: West Central US
+      westus2: West US 2
+      koreacentral: Korea Central
+      koreasouth: Korea South
+      francecentral: France Central
+      uaenorth: UAE North
+      southafricanorth: South Africa North
+      southafricawest: South Africa West
+      germanycentral: Germany Central
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
-  template: |-
-    variable sku_name { type = string }
-    variable family { type = string }
-    variable capacity { type = string }
-    variable instance_name { type = string }
-    variable region { type = string }
-    variable labels { type = map }
-
-    resource "azurerm_resource_group" "azure-redis" {
-      name     = var.instance_name
-      location = var.region
-      tags     = var.labels
-    }
-
-    resource "azurerm_redis_cache" "redis" {
-      name                = var.instance_name
-      sku_name            = var.sku_name
-      family              = var.family
-      capacity            = var.capacity
-      location            = azurerm_resource_group.azure-redis.location
-      resource_group_name = azurerm_resource_group.azure-redis.name
-      tags                = var.labels
-    }
-  
-    output name { value = "${azurerm_redis_cache.redis.name}" }
-    output hostname { value = "${azurerm_redis_cache.redis.hostname}" }
-    output port { value = azurerm_redis_cache.redis.port }
-    output password { value = "${azurerm_redis_cache.redis.primary_access_key}" }
-    output tls_port { value = "${azurerm_redis_cache.redis.ssl_port}" }
-
+  template_ref: ./terraform/azure-redis/redis-provision.tf
   outputs:
   - field_name: name
     type: string
@@ -163,7 +171,6 @@ provision:
   - field_name: password
     type: string
     details: The password to authenticate to the redis instance.
- 
 bind:
   plan_inputs: []
   user_inputs: []
@@ -177,14 +184,14 @@ examples:
   provision_params: {}
   bind_params: {}
 - name: redis-cache-medium
-  description: Medium redis cache
+  description: Medium redis cache in centralus region
   plan_id: 6B272C43-2116-4483-9A99-DE9262C0A7D6
-  provision_params: {}
+  provision_params: { "region": "centralus" }
   bind_params: {}
 - name: redis-cache-large
-  description: Large redis cache
+  description: Large redis cache in csb-acceptance-test-rg resource group
   plan_id: C3E34ABC-A820-457C-B723-1C342EF42C50
-  provision_params: {}
+  provision_params: { "resource_group": "csb-acceptance-test-rg"}
   bind_params: {}
 - name: redis-cache-ha-small
   description: HA small redis cache

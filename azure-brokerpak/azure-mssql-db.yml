@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: azure-mssql-db
+name: csb-azure-mssql-db
 id: 6663f9f1-33c1-4f7d-839c-d4b7682d88cc
 description: Manage Azure SQL Databases on pre-provisioned database servers
 display_name: Azure SQL Database
@@ -89,27 +89,13 @@ provision:
     default: vsb-db-${request.instance_id}
     constraints:
       maxLength: 64
-  - field_name: server_name
+  - field_name: server
     type: string
-    details: Existing MSSQL server name
-    constraints:
-      maxLength: 63
-      minLength: 6
-      pattern: ^[a-z][a-z0-9-]+$    
-  - field_name: admin_username
-    type: string
-    details: Existing admin username for server
-  - field_name: admin_password
-    type: string
-    details: Existing admin password for server
-  - field_name: resource_group
-    type: string
-    details: Existing resource group for server
-    constraints:
-      maxLength: 90
-      minLength: 6
-      pattern: ^[a-z][a-z0-9-()_\.]+$    
-  template_ref: terraform/azure-sql-db/provision-mssql-db.tf 
+    details: Name of server from server_credentials to create database upon
+  - field_name: server_credentials
+    type: object
+    details: 'JSON has of server credentials. { "name":{"server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."},...}'
+  template_ref: terraform/azure-mssql-db/provision-mssql-db.tf 
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
@@ -164,7 +150,7 @@ bind:
     type: string
     default: ${instance.details["password"]}
     overwrite: true
-  template_ref: terraform/azure-sql/bind-mssql.tf
+  template_ref: terraform/azure-mssql/bind-mssql.tf
   outputs:
   - field_name: username
     type: string

@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: azure-mongodb
+name: csb-azure-mongodb
 id: e5d2898e-534a-11ea-a4e8-00155da9789e
 description: The Cosmos DB service implements wire protocols for MongoDB.  Azure Cosmos DB is Microsoft's globally distributed, multi-model database service for mission-critical application
 display_name: Azure Cosmos DB's API for MongoDB
@@ -56,24 +56,31 @@ provision:
   - field_name: failover_locations
     required: false
     type: array
-    details: A list of location for the Cosmos DB account.  The first region is the default write region
+    details: A list of location for the Cosmos DB account.  The first location is the default write location
   user_inputs:
-  - field_name: instance_prefix
-    type: string
-    details: Prefix that will be used to generate a random instance_name if instance_name is not provided.
-    default: psb-mongodb
-    constraints:
-      maxLength: 18
-      minLength: 1
-      pattern: ^[a-z][a-z0-9-]+$
   - field_name: instance_name
     type: string
     details: Name for your Cosmos DB with API for MongoDB instance
-    default: null
+    default: vsb-mongo-${request.instance_id}
     constraints:
-      maxLength: 31
-      minLength: 3
-      pattern: ^[a-z][a-z0-9-]+$ #^[-\w\._\(\)]+$
+      maxLength: 98
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$ 
+  - field_name: account_name
+    type: string
+    details: Account name for your Cosmos DB with API for MongoDB instance
+    default: vsb${request.instance_id}
+    constraints:
+      maxLength: 44
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$ 
+  - field_name: resource_group
+    details: Name for the resource group for this instance
+    default: ''
+    constraints:
+      maxLength: 64
+      minLength: 0
+      pattern: ^[a-z][a-z0-9-]+$|^$
   - field_name: db_name
     type: string
     details: Name for your Cosmos DB database with API for Mongo DB
@@ -91,10 +98,44 @@ provision:
     type: string
     details: Name for your shard key
     default: uniqueKey
-  - field_name: region
+  - field_name: location
     type: string
-    details: Specifies the supported Azure location where the resource exists. 
-    default: West US 2
+    details: The location of the mongodb instance.
+    default: westus
+    enum:
+      eastasia: East Asia
+      southeastasia: South East Asia
+      centralus: Central US
+      eastus: East US
+      eastus2: East US 2
+      westus: West US
+      northcentralus: North Central US
+      southcentralus: South Central US
+      northeurope: North Europe
+      westeurope: West Europe
+      japanwest: Japan West
+      japaneast: Japan East
+      brazilsouth: Brazil South
+      australiaeast: Australia East
+      australiasoutheast: Australia South East
+      australiacentral: Australia Central
+      australiacentral2: Australia Central 2
+      southindia: South India
+      centralindia: Central India
+      westindia: West India
+      canadacentral: Canada Central
+      canadaeast: Canada East
+      uksouth: UK South
+      ukwest: UK West
+      westcentralus: West Central US
+      westus2: West US 2
+      koreacentral: Korea Central
+      koreasouth: Korea South
+      francecentral: France Central
+      uaenorth: UAE North
+      southafricanorth: South Africa North
+      southafricawest: South Africa West
+      germanycentral: Germany Central
   - field_name: ip_range_filter
     type: string
     details: CosmosDB Firewall Support. This value specifies the set of IP addresses or IP address ranges in CIDR form to be included as the allowed list of client IP's for a given database account. IP addresses/ranges must be comma separated and must not contain any spaces. 0.0.0.0 allows access from Azure networks.  An empty string "" allows access from all public networks.
@@ -155,5 +196,16 @@ examples:
     db_name: 'musicdb',
     collection_name: 'album',
     shard_key: '_id'
+  }
+  bind_params: {}
+- name: spring-music-mongo-db-alternate-rg
+  description: Create a small cosmos db with Mongo API for the spring music sample app
+  plan_id: 4ba45322-534c-11ea-b346-00155da9789e
+  provision_params: {
+    db_name: 'musicdb',
+    collection_name: 'album',
+    shard_key: '_id',
+    resource_group: 'csb-acceptance-test-rg',
+    location: 'westus2'
   }
   bind_params: {}

@@ -19,7 +19,7 @@ terraform_binaries:
 - name: terraform-provider-mysql
   version: 1.9.0
   source: https://github.com/terraform-providers/terraform-provider-mysql/archive/v1.9.0.zip
-required_env_vars:
+required_env_variables:
 - GOOGLE_CREDENTIALS
 - GOOGLE_PROJECT
 service_definitions:

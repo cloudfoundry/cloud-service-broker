@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: azure-eventhubs
+name: csb-azure-eventhubs
 id: 40b751ac-624d-11ea-8354-f38aff407636
 description: Simple, secure, and scalable real-time data ingestion
 display_name: Event Hubs
@@ -22,57 +22,74 @@ documentation_url: https://azure.microsoft.com/en-us/services/event-hubs/
 support_url: https://azure.microsoft.com/en-us/support/options/
 tags: [azure, eventhubs, Event Hubs, Azure, preview]
 plans:
-- name: Basic
+- name: basic
   id: 3ac4fede-62ed-11ea-af59-cb26248cfe7b
   description: 'Basic Tier, 1 Consumer group, 100 Brokered connections'
   display_name: "basic"
   properties:
     sku: Basic
-
-
-- name: Standard
+- name: standard
   id: 57e330ee-62ed-11ea-825c-23c5737ad688
   description: 'Standard Tier, 20 Consumer groups, 1000 Brokered connections, Additional Storage, Publisher Policies'
   display_name: "standard"
   properties:
     sku: Standard
-
 provision:
   plan_inputs:
   user_inputs:
-  - field_name: prefix
+  - field_name: instance_name
     type: string
-    details: Prefix that will be used to generate a random instance_name if instance_name is not provided.
-    default: psb-eventhub
+    details: Name for your MySQL instance
+    default: vsb-eventhubs-${request.instance_id}
     constraints:
-      maxLength: 18
-      minLength: 1
+      maxLength: 98
+      minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
+  - field_name: resource_group
+    details: Name for the resource group for this instance
+    default: ''
+    constraints:
+      maxLength: 64
+      minLength: 0
+      pattern: ^[a-z][a-z0-9-]+$|^$
   - field_name: location
     type: string
-    details: Specifies the supported Azure location where the resource exists. Changing this forces a new resource to be created.
-    default: West US 2   
-  - field_name: eventhub_name
-    type: string
-    details: Specifies the name of the EventHub Namespace resource. Changing this forces a new resource to be created.
-    default: null
-    constraints:
-      maxLength: 31
-      minLength: 3
-      pattern: ^[a-z][a-z0-9-]+$ #^[-\w\._\(\)]+$
-  - field_name: namespace_name
-    type: string
-    details: Specifies the name of the EventHub Namespace. Changing this forces a new resource to be created. The namespace name can contain only letters, numbers and hyphens. The namespace must start with a letter, and it must end with a letter or number and be between 6 and 50 characters long.
-    constraints:
-      minLenth: 6
-      maxLength: 50
-      pattern: ^[a-z][a-z0-9-]*$    
-  - field_name: collection_name
-    type: string
-    details: Name for your collection
-    default: default_collection
-    constraints:
-      maxLength: 255
+    details: The location of the mysql instance.
+    default: westus
+    enum:
+      eastasia: East Asia
+      southeastasia: South East Asia
+      centralus: Central US
+      eastus: East US
+      eastus2: East US 2
+      westus: West US
+      northcentralus: North Central US
+      southcentralus: South Central US
+      northeurope: North Europe
+      westeurope: West Europe
+      japanwest: Japan West
+      japaneast: Japan East
+      brazilsouth: Brazil South
+      australiaeast: Australia East
+      australiasoutheast: Australia South East
+      australiacentral: Australia Central
+      australiacentral2: Australia Central 2
+      southindia: South India
+      centralindia: Central India
+      westindia: West India
+      canadacentral: Canada Central
+      canadaeast: Canada East
+      uksouth: UK South
+      ukwest: UK West
+      westcentralus: West Central US
+      westus2: West US 2
+      koreacentral: Korea Central
+      koreasouth: Korea South
+      francecentral: France Central
+      uaenorth: UAE North
+      southafricanorth: South Africa North
+      southafricawest: South Africa West
+      germanycentral: Germany Central
   - field_name: sku
     type: string
     details: Defines which tier to use. Valid options are Basic and Standard
@@ -92,7 +109,6 @@ provision:
     type: integer
     details: Specifies the number of days to retain the events for this Event Hub. Needs to be between 1 and 7 days; or 1 day when using a Basic SKU for the parent EventHub
     default: 1     
-
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
@@ -147,7 +163,13 @@ bind:
       type: string
       details: The primary access key for the authorization rule RootManageSharedAccessKey.          
 examples:
-- name: eventhubs
-  description: Simple, secure, and scalable real-time data ingestion
+- name: eventhubs-basic
+  description: Simple, secure, and scalable real-time data ingestion basic
   plan_id: 3ac4fede-62ed-11ea-af59-cb26248cfe7b
+  provision_params: {}
+  bind_params: {}
+- name: eventhubs-standard
+  description: Simple, secure, and scalable real-time data ingestion standard in location northcentralus and resource group csb-acceptance-test-rg
+  plan_id: 57e330ee-62ed-11ea-825c-23c5737ad688
+  provision_params: {"location": "northcentralus", "resource_group": "csb-acceptance-test-rg"}
   bind_params: {}

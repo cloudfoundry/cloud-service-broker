@@ -13,17 +13,17 @@
 # limitations under the License.
 ---
 version: 1
-name: csb-azure-mssql
-id: 2cfcad84-5824-11ea-b0e2-00155d4dfe6c
-description: Azure SQL Database is a fully managed service for the Azure Platform
-display_name: Azure SQL Database - Single Instance
+name: csb-azure-mssql-db-failover-group
+id: d7ba0e8e-4480-4543-a504-b57e1dd1f1ad
+description: Manages auto failover group db's on existing Azure SQL server pairs
+display_name: Azure SQL Failover Group on Existing Server Pairs
 image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquaretransparent1.png
-documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/
-support_url: https://docs.microsoft.com/en-us/azure/sql-database/
-tags: [azure, mssql, sqlserver, preview]
+documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
+support_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
+tags: [azure, mssql, sqlserver, dr, failover, preview]
 plans:
 - name: small
-  id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
+  id: 35a7e882-9e27-4e5a-a292-9c3f3da10873
   description: 'SQL Server latest version. Instance properties: General Purpose - Serverless ; 0.5 - 2 cores ; Max Memory: 6gb ; 50 GB storage ; auto-pause enabled after 1 hour of inactivity'
   display_name: "Small"
   properties:
@@ -31,7 +31,7 @@ plans:
     cores: 2
     storage_gb: 50
 - name: medium
-  id: 9295b05a-58c9-11ea-b9df-00155d2c938f
+  id: b653c8a6-4094-4103-8958-4630a42e1c49
   description: 'SQL Server latest version. Instance properties: General Purpose - Provisioned ; Provisioned Capacity ; 8 cores ; 200 GB storage'
   display_name: "Medium"
   properties:
@@ -39,17 +39,9 @@ plans:
     cores: 8
     storage_gb: 200
 - name: large
-  id: 9dc5e814-58c9-11ea-9e77-00155d2c938f
-  description: 'SQL Server latest version. Instance properties: Hyperscale ; Provisioned Capacity ; 24 cores ; Unlimited Storage ; 2 read replica ; Auto-failover group enabled'
-  display_name: "Large"
-  properties:
-    pricing_tier: HS
-    cores: 24
-    storage_gb: 500
-- name: extra-large
-  id: a94f7192-5cba-11ea-8b5a-00155d7cdd25
+  id: 609b668e-0cf8-4512-9f42-ef684c0c8d8d
   description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 80 cores ; 1 TB storage ; 1 read replica; Auto-failover group enabled'
-  display_name: "Extra Large"
+  display_name: "Large"
   properties:
     pricing_tier: BC
     cores: 40
@@ -82,85 +74,43 @@ provision:
     constraints:
       maximum: 4096
       minimum: 5      
-  user_inputs:
+  user_inputs:    
   - field_name: instance_name
     type: string
-    details: Name for your Azure SQL Instance
-    default: vsb-azsql-${request.instance_id}
+    details: Name for your Azure SQL Faileover Group
+    default: vsb-azsql-fog-${request.instance_id}
     constraints:
       maxLength: 63
       minLength: 6
-      pattern: ^[a-z][a-z0-9-]+$
-  - field_name: resource_group
-    details: Name for the resource group for this instance
-    default: ''
-    constraints:
-      maxLength: 64
-      minLength: 0
-      pattern: ^[a-z][a-z0-9-]+$|^$
+      pattern: ^[a-z][a-z0-9-]+$  
   - field_name: db_name
     type: string
     details: Name for your database
-    default: vsb-db
+    default: vsb-fog-db-${request.instance_id}
     constraints:
       maxLength: 64
-  - field_name: location
+  - field_name: server_pair
     type: string
-    details: The location for the Azure SQL Database
-    default: westus
-    enum:
-      eastasia: East Asia
-      southeastasia: South East Asia
-      centralus: Central US
-      eastus: East US
-      eastus2: East US 2
-      westus: West US
-      northcentralus: North Central US
-      southcentralus: South Central US
-      northeurope: North Europe
-      westeurope: West Europe
-      japanwest: Japan West
-      japaneast: Japan East
-      brazilsouth: Brazil South
-      australiaeast: Australia East
-      australiasoutheast: Australia South East
-      australiacentral: Australia Central
-      australiacentral2: Australia Central 2
-      southindia: South India
-      centralindia: Central India
-      westindia: West India
-      canadacentral: Canada Central
-      canadaeast: Canada East
-      uksouth: UK South
-      ukwest: UK West
-      westcentralus: West Central US
-      westus2: West US 2
-      koreacentral: Korea Central
-      koreasouth: Korea South
-      francecentral: France Central
-      uaenorth: UAE North
-      southafricanorth: South Africa North
-      southafricawest: South Africa West
-      germanycentral: Germany Central
-  template_ref: terraform/azure-mssql/provision-mssql.tf 
+    details: Name of server pair from server_credential_pairs to create database upon
+  - field_name: server_credential_pairs
+    type: object
+    details: 'JSON hash of failover group name to pair of server credentials. { "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}'
+  template_ref: terraform/azure-mssql-db-failover/provision-fog-db.tf 
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
   outputs:
-  - field_name: sqldbResourceGroup
-    type: string
-    details: Azure resource group for the database server and database.
-  - field_name: sqldbName
-    type: string
-    details: The name of the database.
   - field_name: sqlServerName
     type: string
     details: Hostname of the Azure SQL Server
+  - field_name: sqldbName
+    type: string
+    details: The name of the database.    
   - field_name: sqlServerFullyQualifiedDomainName
     type: string
-    details: The fully qualifief domain name (FQDN) of the Azure SQL Server    
+    details: The fully qualifief domain name (FQDN) of the Azure SQL Server
   - field_name: hostname
     type: string
     details: Hostname of the Azure SQL Server
@@ -222,29 +172,5 @@ bind:
     details: The username to authenticate to the database server.
   - field_name: databaseLoginPassword
     type: string
-    details: The password to authenticate to the database server.
-examples:
-- name: azuresql-db-small-configuration
-  description: Create a small Azure SQL Database in westcentralus location
-  plan_id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
-  provision_params: {"location": "westcentralus"}
-  bind_params: {}
-  bind_can_fail: true  
-- name: azuresql-db-medium-configuration
-  description: Create a medium Azure SQL Database in csb-acceptance-test-rg resource group
-  plan_id: 9295b05a-58c9-11ea-b9df-00155d2c938f
-  provision_params: {"resource_group": "csb-acceptance-test-rg"}
-  bind_params: {}
-  bind_can_fail: true  
-- name: azuresql-db-large-configuration
-  description: Create a large Azure SQL Database
-  plan_id: 9dc5e814-58c9-11ea-9e77-00155d2c938f
-  provision_params: {}
-  bind_params: {}
-  bind_can_fail: true  
-- name: azuresql-db-xlarge-configuration
-  description: Create an extra large Azure SQL Database
-  plan_id: a94f7192-5cba-11ea-8b5a-00155d7cdd25
-  provision_params: {}
-  bind_params: {}
-  bind_can_fail: true  
+    details: The password to authenticate to the database server. 
+

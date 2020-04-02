@@ -1,4 +1,4 @@
-# Copyright 2018 the Service Broker Project Authors.
+# Copyright 2020 Pivotal Software, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: azure-mssql-server
+name: csb-azure-mssql-server
 id: a0ab0f36-f8e1-4045-8ddb-1918d2ceafe4
 description: Azure SQL Server (no database attached)
 display_name: Azure SQL Server
@@ -29,17 +29,38 @@ plans:
 provision:
   plan_inputs: []
   user_inputs:
-  - field_name: server_name
+  - field_name: instance_name
     type: string
-    details: Name for your Azure SQL Server
+    details: Name for your Azure SQL Server instance
     default: vsb-azsql-svr-${request.instance_id}
     constraints:
       maxLength: 63
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
-  - field_name: region
+  - field_name: resource_group
+    details: Name for the resource group for this instance
+    default: ''
+    constraints:
+      maxLength: 64
+      minLength: 0
+      pattern: ^[a-z][a-z0-9-]+$|^$
+  - field_name: admin_username
+    details: Name for the resource group for this instance
+    default: ''
+    constraints:
+      maxLength: 32
+      minLength: 0
+      pattern: ^[A-Za-z]+$|^$   
+  - field_name: admin_password
+    details: Name for the resource group for this instance
+    default: ''
+    constraints:
+      maxLength: 64
+      minLength: 0
+      pattern: ^[A-Za-z0-9~_.-]+$|^$               
+  - field_name: location
     type: string
-    details: The region of the Azure SQL Database
+    details: The location of the Azure SQL Database
     default: westus
     enum:
       eastasia: East Asia
@@ -120,4 +141,13 @@ examples:
   plan_id: 1aab10e2-ca79-4755-855a-6073a739d2e0
   provision_params: {}
   bind_params: {}
-
+- name: azuresql-db-server-standard-rg
+  description: Create a standard Azure SQL Database Server in resource group csb-acceptance-test-rg and location centralus
+  plan_id: 1aab10e2-ca79-4755-855a-6073a739d2e0
+  provision_params: {"resource_group": "csb-acceptance-test-rg", "location": "centralus"}
+  bind_params: {}  
+- name: azuresql-db-server-standard-admin-username-password
+  description: Create a standard Azure SQL Database Server with instance name, admin username and admin password
+  plan_id: 1aab10e2-ca79-4755-855a-6073a739d2e0
+  provision_params: {"instance_name": "a-test-instance", "admin_username": "anadmin", "admin_password": "SomeComp-l1cat3d_Passw0rd"}
+  bind_params: {}  

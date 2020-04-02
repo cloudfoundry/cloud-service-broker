@@ -6,7 +6,6 @@ variable namespace_name {
     type = string
 }
 
-
 variable eventhub_name {
     type = string
 }
@@ -29,14 +28,14 @@ output "namespace_connection_string" {
 }
 
 output "namespace_name" {
-  value = data.azurerm_eventhub_namespace.ns.name
+    value = data.azurerm_eventhub_namespace.ns.name
 }
 
 output "shared_access_key_name" {
-  value = "RootManageSharedAccessKey"
+    value = "RootManageSharedAccessKey"
 }
 
 output "shared_access_key_value" {
-  value = data.azurerm_eventhub_namespace.ns.default_primary_key
+    value = data.azurerm_eventhub_namespace.ns.default_primary_key
 }
 

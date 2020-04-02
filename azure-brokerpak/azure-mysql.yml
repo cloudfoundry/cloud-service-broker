@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: azure-mysql
+name: csb-azure-mysql
 id: cac4a46b-c4ec-49df-9b11-06457a29d31e
 description: Mysql is a fully managed service for the Azure Platform
 display_name: Azure Database for MySQL servers
@@ -93,6 +93,13 @@ provision:
       maxLength: 98
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
+  - field_name: resource_group
+    details: Name for the resource group for this instance
+    default: ''
+    constraints:
+      maxLength: 64
+      minLength: 0
+      pattern: ^[a-z][a-z0-9-]+$|^$
   - field_name: db_name
     type: string
     details: Name for your database
@@ -103,9 +110,9 @@ provision:
     type: string
     details: The subnet ID of the Azure VNET to which the instance is locked down to. If left unspecified, the instance is made avaialble on the Internet.
     default: default
-  - field_name: region
+  - field_name: location
     type: string
-    details: The region of the mysql instance.
+    details: The location of the mysql instance.
     default: westus
     enum:
       eastasia: East Asia
@@ -209,15 +216,15 @@ examples:
   bind_params: {}
   bind_can_fail: true
 - name: small-v5.6-50gb-storage
-  description: Create a small mysql v5.6 instance with 50gb storage
+  description: Create a small mysql v5.6 instance with 50gb storage in resource group csb-acceptance-test-rg
   plan_id: 828e324e-6b34-4f50-b224-9b956dd2d1b7
-  provision_params: { "mysql_version": "5.6", "storage_gb": 50 }
+  provision_params: { "mysql_version": "5.6", "storage_gb": 50, "resource_group": "csb-acceptance-test-rg" }
   bind_params: {}
   bind_can_fail: true
 - name: medium
-  description: Create a medium mysql instance
+  description: Create a medium mysql instance in centralus location
   plan_id: 9eb836dd-4B90-4cF7-bc06-1986103802d3
-  provision_params: {}
+  provision_params: { "location": "centralus" }
   bind_params: {}
   bind_can_fail: true
 - name: large

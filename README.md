@@ -16,22 +16,19 @@ The service broker provides support for:
 |[GCP Cloud SQL (MySQL)](https://cloud.google.com/sql/)|[Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/?&ef_id=EAIaIQobChMImtPm8_DK5wIVgf5kCh1lEAqOEAAYASABEgIwjfD_BwE:G:s&OCID=AID2000128_SEM_VfuRONbO&MarinID=VfuRONbO_307794721357_azure%20mysql_e_c_Qml9BhwJ_46775457259_kwd-310296951725&lnkd=Google_Azure_Brand&gclid=EAIaIQobChMImtPm8_DK5wIVgf5kCh1lEAqOEAAYASABEgIwjfD_BwE)|[Amazon RDS for MySQL](https://aws.amazon.com/rds/mysql/)|
 |[GCP Memorystore for Redis](https://cloud.google.com/memorystore/docs/redis/)|[Azure Cache for Redis](https://azure.microsoft.com/en-us/services/cache/?&ef_id=EAIaIQobChMIzc-t2vHK5wIVsh-tBh3Z8wteEAAYASAAEgJ0cvD_BwE:G:s&OCID=AID2000128_SEM_SeUFPHct&MarinID=SeUFPHct_287547165334_azure%20redis_e_c__46775456859_kwd-310342681850&lnkd=Google_Azure_Brand&gclid=EAIaIQobChMIzc-t2vHK5wIVsh-tBh3Z8wteEAAYASAAEgJ0cvD_BwE)|
 ||[MongoDB](https://docs.microsoft.com/en-us/azure/cosmos-db/mongodb-introduction) for [CosmosDB](https://azure.microsoft.com/en-us/services/cosmos-db/)||
+||[Azure SQL](https://docs.microsoft.com/en-us/azure/sql-database/)||
+||[Azure SQL Failover Groups](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/)||
 
 ## Installation
 
-This application can be installed as either a PCF Ops Man Tile _or_ deployed as a PCF application.
-See the [installation instructions](https://github.com/pivotal/cloud-service-broker/blob/master/docs/installation.md) for a more detailed walkthrough.
-
-## Upgrading
-
-If you're upgrading, check the [upgrade guide](https://github.com/pivotal/cloud-service-broker/blob/master/docs/upgrading.md).
+This service broker can be installed as a CF application.
+See the instructions for [Azure](./docs/azure-installation.md) for a detailed walkthrough.
 
 ## Usage
 
-For operators: see [docs/customization.md](https://github.com/pivotal/cloud-service-broker/blob/master/docs/customization.md) for details about configuring the service broker.
+For operators: see [docs/configuration.md](./docs/configuration.md) for details about configuring the service broker.
 
-For developers: see [docs/use.md](https://github.com/pivotal/cloud-service-broker/blob/master/docs/use.md) for information about creating and binding specific GCP services with the broker.
-
+For developers: see [docs/use.md](./docs/use.md) for service options and details.
 
 You can get documentation specific to your install from the `/docs` endpoint of your deployment.
 

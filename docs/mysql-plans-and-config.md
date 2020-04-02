@@ -1,13 +1,14 @@
 # MySQL Plans and Config
+
 These are the default plans and configuration options for MySQL across the supported cloud platforms (AWS, Azure and GCP.)
 
 ## Plans
 
 | Plan | Version | CPUs | Memory Size | Disk Size |
 |------|---------|------|-------------|-----------|
-|Small | 5.7     | 2    | min 4GB     | 5GB       |
-|Medium| 5.7     | 4    | min 8GB     | 10GB      |
-|Large | 5.7     | 8    | min 16GB    | 20GB      |
+|small | 5.7     | 2    | min 4GB     | 5GB       |
+|medium| 5.7     | 4    | min 8GB     | 10GB      |
+|large | 5.7     | 8    | min 16GB    | 20GB      |
 
 ## Configuration Options
 
@@ -18,31 +19,40 @@ The following options can be configured across all supported platforms. Notes be
 | mysql_version | 5.6, 5.7| 5.7    |
 | storage_gb  | 5 - 4096| 5      |
 | cores       | 1,2,4,8,16,32,64 | 1      |
+| db_name     | | vsb-db |
  
-### Azure Notes
-CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-vcore-resource-limits-single-databases) as follows:
+### Azure Notes - applies to *csb-azure-mysql*
+CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) as follows:
 
-| Plan  | Sku      | Memory | Storage | vCores |
-|-------|----------|--------|---------|--------|
-| small | B_Gen5_2 | 4GB | 50GB | 2 |
-| medium | GP_Gen5_4 | 10GB | 200GB | 4 |
-| large | MO_Gen5_8 | 20GB | 500GB | 8 |
+| Plan   | Sku       | Memory | Storage | vCores |
+|--------|-----------|--------|---------|--------|
+| small  | B_Gen5_2  | 4GB    | 50GB     | 2      |
+| medium | GP_Gen5_4 | 10GB   | 200GB    | 4      |
+| large  | MO_Gen5_8 | 20GB   | 500GB    | 8      |
+
+> Note that the maximum vCores is dependant on the Service Tier. B_ = Basic, GP_ = General Purpose and MO_ = Memory Optimized. See below for details.
 
 > Note that the maximum vCores is dependant on the Service Tier. B_ = Basic, GP_ = General Puspose and MO_ = Memory Optimized. See below for details.
 
 #### Azure specific config parameters
 
-| Parameter | Value |
-|-----------|--------|
-| region  | Azure region to deploy service instance |
+The following parameters (as well as those above) may be configured during service provisioning (`cf create-service vsb-azure-mysql ... -c '{...}'`
+)
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| instance_name | name of Azure instance to create | vsb-mysql-*instance_id* |
+| location  | Azure location to deploy service instance | westus |
+| pricing_tier | One of B, GP, MO | |
+| resource_group | The Azure resource group in which to create the instance | rg-*instance_name* |
+
 Note: Currently MySQL is not available in all regions. The enum in the YML lists all the valid regions as of 2/12/2020
 
 Each of the so-called Pricing Tiers in Azure has a min and max cores:
 | Pricing Tier | Max vCores |
 |--------------|------------|
-| Basic | 2 |
-| General Purpose | 64 |
-| Memory Optimized | 32 |
+| B - Basic | 2 |
+| GP - General Purpose | 64 |
+| MO - Memory Optimized | 32 |
 
 | Parameter | Value |
 |-----------|--------|

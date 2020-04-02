@@ -3,43 +3,58 @@
 set -o nounset
 
 wait_for_service() {
-    SERVICE_NAME=$1
-    OPERATION_IN_PROGRESS=$2
-    while cf service "${SERVICE_NAME}" | grep "${OPERATION_IN_PROGRESS}"; do
-        sleep 30
-    done  
+  SERVICE_NAME=$1
+  OPERATION_IN_PROGRESS=$2
+  while cf service "${SERVICE_NAME}" | grep "${OPERATION_IN_PROGRESS}"; do
+    sleep 30
+  done
+
+  LOCAL_RESULT=0
+  if [ $# -gt 2 ]; then
+    LOCAL_RESULT=1
+    if cf service "${SERVICE_NAME}" | grep "$3"; then
+      LOCAL_RESULT=0
+    fi
+  fi
+
+  return ${LOCAL_RESULT}
 }
 
-MSSQL_SERVER_INSTANCE_NAME="test-mssql-server-$$"
-cf create-service azure-mssql-server standard "${MSSQL_SERVER_INSTANCE_NAME}"
+SERVER_NAME=mssql-server-$$
+USERNAME=anadminuser
+PASSWORD=This_S0uld-3eC0mplex~
+SERVER_RG=csb-acceptance-test-rg
 
-wait_for_service "${MSSQL_SERVER_INSTANCE_NAME}" "create in progress"
-
-RESULT=0
-if cf bind-service spring-music "${MSSQL_SERVER_INSTANCE_NAME}"; then
-    cf env spring-music
-    USERNAME=$(cf env spring-music | grep '"databaseLogin":' | sed -e 's/".*": "\(.*\)",/\1/;s/^[[:blank:]]*//')
-    PASSWORD=$(cf env spring-music | grep '"databaseLoginPassword":' | sed -e 's/".*": "\(.*\)",/\1/;s/^[[:blank:]]*//')
-    SERVER_NAME=$(cf env spring-music | grep '"sqlServerName":' | sed -e 's/".*": "\(.*\)",/\1/;s/^[[:blank:]]*//')
-    SERVER_RG=$(cf env spring-music | grep '"sqldbResourceGroup"' | sed -e 's/".*": "\(.*\)",/\1/;s/^[[:blank:]]*//')
-
-    CONFIG="{ \
-    \"server_name\":\"${SERVER_NAME}\", \
+CONFIG="{ \
+    \"instance_name\":\"${SERVER_NAME}\", \
     \"admin_username\":\"${USERNAME}\", \
     \"admin_password\":\"${PASSWORD}\", \
     \"resource_group\":\"${SERVER_RG}\" \
     }"
 
-    echo $CONFIG
+MSSQL_SERVER_INSTANCE_NAME="test-mssql-server-$$"
 
-    ../cf-test-spring-music.sh azure-mssql-db medium "${CONFIG}"
-    RESULT=$?
+RESULT=1
+if cf create-service csb-azure-mssql-server standard "${MSSQL_SERVER_INSTANCE_NAME}" -c "${CONFIG}"; then
+    if wait_for_service "${MSSQL_SERVER_INSTANCE_NAME}" "create in progress" "create succeeded"; then
+        CONFIG="{ 
+          \"server\": \"test_server\", \
+          \"server_credentials\": { \
+            \"test_server\": { \
+              \"server_name\":\"${SERVER_NAME}\", \
+              \"admin_username\":\"${USERNAME}\", \
+              \"admin_password\":\"${PASSWORD}\", \
+              \"server_resource_group\":\"${SERVER_RG}\" \
+            } \
+          } \
+        }"
 
-    cf unbind-service spring-music "${MSSQL_SERVER_INSTANCE_NAME}"
-else
-  RESULT=$?
+        echo $CONFIG
+
+        ../cf-test-spring-music.sh csb-azure-mssql-db medium "${CONFIG}"
+        RESULT=$?
+    fi
 fi
-
 cf delete-service -f "${MSSQL_SERVER_INSTANCE_NAME}"
 wait_for_service "${MSSQL_SERVER_INSTANCE_NAME}" "delete in progress"
 
