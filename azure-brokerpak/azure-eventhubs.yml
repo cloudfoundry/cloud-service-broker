@@ -39,7 +39,7 @@ provision:
   user_inputs:
   - field_name: instance_name
     type: string
-    details: Name for your MySQL instance
+    details: Name for your Eventhub instance
     default: vsb-eventhubs-${request.instance_id}
     constraints:
       maxLength: 98
