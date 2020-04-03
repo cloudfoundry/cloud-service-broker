@@ -6,6 +6,12 @@ set -o nounset
 
 cf marketplace
 
+SPRING_MUSIC_TEST=../cf-test-spring-music.sh
+
+if [ $# -gt 1 ]; then
+  SPRING_MUSIC_TEST=../cf-test-spring-music-credhub.sh
+fi
+
 # bogus location or resource_group should fail
 ../cf-create-service-should-fail.sh csb-azure-mysql medium '{"location":"bogus"}'
 ../cf-create-service-should-fail.sh csb-azure-mysql medium '{"resource_group":"bogus"}'
@@ -29,11 +35,11 @@ cf marketplace
 ../cf-create-service-should-fail.sh csb-azure-mssql-server standard '{"resource_group":"bogus"}'
 
 # validate services against spring music 
-../cf-test-spring-music.sh csb-azure-mysql small
-../cf-test-spring-music.sh csb-azure-redis small
-../cf-test-spring-music.sh csb-azure-mongodb small '{"db_name": "musicdb", "collection_name": "album", "shard_key": "_id"}'
-../cf-test-spring-music.sh csb-azure-mssql small
-../cf-test-spring-music.sh csb-azure-mssql-failover-group small
+"${SPRING_MUSIC_TEST}" csb-azure-mysql small
+"${SPRING_MUSIC_TEST}" csb-azure-redis small
+"${SPRING_MUSIC_TEST}" csb-azure-mongodb small '{"db_name": "musicdb", "collection_name": "album", "shard_key": "_id"}'
+"${SPRING_MUSIC_TEST}" csb-azure-mssql small
+"${SPRING_MUSIC_TEST}" csb-azure-mssql-failover-group small
 
 ./cf-test-mssql-db.sh
 
