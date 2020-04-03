@@ -35,7 +35,7 @@ type CredStoreConfig struct {
 	UaaClientSecret      string `mapstructure:"uaa_client_secret"`
 	SkipSSLValidation    bool   `mapstructure:"skip_ssl_validation"`
 	CaCertFile           string `mapstructure:"ca_cert_file"`
-	StoreBindCredentials bool   `mapstructure:"ca_cert_file"`
+	StoreBindCredentials bool   `mapstructure:"store_bind_credentials"`
 }
 
 type Config struct {
