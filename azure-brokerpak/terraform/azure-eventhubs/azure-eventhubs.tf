@@ -1,48 +1,39 @@
-variable instance_name {
-	type = string
-}
+# Copyright 2020 Pivotal Software, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-variable resource_group {
-	type = string
-}
-
-variable location {
-	type = string
-}
-
-variable sku {
-	type = string
-}
-
-variable auto_inflate_enabled {
-  	type = bool
-}
-
-variable partition_count {
-	type = number
-}
-
-variable message_retention {
-	type = number
-}
-
-variable labels {
-	type = map
-}
+variable instance_name { type = string }
+variable resource_group { type = string }
+variable location {	type = string }
+variable sku { type = string }
+variable auto_inflate_enabled { type = bool }
+variable partition_count { type = number }
+variable message_retention { type = number }
+variable labels { type = map }
 
 locals{
 	tags = merge (var.labels,{"heritage": "cloud-service-broker"})
 }
 
 locals {
-  resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group
+  	resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group
 }
 
 resource "azurerm_resource_group" "rg" {
-  name     = local.resource_group
-  location = var.location
-  tags     = var.labels
-  count    = length(var.resource_group) == 0 ? 1 : 0
+	name     = local.resource_group
+	location = var.location
+	tags     = var.labels
+	count    = length(var.resource_group) == 0 ? 1 : 0
 }
 
 resource "azurerm_eventhub_namespace" "rg-namespace" {
