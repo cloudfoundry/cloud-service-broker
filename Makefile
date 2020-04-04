@@ -76,6 +76,7 @@ clean: deps-go-binary
 	-rm azure-brokerpak/*.brokerpak
 	-rm aws-brokerpak/*.brokerpak
 	-cd tools/psqlcmd; $(MAKE) clean
+	-cd tools/sqlfailover; $(MAKE) clean
 
 .PHONY: lint
 lint: deps-goimports
@@ -122,7 +123,7 @@ run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) 
 
 build-brokerpak-azure: azure-brokerpak/*.brokerpak
 
-azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml ./azure-brokerpak/terraform/*/*.tf ./build/psqlcmd_*.zip
+azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml ./azure-brokerpak/terraform/*/*.tf ./build/psqlcmd_*.zip ./build/sqlfailover_*.zip
 	# docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
 	cd ./azure-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
@@ -148,8 +149,12 @@ run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux
 	-e ARM_CLIENT_SECRET \
 	ubuntu /broker/build/cloud-service-broker.linux serve
 
-./build/psqlcmd_*.zip: 
+./build/psqlcmd_*.zip: tools/psqlcmd/*.go
 	cd tools/psqlcmd; $(MAKE) build
+
+./build/sqlfailover_*.zip: tools/sqlfailover/*.go
+	cd tools/sqlfailover; $(MAKE) build
+
 
 # AWS broker 
 .PHONY: aws-brokerpak
