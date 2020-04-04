@@ -18,11 +18,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
-	"log"
 	sqlsdk "github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v3.0/sql"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	_ "github.com/jinzhu/gorm/dialects/mssql"
+	"log"
+	"os"
 )
 
 // https://godoc.org/github.com/Azure/azure-sdk-for-go/services/preview/sql/mgmt/v3.0/sql#DatabasesClient.Failover
@@ -33,7 +33,7 @@ func main() {
 	if (len(os.Args) < 4) {
 		log.Fatal("Usage: sqlfailover <resource-group> <server> <failover-group>")
 	}
-	temp := os.Getenv("ARM_SUBSCRIPTION_ID")
+	temp := os.Getenv("AZURE_SUBSCRIPTION_ID")
 	if len(temp) == 0 {
 		log.Fatal("Environment variable ARM_SUBSCRIPTION_ID not found")
 	}	

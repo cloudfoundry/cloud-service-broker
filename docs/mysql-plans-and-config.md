@@ -32,6 +32,8 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 
 > Note that the maximum vCores is dependant on the Service Tier. B_ = Basic, GP_ = General Purpose and MO_ = Memory Optimized. See below for details.
 
+> Note that the maximum vCores is dependant on the Service Tier. B_ = Basic, GP_ = General Puspose and MO_ = Memory Optimized. See below for details.
+
 #### Azure specific config parameters
 
 The following parameters (as well as those above) may be configured during service provisioning (`cf create-service vsb-azure-mysql ... -c '{...}'`

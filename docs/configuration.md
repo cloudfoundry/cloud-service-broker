@@ -4,7 +4,7 @@ The broker can be configured though environment variables or configuration files
 ## Configuration File
 A configuration file can be provided at run time to the broker.
 ```bash
-cloud-service-broker server --config <config file name>
+cloud-service-broker serve --config <config file name>
 ```
 
 A configuration file can be YAML or JSON. Config file values that are `.` delimited represent hierarchy in the config file.

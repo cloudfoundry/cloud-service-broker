@@ -45,6 +45,8 @@ fi
 
 ./cf-test-mssql-db-fog.sh
 
+./cf-test-mssql-do-failover.sh
+
 
 
 
