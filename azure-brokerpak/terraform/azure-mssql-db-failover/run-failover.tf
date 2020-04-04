@@ -12,18 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-variable fog_name { type = string }
-variable fog_resource_group { type = string }
-variable db_name { type = string }
+variable fog_instance_name { type = string }
+variable server_pair_name { type = string }
+variable server_pairs { type = map }
 
 resource "null_resource" "run-failover" {
 
   provisioner "local-exec" {
-    command = "sqlfailover ${var.fog_resource_group} ${var.fog_name} ${var.db_name} secondary" 
+    command = format("sqlfailover %s %s %s", 
+                     var.server_pairs[var.server_pair_name].secondary.resource_group,
+                     var.server_pairs[var.server_pair_name].secondary.server_name,
+                     var.fog_instance_name) 
   }
 
   provisioner "local-exec" {
 	when = destroy
-    command = "sqlfailover ${var.fog_resource_group} ${var.fog_name} ${var.db_name} primary"
+    command = format("sqlfailover %s %s %s", 
+                     var.server_pairs[var.server_pair_name].primary.resource_group,
+                     var.server_pairs[var.server_pair_name].primary.server_name,
+                     var.fog_instance_name)  
   }
 }
