@@ -33,10 +33,11 @@ func main() {
 	if (len(os.Args) < 4) {
 		log.Fatal("Usage: sqlfailover <resource-group> <server> <failover-group>")
 	}
-	temp := os.Getenv("AZURE_SUBSCRIPTION_ID")
+	temp := os.Getenv("ARM_SUBSCRIPTION_ID")
 	if len(temp) == 0 {
 		log.Fatal("Environment variable ARM_SUBSCRIPTION_ID not found")
 	}	
+	os.Setenv("AZURE_SUBSCRIPTION_ID", temp)	
 
 	subid := temp
 	temp = os.Getenv("ARM_TENANT_ID")
