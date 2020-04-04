@@ -3,20 +3,32 @@
 set -o nounset
 
 NAME=$1; shift
+FOG_NAME=$1; shift
 RG=$1; shift
+PRIMARY_SERVER=$1; shift
+SECONDARY_SERVER=$1; shift
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 . "${SCRIPT_DIR}/functions.sh"
 
-DB_NAME="db-${NAME}"
-
 CONFIG="{ \
-    \"fog_name\":\"mssql-${NAME}-p\", \
-    \"fog_resource_group\":\"${RG}\", \
-    \"db_name\":\"${DB_NAME}\" \
-    }"
+    \"fog_instance_name\":\"${FOG_NAME}\", \
+    \"server_pair_name\":\"test\", \
+    \"server_pairs\": { \
+        \"test\": { \
+            \"primary\": { \
+                \"server_name\":\"${PRIMARY_SERVER}\", \
+                \"resource_group\":\"${RG}\" \
+            }, \
+            \"secondary\": { \
+                \"server_name\":\"${SECONDARY_SERVER}\", \
+                \"resource_group\":\"${RG}\" \
+            } \
+        } \
+    } \
+}"
 
-create_service csb-azure-mssql-do-failover standard "${NAME}-failed" "${CONFIG}"
+create_service csb-azure-mssql-do-failover standard "${NAME}" "${CONFIG}"
 
 exit $?

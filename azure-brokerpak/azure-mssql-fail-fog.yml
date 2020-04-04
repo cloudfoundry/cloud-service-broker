@@ -28,15 +28,15 @@ plans:
   display_name: "standard"
 provision:
   user_inputs:
-  - field_name: fog_name
+  - field_name: fog_instance_name
     type: string
     details: Name of failover group to target
-  - field_name: fog_resource_group
+  - field_name: server_pair_name
     type: string
-    details: The resource group of the failover group
-  - field_name: db_name
-    type: string
-    details: Name of database to failover
+    details: Name of server pair from server_credential_pairs to create database upon
+  - field_name: server_pairs
+    type: object
+    details: 'JSON hash of server pair name to set of server names. { "name": { "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}'
   template_ref: terraform/azure-mssql-db-failover/run-failover.tf 
   computed_inputs: []
   outputs: []
