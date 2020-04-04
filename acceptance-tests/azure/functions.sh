@@ -21,11 +21,15 @@ wait_for_service() {
 }
 
 delete_service() {
-    NAME=$1; shift
+    SERVICE_NAME=$1; shift
     LOCAL_RESULT=1
-    if cf delete-service -f "${NAME}"; then
-        wait_for_service "${NAME}" "delete in progress"
-        LOCAL_RESULT=$?
+    if cf delete-service -f "${SERVICE_NAME}"; then
+        wait_for_service "${SERVICE_NAME}" "delete in progress"
+        if cf service "${SERVICE_NAME}" | grep "delete failed"; then
+            LOCAL_RESULT=1
+        else
+            LOCAL_RESULT=0
+        fi
     fi
 
     return ${LOCAL_RESULT}
