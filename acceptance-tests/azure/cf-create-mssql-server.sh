@@ -10,7 +10,7 @@ LOCATION=$1; shift
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-. "${SCRIPT_DIR}/functions.sh"
+. "${SCRIPT_DIR}/../functions.sh"
 
 CONFIG="{ \
     \"instance_name\":\"${NAME}\", \

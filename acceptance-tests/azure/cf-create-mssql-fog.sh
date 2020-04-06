@@ -9,7 +9,7 @@ RG=$1; shift
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-. "${SCRIPT_DIR}/functions.sh"
+. "${SCRIPT_DIR}/../functions.sh"
 
 DB_NAME="db-${NAME}"
 PRIMARY_SERVER_NAME="mssql-${NAME}-p"
