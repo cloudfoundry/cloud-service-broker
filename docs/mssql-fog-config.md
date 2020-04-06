@@ -2,7 +2,7 @@
 
 ## Applies to service *csb-azure-mssql-db-failover-group*
 
-*csb-azure-mssql-db-failover-group* manages Azure SQL failover group databases on pre-configured database server pairs on Azure (not currently supported on GCP or AWS.).
+*csb-azure-mssql-db-failover-group* manages Azure SQL failover group databases on pre-configured database server pairs on Azure (not currently supported on GCP or AWS.)
 
 ## Plans
 
@@ -31,7 +31,7 @@ The following parameters may be configured during service provisioning (`cf crea
 | instance_name | string | instance name for failover group | vsb-azsql-fog-*instance_id* |
 | db_name | string | database name | vsb-fog-db-*instance_id* |
 | server_pair | string | server pair from *server_credential_pairs* on which to create failover DB | |
-| server_credential_pairs | JSON | list of server pairs on which failover DB's can be created, *server_pair* must match one of *name*. Format: `{ "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}`
+| server_credential_pairs | JSON | list of server pairs on which failover DB's can be created, *server_pair* must match one of *name*. Format: `{ "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}`| |
 
 ## Configuring Global Defaults
 

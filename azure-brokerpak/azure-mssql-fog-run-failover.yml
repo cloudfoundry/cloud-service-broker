@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: csb-azure-mssql-do-failover
+name: csb-azure-mssql-fog-run-failover
 id: 50ef4ced-e7ac-48dc-8bfc-c86bfeafe964
 description: Fails primary to secondary on existing Azure SQL Failover Group
 display_name: Runs failover from primary to secondary on existing AZure SQL Failover group

@@ -59,7 +59,7 @@ service_definitions:
 - azure-mssql-db.yml
 - azure-mssql-server.yml
 - azure-mssql-db-failover.yml
-- azure-mssql-fail-fog.yml
+- azure-mssql-fog-run-failover.yml
 
 
 
