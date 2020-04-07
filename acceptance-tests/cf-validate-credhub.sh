@@ -22,4 +22,6 @@ if cf bind-service "${APP}" "${SERVICE_INSTANCE_NAME}"; then
     fi
 fi
 
+cf unbind-service "${APP}" "${SERVICE_INSTANCE_NAME}"
+
 exit ${RESULT}
