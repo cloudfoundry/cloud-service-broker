@@ -12,7 +12,7 @@ PASSWORD=This_S0uld-3eC0mplex~
 
 SERVER_RG=rg-test-service-$$
 RESULT=1
-if create_service csb-azure-resource-group standard "${SERVER_RG}" "{\"instance_name\":\"${RG_NAME}\"}"; then
+if create_service csb-azure-resource-group standard "${SERVER_RG}" "{\"instance_name\":\"${SERVER_RG}\"}"; then
   if "${SCRIPT_DIR}/cf-create-mssql-server.sh" "${SERVER_NAME}" "${USERNAME}" "${PASSWORD}" "${SERVER_RG}" centralus; then
       CONFIG="{ 
         \"server\": \"test_server\", \

@@ -15,7 +15,7 @@ FAILOVER_NAME=fog-test-failed-$$
 
 SERVER_RG=rg-test-service-$$
 RESULT=1
-if create_service csb-azure-resource-group standard "${SERVER_RG}" "{\"instance_name\":\"${RG_NAME}\"}"; then
+if create_service csb-azure-resource-group standard "${SERVER_RG}" "{\"instance_name\":\"${SERVER_RG}\"}"; then
   if "${SCRIPT_DIR}/cf-create-mssql-fog.sh" "${NAME}" "${USERNAME}" "${PASSWORD}" "${SERVER_RG}" "${PRIMARY_SERVER_NAME}" "${SECONDARY_SERVER_NAME}"; then
     if "${SCRIPT_DIR}/cf-create-mssql-do-failover.sh" "${FAILOVER_NAME}" "${NAME}" "${SERVER_RG}" "${PRIMARY_SERVER_NAME}" "${SECONDARY_SERVER_NAME}"; then
       if delete_service "${NAME}"; then
