@@ -169,7 +169,7 @@ examples:
   provision_params: {}
   bind_params: {}
 - name: eventhubs-standard
-  description: Simple, secure, and scalable real-time data ingestion standard in location northcentralus and resource group csb-acceptance-test-rg
+  description: Simple, secure, and scalable real-time data ingestion standard in location northcentralus
   plan_id: 57e330ee-62ed-11ea-825c-23c5737ad688
-  provision_params: {"location": "northcentralus", "resource_group": "csb-acceptance-test-rg"}
+  provision_params: {"location": "northcentralus"}
   bind_params: {}

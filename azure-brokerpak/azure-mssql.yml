@@ -231,9 +231,9 @@ examples:
   bind_params: {}
   bind_can_fail: true  
 - name: azuresql-db-medium-configuration
-  description: Create a medium Azure SQL Database in csb-acceptance-test-rg resource group
+  description: Create a medium Azure SQL Database
   plan_id: 9295b05a-58c9-11ea-b9df-00155d2c938f
-  provision_params: {"resource_group": "csb-acceptance-test-rg"}
+  provision_params: {}
   bind_params: {}
   bind_can_fail: true  
 - name: azuresql-db-large-configuration
