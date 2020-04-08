@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
 	"regexp"
 	"sort"
 	"strings"
@@ -46,6 +47,21 @@ func createStandardLibrary() map[string]ast.Function {
 		"assert":          hilFuncAssert(),
 		"json.marshal":    hilFuncJSONMarshal(),
 		"map.flatten":     hilFuncMapFlatten(),
+		"env":             hilFuncEnv(),
+	}
+}
+
+// hilFuncEnv returns value of a given enironment variable
+func hilFuncEnv() ast.Function {
+	return ast.Function{
+		ArgTypes:   []ast.Type{ast.TypeString},
+		ReturnType: ast.TypeString,
+		Callback: func(args []interface{}) (interface{}, error) {
+			if val, ok := os.LookupEnv(args[0].(string)); ok {
+				return val, nil
+			}
+			return "", fmt.Errorf("Missing environment variable %s", args[0].(string))
+		},
 	}
 }
 

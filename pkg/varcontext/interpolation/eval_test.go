@@ -15,6 +15,7 @@
 package interpolation
 
 import (
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -59,10 +60,15 @@ func TestEval(t *testing.T) {
 		"map flatten blank":     {Template: `${map.flatten(":", ";", mapval)}`, Variables: map[string]interface{}{"mapval": map[string]string{}}, Expected: ``},
 		"map flatten one":       {Template: `${map.flatten(":", ";", mapval)}`, Variables: map[string]interface{}{"mapval": map[string]string{"key1": "val1"}}, Expected: `key1:val1`},
 		"map flatten":           {Template: `${map.flatten(":", ";", mapval)}`, Variables: map[string]interface{}{"mapval": map[string]string{"key1": "val1", "key2": "val2"}}, Expected: `key1:val1;key2:val2`},
+		"env var":               {Template: `${env("FOO")}`, Expected: `Bar`},
+		"missing env var":       {Template: `${env("_MISSING")}`, ErrorContains: "Missing environment variable _MISSING"},
 	}
 
 	for tn, tc := range tests {
 		hilStandardLibrary = createStandardLibrary()
+
+		os.Setenv("FOO", "Bar")
+		defer os.Unsetenv("FOO")
 
 		t.Run(tn, func(t *testing.T) {
 			res, err := Eval(tc.Template, tc.Variables)
