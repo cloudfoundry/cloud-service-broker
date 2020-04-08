@@ -30,6 +30,8 @@ if create_service csb-azure-resource-group standard "${SERVER_RG}" "{\"instance_
   fi
 
   "${SCRIPT_DIR}/cf-delete-mssql-fog.sh" "${NAME}" "${PRIMARY_SERVER_NAME}" "${SECONDARY_SERVER_NAME}"
+
+  delete_service "${SERVER_RG}"
 else
   echo "Failed creating resource group ${SERVER_RG} for test services"
 fi
