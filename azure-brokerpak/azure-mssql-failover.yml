@@ -269,9 +269,3 @@ examples:
   provision_params: { "location": "centralus" }
   bind_params: {}
   bind_can_fail: true  
-- name: failover-group-azuresql-db-large-configuration resource group csb-acceptance-test-rg
-  description: Create a large Azure SQL Database failover group 
-  plan_id: 605a7a26-b1dd-4ce5-a382-4233e98469a8
-  provision_params: { "resource_group": "csb-acceptance-test-rg" }
-  bind_params: {}
-  bind_can_fail: true  

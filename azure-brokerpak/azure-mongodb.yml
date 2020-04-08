@@ -205,7 +205,6 @@ examples:
     db_name: 'musicdb',
     collection_name: 'album',
     shard_key: '_id',
-    resource_group: 'csb-acceptance-test-rg',
     location: 'westus2'
   }
   bind_params: {}

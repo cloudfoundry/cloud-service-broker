@@ -189,9 +189,9 @@ examples:
   provision_params: { "region": "centralus" }
   bind_params: {}
 - name: redis-cache-large
-  description: Large redis cache in csb-acceptance-test-rg resource group
+  description: Large redis cache
   plan_id: C3E34ABC-A820-457C-B723-1C342EF42C50
-  provision_params: { "resource_group": "csb-acceptance-test-rg"}
+  provision_params: {}
   bind_params: {}
 - name: redis-cache-ha-small
   description: HA small redis cache

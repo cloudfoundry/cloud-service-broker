@@ -1,0 +1,97 @@
+# Copyright 2020 Pivotal Software, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+version: 1
+name: csb-azure-resource-group
+id: 57af72ea-b951-44cb-b814-1da900554ce8
+description: Azure Resource Group
+display_name: Azure Resource Group
+image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquaretransparent1.png
+documentation_url: https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/overview#resource-groups
+support_url: https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/overview#resource-groups
+tags: [azure, preview]
+plans:
+- name: standard
+  id: c995c72a-a5f4-48d8-9179-9e295cc535b7
+  description: 'Azure Resource Group'
+  display_name: "Standard"
+provision:
+  plan_inputs: []
+  user_inputs:    
+  - field_name: instance_name
+    type: string
+    details: Name for your Azure Resource Group
+    constraints:
+      maxLength: 63
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$
+  - field_name: location
+    type: string
+    details: The location of the Azure SQL Database
+    default: westus
+    enum:
+      eastasia: East Asia
+      southeastasia: South East Asia
+      centralus: Central US
+      eastus: East US
+      eastus2: East US 2
+      westus: West US
+      northcentralus: North Central US
+      southcentralus: South Central US
+      northeurope: North Europe
+      westeurope: West Europe
+      japanwest: Japan West
+      japaneast: Japan East
+      brazilsouth: Brazil South
+      australiaeast: Australia East
+      australiasoutheast: Australia South East
+      australiacentral: Australia Central
+      australiacentral2: Australia Central 2
+      southindia: South India
+      centralindia: Central India
+      westindia: West India
+      canadacentral: Canada Central
+      canadaeast: Canada East
+      uksouth: UK South
+      ukwest: UK West
+      westcentralus: West Central US
+      westus2: West US 2
+      koreacentral: Korea Central
+      koreasouth: Korea South
+      francecentral: France Central
+      uaenorth: UAE North
+      southafricanorth: South Africa North
+      southafricawest: South Africa West
+      germanycentral: Germany Central      
+  template_ref: terraform/azure-resource-group/resource-group-provision.tf 
+  computed_inputs:
+  - name: labels
+    default: ${json.marshal(request.default_labels)}
+    overwrite: true
+    type: object
+  outputs:
+  - field_name: resource-group-name
+    type: string
+    details: Name of resource group     
+bind:
+  plan_inputs: []
+  user_inputs: []
+  computed_inputs: []
+  outputs: []
+examples:
+- name: azure-resource-group-standard
+  description: Create a standard Azure resource group
+  plan_id: c995c72a-a5f4-48d8-9179-9e295cc535b7
+  provision_params: {instance_name: example-rg}
+  bind_params: {}     

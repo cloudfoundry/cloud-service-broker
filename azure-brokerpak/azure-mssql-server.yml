@@ -142,9 +142,9 @@ examples:
   provision_params: {}
   bind_params: {}
 - name: azuresql-db-server-standard-rg
-  description: Create a standard Azure SQL Database Server in resource group csb-acceptance-test-rg and location centralus
+  description: Create a standard Azure SQL Database Server with location centralus
   plan_id: 1aab10e2-ca79-4755-855a-6073a739d2e0
-  provision_params: {"resource_group": "csb-acceptance-test-rg", "location": "centralus"}
+  provision_params: {"location": "centralus"}
   bind_params: {}  
 - name: azuresql-db-server-standard-admin-username-password
   description: Create a standard Azure SQL Database Server with instance name, admin username and admin password

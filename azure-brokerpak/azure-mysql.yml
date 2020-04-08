@@ -216,9 +216,9 @@ examples:
   bind_params: {}
   bind_can_fail: true
 - name: small-v5.6-50gb-storage
-  description: Create a small mysql v5.6 instance with 50gb storage in resource group csb-acceptance-test-rg
+  description: Create a small mysql v5.6 instance with 50gb storage
   plan_id: 828e324e-6b34-4f50-b224-9b956dd2d1b7
-  provision_params: { "mysql_version": "5.6", "storage_gb": 50, "resource_group": "csb-acceptance-test-rg" }
+  provision_params: { "mysql_version": "5.6", "storage_gb": 50 }
   bind_params: {}
   bind_can_fail: true
 - name: medium
