@@ -11,23 +11,27 @@ PRIMARY_SERVER_NAME="mssql-${NAME}-p"
 SECONDARY_SERVER_NAME="mssql-${NAME}-s"
 USERNAME="testadminuser"
 PASSWORD="A_C0mpl1cated-Passw0rd"
-RG="csb-acceptance-test-rg"
 FAILOVER_NAME=fog-test-failed-$$
 
+SERVER_RG=rg-test-service-$$
 RESULT=1
-if "${SCRIPT_DIR}/cf-create-mssql-fog.sh" "${NAME}" "${USERNAME}" "${PASSWORD}" "${RG}" "${PRIMARY_SERVER_NAME}" "${SECONDARY_SERVER_NAME}"; then
-  if "${SCRIPT_DIR}/cf-create-mssql-do-failover.sh" "${FAILOVER_NAME}" "${NAME}" "${RG}" "${PRIMARY_SERVER_NAME}" "${SECONDARY_SERVER_NAME}"; then
-    if delete_service "${NAME}"; then
-      cf service "${NAME}"
-      echo "Should not have been able to delete failover group in swapped state!"
-      delete_service "${FAILOVER_NAME}"
-    else
-      delete_service "${FAILOVER_NAME}"
-      RESULT=$?
-    fi  
+if create_service csb-azure-resource-group standard "${SERVER_RG}" "{\"instance_name\":\"${RG_NAME}\"}"; then
+  if "${SCRIPT_DIR}/cf-create-mssql-fog.sh" "${NAME}" "${USERNAME}" "${PASSWORD}" "${SERVER_RG}" "${PRIMARY_SERVER_NAME}" "${SECONDARY_SERVER_NAME}"; then
+    if "${SCRIPT_DIR}/cf-create-mssql-do-failover.sh" "${FAILOVER_NAME}" "${NAME}" "${SERVER_RG}" "${PRIMARY_SERVER_NAME}" "${SECONDARY_SERVER_NAME}"; then
+      if delete_service "${NAME}"; then
+        cf service "${NAME}"
+        echo "Should not have been able to delete failover group in swapped state!"
+        delete_service "${FAILOVER_NAME}"
+      else
+        delete_service "${FAILOVER_NAME}"
+        RESULT=$?
+      fi  
+    fi
   fi
-fi
 
-"${SCRIPT_DIR}/cf-delete-mssql-fog.sh" "${NAME}" "${PRIMARY_SERVER_NAME}" "${SECONDARY_SERVER_NAME}"
+  "${SCRIPT_DIR}/cf-delete-mssql-fog.sh" "${NAME}" "${PRIMARY_SERVER_NAME}" "${SECONDARY_SERVER_NAME}"
+else
+  echo "Failed creating resource group ${SERVER_RG} for test services"
+fi
 
 exit ${RESULT}
