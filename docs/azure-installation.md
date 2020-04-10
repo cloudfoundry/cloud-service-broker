@@ -10,11 +10,11 @@ Documentation for broker configuration can be found [here](./configuration.md).
 The Azure brokerpak services are provisioned with firewall rules that only allow internal connectivity. This allows `cf push`ed applications access, while denying any public access.
 
 ### Azure Service Credentials
-The services need to be provisioned in the same Azure account that the foundation is running in. To do this, the broker needs the following credentials to manage resources within that account:
-- `ARM_SUBSCRIPTION_ID`
-- `ARM_TENANT_ID`
-- `ARM_CLIENT_ID`
-- `ARM_CLIENT_SECRET`
+The services need to be provisioned in the same Azure account that the foundation is running in. To do this, the broker needs the following service principal credentials to manage resources within that account:
+- tenant id
+- subscription id
+- client id
+- client secret
 
 ### MySQL Database for Broker State
 The broker keeps service instance and binding information in a MySQL database. 
@@ -58,18 +58,22 @@ To avoid putting any sensitive information in environment variables, a config fi
 
 Create a file named `config.yml` in the same directory the broker and brokerpak have been downloaded to. Its contents should be:
 
-```
-ARM_SUBSCRIPTION_ID: your subscription id
-ARM_TENANT_ID: your tenant id
-ARM_CLIENT_ID: your client id
-ARM_CLIENT_SECRET: your client secret
+```yaml
+arm:
+  subscription_id: your subscription id
+  tenant_id: your tenant id
+  client_id: your client id
+  client_secret: your client secret
 
 api:
   user: someusername
   password: somepassword
 ```
+
 ### Push and Register the Broker
+
 Push the broker as a binary application:
+
 ```bash
 SECURITY_USER_NAME=someusername
 SECURITY_USER_PASSWORD=somepassword
@@ -92,13 +96,13 @@ cf create-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_US
 ```
 Once this completes, the output from `cf marketplace` should include:
 ```
-azure-mongodb                small, medium, large                        The Cosmos DB service implements wire protocols for MongoDB.  Azure Cosmos DB is Microsoft's globally distributed, multi-model database service for mission-critical application
-azure-mssql                  small, medium, large, extra-large           Azure SQL Database is a fully managed service for the Azure Platform
-azure-mssql-db               small, medium, large, extra-large           Manage Azure SQL Databases on pre-provisioned database servers
-azure-mssql-failover-group   small, medium, large                        Manages auto failover group for managed Azure SQL on the Azure Platform
-azure-mssql-server           standard                                    Azure SQL Server (no database attached)
-azure-mysql                  small, medium,                              Mysql is a fully managed service for the Azure Platform
-azure-redis                  small, medium, large, ha-small, ha-medium,  Redis is a fully managed service for the Azure Platform
+csb-azure-mongodb                small, medium, large                        The Cosmos DB service implements wire protocols for MongoDB.  Azure Cosmos DB is Microsoft's globally distributed, multi-model database service for mission-critical application
+csb-azure-mssql                  small, medium, large, extra-large           Azure SQL Database is a fully managed service for the Azure Platform
+csb-azure-mssql-db               small, medium, large, extra-large           Manage Azure SQL Databases on pre-provisioned database servers
+csb-azure-mssql-failover-group   small, medium, large                        Manages auto failover group for managed Azure SQL on the Azure Platform
+csb-azure-mssql-server           standard                                    Azure SQL Server (no database attached)
+csb-azure-mysql                  small, medium,                              Mysql is a fully managed service for the Azure Platform
+csb-azure-redis                  small, medium, large, ha-small, ha-medium,  Redis is a fully managed service for the Azure Platform
 ```
 
 ## Step By Step From a Pre-built Release with a Manually Provisioned MySQL Instance
@@ -115,11 +119,12 @@ To avoid putting any sensitive information in environment variables, a config fi
 
 Create a file named `config.yml` in the same directory the broker and brokerpak have been downloaded to. Its contents should be:
 
-```
-ARM_SUBSCRIPTION_ID: your subscription id
-ARM_TENANT_ID: your tenant id
-ARM_CLIENT_ID: your client id
-ARM_CLIENT_SECRET: your client secret
+```yaml
+arm:
+  subscription_id: your subscription id
+  tenant_id: your tenant id
+  client_id: your client id
+  client_secret: your client secret
 
 db:
   host: your mysql host
@@ -131,7 +136,9 @@ api:
 ```
 
 ### Push and Register the Broker
+
 Push the broker as a binary application:
+
 ```bash
 SECURITY_USER_NAME=someusername
 SECURITY_USER_PASSWORD=somepassword

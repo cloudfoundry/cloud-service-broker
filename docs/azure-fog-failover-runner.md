@@ -12,11 +12,15 @@ The only plan is *standard*.
  
  The following parameters may be configured during service provisioning (`cf create-service csb-azure-mssql-fog-run-failover standard ... -c '{...}'`)
 
-| Parameter Name | Type | Description |
-|----------------|------|-------------|
+| Parameter Name | Type | Description | Default |
+|----------------|------|-------------|---------|
 | fog_instance_name | string | instance name for failover group to target |
 | server_pair_name | string | server pair from *server_pairs* |
 | server_pairs | JSON | list of failover group server pairs, *server_pair* must match one of *name*. Format: `{ "name": { "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}` |
+| azure_tenant_id | string | ID of Azure tenant for instance | config file value `arm.tenant_id` |
+| azure_subscription_id | string | ID of Azure subscription for instance | config file value `arm.subscription_id` |
+| azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `arm.client_id` |
+| azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `arm.client_secret` |
 
 ## Binding Credentials
 
