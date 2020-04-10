@@ -48,7 +48,7 @@ func (si *ServiceInstanceDetails) SetOtherDetails(toSet interface{}) error {
 	return nil
 }
 
-// GetOtherDetails returns an unmarshalls the OtherDetails field into the given
+// GetOtherDetails returns and unmarshalls the OtherDetails field into the given
 // struct. An empty OtherDetails field does not get unmarshalled and does not error.
 func (si ServiceInstanceDetails) GetOtherDetails(v interface{}) error {
 	if si.OtherDetails == "" {

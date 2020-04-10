@@ -27,6 +27,7 @@ import (
 	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal/cloud-service-broker/utils"
 	"github.com/spf13/cast"
+	"github.com/spf13/viper"
 )
 
 type registrarWalkFunc func(name string, pak BrokerpakSourceConfig, vc *varcontext.VarContext) error
@@ -75,6 +76,12 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 
 		for _, defn := range defns {
 			registry.Register(defn)
+		}
+
+		if manifest, err := brokerPak.Manifest(); err == nil {
+			for env, config := range manifest.EnvConfigMapping {
+				viper.BindEnv(config, env)				
+			}
 		}
 
 		return nil

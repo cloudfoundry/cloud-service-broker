@@ -23,6 +23,7 @@ import (
 
 	"github.com/hashicorp/hil"
 	"github.com/spf13/cast"
+	"github.com/spf13/viper"
 )
 
 func TestEval(t *testing.T) {
@@ -62,6 +63,8 @@ func TestEval(t *testing.T) {
 		"map flatten":           {Template: `${map.flatten(":", ";", mapval)}`, Variables: map[string]interface{}{"mapval": map[string]string{"key1": "val1", "key2": "val2"}}, Expected: `key1:val1;key2:val2`},
 		"env var":               {Template: `${env("FOO")}`, Expected: `Bar`},
 		"missing env var":       {Template: `${env("_MISSING")}`, ErrorContains: "Missing environment variable _MISSING"},
+		"config val":            {Template: `${config("config.val")}`, Expected: `foo`},
+		"missing config var":    {Template: `${config("config.missing")}`, ErrorContains: "Missing config value config.missing"},
 	}
 
 	for tn, tc := range tests {
@@ -69,6 +72,7 @@ func TestEval(t *testing.T) {
 
 		os.Setenv("FOO", "Bar")
 		defer os.Unsetenv("FOO")
+		viper.SetDefault("config.val", "foo")
 
 		t.Run(tn, func(t *testing.T) {
 			res, err := Eval(tc.Template, tc.Variables)

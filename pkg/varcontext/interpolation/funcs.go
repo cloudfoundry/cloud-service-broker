@@ -30,6 +30,7 @@ import (
 	"github.com/hashicorp/hil"
 	"github.com/hashicorp/hil/ast"
 	"github.com/spf13/cast"
+	"github.com/spf13/viper"
 )
 
 var hilStandardLibrary = createStandardLibrary()
@@ -48,6 +49,21 @@ func createStandardLibrary() map[string]ast.Function {
 		"json.marshal":    hilFuncJSONMarshal(),
 		"map.flatten":     hilFuncMapFlatten(),
 		"env":             hilFuncEnv(),
+		"config":		   hilFuncConfig(),
+	}
+}
+
+// hilFuncEnv returns value of a given enironment variable
+func hilFuncConfig() ast.Function {
+	return ast.Function{
+		ArgTypes:   []ast.Type{ast.TypeString},
+		ReturnType: ast.TypeString,
+		Callback: func(args []interface{}) (interface{}, error) {
+			if viper.IsSet(args[0].(string)) {
+				return viper.GetString(args[0].(string)), nil
+			}
+			return "", fmt.Errorf("Missing config value %s", args[0].(string))
+		},
 	}
 }
 

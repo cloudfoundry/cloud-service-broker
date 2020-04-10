@@ -16,6 +16,7 @@ require (
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/go-sql-driver/mysql v1.4.0
+	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/golang/protobuf v1.3.5
 	github.com/googleapis/gax-go v2.0.0+incompatible
 	github.com/gorilla/context v1.1.1

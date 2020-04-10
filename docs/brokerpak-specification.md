@@ -49,6 +49,7 @@ and which services it will provide.
 | service_definitions* | array of string | Each entry points to a file relative to the manifest that defines a service as part of the brokerpak. |
 | parameters | array of parameter | These values are set as environment variables when Terraform is executed. |
 | required_env_variables | array of string | These are the required environment variables that will be passed through to the terraform execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution.
+|env_config_mapping|map[string]string|List of mappings of environment variables into config keys|
 
 #### Platform object
 
@@ -107,6 +108,11 @@ service_definitions:
 parameters:
 - name: TF_VAR_redis_version
   description: Set this to override the Redis version globally via injected Terraform variable.
+env_config_mapping:
+  ENV_CONFIG_VAL: env.config_val
+required_env_variables:
+- ENV_VARIABLE1
+- ENV_VARIABLE2
 ```
 
 ## Services
@@ -298,6 +304,10 @@ The following string interpolation functions are available for use:
   * Converts a map into a string with each key/value pair separated by `keyValueSeparator` and each entry separated by `tupleSeparator`.
   * The output is deterministic.
   * Example: if `labels = {"key1":"val1", "key2":"val2"}` then `map.flatten(":", ";", labels)` produces `key1:val1;key2:val2`.
+* `env("ENV_VAR_NAME")`
+  * Returns value for environment variable `ENV_VAR_NAME`
+* `config("config.key")`
+  * Returns value for config key `config.key`  
 
 ### Variables
 

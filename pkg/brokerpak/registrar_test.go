@@ -22,6 +22,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/spf13/viper"
+
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
 	"github.com/pivotal/cloud-service-broker/pkg/providers/tf"
 	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
@@ -49,6 +51,12 @@ func TestNewRegistrar(t *testing.T) {
 
 	if len(registry) != 1 {
 		t.Fatal("Expected length to be 1 got", len(registry))
+	}
+
+	os.Setenv("ENV_VAR", "something")
+	defer os.Unsetenv("ENV_VAR")
+	if viper.GetString("env.var") != "something" {
+		t.Fatal("env var mapping did not happen")
 	}
 }
 

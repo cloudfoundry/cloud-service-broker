@@ -47,8 +47,8 @@ func fakeBrokerpak() (string, error) {
 			"author": "me@example.com",
 		},
 		Platforms: []Platform{
-			{Os: "linux", Arch: "386"},
 			{Os: "linux", Arch: "amd64"},
+			{Os: "darwin", Arch: "amd64"},
 		},
 		// These resources are stubbed with a local dummy file
 		TerraformResources: []TerraformResource{
@@ -69,6 +69,7 @@ func fakeBrokerpak() (string, error) {
 		Parameters: []ManifestParameter{
 			{Name: "TEST_PARAM", Description: "An example paramater that will be injected into Terraform's environment variables."},
 		},
+		EnvConfigMapping: map[string]string{"ENV_VAR":"env.var"},
 	}
 
 	if err := stream.Copy(stream.FromYaml(exampleManifest), stream.ToFile(dir, manifestName)); err != nil {
