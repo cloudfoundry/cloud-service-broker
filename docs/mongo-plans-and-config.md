@@ -46,6 +46,10 @@ The following parameters (and those above) may be configured during service prov
 | max_staleness_prefix | integer | (Optional) When used with the Bounded Staleness consistency level, this value represents the number of stale requests tolerated. Accepted range for this value is 10 – 2147483647. Defaults to 100. Required when consistency_level is set to BoundedStaleness. | `100` |
 | enable_multiple_write_locations | boolean | Enable multi-master support for this Cosmos DB account. | `false` |
 | enable_automatic_failover | boolean | Enable automatic fail over for this Cosmos DB account. | `false` |
+| azure_tenant_id | string | ID of Azure tenant for instance | config file value `arm.tenant_id` |
+| azure_subscription_id | string | ID of Azure subscription for instance | config file value `arm.subscription_id` |
+| azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `arm.client_id` |
+| azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `arm.client_secret` |
 
 
 ### AWS Notes

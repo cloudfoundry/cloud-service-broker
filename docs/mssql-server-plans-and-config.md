@@ -19,6 +19,10 @@ The only plan is *standard*.
 | admin_username | string | admin username for server | randomly generated string |
 | admin_password | string | admin password for server | randomly generated string |
 | location | string | Azure location to create server | westus |
+| azure_tenant_id | string | ID of Azure tenant for instance | config file value `arm.tenant_id` |
+| azure_subscription_id | string | ID of Azure subscription for instance | config file value `arm.subscription_id` |
+| azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `arm.client_id` |
+| azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `arm.client_secret` |
 
 ## Binding Credentials
 
