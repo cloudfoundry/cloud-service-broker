@@ -47,7 +47,7 @@ It supports the following sub-commands:
 ## Development
 
 `make` is used to orchestrate most development tasks. 
-`golang` 1.13 is required to build the broker. If you don't have `golang` installed, it is possible to use a `docker` image to build and unit test the broker. If the environment variable `USE_GO_CONTAINERS` exists, `make` will use `docker` versions of the tools so you don't need to have them installed locally. 
+`golang` 1.14 is required to build the broker. If you don't have `golang` installed, it is possible to use a `docker` image to build and unit test the broker. If the environment variable `USE_GO_CONTAINERS` exists, `make` will use `docker` versions of the tools so you don't need to have them installed locally. 
 
 There are make targets for most common dev tasks. 
 
