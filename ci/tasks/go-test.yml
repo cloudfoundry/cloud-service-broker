@@ -4,7 +4,7 @@ image_resource:
   type: docker-image
   source:
     repository: golang
-    tag: "1.13"
+    tag: "1.14"
 inputs:
 - name: cloud-service-broker
   path: src

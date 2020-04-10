@@ -19,8 +19,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pivotal/cloud-service-broker/pkg/validation"
 	"github.com/go-yaml/yaml"
+	"github.com/pivotal/cloud-service-broker/pkg/validation"
 )
 
 func TestNewExampleManifest(t *testing.T) {
@@ -32,8 +32,8 @@ func TestNewExampleManifest(t *testing.T) {
 }
 
 func TestUnmarshalManifest(t *testing.T) {
-	cases := map[string]struct{
-		yaml string
+	cases := map[string]struct {
+		yaml     string
 		expected Manifest
 	}{
 		"normal": {
@@ -54,7 +54,7 @@ required_env_variables:
 service_definitions:
 - example-service-definition.yml
 env_config_mapping:
-  ARM_SUBSCRIPTION_ID: arm.subscription_id`,
+  ARM_SUBSCRIPTION_ID: azure.subscription_id`,
 			expected: Manifest{
 				PackVersion: 1,
 				Name:        "my-services-pack",
@@ -73,8 +73,8 @@ env_config_mapping:
 					},
 				},
 				ServiceDefinitions: []string{"example-service-definition.yml"},
-				RequiredEnvVars: []string{"ARM_SUBSCRIPTION_ID"},
-				EnvConfigMapping: map[string]string{"ARM_SUBSCRIPTION_ID":"arm.subscription_id"},
+				RequiredEnvVars:    []string{"ARM_SUBSCRIPTION_ID"},
+				EnvConfigMapping:   map[string]string{"ARM_SUBSCRIPTION_ID": "azure.subscription_id"},
 			},
 		},
 	}
@@ -88,7 +88,7 @@ env_config_mapping:
 			}
 			if !reflect.DeepEqual(actual, tc.expected) {
 				t.Fatalf("Expected: %v Actual: %v", tc.expected, actual)
-			}			
+			}
 		})
 	}
 }
