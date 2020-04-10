@@ -77,10 +77,10 @@ The following parameters (as well as those above) may be configured at service p
 | instance_name | string | name of Azure instance to create | vsb-redis-*instance_id* |
 | location  | string | Azure location to deploy service instance | westus |
 | resource_group | string | The Azure resource group in which to create the instance | rg-*instance_name* |
-| azure_tenant_id | string | ID of Azure tenant for instance | config file value `arm.tenant_id` |
-| azure_subscription_id | string | ID of Azure subscription for instance | config file value `arm.subscription_id` |
-| azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `arm.client_id` |
-| azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `arm.client_secret` |
+| azure_tenant_id | string | ID of Azure tenant for instance | config file value `azure.tenant_id` |
+| azure_subscription_id | string | ID of Azure subscription for instance | config file value `azure.subscription_id` |
+| azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
+| azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `azure.client_secret` |
 
 #### Notes
 For consuming Azure Redis, the TLS port is used in place of the standard port.  The key for the TLS port is "tls_port".  The standard port is disabled for both the Azure Basic Plans as well as Azure High Availability Plans.

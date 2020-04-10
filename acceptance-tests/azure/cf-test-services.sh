@@ -61,6 +61,12 @@ else
   echo "Failed creating resource group ${RG_NAME} for test services"
 fi
 
+if [ ${RESULT} -eq 0 ]; then
+  echo "$0 SUCCEEDED"
+else
+  echo "$0 FAILED"
+fi
+
 exit ${RESULT}
 
 

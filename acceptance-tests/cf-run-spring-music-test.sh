@@ -64,4 +64,10 @@ if bind_service_test spring-music "${SERVICE_INSTANCE_NAME}"; then
     cf delete -f spring-music-validator
 fi
 
+if [ ${RESULT} -eq 0 ]; then
+  echo "$0 SUCCEEDED"
+else
+  echo "$0 FAILED"
+fi
+
 exit ${RESULT}

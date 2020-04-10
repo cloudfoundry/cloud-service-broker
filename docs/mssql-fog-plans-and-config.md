@@ -32,10 +32,10 @@ Except as noted below, configuration is generally the same as [Azure SQL](./mssq
 | resource_group |string| resource group for instance | rg-*instance_name* |
 | location  |string|Azure location to deploy service instance | westus |
 | failover_location |string|Azure location for failover instance | [default regional pair]([failover_region](https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions#azure-regional-pairs))|
-| azure_tenant_id | string | ID of Azure tenant for instance | config file value `arm.tenant_id` |
-| azure_subscription_id | string | ID of Azure subscription for instance | config file value `arm.subscription_id` |
-| azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `arm.client_id` |
-| azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `arm.client_secret` |
+| azure_tenant_id | string | ID of Azure tenant for instance | config file value `azure.tenant_id` |
+| azure_subscription_id | string | ID of Azure subscription for instance | config file value `azure.subscription_id` |
+| azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
+| azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `azure.client_secret` |
 
 Note: Currently Azure SQL is not available in all regions. The enum in the YML lists all the valid regions as of 2/12/2020
 
