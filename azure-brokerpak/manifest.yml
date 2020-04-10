@@ -44,11 +44,11 @@ terraform_binaries:
   version: 0.1.0
   source: https://packages.microsoft.com/config/rhel/7/packages-microsoft-prod.rpm
   url_template: ../build/${name}_${version}_${os}_${arch}.zip  
-required_env_variables:
-- ARM_SUBSCRIPTION_ID
-- ARM_TENANT_ID
-- ARM_CLIENT_ID
-- ARM_CLIENT_SECRET
+env_config_mapping:
+  ARM_SUBSCRIPTION_ID: arm.subscription_id
+  ARM_TENANT_ID: arm.tenant_id
+  ARM_CLIENT_ID: arm.client_id
+  ARM_CLIENT_SECRET: arm.client_secret
 service_definitions:
 - azure-redis.yml
 - azure-mysql.yml

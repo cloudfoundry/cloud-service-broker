@@ -13,6 +13,10 @@
 # limitations under the License.
 
 variable instance_name { type = string }
+variable azure_tenant_id { type = string }
+variable azure_subscription_id { type = string }
+variable azure_client_id { type = string }
+variable azure_client_secret { type = string }
 variable server_credential_pairs { type = map }
 variable server_pair { type = string }
 variable db_name { type = string }
@@ -20,6 +24,15 @@ variable labels { type = map }
 variable pricing_tier { type = string }
 variable cores { type = number }
 variable storage_gb { type = number }
+
+provider "azurerm" {
+  version = "=1.44.0"
+
+  subscription_id = var.azure_subscription_id
+  client_id       = var.azure_client_id
+  client_secret   = var.azure_client_secret
+  tenant_id       = var.azure_tenant_id  
+}
 
 data "azurerm_sql_server" "primary_sql_db_server" {
   name                         = var.server_credential_pairs[var.server_pair].primary.server_name

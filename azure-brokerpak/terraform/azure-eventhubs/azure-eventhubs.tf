@@ -13,6 +13,10 @@
 # limitations under the License.
 
 variable instance_name { type = string }
+variable azure_tenant_id { type = string }
+variable azure_subscription_id { type = string }
+variable azure_client_id { type = string }
+variable azure_client_secret { type = string }
 variable resource_group { type = string }
 variable location {	type = string }
 variable sku { type = string }
@@ -20,6 +24,15 @@ variable auto_inflate_enabled { type = bool }
 variable partition_count { type = number }
 variable message_retention { type = number }
 variable labels { type = map }
+
+provider "azurerm" {
+  version = "=1.44.0"
+
+  subscription_id = var.azure_subscription_id
+  client_id       = var.azure_client_id
+  client_secret   = var.azure_client_secret
+  tenant_id       = var.azure_tenant_id  
+}
 
 locals{
 	tags = merge (var.labels,{"heritage": "cloud-service-broker"})

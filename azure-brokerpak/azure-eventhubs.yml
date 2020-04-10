@@ -90,6 +90,22 @@ provision:
       southafricanorth: South Africa North
       southafricawest: South Africa West
       germanycentral: Germany Central
+  - field_name: azure_tenant_id
+    type: string
+    details: Azure Tenant to create resource in
+    default: ${config("arm.tenant_id")}      
+  - field_name: azure_subscription_id
+    type: string
+    details: Azure Subscription to create resource in
+    default: ${config("arm.subscription_id")}      
+  - field_name: azure_client_id
+    type: string
+    details: Client ID of Azure principal 
+    default: ${config("arm.client_id")}      
+  - field_name: azure_client_secret
+    type: string
+    details: Client secret for Azure principal
+    default: ${config("arm.client_secret")}      
   - field_name: sku
     type: string
     details: Defines which tier to use. Valid options are Basic and Standard
@@ -125,7 +141,6 @@ provision:
     - field_name: eventhub_name
       type: string
       details: Specifies the name of the EventHub. 
-
 bind:
   plan_inputs: []
   user_inputs: []
