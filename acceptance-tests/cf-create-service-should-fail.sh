@@ -54,4 +54,10 @@ cf delete-service -f "${SERVICE_INSTANCE_NAME}"
 
 wait_for_service "${SERVICE_INSTANCE_NAME}" "delete in progress"
 
+if [ ${RESULT} -eq 0 ]; then
+  echo "$0 SUCCEEDED"
+else
+  echo "$0 FAILED"
+fi
+
 exit ${RESULT}

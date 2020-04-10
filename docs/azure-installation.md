@@ -59,7 +59,7 @@ To avoid putting any sensitive information in environment variables, a config fi
 Create a file named `config.yml` in the same directory the broker and brokerpak have been downloaded to. Its contents should be:
 
 ```yaml
-arm:
+azure:
   subscription_id: your subscription id
   tenant_id: your tenant id
   client_id: your client id
@@ -120,7 +120,7 @@ To avoid putting any sensitive information in environment variables, a config fi
 Create a file named `config.yml` in the same directory the broker and brokerpak have been downloaded to. Its contents should be:
 
 ```yaml
-arm:
+azure:
   subscription_id: your subscription id
   tenant_id: your tenant id
   client_id: your client id

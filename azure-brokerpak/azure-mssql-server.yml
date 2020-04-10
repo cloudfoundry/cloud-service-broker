@@ -99,19 +99,19 @@ provision:
   - field_name: azure_tenant_id
     type: string
     details: Azure Tenant to create resource in
-    default: ${config("arm.tenant_id")}      
+    default: ${config("azure.tenant_id")}      
   - field_name: azure_subscription_id
     type: string
     details: Azure Subscription to create resource in
-    default: ${config("arm.subscription_id")}      
+    default: ${config("azure.subscription_id")}      
   - field_name: azure_client_id
     type: string
     details: Client ID of Azure principal 
-    default: ${config("arm.client_id")}      
+    default: ${config("azure.client_id")}      
   - field_name: azure_client_secret
     type: string
     details: Client secret for Azure principal
-    default: ${config("arm.client_secret")}
+    default: ${config("azure.client_secret")}
   template_ref: terraform/azure-mssql-server/mssql-server-provision.tf 
   computed_inputs:
   - name: labels

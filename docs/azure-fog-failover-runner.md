@@ -17,10 +17,10 @@ The only plan is *standard*.
 | fog_instance_name | string | instance name for failover group to target |
 | server_pair_name | string | server pair from *server_pairs* |
 | server_pairs | JSON | list of failover group server pairs, *server_pair* must match one of *name*. Format: `{ "name": { "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}` |
-| azure_tenant_id | string | ID of Azure tenant for instance | config file value `arm.tenant_id` |
-| azure_subscription_id | string | ID of Azure subscription for instance | config file value `arm.subscription_id` |
-| azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `arm.client_id` |
-| azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `arm.client_secret` |
+| azure_tenant_id | string | ID of Azure tenant for instance | config file value `azure.tenant_id` |
+| azure_subscription_id | string | ID of Azure subscription for instance | config file value `azure.subscription_id` |
+| azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
+| azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `azure.client_secret` |
 
 ## Binding Credentials
 

@@ -70,10 +70,10 @@ The Azure brokerpak supports default values for tenant, subscription and service
 
 | Environment Variable | Config File Value | Type | Description |
 |----------------------|-------------------|------|-------------|
-| ARM_TENANT_ID        | arm.tenant_id     | string | ID for tenant that resources will be created in |
-| ARM_SUBSCRIPTION_ID  | arm.subscription_id | string | ID for subscription that resources will be created in |
-| ARM_CLIENT_ID        | arm.client_id     | string | service principal client ID |
-| ARM_CLIENT_SECRET    | arm.client_secret | string | service principal secret |
+| ARM_TENANT_ID        | azure.tenant_id     | string | ID for tenant that resources will be created in |
+| ARM_SUBSCRIPTION_ID  | azure.subscription_id | string | ID for subscription that resources will be created in |
+| ARM_CLIENT_ID        | azure.client_id     | string | service principal client ID |
+| ARM_CLIENT_SECRET    | azure.client_secret | string | service principal secret |
 
 ### Global Config Example
 

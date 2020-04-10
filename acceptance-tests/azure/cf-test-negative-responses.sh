@@ -25,3 +25,5 @@ set -o nounset
 
 ../cf-create-service-should-fail.sh csb-azure-mssql-server standard '{"location":"bogus"}'
 ../cf-create-service-should-fail.sh csb-azure-mssql-server standard '{"resource_group":"bogus"}'
+
+echo "$0 SUCCEEDED"
