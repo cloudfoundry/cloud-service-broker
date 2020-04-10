@@ -14,6 +14,10 @@
 
 variable instance_name { type = string }
 variable resource_group { type = string }
+variable azure_tenant_id { type = string }
+variable azure_subscription_id { type = string }
+variable azure_client_id { type = string }
+variable azure_client_secret { type = string }
 variable db_name { type = string }
 variable mysql_version { type = string }
 variable location { type = string }
@@ -22,6 +26,15 @@ variable pricing_tier { type = string }
 variable cores {type = string }
 variable storage_gb {type = string }
 variable authorized_network {type = string}
+
+provider "azurerm" {
+  version = "=1.44.0"
+
+  subscription_id = var.azure_subscription_id
+  client_id       = var.azure_client_id
+  client_secret   = var.azure_client_secret
+  tenant_id       = var.azure_tenant_id  
+}
 
 locals {
   resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group

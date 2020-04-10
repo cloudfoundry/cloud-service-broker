@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+variable azure_tenant_id { type = string }
+variable azure_subscription_id { type = string }
+variable azure_client_id { type = string }
+variable azure_client_secret { type = string }
 variable db_name { type = string }
 variable server { type = string }
 variable server_credentials { type = map }
@@ -19,6 +23,15 @@ variable labels { type = map }
 variable pricing_tier { type = string }
 variable cores { type = number }
 variable storage_gb { type = number }
+
+provider "azurerm" {
+  version = "=1.44.0"
+
+  subscription_id = var.azure_subscription_id
+  client_id       = var.azure_client_id
+  client_secret   = var.azure_client_secret
+  tenant_id       = var.azure_tenant_id  
+}
 
 data "azurerm_sql_server" "azure_sql_db_server" {
   name                         = var.server_credentials[var.server].server_name

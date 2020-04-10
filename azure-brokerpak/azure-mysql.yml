@@ -148,6 +148,22 @@ provision:
       southafricanorth: South Africa North
       southafricawest: South Africa West
       germanycentral: Germany Central
+  - field_name: azure_tenant_id
+    type: string
+    details: Azure Tenant to create resource in
+    default: ${config("arm.tenant_id")}      
+  - field_name: azure_subscription_id
+    type: string
+    details: Azure Subscription to create resource in
+    default: ${config("arm.subscription_id")}      
+  - field_name: azure_client_id
+    type: string
+    details: Client ID of Azure principal 
+    default: ${config("arm.client_id")}      
+  - field_name: azure_client_secret
+    type: string
+    details: Client secret for Azure principal
+    default: ${config("arm.client_secret")}      
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}

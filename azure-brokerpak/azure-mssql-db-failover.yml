@@ -95,6 +95,22 @@ provision:
   - field_name: server_credential_pairs
     type: object
     details: 'JSON hash of server pair name to set of server credentials. { "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}'
+  - field_name: azure_tenant_id
+    type: string
+    details: Azure Tenant to create resource in
+    default: ${config("arm.tenant_id")}      
+  - field_name: azure_subscription_id
+    type: string
+    details: Azure Subscription to create resource in
+    default: ${config("arm.subscription_id")}      
+  - field_name: azure_client_id
+    type: string
+    details: Client ID of Azure principal 
+    default: ${config("arm.client_id")}      
+  - field_name: azure_client_secret
+    type: string
+    details: Client secret for Azure principal
+    default: ${config("arm.client_secret")}
   template_ref: terraform/azure-mssql-db-failover/provision-fog-db.tf 
   computed_inputs:
   - name: labels
