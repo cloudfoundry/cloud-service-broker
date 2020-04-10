@@ -315,7 +315,7 @@ func TestSetDatabaseCredentials(t *testing.T) {
 					"username": "fefcbe8360854a18a7994b870e7b0bf5",
 				},
 			},
-			ExpectedError: errors.New("Error parsing credentials uri field: parse mys@!ql://fefcbe8360854a18a7994b870e7b0bf5:z9z6eskdbs1rhtxt@10.0.0.20:3306/service_instance_db?reconnect=true: first path segment in URL cannot contain colon"),
+			ExpectedError: errors.New(`Error parsing credentials uri field: parse "mys@!ql://fefcbe8360854a18a7994b870e7b0bf5:z9z6eskdbs1rhtxt@10.0.0.20:3306/service_instance_db?reconnect=true": first path segment in URL cannot contain colon`),
 		},
 	}
 
