@@ -52,7 +52,7 @@ packages:
     path: /tmp/cloud-service-broker.zip
     env:
       GOPACKAGENAME: github.com/pivotal/cloud-service-broker
-      GOVERSION: go1.13
+      GOVERSION: go1.14
       # You can override plans here.
   needs_cf_credentials: true
   enable_global_access_to_plans: true

@@ -1,5 +1,6 @@
 SHELL = /bin/bash
-GO-VER = go1.13
+GO-VERSION = 1.14
+GO-VER = go$(GO-VERSION)
 
 
 SRC = $(shell find . -name "*.go" | grep -v "_test\." )
@@ -10,7 +11,7 @@ GOIMPORTS=goimports
 else
 UID:=$(shell id -u)
 DOCKER_OPTS=--rm -u $(UID) -v $(HOME):$(HOME) -e HOME -e USER=$(USER) -e USERNAME=$(USER) -w $(PWD)
-GO=docker run $(DOCKER_OPTS) -e GOARCH -e GOOS golang go
+GO=docker run $(DOCKER_OPTS) -e GOARCH -e GOOS golang:$(GO-VERSION) go
 GOTOOLS=docker run $(DOCKER_OPTS) jare/go-tools
 GOIMPORTS=$(GOTOOLS) goimports
 HAS_GO_IMPORTS=true

@@ -23,5 +23,5 @@ applications:
   - go_buildpack
   env:
     GOPACKAGENAME: github.com/pivotal/cloud-service-broker
-    GOVERSION: go1.13
+    GOVERSION: go1.14
   random-route: true
