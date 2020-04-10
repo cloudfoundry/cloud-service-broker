@@ -45,6 +45,7 @@ type Manifest struct {
 	ServiceDefinitions []string            `yaml:"service_definitions"`
 	Parameters         []ManifestParameter `yaml:"parameters"`
 	RequiredEnvVars	   []string            `yaml:"required_env_variables"`
+	EnvConfigMapping   map[string]string   `yaml:"env_config_mapping"`
 }
 
 var _ validation.Validatable = (*Manifest)(nil)
@@ -252,3 +253,5 @@ func NewExampleManifest() Manifest {
 		},
 	}
 }
+
+

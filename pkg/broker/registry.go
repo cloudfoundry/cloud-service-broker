@@ -39,7 +39,7 @@ var (
 )
 
 // BrokerRegistry holds the list of ServiceDefinitions that can be provisioned
-// by the GCP Service Broker.
+// by the Service Broker.
 type BrokerRegistry map[string]*ServiceDefinition
 
 // Registers a ServiceDefinition with the service registry that various commands

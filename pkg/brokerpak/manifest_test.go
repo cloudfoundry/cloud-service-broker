@@ -16,9 +16,11 @@ package brokerpak
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/pivotal/cloud-service-broker/pkg/validation"
+	"github.com/go-yaml/yaml"
 )
 
 func TestNewExampleManifest(t *testing.T) {
@@ -26,6 +28,68 @@ func TestNewExampleManifest(t *testing.T) {
 
 	if err := exampleManifest.Validate(); err != nil {
 		t.Fatalf("example manifest should be valid, but got error: %v", err)
+	}
+}
+
+func TestUnmarshalManifest(t *testing.T) {
+	cases := map[string]struct{
+		yaml string
+		expected Manifest
+	}{
+		"normal": {
+			yaml: `packversion: 1
+name: my-services-pack
+version: 0.1.0
+metadata:
+  author: VMware
+platforms:
+- os: linux
+  arch: amd64
+terraform_binaries:
+- name: terraform
+  version: 0.12.23
+  source: https://github.com/hashicorp/terraform/archive/v0.12.23.zip  
+required_env_variables:
+- ARM_SUBSCRIPTION_ID
+service_definitions:
+- example-service-definition.yml
+env_config_mapping:
+  ARM_SUBSCRIPTION_ID: arm.subscription_id`,
+			expected: Manifest{
+				PackVersion: 1,
+				Name:        "my-services-pack",
+				Version:     "0.1.0",
+				Metadata: map[string]string{
+					"author": "VMware",
+				},
+				Platforms: []Platform{
+					{Os: "linux", Arch: "amd64"},
+				},
+				TerraformResources: []TerraformResource{
+					{
+						Name:    "terraform",
+						Version: "0.12.23",
+						Source:  "https://github.com/hashicorp/terraform/archive/v0.12.23.zip",
+					},
+				},
+				ServiceDefinitions: []string{"example-service-definition.yml"},
+				RequiredEnvVars: []string{"ARM_SUBSCRIPTION_ID"},
+				EnvConfigMapping: map[string]string{"ARM_SUBSCRIPTION_ID":"arm.subscription_id"},
+			},
+		},
+	}
+
+	for tn, tc := range cases {
+		t.Run(tn, func(t *testing.T) {
+			var actual Manifest
+			err := yaml.Unmarshal([]byte(tc.yaml), &actual)
+			if err != nil {
+				t.Fatalf("failed to unmarshal yaml manifest: %v", err)
+			}
+			if !reflect.DeepEqual(actual, tc.expected) {
+				t.Fatalf("Expected: %v Actual: %v", tc.expected, actual)
+			}			
+		})
 	}
 }
 
