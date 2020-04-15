@@ -1,3 +1,6 @@
+*NOTE* This tool doesn't work with `go mod` bases projects. Use tool https://github.com/mitchellh/golicense instead.
+
+
 `osdfgen` can be used to build a CSV suitable for uploading to Pivotal's [OSDF Generator](http://osdf-generator.cfapps.io/static/index.html).
 It determines licenses by sniffing the dependencies listed in `Gopkg.lock`.
 

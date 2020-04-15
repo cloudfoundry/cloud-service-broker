@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: aws-mysql
+name: csb-aws-mysql
 id: fa22af0f-3637-4a36-b8a7-cfc61168a3e0
 description: Amazon RDS for MySQL
 display_name: Amazon RDS for MySQL
@@ -88,6 +88,10 @@ provision:
     default: vsbdb
     constraints:
       maxLength: 64
+  - field_name: publicly_accessible
+    type: boolean
+    details: Make instance public if true
+    default: false
   - field_name: region
     type: string
     details: The region of the mysql instance.
@@ -114,79 +118,27 @@ provision:
       eu-north-1 : eu-north-1
       me-south-1 : me-south-1
       sa-east-1 : sa-east-1
+  - field_name: multi_az
+    type: boolean
+    details: Make instance multi AZ if true
+    default: false
+  - field_name: aws_access_key_id
+    type: string
+    details: AWS access key
+    default: ${config("aws.access_key_id")}
+  - field_name: aws_secret_access_key
+    type: string
+    details: AWS secret key
+    default: ${config("aws.secret_access_key")}
+  - field_name: aws_vpc_id
+    details: VPC ID for instance
+    default: ""
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
-  template: |-
-    variable cores { type = number }
-    variable instance_name { type = string }
-    variable db_name { type = string }
-    variable mysql_version { type = string }
-    variable region { type = string }
-    variable labels { type = map }
-    variable storage_gb { type = number }
-
-    provider "aws" {
-      version = "~> 2.0"
-      region  = var.region
-    }    
-
-    resource "random_string" "username" {
-      length = 16
-      special = false
-      number = false
-    }
-
-    resource "random_password" "password" {
-      length = 16
-      special = false 
-      // https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.Constraints
-      override_special = "$#%"
-    }
-
-    locals {
-      instance_types = {
-        // https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html
-        1 = "db.m1.medium"
-        2 = "db.t2.medium"
-        4 = "db.m4.xlarge"
-        8 = "db.m4.2xlarge"
-        16 = "db.m4.4xlarge"
-        32 = "db.m5.8xlarge"
-        64 = "db.m5.16xlarge"
-      }   
-
-      parameter_group_names = {
-        "5.6" = "default.mysql5.6"
-        "5.7" = "default.mysql5.7"
-      }
-    }
-
-    resource "aws_db_instance" "default" {
-      allocated_storage    = var.storage_gb
-      storage_type         = "gp2"
-      skip_final_snapshot  = true
-      engine               = "mysql"
-      engine_version       = var.mysql_version
-      instance_class       = local.instance_types[var.cores]
-      identifier           = var.instance_name
-      name                 = var.db_name
-      username             = random_string.username.result
-      password             = random_password.password.result
-      parameter_group_name = local.parameter_group_names[var.mysql_version]
-      tags                 = var.labels
-    }
- 
-    output name { value = "${aws_db_instance.default.name}" }
-    output hostname { value = "${aws_db_instance.default.address}" }
-    output port { value = 3306 }
-    output username { value = "${aws_db_instance.default.username}" }
-    output password { value = "${aws_db_instance.default.password}" }
-    output uri { value = "mysql://${aws_db_instance.default.username}:${aws_db_instance.default.password}@${aws_db_instance.default.address}:3306/${aws_db_instance.default.name}" }
-    output jdbcUrl { value = "jdbc:mysql://${aws_db_instance.default.address}:3306/${aws_db_instance.default.name}?user=${aws_db_instance.default.username};password=${aws_db_instance.default.password};useSSL=false" }
-
+  template_ref: terraform/aws-mysql-provision.tf
   outputs:
   - field_name: name
     type: string
@@ -203,36 +155,71 @@ provision:
   - field_name: password
     type: string
     details: The password to authenticate to the database instance.
-  - field_name: uri
-    type: string
-    details: The uri to connect to the database instance and database.
-  - field_name: jdbcUrl
-    type: string
-    details: The jdbc url to connect to the database instance and database.
 bind:
   plan_inputs: []
   user_inputs: []
-  computed_inputs: []
-  template: ''
-  outputs: []
+  computed_inputs:
+    - name: mysql_db_name
+      type: string
+      default: ${instance.details["name"]}
+      overwrite: true
+    - name: mysql_hostname
+      type: string
+      default: ${instance.details["hostname"]}
+      overwrite: true
+    - name: mysql_port
+      type: integer
+      default: ${instance.details["port"]}
+      overwrite: true
+    - name: admin_username
+      type: string
+      default: ${instance.details["username"]}
+      overwrite: true
+    - name: admin_password
+      type: string
+      default: ${instance.details["password"]}
+      overwrite: true
+  template_ref: terraform/mysql-bind.tf
+  outputs: 
+    - field_name: username
+      type: string
+      details: The username to authenticate to the database instance.
+    - field_name: password
+      type: string
+      details: The password to authenticate to the database instance.  
+    - field_name: uri
+      type: string
+      details: The uri to connect to the database instance and database.
+    - field_name: jdbcUrl
+      type: string
+      details: The jdbc url to connect to the database instance and database.    
 examples:
-- name: small configuration
+- name: small
   description: Create a small mysql instance
   plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
-  provision_params: {}
+  provision_params: { "publicly_accessible": true }
   bind_params: {}
-- name: small configuration v5.6 50gb storage
+  #bind_can_fail: true  
+- name: small-v5.6-50gb-
   description: Create a small mysql v5.6 instance with 50gb storage
   plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
-  provision_params: { "mysql_version": "5.6", "storage_gb": 50 }
+  provision_params: { "mysql_version": "5.6", "storage_gb": 50, "publicly_accessible": true }
   bind_params: {}
-- name: medium configuration
+  #bind_can_fail: true  
+- name: medium
   description: Create a medium mysql instance
   plan_id: f2ae0bb7-6921-43b7-bae7-6d1fe1c5d1c6
-  provision_params: {}
+  provision_params: { "publicly_accessible": true }
   bind_params: {}
-- name: large configuration
+  #bind_can_fail: true  
+- name: large
   description: Create a large mysql instance
   plan_id: a5fea013-e87f-488f-969d-1cf038881b57
-  provision_params: {}
+  provision_params: { "publicly_accessible": true }
   bind_params: {}
+  #bind_can_fail: true  
+- name: medium-multiaz
+  description: Create a medium mysql instance
+  plan_id: f2ae0bb7-6921-43b7-bae7-6d1fe1c5d1c6
+  provision_params: { "publicly_accessible": true, "multi_az": true }
+  bind_params: {}  

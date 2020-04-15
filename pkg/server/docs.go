@@ -35,10 +35,9 @@ var pageTemplate = template.Must(template.New("docs-page").Parse(`
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" crossorigin="anonymous" />
 	</head>
 	<body>
-		<nav class="navbar navbar-expand navbar-dark sticky-top" style="background-color:#4285F4;">
+		<nav class="navbar navbar-expand navbar-dark sticky-top" style="background-color:#626975;">
 			<a class="navbar-brand" href="#">
-				<img src="https://cloud.google.com/_static/images/cloud/products/logos/svg/gcp-button-icon.svg" width="30" height="30" class="d-inline-block align-top" alt="">
-				GCP Service Broker
+				Cloud Service Broker
 			</a>
 			<div>
 				<ul class="navbar-nav">
