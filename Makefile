@@ -163,13 +163,17 @@ aws-brokerpak: aws-brokerpak/*.brokerpak
 
 build-brokerpak-aws: aws-brokerpak/*.brokerpak
 
-aws-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./aws-brokerpak/*.yml
+aws-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./aws-brokerpak/*.yml  ./aws-brokerpak/terraform/*.tf
 	# docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/aws-brokerpak
 	cd ./aws-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
 .PHONY: run-broker-aws 
 run-broker-aws: check-aws-env-vars ./build/cloud-service-broker.$(OSFAMILY) aws-brokerpak/*.brokerpak
 	GSB_BROKERPAK_BUILTIN_PATH=./aws-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
+
+.PHONY: push-broker-aws
+push-broker-aws: check-aws-env-vars ./build/cloud-service-broker.$(OSFAMILY) aws-brokerpak/*.brokerpak
+	GSB_BROKERPAK_BUILTIN_PATH=./aws-brokerpak ./scripts/push-broker.sh	
 
 .PHONY: run-broker-aws-docker
 run-broker-aws-docker: check-aws-env-vars ./build/cloud-service-broker.linux aws-brokerpak/*.brokerpak

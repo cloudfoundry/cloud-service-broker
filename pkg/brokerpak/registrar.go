@@ -158,8 +158,6 @@ func (r *Registrar) walk(callback registrarWalkFunc) error {
 			MergeJsonObject(json.RawMessage(pak.Config)).
 			Build()
 
-		fmt.Printf("varcontext for %s: %v", name, vc)
-
 		if err != nil {
 			return fmt.Errorf("couldn't merge config for brokerpak %q: %v", name, err)
 		}

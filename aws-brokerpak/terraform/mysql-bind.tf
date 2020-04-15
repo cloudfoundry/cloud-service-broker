@@ -13,7 +13,7 @@ provider "mysql" {
 resource "random_string" "username" {
   length = 16
   special = false
-  number = false
+  number = false  
 }
 
 resource "random_password" "password" {
