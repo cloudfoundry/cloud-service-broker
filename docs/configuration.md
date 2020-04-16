@@ -77,14 +77,14 @@ The Azure brokerpak supports default values for tenant, subscription and service
 
 ### Global Config Example
 
-Services for a given IaaS should have common parameter names for service wide platform resources (like regions)
+Services for a given IaaS should have common parameter names for service wide platform resources (like location)
 
-Azure services support global region and resource group parameters:
+Azure services support global location and resource group parameters:
 
 ```yaml
 provision:
   defaults: '{
-    "region": "eastus2", 
+    "location": "eastus2", 
     "resource_group": "sb-acceptance-test-rg"
   }'
 ```
@@ -137,6 +137,25 @@ service:
       }
     ]'
 ```
+## AWS Configuration
 
+The AWS brokerpak supports default values for access key id and secret access key credentials.
 
+| Environment Variable | Config File Value | Type | Description |
+|----------------------|-------------------|------|-------------|
+| AWS_ACCESS_KEY_ID        | aws.access_key_id     | string | access key id |
+| AWS_SECRET_ACCESS_KEY  | aws.secret_access_key | string | secret access key |
 
+### Global Config Example
+
+Services for a given IaaS should have common parameter names for service wide platform resources (like regions)
+
+AWS services support global region and VPC ID:
+
+```yaml
+provision:
+  defaults: '{
+    "region": "us-west-1", 
+    "aws_vpc_id": "vpc-093f61a410460f34c"
+  }'
+```
