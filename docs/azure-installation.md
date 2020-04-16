@@ -46,7 +46,7 @@ The `cf` CLI has been used to authenticate with a foundation (`cf api` and `cf l
 
 ### Fetch A Broker and Azure Brokerpak
 
-Download a release from https://github.com/pivotal/cloud-service-broker/releases. Find the latest release matching the name pattern `sb-0.0.1-rc.XXX-azure-0.0.1-rc.YY`. This will have a broker and brokerpak that have been tested together. Follow the hyperlink into that release and download `cloud-servic-broker` and `azure-services-0.0.1-rc.YY.brokerpak` into the same directory on your workstation.
+Download a release from https://github.com/pivotal/cloud-service-broker/releases. Find the latest release matching the name pattern `sb-0.1.0-rc.XXX-azure-0.0.1-rc.YY`. This will have a broker and brokerpak that have been tested together. Follow the hyperlink into that release and download `cloud-servic-broker` and `azure-services-0.1.0-rc.YY.brokerpak` into the same directory on your workstation.
 
 ### Create a MySQL instance with MASB
 The following command will create a basic MySQL database instance named `csb-sql`
