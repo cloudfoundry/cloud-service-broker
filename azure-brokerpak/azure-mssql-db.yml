@@ -86,7 +86,7 @@ provision:
   - field_name: db_name
     type: string
     details: Name for your database
-    default: vsb-db-${request.instance_id}
+    default: csb-db-${request.instance_id}
     constraints:
       maxLength: 64
   - field_name: server

@@ -15,7 +15,7 @@ The following options can be configured across all supported platforms. Notes be
 
 | Option Name     | Value Type   | Values                      | Default |
 |-----------------|--------------|-----------------------------|---------|
-| instance_name   | string       | `^[a-z][a-z0-9-]+$`         |vsb-eventhubs-*instance_id* |
+| instance_name   | string       | `^[a-z][a-z0-9-]+$`         |csb-eventhubs-*instance_id* |
 
 #### Azure specific config parameters
 
@@ -39,11 +39,11 @@ The binding credentials for MySQL have the following shape:
 ```
  credentials": {
      "event_hub_connection_string": "Endpoint=sb://",
-     "event_hub_name": "vsb-eventhubs-",
-     "eventhub_name": "vsb-eventhubs-",
-     "eventhub_rg_name": "rg-vsb-eventhubs-",
-     "namespace_connection_string": "Endpoint=sb://vsb-eventhubs-",
-     "namespace_name": "vsb-eventhubs-",
+     "event_hub_name": "csb-eventhubs-",
+     "eventhub_name": "csb-eventhubs-",
+     "eventhub_rg_name": "rg-csb-eventhubs-",
+     "namespace_connection_string": "Endpoint=sb://csb-eventhubs-",
+     "namespace_name": "csb-eventhubs-",
      "shared_access_key_name": "",
      "shared_access_key_value": ""
     }

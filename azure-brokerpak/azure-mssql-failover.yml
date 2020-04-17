@@ -77,7 +77,7 @@ provision:
   - field_name: instance_name
     type: string
     details: Name for your Azure SQL Faileover Group
-    default: vsb-azsql-fog-${request.instance_id}
+    default: csb-azsql-fog-${request.instance_id}
     constraints:
       maxLength: 63
       minLength: 6
@@ -92,7 +92,7 @@ provision:
   - field_name: db_name
     type: string
     details: Name for your database
-    default: vsb-db
+    default: csb-db
     constraints:
       maxLength: 64
   - field_name: location

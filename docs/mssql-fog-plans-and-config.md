@@ -28,7 +28,7 @@ Except as noted below, configuration is generally the same as [Azure SQL](./mssq
 
 | Parameter | Type | Description |Default |
 |-----------|--------|------------|--------|
-| instance_name  |string| service instance name | vsb-azsql-*instance_id* |
+| instance_name  |string| service instance name | csb-azsql-*instance_id* |
 | resource_group |string| resource group for instance | rg-*instance_name* |
 | location  |string|Azure location to deploy service instance | westus |
 | failover_location |string|Azure location for failover instance | [default regional pair]([failover_region](https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions#azure-regional-pairs))|

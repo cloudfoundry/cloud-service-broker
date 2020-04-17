@@ -19,7 +19,7 @@ The following options can be configured across all supported platforms. Notes be
 | mysql_version | 5.6, 5.7| 5.7    |
 | storage_gb  | 5 - 4096| 5      |
 | cores       | 1,2,4,8,16,32,64 | 1      |
-| db_name     | | vsb-db |
+| db_name     | | csb-db |
  
 ### Azure Notes - applies to *csb-azure-mysql*
 CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) as follows:
@@ -36,11 +36,11 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 
 #### Azure specific config parameters
 
-The following parameters (as well as those above) may be configured during service provisioning (`cf create-service vsb-azure-mysql ... -c '{...}'`
+The following parameters (as well as those above) may be configured during service provisioning (`cf create-service csb-azure-mysql ... -c '{...}'`
 )
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| instance_name | name of Azure instance to create | vsb-mysql-*instance_id* |
+| instance_name | name of Azure instance to create | csb-mysql-*instance_id* |
 | location  | Azure location to deploy service instance | westus |
 | pricing_tier | One of B, GP, MO | |
 | resource_group | The Azure resource group in which to create the instance | rg-*instance_name* |
@@ -87,7 +87,7 @@ CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/
 
 | Parameter | Type | Description | Default |
 |-----------|------|------|---------|
- instance_name | string | name of Azure instance to create | vsb-mysql-*instance_id* |
+ instance_name | string | name of Azure instance to create | csb-mysql-*instance_id* |
 | region  | string | [AWS region](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) to deploy service  | us-west-2 |
 | vpc_id | string | The VPC to connect the instance to | the default vpc |
 | aws_access_key_id | string | ID of Azure tenant for instance | config file value `aws.access_key_id` |

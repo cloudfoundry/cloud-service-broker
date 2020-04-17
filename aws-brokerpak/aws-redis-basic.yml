@@ -13,9 +13,9 @@
 # limitations under the License.
 ---
 version: 1
-name: csb-aws-redis
+name: csb-aws-redis-basic
 id: 0477676b-2dbd-4193-93fe-8315cbc05d45
-description: Fully managed Redis ElastiCache on AWS
+description: Amazon ElstiCache for Redis - single node
 display_name: Amazon ElstiCache for Redis
 image_url: https://www.edrawsoft.com/symbols/awsdatabase/elasticacheredis.png
 documentation_url: https://aws.amazon.com/elasticache/redis/resources/?nc=sn&loc=5
@@ -24,21 +24,21 @@ tags: [aws, redis, preview]
 plans:
 - name: small
   id: 600ae59f-cab3-4b2a-a6bb-f64f3e8df623
-  description: 'A basic plan with 1GB cache and no failover. Not password protected and no TLS encryption.'
+  description: 'Redis 5.0 with 1GB cache and no failover. Not password protected and no TLS encryption.'
   display_name: "Small"
   properties:
     cache_size: 1   
     redis_version: "5.0"
 - name: medium
   id: c5b146b3-0a6b-43a0-8df4-daca3651614f
-  description: 'A basic plan with at least 4GB cache and no failover. Not password protected and no TLS encryption.'
+  description: 'Redis 5.0 with at least 4GB cache and no failover. Not password protected and no TLS encryption.'
   display_name: "Medium"
   properties:
     cache_size: 4
     redis_version: "5.0"
 - name: large
   id: dbf161ab-750b-43ff-9a46-2cec49c9a57b
-  description: 'A basic plan with at least 16 GB cache and no failover. Not password protected and no TLS encryption.'
+  description: 'Redis 5.0 with at least 16 GB cache and no failover. Not password protected and no TLS encryption.'
   display_name: "Large"
   properties:
     cache_size: 16
@@ -67,7 +67,7 @@ provision:
   - field_name: instance_name
     type: string
     details: Name for your mysql instance
-    default: vsb-redis-${request.instance_id}
+    default: csb-redis-${request.instance_id}
     constraints:
       maxLength: 98
       minLength: 6
@@ -118,7 +118,7 @@ provision:
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
-  template_ref: ./terraform/aws-redis-provision.tf
+  template_ref: ./terraform/aws-redis-basic-provision.tf
   outputs:
   - field_name: name
     type: string

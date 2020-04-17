@@ -56,7 +56,7 @@ The following parameters (as well as those above) may be configured at service p
 
 | Parameter | Type | Description | Default |
 |-----------|------|------|---------|
-| instance_name | string | name of Azure instance to create | vsb-redis-*instance_id* |
+| instance_name | string | name of Azure instance to create | csb-redis-*instance_id* |
 | region  | string | AWS region to deploy service instance | us-west-2 |
 | vpc_id | string | The VPC to connect the instance to | the default vpc |
 | aws_access_key_id | string | ID of Azure tenant for instance | config file value `aws.access_key_id` |
@@ -101,7 +101,7 @@ The following parameters (as well as those above) may be configured at service p
 
 | Parameter | Type | Description | Default |
 |-----------|------|------|---------|
-| instance_name | string | name of Azure instance to create | vsb-redis-*instance_id* |
+| instance_name | string | name of Azure instance to create | csb-redis-*instance_id* |
 | location  | string | Azure location to deploy service instance | westus |
 | resource_group | string | The Azure resource group in which to create the instance | rg-*instance_name* |
 | azure_tenant_id | string | ID of Azure tenant for instance | config file value `azure.tenant_id` |

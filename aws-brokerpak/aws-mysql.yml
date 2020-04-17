@@ -77,7 +77,7 @@ provision:
   - field_name: instance_name
     type: string
     details: Name for your mysql instance
-    default: vsb-mysql-${request.instance_id}
+    default: csb-mysql-${request.instance_id}
     constraints:
       maxLength: 98
       minLength: 6

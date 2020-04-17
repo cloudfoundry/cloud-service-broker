@@ -29,9 +29,9 @@ The following parameters may be configured during service provisioning (`cf crea
 
 | Parameter Name | Type | Description | Default  |
 |----------------|------|-------------|----------|
-| instance_name  |string| service instance name | vsb-azsql-*instance_id* |
+| instance_name  |string| service instance name | csb-azsql-*instance_id* |
 | resource_group |string| resource group for instance | rg-*instance_name* |
-| db_name        |string| database name | vsb-db |
+| db_name        |string| database name | csb-db |
 | location       |string| Azure region to deploy service instance | westus |
 | azure_tenant_id | string | ID of Azure tenant for instance | config file value `azure.tenant_id` |
 | azure_subscription_id | string | ID of Azure subscription for instance | config file value `azure.subscription_id` |
