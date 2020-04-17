@@ -14,7 +14,7 @@ The only plan is *standard*.
 
 | Parameter Name | Type | Description | Default |
 |----------------|------|-------------|---------|
-| instance_name | string | instance name for server | vsb-azsql-svr-*instance_id* |
+| instance_name | string | instance name for server | csb-azsql-svr-*instance_id* |
 | resource_group | string | resource group for the server | rg-*instance_name* |
 | admin_username | string | admin username for server | randomly generated string |
 | admin_password | string | admin password for server | randomly generated string |

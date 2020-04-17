@@ -32,7 +32,7 @@ provision:
   - field_name: instance_name
     type: string
     details: Name for your Azure SQL Server instance
-    default: vsb-azsql-svr-${request.instance_id}
+    default: csb-azsql-svr-${request.instance_id}
     constraints:
       maxLength: 63
       minLength: 6

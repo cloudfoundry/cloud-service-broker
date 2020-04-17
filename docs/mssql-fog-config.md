@@ -28,8 +28,8 @@ The following parameters may be configured during service provisioning (`cf crea
 
 | Parameter Name | Type | Description | Default |
 |----------------|------|-------------|---------|
-| instance_name | string | instance name for failover group | vsb-azsql-fog-*instance_id* |
-| db_name | string | database name | vsb-fog-db-*instance_id* |
+| instance_name | string | instance name for failover group | csb-azsql-fog-*instance_id* |
+| db_name | string | database name | csb-fog-db-*instance_id* |
 | server_pair | string | server pair from *server_credential_pairs* on which to create failover DB | |
 | server_credential_pairs | JSON | list of server pairs on which failover DB's can be created, *server_pair* must match one of *name*. Format: `{ "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}`| |
 | azure_tenant_id | string | ID of Azure tenant for instance | config file value `azure.tenant_id` |

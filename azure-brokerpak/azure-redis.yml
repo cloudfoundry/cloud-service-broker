@@ -99,7 +99,7 @@ provision:
   - field_name: instance_name
     type: string
     details: Name for your mysql instance
-    default: vsb-redis-${request.instance_id}
+    default: csb-redis-${request.instance_id}
     constraints:
       maxLength: 98
       minLength: 6
@@ -178,9 +178,9 @@ provision:
   - field_name: hostname
     type: string
     details: Hostname or IP address of the exposed redis endpoint used by clients to connect to the service.
-  - field_name: port
-    type: integer
-    details: The port number of the exposed redis instance.
+  # - field_name: port
+  #   type: integer
+  #   details: The port number of the exposed redis instance.
   - field_name: tls_port
     type: integer
     details: The tls_port number of the exposed redis instance.  

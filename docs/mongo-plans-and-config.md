@@ -15,7 +15,7 @@ The following options can be configured across all supported platforms. Notes be
 
 | Option Name     | Value Type   | Values                      | Default |
 |-----------------|--------------|-----------------------------|---------|
-| instance_name   | string       | `^[a-z][a-z0-9-]+$`         | vsb-mongo-*instance_id* |
+| instance_name   | string       | `^[a-z][a-z0-9-]+$`         | csb-mongo-*instance_id* |
 | db_name         | string       |                             | default_db |
 | collection_name | string       |                             | default_collection |
 | shard_key       | string       |                             | uniqueKey |

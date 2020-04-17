@@ -97,10 +97,10 @@ service:
   azure-mssql-db:
     provision:
       defaults: '{
-          "server_name": "vsb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5",
+          "server_name": "csb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5",
           "admin_username": "KlpWlZCYHEyqdwuf",
           "admin_password": "KZe-.-rTuhK2ucDCx5UYQJyjsbum65SlC8_LTZg~Klr.2.1Yut-1weBdF1Xk-uo.",
-          "resource_group": "vsb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5"
+          "resource_group": "csb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5"
         }' 
 ```
 
@@ -114,26 +114,26 @@ service:
       {
         "id":"881de5d9-e078-44e7-bed5-26faadabda3c",
         "name":"small",
-        "description":"2cores, 10GB storage DB on server vsb-azsql-test-db4",
+        "description":"2cores, 10GB storage DB on server csb-azsql-test-db4",
         "pricing_tier":"GP",
         "cores":"2",
         "storage_gb":"10",
-        "server_name":"vsb-azsql-test-db4",
+        "server_name":"csb-azsql-test-db4",
         "admin_username":"eqVrU6vcTBvgfiqj",
         "admin_password":"BI@G9a9nCnXIV4CV",
-        "resource_group":"vsb-azsql-test-db4"
+        "resource_group":"csb-azsql-test-db4"
       },
       {
         "id":"1a1de5d9-e078-44e7-bed5-266aadabdaa6",
         "name":"small",
-        "description":"2cores, 10GB storage DB on server vsb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5",
+        "description":"2cores, 10GB storage DB on server csb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5",
         "pricing_tier":"GP",
         "cores":"2",
         "storage_gb":"10",
-        "server_name": "vsb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5",
+        "server_name": "csb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5",
         "admin_username": "KlpWlZCYHEyqdwuf",
         "admin_password": "KZe-.-rTuhK2ucDCx5UYQJyjsbum65SlC8_LTZg~Klr.2.1Yut-1weBdF1Xk-uo.",
-        "resource_group": "vsb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5"
+        "resource_group": "csb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5"
       }
     ]'
 ```

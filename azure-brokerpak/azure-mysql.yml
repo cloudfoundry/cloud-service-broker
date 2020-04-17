@@ -88,7 +88,7 @@ provision:
   - field_name: instance_name
     type: string
     details: Name for your MySQL instance
-    default: vsb-mysql-${request.instance_id}
+    default: csb-mysql-${request.instance_id}
     constraints:
       maxLength: 98
       minLength: 6
@@ -103,7 +103,7 @@ provision:
   - field_name: db_name
     type: string
     details: Name for your database
-    default: vsb-db
+    default: csb-db
     constraints:
       maxLength: 64
   - field_name: authorized_network

@@ -24,7 +24,8 @@ env_config_mapping:
   AWS_SECRET_ACCESS_KEY: aws.secret_access_key
 service_definitions:
 - aws-mysql.yml
-- aws-redis.yml
+- aws-redis-basic.yml
+- aws-redis-cluster.yml
 
 
 
