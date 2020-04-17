@@ -23,7 +23,7 @@ support_url: https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/
 tags: [azure, redis, preview]
 plans:
 - name: small
-  id: 6B9CA24E-1DEC-4E6F-8C8A-DC6E11AB5BEF
+  id: 6b9ca24e-1dec-4e6f-8c8a-dc6e11ab5bef
   description: 'A basic plan with 1GB cache and no failover. High Availability is not provided.'
   display_name: "Small"
   properties:
@@ -31,7 +31,7 @@ plans:
     family: C
     capacity: 1    
 - name: medium
-  id: 6B272C43-2116-4483-9A99-DE9262C0A7D6
+  id: 6b272c43-2116-4483-9a99-de9262c0a7d6
   description: 'A basic plan with 6GB cache and no failover. High Availability is not provided.'
   display_name: "Medium"
   properties:
@@ -39,7 +39,7 @@ plans:
     family: C
     capacity: 3
 - name: large
-  id: C3E34ABC-A820-457C-B723-1C342EF42C50
+  id: c3e34abc-a820-457c-b723-1c342ef42c50
   description: 'A basic plan with 26GB cache and no failover. High Availability is not provided.'
   display_name: "Large"
   properties:
@@ -47,7 +47,7 @@ plans:
     family: C
     capacity: 5
 - name: ha-small
-  id: D27A8E60-3724-49D1-B668-44B03D99B3B3
+  id: d27a8e60-3724-49d1-b668-44b03d99b3b3
   description: 'A standard plan with 1GB cache with high availability and no failover.'
   display_name: "High Availability Small"
   properties:
@@ -55,7 +55,7 @@ plans:
     family: C
     capacity: 1      
 - name: ha-medium
-  id: 421B932A-B86F-48A3-97E4-64BB13D3EC13
+  id: 421b932a-b86f-48a3-97e4-64bb13d3ec13
   description: 'A standard plan with 6GB cache with high availability and no failover.'
   display_name: "High Availability Medium"
   properties:
@@ -63,7 +63,7 @@ plans:
     family: C
     capacity: 3
 - name: ha-large
-  id: E919B281-9661-465D-82CF-0A0A6E1F195A
+  id: e919b281-9661-465d-82cf-0a0a6e1f195a
   description: 'A standard plan with 26GB cache with high availability and no failover.'
   display_name: "High Availability Large"
   properties:
@@ -196,31 +196,31 @@ bind:
 examples:
 - name: redis-cache-small
   description: Small redis cache
-  plan_id: 6B9CA24E-1DEC-4E6F-8C8A-DC6E11AB5BEF
+  plan_id: 6b9ca24e-1dec-4e6f-8c8a-dc6e11ab5bef
   provision_params: {}
   bind_params: {}
 - name: redis-cache-medium
   description: Medium redis cache in centralus region
-  plan_id: 6B272C43-2116-4483-9A99-DE9262C0A7D6
+  plan_id: 6b272c43-2116-4483-9a99-de9262c0a7d6
   provision_params: { "region": "centralus" }
   bind_params: {}
 - name: redis-cache-large
   description: Large redis cache
-  plan_id: C3E34ABC-A820-457C-B723-1C342EF42C50
+  plan_id: c3e34abc-a820-457c-b723-1c342ef42c50
   provision_params: {}
   bind_params: {}
 - name: redis-cache-ha-small
   description: HA small redis cache
-  plan_id: D27A8E60-3724-49D1-B668-44B03D99B3B3
+  plan_id: d27a8e60-3724-49d1-b668-44b03d99b3b3
   provision_params: {}
   bind_params: {}
 - name: redis-cache-ha-medium
   description: HA medium redis cache
-  plan_id: 421B932A-B86F-48A3-97E4-64BB13D3EC13
+  plan_id: 421b932a-b86f-48a3-97e4-64bb13d3ec13
   provision_params: {}
   bind_params: {}
 - name: redis-cache-ha-large
   description: HA large redis cache
-  plan_id: E919B281-9661-465D-82CF-0A0A6E1F195A
+  plan_id: e919b281-9661-465d-82cf-0a0a6e1f195a
   provision_params: {}
   bind_params: {}

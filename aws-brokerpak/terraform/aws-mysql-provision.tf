@@ -24,6 +24,7 @@ variable aws_secret_access_key { type = string }
 variable aws_vpc_id { type = string }
 variable publicly_accessible { type = bool }
 variable multi_az { type = bool }
+variable instance_class { type = string }
 
 provider "aws" {
   version = "~> 2.0"
@@ -45,6 +46,10 @@ resource "random_password" "password" {
   override_special = "~_-."
 }
 
+data "aws_vpc" "default" {
+  default = true
+}
+
 locals {
   instance_types = {
     // https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html
@@ -61,14 +66,8 @@ locals {
     "5.6" = "default.mysql5.6"
     "5.7" = "default.mysql5.7"
   }
-}
-
-data "aws_vpc" "default" {
-  default = true
-}
-
-locals {
   vpc_id = length(var.aws_vpc_id) == 0 ? data.aws_vpc.default.id : var.aws_vpc_id
+  instance_class = length(var.instance_class) == 0 ? local.instance_types[var.cores] : var.instance_class
 }
 
 data "aws_subnet_ids" "all" {
@@ -101,7 +100,7 @@ resource "aws_db_instance" "default" {
   skip_final_snapshot  = true
   engine               = "mysql"
   engine_version       = var.mysql_version
-  instance_class       = local.instance_types[var.cores]
+  instance_class       = local.instance_class
   identifier           = var.instance_name
   name                 = var.db_name
   username             = random_string.username.result

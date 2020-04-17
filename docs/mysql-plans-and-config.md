@@ -65,15 +65,15 @@ Each of the so-called Pricing Tiers in Azure has a min and max cores:
 ### AWS Notes
 CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) as follows:
 
-| Plan  | Instance type |
+| Plan  | Instance class |
 |-------|----------|
 | small | db.t2.medium |
 | medium | db.m4.xlarge |
 | large | db.m4.2xlarge |
 
-#### Core to instance type mapping
+#### Core to instance class mapping
 
-| Cores | Instance type |
+| Cores | Instance class |
 |-------|---------------|
 | 1     | db.m1.medium  |
 | 2     | db.t2.medium  |
@@ -85,9 +85,14 @@ CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/
 
 #### AWS specific config parameters
 
-| Parameter | Value |
-|-----------|--------|
-| region  | [AWS region](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) to deploy service instance |
+| Parameter | Type | Description | Default |
+|-----------|------|------|---------|
+ instance_name | string | name of Azure instance to create | vsb-mysql-*instance_id* |
+| region  | string | [AWS region](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) to deploy service  | us-west-2 |
+| vpc_id | string | The VPC to connect the instance to | the default vpc |
+| aws_access_key_id | string | ID of Azure tenant for instance | config file value `aws.access_key_id` |
+| aws_secret_access_key | string | ID of Azure subscription for instance | config file value `aws.secret_access_key` |
+| instance_class | string | explicit [instance class](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) *overrides* `cores` conversion into instance class per table above | | 
 
 ### GCP Notes
 

@@ -26,9 +26,9 @@ Cache size mapped into [GCP memory store tiers](https://cloud.google.com/memorys
 |-------------|--------|---------|
 | cache_size  | 1,2,4,8,16,32,64 | 1    |
 
-### AWS Notes
-Cache size mapped into [AWS ElastiCash node types](https://aws.amazon.com/elasticache/pricing/
-) as follows:
+### AWS Notes - applies to *csb-aws-redis*
+
+Cache size mapped into [AWS ElastiCash node types](https://aws.amazon.com/elasticache/pricing/) as follows:
 
 | Plan | AWS Cache Node Type |
 |------|---------------------|
@@ -36,7 +36,34 @@ Cache size mapped into [AWS ElastiCash node types](https://aws.amazon.com/elasti
 | medium | cache.m5.large |
 | large | cache.r4.xlarge |
 
-TODO: document how cache_size is mapped to an AWS node type
+Cache size to AWS node type mapping
+
+| cache_size | node type |
+|------------|-----------|
+| 1   |cache.t2.small |
+| 2   |cache.t3.medium |
+| 4   |cache.m5.large |
+| 8   |cache.m5.xlarge |
+| 16  |cache.r4.xlarge |
+| 32  |cache.r4.2xlarge |
+| 64  |cache.r4.4xlarge |
+| 128 |cache.r4.8xlarge |
+| 256 |cache.r5.12xlarge |
+
+#### Configuration Options
+
+The following parameters (as well as those above) may be configured at service provisioning time (`cf create-service csb-aws-redis ... -c '{...}'`)
+
+| Parameter | Type | Description | Default |
+|-----------|------|------|---------|
+| instance_name | string | name of Azure instance to create | vsb-redis-*instance_id* |
+| region  | string | AWS region to deploy service instance | us-west-2 |
+| vpc_id | string | The VPC to connect the instance to | the default vpc |
+| aws_access_key_id | string | ID of Azure tenant for instance | config file value `aws.access_key_id` |
+| aws_secret_access_key | string | ID of Azure subscription for instance | config file value `aws.secret_access_key` |
+| redis_version | string | Redis version to provision (`"2.6"`, `"2.8"`, `"3.2"`, `"4.0"`, `"5.0"`) | `"5.0"`|
+| cache_size | integer | Size in GB for cache: 1,2,4,8,16,32,64,128,256 | per plan |
+| node_type | string | explicit [node type](https://aws.amazon.com/elasticache/pricing/) *overrides* `cache_size` conversion into node type per table above | | 
 
 ### Azure Notes - applies to *csb-azure-redis*
 
