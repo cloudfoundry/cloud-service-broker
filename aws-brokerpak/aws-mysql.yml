@@ -17,7 +17,7 @@ name: csb-aws-mysql
 id: fa22af0f-3637-4a36-b8a7-cfc61168a3e0
 description: Amazon RDS for MySQL
 display_name: Amazon RDS for MySQL
-image_url: https://pbs.twimg.com/profile_images/930941244724854784/noZmA1hr_400x400.jpg
+image_url: https://www.edrawsoft.com/symbols/awsdatabase/mysqldbinstance.png
 documentation_url: https://aws.amazon.com/rds/mysql/resources/?nc=sn&loc=5
 support_url: https://aws.amazon.com/rds/mysql/resources/?nc=sn&loc=5
 tags: [aws, mysql, preview]
@@ -133,6 +133,10 @@ provision:
   - field_name: aws_vpc_id
     details: VPC ID for instance
     default: ""
+  - field_name: instance_class
+    type: string
+    details: AWS DB instance class (see https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) Will be computed from cache_size if empty.
+    default: ""    
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}

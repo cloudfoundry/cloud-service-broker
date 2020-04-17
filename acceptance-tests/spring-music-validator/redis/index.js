@@ -19,7 +19,7 @@ module.exports = async function (credentials, runServer) {
     let content = ""    
     const client = redis.createClient({
         host: credentials.hostname,
-        port: credentials.tls_port,
+        port: credentials.tls_port ? credentials.tls_port : credentials.port,
         password: credentials.password,
         retry_strategy: (options) => {
             if (options.error && options.error.code === "ECONNREFUSED") {
@@ -29,7 +29,7 @@ module.exports = async function (credentials, runServer) {
             }
             console.log("redis client retry", options)
         },
-        tls: {},
+        tls: credentials.tls_port ? {} : null,
     });
 
     return redisGetAllKeys(client).then((result) => {

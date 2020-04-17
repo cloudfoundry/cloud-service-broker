@@ -9,9 +9,14 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 RESULT=1
 
+if [ $# -eq 0 ]; then
+  echo "Usage: $0 <vpc-id>"
+  exit 1
+fi
+
 VPC_ID=$1; shift
 
-allServices=("csb-aws-mysql" )
+allServices=("csb-aws-mysql"  "csb-aws-redis")
 
 for s in ${allServices[@]}; do
   create_service "${s}" small "${s}-$$" "{\"aws_vpc_id\": \"${VPC_ID}\"}" &

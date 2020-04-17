@@ -1,0 +1,158 @@
+# Copyright 2020 Pivotal Software, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+version: 1
+name: csb-aws-redis
+id: 0477676b-2dbd-4193-93fe-8315cbc05d45
+description: Fully managed Redis ElastiCache on AWS
+display_name: Amazon ElstiCache for Redis
+image_url: https://www.edrawsoft.com/symbols/awsdatabase/elasticacheredis.png
+documentation_url: https://aws.amazon.com/elasticache/redis/resources/?nc=sn&loc=5
+support_url: https://aws.amazon.com/redis/
+tags: [aws, redis, preview]
+plans:
+- name: small
+  id: 600ae59f-cab3-4b2a-a6bb-f64f3e8df623
+  description: 'A basic plan with 1GB cache and no failover. Not password protected and no TLS encryption.'
+  display_name: "Small"
+  properties:
+    cache_size: 1   
+    redis_version: "5.0"
+- name: medium
+  id: c5b146b3-0a6b-43a0-8df4-daca3651614f
+  description: 'A basic plan with at least 4GB cache and no failover. Not password protected and no TLS encryption.'
+  display_name: "Medium"
+  properties:
+    cache_size: 4
+    redis_version: "5.0"
+- name: large
+  id: dbf161ab-750b-43ff-9a46-2cec49c9a57b
+  description: 'A basic plan with at least 16 GB cache and no failover. Not password protected and no TLS encryption.'
+  display_name: "Large"
+  properties:
+    cache_size: 16
+    redis_version: "5.0"
+provision:
+  plan_inputs:
+  - field_name: cache_size
+    required: true
+    type: integer
+    details: Cache size in GB
+    constraints:
+      maximum: 256
+      minimum: 1
+      multipleOf: 2    
+  - field_name: redis_version
+    required: true
+    type: string
+    details: The version for the redis instance.
+    enum: 
+      2.6: Redis 2.6
+      2.8: Redis 2.8
+      3.2: Redis 3.2
+      4.0: Redis 4.0
+      5.0: Redis 5.0
+  user_inputs:
+  - field_name: instance_name
+    type: string
+    details: Name for your mysql instance
+    default: vsb-redis-${request.instance_id}
+    constraints:
+      maxLength: 98
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$
+  - field_name: region
+    type: string
+    details: The region of the mysql instance.
+    default: us-west-2
+    enum: 
+      us-east-2 : us-east-2
+      us-east-1 : us-east-1
+      us-west-1 : us-west-1
+      us-west-2 : us-west-2
+      ap-east-1 : ap-east-1
+      ap-south-1 : ap-south-1
+      ap-northeast-3 : ap-northeast-3
+      ap-northeast-2 : ap-northeast-2
+      ap-southeast-1 : ap-southeast-1
+      ap-southeast-2 : ap-southeast-2
+      ap-northeast-1 : ap-northeast-1
+      ca-central-1 : ca-central-1
+      cn-north-1 : cn-north-1
+      cn-northwest-1 : cn-northwest-1
+      eu-central-1 : eu-central-1
+      eu-west-1 : eu-west-1
+      eu-west-2 : eu-west-2
+      eu-west-3 : eu-west-3
+      eu-north-1 : eu-north-1
+      me-south-1 : me-south-1
+      sa-east-1 : sa-east-1
+  - field_name: aws_access_key_id
+    type: string
+    details: AWS access key
+    default: ${config("aws.access_key_id")}
+  - field_name: aws_secret_access_key
+    type: string
+    details: AWS secret key
+    default: ${config("aws.secret_access_key")}
+  - field_name: aws_vpc_id
+    details: VPC ID for instance
+    default: ""
+  - field_name: node_type
+    type: string
+    details: AWS Elasticache node type (see https://aws.amazon.com/elasticache/pricing) Will be computed from cache_size if empty.
+    default: ""
+  computed_inputs:
+  - name: labels
+    default: ${json.marshal(request.default_labels)}
+    overwrite: true
+    type: object
+  template_ref: ./terraform/aws-redis-provision.tf
+  outputs:
+  - field_name: name
+    type: string
+    details: The name of the redis.
+  - field_name: hostname
+    type: string
+    details: Hostname or IP address of the exposed redis endpoint used by clients to connect to the service.
+  - field_name: port
+    type: integer
+    details: The port number of the exposed redis instance.
+bind:
+  plan_inputs: []
+  user_inputs: []
+  computed_inputs: []
+  template: ''
+  outputs: []
+examples:
+- name: redis-cache-small
+  description: Small redis cache
+  plan_id: 600ae59f-cab3-4b2a-a6bb-f64f3e8df623
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-medium
+  description: Medium redis cache in us-east-1 region
+  plan_id: c5b146b3-0a6b-43a0-8df4-daca3651614f
+  provision_params: { "region": "us-east-1" }
+  bind_params: {}
+- name: redis-cache-large
+  description: Large redis cache
+  plan_id: dbf161ab-750b-43ff-9a46-2cec49c9a57b
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-tiny
+  description: Tiny redis cache
+  plan_id: 600ae59f-cab3-4b2a-a6bb-f64f3e8df623
+  provision_params: { "node-type":"cache.t2.micro"}
+  bind_params: {}
