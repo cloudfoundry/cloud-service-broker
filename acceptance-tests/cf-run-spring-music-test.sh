@@ -57,7 +57,7 @@ SERVICE_INSTANCE_NAME=$1; shift
 RESULT=1
 
 if bind_service_test spring-music "${SERVICE_INSTANCE_NAME}"; then
-    ( cd "${SCRIPT_DIR}/spring-music-validator" && cf push --no-start )
+    ( cd "${SCRIPT_DIR}/spring-music-validator" && cf push --no-start --no-route)
 
     bind_service_test spring-music-validator "${SERVICE_INSTANCE_NAME}"
     RESULT=$?
