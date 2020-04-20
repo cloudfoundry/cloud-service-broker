@@ -4,17 +4,22 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-allServices=("csb-aws-mysql" "csb-aws-redis-basic" "csb-aws-redis-ha" )
+ALL_SERVICES=("csb-aws-mysql" "csb-aws-redis-basic" "csb-aws-redis-ha" "csb-aws-postgresql")
 
 # bogus region, node_type should fail
-for s in ${allServices[@]}; do
+for s in ${ALL_SERVICES[@]}; do
     ../cf-create-service-should-fail.sh ${s} medium '{"region":"bogus"}'
 done
 
-../cf-create-service-should-fail.sh csb-aws-mysql medium '{"instance_class":"bogus"}'
+INSTANCE_CLASS_SERVICES=("csb-aws-mysql" "csb-aws-postgresql" )
 
-../cf-create-service-should-fail.sh csb-aws-redis-basic medium '{"node_type":"bogus"}'
+for s in ${INSTANCE_CLASS_SERVICES[@]}; do
+    ../cf-create-service-should-fail.sh ${s} medium '{"instance_class":"bogus"}'
+done
 
-../cf-create-service-should-fail.sh csb-aws-redis-ha medium '{"node_type":"bogus"}'
+NODE_TYPE_SERVICES=("csb-aws-redis-basic" "csb-aws-redis-ha")
+for s in ${NODE_TYPE_SERVICES[@]}; do
+    ../cf-create-service-should-fail.sh ${s} medium '{"node_type":"bogus"}'
+done
 
 echo "$0 SUCCEEDED"

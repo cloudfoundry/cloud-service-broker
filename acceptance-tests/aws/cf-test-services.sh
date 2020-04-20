@@ -16,7 +16,7 @@ fi
 
 VPC_ID=$1; shift
 
-allServices=("csb-aws-mysql" "csb-aws-redis-basic" "csb-aws-redis-ha")
+allServices=("csb-aws-mysql" "csb-aws-redis-basic" "csb-aws-redis-ha" "csb-aws-postgresql")
 
 for s in ${allServices[@]}; do
   create_service "${s}" small "${s}-$$" "{\"aws_vpc_id\": \"${VPC_ID}\"}" &
