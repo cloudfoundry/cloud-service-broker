@@ -15,6 +15,7 @@ APP=spring-music
 RESULT=1
 if cf bind-service "${APP}" "${SERVICE_INSTANCE_NAME}"; then 
     if cf env "${APP}" | grep "credhub-ref" > /dev/null; then
+        echo "Success - found credhub-ref in binding"
         RESULT=0
     else
         echo "Error: did not find credhub-ref in binding"

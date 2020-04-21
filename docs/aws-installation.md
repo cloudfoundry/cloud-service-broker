@@ -14,6 +14,11 @@ The services need to be provisioned in the same AWS account that the foundation 
 - access key id
 - secret access key
 
+#### Required IAM Policies
+The AWS account represented by the access key needs the following permission policies:
+- AmazonElastiCacheFullAccess 
+- AmazonRDSFullAccess 
+
 ### MySQL Database for Broker State
 The broker keeps service instance and binding information in a MySQL database. 
 

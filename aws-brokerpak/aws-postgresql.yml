@@ -13,38 +13,38 @@
 # limitations under the License.
 ---
 version: 1
-name: csb-aws-mysql
-id: fa22af0f-3637-4a36-b8a7-cfc61168a3e0
-description: Amazon RDS for MySQL
-display_name: Amazon RDS for MySQL
-image_url: https://www.edrawsoft.com/symbols/awsdatabase/mysqldbinstance.png
-documentation_url: https://aws.amazon.com/rds/mysql/resources/?nc=sn&loc=5
-support_url: https://aws.amazon.com/rds/mysql/resources/?nc=sn&loc=5
-tags: [aws, mysql, preview]
+name: csb-aws-postgresql
+id: fa6334bc-5314-4b63-8a74-c0e4b638c950
+description: Amazon RDS for PostgreSQL
+display_name: Amazon RDS for PostgreSQL
+image_url: https://d1.awsstatic.com/rdsImages/postgresql_logo.6de4615badd99412268bc6aa8fc958a0f403dd41.png
+documentation_url: https://aws.amazon.com/rds/postgresql/
+support_url: https://aws.amazon.com/rds/postgresql/
+tags: [aws, postgresql, postgres, preview]
 plans:
 - name: small
-  id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
-  description: 'MySQL v5.7, minumum 2 cores, minumum 4GB ram, 5GB storage'
+  id: ffc51616-228b-41bd-bed1-d601c18d58f5
+  description: 'PostgreSQL 11, minumum 2 cores, minumum 4GB ram, 5GB storage'
   display_name: "small"
   properties:
     cores: 2
-    mysql_version: 5.7
+    postgres_version: 11
     storage_gb: 5
 - name: medium
-  id: f2ae0bb7-6921-43b7-bae7-6d1fe1c5d1c6
-  description: 'MySQL v5.7, minumum 4 cores, minumum 8GB ram, 10GB storage'
+  id: e64d07f9-ceb2-40a6-abd9-391047fa3cf5
+  description: 'PostgreSQL 11, minumum 4 cores, minumum 8GB ram, 10GB storage'
   display_name: "medium"
   properties:
     cores: 4
-    mysql_version: 5.7
+    postgres_version: 11
     storage_gb: 10
 - name: large
-  id: a5fea013-e87f-488f-969d-1cf038881b57
-  description: 'MySQL v5.7, minumum 8 cores, minumum 16GB ram, 20GB storage'
+  id: 48baef10-a14c-4ae1-aab5-25f26eba941a
+  description: 'PostgreSQL 11, minumum 8 cores, minumum 16GB ram, 20GB storage'
   display_name: "large"
   properties:
     cores: 8
-    mysql_version: 5.7
+    postgres_version: 11
     storage_gb: 20
 provision:
   plan_inputs:
@@ -57,14 +57,17 @@ provision:
       maximum: 64
       minimum: 1
       multipleOf: 2
-  - field_name: mysql_version
+  - field_name: postgres_version
     required: true
     type: string
-    details: The version for the mysql instance.
+    details: The version for the PostgreSQL instance.
     default: 5.7
     enum: 
-      5.6: MySQL v5.6
-      5.7: MySQL v5.7
+      9.4: PostgreSQL 9.4
+      9.5: PostgreSQL 9.5
+      9.6: PostgreSQL 9.6
+      10: PostgreSQL 10
+      11: PostgreSQL 11
   - field_name: storage_gb
     required: true
     type: number
@@ -76,8 +79,8 @@ provision:
   user_inputs:
   - field_name: instance_name
     type: string
-    details: Name for your mysql instance
-    default: csb-mysql-${request.instance_id}
+    details: Name for your PostgreSQL instance
+    default: csb-postgresql-${request.instance_id}
     constraints:
       maxLength: 98
       minLength: 6
@@ -94,7 +97,7 @@ provision:
     default: false
   - field_name: region
     type: string
-    details: The region of the mysql instance.
+    details: The region of the PostgreSQL instance.
     default: us-west-2
     enum: 
       us-east-2 : us-east-2
@@ -143,13 +146,13 @@ provision:
     overwrite: true
     type: object
   - name: engine
-    default: mysql
+    default: postgres
     overwrite: true
     type: string
   - name: engine_version
-    default: ${mysql_version}
+    default: ${postgres_version}
     overwrite: true
-    type: string    
+    type: string
   template_ref: terraform/aws-rds-provision.tf
   outputs:
   - field_name: name
@@ -157,10 +160,10 @@ provision:
     details: The name of the database.
   - field_name: hostname
     type: string
-    details: Hostname or IP address of the exposed mysql endpoint used by clients to connect to the service.
+    details: Hostname or IP address of the exposed PostgreSQL endpoint used by clients to connect to the service.
   - field_name: port
     type: integer
-    details: The port number of the exposed mysql instance.
+    details: The port number of the exposed PostgreSQL instance.
   - field_name: username
     type: string
     details: The username to authenticate to the database instance.
@@ -171,15 +174,15 @@ bind:
   plan_inputs: []
   user_inputs: []
   computed_inputs:
-    - name: mysql_db_name
+    - name: db_name
       type: string
       default: ${instance.details["name"]}
       overwrite: true
-    - name: mysql_hostname
+    - name: hostname
       type: string
       default: ${instance.details["hostname"]}
       overwrite: true
-    - name: mysql_port
+    - name: port
       type: integer
       default: ${instance.details["port"]}
       overwrite: true
@@ -191,7 +194,7 @@ bind:
       type: string
       default: ${instance.details["password"]}
       overwrite: true
-  template_ref: terraform/mysql-bind.tf
+  template_ref: terraform/postgresql-bind.tf
   outputs: 
     - field_name: username
       type: string
@@ -207,27 +210,27 @@ bind:
       details: The jdbc url to connect to the database instance and database.    
 examples:
 - name: small
-  description: Create a small mysql instance
-  plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
+  description: Create a small PostgreSQL instance
+  plan_id: ffc51616-228b-41bd-bed1-d601c18d58f5
   provision_params: { "publicly_accessible": true }
   bind_params: {}
 - name: small-v5.6-50gb-
-  description: Create a small mysql v5.6 instance with 50gb storage
-  plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
+  description: Create a small PostgreSQL v5.6 instance with 50gb storage
+  plan_id: ffc51616-228b-41bd-bed1-d601c18d58f5
   provision_params: { "mysql_version": "5.6", "storage_gb": 50, "publicly_accessible": true }
   bind_params: {}
 - name: medium
-  description: Create a medium mysql instance
-  plan_id: f2ae0bb7-6921-43b7-bae7-6d1fe1c5d1c6
+  description: Create a medium PostgreSQL instance
+  plan_id: e64d07f9-ceb2-40a6-abd9-391047fa3cf5
   provision_params: { "publicly_accessible": true }
   bind_params: {}
 - name: large
   description: Create a large mysql instance
-  plan_id: a5fea013-e87f-488f-969d-1cf038881b57
+  plan_id: 48baef10-a14c-4ae1-aab5-25f26eba941a
   provision_params: { "publicly_accessible": true }
   bind_params: {}
 - name: medium-multiaz
-  description: Create a medium mysql instance
-  plan_id: f2ae0bb7-6921-43b7-bae7-6d1fe1c5d1c6
+  description: Create a medium PostgreSQL instance
+  plan_id: e64d07f9-ceb2-40a6-abd9-391047fa3cf5
   provision_params: { "publicly_accessible": true, "multi_az": true }
   bind_params: {}  

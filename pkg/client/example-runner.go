@@ -356,12 +356,6 @@ func (ee *exampleExecutor) Deprovision() error {
 
 // Unbind unbinds the exact binding created by a call to Bind.
 func (ee *exampleExecutor) Unbind() error {
-	// XXX(josephlewis42) Due to some unknown reason, binding Postgres and MySQL
-	// don't wait for all operations to finish before returning even though it
-	// looks like they do so we can get 500 errors back the first few times we try
-	// to unbind. Issue #222 was opened to address this. In the meantime this
-	// is a hack to get around it that will still fail if the 500 errors truly
-	// occur because of a real, unrecoverable, server error.
 	return retry(15*time.Minute, 15*time.Second, func() (bool, error) {
 		log.Printf("Unbinding %s\n", ee.Name)
 		resp := ee.client.Unbind(ee.InstanceId, ee.BindingId, ee.ServiceId, ee.PlanId)
@@ -373,10 +367,6 @@ func (ee *exampleExecutor) Unbind() error {
 
 		if resp.StatusCode == 200 {
 			return false, nil
-		}
-
-		if resp.StatusCode == 500 {
-			return true, nil
 		}
 
 		return false, fmt.Errorf("Unexpected response code %d", resp.StatusCode)

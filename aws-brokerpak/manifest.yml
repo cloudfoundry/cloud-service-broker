@@ -19,6 +19,9 @@ terraform_binaries:
 - name: terraform-provider-mysql
   version: 1.9.0
   source: https://releases.hashicorp.com/terraform-provider-mysql/1.9.0/terraform-provider-mysql_1.9.0_linux_amd64.zip 
+- name: terraform-provider-postgresql
+  version: 1.5.0
+  source: https://github.com/terraform-providers/terraform-provider-postgresql/archive/v1.5.0.zip
 env_config_mapping:
   AWS_ACCESS_KEY_ID: aws.access_key_id
   AWS_SECRET_ACCESS_KEY: aws.secret_access_key
@@ -26,6 +29,8 @@ service_definitions:
 - aws-mysql.yml
 - aws-redis-basic.yml
 - aws-redis-cluster.yml
+- aws-postgresql.yml
+
 
 
 
