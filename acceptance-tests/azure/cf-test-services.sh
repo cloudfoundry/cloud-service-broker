@@ -13,19 +13,19 @@ RG_NAME=rg-test-service-$$
 
 if create_service csb-azure-resource-group standard "${RG_NAME}" "{\"instance_name\":\"${RG_NAME}\"}"; then
 
-  allServices=("csb-azure-mysql" "csb-azure-redis" "csb-azure-mssql" "csb-azure-mssql-failover-group")
+  ALL_SERVICES=("csb-azure-mysql" "csb-azure-redis" "csb-azure-mssql" "csb-azure-mssql-failover-group")
 
-  for s in ${allServices[@]}; do
+  for s in ${ALL_SERVICES[@]}; do
     create_service "${s}" small "${s}-$$" "{\"resource_group\":\"${RG_NAME}\"}" &
   done
 
   create_service csb-azure-mongodb small csb-azure-mongodb-$$ "{\"resource_group\":\"${RG_NAME}\", \"db_name\": \"musicdb\", \"collection_name\": \"album\", \"shard_key\": \"_id\"}" &
 
-  allServices+=( "csb-azure-mongodb" )
+  ALL_SERVICES+=( "csb-azure-mongodb" )
 
   if wait; then
     RESULT=0
-    for s in ${allServices[@]}; do
+    for s in ${ALL_SERVICES[@]}; do
       if [ $# -gt 0 ]; then
         if "${SCRIPT_DIR}/../cf-validate-credhub.sh" "${s}-$$"; then
           echo "SUCCEEDED: ${SCRIPT_DIR}/../cf-validate-credhub.sh ${s}-$$"
@@ -43,14 +43,16 @@ if create_service csb-azure-resource-group standard "${RG_NAME}" "{\"instance_na
         break
       fi
     done
+  else
+    echo "FAILED creating one or more service instances"
   fi
 
-  for s in ${allServices[@]}; do
+  for s in ${ALL_SERVICES[@]}; do
     delete_service "${s}-$$" &
   done
 
   if [ ${RESULT} -eq 0 ]; then
-    ./cf-test-mssql-db.sh && ./cf-test-mssql-db-fog.sh && ./cf-test-mssql-do-failover.sh
+    ${SCRIPT_DIR}/cf-test-mssql-db.sh && ${SCRIPT_DIR}/cf-test-mssql-db-fog.sh && ${SCRIPT_DIR}/cf-test-mssql-do-failover.sh
     RESULT=$?
   fi
 
@@ -62,9 +64,9 @@ else
 fi
 
 if [ ${RESULT} -eq 0 ]; then
-  echo "$0 SUCCEEDED"
+  echo "SUCCEEDED: $0"
 else
-  echo "$0 FAILED"
+  echo "FAILED: $0"
 fi
 
 exit ${RESULT}
