@@ -1,14 +1,15 @@
-# MySQL Plans and Config
+# PostgreSQL Plans and Config
 
-These are the default plans and configuration options for MySQL across the supported cloud platforms (AWS, Azure and GCP.)
+These are the default plans and configuration options for PostgreSQL across the supported cloud platforms (AWS, Azure and GCP.)
 
 ## Plans
 
 | Plan | Version | CPUs | Memory Size | Disk Size |
 |------|---------|------|-------------|-----------|
-|small | 5.7     | 2    | min 4GB     | 5GB       |
-|medium| 5.7     | 4    | min 8GB     | 10GB      |
-|large | 5.7     | 8    | min 16GB    | 20GB      |
+|small | 11      | 2    | min 4GB     | 5GB       |
+|medium| 11      | 4    | min 8GB     | 10GB      |
+|large | 11      | 8    | min 16GB    | 20GB      |
+
 
 ## Configuration Options
 
@@ -16,12 +17,12 @@ The following options can be configured across all supported platforms. Notes be
 
 | Option Name | Values | Default |
 |-------------|--------|---------|
-| mysql_version | 5.6, 5.7| 5.7    |
+| postgres_version | 9.5, 9.6, 10, 11 | 11    |
 | storage_gb  | 5 - 4096| 5      |
 | cores       | 1,2,4,8,16,32,64 | 1      |
 | db_name     | | csb-db |
- 
-### Azure Notes - applies to *csb-azure-mysql*
+
+### Azure Notes - applies to *csb-azure-postgresql*
 CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) as follows:
 
 | Plan   | Sku       | Memory | Storage | vCores |
@@ -36,7 +37,7 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 
 #### Azure specific config parameters
 
-The following parameters (as well as those above) may be configured during service provisioning (`cf create-service csb-azure-mysql ... -c '{...}'`
+The following parameters (as well as those above) may be configured during service provisioning (`cf create-service csb-azure-postgresql ... -c '{...}'`
 )
 | Parameter | Description | Default |
 |-----------|-------------|---------|
@@ -62,7 +63,8 @@ Each of the so-called Pricing Tiers in Azure has a min and max cores:
 |-----------|--------|
 | authorized_network  | Subnet ID (the long version) of the VNET/Subnet that is attached to this instance to allow remote access. By default no VNETs are allowed access. |
 
-### AWS Notes
+### AWS Notes - applies to *csb-aws-postgresql*
+
 CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) as follows:
 
 | Plan  | Instance class |
@@ -85,6 +87,8 @@ CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/
 
 #### AWS specific config parameters
 
+The following parameters (as well as those above) may be configured during service provisioning (`cf create-service csb-aws-postgresql ... -c '{...}'`
+
 | Parameter | Type | Description | Default |
 |-----------|------|------|---------|
  instance_name | string | name of Azure instance to create | csb-mysql-*instance_id* |
@@ -96,40 +100,9 @@ CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/
 | multi-az | boolean | If `true`, create multi-az ([HA](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZ.html)) instance | `false` | 
 | publicly_accessible | boolean | If `true`, make instance available to public connections | `false ` |
 
-### GCP Notes
-
-MySQL minimum storage size is 10GB.
-
-CPU/memory size mapped into [GCP tiers](https://cloud.google.com/sql/pricing#2nd-gen-pricing) as follows:
-
-| Plan  | Tier     |
-|-------|----------|
-| small | db-n1-standard-2 |
-| medium | db-n1-standard-4 |
-| large | db-n1-standard-8 |
-
-#### Core to service tier mapping
-
-| Cores | Service Tier |
-|-------|---------------|
-| 1     | db-n1-standard-1  |
-| 2     | db-n1-standard-2  |
-| 4     | db-n1-standard-4  |
-| 8     | db-n1-standard-8  |
-| 16    | db-n1-standard-16  |
-| 32    | db-n1-standard-32  |
-| 64    | db-n1-standard-64  |
-
-#### GCP specific config parameters
-
-| Parameter | Value |
-|-----------|--------|
-| region  | [GCP region](https://cloud.google.com/compute/docs/regions-zones) to deploy service instance into |
-| authorized_network | compute network to connect the instance to |
-
 ## Binding Credentials
 
-The binding credentials for MySQL have the following shape:
+The binding credentials for PostgreSQL have the following shape:
 
 ```json
 {

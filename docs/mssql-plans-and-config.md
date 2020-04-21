@@ -76,7 +76,7 @@ Each of the Pricing Tiers in Azure has a [min and max](https://docs.microsoft.co
 
 The binding credentials for Azure SQL have the following shape:
 
-```
+```json
 {
     "name" : "database name",
     "hostname" : "database server host",

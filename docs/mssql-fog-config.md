@@ -77,7 +77,7 @@ cf create-service csb-azure-mssql-db-failover-group medium medium-fog -c '{"serv
 
 The binding credentials for Azure SQL Failover Group have the following shape:
 
-```
+```json
 {
     "name" : "database name",
     "hostname" : "database server host",

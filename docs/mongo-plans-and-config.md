@@ -102,7 +102,7 @@ CPU/memory size mapped into [GCP tiers](https://cloud.google.com/sql/pricing#2nd
 
 The binding credentials for MySQL have the following shape:
 
-```
+```json
 {
     "uri" : "mongodb connection URI"
 }

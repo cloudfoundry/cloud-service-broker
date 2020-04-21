@@ -43,7 +43,7 @@ Note: Currently Azure SQL is not available in all regions. The enum in the YML l
 
 The binding credentials for Azure SQL Failover Group have the following shape:
 
-```
+```json
 {
     "name" : "database name",
     "hostname" : "database server host",

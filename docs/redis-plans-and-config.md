@@ -116,7 +116,7 @@ For consuming Azure Redis, the TLS port is used in place of the standard port.  
 
 The binding credentials for Redis have the following shape:
 
-```
+```json
 {
     "host" : "redis server hostname",
     "port" : "redis server port",
