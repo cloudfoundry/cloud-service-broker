@@ -28,7 +28,7 @@ The only plan is *standard*.
 
 The binding credentials for Azure SQL Failover Group have the following shape:
 
-```
+```json
 {
     "hostname" : "database server host",
     "port" : "database server port",

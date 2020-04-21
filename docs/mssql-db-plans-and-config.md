@@ -72,7 +72,7 @@ cf create-service csb-azure-mssql-db medium medium-sql -c '{"server":"server1"}'
 
 The binding credentials for Azure SQL DB have the following shape:
 
-```
+```json
 {
     "name" : "database name",
     "hostname" : "database server host",

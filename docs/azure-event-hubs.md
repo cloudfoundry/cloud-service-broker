@@ -36,8 +36,8 @@ The following options can be configured across all supported platforms. Notes be
 
 The binding credentials for MySQL have the following shape:
 
-```
- credentials": {
+```json
+{
      "event_hub_connection_string": "Endpoint=sb://",
      "event_hub_name": "csb-eventhubs-",
      "eventhub_name": "csb-eventhubs-",
@@ -46,7 +46,7 @@ The binding credentials for MySQL have the following shape:
      "namespace_name": "csb-eventhubs-",
      "shared_access_key_name": "",
      "shared_access_key_value": ""
-    }
+}
 ```
 
 
