@@ -64,11 +64,6 @@ resource "random_string" "username" {
   number = false
 }
 
-# resource "random_string" "servername" {
-#   length = 8
-#   special = false
-# }
-
 resource "random_password" "password" {
   length = 31
   override_special = "~_-."
