@@ -19,6 +19,7 @@ The service broker provides support for:
 ||[Azure SQL](https://docs.microsoft.com/en-us/azure/sql-database/)||
 ||[Azure SQL Failover Groups](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/)||
 ||[Azure Eventhubs](https://azure.microsoft.com/en-us/services/event-hubs/)||
+||[Azure Database for PostgreSQL](https://azure.microsoft.com/en-us/services/postgresql)||
 
 ## Installation
 

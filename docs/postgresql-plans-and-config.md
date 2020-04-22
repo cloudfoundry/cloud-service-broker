@@ -31,9 +31,17 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 | medium | GP_Gen5_4 | 10GB   | 200GB    | 4      |
 | large  | MO_Gen5_8 | 20GB   | 500GB    | 8      |
 
-> Note that the maximum vCores is dependant on the Service Tier. B_ = Basic, GP_ = General Purpose and MO_ = Memory Optimized. See below for details.
+#### Core to sku mapping
 
-> Note that the maximum vCores is dependant on the Service Tier. B_ = Basic, GP_ = General Puspose and MO_ = Memory Optimized. See below for details.
+| Cores | Instance class |
+|-------|---------------|
+| 1     | B_Gen5_1    |
+| 2     | B_Gen5_2    |
+| 4     | GP_Gen5_4   |
+| 8     | MO_Gen5_8   |
+| 16    | MO_Gen5_16  |
+| 32    | MO_Gen5_32  |
+| 64    | GP_Gen5_64  |
 
 #### Azure specific config parameters
 
@@ -43,25 +51,15 @@ The following parameters (as well as those above) may be configured during servi
 |-----------|-------------|---------|
 | instance_name | name of Azure instance to create | csb-mysql-*instance_id* |
 | location  | Azure location to deploy service instance | westus |
-| pricing_tier | One of B, GP, MO | |
 | resource_group | The Azure resource group in which to create the instance | rg-*instance_name* |
 | azure_tenant_id | string | ID of Azure tenant for instance | config file value `azure.tenant_id` |
 | azure_subscription_id | string | ID of Azure subscription for instance | config file value `azure.subscription_id` |
 | azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
 | azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `azure.client_secret` |
+| authorized_network  | Subnet ID (the long version) of the VNET/Subnet that is attached to this instance to allow remote access. By default no VNETs are allowed access. ||
+| sku_name | [Azure sku](https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) (typically, tier [`B`,`GP`,`MO`] + family [`Gen4`,`Gen5`] + *cores*, e.g. `B_Gen4_1`, `GP_Gen5_8`) *overrides* `cores` conversion into sku per table above
 
 Note: Currently MySQL is not available in all regions. The enum in the YML lists all the valid regions as of 2/12/2020
-
-Each of the so-called Pricing Tiers in Azure has a min and max cores:
-| Pricing Tier | Max vCores |
-|--------------|------------|
-| B - Basic | 2 |
-| GP - General Purpose | 64 |
-| MO - Memory Optimized | 32 |
-
-| Parameter | Value |
-|-----------|--------|
-| authorized_network  | Subnet ID (the long version) of the VNET/Subnet that is attached to this instance to allow remote access. By default no VNETs are allowed access. |
 
 ### AWS Notes - applies to *csb-aws-postgresql*
 
