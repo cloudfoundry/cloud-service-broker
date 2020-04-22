@@ -30,6 +30,10 @@ delete_service() {
                 echo "Failed to delete ${SERVICE_NAME}"
                 cf service "${SERVICE_NAME}"
                 LOCAL_RESULT=1
+                if [ $RETRY -eq 0 ]; then
+                    echo "Retry delete in 5..."
+                    sleep 5
+                fi
             else
                 echo "Successfully deleted ${SERVICE_NAME}"
                 LOCAL_RESULT=0
