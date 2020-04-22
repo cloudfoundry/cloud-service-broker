@@ -61,7 +61,6 @@ provision:
     required: true
     type: string
     details: The version for the PostgreSQL instance.
-    default: 5.7
     enum: 
       9.4: PostgreSQL 9.4
       9.5: PostgreSQL 9.5
@@ -123,7 +122,7 @@ provision:
       sa-east-1 : sa-east-1
   - field_name: multi_az
     type: boolean
-    details: Make instance multi AZ if true
+    details: Make instance multi AZ if true (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZ.html)
     default: false
   - field_name: aws_access_key_id
     type: string
@@ -214,10 +213,10 @@ examples:
   plan_id: ffc51616-228b-41bd-bed1-d601c18d58f5
   provision_params: { "publicly_accessible": true }
   bind_params: {}
-- name: small-v5.6-50gb-
-  description: Create a small PostgreSQL v5.6 instance with 50gb storage
+- name: small-v9.6-50gb
+  description: Create a small PostgreSQL v9.6 instance with 50gb storage
   plan_id: ffc51616-228b-41bd-bed1-d601c18d58f5
-  provision_params: { "mysql_version": "5.6", "storage_gb": 50, "publicly_accessible": true }
+  provision_params: { "postgres_version": "9.6", "storage_gb": 50, "publicly_accessible": true }
   bind_params: {}
 - name: medium
   description: Create a medium PostgreSQL instance
@@ -225,7 +224,7 @@ examples:
   provision_params: { "publicly_accessible": true }
   bind_params: {}
 - name: large
-  description: Create a large mysql instance
+  description: Create a large PostgreSQL instance
   plan_id: 48baef10-a14c-4ae1-aab5-25f26eba941a
   provision_params: { "publicly_accessible": true }
   bind_params: {}
@@ -234,3 +233,18 @@ examples:
   plan_id: e64d07f9-ceb2-40a6-abd9-391047fa3cf5
   provision_params: { "publicly_accessible": true, "multi_az": true }
   bind_params: {}  
+- name: small-v9.4
+  description: Create a small PostgreSQL v9.4 instance
+  plan_id: ffc51616-228b-41bd-bed1-d601c18d58f5
+  provision_params: { "postgres_version": "9.4","publicly_accessible": true }
+  bind_params: {}
+- name: small-v9.5
+  description: Create a small PostgreSQL v9.5 instance
+  plan_id: ffc51616-228b-41bd-bed1-d601c18d58f5
+  provision_params: {  "postgres_version": "9.5","publicly_accessible": true }
+  bind_params: {}
+- name: small-v10
+  description: Create a small PostgreSQL v10 instance
+  plan_id: ffc51616-228b-41bd-bed1-d601c18d58f5
+  provision_params: { "postgres_version": "10","publicly_accessible": true }
+  bind_params: {}

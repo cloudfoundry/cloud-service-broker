@@ -50,21 +50,26 @@ resource "mysql_grant" "newuser" {
   privileges = ["ALL"]
 }
 
-output username { value = "${random_string.username.result}@${var.mysql_hostname}" }
+locals {
+  username = format("%s@%s", random_string.username.result, var.mysql_hostname)
+}
+output username { value = local.username }
 output password { value = random_password.password.result }
 output uri { 
-  value = format("mysql://%s:%s@%s:%d/%s", 
-                  "${random_string.username.result}@${var.mysql_hostname}" , 
+  value = format("%s://%s:%s@%s:%d/%s", 
+                  "mysql",
+                  local.username, 
                   random_password.password.result, 
                   var.mysql_hostname, 
                   var.mysql_port,
                   var.mysql_db_name) 
 }
 output jdbcUrl { 
-  value = format("jdbc:mysql://%s:%s/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=true\u0026requireSSL=false\u0026serverTimezone=GMT", 
+  value = format("jdbc:%s://%s:%s/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=true\u0026requireSSL=false\u0026serverTimezone=GMT", 
+                  "mysql",
                   var.mysql_hostname, 
                   var.mysql_port,
                   var.mysql_db_name, 
-                  "${random_string.username.result}@${var.mysql_hostname}", 
+                  local.username, 
                   random_password.password.result) 
 }  

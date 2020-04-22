@@ -120,7 +120,7 @@ provision:
       sa-east-1 : sa-east-1
   - field_name: multi_az
     type: boolean
-    details: Make instance multi AZ if true
+    details: Make instance multi AZ if true (see https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZ.html)
     default: false
   - field_name: aws_access_key_id
     type: string
