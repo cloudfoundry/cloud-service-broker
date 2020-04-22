@@ -97,7 +97,7 @@ resource "azurerm_postgresql_database" "instance-db" {
   resource_group_name = local.resource_group
   server_name         = azurerm_postgresql_server.instance.name
   charset             = "UTF8"
-  collation           = "English_United States.1252"
+  collation           = "en_US"
 }
 
 resource "azurerm_postgresql_virtual_network_rule" "allow_subnet_id" {
