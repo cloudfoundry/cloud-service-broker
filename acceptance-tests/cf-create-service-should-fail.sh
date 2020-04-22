@@ -54,6 +54,11 @@ cf delete-service -f "${SERVICE_INSTANCE_NAME}"
 
 wait_for_service "${SERVICE_INSTANCE_NAME}" "delete in progress"
 
+if [ $? -ne 0 ]; then
+  echo "Purging service instance..."
+  cf purge-service-instance -f "${SERVICE_INSTANCE_NAME}"
+fi
+
 if [ ${RESULT} -eq 0 ]; then
   echo "$0 SUCCEEDED"
 else
