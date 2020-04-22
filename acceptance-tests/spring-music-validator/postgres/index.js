@@ -42,7 +42,8 @@ module.exports = async function (credentials, runServer) {
         user: credentials.username,
         password: credentials.password,
         port: credentials.port,
-        database: credentials.name
+        database: credentials.name,
+        ssl: {}
     }).then((client) => {
         return postgresShowTables(client)
     }).then((result) => {
@@ -54,7 +55,10 @@ module.exports = async function (credentials, runServer) {
         content += JSON.stringify(result.rows)
         return Promise.resolve(result.connection)
     }).then(() => {
-        return connectPostgres({ connectionString: credentials.uri })
+        return connectPostgres({
+            connectionString: credentials.uri,
+            ssl: {}
+        })
     }).then((client) => {
         return postgresShowTables(client)
     }).then((result) => {
