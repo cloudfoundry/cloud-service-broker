@@ -13,7 +13,7 @@ RG_NAME=rg-test-service-$$
 
 if create_service csb-azure-resource-group standard "${RG_NAME}" "{\"instance_name\":\"${RG_NAME}\"}"; then
 
-  ALL_SERVICES=("csb-azure-mysql" "csb-azure-redis" "csb-azure-mssql" "csb-azure-mssql-failover-group")
+  ALL_SERVICES=("csb-azure-mysql" "csb-azure-redis" "csb-azure-mssql" "csb-azure-mssql-failover-group" "csb-azure-postgresql")
 
   for s in ${ALL_SERVICES[@]}; do
     create_service "${s}" small "${s}-$$" "{\"resource_group\":\"${RG_NAME}\"}" &

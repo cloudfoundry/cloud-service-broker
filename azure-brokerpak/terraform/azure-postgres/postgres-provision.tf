@@ -12,19 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+variable cores { type = number }
 variable instance_name { type = string }
+variable db_name { type = string }
+variable location { type = string }
+variable labels { type = map }
+variable storage_gb { type = number }
 variable resource_group { type = string }
 variable azure_tenant_id { type = string }
 variable azure_subscription_id { type = string }
 variable azure_client_id { type = string }
 variable azure_client_secret { type = string }
-variable db_name { type = string }
-variable mysql_version { type = string }
-variable location { type = string }
-variable labels { type = map }
-variable pricing_tier { type = string }
-variable cores {type = string }
-variable storage_gb {type = string }
+variable postgres_version { type = string }
+variable sku_name { type = string }
 variable authorized_network {type = string}
 
 provider "azurerm" {
@@ -37,10 +38,20 @@ provider "azurerm" {
 }
 
 locals {
+  instance_types = {
+    1 = "B_Gen5_1"
+    2 = "B_Gen5_2"
+    4 = "GP_Gen5_4"
+    8 = "MO_Gen5_8"
+    16 = "MO_Gen5_16"
+    32 = "MO_Gen5_32"
+    64 = "GP_Gen5_64"
+  }       
   resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group
+  sku_name = length(var.sku_name) == 0 ? local.instance_types[var.cores] : var.sku_name
 }
 
-resource "azurerm_resource_group" "azure-msyql" {
+resource "azurerm_resource_group" "azure-postgres" {
   name     = local.resource_group
   location = var.location
   tags     = var.labels
@@ -53,10 +64,10 @@ resource "random_string" "username" {
   number = false
 }
 
-resource "random_string" "servername" {
-  length = 8
-  special = false
-}
+# resource "random_string" "servername" {
+#   length = 8
+#   special = false
+# }
 
 resource "random_password" "password" {
   length = 31
@@ -66,12 +77,13 @@ resource "random_password" "password" {
   min_special = 2
 }
 
-resource "azurerm_mysql_server" "instance" {
-  depends_on = [ azurerm_resource_group.azure-msyql ]
-  name                = lower(random_string.servername.result)
+resource "azurerm_postgresql_server" "instance" {
+  depends_on = [ azurerm_resource_group.azure-postgres ]    
+  name                = var.instance_name
   location            = var.location
   resource_group_name = local.resource_group
-  sku_name = format("%s_Gen5_%d", var.pricing_tier, var.cores)
+
+  sku_name = local.sku_name
 
   storage_profile {
     storage_mb            = var.storage_gb * 1024
@@ -81,38 +93,37 @@ resource "azurerm_mysql_server" "instance" {
 
   administrator_login          = random_string.username.result
   administrator_login_password = random_password.password.result
-  version                      = var.mysql_version
-  ssl_enforcement              = "Disabled"
-  tags                         = var.labels
+  version                      = var.postgres_version
+  ssl_enforcement              = "Enabled"
 }
 
-resource "azurerm_mysql_database" "instance-db" {
+resource "azurerm_postgresql_database" "instance-db" {
   name                = var.db_name
   resource_group_name = local.resource_group
-  server_name         = azurerm_mysql_server.instance.name
-  charset             = "utf8"
-  collation           = "utf8_unicode_ci"
+  server_name         = azurerm_postgresql_server.instance.name
+  charset             = "UTF8"
+  collation           = "English_United States.1252"
 }
 
-resource "azurerm_mysql_virtual_network_rule" "allow_subnet_id" {
-  name                = format("subnetrule-%s", lower(random_string.servername.result))
+resource "azurerm_postgresql_virtual_network_rule" "allow_subnet_id" {
+  name                = format("snr-%s", var.instance_name)
   resource_group_name = local.resource_group
-  server_name         = azurerm_mysql_server.instance.name
+  server_name         = azurerm_postgresql_server.instance.name
   subnet_id           = var.authorized_network
   count = var.authorized_network != "default" ? 1 : 0      
 }
 
-resource "azurerm_mysql_firewall_rule" "allow_azure" {
-  name                = format("firewall-%s", lower(random_string.servername.result))
+resource "azurerm_postgresql_firewall_rule" "allow_azure" {
+  name                = format("f-%s", var.instance_name)
   resource_group_name = local.resource_group
-  server_name         = azurerm_mysql_server.instance.name
+  server_name         = azurerm_postgresql_server.instance.name
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "0.0.0.0"
   count = var.authorized_network == "default" ? 1 : 0
-}    
+} 
 
-output name { value = azurerm_mysql_database.instance-db.name }
-output hostname { value = azurerm_mysql_server.instance.fqdn }
-output port { value = 3306 }
-output username { value = format( "%s@%s", azurerm_mysql_server.instance.administrator_login, azurerm_mysql_server.instance.name ) }
-output password { value = azurerm_mysql_server.instance.administrator_login_password }
+output name { value = azurerm_postgresql_database.instance-db.name }
+output hostname { value = azurerm_postgresql_server.instance.fqdn }
+output port { value = 5432 }
+output username { value = format("%s@%s", random_string.username.result, azurerm_postgresql_server.instance.name) }
+output password { value = random_password.password.result }

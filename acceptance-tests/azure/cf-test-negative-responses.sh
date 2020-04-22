@@ -4,26 +4,17 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 # bogus location or resource_group should fail
-../cf-create-service-should-fail.sh csb-azure-mysql medium '{"location":"bogus"}'
-../cf-create-service-should-fail.sh csb-azure-mysql medium '{"resource_group":"bogus"}'
+ALL_SERVICES=("csb-azure-mysql" "csb-azure-redis" "csb-azure-mongodb" "csb-azure-mssql" "csb-azure-mssql-failover-group" "csb-azure-eventhubs" "csb-azure-mssql-server" "csb-azure-postgresql")
 
-../cf-create-service-should-fail.sh csb-azure-redis medium '{"location":"bogus"}'
-../cf-create-service-should-fail.sh csb-azure-redis medium '{"resource_group":"bogus"}'
+for s in ${ALL_SERVICES[@]}; do
+    ${SCRIPT_DIR}/../cf-create-service-should-fail.sh "${s}" medium '{"location":"bogus"}'
+    ${SCRIPT_DIR}/../cf-create-service-should-fail.sh "${s}" medium '{"resource_group":"bogus"}'
+    ${SCRIPT_DIR}/../cf-create-service-should-fail.sh "${s}" medium '{"azure_subscription_id":"bogus"}'
+done
 
-../cf-create-service-should-fail.sh csb-azure-mongodb medium '{"location":"bogus"}'
-../cf-create-service-should-fail.sh csb-azure-mongodb medium '{"resource_group":"bogus"}'
-
-../cf-create-service-should-fail.sh csb-azure-mssql medium '{"location":"bogus"}'
-../cf-create-service-should-fail.sh csb-azure-mssql medium '{"resource_group":"bogus"}'
-
-../cf-create-service-should-fail.sh csb-azure-mssql-failover-group medium '{"location":"bogus"}'
-../cf-create-service-should-fail.sh csb-azure-mssql-failover-group medium '{"resource_group":"bogus"}'
-
-../cf-create-service-should-fail.sh csb-azure-eventhubs medium '{"location":"bogus"}'
-../cf-create-service-should-fail.sh csb-azure-eventhubs medium '{"resource_group":"bogus"}'
-
-../cf-create-service-should-fail.sh csb-azure-mssql-server standard '{"location":"bogus"}'
-../cf-create-service-should-fail.sh csb-azure-mssql-server standard '{"resource_group":"bogus"}'
+${SCRIPT_DIR}/../cf-create-service-should-fail.sh csb-azure-postgresql medium '{"sku_name":"bogus"}'
 
 echo "$0 SUCCEEDED"

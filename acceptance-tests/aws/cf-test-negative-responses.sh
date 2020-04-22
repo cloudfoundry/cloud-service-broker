@@ -22,4 +22,7 @@ for s in ${NODE_TYPE_SERVICES[@]}; do
     ../cf-create-service-should-fail.sh ${s} medium '{"node_type":"bogus"}'
 done
 
+../cf-create-service-should-fail.sh sb-aws-postgresql small '{"postgres_version":"bogus"}'
+../cf-create-service-should-fail.sh sb-aws-mysql small '{"mysql_version":"bogus"}'
+
 echo "$0 SUCCEEDED"

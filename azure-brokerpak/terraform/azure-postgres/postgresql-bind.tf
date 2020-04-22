@@ -58,21 +58,26 @@ resource "postgresql_grant" "all_access" {
   privileges  = ["ALL"]
 }
 
-output username { value = random_string.username.result }
+locals {
+  username = format("%s@%s", random_string.username.result, var.hostname)
+}
+output username { value = local.username }
 output password { value = random_password.password.result }
 output uri { 
-  value = format("postgresql://%s:%s@%s:%d/%s", 
-                  random_string.username.result, 
+  value = format("%s://%s:%s@%s:%d/%s", 
+                  "postgresql",
+                  local.username, 
                   random_password.password.result, 
                   var.hostname, 
                   var.port,
                   var.db_name) 
 }
 output jdbcUrl { 
-  value = format("jdbc:postgresql://%s:%d/%s?user=%s\u0026password=%s\u0026useSSL=false", 
+  value = format("jdbc:%s://%s:%s/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=true\u0026requireSSL=false\u0026serverTimezone=GMT", 
+                  "postgresql",
                   var.hostname, 
                   var.port,
                   var.db_name, 
-                  random_string.username.result, 
+                  local.username, 
                   random_password.password.result) 
-}
+}  
