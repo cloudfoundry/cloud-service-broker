@@ -1,0 +1,155 @@
+# Copyright 2020 Pivotal Software, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+version: 1
+name: csb-aws-s3-bucket
+id: ffe28d48-c235-4e07-9c51-ddff5699e48c
+description: AWS S3 Bucket
+display_name: AWS S3 Bucket
+image_url: https://www.pikpng.com/pngl/m/73-731373_aws-s3-logo-png-transparent-amazon-s3-logo.png
+documentation_url: https://aws.amazon.com/s3/
+support_url: https://aws.amazon.com/s3/
+tags: [aws, s3, preview]
+plans:
+- name: private
+  id: 8938b4c0-d67f-4c34-9f68-a66deef99b4e
+  description: 'Private S3 bucket'
+  display_name: 'Private'
+  properties:
+    acl: private
+- name: public-read
+  id: 04317eaa-11ac-4c5f-b77f-eb005fe977fe
+  description: 'Public-read S3 bucket'
+  display_name: 'Public Read'
+  properties:
+    acl: public-read    
+provision:
+  plan_inputs:
+    - field_name: acl
+      type: string
+      details: S3 bucket ACL (see https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl)
+      enum:
+        private: private
+        public-read: public-read
+        public-read-write: public-read-write
+        aws-exec-read: aws-exec-read
+        authenticated-read: authenticated-read
+        bucket-owner-read: bucket-owner-read
+        bucket-owner-full-control: bucket-owner-full-control
+        log-delivery-write: log-delivery-write
+  user_inputs:
+    - field_name: bucket_name
+      type: string
+      details: Name of bucket
+      default: csb-${request.instance_id}
+    - field_name: region
+      type: string
+      details: The region of the mysql instance.
+      default: us-west-2
+      enum: 
+        us-east-2 : us-east-2
+        us-east-1 : us-east-1
+        us-west-1 : us-west-1
+        us-west-2 : us-west-2
+        ap-east-1 : ap-east-1
+        ap-south-1 : ap-south-1
+        ap-northeast-3 : ap-northeast-3
+        ap-northeast-2 : ap-northeast-2
+        ap-southeast-1 : ap-southeast-1
+        ap-southeast-2 : ap-southeast-2
+        ap-northeast-1 : ap-northeast-1
+        ca-central-1 : ca-central-1
+        cn-north-1 : cn-north-1
+        cn-northwest-1 : cn-northwest-1
+        eu-central-1 : eu-central-1
+        eu-west-1 : eu-west-1
+        eu-west-2 : eu-west-2
+        eu-west-3 : eu-west-3
+        eu-north-1 : eu-north-1
+        me-south-1 : me-south-1
+        sa-east-1 : sa-east-1
+    - field_name: aws_access_key_id
+      type: string
+      details: AWS access key
+      default: ${config("aws.access_key_id")}
+    - field_name: aws_secret_access_key
+      type: string
+      details: AWS secret key
+      default: ${config("aws.secret_access_key")}
+    - field_name: aws_vpc_id
+      type: string
+      details: VPC ID for instance
+      default: ""
+  computed_inputs:
+  - name: labels
+    default: ${json.marshal(request.default_labels)}
+    overwrite: true
+    type: object
+  template_ref: ./terraform/aws-s3-bucket-provision.tf
+  outputs:
+  - field_name: arn
+    type: string
+    details: Bucket ARN
+  - field_name: bucket_domain_name
+    type: string
+    details: The FQDN for the bucket
+  - field_name: region
+    type: string
+    details: AWS region for the bucket
+  - field_name: bucket_name
+    type: string
+    details: Name of created bucket
+bind:
+  plan_inputs: []
+  user_inputs: 
+  - field_name: aws_access_key_id
+    type: string
+    details: AWS access key
+    default: ${config("aws.access_key_id")}
+  - field_name: aws_secret_access_key
+    type: string
+    details: AWS secret key
+    default: ${config("aws.secret_access_key")}    
+  computed_inputs:
+  - name: arn
+    default: ${instance.details["arn"]}
+    overwrite: true
+    type: string
+  - name: region
+    default: ${instance.details["region"]}
+    overwrite: true
+    type: string
+  - name: user_name
+    default: csb-${request.binding_id}
+    overwrite: true
+    type: string
+  template_ref: ./terraform/aws-s3-bucket-bind.tf
+  outputs:
+  - field_name: access_key_id
+    type: string
+    details: AWS access key
+  - field_name: secret_access_key
+    type: string
+    details: AWS secret access key
+examples:
+- name: s3-bucket-private
+  description: Private S3 Bucket
+  plan_id: 8938b4c0-d67f-4c34-9f68-a66deef99b4e
+  provision_params: {}
+  bind_params: {}
+- name: s3-bucket-public-read
+  description: Public Read S3 Bucket
+  plan_id: 04317eaa-11ac-4c5f-b77f-eb005fe977fe
+  provision_params: {}
+  bind_params: {}

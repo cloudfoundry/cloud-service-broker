@@ -48,6 +48,8 @@ for s in ${allServices[@]}; do
   delete_service "${s}-$$" &
 done
 
+${SCRIPT_DIR}/test-s3-bucket.sh
+
 wait
 
 if [ ${RESULT} -eq 0 ]; then

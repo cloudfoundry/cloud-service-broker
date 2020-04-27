@@ -1,0 +1,5 @@
+---
+applications:
+- name: s3-test-app
+  command: node index.js
+  random-route: true  

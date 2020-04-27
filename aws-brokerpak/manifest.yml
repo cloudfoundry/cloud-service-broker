@@ -30,6 +30,7 @@ service_definitions:
 - aws-redis-basic.yml
 - aws-redis-cluster.yml
 - aws-postgresql.yml
+- aws-s3-bucket.yml
 
 
 

@@ -26,8 +26,6 @@ let tests = [
     { tag: 'postgres', testFunc: testPostgres }
 ]
 
-let credentials = vcapServices.findCredentials({ instance: { tags: tests[0].tag } });
-
 async function runTest(credentials, testFunc) {
     try {
         await testFunc(credentials, runServer)
