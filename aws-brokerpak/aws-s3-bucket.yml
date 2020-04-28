@@ -87,10 +87,6 @@ provision:
       type: string
       details: AWS secret key
       default: ${config("aws.secret_access_key")}
-    - field_name: aws_vpc_id
-      type: string
-      details: VPC ID for instance
-      default: ""
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}

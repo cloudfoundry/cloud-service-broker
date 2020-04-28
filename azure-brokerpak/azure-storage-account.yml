@@ -1,0 +1,146 @@
+# Copyright 2020 Pivotal Software, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+version: 1
+name: csb-azure-storage-account
+id: eb263d40-3a2e-4af1-9333-752acb1e6ea3
+description: Azure Storage Account
+display_name: Azure Storage Account
+image_url: https://cloudfoundry.blob.core.windows.net/assets/StorageAccount.png
+documentation_url: https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview
+support_url: https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview
+tags: [azure, storage, Azure, preview, Storage]
+plans:
+- name: standard
+  id: b9fe2b0c-1a95-4a1b-a576-60e7f9e42aad
+  description: General-purpose V2 account. Locally redundant, standard tier.
+  display_name: standard
+provision:
+  plan_inputs: []
+  user_inputs:
+  - field_name: storage_account_type
+    type: string
+    details: Azure storage account type to create
+    default: StorageV2
+    enum:
+      BlobStorage: Blob (block blobs and append blobs only)
+      BlockBlobStorage: Blob (block blobs and append blobs only)
+      FileStorage: File only
+      Storage: General-purpose V1 - Blob, File, Queue, Table, and Disk
+      StorageV2: General-purpose V2 - Blob, File, Queue, Table, Disk, and Data Lake Gen2
+  - field_name: tier
+    type: string
+    details: Tier to use for this storage account
+    default: Standard
+    enum:
+      Standard: standard
+      Premium: premium
+  - field_name: replication_type
+    type: string
+    details: Defines the type of replication to use for this storage account
+    default: LRS
+    enum:
+      LRS: Locally redundant storage
+      GRS: Geo-redundant
+      RAGRS: Read only geo-redundant
+      ZRS: Zone-redundant
+  - field_name: resource_group
+    details: Name for the resource group for this instance
+    default: ''
+    constraints:
+      maxLength: 64
+      minLength: 0
+      pattern: ^[a-z][a-z0-9-]+$|^$
+  - field_name: location
+    type: string
+    details: The region for this instance.
+    default: westus
+    enum:
+      eastasia: East Asia
+      southeastasia: South East Asia
+      centralus: Central US
+      eastus: East US
+      eastus2: East US 2
+      westus: West US
+      northcentralus: North Central US
+      southcentralus: South Central US
+      northeurope: North Europe
+      westeurope: West Europe
+      japanwest: Japan West
+      japaneast: Japan East
+      brazilsouth: Brazil South
+      australiaeast: Australia East
+      australiasoutheast: Australia South East
+      australiacentral: Australia Central
+      australiacentral2: Australia Central 2
+      southindia: South India
+      centralindia: Central India
+      westindia: West India
+      canadacentral: Canada Central
+      canadaeast: Canada East
+      uksouth: UK South
+      ukwest: UK West
+      westcentralus: West Central US
+      westus2: West US 2
+      koreacentral: Korea Central
+      koreasouth: Korea South
+      francecentral: France Central
+      uaenorth: UAE North
+      southafricanorth: South Africa North
+      southafricawest: South Africa West
+      germanycentral: Germany Central
+  - field_name: azure_tenant_id
+    type: string
+    details: Azure Tenant to create resource in
+    default: ${config("azure.tenant_id")}      
+  - field_name: azure_subscription_id
+    type: string
+    details: Azure Subscription to create resource in
+    default: ${config("azure.subscription_id")}      
+  - field_name: azure_client_id
+    type: string
+    details: Client ID of Azure principal 
+    default: ${config("azure.client_id")}      
+  - field_name: azure_client_secret
+    type: string
+    details: Client secret for Azure principal
+    default: ${config("azure.client_secret")}      
+  computed_inputs:
+  - name: labels
+    default: ${json.marshal(request.default_labels)}
+    overwrite: true
+    type: object
+  template_ref: ./terraform/azure-storage/account-provision.tf
+  outputs:
+  - field_name: primary_access_key
+    type: string
+    details: Primary access key for account
+  - field_name: secondary_access_key
+    type: string
+    details: Secondary access key for account
+  - field_name: storage_account_name
+    type: string
+    details: Storage account name
+bind:
+  plan_inputs: []
+  user_inputs: []
+  computed_inputs: []
+  template: ''
+  outputs: []
+examples:
+- name: storage-account-standard
+  description: Standard storage account
+  plan_id: b9fe2b0c-1a95-4a1b-a576-60e7f9e42aad
+  provision_params: {}
+  bind_params: {}    

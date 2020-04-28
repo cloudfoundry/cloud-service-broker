@@ -18,7 +18,6 @@ variable region { type = string }
 variable labels { type = map }
 variable aws_access_key_id { type = string }
 variable aws_secret_access_key { type = string }
-variable aws_vpc_id { type = string }
 
 provider "aws" {
   version = "~> 2.0"
