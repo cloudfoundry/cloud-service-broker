@@ -16,8 +16,56 @@ The services need to be provisioned in the same AWS account that the foundation 
 
 #### Required IAM Policies
 The AWS account represented by the access key needs the following permission policies:
-- AmazonElastiCacheFullAccess 
-- AmazonRDSFullAccess 
+```json
+{
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Action": [
+                    "s3:CreateBucket",
+                    "s3:DeleteBucket",
+                    "s3:PutBucketAcl",
+                    "s3:PutBucketLogging",
+                    "s3:PutBucketPolicy",
+                    "s3:PutBucketTagging",
+                    "s3:GetObject",
+                    "s3:ListBucket",
+                    "iam:CreateAccessKey",
+                    "iam:CreateUser",
+                    "iam:GetUser",
+                    "iam:DeleteAccessKey",
+                    "iam:DeleteUser",
+                    "iam:DeleteUserPolicy",
+                    "iam:ListAccessKeys",
+                    "iam:ListAttachedUserPolicies",
+                    "iam:ListUserPolicies",
+                    "iam:ListPolicies",
+                    "iam:PutUserPolicy",
+                    "iam:GetPolicy",
+                    "iam:GetAccountAuthorizationDetails",
+                    "rds:CreateDBCluster",
+                    "rds:CreateDBInstance",
+                    "rds:DeleteDBCluster",
+                    "rds:DeleteDBInstance",
+                    "rds:DescribeDBClusters",
+                    "rds:DescribeDBInstances",
+                    "rds:DescribeDBSnapshots",
+                    "rds:DeleteDBSnapshot",
+                    "rds:CreateDBParameterGroup",
+                    "rds:ModifyDBParameterGroup",
+                    "rds:DeleteDBParameterGroup",
+                    "dynamodb:ListTables",
+                    "dynamodb:DeleteTable",
+                    "dynamodb:DescribeTable",
+                    "sqs:CreateQueue",
+                    "sqs:DeleteQueue"
+                ],
+                "Effect": "Allow",
+                "Resource": "*"
+            }
+        ]
+    }
+```
 
 ### MySQL Database for Broker State
 The broker keeps service instance and binding information in a MySQL database. 
