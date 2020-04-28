@@ -89,7 +89,7 @@ The following parameters (as well as those above) may be configured during servi
 
 | Parameter | Type | Description | Default |
 |-----------|------|------|---------|
- instance_name | string | name of Azure instance to create | csb-mysql-*instance_id* |
+| instance_name | string | name of Azure instance to create | csb-mysql-*instance_id* |
 | region  | string | [AWS region](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) to deploy service  | us-west-2 |
 | vpc_id | string | The VPC to connect the instance to | the default vpc |
 | aws_access_key_id | string | ID of Azure tenant for instance | config file value `aws.access_key_id` |

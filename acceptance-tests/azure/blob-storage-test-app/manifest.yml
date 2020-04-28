@@ -1,0 +1,5 @@
+---
+applications:
+- name: blob-storage-test-app
+  command: node index.js
+  random-route: true  

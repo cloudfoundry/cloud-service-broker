@@ -52,7 +52,7 @@ if create_service csb-azure-resource-group standard "${RG_NAME}" "{\"instance_na
   done
 
   if [ ${RESULT} -eq 0 ]; then
-    ${SCRIPT_DIR}/cf-test-mssql-db.sh && ${SCRIPT_DIR}/cf-test-mssql-db-fog.sh && ${SCRIPT_DIR}/cf-test-mssql-do-failover.sh
+    ${SCRIPT_DIR}/cf-test-mssql-db.sh && ${SCRIPT_DIR}/cf-test-mssql-db-fog.sh && ${SCRIPT_DIR}/cf-test-mssql-do-failover.sh && ${SCRIPT_DIR}/cf-test-storage-account.sh 
     RESULT=$?
   fi
 
