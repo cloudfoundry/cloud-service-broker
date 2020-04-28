@@ -13,40 +13,32 @@
 # limitations under the License.
 ---
 version: 1
-name: google-mysql
-id: b9f3d4f3-8716-4179-8b7c-e80bd5bccb31
-description: Mysql is a fully managed service for the
+name: google-postgres
+id: e4ac5b1c-8693-11ea-8977-1f3cd95a07dd
+description: PostgreSQL is a fully managed service for the
   Google Cloud Platform.
-display_name: Google Cloud Mysql
+display_name: Google Cloud PostgreSQL
 image_url: https://cloud.google.com/_static/images/cloud/products/logos/svg/sql.svg
-documentation_url: https://cloud.google.com/sql/docs/mysql/
+documentation_url: https://cloud.google.com/sql/docs/postgres
 support_url: https://cloud.google.com/support/
-tags: [gcp, mysql, preview]
+tags: [gcp, postgresql, postgres, preview]
 plans:
 - name: small
-  id: 8809fe67-99b5-48dd-a6dd-890ee45e86be
-  description: 'MySQL v5.7, minumum 2 cores, minumum 4GB ram, 10GB storage'
+  id: 85b27a04-8695-11ea-818a-274131861b81
+  description: 'PostgreSQL v11, shared CPU, minumum 0.6GB ram, 10GB storage'
   display_name: "small"
   properties:
-    cores: 2
-    mysql_version: "MYSQL_5_7"
+    cores: 0.6
+    postgres_version: "POSTGRES_11"
     storage_gb: 10
 - name: medium
-  id: 753accb8-52a7-4673-8216-ffc539351aea
-  description: 'MySQL v5.7, minumum 4 cores, minumum 8GB ram, 10GB storage'
+  id: b41ee300-8695-11ea-87df-cfcb8aecf3bc
+  description: 'PostgreSQL v11, shared CPU, minumum 1.7GB ram, 10GB storage'
   display_name: "medium"
   properties:
-    cores: 4
-    mysql_version: "MYSQL_5_7"
+    cores: 1.7
+    postgres_version: "POSTGRES_11"
     storage_gb: 10
-- name: large
-  id: 8f8fc4ab-2b37-41da-bc6a-e915497dac33
-  description: 'MySQL v5.7, minumum 8 cores, minumum 16GB ram, 20GB storage'
-  display_name: "large"
-  properties:
-    cores: 8
-    mysql_version: "MYSQL_5_7"
-    storage_gb: 20
 provision:
   plan_inputs:
   - field_name: cores
@@ -58,6 +50,11 @@ provision:
       maximum: 64
       minimum: 1
       multipleOf: 2
+  - field_name: postgres_version
+    required: true
+    type: string
+    details: The version for the postgres instance.
+    default: "POSTGRES_11"
   - field_name: storage_gb
     required: true
     type: number
@@ -77,8 +74,8 @@ provision:
     default: ${config("gcp.project")}     
   - field_name: instance_name
     type: string
-    details: Name for your mysql instance
-    default: csb-mysql-${request.instance_id}
+    details: Name for your PostgreSQL instance
+    default: csb-postgres-${request.instance_id}
     constraints:
       maxLength: 98
       minLength: 6
@@ -91,7 +88,7 @@ provision:
       maxLength: 64
   - field_name: region
     type: string
-    details: The region of the mysql instance.
+    details: The region of the postgres instance.
     default: us-central1
     enum:
       asia-east1: asia-east1
@@ -125,7 +122,7 @@ provision:
     overwrite: true
     type: object
   - name: database_version
-    default: ${mysql_version}
+    default: ${postgres_version}
     overwrite: true
     type: string       
   template_ref: terraform/cloud-sql-provision.tf
@@ -135,10 +132,10 @@ provision:
     details: The name of the database.
   - field_name: hostname
     type: string
-    details: Hostname or IP address of the exposed mysql endpoint used by clients to connect to the service.
+    details: Hostname or IP address of the exposed postgres endpoint used by clients to connect to the service.
   - field_name: port
     type: integer
-    details: The port number of the exposed mysql instance.
+    details: The port number of the exposed postgres instance.
   - field_name: username
     type: string
     details: The username to authenticate to the database instance.
@@ -149,15 +146,15 @@ bind:
   plan_inputs: []
   user_inputs: []
   computed_inputs:
-  - name: mysql_db_name
+  - name: postgres_db_name
     type: string
     default: ${instance.details["name"]}
     overwrite: true
-  - name: mysql_hostname
+  - name: postgres_hostname
     type: string
     default: ${instance.details["hostname"]}
     overwrite: true
-  - name: mysql_port
+  - name: postgres_port
     type: integer
     default: ${instance.details["port"]}
     overwrite: true
@@ -169,7 +166,7 @@ bind:
     type: string
     default: ${instance.details["password"]}
     overwrite: true
-  template_ref: terraform/bind-mysql.tf
+  template_ref: terraform/bind-postgres.tf
   outputs: 
   - field_name: username
     type: string
@@ -185,26 +182,26 @@ bind:
     details: The jdbc url to connect to the database instance and database.    
 examples:
 - name: small configuration
-  description: Create a small mysql instance
+  description: Create a small postgres instance
   plan_id: 8809fe67-99b5-48dd-a6dd-890ee45e86be
   provision_params: {}
   bind_params: {}
   bind_can_fail: true
-- name: small configuration v5.6 50gb storage
-  description: Create a small mysql v5.6 instance with 50gb storage
-  plan_id: 8809fe67-99b5-48dd-a6dd-890ee45e86be
-  provision_params: { "mysql_version": "MYSQL_5_7", "storage_gb": 50 }
+- name: small configuration v11 50gb storage
+  description: Create a small postgres v11 instance with 50gb storage
+  plan_id: 85b27a04-8695-11ea-818a-274131861b81
+  provision_params: { "postgres_version": "POSTGRES_11", "storage_gb": 50 }
   bind_params: {}
   bind_can_fail: true
 - name: medium configuration
-  description: Create a medium mysql instance
-  plan_id: 753accb8-52a7-4673-8216-ffc539351aea
+  description: Create a medium postgres instance
+  plan_id: b41ee300-8695-11ea-87df-cfcb8aecf3bc
   provision_params: {}
   bind_params: {}
   bind_can_fail: true
 - name: large configuration
-  description: Create a large mysql instance
-  plan_id: 8f8fc4ab-2b37-41da-bc6a-e915497dac33
+  description: Create a large postgres instance
+  plan_id: ba438f2e-8695-11ea-9df4-db32f65a7690
   provision_params: {}
   bind_params: {}
   bind_can_fail: true
