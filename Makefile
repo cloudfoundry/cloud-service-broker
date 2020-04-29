@@ -88,7 +88,7 @@ lint: deps-goimports
 .PHONY:	lint-brokerpak-gcp
 build-brokerpak-gcp: gcp-brokerpak/*.brokerpak
 
-gcp-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./gcp-brokerpak/*.yml
+gcp-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./gcp-brokerpak/*.yml ./gcp-brokerpak/terraform/*
 	# docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/gcp-brokerpak
 	cd ./gcp-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
