@@ -89,3 +89,7 @@ Create unbind commands for all bindings:
 Create deprovision commands for all bindings:
 
   ./cloud-service-broker show instances | jq --raw-output '.[] | "./cloud-service-broker client deprovision --instanceid \(.ID) --serviceid \(.ServiceId) --planid \(.PlanId)"'
+
+## Acceptance Testing
+
+See [acceptance testing](acceptance-tests/README.md) for hints and tools for testing services.
