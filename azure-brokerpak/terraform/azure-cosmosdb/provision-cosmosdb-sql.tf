@@ -12,20 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-variable resource_group { type = string }
 variable instance_name { type = string }
+variable resource_group { type = string }
+variable db_name { type = string }
 variable azure_tenant_id { type = string }
 variable azure_subscription_id { type = string }
 variable azure_client_id { type = string }
 variable azure_client_secret { type = string }
-variable account_name { type = string }
-variable db_name { type = string }
-variable collection_name { type = string }
-variable request_units {type = number }
 variable failover_locations {type = list(string) }
 variable location { type = string }
-variable shard_key { type = string }
 variable ip_range_filter { type = string }
+variable request_units { type = number }
 variable enable_automatic_failover { type = bool }
 variable enable_multiple_write_locations { type = bool }
 variable consistency_level { type = string }
@@ -53,13 +50,13 @@ resource "azurerm_resource_group" "rg" {
 	count    = length(var.resource_group) == 0 ? 1 : 0
 }
 
-resource "azurerm_cosmosdb_account" "mongo-account" {
+resource "azurerm_cosmosdb_account" "cosmosdb-account" {
 	depends_on = [ azurerm_resource_group.rg ]	
-	name                = var.account_name
+	name                = var.instance_name
 	location            = var.location
 	resource_group_name = local.resource_group
 	offer_type          = "Standard"
-	kind                = "MongoDB"
+	kind                = "GlobalDocumentDB"
 
 	consistency_policy {
 		consistency_level       = var.consistency_level
@@ -81,21 +78,14 @@ resource "azurerm_cosmosdb_account" "mongo-account" {
 	tags                            = var.labels	
 }
 
-resource "azurerm_cosmosdb_mongo_database" "mongo-db" {
-	name                = var.db_name
-	resource_group_name = azurerm_cosmosdb_account.mongo-account.resource_group_name
-	account_name        = azurerm_cosmosdb_account.mongo-account.name
-	throughput          = var.request_units
+resource "azurerm_cosmosdb_sql_database" "db" {
+  name                = var.db_name
+  resource_group_name = azurerm_cosmosdb_account.cosmosdb-account.resource_group_name
+  account_name        = azurerm_cosmosdb_account.cosmosdb-account.name
+  throughput          = var.request_units
 }
 
-resource "azurerm_cosmosdb_mongo_collection" "mongo-collection" {
-	name                = var.collection_name
-	resource_group_name = azurerm_cosmosdb_account.mongo-account.resource_group_name
-	account_name        = azurerm_cosmosdb_account.mongo-account.name
-	database_name       = azurerm_cosmosdb_mongo_database.mongo-db.name
-
-	default_ttl_seconds = "777"
-	shard_key           = var.shard_key
-}
-
-output uri { value = replace(azurerm_cosmosdb_account.mongo-account.connection_strings[0], "/?", "/${azurerm_cosmosdb_mongo_database.mongo-db.name}?")  }
+output cosmosdb_host_endpoint {value = azurerm_cosmosdb_account.cosmosdb-account.endpoint }
+output cosmosdb_master_key {value = azurerm_cosmosdb_account.cosmosdb-account.primary_master_key }
+output cosmosdb_readonly_master_key {value = azurerm_cosmosdb_account.cosmosdb-account.primary_readonly_master_key }
+output cosmosdb_database_id { value = azurerm_cosmosdb_sql_database.db.name }

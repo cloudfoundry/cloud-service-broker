@@ -13,30 +13,30 @@
 # limitations under the License.
 ---
 version: 1
-name: csb-azure-mongodb
-id: e5d2898e-534a-11ea-a4e8-00155da9789e
-description: The Cosmos DB service implements wire protocols for MongoDB.  Azure Cosmos DB is Microsoft's globally distributed, multi-model database service for mission-critical application
-display_name: Azure Cosmos DB's API for MongoDB
-image_url: https://azurecomcdn.azureedge.net/cvt-d09489c6661f16b0396f43f6be09db6e0a95b35e61aedbd2c0f30217ac43408c/images/page/services/cosmosdb/dev-03-mongodb.svg
-documentation_url: https://docs.microsoft.com/en-us/azure/cosmos-db/mongodb-introduction
+name: csb-azure-cosmosdb-sql
+id: 685e151f-3ad8-414f-ab5b-54abbb3dee02
+description: Azure CosmosDB Account - SQL API
+display_name: Azure CosmosDB Account - SQL API
+image_url: https://azurecomcdn.azureedge.net/cvt-e38d7e7665389e39a7df3f96fc03f8b8f42655e6546ecadbb21196dd1c82bc95/images/page/services/cosmosdb/dev-01-sql-api.svg
+documentation_url: https://docs.microsoft.com/en-us/azure/cosmos-db/
 support_url: https://docs.microsoft.com/en-us/azure/cosmos-db/faq
-tags: [azure, mongodb, preview, cosmosdb-mongo, cosmosdb-mongodb]
+tags: [azure, cosmos, cosmosdb, cosmos-sql, cosmosdb-sql, preview]
 plans:
 - name: small
-  id: 4ba45322-534c-11ea-b346-00155da9789e
-  description: 'Mongo Cosmos DB Account, no redundancy, 400 request units'
-  display_name: "Small"
-- name: medium
-  id: 6a28ad34-534c-11ea-9bac-00155da9789e
-  description: 'Mongo Cosmos DB Account, single read failover location, 1,000 request units'
-  display_name: "Medium"
+  id: ca38881c-2d6b-4db4-988c-d8e49f3293da
+  description: 'SQL Cosmos DB Account, no redundancy, 400 request units'
+  display_name: "small"
+- name: medium 
+  id: f666cd68-cbba-4c58-b532-bfc0cb533011
+  description: 'SQL Cosmos DB Account, single read failover location, 1,000 request units'
+  display_name: "medium"
   properties:
     request_units: 1000
     failover_locations: [ "westus", "eastus" ]
     enable_automatic_failover: true
 - name: large
-  id: 72227eac-534c-11ea-b7ca-00155da9789e
-  description: 'Mongo Cosmos DB Account, single read/write failover location, 10,000 request units'
+  id: 2d5ee55d-1315-40ca-a9e9-08f4f76e880f
+  description: 'SQL Cosmos DB Account, single read/write failover location, 10,000 request units'
   display_name: "Large"
   properties:
     request_units: 10000
@@ -44,7 +44,8 @@ plans:
     enable_multiple_write_locations: true
     enable_automatic_failover: true
 provision:
-  plan_inputs:
+  plan_inputs: []
+  user_inputs:
   - field_name: request_units
     required: true
     type: integer
@@ -52,24 +53,15 @@ provision:
     constraints:
       maximum: 100000
       minimum: 400
-      multipleOf: 100
+      multipleOf: 100  
+    default: 400
   - field_name: failover_locations
-    required: false
     type: array
-    details: A list of location for the Cosmos DB account.  The first location is the default write location
+    details: A list of location for the Cosmos DB account. The first location is the default write location
     default: [ "westus" ]
-  user_inputs:
   - field_name: instance_name
     type: string
-    details: Name for your Cosmos DB with API for MongoDB instance
-    default: csb-mongo-${request.instance_id}
-    constraints:
-      maxLength: 98
-      minLength: 6
-      pattern: ^[a-z][a-z0-9-]+$ 
-  - field_name: account_name
-    type: string
-    details: Account name for your Cosmos DB with API for MongoDB instance
+    details: Account name for your Cosmos DB
     default: csb${request.instance_id}
     constraints:
       maxLength: 44
@@ -84,24 +76,14 @@ provision:
       pattern: ^[a-z][a-z0-9-]+$|^$
   - field_name: db_name
     type: string
-    details: Name for your Cosmos DB database with API for Mongo DB
+    details: Name for your Cosmos DB database
     default: csb-db${request.instance_id}
     constraints:
       maxLength: 255
-      pattern: ^[a-z][a-z0-9-_]*$
-  - field_name: collection_name
-    type: string
-    details: Name for your collection
-    default: default_collection
-    constraints:
-      maxLength: 255
-  - field_name: shard_key
-    type: string
-    details: Name for your shard key
-    default: uniqueKey
+      pattern: ^[a-z][a-z0-9-_]*$      
   - field_name: location
     type: string
-    details: The location of the mongodb instance.
+    details: The location of the CosmosDB account.
     default: westus
     enum:
       eastasia: East Asia
@@ -194,11 +176,20 @@ provision:
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
-  template_ref: terraform/azure-mongodb/azure-mongodb.tf
+  template_ref: terraform/azure-cosmosdb/provision-cosmosdb-sql.tf
   outputs:
-  - field_name: uri
+  - field_name: cosmosdb_host_endpoint
     type: string
-    details: The primary master mongodb uri of the Cosmos DB Mongo Collection.
+    details: The endpoint used to connect to the CosmosDB account
+  - field_name: cosmosdb_master_key
+    type: string
+    details: The Primary master key for the CosmosDB Account
+  - field_name: cosmosdb_readonly_master_key
+    type: string
+    details: The Primary read-only master Key for the CosmosDB Account
+  - field_name: cosmosdb_database_id
+    type: string
+    details: The CosmosDB Account ID
 bind:
   plan_inputs: []
   user_inputs: []
@@ -206,22 +197,18 @@ bind:
   template: ''
   outputs: []
 examples:
-- name: spring-music-mongo-db
-  description: Create a small cosmos db with Mongo API for the spring music sample app
-  plan_id: 4ba45322-534c-11ea-b346-00155da9789e
-  provision_params: {
-    db_name: 'musicdb',
-    collection_name: 'album',
-    shard_key: '_id'
-  }
+- name: cosmosdb-sql-small
+  description: Small CosmosDB
+  plan_id: ca38881c-2d6b-4db4-988c-d8e49f3293da
+  provision_params: {}
   bind_params: {}
-- name: spring-music-mongo-db-alternate-rg
-  description: Create a small cosmos db with Mongo API for the spring music sample app
-  plan_id: 4ba45322-534c-11ea-b346-00155da9789e
-  provision_params: {
-    db_name: 'musicdb',
-    collection_name: 'album',
-    shard_key: '_id',
-    location: 'westus2'
-  }
+- name: cosmosdb-sql-medium
+  description: Medium cosmosdb
+  plan_id: f666cd68-cbba-4c58-b532-bfc0cb533011
+  provision_params: {}
+  bind_params: {}
+- name: cosmosdb-sql-large
+  description: Large cosmosdb
+  plan_id: 2d5ee55d-1315-40ca-a9e9-08f4f76e880f
+  provision_params: {}
   bind_params: {}

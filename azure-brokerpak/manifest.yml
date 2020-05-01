@@ -66,6 +66,7 @@ service_definitions:
 - azure-resource-group.yml
 - azure-postgres.yml
 - azure-storage-account.yml
+- azure-cosmosdb-sql.yml
 
 
 
