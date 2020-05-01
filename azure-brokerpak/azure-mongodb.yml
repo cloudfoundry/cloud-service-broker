@@ -45,10 +45,12 @@ plans:
     enable_automatic_failover: true
 provision:
   plan_inputs:
+  user_inputs:
   - field_name: request_units
     required: true
     type: integer
     details: The throughput of the MongoDB collection (RU/s). Must be set in increments of 100. The minimum value is 400.
+    default: 400
     constraints:
       maximum: 100000
       minimum: 400
@@ -58,7 +60,6 @@ provision:
     type: array
     details: A list of location for the Cosmos DB account.  The first location is the default write location
     default: [ "westus" ]
-  user_inputs:
   - field_name: instance_name
     type: string
     details: Name for your Cosmos DB with API for MongoDB instance
