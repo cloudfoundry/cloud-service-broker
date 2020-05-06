@@ -1,0 +1,13 @@
+secretGenerator:
+- name: mysql-secrets
+  literals:
+  - rootpassword=AG00dS3cr3t!
+  - dbpassword=Ah0th3rG00dS3cr3t!
+  - dbuser=dbuser
+configMapGenerator:
+- name: broker-config
+  files:
+  - ./config-files/broker-config.yaml
+resources:
+- mysql-deployment.yaml
+- csb-deployment.yaml

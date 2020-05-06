@@ -191,6 +191,12 @@ run-broker-aws-docker: check-aws-env-vars ./build/cloud-service-broker.linux aws
     -e AWS_SECRET_ACCESS_KEY \
 	alpine /broker/build/cloud-service-broker.linux serve
 
+# image
+
+.PHONY: build-image
+build-image: Dockerfile ./build/cloud-service-broker.linux aws-brokerpak/*.brokerpak gcp-brokerpak/*.brokerpak azure-brokerpak/*.brokerpak
+	docker build --tag csb .
+
 # env vars checks
 
 .PHONY: google-credentials
