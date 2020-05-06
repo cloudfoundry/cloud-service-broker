@@ -49,10 +49,18 @@ spec:
             secretKeyRef:
               name: mysql-secrets
               key: dbpassword
-        - name: GSB_BROKERPAK_BUILTIN_PATH
-          value: /aws-brokerpak
         - name: PORT
           value: "8080"
+        - name: SECURITY_USER_NAME
+          valueFrom:
+            secretKeyRef:
+              name: broker-secrets
+              key: username
+        - name: SECURITY_USER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: broker-secrets
+              key: userpassword              
         ports:
         - containerPort: 8080
           name: csb

@@ -1,5 +1,7 @@
 # K8S Manifests
 
+*Work in progress, currently only tested with minikube*
+
 Uses kustomize to inject configuration and secrets.
 
 ## Generate Config with Credentials
@@ -32,6 +34,9 @@ Required environment variables
 Required environment variables
 | Variable | Value |
 |----------|-------|
+|GOOGLE_CREDENTIALS| gcp service account json |
+|GOOGLE_PROJECT| gcp project |
+
 ```bash
 ./build-config.sh gcp
 ```
@@ -53,3 +58,14 @@ NAME                         READY   STATUS    RESTARTS   AGE
 csb-6df5cf46db-skln4         1/1     Running   3          110s
 csb-mysql-7fff9c5697-8f4x8   1/1     Running   0          110s
 ```
+
+### Run Client Example Tests
+
+**NOTE: when using minikube, make sure `minikube tunnel` is running.**
+
+To run the *cloud-service-broker* example tests:
+
+```bash
+./run-client-examples.sh
+```
+

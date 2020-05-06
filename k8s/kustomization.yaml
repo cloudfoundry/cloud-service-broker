@@ -4,6 +4,10 @@ secretGenerator:
   - rootpassword=AG00dS3cr3t!
   - dbpassword=Ah0th3rG00dS3cr3t!
   - dbuser=dbuser
+- name: broker-secrets
+  literals:
+  - username=csb-broker
+  - userpassword=S0m3S3cr3tPa$$w0rd
 configMapGenerator:
 - name: broker-config
   files:
