@@ -26,6 +26,7 @@ variable azure_client_secret { type = string }
 variable postgres_version { type = string }
 variable sku_name { type = string }
 variable authorized_network {type = string}
+variable use_tls { type = bool }
 
 provider "azurerm" {
   version = "=1.44.0"
@@ -88,7 +89,8 @@ resource "azurerm_postgresql_server" "instance" {
   administrator_login          = random_string.username.result
   administrator_login_password = random_password.password.result
   version                      = var.postgres_version
-  ssl_enforcement              = "Enabled"
+  ssl_enforcement              = var.use_tls ? "Enabled" : "Disabled"
+  tags                         = var.labels  
 }
 
 resource "azurerm_postgresql_database" "instance-db" {
@@ -96,7 +98,7 @@ resource "azurerm_postgresql_database" "instance-db" {
   resource_group_name = local.resource_group
   server_name         = azurerm_postgresql_server.instance.name
   charset             = "UTF8"
-  collation           = "en_US"
+  collation           = "en-US"
 }
 
 resource "azurerm_postgresql_virtual_network_rule" "allow_subnet_id" {
@@ -121,3 +123,4 @@ output hostname { value = azurerm_postgresql_server.instance.fqdn }
 output port { value = 5432 }
 output username { value = format("%s@%s", random_string.username.result, azurerm_postgresql_server.instance.name) }
 output password { value = random_password.password.result }
+output use_tls { value = var.use_tls }

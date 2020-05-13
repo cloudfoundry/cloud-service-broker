@@ -27,16 +27,12 @@ plans:
   description: 'PostgreSQL 11, minumum 2 cores, minumum 4GB ram, 5GB storage'
   display_name: "small"
   properties:
-    cores: 2
-    postgres_version: 11
-    storage_gb: 5
 - name: medium
   id: d83c74b9-0bb9-409e-bd26-8424ea908462
   description: 'PostgreSQL 11, minumum 4 cores, minumum 8GB ram, 10GB storage'
   display_name: "medium"
   properties:
     cores: 4
-    postgres_version: 11
     storage_gb: 10
 - name: large
   id: 945b0ca1-5b5e-49b0-884a-20809103907e
@@ -44,12 +40,11 @@ plans:
   display_name: "large"
   properties:
     cores: 8
-    postgres_version: 11
     storage_gb: 20
 provision:
   plan_inputs:
+  user_inputs:
   - field_name: cores
-    required: true
     type: integer
     details: Minimum number of cores for service instance.
     default: 2
@@ -58,23 +53,25 @@ provision:
       minimum: 1
       multipleOf: 2
   - field_name: postgres_version
-    required: true
     type: string
     details: The version for the PostgreSQL instance.
+    default: "11"
     enum: 
-      9.5: PostgreSQL 9.5
-      9.6: PostgreSQL 9.6
-      10: PostgreSQL 10
-      11: PostgreSQL 11
+      "9.5": PostgreSQL 9.5
+      "9.6": PostgreSQL 9.6
+      "10": PostgreSQL 10
+      "11": PostgreSQL 11
   - field_name: storage_gb
-    required: true
     type: number
     details: Size of storage volume for service instance.
-    defualt: 5
+    default: 5
     constraints:
       maximum: 4096
       minumum: 5
-  user_inputs:
+  - field_name: use_tls
+    type: boolean
+    details: Use TLS for connection
+    default: true
   - field_name: instance_name
     type: string
     details: Name for your PostgreSQL instance
@@ -180,6 +177,9 @@ provision:
   - field_name: password
     type: string
     details: The password to authenticate to the database instance.
+  - field_name: use_tls
+    type: boolean
+    details: Using TLS for connection    
 bind:
   plan_inputs: []
   user_inputs: []
@@ -203,6 +203,10 @@ bind:
     - name: admin_password
       type: string
       default: ${instance.details["password"]}
+      overwrite: true
+    - name: use_tls
+      type: boolean
+      default: ${instance.details["use_tls"]}
       overwrite: true
   template_ref: terraform/azure-postgres/postgresql-bind.tf
   outputs: 

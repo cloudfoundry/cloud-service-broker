@@ -13,7 +13,7 @@ BOGUS_OPTIONS=('{"location":"bogus"}' '{"resource_group":"bogus"}' '{"azure_subs
 
 for s in ${ALL_SERVICES[@]}; do
     for o in ${BOGUS_OPTIONS[@]}; do
-        ${SCRIPT_DIR}/../cf-create-service-should-fail.sh "${s}" medium ${o}
+        ${SCRIPT_DIR}/../cf-create-service-should-fail.sh "${s}" small ${o}
     done
 done
 
@@ -28,6 +28,14 @@ for o in ${BOGUS_OPTIONS[@]}; do
     ${SCRIPT_DIR}/../cf-create-service-should-fail.sh csb-azure-eventhubs basic ${o}
 done
 
-${SCRIPT_DIR}/../cf-create-service-should-fail.sh csb-azure-postgresql medium '{"sku_name":"bogus"}'
+SKU_NAME_SERVICES=("csb-azure-mysql" "csb-azure-postgresql")
+for s in ${SKU_NAME_SERVICES[@]}; do
+    ${SCRIPT_DIR}/../cf-create-service-should-fail.sh ${s} small '{"sku_name":"bogus"}'
+done
+
+AUTHORIZED_NETWORK_NAME_SERVICES=("csb-azure-mysql" "csb-azure-postgresql")
+for s in ${AUTHORIZED_NETWORK_NAME_SERVICES[@]}; do
+    ${SCRIPT_DIR}/../cf-create-service-should-fail.sh ${s} small '{"authorized_network":"bogus"}'
+done
 
 echo "$0 SUCCEEDED"

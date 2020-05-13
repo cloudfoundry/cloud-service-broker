@@ -17,6 +17,7 @@ variable hostname { type = string }
 variable port { type = number }
 variable admin_username { type = string }
 variable admin_password { type = string }
+variable use_tls { type = bool }
 
 provider "postgresql" {
   host            = var.hostname
@@ -25,6 +26,7 @@ provider "postgresql" {
   password        = var.admin_password
   superuser       = false
   database        = var.db_name
+  sslmode         = var.use_tls ? "require" : "disable"
 }
 
 resource "random_string" "username" {
@@ -73,11 +75,12 @@ output uri {
                   var.db_name) 
 }
 output jdbcUrl { 
-  value = format("jdbc:%s://%s:%s/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=true\u0026requireSSL=false\u0026serverTimezone=GMT", 
+  value = format("jdbc:%s://%s:%s/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=%v\u0026requireSSL=false\u0026serverTimezone=GMT", 
                   "postgresql",
                   var.hostname, 
                   var.port,
                   var.db_name, 
                   local.username, 
-                  random_password.password.result) 
+                  random_password.password.result,
+                  var.use_tls) 
 }  
