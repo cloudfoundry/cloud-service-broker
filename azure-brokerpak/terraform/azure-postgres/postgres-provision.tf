@@ -29,7 +29,8 @@ variable authorized_network {type = string}
 variable use_tls { type = bool }
 
 provider "azurerm" {
-  version = "=1.44.0"
+  version = "=2.9.0"
+  features {}
 
   subscription_id = var.azure_subscription_id
   client_id       = var.azure_client_id
@@ -73,23 +74,16 @@ resource "random_password" "password" {
 }
 
 resource "azurerm_postgresql_server" "instance" {
-  depends_on = [ azurerm_resource_group.azure-postgres ]    
-  name                = var.instance_name
-  location            = var.location
-  resource_group_name = local.resource_group
-
-  sku_name = local.sku_name
-
-  storage_profile {
-    storage_mb            = var.storage_gb * 1024
-    backup_retention_days = 7
-    geo_redundant_backup  = "Disabled"
-  }
-
+  depends_on                   = [ azurerm_resource_group.azure-postgres ]    
+  name                         = var.instance_name
+  location                     = var.location
+  resource_group_name          = local.resource_group
+  sku_name                     = local.sku_name
+  storage_mb                   = var.storage_gb * 1024
   administrator_login          = random_string.username.result
   administrator_login_password = random_password.password.result
   version                      = var.postgres_version
-  ssl_enforcement              = var.use_tls ? "Enabled" : "Disabled"
+  ssl_enforcement_enabled      = var.use_tls
   tags                         = var.labels  
 }
 
