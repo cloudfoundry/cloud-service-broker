@@ -43,7 +43,7 @@ module.exports = async function (credentials, runServer) {
         password: credentials.password,
         port: credentials.port,
         database: credentials.name,
-        ssl: true
+        ssl: credentials.use_tls
     }).then((client) => {
         return postgresShowTables(client)
     }).then((result) => {
@@ -57,7 +57,7 @@ module.exports = async function (credentials, runServer) {
     }).then(() => {
         return connectPostgres({
             connectionString: credentials.uri,
-            ssl: true
+            ssl: credentials.use_tls
         })
     }).then((client) => {
         return postgresShowTables(client)

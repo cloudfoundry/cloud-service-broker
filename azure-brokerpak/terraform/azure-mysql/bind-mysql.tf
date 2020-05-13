@@ -17,11 +17,13 @@ variable mysql_hostname { type = string }
 variable mysql_port { type = number }
 variable admin_username { type = string }
 variable admin_password { type = string }
+variable use_tls { type = bool }
 
 provider "mysql" {
   endpoint = format("%s:%d", var.mysql_hostname, var.mysql_port)
   username = var.admin_username
   password = var.admin_password
+  tls = var.use_tls
 }
 
 resource "random_string" "username" {
@@ -65,11 +67,12 @@ output uri {
                   var.mysql_db_name) 
 }
 output jdbcUrl { 
-  value = format("jdbc:%s://%s:%s/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=true\u0026requireSSL=false\u0026serverTimezone=GMT", 
+  value = format("jdbc:%s://%s:%s/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=%v\u0026requireSSL=false\u0026serverTimezone=GMT", 
                   "mysql",
                   var.mysql_hostname, 
                   var.mysql_port,
                   var.mysql_db_name, 
                   local.username, 
-                  random_password.password.result) 
+                  random_password.password.result,
+                  var.use_tls) 
 }  
