@@ -25,7 +25,8 @@ variable azure_client_secret { type = string }
 # variable authorized_network {type = string}
 
 provider "azurerm" {
-  version = "=1.44.0"
+  version = "=2.9.0"
+  features {}
 
   subscription_id = var.azure_subscription_id
   client_id       = var.azure_client_id
