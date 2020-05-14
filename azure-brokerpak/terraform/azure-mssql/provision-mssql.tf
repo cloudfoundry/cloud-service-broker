@@ -21,9 +21,10 @@ variable azure_subscription_id { type = string }
 variable azure_client_id { type = string }
 variable azure_client_secret { type = string }
 variable labels { type = map }
-variable pricing_tier { type = string }
+variable sku_name { type = string }
 variable cores { type = number }
-variable storage_gb { type = number }
+variable max_storage_gb { type = number }
+variable authorized_network {type = string}
 
 provider "azurerm" {
   version = "=2.9.0"
@@ -36,6 +37,16 @@ provider "azurerm" {
 }
 
 locals {
+  instance_types = {
+    1 = "GP_S_Gen5_1"
+    2 = "GP_S_Gen5_2"
+    4 = "GP_Gen5_4"
+    8 = "GP_Gen5_8"
+    16 = "GP_Gen5_16"
+    32 = "HS_Gen5_32"
+    64 = "HS_Gen5_64"
+  }     
+  sku_name = length(var.sku_name) == 0 ? local.instance_types[var.cores] : var.sku_name    
   resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group
 }
 
@@ -76,17 +87,26 @@ resource "azurerm_sql_database" "azure_sql_db" {
   resource_group_name = azurerm_sql_server.azure_sql_db_server.resource_group_name
   location            = var.location
   server_name         = azurerm_sql_server.azure_sql_db_server.name
-  requested_service_objective_name = format("%s_Gen5_%d", var.pricing_tier, var.cores)
-  max_size_bytes      = var.storage_gb * 1024 * 1024 * 1024
+  requested_service_objective_name = local.sku_name
+  max_size_bytes      = var.max_storage_gb * 1024 * 1024 * 1024
   tags = var.labels
 }
 
+resource "azurerm_sql_virtual_network_rule" "allow_subnet_id" {
+  name                = format("subnetrule-%s", lower(var.instance_name))
+  resource_group_name = local.resource_group
+  server_name         = azurerm_sql_server.azure_sql_db_server.name
+  subnet_id           = var.authorized_network
+  count = var.authorized_network != "default" ? 1 : 0   
+}
+
 resource "azurerm_sql_firewall_rule" "example" {
-  name                = "FirewallRule1"
+  name                = format("firewallrule-%s", lower(var.instance_name))
   resource_group_name = local.resource_group
   server_name         = azurerm_sql_server.azure_sql_db_server.name
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "0.0.0.0"
+  count = var.authorized_network == "default" ? 1 : 0  
 }
 
 output "sqldbResourceGroup" {value = azurerm_sql_server.azure_sql_db_server.resource_group_name}
