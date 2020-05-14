@@ -22,6 +22,7 @@ variable admin_username { type = string }
 variable admin_password { type = string }
 variable location { type = string }
 variable labels { type = map }
+variable authorized_network {type = string}
 
 provider "azurerm" {
   version = "=2.9.0"
@@ -74,13 +75,21 @@ resource "azurerm_sql_server" "azure_sql_db_server" {
   tags = var.labels
 }
 
-resource "azurerm_sql_firewall_rule" "example" {
-  depends_on = [ azurerm_resource_group.azure_sql ]
-  name                = "FirewallRule1"
+resource "azurerm_sql_virtual_network_rule" "allow_subnet_id" {
+  name                = format("subnetrule-%s", lower(var.instance_name))
+  resource_group_name = local.resource_group
+  server_name         = azurerm_sql_server.azure_sql_db_server.name
+  subnet_id           = var.authorized_network
+  count = var.authorized_network != "default" ? 1 : 0   
+}
+
+resource "azurerm_sql_firewall_rule" "sql_firewall_rule" {
+  name                = format("firewallrule-%s", lower(var.instance_name))
   resource_group_name = local.resource_group
   server_name         = azurerm_sql_server.azure_sql_db_server.name
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "0.0.0.0"
+  count = var.authorized_network == "default" ? 1 : 0  
 }
 
 output "sqldbResourceGroup" {value = azurerm_sql_server.azure_sql_db_server.resource_group_name}

@@ -100,7 +100,7 @@ resource "azurerm_sql_virtual_network_rule" "allow_subnet_id" {
   count = var.authorized_network != "default" ? 1 : 0   
 }
 
-resource "azurerm_sql_firewall_rule" "example" {
+resource "azurerm_sql_firewall_rule" "sql_firewall_rule" {
   name                = format("firewallrule-%s", lower(var.instance_name))
   resource_group_name = local.resource_group
   server_name         = azurerm_sql_server.azure_sql_db_server.name
