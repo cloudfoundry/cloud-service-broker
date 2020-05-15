@@ -28,12 +28,12 @@ for o in ${BOGUS_OPTIONS[@]}; do
     ${SCRIPT_DIR}/../cf-create-service-should-fail.sh csb-azure-eventhubs basic ${o}
 done
 
-SKU_NAME_SERVICES=("csb-azure-mysql" "csb-azure-postgresql")
+SKU_NAME_SERVICES=("csb-azure-mysql" "csb-azure-postgresql" "csb-azure-mssql-failover-group")
 for s in ${SKU_NAME_SERVICES[@]}; do
     ${SCRIPT_DIR}/../cf-create-service-should-fail.sh ${s} small '{"sku_name":"bogus"}'
 done
 
-AUTHORIZED_NETWORK_NAME_SERVICES=("csb-azure-mysql" "csb-azure-postgresql")
+AUTHORIZED_NETWORK_NAME_SERVICES=("csb-azure-mysql" "csb-azure-postgresql" "csb-azure-mssql-failover-group" "csb-azure-mssql-server")
 for s in ${AUTHORIZED_NETWORK_NAME_SERVICES[@]}; do
     ${SCRIPT_DIR}/../cf-create-service-should-fail.sh ${s} small '{"authorized_network":"bogus"}'
 done
