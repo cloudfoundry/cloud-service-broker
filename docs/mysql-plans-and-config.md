@@ -50,15 +50,6 @@ The following parameters (as well as those above) may be configured during servi
 
 Note: Currently MySQL is not available in all regions. The enum in the YML lists all the valid regions as of 2/12/2020
 
-Each of the so-called Pricing Tiers in Azure has a min and max cores:
-| Pricing Tier | Max vCores |
-|--------------|------------|
-| B - Basic | 2 |
-| GP - General Purpose | 64 |
-| MO - Memory Optimized | 32 |
-
-
-
 ### AWS Notes
 CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) as follows:
 
