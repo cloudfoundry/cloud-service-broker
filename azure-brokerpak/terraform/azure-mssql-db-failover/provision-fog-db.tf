@@ -21,9 +21,9 @@ variable server_credential_pairs { type = map }
 variable server_pair { type = string }
 variable db_name { type = string }
 variable labels { type = map }
-variable pricing_tier { type = string }
+variable sku_name { type = string }
 variable cores { type = number }
-variable storage_gb { type = number }
+variable max_storage_gb { type = number }
 
 provider "azurerm" {
   version = "=2.9.0"
@@ -45,13 +45,26 @@ data "azurerm_sql_server" "secondary_sql_db_server" {
   resource_group_name          = var.server_credential_pairs[var.server_pair].secondary.resource_group
 }
 
+locals {
+  instance_types = {
+    1 = "GP_S_Gen5_1"
+    2 = "GP_S_Gen5_2"
+    4 = "GP_Gen5_4"
+    8 = "GP_Gen5_8"
+    16 = "GP_Gen5_16"
+    32 = "BC_Gen5_32"
+    64 = "BC_Gen5_64"
+  }     
+  sku_name = length(var.sku_name) == 0 ? local.instance_types[var.cores] : var.sku_name 
+}
+
 resource "azurerm_sql_database" "azure_sql_db" {
   name                = var.db_name
   resource_group_name = var.server_credential_pairs[var.server_pair].primary.resource_group
   location            = data.azurerm_sql_server.primary_sql_db_server.location
   server_name         = data.azurerm_sql_server.primary_sql_db_server.name
-  requested_service_objective_name = format("%s_Gen5_%d", var.pricing_tier, var.cores)
-  max_size_bytes      = var.storage_gb * 1024 * 1024 * 1024
+  requested_service_objective_name = local.sku_name
+  max_size_bytes      = var.max_storage_gb * 1024 * 1024 * 1024
   tags                = var.labels
 }
 

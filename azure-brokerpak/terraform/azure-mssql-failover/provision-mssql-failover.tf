@@ -50,6 +50,7 @@ locals {
   sku_name = length(var.sku_name) == 0 ? local.instance_types[var.cores] : var.sku_name     
   resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group
 }
+
 resource "azurerm_resource_group" "azure-sql-fog" {
   name     = local.resource_group
   location = var.location
@@ -141,8 +142,8 @@ resource "azurerm_sql_database" "azure_sql_db" {
   resource_group_name = local.resource_group
   location            = var.location
   server_name         = azurerm_sql_server.primary_azure_sql_db_server.name
-  requested_service_objective_name = var.sku_name
-  max_size_bytes      = var.storage_gb * 1024 * 1024 * 1024
+  requested_service_objective_name = local.sku_name
+  max_size_bytes      = var.max_storage_gb * 1024 * 1024 * 1024
   tags                = var.labels
 }
 
