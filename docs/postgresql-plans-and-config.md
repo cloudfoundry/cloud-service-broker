@@ -44,7 +44,7 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 | 8     | MO_Gen5_8   |
 | 16    | MO_Gen5_16  |
 | 32    | MO_Gen5_32  |
-| 64    | GP_Gen5_64  |
+| 80    | GP_Gen5_80  |
 
 #### Azure specific config parameters
 

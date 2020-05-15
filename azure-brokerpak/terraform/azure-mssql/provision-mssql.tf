@@ -44,7 +44,7 @@ locals {
     8 = "GP_Gen5_8"
     16 = "GP_Gen5_16"
     32 = "HS_Gen5_32"
-    64 = "HS_Gen5_64"
+    80 = "HS_Gen5_80"
   }     
   sku_name = length(var.sku_name) == 0 ? local.instance_types[var.cores] : var.sku_name    
   resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group
