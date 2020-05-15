@@ -23,6 +23,7 @@ The only plan is *standard*.
 | azure_subscription_id | string | ID of Azure subscription for instance | config file value `azure.subscription_id` |
 | azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
 | azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `azure.client_secret` |
+| authorized_network | string | The Azure subnet ID (long form) that the instance is connected to via a service endpoint. The subnet must have the `Microsoft.sql` service enabled. | |
 
 ## Binding Credentials
 

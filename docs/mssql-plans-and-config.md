@@ -8,10 +8,10 @@ These are the default plans and configuration options for Azure SQL on Azure (no
 
 | Plan       | CPUs | Storage Size |
 |------------|------|--------------|
-|small       | 2    | 50GB         |
-|medium      | 8    | 200GB        |
-|large       | 24   | 500GB        |
-|extra-large | 40   | 1GB          |
+| small       | 2    | 50GB         |
+| medium      | 8    | 200GB        |
+| large       | 32   | 500GB        |
+| extra-large | 64   | 1TB          |
 
 ## Configuration Options
 
@@ -19,9 +19,9 @@ The following plan parameters can be configured.
 
 | Option Name | Values              | Default |
 |-------------|---------------------|---------|
-| pricing_tier| GP_S, GP, HS, BC    |         |
-| storage_gb  | 5 - 4096            | 50      |
+| max_storage_gb  |            | 50      |
 | cores       | 1-64, multiple of 2 | 2       |
+
 
 ## Provision Parameters
 
@@ -37,40 +37,29 @@ The following parameters may be configured during service provisioning (`cf crea
 | azure_subscription_id | string | ID of Azure subscription for instance | config file value `azure.subscription_id` |
 | azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
 | azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `azure.client_secret` |
+| sku_name | string | Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) Will be computed from cores if empty. `az sql db list-editions -l <location> -o table` will show all valid values. | |
+| authorized_network | string | The Azure subnet ID (long form) that the instance is connected to via a service endpoint. The subnet must have the `Microsoft.sql` service enabled. | |
 
 Note: Currently Azure SQL is not available in all regions. The enum in the YML lists all the valid regions as of 2/12/2020
 
 ### Azure Notes
 
-Azure SQL instances are [vCore model](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-service-tiers-vcore?tabs=azure-portal) and Gen5 hardware generation.
+Azure SQL instances are [vCore model](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-service-tiers-vcore?tabs=azure-portal) and Gen5 hardware generation 
+unless overridden by `sku_name` parameter.
 
-CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-vcore-resource-limits-single-databases) as follows:
+CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-vcore-resource-limits-single-databases) as follows:  
 
-| Plan        | Sku        | Storage | vCores |
-|-------------|------------|---------|--------|
-| small       | GP_S_Gen5_2 | 50GB   | 2      |
-| medium      | GP_Gen5_8  | 200GB   | 8      |
-| large       | HS_Gen5_24 | 500GB   | 24     |
-| extra-large | BC_Gen5_40 | 1TB     | 40     |
+#### Core to sku mapping
 
-Pricing tiers map:
-
-| Pricing Tier | Description |
-|-|-|
-| GP_S | General Purpose tier - Serverless pricing model |
-| GP   | General Purpose tier - Provisioned pricing model |
-| HS   | Hyperscale tier |
-| BC   | Business Critical tier |
-
-Each of the Pricing Tiers in Azure has a [min and max](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-vcore-resource-limits-single-databases) cores:
-
-| Pricing Tier | Max vCores |
-|--------------|------------|
-| GP_S         | 16         |
-| GP           | 80         |
-| HS           | 80         |
-| BC           | 80         |
-
+| Cores | Sku |
+|-------|-----|
+| 1  | P_S_Gen5_1 |
+| 2  | P_S_Gen5_2 |
+| 4  | P_Gen5_4   |
+| 8  | P_Gen5_8   |
+| 16 | GP_Gen5_16 |
+| 32 | HS_Gen5_32 |
+| 64 | HS_Gen5_64 |
 
 ## Binding Credentials
 
