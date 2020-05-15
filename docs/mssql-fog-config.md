@@ -90,7 +90,7 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 | 8  | P_Gen5_8   |
 | 16 | GP_Gen5_16 |
 | 32 | BC_Gen5_32 |
-| 64 | BC_Gen5_64 |
+| 80 | BC_Gen5_80 |
 
 
 ## Binding Credentials
