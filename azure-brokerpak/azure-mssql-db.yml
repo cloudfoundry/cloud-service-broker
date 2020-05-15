@@ -43,10 +43,10 @@ plans:
     max_storage_gb: 500
 - name: extra-large
   id: 09096759-58a8-41d0-96bf-39b02a0e4104
-  description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 64 cores ; 1 TB storage'
+  description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 80 cores ; 1 TB storage'
   display_name: "Extra Large"
   properties:
-    cores: 64
+    cores: 80
     max_storage_gb: 1024
 provision:
   plan_inputs:
