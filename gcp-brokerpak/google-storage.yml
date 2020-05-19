@@ -145,7 +145,7 @@ bind:
     default: ${str.truncate(20, "pcf-binding-${request.binding_id}")}
     overwrite: true
   - name: service_account_display_name
-    default: var.service_account_name
+    default: ""
     overwrite: true
   - name: bucket
     default: ${instance.details["bucket_name"]}
