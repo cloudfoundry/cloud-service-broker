@@ -22,6 +22,16 @@ variable labels { type = map }
 variable storage_gb { type = number }
 variable database_version { type = string }
 
+variable credentials  { type = string }
+variable project  { type = string }
+
+provider "google" {
+  version = "~> 3.5.0"
+  credentials = var.credentials
+  project     = var.project
+  
+}
+
 data "google_compute_network" "authorized-network" {
   name = var.authorized_network
 }

@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: google-postgres
+name: csb-google-postgres
 id: e4ac5b1c-8693-11ea-8977-1f3cd95a07dd
 description: PostgreSQL is a fully managed service for the
   Google Cloud Platform.

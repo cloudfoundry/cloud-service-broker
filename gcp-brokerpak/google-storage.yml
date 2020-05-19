@@ -1,0 +1,199 @@
+# Copyright 2020 Pivotal Software, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+version: 1
+name: csb-google-storage-bucket
+id: b247fcde-8a63-11ea-b945-cb26f061f70f
+description: Google Cloud Storage that uses the Terraform back-end and grants service accounts IAM permissions directly on the bucket.
+display_name: Google Cloud Storage
+image_url: https://cloud.google.com/_static/images/cloud/products/logos/svg/storage.svg
+documentation_url: https://cloud.google.com/storage/docs/overview
+support_url: https://cloud.google.com/storage/docs/getting-support
+tags: [gcp, storage]
+plans:
+- name: private
+  id: bbc4853e-8a63-11ea-a54e-670ca63cee0b
+  description: 'Private Storage bucket'
+  display_name: 'Private'
+  properties:
+    acl: private
+- name: public-read
+  id: c07f21a6-8a63-11ea-bc1b-d38b123189cb
+  description: 'Public-read Storage bucket'
+  display_name: 'Public Read'
+  properties:
+    acl: publicRead   
+provision:
+  plan_inputs:
+    - field_name: acl
+      type: string
+      details: Storage bucket ACL (see https://cloud.google.com/storage/docs/access-control/lists#predefined-acl)
+      enum:
+        private: private
+        publicRead: publicRead
+        publicReadWrite: publicReadWrite
+        bucketOwnerRead: bucketOwnerRead
+        bucketOwnerFullControl: bucketOwnerFullControl
+        projectPrivate: projectPrivate
+        authenticatedRead: authenticatedRead
+  user_inputs:
+    - field_name: name
+      type: string
+      details: Name of bucket
+      default: csb-${request.instance_id}
+    - field_name: storage_class
+      type: string
+      details: The Storage Class of the new bucket.
+      default: STANDARD
+      enum: 
+        STANDARD : STANDARD 
+        MULTI_REGIONAL: MULTI_REGIONAL
+        REGIONAL : REGIONAL
+        NEARLINE : NEARLINE
+        COLDLINE : COLDLINE
+    - field_name: region
+      type: string
+      details: The region of the mysql instance.
+      default: US-CENTRAL1
+      enum: 
+        US-CENTRAL1 : US-CENTRAL1
+        US-EAST1 : US-EAST1
+        US-EAST4 : US-EAST4
+        US-WEST1 : US-WEST1
+        US-WEST2 : US-WEST2
+        US-WEST3 : US-WEST3
+        US-WEST4 : US-WEST4
+        SOUTHAMERICA-EAST1 : SOUTHAMERICA-EAST1
+        EUROPE-NORTH1 : EUROPE-NORTH1
+        EUROPE-WEST1 : EUROPE-WEST1 
+        EUROPE-WEST2 : EUROPE-WEST2
+        EUROPE-WEST3 : EUROPE-WEST3
+        EUROPE-WEST4 : EUROPE-WEST4
+        EUROPE-WEST5 : EUROPE-WEST5
+        EUROPE-WEST6 : EUROPE-WEST6
+        ASIA-EAST1 : ASIA-EAST1
+        ASIA-EAST2 : ASIA-EAST2
+        ASIA-NORTHEAST1 : ASIA-NORTHEAST1
+        ASIA-NORTHEAST2 : ASIA-NORTHEAST2
+        ASIA-NORTHEAST3 : ASIA-NORTHEAST3
+        ASIA-SOUTH1 : ASIA-SOUTH1
+        ASIA-SOUTHEAST1 : ASIA-SOUTHEAST1
+        AUSTRALIA-SOUTHEAST1 : AUSTRALIA-SOUTHEAST1
+    - field_name: credentials
+      type: string
+      details: GCP credentials
+      default: ${config("gcp.credentials")}
+    - field_name: project
+      type: string
+      details: GCP project
+      default: ${config("gcp.project")}     
+  computed_inputs:
+  - name: labels
+    default: ${json.marshal(request.default_labels)}
+    overwrite: true
+    type: object
+  template_ref: ./terraform/google-storage-bucket-provision.tf
+  outputs:
+  - required: true
+    field_name: bucket_name
+    type: string
+    details: Name of the bucket this binding is for.
+    constraints:
+      maxLength: 222
+      minLength: 3
+      pattern: ^[A-Za-z0-9_\.]+$
+  - required: true
+    field_name: id
+    type: string
+    details: The GCP ID of this bucket.
+
+bind:
+  plan_inputs: []
+  user_inputs: 
+  - required: true
+    field_name: role
+    type: string
+    default: "storage.objectAdmin"
+    details: "The role for the account without the \"roles/\" prefix.\n\t\tSee: https://cloud.google.com/iam/docs/understanding-roles
+      for more details.\n\t\tNote: The default enumeration may be overridden by your
+      operator."
+    enum:
+      storage.objectAdmin: roles/storage.objectAdmin
+      storage.objectCreator: roles/storage.objectCreator
+      storage.objectViewer: roles/storage.objectViewer  
+  - field_name: credentials
+    type: string
+    details: GCP credentials
+    default: ${config("gcp.credentials")}
+  - field_name: project
+    type: string
+    details: GCP project
+    default: ${config("gcp.project")}    
+  computed_inputs:
+  - name: service_account_name
+    default: ${str.truncate(20, "pcf-binding-${request.binding_id}")}
+    overwrite: true
+  - name: service_account_display_name
+    default: var.service_account_name
+    overwrite: true
+  - name: bucket
+    default: ${instance.details["bucket_name"]}
+    overwrite: true
+  template_ref: ./terraform/google-storage-bucket-bind.tf
+  outputs:
+  - required: true
+    field_name: Email
+    type: string
+    details: Email address of the service account.
+    constraints:
+      examples:
+      - pcf-binding-ex312029@my-project.iam.gserviceaccount.com
+      pattern: ^pcf-binding-[a-z0-9-]+@.+\.gserviceaccount\.com$
+  - required: true
+    field_name: Name
+    type: string
+    details: The name of the service account.
+    constraints:
+      examples:
+      - pcf-binding-ex312029
+  - required: true
+    field_name: PrivateKeyData
+    type: string
+    details: Service account private key data. Base64 encoded JSON.
+    constraints:
+      minLength: 512
+      pattern: ^[A-Za-z0-9+/]*=*$
+  - required: true
+    field_name: ProjectId
+    type: string
+    details: ID of the project that owns the service account.
+    constraints:
+      examples:
+      - my-project
+      maxLength: 30
+      minLength: 6
+      pattern: ^[a-z0-9-]+$
+  - required: true
+    field_name: UniqueId
+    type: string
+    details: Unique and stable ID of the service account.
+    constraints:
+      examples:
+      - "112447814736626230844" 
+examples:
+- name: gcp-bucket-public-read
+  description: Public Read S3 Bucket
+  plan_id: c07f21a6-8a63-11ea-bc1b-d38b123189cb
+  provision_params: {}
+  bind_params: {}

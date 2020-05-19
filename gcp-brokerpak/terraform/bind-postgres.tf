@@ -18,16 +18,24 @@ variable postgres_port { type = number }
 variable admin_username { type = string }
 variable admin_password { type = string }
 
+locals {
+  schema_name = "album" 
+  #var.schema_name == null || var.schema_name == "" ? var.db_name : var.schema_name
+}
+
 provider "postgresql" {
-  endpoint = format("%s:%d", var.postgres_hostname, var.postgres_port)
-  username = var.admin_username
-  password = var.admin_password
+  host            = var.postgres_hostname
+  port            = var.postgres_port
+  username        = var.admin_username
+  password        = var.admin_password
+  superuser       = false
+  database        = var.postgres_db_name
 }
 
 resource "random_string" "username" {
   length = 16
   special = false
-  number = false
+  number = false  
 }
 
 resource "random_password" "password" {
@@ -38,20 +46,84 @@ resource "random_password" "password" {
   min_special = 2
 }    
 
-resource "postgres_user" "newuser" {
-  user               = random_string.username.result
-  plaintext_password = random_password.password.result
-  host = "%"
+resource "postgresql_role" "new_user" {
+  name     = random_string.username.result
+  login    = true
+  password = random_password.password.result
+  skip_reassign_owned = true
+  skip_drop_role = true
 }
 
-resource "postgres_grant" "newuser" {
-  user       = postgres_user.newuser.user
-  database   = var.postgres_db_name
-  host = postgres_user.newuser.host
-  privileges = ["ALL"]
+
+resource "postgresql_schema" "schema" {
+  name = local.schema_name
+  database = var.postgres_db_name
+  owner = var.admin_username
+
+  policy {
+    create_with_grant = true
+    usage_with_grant = true
+    role = postgresql_role.new_user.name
+  }
+
 }
 
-output username { value = postgres_user.newuser.user }
+
+resource "postgresql_grant" "all_access" {
+  depends_on  = [ postgresql_role.new_user ]
+  database    = var.postgres_db_name
+  role        = random_string.username.result
+  schema      = "public"
+  object_type = "table"
+  privileges  = ["ALL"]
+}
+
+
+
+// Adding Root user to new db
+
+resource "postgresql_grant" "all_rootuser_access" {
+
+  database    = var.postgres_db_name
+  role        = var.admin_username
+  schema      = "public"
+  object_type = "table"
+  privileges  = ["ALL"]
+}
+
+resource "postgresql_default_privileges" "db_newuser_tables" {
+  depends_on  = [ postgresql_role.new_user ]
+  database    = var.postgres_db_name
+  object_type = "table"
+  owner       = random_string.username.result
+  privileges  = ["ALL"]
+  role        = random_string.username.result
+  schema      = "public"
+}
+
+resource "postgresql_default_privileges" "db_rootuser_tables" {
+  database    = var.postgres_db_name
+  object_type = "table"
+  owner       = var.admin_username
+  privileges  = ["ALL"]
+  role        = var.admin_username
+  schema      = "public"
+} 
+
+# resource "postgresql_default_privileges" "app" {
+#   database = var.postgres_db_name
+#   #schema = postgresql_schema.schema.name
+#   owner = var.admin_username
+#   role = postgresql_role.db_app.name
+#   object_type = "table"
+#   privileges = ["ALL"]
+# }
+
+
+
+
+
+output username { value = random_string.username.result }
 output password { value = random_password.password.result }
 output uri { 
   value = format("postgresql://%s:%s@%s:%d/%s", 
@@ -66,6 +138,6 @@ output jdbcUrl {
                   var.postgres_hostname, 
                   var.postgres_port,
                   var.postgres_db_name, 
-                  postgres_user.newuser.user, 
+                  random_string.username.result, 
                   random_password.password.result) 
 }

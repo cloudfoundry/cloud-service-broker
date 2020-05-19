@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: google-mysql
+name: csb-google-mysql
 id: b9f3d4f3-8716-4179-8b7c-e80bd5bccb31
 description: Mysql is a fully managed service for the
   Google Cloud Platform.
