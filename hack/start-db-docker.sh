@@ -16,6 +16,6 @@
 
 USERNAME="${DB_USERNAME:-broker}"
 PASSWORD="${DB_PASSWORD:-brokerpass}"
-DB_NAME="servicebroker"
+DBNAME="${DB_NAME:-servicebroker}"
 
-docker run --rm -p 3306:3306 --name test-mysql -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE="${DB_NAME}" -e MYSQL_USER="${USERNAME}" -e MYSQL_PASSWORD="${PASSWORD}" -d mysql:5.7
+docker run --rm -p 3306:3306 --name test-mysql -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE="${DBNAME}" -e MYSQL_USER="${USERNAME}" -e MYSQL_PASSWORD="${PASSWORD}" -d mysql:5.7
