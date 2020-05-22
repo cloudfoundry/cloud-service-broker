@@ -16,7 +16,7 @@ fi
 
 NETWORK=$1; shift
 
-allServices=("google-redis" "google-mysql")
+allServices=("google-mysql")
 
 for s in ${allServices[@]}; do
   create_service "${s}" small "${s}-$$" "{\"authorized_network\": \"${NETWORK}\"}" &
