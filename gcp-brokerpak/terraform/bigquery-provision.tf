@@ -11,6 +11,10 @@ provider "google" {
   region      = var.region 
 }
 
+provider "google-beta" {
+  version = ">=3.22.0"
+  project     = var.project
+}
 
 resource "google_bigquery_dataset" "csb_dataset" {
   dataset_id    = replace(var.instance_name,"-","") 

@@ -15,7 +15,7 @@
       member = "serviceAccount:${google_service_account.account.email}"
     }
 
-    output "Name" {value = "${google_service_account.account.display_name}"}
+    output "Name" {value = "${google_service_account.account.name}"}
     output "Email" {value = "${google_service_account.account.email}"}
     output "UniqueId" {value = "${google_service_account.account.unique_id}"}
     output "PrivateKeyData" {value = "${google_service_account_key.key.private_key}"}

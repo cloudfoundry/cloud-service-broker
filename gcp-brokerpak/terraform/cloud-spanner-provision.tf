@@ -13,13 +13,19 @@ provider "google" {
   
 }
 
+locals {
+  display_name = substr(var.instance_name, 4,29)
+  db_name = replace(local.display_name ,"-","_")
+}
+
+
 #---------------------------------------------------
 # Create google spanner instance
 #---------------------------------------------------
 resource "google_spanner_instance" "spanner_instance" {
-  
+
     config          = var.num_nodes > 2 ? var.config : "regional-${var.config}"
-    display_name    = var.instance_name
+    display_name    = local.display_name
     name            = lower(var.instance_name)
     num_nodes       = var.num_nodes
     project         = var.project
@@ -33,15 +39,15 @@ resource "google_spanner_instance" "spanner_instance" {
 
 
 #---------------------------------------------------
-# Create spanner database 
+# Create spanner database
 #---------------------------------------------------
 resource "google_spanner_database" "spanner_database" {
-   
+
 
     instance    = google_spanner_instance.spanner_instance.name
-    name        = "${var.instance_name}-db"
+    name        = local.db_name
     project     = var.project
-   
+
     ddl       =  var.ddl
 
     lifecycle {
@@ -52,4 +58,4 @@ resource "google_spanner_database" "spanner_database" {
 }
 
 output instance { value = google_spanner_instance.spanner_instance.name }
-output db_name { value = google_spanner_database.spanner_database.name }
+output db_name { value =  join(",", google_spanner_database.spanner_database.*.name)}

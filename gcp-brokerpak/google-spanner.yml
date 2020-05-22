@@ -80,8 +80,8 @@ provision:
     default: ${config("gcp.project")}     
   - field_name: instance_name
     type: string
-    details: Name for your mysql instance
-    default: csb-mysql-${request.instance_id}
+    details: Name for your spanner instance
+    default: csb-spanner-${request.instance_id}
     constraints:
       maxLength: 98
       minLength: 6
@@ -94,7 +94,7 @@ provision:
       maxLength: 64
   - field_name: region
     type: string
-    details: The region of the mysql instance.
+    details: The region of the spanner instance.
     default: us-central1
     enum:
       asia-east1: asia-east1
@@ -141,11 +141,7 @@ bind:
   - field_name: role
     type: string
     details: The role that should be applied.
-    default: roles/editor 
-  - field_name: members
-    type: array
-    details: (Required) Identities that will be granted the privilege in role.
-    default: []  
+    default: roles/editor
   - field_name: credentials
     type: string
     details: GCP credentials
@@ -159,10 +155,71 @@ bind:
       type: string
       default: ${instance.details["db_name"]}
       overwrite: true
+    - name: service_account_name
+      default: ${str.truncate(20, "pcf-binding-${request.binding_id}")}
+      overwrite: true
+    - name: service_account_display_name
+      default: ""
+      overwrite: true    
   template_ref: terraform/bind-spanner.tf
   outputs: 
-
-   
+  - required: true
+    field_name: Email
+    type: string
+    details: Email address of the service account.
+    constraints:
+      examples:
+      - pcf-spanner-ex312029@my-project.iam.gserviceaccount.com
+      pattern: ^pcf-spanner-[a-z0-9-]+@.+\.gserviceaccount\.com$
+  - required: true
+    field_name: Name
+    type: string
+    details: The name of the service account.
+    constraints:
+      examples:
+      - pcf-spanner-ex312029
+  - required: true
+    field_name: PrivateKeyData
+    type: string
+    details: Service account private key data. Base64 encoded JSON.
+    constraints:
+      minLength: 512
+      pattern: ^[A-Za-z0-9+/]*=*$
+  - required: true
+    field_name: ProjectId
+    type: string
+    details: ID of the project that owns the service account.
+    constraints:
+      examples:
+      - my-project
+      maxLength: 30
+      minLength: 6
+      pattern: ^[a-z0-9-]+$
+  - required: true
+    field_name: UniqueId
+    type: string
+    details: Unique and stable ID of the service account.
+    constraints:
+      examples:
+      - "112447814736626230844"  
+  - required: true
+    field_name: policy_etag
+    type: string
+    details: Unique and stable ID of the service account.
+  - required: true
+    field_name: binding_etag
+    type: string
+    details: Unique and stable ID of the service account.
+  - required: true
+    field_name: member_etag
+    type: string
+    details: Unique and stable ID of the service account.
+  - field_name: instance
+    type: string
+    details: The name of the instance.
+  - field_name: db_name
+    type: string
+    details: The name of the database.    
 examples:
 - name: small configuration
   description: Create a small spanner instance
