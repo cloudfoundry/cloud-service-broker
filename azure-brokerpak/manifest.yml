@@ -22,11 +22,11 @@ platforms:
   arch: amd64
 terraform_binaries:
 - name: terraform
-  version: 0.12.23
-  source: https://github.com/hashicorp/terraform/archive/v0.12.23.zip  
+  version: 0.12.25
+  source: https://github.com/hashicorp/terraform/archive/v0.12.25.zip  
 - name: terraform-provider-azurerm
-  version: 1.44.0
-  source: https://github.com/terraform-providers/terraform-provider-azurerm/archive/v1.44.0.zip
+  version: 2.9.0
+  source: https://github.com/terraform-providers/terraform-provider-azurerm/archive/v2.9.0.zip
 - name: terraform-provider-random
   version: 2.2.1
   source: https://releases.hashicorp.com/terraform-provider-random/2.2.1/terraform-provider-random_2.2.1_linux_amd64.zip
@@ -65,6 +65,8 @@ service_definitions:
 - azure-mssql-fog-run-failover.yml
 - azure-resource-group.yml
 - azure-postgres.yml
+- azure-storage-account.yml
+- azure-cosmosdb-sql.yml
 
 
 

@@ -88,7 +88,7 @@ lint: deps-goimports
 .PHONY:	lint-brokerpak-gcp
 build-brokerpak-gcp: gcp-brokerpak/*.brokerpak
 
-gcp-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./gcp-brokerpak/*.yml
+gcp-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./gcp-brokerpak/*.yml ./gcp-brokerpak/terraform/*
 	# docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/gcp-brokerpak
 	cd ./gcp-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
@@ -190,6 +190,12 @@ run-broker-aws-docker: check-aws-env-vars ./build/cloud-service-broker.linux aws
 	-e AWS_ACCESS_KEY_ID \
     -e AWS_SECRET_ACCESS_KEY \
 	alpine /broker/build/cloud-service-broker.linux serve
+
+# image
+
+.PHONY: build-image
+build-image: Dockerfile ./build/cloud-service-broker.linux aws-brokerpak/*.brokerpak gcp-brokerpak/*.brokerpak azure-brokerpak/*.brokerpak
+	docker build --tag csb .
 
 # env vars checks
 

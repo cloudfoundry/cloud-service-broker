@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-set -o errexit
 set -o pipefail
 set -o nounset
 
@@ -8,13 +7,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 . "${SCRIPT_DIR}/functions.sh"
 
-if [ -z "$1" ]; then
-    echo "No service name argument supplied"
-    exit 1
-fi
-
-if [ -z "$2" ]; then
-    echo "No plan argument supplied"
+if [ $# -lt 2 ]; then
+    echo "Usage: $0 <service name> <plan name>"
     exit 1
 fi
 
@@ -23,7 +17,7 @@ PLAN=$1; shift
 
 SERVICE_INSTANCE_NAME="${SERVICE}-${PLAN}-$$"
 
-if [ -z "$1" ]; then
+if [ $# -eq 0 ]; then
   cf create-service "${SERVICE}" "${PLAN}" "${SERVICE_INSTANCE_NAME}"
 else
   cf create-service "${SERVICE}" "${PLAN}" "${SERVICE_INSTANCE_NAME}" -c "$@"

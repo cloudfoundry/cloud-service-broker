@@ -20,35 +20,37 @@ display_name: Azure Cosmos DB's API for MongoDB
 image_url: https://azurecomcdn.azureedge.net/cvt-d09489c6661f16b0396f43f6be09db6e0a95b35e61aedbd2c0f30217ac43408c/images/page/services/cosmosdb/dev-03-mongodb.svg
 documentation_url: https://docs.microsoft.com/en-us/azure/cosmos-db/mongodb-introduction
 support_url: https://docs.microsoft.com/en-us/azure/cosmos-db/faq
-tags: [azure, mongodb, preview]
+tags: [azure, mongodb, preview, cosmosdb-mongo, cosmosdb-mongodb]
 plans:
 - name: small
   id: 4ba45322-534c-11ea-b346-00155da9789e
-  description: 'Cosmos DB API for MongoDB with 400 request units'
+  description: 'Mongo Cosmos DB Account, no redundancy, 400 request units'
   display_name: "Small"
-  properties:
-    request_units: 400
-    failover_locations: ["Central US", "East US 2"]
 - name: medium
   id: 6a28ad34-534c-11ea-9bac-00155da9789e
-  description: 'Cosmos DB API for MongoDB with 1,000 request units'
+  description: 'Mongo Cosmos DB Account, single read failover location, 1,000 request units'
   display_name: "Medium"
   properties:
     request_units: 1000
-    failover_locations: ["Central US", "East US 2"]
+    failover_locations: [ "westus", "eastus" ]
+    enable_automatic_failover: true
 - name: large
   id: 72227eac-534c-11ea-b7ca-00155da9789e
-  description: 'Cosmos DB API for MongoDB with 10,000 request units'
+  description: 'Mongo Cosmos DB Account, single read/write failover location, 10,000 request units'
   display_name: "Large"
   properties:
     request_units: 10000
-    failover_locations: ["Central US", "East US 2"]
+    failover_locations: [ "westus", "eastus" ]
+    enable_multiple_write_locations: true
+    enable_automatic_failover: true
 provision:
   plan_inputs:
+  user_inputs:
   - field_name: request_units
     required: true
     type: integer
     details: The throughput of the MongoDB collection (RU/s). Must be set in increments of 100. The minimum value is 400.
+    default: 400
     constraints:
       maximum: 100000
       minimum: 400
@@ -57,7 +59,7 @@ provision:
     required: false
     type: array
     details: A list of location for the Cosmos DB account.  The first location is the default write location
-  user_inputs:
+    default: [ "westus" ]
   - field_name: instance_name
     type: string
     details: Name for your Cosmos DB with API for MongoDB instance
@@ -69,7 +71,7 @@ provision:
   - field_name: account_name
     type: string
     details: Account name for your Cosmos DB with API for MongoDB instance
-    default: vsb${request.instance_id}
+    default: csb${request.instance_id}
     constraints:
       maxLength: 44
       minLength: 6
@@ -84,7 +86,7 @@ provision:
   - field_name: db_name
     type: string
     details: Name for your Cosmos DB database with API for Mongo DB
-    default: default_db
+    default: csb-db${request.instance_id}
     constraints:
       maxLength: 255
       pattern: ^[a-z][a-z0-9-_]*$

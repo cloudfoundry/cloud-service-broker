@@ -32,7 +32,7 @@ bind_service_test() {
     LOCAL_RESULT=$?
     echo "Failed to bind-service ${APP} to ${SERVICE_INSTANCE_NAME}: ${LOCAL_RESULT}"
   fi  
-  
+  cf stop "${APP}"
   if cf unbind-service "${APP}" "${SERVICE_INSTANCE_NAME}"; then
     echo "successfully bound and restarted ${APP}"
   else
@@ -58,7 +58,6 @@ RESULT=1
 
 if bind_service_test spring-music "${SERVICE_INSTANCE_NAME}"; then
     ( cd "${SCRIPT_DIR}/spring-music-validator" && cf push --no-start --no-route)
-
     bind_service_test spring-music-validator "${SERVICE_INSTANCE_NAME}"
     RESULT=$?
 

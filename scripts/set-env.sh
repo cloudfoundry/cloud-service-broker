@@ -22,4 +22,5 @@ export SECURITY_USER_PASSWORD=brokeruserpassword
 export DB_HOST=localhost
 export DB_USERNAME=broker
 export DB_PASSWORD=brokerpass
+export DB_NAME=brokerdb
 export PORT=8080

@@ -10,7 +10,7 @@
 |------------|------|--------------|
 |small       | 2    | 50GB         |
 |medium      | 8    | 200GB        |
-|large       | 40   | 1TB          |
+|large       | 32   | 500GB          |
 
 ## Plan Configuration Parameters
 
@@ -18,8 +18,7 @@ The following parameters may be configured.
 
 | Parameter Name | Values           | Default |
 |-------------|---------------------|---------|
-| pricing_tier| GP_S, GP, BC        |         |
-| storage_gb  | 5 - 4096            | 50      |
+| max_storage_gb  |             | 50      |
 | cores       | 1-64, multiple of 2 | 2       |
 
 ## Provision Parameters
@@ -36,6 +35,7 @@ The following parameters may be configured during service provisioning (`cf crea
 | azure_subscription_id | string | ID of Azure subscription for instance | config file value `azure.subscription_id` |
 | azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
 | azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `azure.client_secret` |
+| sku_name | string | Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) Will be computed from cores if empty. `az sql db list-editions -l <location> -o table` will show all valid values. | |
 
 ## Configuring Global Defaults
 
@@ -49,21 +49,23 @@ To globally configure *server_credential_pairs*, include the following in the co
 service:
   csb-azure-mssql-db-failover-group:
     provision:
-      defaults: '{ 
-        "pair1": { 
-          "admin_username":"...", 
-          "admin_password":"...", 
-          "primary": {
-            "server_name":"...", 
-            "resource_group":..."
-          }, 
-          "secondary": {
-            "server_name":"...", 
-            "resource_group":..."
-          },
-        "pair2": {
-          "admin_username":"...",
-          ...
+      defaults: '{
+        "server_credential_pairs": { 
+          "pair1": { 
+            "admin_username":"...", 
+            "admin_password":"...", 
+            "primary": {
+              "server_name":"...", 
+              "resource_group":..."
+            }, 
+            "secondary": {
+              "server_name":"...", 
+              "resource_group":..."
+            },
+          "pair2": {
+            "admin_username":"...",
+            ...
+          }
         }
       }' 
 ```
@@ -72,6 +74,26 @@ A developer could create a new failover group database on *pair1* like this:
 ```bash
 cf create-service csb-azure-mssql-db-failover-group medium medium-fog -c '{"server_pair":"pair1"}'
 ```
+
+### Azure Notes
+
+Azure SQL instances are [vCore model](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-service-tiers-vcore?tabs=azure-portal) and Gen5 hardware generation 
+unless overridden by `sku_name` parameter.
+
+CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-vcore-resource-limits-single-databases) as follows:  
+
+#### Core to sku mapping
+
+| Cores | Sku |
+|-------|-----|
+| 1  | P_S_Gen5_1 |
+| 2  | P_S_Gen5_2 |
+| 4  | P_Gen5_4   |
+| 8  | P_Gen5_8   |
+| 16 | GP_Gen5_16 |
+| 32 | BC_Gen5_32 |
+| 80 | BC_Gen5_80 |
+
 
 ## Binding Credentials
 

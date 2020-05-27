@@ -23,18 +23,24 @@ wait_for_service() {
 delete_service() {
     local SERVICE_NAME=$1; shift
     local LOCAL_RESULT=1
-    if cf delete-service -f "${SERVICE_NAME}"; then
-        wait_for_service "${SERVICE_NAME}" "delete in progress"
-        if cf service "${SERVICE_NAME}" | grep "delete failed" > /dev/null; then
-            echo "Failed to delete ${SERVICE_NAME}"
-            cf service "${SERVICE_NAME}"
-            LOCAL_RESULT=1
-        else
-            echo "Successfully deleted ${SERVICE_NAME}"
-            LOCAL_RESULT=0
+    for RETRY in 0 1; do
+        if cf delete-service -f "${SERVICE_NAME}"; then
+            wait_for_service "${SERVICE_NAME}" "delete in progress"
+            if cf service "${SERVICE_NAME}" | grep "delete failed" > /dev/null; then
+                echo "Failed to delete ${SERVICE_NAME}"
+                cf service "${SERVICE_NAME}"
+                LOCAL_RESULT=1
+                if [ $RETRY -eq 0 ]; then
+                    echo "Retry delete in 5..."
+                    sleep 5
+                fi
+            else
+                echo "Successfully deleted ${SERVICE_NAME}"
+                LOCAL_RESULT=0
+                break
+            fi
         fi
-    fi
-
+    done
     return ${LOCAL_RESULT}
 }
 

@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: csb-mysql
+  labels:
+    app: csb
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: csb
+    tier: mysql
+  clusterIP: None
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+  labels:
+    app: csb
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: csb-mysql
+  labels:
+    app: csb
+spec:
+  selector:
+    matchLabels:
+      app: csb
+      tier: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: csb
+        tier: mysql
+    spec:
+      containers:
+      - image: mysql:5.6
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secrets
+              key: rootpassword
+        - name: "MYSQL_DATABASE"
+          value: servicebroker
+        - name: "MYSQL_USER"
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secrets
+              key: dbuser
+        - name: "MYSQL_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secrets
+              key: dbpassword
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim

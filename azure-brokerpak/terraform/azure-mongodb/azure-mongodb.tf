@@ -26,44 +26,21 @@ variable failover_locations {type = list(string) }
 variable location { type = string }
 variable shard_key { type = string }
 variable ip_range_filter { type = string }
-variable enable_automatic_failover { 
-	type = bool
-	default = false
-}
-variable enable_multiple_write_locations {
-	type = bool
-	default = false
-}
-variable consistency_level {
-	type = string
-	default = "Session"
-}
-variable max_interval_in_seconds {
-	type = number
-	default = 5
-}
-variable max_staleness_prefix {
-	type= number
-	default = 100
-}
-
+variable enable_automatic_failover { type = bool }
+variable enable_multiple_write_locations { type = bool }
+variable consistency_level { type = string }
+variable max_interval_in_seconds { type = number }
+variable max_staleness_prefix {	type= number }
 variable labels { type = map }
 
 provider "azurerm" {
-  version = "=1.44.0"
+  version = "=2.9.0"
+  features {}
 
   subscription_id = var.azure_subscription_id
   client_id       = var.azure_client_id
   client_secret   = var.azure_client_secret
   tenant_id       = var.azure_tenant_id  
-}
-
-resource "random_string" "account_id" {
-	upper = false
-	special = false
-	lower = true
-	number = true
-	length = 12
 }
 
 locals {

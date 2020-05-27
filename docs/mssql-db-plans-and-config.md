@@ -6,12 +6,12 @@
 
 ## Plans
 
-| Plan       | CPUs | Storage Size |
+| Plan       | CPUs | Maximumum Storage Size |
 |------------|------|--------------|
 |small       | 2    | 50GB         |
 |medium      | 8    | 200GB        |
-|large       | 24   | 500GB        |
-|extra-large | 40   | 1TB          |
+|large       | 32   | 500GB        |
+|extra-large | 64   | 1TB          |
 
 ## Plan Configuration Parameters
 
@@ -19,9 +19,9 @@ The following plan parameters can be configured.
 
 | Parameter Name | Values              | Default |
 |-------------|---------------------|---------|
-| pricing_tier| GP_S, GP, BC, HS    |         |
-| storage_gb  | 5 - 4096            | 50      |
+| max_storage_gb  |             | 50      |
 | cores       | 1-64, multiple of 2 | 2       |
+
 
 ## Provision Parameters
 
@@ -36,6 +36,27 @@ The following parameters may be configured during service provisioning (`cf crea
 | azure_subscription_id | string | ID of Azure subscription for instance | config file value `azure.subscription_id` |
 | azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
 | azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `azure.client_secret` |
+| sku_name | string | Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) Will be computed from cores if empty. `az sql db list-editions -l <location> -o table` will show all valid values. | |
+
+### Azure Notes
+
+Azure SQL instances are [vCore model](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-service-tiers-vcore?tabs=azure-portal) and Gen5 hardware generation 
+unless overridden by `sku_name` parameter.
+
+CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-vcore-resource-limits-single-databases) as follows:  
+
+### Core to sku mapping
+
+| Cores | Sku |
+|-------|-----|
+| 1  | P_S_Gen5_1 |
+| 2  | P_S_Gen5_2 |
+| 4  | P_Gen5_4   |
+| 8  | P_Gen5_8   |
+| 16 | GP_Gen5_16 |
+| 32 | HS_Gen5_32 |
+| 80 | HS_Gen5_80 |
+
 
 ## Configuring Global Defaults
 
@@ -50,15 +71,17 @@ service:
   csb-azure-mssql-db:
     provision:
       defaults: '{ 
-        "server1": { 
-          "admin_username":"...", 
-          "admin_password":"...", 
-          "server_name":"...", 
-          "server_resource_group":..."
-        },
-        "server2": {
-          "admin_username":"...",
-          ...
+        "server_credentials": {
+          "server1": { 
+            "admin_username":"...", 
+            "admin_password":"...", 
+            "server_name":"...", 
+            "server_resource_group":..."
+          },
+          "server2": {
+            "admin_username":"...",
+            ...
+          }
         }
       }' 
 ```

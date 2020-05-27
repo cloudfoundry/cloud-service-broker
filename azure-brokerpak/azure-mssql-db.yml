@@ -27,46 +27,31 @@ plans:
   description: 'SQL Server latest version. Instance properties: General Purpose - Serverless ; 0.5 - 2 cores ; Max Memory: 6gb ; 50 GB storage ; auto-pause enabled after 1 hour of inactivity'
   display_name: "Small"
   properties:
-    pricing_tier: GP_S
-    cores: 2
-    storage_gb: 50
 - name: medium
   id: 3ee14bce-33e8-4d02-9850-023a66bfe120
   description: 'SQL Server latest version. Instance properties: General Purpose - Provisioned ; Provisioned Capacity ; 8 cores ; 200 GB storage'
   display_name: "Medium"
   properties:
-    pricing_tier: GP
     cores: 8
-    storage_gb: 200
+    max_storage_gb: 200
 - name: large
   id: 8f1c9c7b-80b2-49c3-9365-a3a059df9907
-  description: 'SQL Server latest version. Instance properties: Hyperscale ; Provisioned Capacity ; 24 cores ; Unlimited Storage ; 2 read replica ; Auto-failover group enabled'
+  description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 32 cores ; 500 GB storage'
   display_name: "Large"
   properties:
-    pricing_tier: HS
-    cores: 24
-    storage_gb: 500
+    cores: 32
+    max_storage_gb: 500
 - name: extra-large
   id: 09096759-58a8-41d0-96bf-39b02a0e4104
-  description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 80 cores ; 1 TB storage ; 1 read replica; Auto-failover group enabled'
+  description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 80 cores ; 1 TB storage'
   display_name: "Extra Large"
   properties:
-    pricing_tier: BC
-    cores: 40
-    storage_gb: 1024
+    cores: 80
+    max_storage_gb: 1024
 provision:
   plan_inputs:
-  - field_name: pricing_tier
-    required: true
-    type: string
-    details: The service tier of the instance.
-    enum:
-      GP_S: General Purpose tier - Serverless pricing model
-      GP: General Purpose tier - Provisioned pricing model
-      HS: Hyperscale tier
-      BC: Business Critical tier
+  user_inputs:
   - field_name: cores
-    required: false
     type: number
     default: 2
     details: Number vcores for the instance (upto the maximum allowed for the service tier)
@@ -74,15 +59,10 @@ provision:
       maximum: 80
       minimum: 1
       multipleOf: 2
-  - field_name: storage_gb
+  - field_name: max_storage_gb
     type: number
-    required: false
-    default: 50
-    details: Storage allocated to the database instance in GB
-    constraints:
-      maximum: 4096
-      minimum: 5      
-  user_inputs:    
+    default: 5
+    details: Maximum storage allocated to the database instance in GB      
   - field_name: db_name
     type: string
     details: Name for your database
@@ -111,6 +91,10 @@ provision:
     type: string
     details: Client secret for Azure principal
     default: ${config("azure.client_secret")}
+  - field_name: sku_name
+    type: string
+    details: Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) Will be computed from cores if empty.
+    default: ""       
   template_ref: terraform/azure-mssql-db/provision-mssql-db.tf 
   computed_inputs:
   - name: labels
