@@ -49,21 +49,23 @@ To globally configure *server_credential_pairs*, include the following in the co
 service:
   csb-azure-mssql-db-failover-group:
     provision:
-      defaults: '{ 
-        "pair1": { 
-          "admin_username":"...", 
-          "admin_password":"...", 
-          "primary": {
-            "server_name":"...", 
-            "resource_group":..."
-          }, 
-          "secondary": {
-            "server_name":"...", 
-            "resource_group":..."
-          },
-        "pair2": {
-          "admin_username":"...",
-          ...
+      defaults: '{
+        "server_credential_pairs": { 
+          "pair1": { 
+            "admin_username":"...", 
+            "admin_password":"...", 
+            "primary": {
+              "server_name":"...", 
+              "resource_group":..."
+            }, 
+            "secondary": {
+              "server_name":"...", 
+              "resource_group":..."
+            },
+          "pair2": {
+            "admin_username":"...",
+            ...
+          }
         }
       }' 
 ```

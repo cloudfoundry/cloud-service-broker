@@ -97,11 +97,13 @@ service:
   azure-mssql-db:
     provision:
       defaults: '{
+        "server_credentials": {
           "server_name": "csb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5",
           "admin_username": "KlpWlZCYHEyqdwuf",
           "admin_password": "KZe-.-rTuhK2ucDCx5UYQJyjsbum65SlC8_LTZg~Klr.2.1Yut-1weBdF1Xk-uo.",
           "resource_group": "csb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5"
-        }' 
+        }
+      }' 
 ```
 
 ### Plans Example
