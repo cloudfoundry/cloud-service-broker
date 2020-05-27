@@ -27,7 +27,7 @@ provision:
     type: string
     details: The name of the bucket. There is a single global namespace shared by
       all buckets so it MUST be unique.
-    default: pcf_sb_${counter.next()}_${time.nano()}
+    default: pcf_csb_${counter.next()}_${time.nano()}
     constraints:
       maxLength: 222
       minLength: 3
