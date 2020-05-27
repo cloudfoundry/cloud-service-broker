@@ -71,15 +71,17 @@ service:
   csb-azure-mssql-db:
     provision:
       defaults: '{ 
-        "server1": { 
-          "admin_username":"...", 
-          "admin_password":"...", 
-          "server_name":"...", 
-          "server_resource_group":..."
-        },
-        "server2": {
-          "admin_username":"...",
-          ...
+        "server_credentials": {
+          "server1": { 
+            "admin_username":"...", 
+            "admin_password":"...", 
+            "server_name":"...", 
+            "server_resource_group":..."
+          },
+          "server2": {
+            "admin_username":"...",
+            ...
+          }
         }
       }' 
 ```
