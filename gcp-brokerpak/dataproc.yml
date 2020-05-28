@@ -87,10 +87,6 @@ provision:
     field_name: bucket_name
     type: string
     details: Name of the bucket used for staging jobs.
-    constraints:
-      maxLength: 222
-      minLength: 3
-      pattern: ^[A-Za-z0-9_\.\-]+$
   - required: true
     field_name: name
     type: string
@@ -119,19 +115,10 @@ bind:
     field_name: private_key
     type: string
     details: Service account private key data. Base64 encoded JSON.
-    constraints:
-      minLength: 512
-      pattern: ^[A-Za-z0-9+/]*=*$
   - required: true
     field_name: project_id
     type: string
     details: ID of the project that owns the service account.
-    constraints:
-      examples:
-      - my-project
-      maxLength: 30
-      minLength: 6
-      pattern: ^[a-z0-9-]+$
 examples:
 - name: Basic Configuration
   description: Create a standard Dataproc cluster with a service account that can kick off jobs (roles/dataproc.editor) and has objectAdmin access to the bucket that's created.

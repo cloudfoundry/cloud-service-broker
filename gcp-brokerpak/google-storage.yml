@@ -109,10 +109,6 @@ provision:
     field_name: bucket_name
     type: string
     details: Name of the bucket this binding is for.
-    constraints:
-      maxLength: 222
-      minLength: 3
-      pattern: ^[A-Za-z0-9_\.]+$
   - required: true
     field_name: id
     type: string
