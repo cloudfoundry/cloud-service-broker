@@ -76,16 +76,10 @@ provision:
     type: string
     details: Name for your PostgreSQL instance
     default: csb-postgres-${request.instance_id}
-    constraints:
-      maxLength: 98
-      minLength: 6
-      pattern: ^[a-z][a-z0-9-]+$
   - field_name: db_name
     type: string
     details: Name for your database
     default: csb-db
-    constraints:
-      maxLength: 64
   - field_name: region
     type: string
     details: The region of the postgres instance.

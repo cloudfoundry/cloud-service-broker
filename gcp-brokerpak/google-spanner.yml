@@ -167,10 +167,6 @@ bind:
     field_name: Email
     type: string
     details: Email address of the service account.
-    constraints:
-      examples:
-      - pcf-spanner-ex312029@my-project.iam.gserviceaccount.com
-      pattern: ^pcf-spanner-[a-z0-9-]+@.+\.gserviceaccount\.com$
   - required: true
     field_name: Name
     type: string
@@ -182,9 +178,6 @@ bind:
     field_name: PrivateKeyData
     type: string
     details: Service account private key data. Base64 encoded JSON.
-    constraints:
-      minLength: 512
-      pattern: ^[A-Za-z0-9+/]*=*$
   - required: true
     field_name: ProjectId
     type: string
