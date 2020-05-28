@@ -132,51 +132,67 @@ provision:
     type: object
   template_ref: terraform/azure-eventhubs/azure-eventhubs.tf
   outputs:
-    - field_name: eventhub_rg_name
-      type: string
-      details: Resource group containing the eventhub namespace.
-    - field_name: namespace_name
-      type: string
-      details: Specifies the name of the EventHub Namespace.
-    - field_name: eventhub_name
-      type: string
-      details: Specifies the name of the EventHub. 
+  - field_name: eventhub_rg_name
+    type: string
+    details: Resource group containing the eventhub namespace.
+  - field_name: namespace_name
+    type: string
+    details: Specifies the name of the EventHub Namespace.
+  - field_name: eventhub_name
+    type: string
+    details: Specifies the name of the EventHub. 
 bind:
   plan_inputs: []
-  user_inputs: []
+  user_inputs:
+  - field_name: azure_tenant_id
+    type: string
+    details: Azure Tenant to create resource in
+    default: ${config("azure.tenant_id")}      
+  - field_name: azure_subscription_id
+    type: string
+    details: Azure Subscription to create resource in
+    default: ${config("azure.subscription_id")}      
+  - field_name: azure_client_id
+    type: string
+    details: Client ID of Azure principal 
+    default: ${config("azure.client_id")}      
+  - field_name: azure_client_secret
+    type: string
+    details: Client secret for Azure principal
+    default: ${config("azure.client_secret")}  
   computed_inputs:
-    - name: eventhub_rg_name
-      type: string
-      default: ${instance.details["eventhub_rg_name"]}
-      overwrite: true
-    - name: namespace_name
-      type: string
-      default: ${instance.details["namespace_name"]}
-      overwrite: true
-    - name: eventhub_name
-      type: string
-      default: ${instance.details["eventhub_name"]}
-      overwrite: true      
+  - name: eventhub_rg_name
+    type: string
+    default: ${instance.details["eventhub_rg_name"]}
+    overwrite: true
+  - name: namespace_name
+    type: string
+    default: ${instance.details["namespace_name"]}
+    overwrite: true
+  - name: eventhub_name
+    type: string
+    default: ${instance.details["eventhub_name"]}
+    overwrite: true      
   template_ref: terraform/azure-eventhubs/azure-eventhubs-bind.tf
   outputs: 
-    - field_name: event_hub_connection_string
-      type: string
-      details: The primary connection string for the authorization rule RootManageSharedAccessKey
-    - field_name: event_hub_name
-      type: string
-      details: Specifies the name of the EventHub Namespace resource. 
-    - field_name: namespace_connection_string
-      type: string
-      details: The primary connection string for the authorization rule RootManageSharedAccessKey
-    - field_name: namespace_name
-      type: string
-      details: Specifies the name of the EventHub Namespace. 
-    - field_name: shared_access_key_name
-      type: string
-      details: Set to default RootManageSharedAccessKey
-    - field_name: shared_access_key_value
-      type: string
-      details: The primary access key for the authorization rule RootManageSharedAccessKey.          
+  - field_name: event_hub_connection_string
+    type: string
+    details: The primary connection string for the authorization rule RootManageSharedAccessKey
+  - field_name: event_hub_name
+    type: string
+    details: Specifies the name of the EventHub Namespace resource. 
+  - field_name: namespace_connection_string
+    type: string
+    details: The primary connection string for the authorization rule RootManageSharedAccessKey
+  - field_name: namespace_name
+    type: string
+    details: Specifies the name of the EventHub Namespace. 
+  - field_name: shared_access_key_name
+    type: string
+    details: Set to default RootManageSharedAccessKey
+  - field_name: shared_access_key_value
+    type: string
+    details: The primary access key for the authorization rule RootManageSharedAccessKey.          
 examples:
 - name: eventhubs-basic
   description: Simple, secure, and scalable real-time data ingestion basic

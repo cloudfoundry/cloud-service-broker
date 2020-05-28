@@ -1,24 +1,9 @@
 #!/usr/bin/env bash
 
-wait_for_service() {
-  SERVICE_NAME=$1
-  OPERATION_IN_PROGRESS=$2
-  while cf service "${SERVICE_NAME}" | grep "${OPERATION_IN_PROGRESS}"; do
-    sleep 30
-  done
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-  LOCAL_RESULT=0
-  if [ $# -gt 2 ]; then
-    LOCAL_RESULT=1
-    if cf service "${SERVICE_NAME}" | grep "$3"; then
-      LOCAL_RESULT=0
-    fi
-  fi
+. "${SCRIPT_DIR}/functions.sh"
 
-  return ${LOCAL_RESULT}
-}
-
-set -o errexit
 set -o pipefail
 
 if [ -z "$1" ]; then
@@ -36,33 +21,18 @@ PLAN=$1; shift
 
 SERVICE_INSTANCE_NAME="${SERVICE}-${PLAN}-$$"
 
-if [ -z "$1" ]; then
-  cf create-service "${SERVICE}" "${PLAN}" "${SERVICE_INSTANCE_NAME}" || exit 0
-else
-  cf create-service "${SERVICE}" "${PLAN}" "${SERVICE_INSTANCE_NAME}" -c "$@" || exit 0
-fi
-
-RESULT=1
-if wait_for_service "${SERVICE_INSTANCE_NAME}" "create in progress" "create failed"; then
-  RESULT=0
-else
-  echo "Create service ${SERVICE_INSTANCE_NAME} should have failed."
-  cf service "${SERVICE_INSTANCE_NAME}"
-fi
-
-cf delete-service -f "${SERVICE_INSTANCE_NAME}"
-
-wait_for_service "${SERVICE_INSTANCE_NAME}" "delete in progress"
+create_service "${SERVICE}" "${PLAN}" "${SERVICE_INSTANCE_NAME}" "$@"
 
 if [ $? -ne 0 ]; then
-  echo "Purging service instance..."
-  cf purge-service-instance -f "${SERVICE_INSTANCE_NAME}"
-fi
-
-if [ ${RESULT} -eq 0 ]; then
+  if cf service ${SERVICE_INSTANCE_NAME}; then 
+    echo "Purging service instance..."
+    cf purge-service-instance -f "${SERVICE_INSTANCE_NAME}"
+  fi
   echo "$0 SUCCEEDED"
-else
-  echo "$0 FAILED"
+  exit 0
 fi
 
-exit ${RESULT}
+delete_service "${SERVICE_INSTANCE_NAME}"
+echo "$0 FAILED"
+
+exit 1

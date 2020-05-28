@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: csb
+  labels:
+    app: csb
+spec:
+  ports:
+    - port: 8080
+  selector:
+    app: csb
+    tier: frontend
+  type: LoadBalancer
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: csb
+  labels:
+    app: csb
+spec:
+  selector:
+    matchLabels:
+      app: csb
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: csb
+        tier: frontend
+    spec:
+      containers:
+      - image: csb
+        name: csb
+        imagePullPolicy: Never
+        args: ["serve", "--config", "/config/broker-config.yaml"]
+        env:
+        - name: DB_HOST
+          value: csb-mysql
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secrets
+              key: dbuser
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secrets
+              key: dbpassword
+        - name: PORT
+          value: "8080"
+        - name: SECURITY_USER_NAME
+          valueFrom:
+            secretKeyRef:
+              name: broker-secrets
+              key: username
+        - name: SECURITY_USER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: broker-secrets
+              key: userpassword              
+        ports:
+        - containerPort: 8080
+          name: csb
+        volumeMounts:
+        - name: config
+          mountPath: /config
+      volumes:
+      - name: config
+        configMap:
+          name: broker-config

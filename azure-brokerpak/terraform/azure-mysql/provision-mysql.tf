@@ -22,13 +22,15 @@ variable db_name { type = string }
 variable mysql_version { type = string }
 variable location { type = string }
 variable labels { type = map }
-variable pricing_tier { type = string }
 variable cores {type = string }
+variable sku_name { type = string }
 variable storage_gb {type = string }
 variable authorized_network {type = string}
+variable use_tls { type = bool }
 
 provider "azurerm" {
-  version = "=1.44.0"
+  version = "=2.9.0"
+  features {}
 
   subscription_id = var.azure_subscription_id
   client_id       = var.azure_client_id
@@ -37,6 +39,16 @@ provider "azurerm" {
 }
 
 locals {
+  instance_types = {
+    1 = "B_Gen5_1"
+    2 = "B_Gen5_2"
+    4 = "GP_Gen5_4"
+    8 = "MO_Gen5_8"
+    16 = "MO_Gen5_16"
+    32 = "MO_Gen5_32"
+    64 = "GP_Gen5_64"
+  }     
+  sku_name = length(var.sku_name) == 0 ? local.instance_types[var.cores] : var.sku_name    
   resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group
 }
 
@@ -71,7 +83,7 @@ resource "azurerm_mysql_server" "instance" {
   name                = lower(random_string.servername.result)
   location            = var.location
   resource_group_name = local.resource_group
-  sku_name = format("%s_Gen5_%d", var.pricing_tier, var.cores)
+  sku_name = local.sku_name
 
   storage_profile {
     storage_mb            = var.storage_gb * 1024
@@ -82,7 +94,7 @@ resource "azurerm_mysql_server" "instance" {
   administrator_login          = random_string.username.result
   administrator_login_password = random_password.password.result
   version                      = var.mysql_version
-  ssl_enforcement              = "Disabled"
+  ssl_enforcement              = var.use_tls ? "Enabled" : "Disabled"
   tags                         = var.labels
 }
 
@@ -116,3 +128,4 @@ output hostname { value = azurerm_mysql_server.instance.fqdn }
 output port { value = 3306 }
 output username { value = format( "%s@%s", azurerm_mysql_server.instance.administrator_login, azurerm_mysql_server.instance.name ) }
 output password { value = azurerm_mysql_server.instance.administrator_login_password }
+output use_tls { value = var.use_tls }

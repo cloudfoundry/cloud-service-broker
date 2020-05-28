@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 variable cores { type = number }
 variable instance_name { type = string }
 variable db_name { type = string }
@@ -27,9 +26,11 @@ variable azure_client_secret { type = string }
 variable postgres_version { type = string }
 variable sku_name { type = string }
 variable authorized_network {type = string}
+variable use_tls { type = bool }
 
 provider "azurerm" {
-  version = "=1.44.0"
+  version = "=2.9.0"
+  features {}
 
   subscription_id = var.azure_subscription_id
   client_id       = var.azure_client_id
@@ -73,23 +74,17 @@ resource "random_password" "password" {
 }
 
 resource "azurerm_postgresql_server" "instance" {
-  depends_on = [ azurerm_resource_group.azure-postgres ]    
-  name                = var.instance_name
-  location            = var.location
-  resource_group_name = local.resource_group
-
-  sku_name = local.sku_name
-
-  storage_profile {
-    storage_mb            = var.storage_gb * 1024
-    backup_retention_days = 7
-    geo_redundant_backup  = "Disabled"
-  }
-
+  depends_on                   = [ azurerm_resource_group.azure-postgres ]    
+  name                         = var.instance_name
+  location                     = var.location
+  resource_group_name          = local.resource_group
+  sku_name                     = local.sku_name
+  storage_mb                   = var.storage_gb * 1024
   administrator_login          = random_string.username.result
   administrator_login_password = random_password.password.result
   version                      = var.postgres_version
-  ssl_enforcement              = "Enabled"
+  ssl_enforcement_enabled      = var.use_tls
+  tags                         = var.labels  
 }
 
 resource "azurerm_postgresql_database" "instance-db" {
@@ -97,7 +92,7 @@ resource "azurerm_postgresql_database" "instance-db" {
   resource_group_name = local.resource_group
   server_name         = azurerm_postgresql_server.instance.name
   charset             = "UTF8"
-  collation           = "English_United States.1252"
+  collation           = "en-US"
 }
 
 resource "azurerm_postgresql_virtual_network_rule" "allow_subnet_id" {
@@ -122,3 +117,4 @@ output hostname { value = azurerm_postgresql_server.instance.fqdn }
 output port { value = 5432 }
 output username { value = format("%s@%s", random_string.username.result, azurerm_postgresql_server.instance.name) }
 output password { value = random_password.password.result }
+output use_tls { value = var.use_tls }

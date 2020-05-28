@@ -1,0 +1,214 @@
+# Copyright 2020 Pivotal Software, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+version: 1
+name: csb-azure-cosmosdb-sql
+id: 685e151f-3ad8-414f-ab5b-54abbb3dee02
+description: Azure CosmosDB Account - SQL API
+display_name: Azure CosmosDB Account - SQL API
+image_url: https://azurecomcdn.azureedge.net/cvt-e38d7e7665389e39a7df3f96fc03f8b8f42655e6546ecadbb21196dd1c82bc95/images/page/services/cosmosdb/dev-01-sql-api.svg
+documentation_url: https://docs.microsoft.com/en-us/azure/cosmos-db/
+support_url: https://docs.microsoft.com/en-us/azure/cosmos-db/faq
+tags: [azure, cosmos, cosmosdb, cosmos-sql, cosmosdb-sql, preview]
+plans:
+- name: small
+  id: ca38881c-2d6b-4db4-988c-d8e49f3293da
+  description: 'SQL Cosmos DB Account, no redundancy, 400 request units'
+  display_name: "small"
+- name: medium 
+  id: f666cd68-cbba-4c58-b532-bfc0cb533011
+  description: 'SQL Cosmos DB Account, single read failover location, 1,000 request units'
+  display_name: "medium"
+  properties:
+    request_units: 1000
+    failover_locations: [ "westus", "eastus" ]
+    enable_automatic_failover: true
+- name: large
+  id: 2d5ee55d-1315-40ca-a9e9-08f4f76e880f
+  description: 'SQL Cosmos DB Account, single read/write failover location, 10,000 request units'
+  display_name: "Large"
+  properties:
+    request_units: 10000
+    failover_locations: [ "westus", "eastus" ]
+    enable_multiple_write_locations: true
+    enable_automatic_failover: true
+provision:
+  plan_inputs: []
+  user_inputs:
+  - field_name: request_units
+    required: true
+    type: integer
+    details: The throughput of the MongoDB collection (RU/s). Must be set in increments of 100. The minimum value is 400.
+    constraints:
+      maximum: 100000
+      minimum: 400
+      multipleOf: 100  
+    default: 400
+  - field_name: failover_locations
+    type: array
+    details: A list of location for the Cosmos DB account. The first location is the default write location
+    default: [ "westus" ]
+  - field_name: instance_name
+    type: string
+    details: Account name for your Cosmos DB
+    default: csb${request.instance_id}
+    constraints:
+      maxLength: 44
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$ 
+  - field_name: resource_group
+    details: Name for the resource group for this instance
+    default: ''
+    constraints:
+      maxLength: 64
+      minLength: 0
+      pattern: ^[a-z][a-z0-9-]+$|^$
+  - field_name: db_name
+    type: string
+    details: Name for your Cosmos DB database
+    default: csb-db${request.instance_id}
+    constraints:
+      maxLength: 255
+      pattern: ^[a-z][a-z0-9-_]*$      
+  - field_name: location
+    type: string
+    details: The location of the CosmosDB account.
+    default: westus
+    enum:
+      eastasia: East Asia
+      southeastasia: South East Asia
+      centralus: Central US
+      eastus: East US
+      eastus2: East US 2
+      westus: West US
+      northcentralus: North Central US
+      southcentralus: South Central US
+      northeurope: North Europe
+      westeurope: West Europe
+      japanwest: Japan West
+      japaneast: Japan East
+      brazilsouth: Brazil South
+      australiaeast: Australia East
+      australiasoutheast: Australia South East
+      australiacentral: Australia Central
+      australiacentral2: Australia Central 2
+      southindia: South India
+      centralindia: Central India
+      westindia: West India
+      canadacentral: Canada Central
+      canadaeast: Canada East
+      uksouth: UK South
+      ukwest: UK West
+      westcentralus: West Central US
+      westus2: West US 2
+      koreacentral: Korea Central
+      koreasouth: Korea South
+      francecentral: France Central
+      uaenorth: UAE North
+      southafricanorth: South Africa North
+      southafricawest: South Africa West
+      germanycentral: Germany Central
+  - field_name: ip_range_filter
+    type: string
+    details: CosmosDB Firewall Support. This value specifies the set of IP addresses or IP address ranges in CIDR form to be included as the allowed list of client IP's for a given database account. IP addresses/ranges must be comma separated and must not contain any spaces. 0.0.0.0 allows access from Azure networks.  An empty string "" allows access from all public networks.
+    default: "0.0.0.0"
+  - field_name: consistency_level
+    type: string
+    default: Session
+    details: The Consistency Level to use for this CosmosDB Account - can be either BoundedStaleness, Eventual, Session, Strong or ConsistentPrefix
+    enum:
+      Strong: Strong
+      BoundedStaleness: BoundedStaleness
+      Session: Session
+      ConsistentPrefix: ConsistentPrefix
+      Eventual: Eventual
+  - field_name: max_interval_in_seconds
+    type: integer
+    details: (Optional) When used with the Bounded Staleness consistency level, this value represents the time amount of staleness (in seconds) tolerated. Accepted range for this value is 5 - 86400 (1 day). Defaults to 5. Required when consistency_level is set to BoundedStaleness.
+    default: 5
+    constraints:
+      minimum: 5
+      maximum: 86400
+  - field_name: max_staleness_prefix 
+    type: integer
+    details: (Optional) When used with the Bounded Staleness consistency level, this value represents the number of stale requests tolerated. Accepted range for this value is 10 – 2147483647. Defaults to 100. Required when consistency_level is set to BoundedStaleness.
+    default: 100
+    constraints:
+      minimum: 10
+      maximum: 2147483647
+  - field_name: enable_multiple_write_locations
+    type: boolean
+    default: false
+    details: Enable multi-master support for this Cosmos DB account.
+  - field_name: enable_automatic_failover
+    type: boolean
+    default: false
+    details: Enable automatic fail over for this Cosmos DB account.
+  - field_name: azure_tenant_id
+    type: string
+    details: Azure Tenant to create resource in
+    default: ${config("azure.tenant_id")}      
+  - field_name: azure_subscription_id
+    type: string
+    details: Azure Subscription to create resource in
+    default: ${config("azure.subscription_id")}      
+  - field_name: azure_client_id
+    type: string
+    details: Client ID of Azure principal 
+    default: ${config("azure.client_id")}      
+  - field_name: azure_client_secret
+    type: string
+    details: Client secret for Azure principal
+    default: ${config("azure.client_secret")}    
+  computed_inputs:
+  - name: labels
+    default: ${json.marshal(request.default_labels)}
+    overwrite: true
+    type: object
+  template_ref: terraform/azure-cosmosdb/provision-cosmosdb-sql.tf
+  outputs:
+  - field_name: cosmosdb_host_endpoint
+    type: string
+    details: The endpoint used to connect to the CosmosDB account
+  - field_name: cosmosdb_master_key
+    type: string
+    details: The Primary master key for the CosmosDB Account
+  - field_name: cosmosdb_readonly_master_key
+    type: string
+    details: The Primary read-only master Key for the CosmosDB Account
+  - field_name: cosmosdb_database_id
+    type: string
+    details: The CosmosDB Account ID
+bind:
+  plan_inputs: []
+  user_inputs: []
+  computed_inputs: []
+  template: ''
+  outputs: []
+examples:
+- name: cosmosdb-sql-small
+  description: Small CosmosDB
+  plan_id: ca38881c-2d6b-4db4-988c-d8e49f3293da
+  provision_params: {}
+  bind_params: {}
+- name: cosmosdb-sql-medium
+  description: Medium cosmosdb
+  plan_id: f666cd68-cbba-4c58-b532-bfc0cb533011
+  provision_params: {}
+  bind_params: {}
+- name: cosmosdb-sql-large
+  description: Large cosmosdb
+  plan_id: 2d5ee55d-1315-40ca-a9e9-08f4f76e880f
+  provision_params: {}
+  bind_params: {}

@@ -20,6 +20,8 @@ The service broker provides support for:
 |[GCP Spanner](https://cloud.google.com/spanner/)|[Azure SQL Failover Groups](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/)||
 |[GCP Dataproc](https://cloud.google.com/dataproc/docs/overview/)|[Azure Eventhubs](https://azure.microsoft.com/en-us/services/event-hubs/)||
 ||[Azure Database for PostgreSQL](https://azure.microsoft.com/en-us/services/postgresql)||
+||[Azure Storage Account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview)||
+||[Azure CosmosDB](https://azure.microsoft.com/en-us/services/cosmos-db/)||
 
 ## Installation
 

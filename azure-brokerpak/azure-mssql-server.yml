@@ -58,6 +58,10 @@ provision:
       maxLength: 64
       minLength: 0
       pattern: ^[A-Za-z0-9~_.-]+$|^$               
+  - field_name: authorized_network
+    type: string
+    details: The subnet ID of the Azure VNET to which the instance is locked down to. If left unspecified, 
+    default: default         
   - field_name: location
     type: string
     details: The location of the Azure SQL Database
