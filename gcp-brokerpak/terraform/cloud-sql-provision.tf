@@ -26,7 +26,7 @@ variable credentials  { type = string }
 variable project  { type = string }
 
 provider "google" {
-  version = "~> 3.5.0"
+  version = ">=3.17.0"
   credentials = var.credentials
   project     = var.project
   
