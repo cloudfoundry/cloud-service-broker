@@ -21,12 +21,12 @@ display_name: Google Cloud Memorystore for Redis
 image_url: https://cloud.google.com/_static/images/cloud/products/logos/svg/cache.svg
 documentation_url: https://cloud.google.com/memorystore/docs/redis/
 support_url: https://cloud.google.com/support/
-tags: [gcp, redis, preview]
+tags: [gcp, redis]
 plans:
 - name: basic
   id: 6ed44104-8777-4b57-8c03-826b3af7d0be
   description: A basic plan with no failover. Data will be lost on maintenance or cluster changes.
-  display_name: "Basic"
+  display_name: "basic"
   properties:
     service_tier: BASIC
 - name: ha
@@ -92,48 +92,7 @@ provision:
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
-  template: |-
-    variable service_tier { type = string }
-    variable authorized_network { type = string }
-    variable display_name { type = string }
-    variable instance_id { type = string }
-    variable region { type = string }
-    variable memory_size_gb { type = number }
-    variable labels { type = map }
-    variable credentials { type = string }
-    variable project { type = string }  
-
-    provider "google" {
-      version = "=3.5.0"
-      credentials = var.credentials
-      project     = var.project      
-    }
-
-    data "google_compute_network" "authorized-network" {
-      name = var.authorized_network
-    }
-
-    resource "google_redis_instance" "instance" {
-      name               = var.instance_id
-      tier               = var.service_tier
-      memory_size_gb     = var.memory_size_gb
-      display_name       = var.display_name
-      region             = var.region
-      authorized_network = data.google_compute_network.authorized-network.self_link
-      labels             = var.labels
-
-      timeouts {
-        create = "15m"
-        update = "15m"
-        delete = "15m"
-      }
-    }
-
-    output memory_size_gb { value = google_redis_instance.instance.memory_size_gb }
-    output service_tier { value = "${google_redis_instance.instance.tier}" }
-    output redis_version { value = "${google_redis_instance.instance.redis_version}" }
-    output host { value = "${google_redis_instance.instance.host}" }
-    output port { value = google_redis_instance.instance.port }
+  template_ref: terraform/provision-redis.tf
   outputs:
   - required: true
     field_name: memory_size_gb

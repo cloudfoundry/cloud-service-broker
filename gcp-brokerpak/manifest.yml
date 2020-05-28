@@ -37,6 +37,5 @@ service_definitions:
 - google-postgresql.yml
 - google-spanner.yml
 - google-bigquery.yml
-
-
+- dataproc.yml
 

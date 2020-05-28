@@ -18,7 +18,7 @@ The service broker provides support for:
 |[GCP BigQuery](https://cloud.google.com/bigquery/)|[MongoDB](https://docs.microsoft.com/en-us/azure/cosmos-db/mongodb-introduction) for [CosmosDB](https://azure.microsoft.com/en-us/services/cosmos-db/)|[Amazon RDS for PostgreSQL](https://aws.amazon.com/rds/postgresql/)|
 |[GCP Cloud Storage](https://cloud.google.com/storage/)|[Azure SQL](https://docs.microsoft.com/en-us/azure/sql-database/)||
 |[GCP Spanner](https://cloud.google.com/spanner/)|[Azure SQL Failover Groups](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/)||
-||[Azure Eventhubs](https://azure.microsoft.com/en-us/services/event-hubs/)||
+|[GCP Dataproc](https://cloud.google.com/dataproc/docs/overview/)|[Azure Eventhubs](https://azure.microsoft.com/en-us/services/event-hubs/)||
 ||[Azure Database for PostgreSQL](https://azure.microsoft.com/en-us/services/postgresql)||
 
 ## Installation
