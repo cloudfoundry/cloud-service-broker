@@ -167,6 +167,10 @@ bind:
     field_name: Email
     type: string
     details: Email address of the service account.
+    constraints:
+      examples:
+      - pcf-spanner-ex312029@my-project.iam.gserviceaccount.com
+      pattern: ^pcf-spanner-[a-z0-9-]+@.+\.gserviceaccount\.com$
   - required: true
     field_name: Name
     type: string

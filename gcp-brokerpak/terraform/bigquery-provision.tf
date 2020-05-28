@@ -5,7 +5,7 @@ variable region { type = string }
 variable instance_name { type = string }
 
 provider "google" {
-  version = ">=3.17.0"
+  version = ">=3.5.0"
   credentials = var.credentials
   project     = var.project
   region      = var.region 
