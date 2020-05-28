@@ -4,9 +4,9 @@ variable role { type = string }
 variable service_account_name {type = "string"}
 variable service_account_display_name {type = "string"}
 
-# provider "google-beta" {
-#     version     = "2.7.0"
-# }
+provider "google-beta" {
+    version     = "2.7.0"
+}
 
 resource "google_service_account" "account" {
     account_id = var.service_account_name

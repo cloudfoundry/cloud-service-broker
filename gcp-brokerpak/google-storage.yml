@@ -108,7 +108,11 @@ provision:
   - required: true
     field_name: bucket_name
     type: string
-    details: Name of the bucket this binding is for. (bucket_name)
+    details: Name of the bucket this binding is for.
+    constraints:
+      maxLength: 222
+      minLength: 3
+      pattern: ^[A-Za-z0-9_\.]+$
   - required: true
     field_name: id
     type: string
@@ -152,6 +156,10 @@ bind:
     field_name: Email
     type: string
     details: Email address of the service account.
+    constraints:
+      examples:
+      - pcf-binding-ex312029@my-project.iam.gserviceaccount.com
+      pattern: ^pcf-binding-[a-z0-9-]+@.+\.gserviceaccount\.com$
   - required: true
     field_name: Name
     type: string

@@ -32,6 +32,9 @@ env_config_mapping:
   GOOGLE_PROJECT: gcp.project
 service_definitions:
 - google-storage.yml
+- google-redis.yml
 - google-mysql.yml
+- google-postgresql.yml
 - google-spanner.yml
 - google-bigquery.yml
+- dataproc.yml
