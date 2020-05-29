@@ -27,7 +27,7 @@ provision:
     type: string
     details: The name of the bucket. There is a single global namespace shared by
       all buckets so it MUST be unique.
-    default: pcf_sb_${counter.next()}_${time.nano()}
+    default: pcf_csb_${counter.next()}_${time.nano()}
     constraints:
       maxLength: 222
       minLength: 3
@@ -132,41 +132,22 @@ bind:
     field_name: Email
     type: string
     details: Email address of the service account.
-    constraints:
-      examples:
-      - pcf-binding-ex312029@my-project.iam.gserviceaccount.com
-      pattern: ^pcf-binding-[a-z0-9-]+@.+\.gserviceaccount\.com$
   - required: true
     field_name: Name
     type: string
     details: The name of the service account.
-    constraints:
-      examples:
-      - pcf-binding-ex312029
   - required: true
     field_name: PrivateKeyData
     type: string
     details: Service account private key data. Base64 encoded JSON.
-    constraints:
-      minLength: 512
-      pattern: ^[A-Za-z0-9+/]*=*$
   - required: true
     field_name: ProjectId
     type: string
     details: ID of the project that owns the service account.
-    constraints:
-      examples:
-      - my-project
-      maxLength: 30
-      minLength: 6
-      pattern: ^[a-z0-9-]+$
   - required: true
     field_name: UniqueId
     type: string
     details: Unique and stable ID of the service account.
-    constraints:
-      examples:
-      - "112447814736626230844"
 examples:
 - name: Basic Configuration
   description: Create a bucket with a service account that can create/read/delete
