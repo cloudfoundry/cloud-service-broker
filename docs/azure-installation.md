@@ -16,6 +16,59 @@ The services need to be provisioned in the same Azure account that the foundatio
 - client id
 - client secret
 
+#### Serrvice Principal Roles and Required Providers
+The subscription will require registered providers for each of the services that will be deployed.
+
+> If the service principal being used has the `Contributor` role, provider registration should be automatic and the following can just be used for reference. 
+
+You can list the providers in the subscription, and make sure that the namespace is registered. For example, if you want to enable Service Bus service, `Microsoft.ServiceBus` should be registered. If the specific provider is not registered, you need to run `azure provider register <PROVIDER-NAME>` to register it.
+
+```
+$ azure provider list
+info:    Executing command provider list
++ Getting ARM registered providers
+data:    Namespace                  Registered
+data:    -------------------------  -------------
+data:    Microsoft.Batch            Registered
+data:    Microsoft.Cache            Registered
+data:    Microsoft.Compute          Registered
+data:    Microsoft.DocumentDB       Registered
+data:    Microsoft.EventHub         Registered
+data:    microsoft.insights         Registered
+data:    Microsoft.KeyVault         Registered
+data:    Microsoft.MySql            Registered
+data:    Microsoft.Network          Registering
+data:    Microsoft.ServiceBus       Registered
+data:    Microsoft.Sql              Registered
+data:    Microsoft.Storage          Registered
+data:    Microsoft.ApiManagement    NotRegistered
+data:    Microsoft.Authorization    Registered
+data:    Microsoft.ClassicCompute   NotRegistered
+data:    Microsoft.ClassicNetwork   NotRegistered
+data:    Microsoft.ClassicStorage   NotRegistered
+data:    Microsoft.Devices          NotRegistered
+data:    Microsoft.Features         Registered
+data:    Microsoft.HDInsight        NotRegistered
+data:    Microsoft.Resources        Registered
+data:    Microsoft.Scheduler        Registered
+data:    Microsoft.ServiceFabric    NotRegistered
+data:    Microsoft.StreamAnalytics  NotRegistered
+data:    Microsoft.Web              NotRegistered
+info:    provider list command OK
+```
+
+##### Services and their required providers
+| Service | Namespace |
+|---------|-----------|
+| redis   | `Microsoft.Cache` |
+| mysql   | `Microsoft.DBforMySQL` |
+| mssql   | `Microsoft.Sql` |
+| mongodb | `Microsoft.DocumentDB` |
+| eventhubs | `Microsoft.EventHub` |
+| postgresql | `Microsoft.DBforPostgreSQL` |
+| storage | `Microsoft.Storage` |
+| cosmosdb | `Microsoft.DocumentDB` |
+
 ### MySQL Database for Broker State
 The broker keeps service instance and binding information in a MySQL database. 
 
@@ -38,7 +91,6 @@ Fetch a pre-built broker and brokerpak and bind it to a `cf create-service` mana
 
 The following tools are needed on your workstation:
 - [cf cli](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
-
 
 ### Assumptions
 
