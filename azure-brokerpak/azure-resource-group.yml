@@ -89,7 +89,11 @@ provision:
   - field_name: azure_client_secret
     type: string
     details: Client secret for Azure principal
-    default: ${config("azure.client_secret")}          
+    default: ${config("azure.client_secret")}    
+  - field_name: skip_provider_registration
+    type: boolean
+    details: Skip automatic Azure provider registration, set to true if service principal being used does not have rights to register providers
+    default: false          
   template_ref: terraform/azure-resource-group/resource-group-provision.tf 
   computed_inputs:
   - name: labels

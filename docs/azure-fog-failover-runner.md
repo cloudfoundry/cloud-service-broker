@@ -21,6 +21,7 @@ The only plan is *standard*.
 | azure_subscription_id | string | ID of Azure subscription for instance | config file value `azure.subscription_id` |
 | azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
 | azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `azure.client_secret` |
+| skip_provider_registration | boolean | `true` to skip automatic Azure provider registration, set if service principal being used does not have rights to register providers | `false` |
 
 ## Binding Credentials
 

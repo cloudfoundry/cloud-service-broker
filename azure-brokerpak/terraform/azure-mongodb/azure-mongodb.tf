@@ -32,6 +32,7 @@ variable consistency_level { type = string }
 variable max_interval_in_seconds { type = number }
 variable max_staleness_prefix {	type= number }
 variable labels { type = map }
+variable skip_provider_registration { type = bool }
 
 provider "azurerm" {
   version = "=2.9.0"
@@ -41,6 +42,8 @@ provider "azurerm" {
   client_id       = var.azure_client_id
   client_secret   = var.azure_client_secret
   tenant_id       = var.azure_tenant_id  
+
+  skip_provider_registration = var.skip_provider_registration
 }
 
 locals {

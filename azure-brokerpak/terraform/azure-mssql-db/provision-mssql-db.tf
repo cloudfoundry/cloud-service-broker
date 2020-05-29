@@ -23,6 +23,7 @@ variable labels { type = map }
 variable sku_name { type = string }
 variable cores { type = number }
 variable max_storage_gb { type = number }
+variable skip_provider_registration { type = bool }
 
 provider "azurerm" {
   version = "=2.9.0"
@@ -32,6 +33,8 @@ provider "azurerm" {
   client_id       = var.azure_client_id
   client_secret   = var.azure_client_secret
   tenant_id       = var.azure_tenant_id  
+
+  skip_provider_registration = var.skip_provider_registration
 }
 
 data "azurerm_sql_server" "azure_sql_db_server" {

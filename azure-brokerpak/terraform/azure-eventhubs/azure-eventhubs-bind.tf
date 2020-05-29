@@ -19,6 +19,7 @@ variable azure_tenant_id { type = string }
 variable azure_subscription_id { type = string }
 variable azure_client_id { type = string }
 variable azure_client_secret { type = string }
+variable skip_provider_registration { type = bool }
 
 provider "azurerm" {
   version = "=2.9.0"
@@ -28,6 +29,8 @@ provider "azurerm" {
   client_id       = var.azure_client_id
   client_secret   = var.azure_client_secret
   tenant_id       = var.azure_tenant_id  
+
+  skip_provider_registration = var.skip_provider_registration
 }
 
 data "azurerm_eventhub_namespace" "ns" {
