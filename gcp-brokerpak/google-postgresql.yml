@@ -177,7 +177,7 @@ bind:
 examples:
 - name: small configuration
   description: Create a small postgres instance
-  plan_id: 8809fe67-99b5-48dd-a6dd-890ee45e86be
+  plan_id: 85b27a04-8695-11ea-818a-274131861b81
   provision_params: {}
   bind_params: {}
   bind_can_fail: true
