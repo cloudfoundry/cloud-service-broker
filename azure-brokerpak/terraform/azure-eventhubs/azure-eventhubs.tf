@@ -24,6 +24,7 @@ variable auto_inflate_enabled { type = bool }
 variable partition_count { type = number }
 variable message_retention { type = number }
 variable labels { type = map }
+variable skip_provider_registration { type = bool }
 
 provider "azurerm" {
   version = "=2.9.0"
@@ -33,6 +34,8 @@ provider "azurerm" {
   client_id       = var.azure_client_id
   client_secret   = var.azure_client_secret
   tenant_id       = var.azure_tenant_id  
+
+  skip_provider_registration = var.skip_provider_registration
 }
 
 locals{

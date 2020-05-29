@@ -39,6 +39,7 @@ The following parameters may be configured during service provisioning (`cf crea
 | azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `azure.client_secret` |
 | sku_name | string | Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) Will be computed from cores if empty. `az sql db list-editions -l <location> -o table` will show all valid values. | |
 | authorized_network | string | The Azure subnet ID (long form) that the instance is connected to via a service endpoint. The subnet must have the `Microsoft.sql` service enabled. | |
+| skip_provider_registration | boolean | `true` to skip automatic Azure provider registration, set if service principal being used does not have rights to register providers | `false` |
 
 Note: Currently Azure SQL is not available in all regions. The enum in the YML lists all the valid regions as of 2/12/2020
 

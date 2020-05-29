@@ -116,6 +116,10 @@ provision:
     type: string
     details: Client secret for Azure principal
     default: ${config("azure.client_secret")}
+  - field_name: skip_provider_registration
+    type: boolean
+    details: Skip automatic Azure provider registration, set to true if service principal being used does not have rights to register providers
+    default: false    
   template_ref: terraform/azure-mssql-server/mssql-server-provision.tf 
   computed_inputs:
   - name: labels

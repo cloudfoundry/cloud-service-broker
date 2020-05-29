@@ -16,10 +16,18 @@ The services need to be provisioned in the same Azure account that the foundatio
 - client id
 - client secret
 
-#### Serrvice Principal Roles and Required Providers
+#### Service Principal Roles and Required Providers
 The subscription will require registered providers for each of the services that will be deployed.
 
 > If the service principal being used has the `Contributor` role, provider registration should be automatic and the following can just be used for reference. 
+
+> If the service principal being used does not have rights for automatic provider registration, the broker should be configured to disable this feature.
+> Make sure the following is part of the `provision.defaults` part of the config file:
+> ```yaml
+> provision: 
+>   defaults: '{
+>     "skip_provider_registration": true
+>   }' 
 
 You can list the providers in the subscription, and make sure that the namespace is registered. For example, if you want to enable Service Bus service, `Microsoft.ServiceBus` should be registered. If the specific provider is not registered, you need to run `azure provider register <PROVIDER-NAME>` to register it.
 

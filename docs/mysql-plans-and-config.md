@@ -47,6 +47,7 @@ The following parameters (as well as those above) may be configured during servi
 | azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `azure.client_secret` |
 | authorized_network  | string| Subnet ID (the long version) of the VNET/Subnet that is attached to this instance to allow remote access. By default no VNETs are allowed access. || sku_name | string |[Azure sku](https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) (typically, tier [`B`,`GP`,`MO`] + family [`Gen4`,`Gen5`] + *cores*, e.g. `B_Gen4_1`, `GP_Gen5_8`) *overrides* `cores` conversion into sku per table above
 | use_tls | boolean |Use TLS for DB connections | `true` |
+| skip_provider_registration | boolean | `true` to skip automatic Azure provider registration, set if service principal being used does not have rights to register providers | `false` |
 
 Note: Currently MySQL is not available in all regions. The enum in the YML lists all the valid regions as of 2/12/2020
 
