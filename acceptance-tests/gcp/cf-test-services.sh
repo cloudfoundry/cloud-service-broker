@@ -16,7 +16,7 @@ fi
 
 NETWORK=$1; shift
 
-allServices=("google-mysql")
+allServices=(  "csb-google-postgres")
 
 for s in ${allServices[@]}; do
   create_service "${s}" small "${s}-$$" "{\"authorized_network\": \"${NETWORK}\"}" &
@@ -57,9 +57,3 @@ else
 fi
 
 exit ${RESULT}
-
-
-
-
-
-
