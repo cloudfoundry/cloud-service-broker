@@ -91,51 +91,54 @@ provision:
 
 ### Provision Default Example
 
-The Azure MS SQL DB service (azure-mssql-db) provisions databases on an existing MS SQL server. Configuring the server credentials looks like this:
+The Azure MS SQL DB service (csb-azure-mssql-db) provisions databases on an existing MS SQL server. Configuring the server credentials looks like this:
 ```yaml
 service:
-  azure-mssql-db:
+  csb-azure-mssql-db:
     provision:
       defaults: '{
         "server_credentials": {
-          "server_name": "csb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5",
-          "admin_username": "KlpWlZCYHEyqdwuf",
-          "admin_password": "KZe-.-rTuhK2ucDCx5UYQJyjsbum65SlC8_LTZg~Klr.2.1Yut-1weBdF1Xk-uo.",
-          "resource_group": "csb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5"
+          "sql-server1": { 
+            "server_name":"csb-azsql-svr-b2d43b57-9396-4a8c-8592-6696e7b1d84d", 
+            "admin_username":"TIrtZNKlGQEhmOwR", 
+            "admin_password":"lSFMJ..PoD3H_wZ2cNLNgn9uTBwWskYkMzBkN6mN5A1ZL.V6t0qrebkYeyDYYnW7", 
+            "server_resource_group":"eb-test-rg1" 
+          }, 
+          "sql-server2": { 
+            "server_name":"csb-azsql-svr-dc6f6028-2c01-4d70-b6e6-81ddaaf6b56a", 
+            "admin_username":"UomUxvtkVQxtkGKy", 
+            "admin_password":"At76iTk0o6HkNfR1ZrNCrOZ6wZIWz~QECrp7H-U63.uH8JA-cWpFZaG_C.2MXaEm", 
+            "server_resource_group":"eb-test-rg1" 
+          }
         }
       }' 
 ```
 
 ### Plans Example
 
-The Azure MS SQL DB service (azure-mssql-db) can also have its plans augmented to support more than one existing DB server:
+The Azure MS SQL DB service (csb-azure-mssql-db) can also have its plans augmented to support more than one existing DB server:
 ```yaml
 service:
-  azure-mssql-db:
+  csb-azure-mssql-db:
     plans: '[
       {
         "id":"881de5d9-e078-44e7-bed5-26faadabda3c",
-        "name":"small",
-        "description":"2cores, 10GB storage DB on server csb-azsql-test-db4",
-        "pricing_tier":"GP",
-        "cores":"2",
-        "storage_gb":"10",
-        "server_name":"csb-azsql-test-db4",
-        "admin_username":"eqVrU6vcTBvgfiqj",
-        "admin_password":"BI@G9a9nCnXIV4CV",
-        "resource_group":"csb-azsql-test-db4"
+        "name":"standard-S0",
+        "description":"DTU: S0 - 10DTUS, 250GB storage",      
+        "sku_name":"S0"
       },
       {
         "id":"1a1de5d9-e078-44e7-bed5-266aadabdaa6",
-        "name":"small",
-        "description":"2cores, 10GB storage DB on server csb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5",
-        "pricing_tier":"GP",
-        "cores":"2",
-        "storage_gb":"10",
-        "server_name": "csb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5",
-        "admin_username": "KlpWlZCYHEyqdwuf",
-        "admin_password": "KZe-.-rTuhK2ucDCx5UYQJyjsbum65SlC8_LTZg~Klr.2.1Yut-1weBdF1Xk-uo.",
-        "resource_group": "csb-azsql-svr-52539613-83bc-4f57-9ed8-8a98ebc394e5"
+        "name":"premium-P1",
+        "description":"DTU: P1 - 125DTUS, 500GB storage",      
+        "sku_name":"P1"
+      },
+      {
+        "id":"1a1de5d9-e079-44e7-bed5-266aadabdaa6",
+        "name":"standard-S3-server1",
+        "description":"Server1 DB - DTU: S3 - 100, 250GB storage",      
+        "sku_name":"S3",
+        "server":"sql-server1"
       }
     ]'
 ```
