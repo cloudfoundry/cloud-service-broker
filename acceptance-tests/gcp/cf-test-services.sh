@@ -19,28 +19,38 @@ NETWORK=$1; shift
 allServices=(  "csb-google-mysql" "csb-google-redis")
 
 for s in ${allServices[@]}; do
-  create_service "${s}" small "${s}-$$" "{\"authorized_network\": \"${NETWORK}\"}" &
+  
+  if [  ${s} == "csb-google-redis"  ]
+    then
+        create_service "${s}" basic "${s}-$$" "{\"authorized_network\": \"${NETWORK}\"}" &
+    else
+       create_service "${s}" small "${s}-$$" "{\"authorized_network\": \"${NETWORK}\"}" &
+  fi
+
 done
 
 if wait; then
   RESULT=0
   for s in ${allServices[@]}; do
-    if [ $# -gt 0 ]; then
-      if "${SCRIPT_DIR}/../cf-validate-credhub.sh" "${s}-$$"; then
-        echo "SUCCEEDED: ${SCRIPT_DIR}/../cf-validate-credhub.sh ${s}-$$"
-      else
-        RESULT=1
-        echo "FAILED: ${SCRIPT_DIR}/../cf-validate-credhub.sh" "${s}-$$"
-        break
-      fi
-    fi
-    if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}-$$"; then
-      echo "SUCCEEDED: ${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}-$$"
-    else
-      RESULT=1
-      echo "FAILED: ${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}-$$"
-      break
-    fi
+      if [  ${s} != "csb-google-redis"  ]; then    
+          if [ $# -gt 0 ]; then
+              if "${SCRIPT_DIR}/../cf-validate-credhub.sh" "${s}-$$"; then
+                  echo "SUCCEEDED: ${SCRIPT_DIR}/../cf-validate-credhub.sh ${s}-$$"
+                else
+                  RESULT=1
+                  echo "FAILED: ${SCRIPT_DIR}/../cf-validate-credhub.sh" "${s}-$$"
+                  break
+                fi    
+          fi
+       
+          if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}-$$"; then
+            echo "SUCCEEDED: ${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}-$$"
+          else
+            RESULT=1
+            echo "FAILED: ${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}-$$"
+            break
+          fi
+      fi    
   done
 fi
 
