@@ -31,7 +31,7 @@ The following parameters may be configured during service provisioning (`cf crea
 |----------------|------|-------------|---------|
 | db_name | string | database name | csb-fog-db-*instance_id* |
 | server  | string | server name from *server_credentials* on which to create the database | |
-| server_credentials | JSON | list of server credentials on which databases can be created, *server* must match one of *name*. Format: `{ "name": { "server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."}, ...}`
+| server_credentials | JSON | list of server credentials on which databases can be created, *server* must match one of *name*. Format: `{ "name1": { "server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."}, "name2":{"server_name":..., ...}...}`
 | azure_tenant_id | string | ID of Azure tenant for instance | config file value `azure.tenant_id` |
 | azure_subscription_id | string | ID of Azure subscription for instance | config file value `azure.subscription_id` |
 | azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
