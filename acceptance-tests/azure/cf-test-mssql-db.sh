@@ -22,6 +22,12 @@ if create_service csb-azure-resource-group standard "${SERVER_RG}" "{\"instance_
             \"admin_username\":\"${USERNAME}\", \
             \"admin_password\":\"${PASSWORD}\", \
             \"server_resource_group\":\"${SERVER_RG}\" \
+          }, \
+          \"fail_server\": { \
+            \"server_name\":\"missing\", \
+            \"admin_username\":\"bogus\", \
+            \"admin_password\":\"bad-password\", \
+            \"server_resource_group\":\"rg\" \
           } \
         } \
       }"

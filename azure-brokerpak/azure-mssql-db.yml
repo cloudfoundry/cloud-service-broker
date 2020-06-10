@@ -74,7 +74,7 @@ provision:
     details: Name of server from server_credentials to create database upon
   - field_name: server_credentials
     type: object
-    details: 'JSON has of server credentials. { "name":{"server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."},...}'
+    details: 'JSON has of server credentials. { "name1":{"server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."},"name2":{...}...}'
   - field_name: azure_tenant_id
     type: string
     details: Azure Tenant to create resource in
@@ -97,7 +97,7 @@ provision:
     default: false    
   - field_name: sku_name
     type: string
-    details: Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) Will be computed from cores if empty.
+    details: Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8) Will be computed from cores if empty.
     default: ""       
   template_ref: terraform/azure-mssql-db/provision-mssql-db.tf 
   computed_inputs:
