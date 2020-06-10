@@ -22,8 +22,8 @@ platforms:
   arch: amd64
 terraform_binaries:
 - name: terraform
-  version: 0.12.25
-  source: https://github.com/hashicorp/terraform/archive/v0.12.25.zip  
+  version: 0.12.26
+  source: https://github.com/hashicorp/terraform/archive/v0.12.26.zip  
 - name: terraform-provider-azurerm
   version: 2.9.0
   source: https://github.com/terraform-providers/terraform-provider-azurerm/archive/v2.9.0.zip
@@ -34,8 +34,8 @@ terraform_binaries:
   version: 1.9.0
   source: https://releases.hashicorp.com/terraform-provider-mysql/1.9.0/terraform-provider-mysql_1.9.0_linux_amd64.zip 
 - name: terraform-provider-null
-  version: 2.1.0
-  source: https://releases.hashicorp.com/terraform-provider-null/2.1.0/terraform-provider-null_2.1.0_linux_amd64.zip
+  version: 2.1.2
+  source: https://releases.hashicorp.com/terraform-provider-null/2.1.2/terraform-provider-null_2.1.2_linux_amd64.zip
 - name: psqlcmd
   version: 0.1.0
   source: https://packages.microsoft.com/config/rhel/7/packages-microsoft-prod.rpm
