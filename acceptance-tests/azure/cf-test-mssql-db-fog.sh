@@ -37,6 +37,18 @@ if create_service csb-azure-resource-group standard "${SERVER_RG}" "{\"instance_
               \"server_name\":\"${SECONDARY_SERVER_NAME}\", \
               \"resource_group\":\"${SERVER_RG}\" \
             } \
+          }, \
+          \"test-fail\":{ \
+            \"admin_username\":\"foo\", \
+            \"admin_password\":\"bar\", \
+            \"primary\":{ \
+              \"server_name\":\"s1\", \
+              \"resource_group\":\"rg\" \
+            }, \
+            \"secondary\":{ \
+              \"server_name\":\"s2\", \
+              \"resource_group\":\"rg\" \
+            } \
           } \
         } \
       }"

@@ -61,8 +61,9 @@ Brokerpak configuration values:
 |----------------------|------|-------------|------------------|
 | <tt>GSB_BROKERPAK_BUILTIN_PATH</tt> | brokerpak.builtin.path | string | <p>Path to search for .brokerpak files, default: <code>./</code></p>|
 |<tt>GSB_BROKERPAK_CONFIG</tt>|brokerpak.config| string | JSON global config for broker pak services|
-||service.*service-name*.provision.defaults| string | JSON provision defaults override for *service-name*|
-||services.*service-name*.plans| string | JSON plan collection to augment plans for *service-name*|
+|<tt>GSB_PROVISION_DEFAULTS</tt>|provision.defaults| string | JSON global provision defaults|
+|<tt>GSB_SERVICE_*SERVICE_NAME*_PROVISION_DEFAULTS</tt>|service.*service-name*.provision.defaults| string | JSON provision defaults override for *service-name*|
+|<tt>GSB_SERVICE_*SERVICE_NAME*_PLAN</tt>|service.*service-name*.plans| string | JSON plan collection to augment plans for *service-name*|
 
 ## Azure Configuration
 

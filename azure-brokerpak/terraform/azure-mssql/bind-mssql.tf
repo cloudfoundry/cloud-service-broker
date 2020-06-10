@@ -36,26 +36,52 @@ resource "random_password" "password" {
 resource "null_resource" "create-sql-login" {
 
   provisioner "local-exec" {
-    command = "psqlcmd ${var.mssql_hostname} ${var.mssql_port} ${var.admin_username} ${var.admin_password} master \"CREATE LOGIN [${random_string.username.result}] with PASSWORD='${random_password.password.result}'\"" 
+    command = format("psqlcmd %s %d %s %s master \"CREATE LOGIN [%s] with PASSWORD='%s'\"",
+                     var.mssql_hostname,
+                     var.mssql_port,
+                     var.admin_username,
+                     var.admin_password,
+                     random_string.username.result,
+                     random_password.password.result)
   }
 
   provisioner "local-exec" {
 	  when = destroy
-    command = "psqlcmd ${var.mssql_hostname} ${var.mssql_port} ${var.admin_username} ${var.admin_password} master \"DROP LOGIN [${random_string.username.result}]\""
+    command = format("psqlcmd %s %d %s %s master \"DROP LOGIN [%s]\"",
+                     var.mssql_hostname,
+                     var.mssql_port,
+                     var.admin_username,
+                     var.admin_password,
+                     random_string.username.result)
   }
   depends_on = [random_password.password]
 }
 
 resource "null_resource" "create-sql-user-and-permissions" {
-
+  # https://docs.microsoft.com/en-us/sql/relational-databases/security/authentication-access/database-level-roles?view=sql-server-ver15
   provisioner "local-exec" {
-    command = "psqlcmd ${var.mssql_hostname} ${var.mssql_port} ${var.admin_username} ${var.admin_password} ${var.mssql_db_name} \"CREATE USER [${random_string.username.result}] from LOGIN ${random_string.username.result};ALTER ROLE db_owner ADD MEMBER [${random_string.username.result}];\"" 
+    command = format("psqlcmd %s %d %s %s %s \"CREATE USER [%s] from LOGIN %s;ALTER ROLE db_owner ADD MEMBER [%s];\"", 
+                     var.mssql_hostname,
+                     var.mssql_port,
+                     var.admin_username,
+                     var.admin_password,
+                     var.mssql_db_name,
+                     random_string.username.result,
+                     random_string.username.result,
+                     random_string.username.result)
   }
 
   provisioner "local-exec" {
 	  when = destroy
-    command = "psqlcmd ${var.mssql_hostname} ${var.mssql_port} ${var.admin_username} ${var.admin_password} ${var.mssql_db_name} \"ALTER ROLE db_owner DROP MEMBER [${random_string.username.result}];DROP USER [${random_string.username.result}];\""
-  }
+    command = format("psqlcmd %s %d %s %s %s \"ALTER ROLE db_owner DROP MEMBER [%s];DROP USER [%s];\"",
+                     var.mssql_hostname,
+                     var.mssql_port,
+                     var.admin_username,
+                     var.admin_password,
+                     var.mssql_db_name,
+                     random_string.username.result,
+                     random_string.username.result)
+    }
 
   depends_on = [null_resource.create-sql-login]
 }
