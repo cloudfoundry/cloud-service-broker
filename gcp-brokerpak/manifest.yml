@@ -6,8 +6,6 @@ metadata:
 platforms:
 - os: linux
   arch: amd64 
-- os: darwin
-  arch: amd64  
 terraform_binaries:
 - name: terraform
   version: 0.12.20
@@ -34,6 +32,7 @@ service_definitions:
 - google-storage.yml
 - google-redis.yml
 - google-mysql.yml
+- google-postgresql.yml
 - google-spanner.yml
 - google-bigquery.yml
 - dataproc.yml

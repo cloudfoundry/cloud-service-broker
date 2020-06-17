@@ -21,7 +21,7 @@ display_name: Google Cloud PostgreSQL
 image_url: https://cloud.google.com/_static/images/cloud/products/logos/svg/sql.svg
 documentation_url: https://cloud.google.com/sql/docs/postgres
 support_url: https://cloud.google.com/support/
-tags: [gcp, postgresql, postgres, preview]
+tags: [gcp, postgresql, postgres]
 plans:
 - name: small
   id: 85b27a04-8695-11ea-818a-274131861b81
@@ -33,12 +33,20 @@ plans:
     storage_gb: 10
 - name: medium
   id: b41ee300-8695-11ea-87df-cfcb8aecf3bc
-  description: 'PostgreSQL v11, shared CPU, minumum 1.7GB ram, 10GB storage'
+  description: 'PostgreSQL v11, shared CPU, minumum 1.7GB ram, 20GB storage'
   display_name: "medium"
   properties:
     cores: 1.7
     postgres_version: "POSTGRES_11"
-    storage_gb: 10
+    storage_gb: 20
+- name: large
+  id: 2a57527e-b025-11ea-b643-bf3bcf6d055a
+  description: 'PostgreSQL v11, minumum 8 cores, minumum 8GB ram, 50GB storage'
+  display_name: "large"
+  properties:
+    cores: 8
+    mysql_version: "POSTGRES_11"
+    storage_gb: 50    
 provision:
   plan_inputs:
   - field_name: cores
@@ -181,21 +189,10 @@ examples:
   provision_params: {}
   bind_params: {}
   bind_can_fail: true
-- name: small configuration v11 50gb storage
-  description: Create a small postgres v11 instance with 50gb storage
-  plan_id: 85b27a04-8695-11ea-818a-274131861b81
-  provision_params: { "postgres_version": "POSTGRES_11", "storage_gb": 50 }
-  bind_params: {}
-  bind_can_fail: true
 - name: medium configuration
   description: Create a medium postgres instance
   plan_id: b41ee300-8695-11ea-87df-cfcb8aecf3bc
   provision_params: {}
   bind_params: {}
   bind_can_fail: true
-- name: large configuration
-  description: Create a large postgres instance
-  plan_id: ba438f2e-8695-11ea-9df4-db32f65a7690
-  provision_params: {}
-  bind_params: {}
-  bind_can_fail: true
+
