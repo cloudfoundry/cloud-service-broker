@@ -19,8 +19,21 @@ variable admin_username { type = string }
 variable admin_password { type = string }
 
 locals {
-  schema_name = "album" 
-  #var.schema_name == null || var.schema_name == "" ? var.db_name : var.schema_name
+  
+   table_privileges = [
+    "DELETE",
+    "INSERT",
+    "REFERENCES",
+    "SELECT",
+    "TRIGGER",
+    "TRUNCATE",
+    "UPDATE"
+  ]
+  sequence_privileges = [
+    "SELECT",
+    "UPDATE",
+    "USAGE"
+  ]
 }
 
 provider "postgresql" {
@@ -35,7 +48,7 @@ provider "postgresql" {
 resource "random_string" "username" {
   length = 16
   special = false
-  number = false  
+  number = false
 }
 
 resource "random_password" "password" {
@@ -44,100 +57,54 @@ resource "random_password" "password" {
   min_upper = 2
   min_lower = 2
   min_special = 2
-}    
+}
 
-resource "postgresql_role" "new_user" {
-  name     = random_string.username.result
-  login    = true
-  password = random_password.password.result
+// Create postgres role and db
+resource "postgresql_role" "app_role" {
+  login               = true
+  name                = random_string.username.result
+  password            = random_password.password.result
   skip_reassign_owned = true
   skip_drop_role = true
+  
 }
 
-
-resource "postgresql_schema" "schema" {
-  name = local.schema_name
-  database = var.postgres_db_name
-  owner = var.admin_username
-
-  policy {
-    create_with_grant = true
-    usage_with_grant = true
-    role = postgresql_role.new_user.name
-  }
-
-}
-
-
-resource "postgresql_grant" "all_access" {
-  depends_on  = [ postgresql_role.new_user ]
+resource "postgresql_default_privileges" "app_tables" {
   database    = var.postgres_db_name
-  role        = random_string.username.result
-  schema      = "public"
-  object_type = "table"
-  privileges  = ["ALL"]
-}
-
-
-
-// Adding Root user to new db
-
-resource "postgresql_grant" "all_rootuser_access" {
-
-  database    = var.postgres_db_name
-  role        = var.admin_username
-  schema      = "public"
-  object_type = "table"
-  privileges  = ["ALL"]
-}
-
-resource "postgresql_default_privileges" "db_newuser_tables" {
-  depends_on  = [ postgresql_role.new_user ]
-  database    = var.postgres_db_name
-  object_type = "table"
-  owner       = random_string.username.result
-  privileges  = ["ALL"]
-  role        = random_string.username.result
-  schema      = "public"
-}
-
-resource "postgresql_default_privileges" "db_rootuser_tables" {
-  database    = var.postgres_db_name
+  depends_on  = [postgresql_role.app_role]
   object_type = "table"
   owner       = var.admin_username
-  privileges  = ["ALL"]
-  role        = var.admin_username
+  privileges  = local.table_privileges
+  role        = postgresql_role.app_role.name
   schema      = "public"
-} 
+}
 
-# resource "postgresql_default_privileges" "app" {
-#   database = var.postgres_db_name
-#   #schema = postgresql_schema.schema.name
-#   owner = var.admin_username
-#   role = postgresql_role.db_app.name
-#   object_type = "table"
-#   privileges = ["ALL"]
-# }
-
-
-
+resource "postgresql_default_privileges" "app_sequence" {
+  database    = var.postgres_db_name
+  depends_on  = [postgresql_role.app_role]
+  object_type = "sequence"
+  owner       = var.admin_username
+  privileges  = local.sequence_privileges
+  role        = postgresql_role.app_role.name
+  schema      = "public"
+}
 
 
 output username { value = random_string.username.result }
 output password { value = random_password.password.result }
-output uri { 
-  value = format("postgresql://%s:%s@%s:%d/%s", 
-                  random_string.username.result, 
-                  random_password.password.result, 
-                  var.postgres_hostname, 
+output uri {
+  value = format("postgresql://%s:%s@%s:%d/%s",
+                  random_string.username.result,
+                  random_password.password.result,
+                  var.postgres_hostname,
                   var.postgres_port,
-                  var.postgres_db_name) 
+                  var.postgres_db_name)
 }
-output jdbcUrl { 
-  value = format("jdbc:postgresql://%s:%d/%s?user=%s\u0026password=%s\u0026useSSL=false", 
-                  var.postgres_hostname, 
+output jdbcUrl {
+  value = format("jdbc:postgresql://%s:%d/%s?user=%s\u0026password=%s\u0026useSSL=false",
+                  var.postgres_hostname,
                   var.postgres_port,
-                  var.postgres_db_name, 
-                  random_string.username.result, 
-                  random_password.password.result) 
+                  var.postgres_db_name,
+                  random_string.username.result,
+                  random_password.password.result)
 }

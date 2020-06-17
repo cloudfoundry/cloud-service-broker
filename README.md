@@ -14,12 +14,12 @@ The service broker provides support for:
 | GCP | Azure | AWS |
 |-----|-------| ----|
 |[GCP Cloud SQL (MySQL)](https://cloud.google.com/sql/)|[Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/?&ef_id=EAIaIQobChMImtPm8_DK5wIVgf5kCh1lEAqOEAAYASABEgIwjfD_BwE:G:s&OCID=AID2000128_SEM_VfuRONbO&MarinID=VfuRONbO_307794721357_azure%20mysql_e_c_Qml9BhwJ_46775457259_kwd-310296951725&lnkd=Google_Azure_Brand&gclid=EAIaIQobChMImtPm8_DK5wIVgf5kCh1lEAqOEAAYASABEgIwjfD_BwE)|[Amazon RDS for MySQL](https://aws.amazon.com/rds/mysql/)|
-|[GCP Memorystore for Redis](https://cloud.google.com/memorystore/docs/redis/)|[Azure Cache for Redis](https://azure.microsoft.com/en-us/services/cache/?&ef_id=EAIaIQobChMIzc-t2vHK5wIVsh-tBh3Z8wteEAAYASAAEgJ0cvD_BwE:G:s&OCID=AID2000128_SEM_SeUFPHct&MarinID=SeUFPHct_287547165334_azure%20redis_e_c__46775456859_kwd-310342681850&lnkd=Google_Azure_Brand&gclid=EAIaIQobChMIzc-t2vHK5wIVsh-tBh3Z8wteEAAYASAAEgJ0cvD_BwE)|[Amazon ElastiCache for Redis](https://aws.amazon.com/elasticache/redis/?nc=sn&loc=2&dn=1)|
-|[GCP BigQuery](https://cloud.google.com/bigquery/)|[MongoDB](https://docs.microsoft.com/en-us/azure/cosmos-db/mongodb-introduction) for [CosmosDB](https://azure.microsoft.com/en-us/services/cosmos-db/)|[Amazon RDS for PostgreSQL](https://aws.amazon.com/rds/postgresql/)|
-|[GCP Cloud Storage](https://cloud.google.com/storage/)|[Azure SQL](https://docs.microsoft.com/en-us/azure/sql-database/)||
+|[GCP Cloud SQL (PostgreSQL)](https://cloud.google.com/sql/)|[Azure Cache for Redis](https://azure.microsoft.com/en-us/services/cache/?&ef_id=EAIaIQobChMIzc-t2vHK5wIVsh-tBh3Z8wteEAAYASAAEgJ0cvD_BwE:G:s&OCID=AID2000128_SEM_SeUFPHct&MarinID=SeUFPHct_287547165334_azure%20redis_e_c__46775456859_kwd-310342681850&lnkd=Google_Azure_Brand&gclid=EAIaIQobChMIzc-t2vHK5wIVsh-tBh3Z8wteEAAYASAAEgJ0cvD_BwE)|[Amazon ElastiCache for Redis](https://aws.amazon.com/elasticache/redis/?nc=sn&loc=2&dn=1)|
+|[GCP Memorystore for Redis](https://cloud.google.com/memorystore/docs/redis/)|[MongoDB](https://docs.microsoft.com/en-us/azure/cosmos-db/mongodb-introduction) for [CosmosDB](https://azure.microsoft.com/en-us/services/cosmos-db/)|[Amazon RDS for PostgreSQL](https://aws.amazon.com/rds/postgresql/)|
+|[GCP BigQuery](https://cloud.google.com/bigquery/)|[Azure SQL](https://docs.microsoft.com/en-us/azure/sql-database/)||
 |[GCP Spanner](https://cloud.google.com/spanner/)|[Azure SQL Failover Groups](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/)||
-|[GCP Dataproc](https://cloud.google.com/dataproc/docs/overview/)|[Azure Eventhubs](https://azure.microsoft.com/en-us/services/event-hubs/)||
-||[Azure Database for PostgreSQL](https://azure.microsoft.com/en-us/services/postgresql)||
+|[GCP Cloud Storage](https://cloud.google.com/storage/)|[Azure Eventhubs](https://azure.microsoft.com/en-us/services/event-hubs/)||
+|[GCP Dataproc](https://cloud.google.com/dataproc/docs/overview/)|[Azure Database for PostgreSQL](https://azure.microsoft.com/en-us/services/postgresql)||
 ||[Azure Storage Account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview)||
 ||[Azure CosmosDB](https://azure.microsoft.com/en-us/services/cosmos-db/)||
 

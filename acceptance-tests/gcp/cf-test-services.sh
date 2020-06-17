@@ -16,7 +16,7 @@ fi
 
 NETWORK=$1; shift
 
-allServices=(  "csb-google-mysql" "csb-google-redis")
+allServices=(  "csb-google-mysql" "csb-google-redis" "csb-google-postgres")
 
 for s in ${allServices[@]}; do
   
