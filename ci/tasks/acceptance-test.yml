@@ -9,6 +9,7 @@ params:
   SERVICE_NAME:
   GSB_BROKERPAK_BUILTIN_PATH:
   PARALLEL_JOB_COUNT: 1
+  GSB_PROVISION_DEFAULTS: '{}'
 inputs:
 - name: brokerbuild
 run:
