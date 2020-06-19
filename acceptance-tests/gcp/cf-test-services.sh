@@ -32,7 +32,7 @@ done
 if wait; then
   RESULT=0
   for s in ${allServices[@]}; do
-      if [  ${s} != "csb-google-mysql"  ]; then    
+      if [  ${s} = "csb-google-mysql"  ]; then    
           if [ $# -gt 0 ]; then
               if "${SCRIPT_DIR}/../cf-validate-credhub.sh" "${s}-$$"; then
                   echo "SUCCEEDED: ${SCRIPT_DIR}/../cf-validate-credhub.sh ${s}-$$"
