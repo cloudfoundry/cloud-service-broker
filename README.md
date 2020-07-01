@@ -67,9 +67,9 @@ There are make targets for most common dev tasks.
 `make push-broker-gcp` | will push and register the broker in PAS for GCP
 `make push-broker-azure` | will push and register the broker in PAS for Azure
 
-## Support
+## Bug Reports, Feature Requests, Documentation Requests & Support
 
-[File a GitHub issue](https://github.com/pivotal/cloud-service-broker/issues) for functional issues or feature requests.
+[File a GitHub issue](https://github.com/pivotal/cloud-service-broker/issues) for bug reports and documentation or feature requests. Please use the provided templates.  
 
 ## Contributing
 
