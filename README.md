@@ -73,6 +73,8 @@ There are make targets for most common dev tasks.
 
 ## Contributing
 
+See [the testing file](https://github.com/pivotal/cloud-service-broker/blob/master/TESTING.md) for information on how to conduct end-to-end and acceptance tests to your code before submitting a PR. 
+
 See [the contributing file](https://github.com/pivotal/cloud-service-broker/blob/master/CONTRIBUTING.md) for more information.
 
 This is not an officially supported VMware product.
