@@ -18,8 +18,8 @@ The following parameters may be configured during service provisioning (`cf crea
 |-----------|------|------|---------|
 | bucket_name| string | Name of bucket to create | csb-*instance_id* |
 | region  | string | [AWS region](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) to deploy service  | us-west-2 |
-| aws_access_key_id | string | ID of Azure tenant for instance | config file value `aws.access_key_id` |
-| aws_secret_access_key | string | ID of Azure subscription for instance | config file value `aws.secret_access_key` |
+| aws_access_key_id | string | AWS Access Key to use for instance | config file value `aws.access_key_id` |
+| aws_secret_access_key | string | Corresponding secret for the AWS Access Key to use for instance | config file value `aws.secret_access_key` |
 
 ## Binding Credentials
 
