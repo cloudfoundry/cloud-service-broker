@@ -1,5 +1,5 @@
 ---
-name: "\U0001F680Feature Request"
+name: "\U0001F680Feature request"
 about: Suggest an idea for this project
 title: "[FR]"
 labels: enhancement
@@ -21,3 +21,6 @@ assignees: omerbensaadon
 
 **Platform** 
 <!--Ex: GCP/AWS/Azure-->
+
+**Applicable Services**
+<!--Does this apply to all services? Just one? Let us know -->
