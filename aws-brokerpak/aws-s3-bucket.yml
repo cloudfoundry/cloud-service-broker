@@ -55,7 +55,7 @@ provision:
       default: csb-${request.instance_id}
     - field_name: region
       type: string
-      details: The region of the mysql instance.
+      details: The region of the S3 bucket instance.
       default: us-west-2
       enum: 
         us-east-2 : us-east-2
