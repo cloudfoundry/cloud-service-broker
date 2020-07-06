@@ -36,3 +36,4 @@ service_definitions:
 - google-spanner.yml
 - google-bigquery.yml
 - dataproc.yml
+- google-stackdriver-trace.yml

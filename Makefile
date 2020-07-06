@@ -69,13 +69,16 @@ package: ./build/cloud-service-broker.$(OSFAMILY) ./tile.yml ./manifest.yml docs
 docs/customization.md:
 	./build/cloud-service-broker.$(OSFAMILY) generate customization > docs/customization.md
 
-.PHONY: clean
-clean: deps-go-binary
-	-$(GO) clean --modcache
-	-rm -rf ./build
+.PHONY: clean-brokerpaks
+clean-brokerpaks:
 	-rm gcp-brokerpak/*.brokerpak
 	-rm azure-brokerpak/*.brokerpak
 	-rm aws-brokerpak/*.brokerpak
+
+.PHONY: clean
+clean: deps-go-binary clean-brokerpaks
+	-$(GO) clean --modcache
+	-rm -rf ./build
 	-cd tools/psqlcmd; $(MAKE) clean
 	-cd tools/sqlfailover; $(MAKE) clean
 
