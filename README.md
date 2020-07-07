@@ -25,9 +25,12 @@ The service broker provides support for:
 
 ## Installation
 
-This service broker can be installed as a CF application.
+This service broker can be installed as a CF application. See the instructions for:
 
-See the instructions for [Azure](./docs/azure-installation.md) or [AWS](./docs/aws-installation.md)
+- [AWS Installation](./docs/aws-installation.md)
+- [Azure Installation](./docs/azure-installation.md) 
+- [GCP Installation](./docs/gcp-installation.md) 
+
 
 ## Usage
 
