@@ -38,9 +38,9 @@ This service broker can be installed as a CF application. See the instructions f
 
 ## Usage
 
-For operators: see [docs/configuration.md](./docs/configuration.md) for details about configuring the service broker.
+**For operators**: see [docs/configuration.md](./docs/configuration.md) for details about configuring the service broker.
 
-For developers: see [docs/use.md](./docs/use.md) for service options and details.
+**For developers**: see [docs/use.md](./docs/use.md) for service options and details.
 
 You can get documentation specific to your install from the `/docs` endpoint of your deployment.
 
@@ -80,8 +80,6 @@ There are make targets for most common dev tasks.
 
 ## Contributing
 
-See [the testing file](https://github.com/pivotal/cloud-service-broker/blob/master/TESTING.md) for information on how to conduct end-to-end and acceptance tests to your code before submitting a PR. 
-
-See [the contributing file](https://github.com/pivotal/cloud-service-broker/blob/master/CONTRIBUTING.md) for more information.
+See [the contributing file](https://github.com/pivotal/cloud-service-broker/blob/master/CONTRIBUTING.md) for more information. 
 
 This is not an officially supported VMware product.
