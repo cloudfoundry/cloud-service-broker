@@ -23,6 +23,10 @@ The service broker provides support for:
 ||[Azure Storage Account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview)||
 ||[Azure CosmosDB](https://azure.microsoft.com/en-us/services/cosmos-db/)||
 
+
+## Public Roadmap
+See our up-to-date roadmap on Trello here: https://trello.com/b/6wgNQZLB/cloud-service-broker-public-product-roadmap
+
 ## Installation
 
 This service broker can be installed as a CF application. See the instructions for:
