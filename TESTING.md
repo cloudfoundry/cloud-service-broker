@@ -1,8 +1,12 @@
 # Testing Locally
 
-## End to End Tests
+## Unit Tests
+We anticipate contributions to come in the form of Broker Packs so, more often than not, unit tests will not be necessary. 
 
-The service broker has both unit and end-to-end tests.
+
+In the unlikely event that you are editing the `Go` code the broker is written in, we ask that you use the standard `go test` framework before submitting a Pull Request.
+
+## End to End Tests
 End to end tests are generated from the documentation and examples and run outside the standard `go test` framework.
 This ensures the auto-generated docs are always up-to-date and the examples work.
 By executing the examples as an OSB client, it also ensures the service broker implements the OSB spec correctly.
@@ -16,7 +20,7 @@ To run the suite of end-to-end tests:
 You can also target specific services in the end-to-end tests using the `--service-name` flag.
 See `./cloud-service-broker client run-examples --help` for more details.
 
-## Database Setup
+### Database Setup
 
 You can set up a local MySQL database for testing using Docker:
 
@@ -35,7 +39,7 @@ db.type: sqlite3
 db.path: service-broker-db.sqlite3
 ```
 
-## Database Exploration
+### Database Exploration
 
 You can debug the database locally using the `show` sub-command.
 It will dump a database table as JSON to stdout.
@@ -55,7 +59,7 @@ $ ./cloud-service-broker --config test.yaml show provisions
 ]
 ```
 
-## Configuration
+### Configuration
 
 Rather than setting environment variables to run the broker you can use the
 settings file below and just set the service account JSON as an environment variable:
@@ -80,7 +84,7 @@ api:
 ```
 
 
-## Useful commands
+### Useful commands
 
 Create unbind commands for all bindings:
 
