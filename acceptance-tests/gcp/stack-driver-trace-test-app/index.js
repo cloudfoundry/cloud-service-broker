@@ -1,12 +1,12 @@
 const vcapServices = require('vcap_services');
-const restify = require('restify');
+// const restify = require('restify');
 
 function runServer(content) {
     const tracer = require('@google-cloud/trace-agent').get();
-    const server = restify.createServer();
+    const server = require('restify').createServer();
     server.get('/', (_, res, next) => {
         const customSpan = tracer.createChildSpan({ name: 'root-content' });
-        res.send(content)
+        res.send(`${JSON.stringify(tracer.getConfig().credentials)} ${tracer.getWriterProjectId()} ${content}`)
         customSpan.endSpan();
         next()
     });
@@ -20,13 +20,12 @@ let credentials = vcapServices.findCredentials({ instance: { tags: 'tracing' } }
 
 async function main() {
     require('@google-cloud/trace-agent').start({
+        logLevel: 4,
+        enabled: true,
         projectId: credentials.ProjectId,
-        credentials: {
-            client_email: credentials.Email,
-            private_key: credentials.PrivateKeyData
-        }
+        credentials: JSON.parse(Buffer.from(credentials.PrivateKeyData, 'base64').toString("ascii"))
     })
-    runServer("Should see a some trace data in GCP")
+    runServer(`${JSON.parse(Buffer.from(credentials.PrivateKeyData, 'base64').toString("ascii"))} `)
 }
 
 if (Object.keys(credentials).length > 0) {

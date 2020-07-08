@@ -121,7 +121,7 @@ bind:
       - "112447814736626230844" 
   - field_name: credentials
     type: string
-    details: GCP credentials
+    details: GCP service account credentials as JSON string
 examples:
 - name: stack-driver-trace
   description: Default stack driver trace
