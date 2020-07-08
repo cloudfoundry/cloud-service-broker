@@ -21,9 +21,9 @@ allServices=(  "csb-google-mysql" "csb-google-redis" "csb-google-postgres")
 for s in ${allServices[@]}; do
   if [ ${s} == "csb-google-redis" ]
     then
-        create_service "${s}" basic "${s}-$$" "{\"authorized_network\": \"${NETWORK}\"}" &
+      create_service "${s}" basic "${s}-$$" "{\"authorized_network\": \"${NETWORK}\"}" &
     else
-       create_service "${s}" small "${s}-$$" "{\"authorized_network\": \"${NETWORK}\"}" &
+      create_service "${s}" small "${s}-$$" "{\"authorized_network\": \"${NETWORK}\"}" &
   fi
 done
 
