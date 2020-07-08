@@ -1,0 +1,20 @@
+{
+  "name": "stack-driver-trace-test-app",
+  "version": "0.1.0",
+  "description": "GCP stack driver trace service test app",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "gcp"
+  ],
+  "author": "VMware, Inc",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@google-cloud/trace-agent": "^5.1.0",
+    "restify": "^8.5.1",
+    "vcap_services": "^0.7.1"
+  }
+}

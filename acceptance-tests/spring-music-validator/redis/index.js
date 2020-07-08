@@ -18,7 +18,7 @@ function redisGetAllKeys(client) {
 module.exports = async function (credentials, runServer) {
     let content = ""    
     const client = redis.createClient({
-        host: credentials.hostname,
+        host: credentials.host,
         port: credentials.tls_port ? credentials.tls_port : credentials.port,
         password: credentials.password,
         retry_strategy: (options) => {

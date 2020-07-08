@@ -123,7 +123,7 @@ provision:
   - field_name: name
     type: string
     details: The name of the redis.
-  - field_name: hostname
+  - field_name: host
     type: string
     details: Hostname or IP address of the exposed redis endpoint used by clients to connect to the service.
   - field_name: port
