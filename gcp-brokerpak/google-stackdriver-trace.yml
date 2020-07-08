@@ -20,49 +20,17 @@ display_name: Stack driver trace
 image_url: https://symbols.getvecta.com/stencil_4/52_stackdriver.23cab581ce.svg
 documentation_url: https://cloud.google.com/trace
 support_url: https://cloud.google.com/trace/docs/overview
-tags: [gcp, tracing]
+tags: [gcp, tracing, stackdriver]
 plans:
 - name: default
   id: bd2d009d-4cf3-4386-9800-3c8a063ce1bf
   description: 'Default plan'
   display_name: 'Default'
 provision:
-  user_inputs:
-  - field_name: name
-    type: string
-    details: Name of instance
-    default: csb-${request.instance_id}
-  - field_name: credentials
-    type: string
-    details: GCP credentials
-    default: ${config("gcp.credentials")}
-  - field_name: project
-    type: string
-    details: GCP project
-    default: ${config("gcp.project")}     
-  computed_inputs:
-  - name: labels
-    default: ${json.marshal(request.default_labels)}
-    overwrite: true
-    type: object
-  - name: role
-    default: 'cloudtrace.agent'
-    type: string
-    overwrite: true
-  template_ref: ./terraform/google-service-account-provision.tf
-  outputs:
-  - field_name: name
-    type: string
-    details: Name of instance
-  - field_name: credentials
-    type: string
-    details: GCP credentials
-  - field_name: project
-    type: string
-    details: GCP project
-  - field_name: role
-    type: string
-    details: Service account role
+  user_inputs: []
+  computed_inputs: []
+  # template_ref: ./terraform/google-service-account-provision.tf
+  outputs: []
 bind:
   plan_inputs: []
   user_inputs: []
@@ -74,41 +42,37 @@ bind:
   - name: credentials
     type: string
     details: GCP credentials
-    default: ${instance.details["credentials"]}
+    default: ${config("gcp.credentials")}
   - name: project
     type: string
     details: GCP project
-    default: ${instance.details["project"]}     
+    default: ${config("gcp.project")}   
   - name: role
     type: string
     details: Service account role
-    default: ${instance.details["role"]} 
+    default: 'cloudtrace.agent'
   template_ref: ./terraform/google-service-account-bind.tf
   outputs:
-  - required: true
-    field_name: Email
+  - field_name: Email
     type: string
     details: Email address of the service account.
     constraints:
       examples:
       - csb-ex312029@my-project.iam.gserviceaccount.com
       pattern: ^csb-[a-z0-9-]+@.+\.gserviceaccount\.com$
-  - required: true
-    field_name: Name
+  - field_name: Name
     type: string
     details: The name of the service account.
     constraints:
       examples:
       - pcf-binding-ex312029
-  - required: true
-    field_name: PrivateKeyData
+  - field_name: PrivateKeyData
     type: string
     details: Service account private key data. Base64 encoded JSON.
     constraints:
       minLength: 512
       pattern: ^[A-Za-z0-9+/]*=*$
-  - required: true
-    field_name: ProjectId
+  - field_name: ProjectId
     type: string
     details: ID of the project that owns the service account.
     constraints:
@@ -117,8 +81,7 @@ bind:
       maxLength: 30
       minLength: 6
       pattern: ^[a-z0-9-]+$
-  - required: true
-    field_name: UniqueId
+  - field_name: UniqueId
     type: string
     details: Unique and stable ID of the service account.
     constraints:
