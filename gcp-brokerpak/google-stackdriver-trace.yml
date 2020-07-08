@@ -27,42 +27,10 @@ plans:
   description: 'Default plan'
   display_name: 'Default'
 provision:
-  user_inputs:
-  - field_name: name
-    type: string
-    details: Name of instance
-    default: csb-${request.instance_id}
-  - field_name: credentials
-    type: string
-    details: GCP credentials
-    default: ${config("gcp.credentials")}
-  - field_name: project
-    type: string
-    details: GCP project
-    default: ${config("gcp.project")}     
-  computed_inputs:
-  - name: labels
-    default: ${json.marshal(request.default_labels)}
-    overwrite: true
-    type: object
-  - name: role
-    default: 'cloudtrace.agent'
-    type: string
-    overwrite: true
-  template_ref: ./terraform/google-service-account-provision.tf
-  outputs:
-  - field_name: name
-    type: string
-    details: Name of instance
-  - field_name: credentials
-    type: string
-    details: GCP credentials
-  - field_name: project
-    type: string
-    details: GCP project
-  - field_name: role
-    type: string
-    details: Service account role
+  user_inputs: []
+  computed_inputs: []
+  # template_ref: ./terraform/google-service-account-provision.tf
+  outputs: []
 bind:
   plan_inputs: []
   user_inputs: []
@@ -74,15 +42,15 @@ bind:
   - name: credentials
     type: string
     details: GCP credentials
-    default: ${instance.details["credentials"]}
+    default: ${config("gcp.credentials")}
   - name: project
     type: string
     details: GCP project
-    default: ${instance.details["project"]}     
+    default: ${config("gcp.project")}   
   - name: role
     type: string
     details: Service account role
-    default: ${instance.details["role"]} 
+    default: 'cloudtrace.agent'
   template_ref: ./terraform/google-service-account-bind.tf
   outputs:
   - field_name: Email
@@ -119,9 +87,6 @@ bind:
     constraints:
       examples:
       - "112447814736626230844" 
-  - field_name: credentials
-    type: string
-    details: GCP service account credentials as JSON string
 examples:
 - name: stack-driver-trace
   description: Default stack driver trace

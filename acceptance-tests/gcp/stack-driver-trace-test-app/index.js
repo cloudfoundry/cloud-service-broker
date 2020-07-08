@@ -1,12 +1,11 @@
 const vcapServices = require('vcap_services');
-// const restify = require('restify');
 
 function runServer(content) {
     const tracer = require('@google-cloud/trace-agent').get();
     const server = require('restify').createServer();
     server.get('/', (_, res, next) => {
-        const customSpan = tracer.createChildSpan({ name: 'root-content' });
-        res.send(`${JSON.stringify(tracer.getConfig().credentials)} ${tracer.getWriterProjectId()} ${content}`)
+        const customSpan = tracer.createChildSpan({ name: 'gen-content' });
+        res.send(`${JSON.stringify(tracer.getConfig())} ${tracer.getWriterProjectId()} ${content}`)
         customSpan.endSpan();
         next()
     });
@@ -14,6 +13,7 @@ function runServer(content) {
     server.listen(process.env.PORT || 8080, function () {
         console.log('%s listening at %s', server.name, server.url);
     });
+
 }
 
 let credentials = vcapServices.findCredentials({ instance: { tags: 'tracing' } });
