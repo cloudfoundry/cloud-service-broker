@@ -60,7 +60,7 @@ resource "azurerm_redis_cache" "redis" {
 }
 
 output name { value = azurerm_redis_cache.redis.name }
-output hostname { value = azurerm_redis_cache.redis.hostname }
+output host { value = azurerm_redis_cache.redis.hostname }
 # output port { value = azurerm_redis_cache.redis.port }
 output password { value = azurerm_redis_cache.redis.primary_access_key }
 output tls_port { value = azurerm_redis_cache.redis.ssl_port }
