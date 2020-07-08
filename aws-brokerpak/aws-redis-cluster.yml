@@ -15,7 +15,7 @@
 version: 1
 name: csb-aws-redis-ha
 id: e9c11b1b-0caa-45c9-b9b2-592939c9a5a6
-description: Amazon ElstiCache for Redis - multinode with automatice failover
+description: Amazon ElstiCache for Redis - multinode with automatic failover
 display_name: Amazon ElstiCache for Redis
 image_url: https://www.edrawsoft.com/symbols/awsdatabase/elasticacheredis.png
 documentation_url: https://aws.amazon.com/elasticache/redis/resources/?nc=sn&loc=5
@@ -126,7 +126,7 @@ provision:
   - field_name: name
     type: string
     details: The name of the redis.
-  - field_name: hostname
+  - field_name: host
     type: string
     details: Hostname or IP address of the exposed redis endpoint used by clients to connect to the service.
   - field_name: tls_port

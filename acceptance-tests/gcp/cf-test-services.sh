@@ -16,7 +16,9 @@ fi
 
 NETWORK=$1; shift
 
-allServices=(  "csb-google-mysql" "csb-google-redis" "csb-google-postgres")
+allServices=( "csb-google-mysql" "csb-google-redis" )
+
+# "csb-google-postgres" - does not currently allow second binding
 
 for s in ${allServices[@]}; do
   if [ ${s} == "csb-google-redis" ]
