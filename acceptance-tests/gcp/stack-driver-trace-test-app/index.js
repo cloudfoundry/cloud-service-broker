@@ -23,6 +23,8 @@ async function main() {
         logLevel: 4,
         enabled: true,
         projectId: credentials.ProjectId,
+        bufferSize: 1,
+        flushDelaySeconds: 0,
         credentials: JSON.parse(Buffer.from(credentials.PrivateKeyData, 'base64').toString("ascii"))
     })
     runServer(`${JSON.parse(Buffer.from(credentials.PrivateKeyData, 'base64').toString("ascii"))} `)

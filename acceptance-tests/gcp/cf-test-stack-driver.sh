@@ -19,8 +19,7 @@ if create_service "$SERVICE_NAME" default "${SERVICE_INSTANCE_NAME}"; then
     if cf bind-service ${APP_NAME} ${SERVICE_INSTANCE_NAME}; then
         if cf start ${APP_NAME}; then
             curl $(cf app stack-driver-trace-test-app | grep 'routes:' | cut -d ':' -f 2 | xargs)
-            sleep 10
-            cf logs stack-driver-trace-test-app --recent | grep "DEBUG TraceWriter#publish: Published w/ status code: 200"
+            cf logs ${APP_NAME} --recent | grep "DEBUG TraceWriter#publish: Published w/ status code: 200"
             RESULT=$?
         else
             echo "${APP_NAME} failed"
