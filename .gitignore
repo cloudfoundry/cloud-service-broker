@@ -13,3 +13,9 @@ ci/parameters.yml
 ci/vars.yml
 config.yml
 build/
+acceptance-tests/gcp/storage-spring-test-app/.classpath
+acceptance-tests/gcp/storage-spring-test-app/.project
+acceptance-tests/gcp/storage-spring-test-app/.settings/
+acceptance-tests/gcp/storage-spring-test-app/HELP.md
+acceptance-tests/gcp/storage-spring-test-app/target/
+
