@@ -24,6 +24,7 @@ if create_service csb-azure-resource-group standard "${SERVER_RG}" "{\"instance_
       FOG_NAME=mssql-server-fog-$$
       CONFIG="{
         \"instance_name\":\"${FOG_NAME}\", \
+        \"db_name\":\"test_db\", \
         \"server_pair\":\"test\", \
         \"server_credential_pairs\":{ \
           \"test\":{ \
@@ -53,10 +54,34 @@ if create_service csb-azure-resource-group standard "${SERVER_RG}" "{\"instance_
         } \
       }"
 
-      echo $CONFIG
+      FOG_INSTANCE=test-fog-$$
+      FOG_DR_INSTANCE=test-fog-dr-$$
+      if create_service csb-azure-mssql-db-failover-group medium "${FOG_INSTANCE}" "${CONFIG}"; then
+        if ${SCRIPT_DIR}/../cf-run-spring-music-test.sh "${FOG_INSTANCE}"; then
+          if create_service csb-azure-mssql-db-failover-group-dr standard "${FOG_DR_INSTANCE}" "${CONFIG}"; then
+            if ${SCRIPT_DIR}/../cf-run-spring-music-test.sh "${FOG_DR_INSTANCE}"; then
+              echo "FOG DR test success!"
+            else
+              echo "spring music test failed on FOG DR"
+            fi
+            delete_service "${FOG_DR_INSTANCE}"
+          else
+            echo "failed to create FOG DR"
+          fi
+        else
+          echo "spring music test failed on FOG"
+        fi
+        delete_service "${FOG_INSTANCE}"
+      else
+        echo "failed to create FOG"
+      fi
 
-      ${SCRIPT_DIR}/../cf-test-spring-music.sh csb-azure-mssql-db-failover-group medium "${CONFIG}"
-      RESULT=$?
+      if ${SCRIPT_DIR}/../cf-test-spring-music.sh csb-azure-mssql-db-failover-group medium "${CONFIG}"; then
+        ${SCRIPT_DIR}/../cf-test-spring-music.sh csb-azure-mssql-db-failover-group-dr standard "${CONFIG}";
+        RESULT=$?
+      else
+        echo "failed failover group test"
+      fi
   fi
 
   "${SCRIPT_DIR}/cf-delete-mssql-server.sh" "${PRIMARY_SERVER_NAME}"   &
