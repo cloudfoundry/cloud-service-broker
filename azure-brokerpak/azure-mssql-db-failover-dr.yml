@@ -1,0 +1,124 @@
+# Copyright 2020 Pivotal Software, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+version: 1
+name: csb-azure-mssql-db-failover-group-dr
+id: c9137ade-ce3b-4863-afe2-c878f8b07cea
+description: Binds to existing Azure SQL Failover Group database
+display_name: For binding to existing Azure SQL Failover Group database
+image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquaretransparent1.png
+documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
+support_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
+tags: [azure, mssql, sqlserver, dr, failover, preview]
+plans:
+- name: standard
+  id: 9de613b0-dde2-4cce-84fa-021d46cc7135
+  description: 'Standard binding to existing failover DB'
+  display_name: "Standard"
+provision:
+  plan_inputs:
+  user_inputs:    
+  - field_name: instance_name
+    type: string
+    details: Name for your Azure SQL Faileover Group
+    constraints:
+      maxLength: 63
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$  
+  - field_name: db_name
+    type: string
+    details: Name for your database
+    constraints:
+      maxLength: 64
+  - field_name: server_pair
+    type: string
+    details: Name of server pair from server_credential_pairs to create database upon
+  - field_name: server_credential_pairs
+    type: object
+    details: 'JSON hash of server pair name to set of server credentials. { "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}'
+  template_ref: terraform/azure-mssql-db-failover/provision-fog-db-dr.tf 
+  computed_inputs:
+  outputs:
+  - field_name: sqlServerName
+    type: string
+    details: Hostname of the Azure SQL Server
+  - field_name: sqldbName
+    type: string
+    details: The name of the database.    
+  - field_name: sqlServerFullyQualifiedDomainName
+    type: string
+    details: The fully qualifief domain name (FQDN) of the Azure SQL Server
+  - field_name: hostname
+    type: string
+    details: Hostname of the Azure SQL Server
+  - field_name: port
+    type: integer
+    details: The port number to connect to the database on
+  - field_name: name
+    type: string
+    details: The name of the database.
+  - field_name: username
+    type: string
+    details: The username to authenticate to the database server.
+  - field_name: password
+    type: string
+    details: The password to authenticate to the database server.
+bind:
+  plan_inputs: []
+  user_inputs: []
+  computed_inputs:
+  - name: mssql_db_name
+    type: string
+    default: ${instance.details["name"]}
+    overwrite: true
+  - name: mssql_hostname
+    type: string
+    default: ${instance.details["hostname"]}
+    overwrite: true
+  - name: mssql_port
+    type: integer
+    default: ${instance.details["port"]}
+    overwrite: true
+  - name: admin_username
+    type: string
+    default: ${instance.details["username"]}
+    overwrite: true
+  - name: admin_password
+    type: string
+    default: ${instance.details["password"]}
+    overwrite: true
+  template_ref: terraform/azure-mssql/bind-mssql.tf
+  outputs:
+  - field_name: username
+    type: string
+    details: The username to authenticate to the database instance.
+  - field_name: password
+    type: string
+    details: The password to authenticate to the database instance.  
+  - field_name: uri
+    type: string
+    details: The uri to connect to the database instance and database.
+  - field_name: jdbcUrl
+    type: string
+    details: The jdbc url to connect to the database instance and database.    
+  - field_name: jdbcUrlForAuditingEnabled
+    type: string
+    details: The audit enabled JDBC URL to connect to the database server and database.    
+  - field_name: databaseLogin
+    type: string
+    details: The username to authenticate to the database server.
+  - field_name: databaseLoginPassword
+    type: string
+    details: The password to authenticate to the database server. 
+

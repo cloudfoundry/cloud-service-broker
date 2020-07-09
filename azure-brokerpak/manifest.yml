@@ -67,6 +67,7 @@ service_definitions:
 - azure-postgres.yml
 - azure-storage-account.yml
 - azure-cosmosdb-sql.yml
+- azure-mssql-db-failover-dr.yml
 
 
 
