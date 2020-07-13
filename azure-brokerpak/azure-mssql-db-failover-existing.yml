@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: csb-azure-mssql-db-failover-group-dr
+name: csb-azure-mssql-db-failover-group-existing
 id: c9137ade-ce3b-4863-afe2-c878f8b07cea
 description: Binds to existing Azure SQL Failover Group database
 display_name: For binding to existing Azure SQL Failover Group database
@@ -47,7 +47,7 @@ provision:
   - field_name: server_credential_pairs
     type: object
     details: 'JSON hash of server pair name to set of server credentials. { "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}'
-  template_ref: terraform/azure-mssql-db-failover/provision-fog-db-dr.tf 
+  template_ref: terraform/azure-mssql-db-failover/provision-fog-db-existing.tf 
   computed_inputs:
   outputs:
   - field_name: sqlServerName
