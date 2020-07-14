@@ -40,9 +40,19 @@ plans:
   properties:
     cores: 32
     max_storage_gb: 500
+- name: existing
+  id: 669661c1-7fe6-4c59-8004-63905e79a508
+  description: 'Connect to existing fail over group database'
+  display_name: "Existing"
+  properties: 
+    existing: true
 provision:
   plan_inputs:
   user_inputs:    
+  - field_name: existing
+    required: false
+    default: false
+    details: Connect to existing database if true
   - field_name: cores
     required: false
     type: number
