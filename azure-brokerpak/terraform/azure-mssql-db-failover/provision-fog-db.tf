@@ -26,6 +26,8 @@ variable cores { type = number }
 variable max_storage_gb { type = number }
 variable skip_provider_registration { type = bool }
 variable existing { type = bool }
+variable read_write_endpoint_failover_policy { type = string }
+variable failover_grace_minutes { type = number }
 
 provider "azurerm" {
   version = "=2.9.0"
@@ -64,7 +66,7 @@ locals {
   sku_name = length(var.sku_name) == 0 ? local.instance_types[var.cores] : var.sku_name 
 }
 
-resource "azurerm_sql_database" "azure_sql_db" {
+resource "azurerm_sql_database" "azure_sql_db_primary" {
   name                = var.db_name
   resource_group_name = var.server_credential_pairs[var.server_pair].primary.resource_group
   location            = data.azurerm_sql_server.primary_sql_db_server.location
@@ -75,18 +77,29 @@ resource "azurerm_sql_database" "azure_sql_db" {
   count = var.existing ? 0 : 1
 }
 
+resource "azurerm_sql_database" "azure_sql_db_secondary" {
+  name                = var.db_name
+  resource_group_name = var.server_credential_pairs[var.server_pair].primary.resource_group
+  location            = data.azurerm_sql_server.secondary_sql_db_server.location
+  server_name         = data.azurerm_sql_server.secondary_sql_db_server.name
+  requested_service_objective_name = local.sku_name
+  max_size_bytes      = var.max_storage_gb * 1024 * 1024 * 1024
+  tags                = var.labels
+  count = var.existing ? 0 : 1
+}
+
 resource "azurerm_sql_failover_group" "failover_group" {
   name                = var.instance_name
   resource_group_name = var.server_credential_pairs[var.server_pair].primary.resource_group
   server_name         = data.azurerm_sql_server.primary_sql_db_server.name
-  databases           = [azurerm_sql_database.azure_sql_db[0].id]
+  databases           = [azurerm_sql_database.azure_sql_db_primary[0].id, azurerm_sql_database.azure_sql_db_secondary[0].id]
   partner_servers {
     id = data.azurerm_sql_server.secondary_sql_db_server.id
   }
 
   read_write_endpoint_failover_policy {
-    mode          = "Automatic"
-    grace_minutes = 60
+    mode          = var.read_write_endpoint_failover_policy
+    grace_minutes = var.failover_grace_minutes
   }
   count = var.existing ? 0 : 1
 }

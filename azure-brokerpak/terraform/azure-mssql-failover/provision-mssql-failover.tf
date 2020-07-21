@@ -27,6 +27,8 @@ variable cores { type = number }
 variable max_storage_gb { type = number }
 variable authorized_network {type = string}
 variable skip_provider_registration { type = bool }
+variable read_write_endpoint_failover_policy { type = string }
+variable failover_grace_minutes { type = number }
 
 provider "azurerm" {
   version = "=2.9.0"
@@ -161,8 +163,8 @@ resource "azurerm_sql_failover_group" "failover_group" {
   }
 
   read_write_endpoint_failover_policy {
-    mode          = "Automatic"
-    grace_minutes = 60
+    mode          = var.read_write_endpoint_failover_policy
+    grace_minutes = var.failover_grace_minutes
   }
 }
 
@@ -201,7 +203,6 @@ resource "azurerm_sql_firewall_rule" "server2" {
   end_ip_address      = "0.0.0.0"
   count = var.authorized_network != "default" ? 1 : 0  
 }
-
 
 locals {
     serverFQDN = format("%s.database.windows.net", azurerm_sql_failover_group.failover_group.name)

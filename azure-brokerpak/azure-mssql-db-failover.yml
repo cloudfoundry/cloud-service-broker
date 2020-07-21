@@ -86,6 +86,17 @@ provision:
   - field_name: server_credential_pairs
     type: object
     details: 'JSON hash of server pair name to set of server credentials. { "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}'
+  - field_name: read_write_endpoint_failover_policy
+    type: string
+    details: Faileover policy (Automatic or Manual)
+    default: Automatic
+    enum:
+      Automatic: Automatic
+      Manual: Manual
+  - field_name: failover_grace_minutes
+    type: number
+    details: For automatic mode - the grace period in minutes before failover with data loss is attempted 
+    default: 60
   - field_name: azure_tenant_id
     type: string
     details: Azure Tenant to create resource in
@@ -108,7 +119,7 @@ provision:
     default: false    
   - field_name: sku_name
     type: string
-    details: Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) Will be computed from cores if empty.
+    details: Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/azure-sql/database/resource-limits-vcore-single-databases) Will be computed from cores if empty.
     default: ""    
   template_ref: terraform/azure-mssql-db-failover/provision-fog-db.tf 
   computed_inputs:
