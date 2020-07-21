@@ -34,6 +34,8 @@ The following parameters may be configured during service provisioning (`cf crea
 | db_name | string | database name | csb-fog-db-*instance_id* |
 | server_pair | string | server pair from *server_credential_pairs* on which to create failover DB | |
 | server_credential_pairs | JSON | list of server pairs on which failover DB's can be created, *server_pair* must match one of *name*. Format: `{ "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}`| |
+| read_write_endpoint_failover_policy | string | Read/Write failover policy - `Automatic` or `Manual` | `Automatic` |
+| failover_grace_minutes | number | grace period in minutes before failover with data loss is attempted | 60 |
 | azure_tenant_id | string | ID of Azure tenant for instance | config file value `azure.tenant_id` |
 | azure_subscription_id | string | ID of Azure subscription for instance | config file value `azure.subscription_id` |
 | azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
