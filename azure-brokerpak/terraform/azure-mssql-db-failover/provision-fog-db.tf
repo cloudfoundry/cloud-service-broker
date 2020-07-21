@@ -77,22 +77,11 @@ resource "azurerm_sql_database" "azure_sql_db_primary" {
   count = var.existing ? 0 : 1
 }
 
-resource "azurerm_sql_database" "azure_sql_db_secondary" {
-  name                = var.db_name
-  resource_group_name = var.server_credential_pairs[var.server_pair].primary.resource_group
-  location            = data.azurerm_sql_server.secondary_sql_db_server.location
-  server_name         = data.azurerm_sql_server.secondary_sql_db_server.name
-  requested_service_objective_name = local.sku_name
-  max_size_bytes      = var.max_storage_gb * 1024 * 1024 * 1024
-  tags                = var.labels
-  count = var.existing ? 0 : 1
-}
-
 resource "azurerm_sql_failover_group" "failover_group" {
   name                = var.instance_name
   resource_group_name = var.server_credential_pairs[var.server_pair].primary.resource_group
   server_name         = data.azurerm_sql_server.primary_sql_db_server.name
-  databases           = [azurerm_sql_database.azure_sql_db_primary[0].id, azurerm_sql_database.azure_sql_db_secondary[0].id]
+  databases           = [azurerm_sql_database.azure_sql_db_primary[0].id]
   partner_servers {
     id = data.azurerm_sql_server.secondary_sql_db_server.id
   }
