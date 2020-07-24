@@ -87,7 +87,7 @@ func ExampleGetDefaultProjectId() {
 	// Output: my-project-123, <nil>
 }
 
-func TestExtractDefaultLabels(t *testing.T) {
+func TestExtractDefaultProvisionLabels(t *testing.T) {
 	tests := map[string]struct {
 		instanceId string
 		details    brokerapi.ProvisionDetails
@@ -136,7 +136,7 @@ func TestExtractDefaultLabels(t *testing.T) {
 	}
 
 	for tn, tc := range tests {
-		labels := ExtractDefaultLabels(tc.instanceId, tc.details)
+		labels := ExtractDefaultProvisionLabels(tc.instanceId, tc.details)
 
 		if !reflect.DeepEqual(labels, tc.expected) {
 			t.Errorf("Error runniung case %q, expected: %v got: %v", tn, tc.expected, labels)

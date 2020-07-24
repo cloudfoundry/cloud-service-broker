@@ -61,6 +61,26 @@ func (provider *terraformProvider) Provision(ctx context.Context, provisionConte
 	}, nil
 }
 
+// Update makes necessary updates to resources so they match new desired configuration
+func (provider *terraformProvider) Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+	provider.logger.Info("update", lager.Data{
+		"context": provisionContext.ToMap(),
+	})
+
+	tfId := provisionContext.GetString("tf_id")
+	if err := provisionContext.Error(); err != nil {
+		return models.ServiceInstanceDetails{}, err
+	}
+	if err := provider.jobRunner.Create(ctx, tfId); err != nil {
+		return models.ServiceInstanceDetails{}, err
+	}
+
+	return models.ServiceInstanceDetails{
+		OperationId:   tfId,
+		OperationType: models.UpdateOperationType,
+	}, nil
+}
+
 // Bind creates a new backing Terraform job and executes it, waiting on the result.
 func (provider *terraformProvider) Bind(ctx context.Context, bindContext *varcontext.VarContext) (map[string]interface{}, error) {
 	provider.logger.Info("bind", lager.Data{
@@ -96,6 +116,7 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 
 	return tfId, provider.jobRunner.Create(ctx, tfId)
 }
+
 
 // Unbind performs a terraform destroy on the binding.
 func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord models.ServiceInstanceDetails, bindRecord models.ServiceBindingCredentials) error {
