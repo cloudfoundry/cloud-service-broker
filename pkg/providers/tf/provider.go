@@ -18,12 +18,12 @@ import (
 	"context"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/pivotal-cf/brokerapi"
 	"github.com/pivotal/cloud-service-broker/db_service/models"
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
 	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/base"
 	"github.com/pivotal/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal-cf/brokerapi"
 )
 
 // NewTerraformProvider creates a new ServiceProvider backed by Terraform module definitions for provision and bind.
@@ -71,14 +71,13 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 	if err := provisionContext.Error(); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
-	if err := provider.jobRunner.Create(ctx, tfId); err != nil {
-		return models.ServiceInstanceDetails{}, err
-	}
+
+	err :=  provider.jobRunner.Update(ctx, tfId, provisionContext.ToMap())
 
 	return models.ServiceInstanceDetails{
 		OperationId:   tfId,
 		OperationType: models.UpdateOperationType,
-	}, nil
+	}, err
 }
 
 // Bind creates a new backing Terraform job and executes it, waiting on the result.
@@ -111,12 +110,12 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 	}
 
 	if err := provider.jobRunner.StageJob(ctx, tfId, workspace); err != nil {
+		provider.logger.Error("terraform provider create failed", err)
 		return tfId, err
 	}
 
 	return tfId, provider.jobRunner.Create(ctx, tfId)
 }
-
 
 // Unbind performs a terraform destroy on the binding.
 func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord models.ServiceInstanceDetails, bindRecord models.ServiceBindingCredentials) error {
