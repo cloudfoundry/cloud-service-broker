@@ -49,7 +49,7 @@ bind_service_test() {
 }
 
 if [ $# -lt 1 ]; then
-    echo "Usage: ${0} <service-instance-name>"
+    echo "Usage: ${0} <service-instance-name> [updatge plan]"
     exit 1
 fi
 
@@ -57,6 +57,10 @@ SERVICE_INSTANCE_NAME=$1; shift
 RESULT=1
 
 if bind_service_test spring-music "${SERVICE_INSTANCE_NAME}"; then
+    if [ $# -gt 0 ]; then
+      update_service_plan "${SERVICE_INSTANCE_NAME}" "${1}"
+    fi
+
     ( cd "${SCRIPT_DIR}/spring-music-validator" && cf push --no-start --no-route)
     bind_service_test spring-music-validator "${SERVICE_INSTANCE_NAME}"
     RESULT=$?

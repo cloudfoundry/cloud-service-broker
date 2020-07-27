@@ -67,3 +67,22 @@ create_service() {
 
     return ${LOCAL_RESULT}
 }
+
+update_service_plan() {
+    local INSTANCE_NAME=$1; shift
+    local PLAN=$1; shift
+
+    cf update-service "${INSTANCE_NAME}" -p "${PLAN}" 
+
+    local LOCAL_RESULT=$?
+    if [ ${LOCAL_RESULT} -eq 0 ]; then
+        if wait_for_service "${INSTANCE_NAME}" "update in progress" "update succeeded"; then
+            echo "Successfully updated ${INSTANCE_NAME}"
+        else
+            cf service "${INSTANCE_NAME}"
+            LOCAL_RESULT=1
+        fi
+    fi
+
+    return ${LOCAL_RESULT}
+}
