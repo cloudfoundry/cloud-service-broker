@@ -34,6 +34,21 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 
 > Note in order for `cf update-service -p <new plan>` to work, the sku's must be the same family (B, GP, or MO.) Otherwise Azure will refuse the update request.
 
+#### Storage
+[Storage auto grow](https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers#storage-auto-grow) is enabled on Azure. Initial storage sizes are per plan.
+
+#### Core to sku mapping
+
+| Cores | Instance class |
+|-------|----------------|
+| 1     | GP_Gen5_1      |
+| 2     | GP_Gen5_2      |
+| 4     | GP_Gen5_4      |
+| 8     | GP_Gen5_8      |
+| 16    | GP_Gen5_16     |
+| 32    | GP_Gen5_32     |
+| 64    | GP_Gen5_64     |
+
 #### Azure specific config parameters
 
 The following parameters (as well as those above) may be configured during service provisioning (`cf create-service csb-azure-mysql ... -c '{...}'`

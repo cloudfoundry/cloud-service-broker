@@ -26,6 +26,8 @@ if create_service csb-azure-resource-group standard "${RG_NAME}" "{\"instance_na
 
   NO_TLS_SERVICES=("csb-azure-mysql" "csb-azure-postgresql")
 
+  UPDATE_INSTANCES=("csb-azure-mysql-$$" "csb-azure-mssql-$$")
+
   for s in ${NO_TLS_SERVICES[@]}; do
     create_service "${s}" small "${s}-no-tls-$$" "{\"resource_group\":\"${RG_NAME}\", \"use_tls\":false}" &
     INSTANCES+=("${s}-no-tls-$$")
@@ -43,11 +45,19 @@ if create_service csb-azure-resource-group standard "${RG_NAME}" "{\"instance_na
           break
         fi
       fi
-      if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}"; then
-        echo "SUCCEEDED: ${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}"
+
+      TEST_CMD="${SCRIPT_DIR}/../cf-run-spring-music-test.sh ${s}"
+
+      if in_list ${s} ${UPDATE_INSTANCES}; then
+        echo "Will run cf update-service test on ${s}"
+        TEST_CMD="${SCRIPT_DIR}/../cf-run-spring-music-test.sh ${s} medium {\"resource_group\":\"${RG_NAME}\"}"
+      fi
+
+      if ${TEST_CMD}; then
+        echo "SUCCEEDED: ${TEST_CMD}"
       else
         RESULT=1
-        echo "FAILED: ${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}"
+        echo "FAILED: ${TEST_CMD}"
         break
       fi
     done

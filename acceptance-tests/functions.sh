@@ -72,7 +72,11 @@ update_service_plan() {
     local INSTANCE_NAME=$1; shift
     local PLAN=$1; shift
 
-    cf update-service "${INSTANCE_NAME}" -p "${PLAN}" 
+    if [ $# -gt 0 ]; then 
+      cf update-service "${INSTANCE_NAME}" -p "${PLAN}" -c "$@"
+    else
+      cf update-service "${INSTANCE_NAME}" -p "${PLAN}" 
+    fi
 
     local LOCAL_RESULT=$?
     if [ ${LOCAL_RESULT} -eq 0 ]; then
@@ -85,4 +89,14 @@ update_service_plan() {
     fi
 
     return ${LOCAL_RESULT}
+}
+
+in_list() {
+    local search="$1"
+    shift
+    local list=("$@")
+    for item in "${list[@]}" ; do
+        [[ $item == $search ]] && return 0
+    done
+    return 1
 }

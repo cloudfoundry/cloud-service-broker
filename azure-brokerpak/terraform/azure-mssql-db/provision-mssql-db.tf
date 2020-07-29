@@ -26,7 +26,7 @@ variable max_storage_gb { type = number }
 variable skip_provider_registration { type = bool }
 
 provider "azurerm" {
-  version = "=2.9.0"
+  version = "~> 2.20.0"
   features {}
 
   subscription_id = var.azure_subscription_id

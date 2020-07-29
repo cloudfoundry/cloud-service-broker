@@ -54,13 +54,15 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 
 | Cores | Sku |
 |-------|-----|
-| 1  | P_S_Gen5_1 |
-| 2  | P_S_Gen5_2 |
-| 4  | P_Gen5_4   |
-| 8  | P_Gen5_8   |
+| 1  | GP_Gen5_1 |
+| 2  | GP_Gen5_2 |
+| 4  | GP_Gen5_4 |
+| 8  | GP_Gen5_8  |
 | 16 | GP_Gen5_16 |
-| 32 | HS_Gen5_32 |
-| 80 | HS_Gen5_80 |
+| 32 | GP_Gen5_32 |
+| 80 | GP_Gen5_80 |
+
+> Note in order for `cf update-service -p <new plan>` to work, the sku's must be the same family (GP_S, GP, or HS.) Otherwise Azure will refuse the update request.
 
 ## Binding Credentials
 
