@@ -35,7 +35,7 @@ if create_service csb-azure-resource-group standard "${RG_NAME}" "{\"instance_na
 
   if wait; then
     RESULT=0
-    for s in ${INSTANCES}; do
+    for s in ${INSTANCES[@]}; do
       if [ $# -gt 0 ]; then
         if "${SCRIPT_DIR}/../cf-validate-credhub.sh" "${s}"; then
           echo "SUCCEEDED: ${SCRIPT_DIR}/../cf-validate-credhub.sh ${s}"
