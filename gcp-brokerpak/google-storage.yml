@@ -120,7 +120,7 @@ bind:
   - required: true
     field_name: role
     type: string
-    default: "storage.objectAdmin"
+    default: "  "
     details: "The role for the account without the \"roles/\" prefix.\n\t\tSee: https://cloud.google.com/iam/docs/understanding-roles
       for more details.\n\t\tNote: The default enumeration may be overridden by your
       operator."
@@ -187,6 +187,10 @@ bind:
     constraints:
       examples:
       - "112447814736626230844" 
+  - required: true
+    field_name: Credentials
+    type: string
+    details: Credentials of the service account.        
 examples:
 - name: gcp-bucket-public-read
   description: Public Read S3 Bucket

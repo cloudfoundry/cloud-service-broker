@@ -119,6 +119,10 @@ bind:
     field_name: project_id
     type: string
     details: ID of the project that owns the service account.
+  - required: true
+    field_name: Credentials
+    type: string
+    details: Credentials of the service account.       
 examples:
 - name: Basic Configuration
   description: Create a standard Dataproc cluster with a service account that can kick off jobs (roles/dataproc.editor) and has objectAdmin access to the bucket that's created.
