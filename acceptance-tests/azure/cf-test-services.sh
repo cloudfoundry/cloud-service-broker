@@ -15,9 +15,11 @@ if create_service csb-azure-resource-group standard "${RG_NAME}" "{\"instance_na
 
   ALL_SERVICES=("csb-azure-mysql" "csb-azure-redis" "csb-azure-mssql" "csb-azure-mssql-failover-group" "csb-azure-postgresql")
   INSTANCES=()
+  UPDATE_INSTANCES=()
   for s in ${ALL_SERVICES[@]}; do
     create_service "${s}" small "${s}-$$" "{\"resource_group\":\"${RG_NAME}\"}" &
     INSTANCES+=("${s}-$$")
+    UPDATE_INSTANCES+=("${s}-$$")
   done
 
   create_service csb-azure-mongodb small csb-azure-mongodb-$$ "{\"resource_group\":\"${RG_NAME}\", \"db_name\": \"musicdb\", \"collection_name\": \"album\", \"shard_key\": \"_id\"}" &
@@ -25,8 +27,6 @@ if create_service csb-azure-resource-group standard "${RG_NAME}" "{\"instance_na
   INSTANCES+=("csb-azure-mongodb-$$")
 
   NO_TLS_SERVICES=("csb-azure-mysql" "csb-azure-postgresql")
-
-  UPDATE_INSTANCES=("csb-azure-mysql-$$" "csb-azure-mssql-$$")
 
   for s in ${NO_TLS_SERVICES[@]}; do
     create_service "${s}" small "${s}-no-tls-$$" "{\"resource_group\":\"${RG_NAME}\", \"use_tls\":false}" &
