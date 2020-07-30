@@ -15,8 +15,8 @@
 version: 1
 name: csb-aws-redis-ha
 id: e9c11b1b-0caa-45c9-b9b2-592939c9a5a6
-description: Amazon ElstiCache for Redis - multinode with automatic failover
-display_name: Amazon ElstiCache for Redis
+description: Amazon ElastiCache for Redis - multinode with automatic failover
+display_name: Amazon ElastiCache for Redis
 image_url: https://www.edrawsoft.com/symbols/awsdatabase/elasticacheredis.png
 documentation_url: https://aws.amazon.com/elasticache/redis/resources/?nc=sn&loc=5
 support_url: https://aws.amazon.com/redis/
