@@ -104,6 +104,16 @@ func (s *serviceStub) UnbindDetails() brokerapi.UnbindDetails {
 	}
 }
 
+// UpdateDetails creates a brokerapi.UpdateDetails object valid for
+// the given service.
+func (s *serviceStub) UpdateDetails() brokerapi.UpdateDetails {
+	return brokerapi.UpdateDetails{
+		ServiceID: s.ServiceId,
+		PlanID:    s.PlanId,
+	}
+}
+
+
 // fakeService creates a ServiceDefinition with a mock ServiceProvider and
 // references to some important properties.
 func fakeService(t *testing.T, isAsync bool) *serviceStub {
@@ -620,6 +630,56 @@ func TestGCPServiceBroker_LastBindingOperation(t *testing.T) {
 				assertEqual(t, "expect last binding to return async required", brokerapi.ErrAsyncRequired, err)
 			},
 		},
+	}
+
+	cases.Run(t)
+}
+
+func TestGCPServiceBroker_Update(t *testing.T) {
+	cases := BrokerEndpointTestSuite{
+		// "good-request": {
+		// 	ServiceState: StateProvisioned,
+		// 	AsyncService: true,
+		// 	Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+		// 		_, err := broker.Update(context.Background(), fakeInstanceId, stub.UpdateDetails(), true)
+
+		// 		failIfErr(t, "update", err)
+		// 	},
+		// },
+		"missing-instance": {
+			ServiceState: StateProvisioned,
+			AsyncService: true,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				_, err := broker.Update(context.Background(), "bogus-id", stub.UpdateDetails(), true)
+
+				assertEqual(t, "expect update error to be instance does not exist", brokerapi.ErrInstanceDoesNotExist, err)
+			},
+		},		
+		"requires-async": {
+			AsyncService: true,
+			ServiceState: StateProvisioned,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				// false for async support
+				_, err := broker.Update(context.Background(), fakeInstanceId, stub.UpdateDetails(), false)
+				assertEqual(t, "errors should match", brokerapi.ErrAsyncRequired, err)
+			},
+		},
+		"instance-does-not-exist": {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				_, err := broker.Update(context.Background(), fakeInstanceId, stub.UpdateDetails(), true)
+				assertEqual(t, "instance does not exist should be set", brokerapi.ErrInstanceDoesNotExist, err)
+			},
+		},
+		"bad-request-json": {
+			AsyncService: true,
+			ServiceState: StateProvisioned,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				req := stub.UpdateDetails()
+				req.RawParameters = json.RawMessage("{invalid json")
+				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
+				assertEqual(t, "errors should match", ErrInvalidUserInput, err)
+			},
+		},		
 	}
 
 	cases.Run(t)

@@ -43,6 +43,7 @@ type TfServiceDefinitionV1 struct {
 	ProvisionSettings TfServiceDefinitionV1Action `yaml:"provision"`
 	BindSettings      TfServiceDefinitionV1Action `yaml:"bind"`
 	Examples          []broker.ServiceExample     `yaml:"examples"`
+	PlanUpdateable    bool						  `yaml:"plan_updateable"`
 
 	// Internal SHOULD be set to true for Google maintained services.
 	Internal bool `yaml:"-"`
@@ -328,7 +329,7 @@ func (tfb *TfServiceDefinitionV1) ToService(executor wrapper.TerraformExecutor) 
 		Name:             tfb.Name,
 		Description:      tfb.Description,
 		Bindable:         true,
-		PlanUpdateable:   false,
+		PlanUpdateable:   tfb.PlanUpdateable,
 		DisplayName:      tfb.DisplayName,
 		DocumentationUrl: tfb.DocumentationUrl,
 		SupportUrl:       tfb.SupportUrl,

@@ -21,6 +21,7 @@ image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquare
 documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/
 support_url: https://docs.microsoft.com/en-us/azure/sql-database/
 tags: [azure, mssql, sqlserver, preview]
+plan_updateable: true
 plans:
 - name: small
   id: fd07d12b-94f8-4f69-bd5b-e2c4e84fafc1

@@ -30,7 +30,7 @@ variable use_tls { type = bool }
 variable skip_provider_registration { type = bool }
 
 provider "azurerm" {
-  version = "=2.9.0"
+  version = "~> 2.20.0"
   features {}
 
   subscription_id = var.azure_subscription_id
@@ -43,12 +43,12 @@ provider "azurerm" {
 
 locals {
   instance_types = {
-    1 = "B_Gen5_1"
-    2 = "B_Gen5_2"
+    1 = "GP_Gen5_1"
+    2 = "GP_Gen5_2"
     4 = "GP_Gen5_4"
-    8 = "MO_Gen5_8"
-    16 = "MO_Gen5_16"
-    32 = "MO_Gen5_32"
+    8 = "GP_Gen5_8"
+    16 = "GP_Gen5_16"
+    32 = "GP_Gen5_32"
     64 = "GP_Gen5_64"
   }       
   resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group
