@@ -21,6 +21,7 @@ image_url: https://i7.pngguru.com/preview/368/907/617/cosmos-db-document-oriente
 documentation_url: https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/
 support_url: https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/
 tags: [azure, redis, preview]
+plan_updateable: true
 plans:
 - name: small
   id: 6b9ca24e-1dec-4e6f-8c8a-dc6e11ab5bef
