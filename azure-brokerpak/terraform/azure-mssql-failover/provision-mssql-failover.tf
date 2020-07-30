@@ -191,7 +191,7 @@ resource "azurerm_sql_firewall_rule" "server1" {
   server_name         = azurerm_sql_server.primary_azure_sql_db_server.name
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "0.0.0.0"
-  count = var.authorized_network != "default" ? 1 : 0  
+  count = var.authorized_network == "default" ? 1 : 0  
 }
 
 resource "azurerm_sql_firewall_rule" "server2" {
@@ -201,7 +201,7 @@ resource "azurerm_sql_firewall_rule" "server2" {
   server_name         = azurerm_sql_server.secondary_sql_db_server.name
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "0.0.0.0"
-  count = var.authorized_network != "default" ? 1 : 0  
+  count = var.authorized_network == "default" ? 1 : 0  
 }
 
 locals {
