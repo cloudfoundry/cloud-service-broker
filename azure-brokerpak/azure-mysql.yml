@@ -21,6 +21,7 @@ image_url: https://pbs.twimg.com/profile_images/930941244724854784/noZmA1hr_400x
 documentation_url: https://docs.microsoft.com/en-us/azure/mysql/
 support_url: https://docs.microsoft.com/en-us/azure/mysql/
 tags: [azure, mysql, preview]
+plan_updateable: true
 plans:
 - name: small
   id: 828e324e-6b34-4f50-b224-9b956dd2d1b7

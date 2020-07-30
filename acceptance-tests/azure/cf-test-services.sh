@@ -15,9 +15,11 @@ if create_service csb-azure-resource-group standard "${RG_NAME}" "{\"instance_na
 
   ALL_SERVICES=("csb-azure-mysql" "csb-azure-redis" "csb-azure-mssql" "csb-azure-mssql-failover-group" "csb-azure-postgresql")
   INSTANCES=()
+  UPDATE_INSTANCES=()
   for s in ${ALL_SERVICES[@]}; do
     create_service "${s}" small "${s}-$$" "{\"resource_group\":\"${RG_NAME}\"}" &
     INSTANCES+=("${s}-$$")
+    UPDATE_INSTANCES+=("${s}-$$")
   done
 
   create_service csb-azure-mongodb small csb-azure-mongodb-$$ "{\"resource_group\":\"${RG_NAME}\", \"db_name\": \"musicdb\", \"collection_name\": \"album\", \"shard_key\": \"_id\"}" &
@@ -33,7 +35,7 @@ if create_service csb-azure-resource-group standard "${RG_NAME}" "{\"instance_na
 
   if wait; then
     RESULT=0
-    for s in ${INSTANCES}; do
+    for s in ${INSTANCES[@]}; do
       if [ $# -gt 0 ]; then
         if "${SCRIPT_DIR}/../cf-validate-credhub.sh" "${s}"; then
           echo "SUCCEEDED: ${SCRIPT_DIR}/../cf-validate-credhub.sh ${s}"
@@ -43,11 +45,19 @@ if create_service csb-azure-resource-group standard "${RG_NAME}" "{\"instance_na
           break
         fi
       fi
-      if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}"; then
-        echo "SUCCEEDED: ${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}"
+
+      TEST_CMD="${SCRIPT_DIR}/../cf-run-spring-music-test.sh ${s}"
+
+      if in_list ${s} ${UPDATE_INSTANCES}; then
+        echo "Will run cf update-service test on ${s}"
+        TEST_CMD="${SCRIPT_DIR}/../cf-run-spring-music-test.sh ${s} medium {\"resource_group\":\"${RG_NAME}\"}"
+      fi
+
+      if ${TEST_CMD}; then
+        echo "SUCCEEDED: ${TEST_CMD}"
       else
         RESULT=1
-        echo "FAILED: ${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}"
+        echo "FAILED: ${TEST_CMD}"
         break
       fi
     done

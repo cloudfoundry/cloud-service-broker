@@ -18,12 +18,12 @@ import (
 	"context"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/pivotal-cf/brokerapi"
 	"github.com/pivotal/cloud-service-broker/db_service/models"
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
 	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/base"
 	"github.com/pivotal/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal-cf/brokerapi"
 )
 
 // NewTerraformProvider creates a new ServiceProvider backed by Terraform module definitions for provision and bind.
@@ -61,6 +61,25 @@ func (provider *terraformProvider) Provision(ctx context.Context, provisionConte
 	}, nil
 }
 
+// Update makes necessary updates to resources so they match new desired configuration
+func (provider *terraformProvider) Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+	provider.logger.Info("update", lager.Data{
+		"context": provisionContext.ToMap(),
+	})
+
+	tfId := provisionContext.GetString("tf_id")
+	if err := provisionContext.Error(); err != nil {
+		return models.ServiceInstanceDetails{}, err
+	}
+
+	err :=  provider.jobRunner.Update(ctx, tfId, provisionContext.ToMap())
+
+	return models.ServiceInstanceDetails{
+		OperationId:   tfId,
+		OperationType: models.UpdateOperationType,
+	}, err
+}
+
 // Bind creates a new backing Terraform job and executes it, waiting on the result.
 func (provider *terraformProvider) Bind(ctx context.Context, bindContext *varcontext.VarContext) (map[string]interface{}, error) {
 	provider.logger.Info("bind", lager.Data{
@@ -91,6 +110,7 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 	}
 
 	if err := provider.jobRunner.StageJob(ctx, tfId, workspace); err != nil {
+		provider.logger.Error("terraform provider create failed", err)
 		return tfId, err
 	}
 

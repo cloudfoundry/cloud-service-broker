@@ -11,16 +11,16 @@
 |small       | 2    | 50GB         |
 |medium      | 8    | 200GB        |
 |large       | 32   | 500GB        |
-|extra-large | 64   | 1TB          |
+|extra-large | 80   | 1TB          |
 
 ## Plan Configuration Parameters
 
 The following plan parameters can be configured.
 
 | Parameter Name | Values              | Default |
-|-------------|---------------------|---------|
-| max_storage_gb  |             | 50      |
-| cores       | 1-64, multiple of 2 | 2       |
+|-------------|------------------------|---------|
+| max_storage_gb  |                    |  50      |
+| cores       | 1-64, multiple of 2    | 2       |
 
 
 ## Provision Parameters
@@ -50,15 +50,16 @@ CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure
 
 | Cores | Sku |
 |-------|-----|
-| 1  | P_S_Gen5_1 |
-| 2  | P_S_Gen5_2 |
-| 4  | P_Gen5_4   |
-| 8  | P_Gen5_8   |
+| 1  | GP_Gen5_1 |
+| 2  | GP_Gen5_2 |
+| 4  | GP_Gen5_4 |
+| 8  | GP_Gen5_8  |
 | 16 | GP_Gen5_16 |
-| 32 | HS_Gen5_32 |
-| 80 | HS_Gen5_80 |
+| 32 | GP_Gen5_32 |
+| 80 | GP_Gen5_80 |
 
-
+> Note in order for `cf update-service -p <new plan>` to work, the sku's must be the same family (GP_S, GP, or HS.) Otherwise Azure will refuse the update request.
+> 
 ## Configuring Global Defaults
 
 An operator will likely configure *server_credentials* for developers to use.

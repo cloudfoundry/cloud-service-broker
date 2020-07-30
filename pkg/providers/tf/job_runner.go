@@ -78,12 +78,19 @@ func (runner *TfJobRunner) StageJob(ctx context.Context, jobId string, workspace
 		return err
 	}
 
+	if deployment, err := db_service.GetTerraformDeploymentById(ctx, jobId); err == nil {
+		// deployment exists, update
+		deployment.Workspace = workspaceString
+		deployment.LastOperationType = "validation"
+		return runner.operationFinished(nil, workspace, deployment)
+	}
+
+
 	deployment := &models.TerraformDeployment{
 		ID:                jobId,
 		Workspace:         workspaceString,
 		LastOperationType: "validation",
 	}
-
 	return runner.operationFinished(nil, workspace, deployment)
 }
 
@@ -130,6 +137,41 @@ func (runner *TfJobRunner) Create(ctx context.Context, id string) error {
 	}
 
 	if err := runner.markJobStarted(ctx, deployment, models.ProvisionOperationType); err != nil {
+		return err
+	}
+
+	go func() {
+		err := workspace.Apply()
+		runner.operationFinished(err, workspace, deployment)
+	}()
+
+	return nil
+}
+
+func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars map[string]interface{}) error {
+	deployment, err := db_service.GetTerraformDeploymentById(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	workspace, err := runner.hydrateWorkspace(ctx, deployment)
+	if err != nil {
+		return err
+	}
+
+	inputList, err := workspace.Modules[0].Inputs()
+	if err != nil {
+		return err
+	}
+
+	limitedConfig := make(map[string]interface{})
+	for _, name := range inputList {
+		limitedConfig[name] = templateVars[name]
+	}	
+
+	workspace.Instances[0].Configuration = limitedConfig
+
+	if err := runner.markJobStarted(ctx, deployment, models.UpdateOperationType); err != nil {
 		return err
 	}
 

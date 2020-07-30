@@ -174,7 +174,7 @@ func GetServiceAccountJson() string {
 // ExtractDefaultLabels creates a map[string]string of labels that should be
 // applied to a resource on creation if the resource supports labels.
 // These include the organization, space, and instance id.
-func ExtractDefaultLabels(instanceId string, details brokerapi.ProvisionDetails) map[string]string {
+func ExtractDefaultProvisionLabels(instanceId string, details brokerapi.ProvisionDetails) map[string]string {
 	labels := map[string]string{
 		"pcf-organization-guid": details.OrganizationGUID,
 		"pcf-space-guid":        details.SpaceGUID,
@@ -193,6 +193,19 @@ func ExtractDefaultLabels(instanceId string, details brokerapi.ProvisionDetails)
 		labels["pcf-space-guid"] = spaceGuid
 	}
 
+	sanitized := map[string]string{}
+	for key, value := range labels {
+		sanitized[key] = invalidLabelChars.ReplaceAllString(value, "_")
+	}
+
+	return sanitized
+}
+
+func ExtractDefaultUpdateLabels(instanceId string, details brokerapi.UpdateDetails) map[string]string {
+	labels := map[string]string{
+		"pcf-organization-guid": details.PreviousValues.OrgID,
+		"pcf-instance-id":       instanceId,
+	}
 	sanitized := map[string]string{}
 	for key, value := range labels {
 		sanitized[key] = invalidLabelChars.ReplaceAllString(value, "_")

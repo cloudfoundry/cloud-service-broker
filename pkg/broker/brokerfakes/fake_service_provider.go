@@ -2,13 +2,13 @@
 package brokerfakes
 
 import (
-	context "context"
-	sync "sync"
+	"context"
+	"sync"
 
-	models "github.com/pivotal/cloud-service-broker/db_service/models"
-	broker "github.com/pivotal/cloud-service-broker/pkg/broker"
-	varcontext "github.com/pivotal/cloud-service-broker/pkg/varcontext"
-	brokerapi "github.com/pivotal-cf/brokerapi"
+	"github.com/pivotal-cf/brokerapi"
+	"github.com/pivotal/cloud-service-broker/db_service/models"
+	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 )
 
 type FakeServiceProvider struct {
@@ -116,6 +116,20 @@ type FakeServiceProvider struct {
 	}
 	unbindReturnsOnCall map[int]struct {
 		result1 error
+	}
+	UpdateStub        func(context.Context, *varcontext.VarContext) (models.ServiceInstanceDetails, error)
+	updateMutex       sync.RWMutex
+	updateArgsForCall []struct {
+		arg1 context.Context
+		arg2 *varcontext.VarContext
+	}
+	updateReturns struct {
+		result1 models.ServiceInstanceDetails
+		result2 error
+	}
+	updateReturnsOnCall map[int]struct {
+		result1 models.ServiceInstanceDetails
+		result2 error
 	}
 	UpdateInstanceDetailsStub        func(context.Context, *models.ServiceInstanceDetails) error
 	updateInstanceDetailsMutex       sync.RWMutex
@@ -621,6 +635,70 @@ func (fake *FakeServiceProvider) UnbindReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeServiceProvider) Update(arg1 context.Context, arg2 *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+	fake.updateMutex.Lock()
+	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
+	fake.updateArgsForCall = append(fake.updateArgsForCall, struct {
+		arg1 context.Context
+		arg2 *varcontext.VarContext
+	}{arg1, arg2})
+	fake.recordInvocation("Update", []interface{}{arg1, arg2})
+	fake.updateMutex.Unlock()
+	if fake.UpdateStub != nil {
+		return fake.UpdateStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.updateReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeServiceProvider) UpdateCallCount() int {
+	fake.updateMutex.RLock()
+	defer fake.updateMutex.RUnlock()
+	return len(fake.updateArgsForCall)
+}
+
+func (fake *FakeServiceProvider) UpdateCalls(stub func(context.Context, *varcontext.VarContext) (models.ServiceInstanceDetails, error)) {
+	fake.updateMutex.Lock()
+	defer fake.updateMutex.Unlock()
+	fake.UpdateStub = stub
+}
+
+func (fake *FakeServiceProvider) UpdateArgsForCall(i int) (context.Context, *varcontext.VarContext) {
+	fake.updateMutex.RLock()
+	defer fake.updateMutex.RUnlock()
+	argsForCall := fake.updateArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeServiceProvider) UpdateReturns(result1 models.ServiceInstanceDetails, result2 error) {
+	fake.updateMutex.Lock()
+	defer fake.updateMutex.Unlock()
+	fake.UpdateStub = nil
+	fake.updateReturns = struct {
+		result1 models.ServiceInstanceDetails
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeServiceProvider) UpdateReturnsOnCall(i int, result1 models.ServiceInstanceDetails, result2 error) {
+	fake.updateMutex.Lock()
+	defer fake.updateMutex.Unlock()
+	fake.UpdateStub = nil
+	if fake.updateReturnsOnCall == nil {
+		fake.updateReturnsOnCall = make(map[int]struct {
+			result1 models.ServiceInstanceDetails
+			result2 error
+		})
+	}
+	fake.updateReturnsOnCall[i] = struct {
+		result1 models.ServiceInstanceDetails
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeServiceProvider) UpdateInstanceDetails(arg1 context.Context, arg2 *models.ServiceInstanceDetails) error {
 	fake.updateInstanceDetailsMutex.Lock()
 	ret, specificReturn := fake.updateInstanceDetailsReturnsOnCall[len(fake.updateInstanceDetailsArgsForCall)]
@@ -701,6 +779,8 @@ func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	defer fake.provisionsAsyncMutex.RUnlock()
 	fake.unbindMutex.RLock()
 	defer fake.unbindMutex.RUnlock()
+	fake.updateMutex.RLock()
+	defer fake.updateMutex.RUnlock()
 	fake.updateInstanceDetailsMutex.RLock()
 	defer fake.updateInstanceDetailsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
