@@ -15,8 +15,8 @@
 version: 1
 name: csb-aws-redis-basic
 id: 0477676b-2dbd-4193-93fe-8315cbc05d45
-description: Amazon ElstiCache for Redis - single node
-display_name: Amazon ElstiCache for Redis
+description: Amazon ElastiCache for Redis - single node
+display_name: Amazon ElastiCache for Redis
 image_url: https://www.edrawsoft.com/symbols/awsdatabase/elasticacheredis.png
 documentation_url: https://aws.amazon.com/elasticache/redis/resources/?nc=sn&loc=5
 support_url: https://aws.amazon.com/redis/
