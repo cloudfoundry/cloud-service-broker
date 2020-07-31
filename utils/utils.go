@@ -204,6 +204,7 @@ func ExtractDefaultProvisionLabels(instanceId string, details brokerapi.Provisio
 func ExtractDefaultUpdateLabels(instanceId string, details brokerapi.UpdateDetails) map[string]string {
 	labels := map[string]string{
 		"pcf-organization-guid": details.PreviousValues.OrgID,
+		"pcf-space-guid":        details.PreviousValues.SpaceID,
 		"pcf-instance-id":       instanceId,
 	}
 	sanitized := map[string]string{}

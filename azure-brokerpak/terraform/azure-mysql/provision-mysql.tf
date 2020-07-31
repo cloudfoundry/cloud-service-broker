@@ -87,13 +87,7 @@ resource "azurerm_mysql_server" "instance" {
   location            = var.location
   resource_group_name = local.resource_group
   sku_name = local.sku_name
-
-  storage_profile {
-    storage_mb            = var.storage_gb * 1024
-    backup_retention_days = 7
-    geo_redundant_backup  = "Disabled"
-  }
-
+  storage_mb                   = var.storage_gb * 1024
   administrator_login          = random_string.username.result
   administrator_login_password = random_password.password.result
   version                      = var.mysql_version
