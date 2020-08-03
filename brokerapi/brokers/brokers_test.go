@@ -680,6 +680,16 @@ func TestGCPServiceBroker_Update(t *testing.T) {
 				assertEqual(t, "errors should match", ErrInvalidUserInput, err)
 			},
 		},		
+		"attempt-to-update-non-updatable-parameter": {
+			AsyncService: true,
+			ServiceState: StateProvisioned,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				req := stub.UpdateDetails()
+				req.RawParameters = json.RawMessage(`{"location":"new-location"`)
+				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
+				assertEqual(t, "errors should match", ErrNonUpdatableParameter, err)
+			},
+		},
 	}
 
 	cases.Run(t)

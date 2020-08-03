@@ -80,6 +80,12 @@ func TestBrokerVariable_ToSchema(t *testing.T) {
 				"examples":    []string{"SAMPLEA", "SAMPLEB"},
 			},
 		},
+		"prohibit update is copied": {
+			BrokerVariable{ProhibitUpdate: true},
+			map[string]interface{}{
+				"prohibitUpdate": true,
+			},
+		},
 	}
 
 	for tn, tc := range cases {
