@@ -637,15 +637,15 @@ func TestGCPServiceBroker_LastBindingOperation(t *testing.T) {
 
 func TestGCPServiceBroker_Update(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
-		// "good-request": {
-		// 	ServiceState: StateProvisioned,
-		// 	AsyncService: true,
-		// 	Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
-		// 		_, err := broker.Update(context.Background(), fakeInstanceId, stub.UpdateDetails(), true)
+		"good-request": {
+			ServiceState: StateProvisioned,
+			AsyncService: true,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				_, err := broker.Update(context.Background(), fakeInstanceId, stub.UpdateDetails(), true)
 
-		// 		failIfErr(t, "update", err)
-		// 	},
-		// },
+				failIfErr(t, "update", err)
+			},
+		},
 		"missing-instance": {
 			ServiceState: StateProvisioned,
 			AsyncService: true,
@@ -685,9 +685,20 @@ func TestGCPServiceBroker_Update(t *testing.T) {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				req := stub.UpdateDetails()
-				req.RawParameters = json.RawMessage(`{"location":"new-location"`)
+				req.RawParameters = json.RawMessage(`{"location":"new-location"}`)
 				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
 				assertEqual(t, "errors should match", ErrNonUpdatableParameter, err)
+			},
+		},
+		"good-request-valid-parameter": {
+			ServiceState: StateProvisioned,
+			AsyncService: true,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				req := stub.UpdateDetails()
+				req.RawParameters = json.RawMessage(`{"force_delete":"false"}`)
+				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
+
+				failIfErr(t, "update", err)
 			},
 		},
 	}
