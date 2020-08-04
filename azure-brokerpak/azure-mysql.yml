@@ -69,6 +69,7 @@ provision:
       "5.6": MySQL v5.6
       "5.7": MySQL v5.7
       "8.0": MySQL v8.0
+    prohibit_update: true  
   - field_name: use_tls
     type: boolean
     details: Use TLS for connection
@@ -137,6 +138,7 @@ provision:
       southafricanorth: South Africa North
       southafricawest: South Africa West
       germanycentral: Germany Central
+    prohibit_update: true  
   - field_name: azure_tenant_id
     type: string
     details: Azure Tenant to create resource in
@@ -160,7 +162,8 @@ provision:
   - field_name: sku_name
     type: string
     details: Azure sku (typically, tier [B,GP,MO] + family [Gen4,Gen5] + cores, e.g. B_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) Will be computed from cores if empty.
-    default: ""  
+    default: ""
+    prohibit_update: true  
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
