@@ -44,6 +44,7 @@ provision:
       maxLength: 64
       minLength: 0
       pattern: ^[a-z][a-z0-9-]+$|^$
+    prohibit_update: true  
   - field_name: admin_username
     details: Name for the resource group for this instance
     default: ''

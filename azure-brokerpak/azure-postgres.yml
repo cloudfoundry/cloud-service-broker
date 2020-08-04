@@ -87,7 +87,8 @@ provision:
     constraints:
       maxLength: 64
       minLength: 0
-      pattern: ^[a-z][a-z0-9-]+$|^$      
+      pattern: ^[a-z][a-z0-9-]+$|^$   
+    prohibit_update: true     
   - field_name: db_name
     type: string
     details: Name for your database

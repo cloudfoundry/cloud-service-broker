@@ -74,6 +74,7 @@ provision:
       maxLength: 64
       minLength: 0
       pattern: ^[a-z][a-z0-9-]+$|^$
+    prohibit_update: true  
   - field_name: db_name
     type: string
     details: Name for your Cosmos DB database
