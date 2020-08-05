@@ -77,7 +77,7 @@ func (module *ModuleDefinition) decode() (blocks hcl.Blocks, err error) {
 		for name, definition := range module.Definitions {
 			newBlocks, err := decode(definition)
 			if err != nil {
-				return blocks, fmt.Errorf("%v decoding defiitions[%v]", err, name)
+				return blocks, fmt.Errorf("%v decoding definitions[%v]", err, name)
 			}
 			blocks = append(blocks, newBlocks...)
 		}

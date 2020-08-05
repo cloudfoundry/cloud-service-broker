@@ -47,7 +47,8 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
 			// construct workspace
-			ws, err := NewWorkspace(map[string]interface{}{}, ``)
+			const variablesTfContents = "variable azure_tenant_id { type = string }"
+			ws, err := NewWorkspace(map[string]interface{}{}, ``, map[string]string{"variables": variablesTfContents})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -64,6 +65,14 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 				_, err := os.Stat(cmd.Dir)
 				if err != nil {
 					t.Fatalf("couldn't stat the cmd execution dir %v", err)
+				}
+
+				variables, err := ioutil.ReadFile(path.Join(cmd.Dir, "brokertemplate", "variables.tf"))
+				if err != nil {
+					t.Fatalf("couldn't read the tf file %v", err)
+				}
+				if string(variables) != variablesTfContents {
+					t.Fatalf("Contents of %s should be %s, but got %s", path.Join(cmd.Dir, "brokertemplate", "variables.tf"), variablesTfContents, string(variables))
 				}
 
 				// write dummy state file

@@ -44,10 +44,11 @@ type TerraformExecutor func(*exec.Cmd) error
 
 // NewWorkspace creates a new TerraformWorkspace from a given template and variables to populate an instance of it.
 // The created instance will have the name specified by the DefaultInstanceName constant.
-func NewWorkspace(templateVars map[string]interface{}, terraformTemplate string) (*TerraformWorkspace, error) {
+func NewWorkspace(templateVars map[string]interface{}, terraformTemplate string, terraformTemplates map[string]string) (*TerraformWorkspace, error) {
 	tfModule := ModuleDefinition{
 		Name:       "brokertemplate",
 		Definition: terraformTemplate,
+		Definitions: terraformTemplates,
 	}
 
 	inputList, err := tfModule.Inputs()
@@ -172,6 +173,12 @@ func (workspace *TerraformWorkspace) initializeFs() error {
 			return err
 		}
 
+		for name, tf := range module.Definitions {
+			if err := ioutil.WriteFile(path.Join(parent, fmt.Sprintf("%s.tf", name)), []byte(tf), 0755); err != nil {
+				return err
+			}
+		}
+
 		var err error
 		if outputs[module.Name], err = module.Outputs(); err != nil {
 			return err
@@ -216,9 +223,9 @@ func (workspace *TerraformWorkspace) teardownFs() error {
 
 	workspace.State = bytes
 
-	// if err := os.RemoveAll(workspace.dir); err != nil {
-	// 	return err
-	// }
+	if err := os.RemoveAll(workspace.dir); err != nil {
+		return err
+	}
 
 	workspace.dir = ""
 	workspace.dirLock.Unlock()
