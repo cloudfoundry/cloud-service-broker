@@ -216,9 +216,9 @@ func (workspace *TerraformWorkspace) teardownFs() error {
 
 	workspace.State = bytes
 
-	if err := os.RemoveAll(workspace.dir); err != nil {
-		return err
-	}
+	// if err := os.RemoveAll(workspace.dir); err != nil {
+	// 	return err
+	// }
 
 	workspace.dir = ""
 	workspace.dirLock.Unlock()
