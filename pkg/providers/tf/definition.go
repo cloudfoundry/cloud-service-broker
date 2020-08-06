@@ -106,6 +106,7 @@ type TfServiceDefinitionV1Action struct {
 	Template   string                       `yaml:"template"`
 	Outputs    []broker.BrokerVariable      `yaml:"outputs"`
 	TemplateRef string						`yaml:"template_ref"`
+	Templates map[string]string				`yaml:"templates"`
 }
 
 var _ validation.Validatable = (*TfServiceDefinitionV1Action)(nil)
@@ -181,7 +182,7 @@ func (action *TfServiceDefinitionV1Action) validateTemplateInputs() (errs *valid
 		inputs.Add(in.Name)
 	}
 
-	tfModule := wrapper.ModuleDefinition{Definition: action.Template}
+	tfModule := wrapper.ModuleDefinition{Definition: action.Template, Definitions: action.Templates}
 	tfIn, err := tfModule.Inputs()
 	if err != nil {
 		return &validation.FieldError{
@@ -209,7 +210,7 @@ func (action *TfServiceDefinitionV1Action) validateTemplateOutputs() (errs *vali
 		definedOutputs.Add(in.FieldName)
 	}
 
-	tfModule := wrapper.ModuleDefinition{Definition: action.Template}
+	tfModule := wrapper.ModuleDefinition{Definition: action.Template, Definitions: action.Templates}
 	tfOut, err := tfModule.Outputs()
 	if err != nil {
 		return &validation.FieldError{

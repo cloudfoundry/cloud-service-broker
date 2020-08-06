@@ -26,6 +26,8 @@ import (
 	"github.com/pivotal-cf/brokerapi"
 )
 
+
+
 func TestTfServiceDefinitionV1Action_ValidateTemplateIO(t *testing.T) {
 	cases := map[string]struct {
 		Action      TfServiceDefinitionV1Action
@@ -88,6 +90,96 @@ func TestTfServiceDefinitionV1Action_ValidateTemplateIO(t *testing.T) {
 			Action: TfServiceDefinitionV1Action{
 				Template: `
         `,
+				Outputs: []broker.BrokerVariable{{FieldName: "bucket_name"}},
+			},
+			ErrContains: "template outputs [] must match declared outputs [bucket_name]:",
+		},
+	}
+
+	for tn, tc := range cases {
+		t.Run(tn, func(t *testing.T) {
+			err := tc.Action.ValidateTemplateIO()
+			if err == nil {
+				if tc.ErrContains == "" {
+					return
+				}
+
+				t.Fatalf("Expected error to contain %q, got: <nil>", tc.ErrContains)
+			} else {
+				if tc.ErrContains == "" {
+					t.Fatalf("Expected no error, got: %v", err)
+				}
+
+				if !strings.Contains(err.Error(), tc.ErrContains) {
+					t.Fatalf("Expected error to contain %q, got: %v", tc.ErrContains, err)
+				}
+			}
+		})
+	}
+}
+
+func TestTfServiceDefinitionV1Action_ValidateTemplatesIO(t *testing.T) {
+	cases := map[string]struct {
+		Action      TfServiceDefinitionV1Action
+		ErrContains string
+	}{
+		"nomainal": {
+			Action: TfServiceDefinitionV1Action{
+				PlanInputs: []broker.BrokerVariable{{FieldName: "storage_class"}},
+				UserInputs: []broker.BrokerVariable{{FieldName: "name"}},
+				Computed:   []varcontext.DefaultVariable{{Name: "labels"}},
+				Templates: map[string]string {
+					"variables": `variable storage_class {type = "string"}
+							      variable name {type = "string"}
+								  variable labels {type = "string"}`,
+					"outputs": `output bucket_name {value = "${var.name}"}`,
+				},
+				Outputs: []broker.BrokerVariable{{FieldName: "bucket_name"}},
+			},
+			ErrContains: "",
+		},
+		"extra inputs okay": {
+			Action: TfServiceDefinitionV1Action{
+				PlanInputs: []broker.BrokerVariable{{FieldName: "storage_class"}},
+				UserInputs: []broker.BrokerVariable{{FieldName: "name"}},
+				Computed:   []varcontext.DefaultVariable{{Name: "labels"}},
+				Templates: map[string]string {
+					"variables": `variable storage_class {type = "string"}`,
+				},
+			},
+			ErrContains: "",
+		},
+		"missing inputs": {
+			Action: TfServiceDefinitionV1Action{
+				PlanInputs: []broker.BrokerVariable{{FieldName: "storage_class"}},
+				UserInputs: []broker.BrokerVariable{{FieldName: "name"}},
+				Computed:   []varcontext.DefaultVariable{{Name: "labels"}},
+				Templates: map[string]string {
+					"variables": `variable storage_class {type = "string"}
+								  variable not_defined {type = "string"}`,
+				},
+			},
+			ErrContains: "fields used but not declared: template.not_defined",
+		},
+
+		"extra template outputs": {
+			Action: TfServiceDefinitionV1Action{
+				Templates: map[string]string {
+					"outputs": `output storage_class {value = "${var.name}"}
+						        output name {value = "${var.name}"}
+						        output labels {value = "${var.name}"}
+								output bucket_name {value = "${var.name}"}`,
+				},
+				Outputs: []broker.BrokerVariable{{FieldName: "bucket_name"}},
+			},
+			ErrContains: "template outputs [bucket_name labels name storage_class] must match declared outputs [bucket_name]:",
+		},
+
+		"missing template outputs": {
+			Action: TfServiceDefinitionV1Action{
+				Templates: map[string]string {
+					"outputs": ``,
+				},
 				Outputs: []broker.BrokerVariable{{FieldName: "bucket_name"}},
 			},
 			ErrContains: "template outputs [] must match declared outputs [bucket_name]:",
