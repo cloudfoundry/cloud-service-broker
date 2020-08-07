@@ -104,9 +104,13 @@ type TfServiceDefinitionV1Action struct {
 	UserInputs []broker.BrokerVariable      `yaml:"user_inputs"`
 	Computed   []varcontext.DefaultVariable `yaml:"computed_inputs"`
 	Template   string                       `yaml:"template"`
-	Outputs    []broker.BrokerVariable      `yaml:"outputs"`
 	TemplateRef string						`yaml:"template_ref"`
+	Outputs    []broker.BrokerVariable      `yaml:"outputs"`
 	Templates map[string]string				`yaml:"templates"`
+	OutputsRef string						`yaml:"outputs_tf_ref"`
+	ProviderRef string						`yaml:"provider_tf_ref"`
+	VariablesRef string						`yaml:"variables_tf_ref"`
+	MainRef string							`yaml:"main_tf_ref"`
 }
 
 var _ validation.Validatable = (*TfServiceDefinitionV1Action)(nil)
