@@ -43,6 +43,7 @@ provision:
       - EU
       - southamerica-east1
       pattern: ^[A-Za-z][-a-z0-9A-Z]+$
+    prohibit_update: true  
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}

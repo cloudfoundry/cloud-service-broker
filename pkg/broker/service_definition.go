@@ -389,7 +389,7 @@ func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details brok
 	return svc.variables(constants, details.GetRawParameters(), plan)
 }
 
-func (svc *ServiceDefinition) UpdateVariables(instanceId string, details brokerapi.UpdateDetails, plan ServicePlan) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) 	UpdateVariables(instanceId string, details brokerapi.UpdateDetails, plan ServicePlan) (*varcontext.VarContext, error) {
 	constants := map[string]interface{}{
 		"request.plan_id":        details.PlanID,
 		"request.service_id":     details.ServiceID,
@@ -465,4 +465,23 @@ func buildAndValidate(builder *varcontext.ContextBuilder, vars []BrokerVariable)
 	}
 
 	return vc, nil
+}
+
+func (svc *ServiceDefinition) AllowedUpdate(details brokerapi.UpdateDetails) (bool, error) {
+	if details.GetRawParameters() == nil || len(details.GetRawParameters()) == 0 {
+		return true, nil
+	}
+
+	out := map[string]interface{}{}
+	if err := json.Unmarshal(details.GetRawParameters(), &out); err != nil {
+		return false, err
+	}
+	for _, param := range svc.ProvisionInputVariables {
+		if param.ProhibitUpdate {
+			if _, ok := out[param.FieldName]; ok {
+				return false, nil
+			} 
+		}
+	}
+	return true, nil
 }
