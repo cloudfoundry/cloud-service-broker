@@ -93,6 +93,7 @@ service:
   csb-azure-mssql-db-failover-group:
     provision:
       defaults: '{
+        "read_write_endpoint_failover_policy": "Manual",    
         "server_credential_pairs": { 
           "pair1": { 
             "admin_username": "anadminuser",         
@@ -134,3 +135,5 @@ Create a DTU P1 instance on *pair1*
 ```
 cf create-service csb-azure-mssql-db-failover-group small db-P1 -c '{"server_pair":"pair2","sku_name":"P1"}'
 ```
+
+
