@@ -50,7 +50,7 @@ if create_service csb-azure-resource-group standard "${RG_NAME}" "{\"instance_na
 
       if in_list ${s} ${UPDATE_INSTANCES}; then
         echo "Will run cf update-service test on ${s}"
-        TEST_CMD="${SCRIPT_DIR}/../cf-run-spring-music-test.sh ${s} medium 
+        TEST_CMD="${SCRIPT_DIR}/../cf-run-spring-music-test.sh ${s} medium "
       fi
 
       if ${TEST_CMD}; then
