@@ -90,7 +90,7 @@ cf create-service csb-azure-mssql-db-failover-group medium medium-fog -c '{"serv
 
 And then connect to that db in the second foundation:
 ```bash
-cf create-service csb-azure-mssql-db-failover-group existing medium-fog -c '{"server_pair":"pair1"}'
+cf create-service csb-azure-mssql-db-failover-group existing medium-fog -c '{"server_pair":"pair1","instance_name": "csb-failover-group-test", "db_name":"test-db"}'
 ```
 
 ### Azure Notes
