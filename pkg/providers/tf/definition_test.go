@@ -27,13 +27,72 @@ import (
     "github.com/pivotal-cf/brokerapi"
 )
 
+func TestLoadTemplates(t *testing.T) {
+    cases := map[string]struct {
+        action TfServiceDefinitionV1Action
+        expectedErr string
+        expectedAction TfServiceDefinitionV1Action
+    } {
+        "nominal": {
+            action: TfServiceDefinitionV1Action{
+                OutputsRef: "testdata/outputs.tf",
+                VariablesRef: "testdata/variables.tf",
+                ProviderRef: "testdata/provider.tf",
+                MainRef: "testdata/main.tf",
+                TemplateRef: "testdata/template.tf",
+            },
+            expectedErr: "",
+            expectedAction: TfServiceDefinitionV1Action{
+                OutputsRef: "testdata/outputs.tf",
+                VariablesRef: "testdata/variables.tf",
+                ProviderRef: "testdata/provider.tf",
+                MainRef: "testdata/main.tf",
+				TemplateRef: "testdata/template.tf",
+                Template: "template data",
+                Templates: map[string]string {
+                    "main": "main data",
+                    "variables": "variable user-input-provision { type = string }",
+                    "provider": "provider data",
+                    "outputs": "outputs data",
+                },
+            },
+		},
+		"missing-template": {
+            action: TfServiceDefinitionV1Action{
+                OutputsRef: "testdata/outputs-missing.tf",
+            },
+            expectedErr: "open testdata/outputs-missing.tf: no such file or directory",
+		},
+    }
+
+    for tn, tc := range cases {
+        t.Run(tn, func(t *testing.T) {
+			err := tc.action.LoadTemplate()
+			if err == nil {
+				if tc.expectedErr == "" {
+		            if !reflect.DeepEqual(tc.action, tc.expectedAction) {
+		                t.Fatalf("expected %+v, actual %+v", tc.expectedAction, tc.action)
+		            }
+				} else {
+					t.Fatalf("expected no error, got %v", err)
+				}
+			} else {
+				if !strings.Contains(err.Error(), tc.expectedErr) {
+					t.Fatalf("expected error to contain %v, got %v", tc.expectedErr, err )
+				}
+            }
+        })
+    }
+}
+
 func TestUnmarshalDefinition(t *testing.T) {
     cases := map[string]struct {
         yaml string
         expected TfServiceDefinitionV1
     }{
         "template": {
-            yaml: `version: 1
+            yaml: `---
+version: 1
 name: my-service
 id: fa22af0f-3637-4a36-b8a7-cfc61168a3e0
 description: Some service
@@ -562,6 +621,7 @@ func TestTfServiceDefinitionV1_ToService(t *testing.T) {
             },
             Computed: []varcontext.DefaultVariable{{Name: "computed-input-provision", Default: ""}},
             TemplateRef: "testdata/provision.tf",
+            VariablesRef: "testdata/variables.tf",
         },
 
         BindSettings: TfServiceDefinitionV1Action{

@@ -74,6 +74,7 @@ clean-brokerpaks:
 	-rm gcp-brokerpak/*.brokerpak
 	-rm azure-brokerpak/*.brokerpak
 	-rm aws-brokerpak/*.brokerpak
+	-rm subsume-masb-brokerpak/*.brokerpak
 
 .PHONY: clean
 clean: deps-go-binary clean-brokerpaks
@@ -159,6 +160,38 @@ run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux
 ./build/sqlfailover_*.zip: tools/sqlfailover/*.go
 	cd tools/sqlfailover; $(MAKE) build
 
+# Subsume MASB broker
+
+.PHONY: run-broker-subsume-masb
+run-broker-subsume-masb: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) subsume-masb-brokerpak/*.brokerpak
+	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
+
+build-brokerpak-subsume-masb: subsume-masb-brokerpak/*.brokerpak
+
+subsume-masb-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./subsume-masb-brokerpak/*.yml ./subsume-masb-brokerpak/terraform/*.tf ./build/psqlcmd_*.zip ./build/sqlfailover_*.zip
+	cd ./subsume-masb-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
+
+.PHONY: push-broker-subsume-masb
+push-subsume-masb: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) subsume-masb-brokerpak/*.brokerpak
+	GSB_BROKERPAK_BUILTIN_PATH=./subsume-masb-brokerpak ./scripts/push-broker.sh
+
+.PHONY: run-broker-subsume-masb-docker
+run-broker-subsume-masb-docker: check-azure-env-vars ./build/cloud-service-broker.linux subsume-masb-brokerpak/*.brokerpak
+	GSB_BROKERPAK_BUILTIN_PATH=/broker/subsume-masb-brokerpak \
+	DB_HOST=host.docker.internal \
+	docker run --rm -p 8080:8080 -v $(PWD):/broker \
+	-e GSB_BROKERPAK_BUILTIN_PATH \
+	-e DB_HOST \
+	-e DB_USERNAME \
+	-e DB_PASSWORD \
+	-e PORT \
+	-e SECURITY_USER_NAME \
+	-e SECURITY_USER_PASSWORD \
+	-e ARM_SUBSCRIPTION_ID \
+	-e ARM_TENANT_ID \
+	-e ARM_CLIENT_ID \
+	-e ARM_CLIENT_SECRET \
+	ubuntu /broker/build/cloud-service-broker.linux serve
 
 # AWS broker 
 .PHONY: aws-brokerpak

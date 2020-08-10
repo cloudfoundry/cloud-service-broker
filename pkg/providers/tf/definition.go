@@ -115,18 +115,47 @@ type TfServiceDefinitionV1Action struct {
 
 var _ validation.Validatable = (*TfServiceDefinitionV1Action)(nil)
 
+func loadTemplate(templatePath string) (string, error) {
+	if templatePath == "" {
+		return "", nil
+	}
+	buff, err := ioutil.ReadFile(templatePath)
+	
+	if err != nil {
+		return "", err
+	}
+	return string(buff), nil
+}
+
 // load template ref into template if provided
 func (action *TfServiceDefinitionV1Action) LoadTemplate() error {
-	if action.TemplateRef == "" {
-		return nil
-	}
-	buff, err := ioutil.ReadFile(action.TemplateRef)
+	var err error
 
-	if err != nil {
-		return err
+	if action.TemplateRef != "" {
+		action.Template, err = loadTemplate(action.TemplateRef)
+		if err != nil {
+			return err
+		}
+	}
+	templates := []struct{ 
+		template string
+		templateRef string
+	}{
+		{"outputs", action.OutputsRef},
+		{"variables", action.VariablesRef},
+		{"provider", action.ProviderRef},
+		{"main", action.MainRef},
 	}
 
-	action.Template = string(buff)
+	action.Templates = make(map[string]string)
+	for _, template := range templates {
+		if template.templateRef != "" {
+			action.Templates[template.template], err = loadTemplate(template.templateRef)
+			if err != nil {
+				return err
+			}
+		}
+	}
 
 	return nil
 }
