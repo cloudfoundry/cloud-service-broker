@@ -36,6 +36,7 @@ const (
 	KeyMinProperties    = "minProperties"
 	KeyRequired         = "required"
 	KeyPropertyNames    = "propertyNames"
+	KeyProhibitUpdate   = "prohibitUpdate"
 )
 
 //  NewConstraintBuilder creates a builder for JSON Schema compliant constraint

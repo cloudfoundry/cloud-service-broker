@@ -66,13 +66,15 @@ provision:
       maxLength: 63
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
+    prohibit_update: true  
   - field_name: resource_group
     details: Name for the resource group for this instance
     default: ''
     constraints:
       maxLength: 64
       minLength: 0
-      pattern: ^[a-z][a-z0-9-]+$|^$   
+      pattern: ^[a-z][a-z0-9-]+$|^$ 
+    prohibit_update: true    
   - field_name: db_name
     type: string
     details: Name for your database
@@ -135,6 +137,7 @@ provision:
       southafricawest: South Africa West
       germanycentral: Germany Central
       germanynortheast: Germany North East
+    prohibit_update: true  
   - field_name: failover_location
     type: string
     details: The location of the failover Azure SQL server

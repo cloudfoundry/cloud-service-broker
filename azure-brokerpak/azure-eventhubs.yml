@@ -52,6 +52,7 @@ provision:
       maxLength: 64
       minLength: 0
       pattern: ^[a-z][a-z0-9-]+$|^$
+    prohibit_update: true  
   - field_name: location
     type: string
     details: The location of the mysql instance.
@@ -90,6 +91,7 @@ provision:
       southafricanorth: South Africa North
       southafricawest: South Africa West
       germanycentral: Germany Central
+    prohibit_update: true  
   - field_name: azure_tenant_id
     type: string
     details: Azure Tenant to create resource in

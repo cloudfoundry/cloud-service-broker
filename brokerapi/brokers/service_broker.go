@@ -37,6 +37,7 @@ var (
 	ErrInvalidUserInput        = brokerapi.NewFailureResponse(errors.New(invalidUserInputMsg), http.StatusBadRequest, "parsing-user-request")
 	ErrGetInstancesUnsupported = brokerapi.NewFailureResponse(errors.New("the service_instances endpoint is unsupported"), http.StatusBadRequest, "unsupported")
 	ErrGetBindingsUnsupported  = brokerapi.NewFailureResponse(errors.New("the service_bindings endpoint is unsupported"), http.StatusBadRequest, "unsupported")
+	ErrNonUpdatableParameter   = brokerapi.NewFailureResponse(errors.New("attempt to update parameter that may result in service instance re-creation and data loss"), http.StatusBadRequest, "prohibited")
 )
 
 const credhubClientIdentifier = "csb"
@@ -538,6 +539,16 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return response, ErrInvalidUserInput
 	}
 
+	allowUpdate, err := brokerService.AllowedUpdate(details); 
+
+	if err != nil {
+		return response, err
+	}
+
+	if !allowUpdate {
+		return response, ErrNonUpdatableParameter
+	}
+	
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
 	vars, err := brokerService.UpdateVariables(instanceID, details, *plan)
