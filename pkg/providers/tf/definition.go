@@ -111,6 +111,7 @@ type TfServiceDefinitionV1Action struct {
 	ProviderRef string						`yaml:"provider_tf_ref"`
 	VariablesRef string						`yaml:"variables_tf_ref"`
 	MainRef string							`yaml:"main_tf_ref"`
+	ImportVariables []ImportVariable		`yaml:"import_inputs"`
 }
 
 var _ validation.Validatable = (*TfServiceDefinitionV1Action)(nil)
@@ -505,4 +506,12 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 			},
 		},
 	}
+}
+
+// Variable definition for TF import support
+type ImportVariable struct {
+	Name string			`yaml:"field_name"`
+	Type string			`yaml:"type"`
+	Details string		`yaml:"details"`
+	TfResource string	`yaml:"tf_resource"`
 }

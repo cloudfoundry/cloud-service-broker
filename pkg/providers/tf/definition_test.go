@@ -109,6 +109,11 @@ plans:
   properties:
     plan_prop_1: "value1"
 provision:
+  import_inputs:
+  - field_name: import_prop_1
+    type: string
+    details: Import prop 1
+    tf_resource: resource.name
   plan_inputs:
   - field_name: plan_prop_1
     required: true
@@ -197,7 +202,15 @@ output output_prop_1 { value = var.plan_prop_1 }`,
                             Type: broker.JsonTypeString,
                             Details: "Plan property 1",
                         },
-                    },
+					},
+					ImportVariables: []ImportVariable{
+						{
+							Name: "import_prop_1",
+							Type: "string",
+							Details: "Import prop 1",
+							TfResource: "resource.name",
+						},
+					},
                 },
                 BindSettings: TfServiceDefinitionV1Action{
 
