@@ -15,7 +15,7 @@ GOIMPORTS=goimports
 else
 UID:=$(shell id -u)
 DOCKER_OPTS=--rm -u $(UID) -v $(HOME):$(HOME) -e HOME -e USER=$(USER) -e USERNAME=$(USER) -w $(PWD)
-GO=docker run $(DOCKER_OPTS) -e GOARCH -e GOOS golang:$(GO-VERSION) go
+GO=docker run $(DOCKER_OPTS) -e GOARCH -e GOOS -e CGO_ENABLED golang:$(GO-VERSION) go
 GOTOOLS=docker run $(DOCKER_OPTS) jare/go-tools
 GOIMPORTS=$(GOTOOLS) goimports
 HAS_GO_IMPORTS=true
