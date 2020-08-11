@@ -147,7 +147,10 @@ func (action *TfServiceDefinitionV1Action) LoadTemplate() error {
 		{"main", action.MainRef},
 	}
 
-	action.Templates = make(map[string]string)
+	if action.Templates == nil {
+		action.Templates = make(map[string]string)
+	}
+
 	for _, template := range templates {
 		if template.templateRef != "" {
 			action.Templates[template.template], err = loadTemplate(template.templateRef)
