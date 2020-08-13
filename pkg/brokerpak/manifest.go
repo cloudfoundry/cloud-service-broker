@@ -164,10 +164,7 @@ func (m *Manifest) packBinaries(tmp string) error {
 
 func clearRefs(sd *tf.TfServiceDefinitionV1Action) {
 	sd.TemplateRef = ""
-	sd.OutputsRef = ""
-	sd.VariablesRef = ""
-	sd.MainRef = ""
-	sd.ProviderRef = ""
+	sd.TemplateRefs = make(map[string]string)
 }
 
 func (m *Manifest) packDefinitions(tmp, base string) error {

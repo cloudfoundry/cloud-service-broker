@@ -35,18 +35,22 @@ func TestLoadTemplates(t *testing.T) {
     } {
         "nominal": {
             action: TfServiceDefinitionV1Action{
-                OutputsRef: "testdata/outputs.tf",
-                VariablesRef: "testdata/variables.tf",
-                ProviderRef: "testdata/provider.tf",
-                MainRef: "testdata/main.tf",
-                TemplateRef: "testdata/template.tf",
+				TemplateRefs: map[string]string {
+	                "outputs": "testdata/outputs.tf",
+	                "variables": "testdata/variables.tf",
+	                "provider": "testdata/provider.tf",
+	                "main": "testdata/main.tf",
+				},
+				TemplateRef: "testdata/template.tf",
             },
             expectedErr: "",
             expectedAction: TfServiceDefinitionV1Action{
-                OutputsRef: "testdata/outputs.tf",
-                VariablesRef: "testdata/variables.tf",
-                ProviderRef: "testdata/provider.tf",
-                MainRef: "testdata/main.tf",
+				TemplateRefs: map[string]string {
+	                "outputs": "testdata/outputs.tf",
+	                "variables": "testdata/variables.tf",
+	                "provider": "testdata/provider.tf",
+	                "main": "testdata/main.tf",
+				},
 				TemplateRef: "testdata/template.tf",
                 Template: "template data",
                 Templates: map[string]string {
@@ -59,7 +63,9 @@ func TestLoadTemplates(t *testing.T) {
 		},
 		"missing-template": {
             action: TfServiceDefinitionV1Action{
-                OutputsRef: "testdata/outputs-missing.tf",
+                TemplateRefs: map[string]string {
+					"outputs": "testdata/outputs-missing.tf",
+				},
             },
             expectedErr: "open testdata/outputs-missing.tf: no such file or directory",
 		},
@@ -262,10 +268,11 @@ provision:
   templates:
     variables: "variable plan_prop_1 { type = string }"
     outputs: "output output_prop_1 { value = var.plan_prop_1 }"
-  outputs_tf_ref: outputs_ref
-  provider_tf_ref: provider_ref
-  variables_tf_ref: variables_ref
-  main_tf_ref: main_ref
+  template_refs:
+    outputs: outputs_ref
+    provider: provider_ref
+    variables: variables_ref
+    main: main_ref
 bind:
   plan_inputs: []
   user_inputs: []
@@ -332,11 +339,13 @@ examples:
                     Templates: map[string]string {
                         "variables": "variable plan_prop_1 { type = string }",
                         "outputs": "output output_prop_1 { value = var.plan_prop_1 }",
-                    },
-                    OutputsRef: "outputs_ref",
-                    ProviderRef: "provider_ref",
-                    VariablesRef: "variables_ref",
-                    MainRef: "main_ref",
+					},
+					TemplateRefs: map[string]string {
+	                	"outputs": "outputs_ref",
+                    	"provider": "provider_ref",
+                    	"variables": "variables_ref",
+						"main": "main_ref",
+					},
                 },
                 BindSettings: TfServiceDefinitionV1Action{
 
@@ -633,8 +642,10 @@ func TestTfServiceDefinitionV1_ToService(t *testing.T) {
                 },
             },
             Computed: []varcontext.DefaultVariable{{Name: "computed-input-provision", Default: ""}},
-            TemplateRef: "testdata/provision.tf",
-            VariablesRef: "testdata/variables.tf",
+			TemplateRef: "testdata/provision.tf",
+			TemplateRefs: map[string]string {
+				"variables": "testdata/variables.tf",
+			},
         },
 
         BindSettings: TfServiceDefinitionV1Action{

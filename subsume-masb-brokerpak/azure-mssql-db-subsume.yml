@@ -1,0 +1,151 @@
+# Copyright 2020 Pivotal Software, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+version: 1
+name: csb-masb-mssql-db-subsume
+id: dd1003d8-0220-4a7e-a340-d0517bcf8733
+description: Subsume control of existing MASB created SQL database
+display_name: Subsume MASB Azure SQL Database
+image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquaretransparent1.png
+documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/
+support_url: https://docs.microsoft.com/en-us/azure/sql-database/
+tags: [azure, mssql, sqlserver, preview]
+plan_updateable: false
+plans:
+- name: current
+  id: 3e2464f0-9ae7-4bb8-acdb-7651bbf71d7f
+  description: 'SQL Server latest version. Instance properties: General Purpose - Serverless ; 0.5 - 2 cores ; Max Memory: 6gb ; 50 GB storage ; auto-pause enabled after 1 hour of inactivity'
+  display_name: "Small"
+  properties:
+provision:
+  import_inputs:
+  - field_name: azure_db_id
+    type: string
+    details: Azure resource id for database to subsume
+    tf_resource: azurerm_sql_database.azure_sql_db
+  plan_inputs:
+  user_inputs:
+  - field_name: admin_password
+    type: string
+    details: Administrator password for server hosting database to be subsumed
+  - field_name: server_name
+    type: string
+    details: Name of server hosting database to be subsumed
+  - field_name: server_resource_group
+    type: string
+    details: Resource group of server hosting database to be subsumed
+  - field_name: azure_tenant_id
+    type: string
+    details: Azure Tenant to create resource in
+    default: ${config("azure.tenant_id")}      
+  - field_name: azure_subscription_id
+    type: string
+    details: Azure Subscription to create resource in
+    default: ${config("azure.subscription_id")}      
+  - field_name: azure_client_id
+    type: string
+    details: Client ID of Azure principal 
+    default: ${config("azure.client_id")}      
+  - field_name: azure_client_secret
+    type: string
+    details: Client secret for Azure principal
+    default: ${config("azure.client_secret")}
+  - field_name: skip_provider_registration
+    type: boolean
+    details: Skip automatic Azure provider registration, set to true if service principal being used does not have rights to register providers
+    default: false    
+  template_refs:
+    outputs: terraform/mssql-db-outputs.tf
+    provider: terraform/azure-provider.tf
+    variables: terraform/mssql-db-variables.tf
+    main: terraform/mssql-db-main.tf
+    data: terraform/mssql-db-data.tf
+  computed_inputs:
+  # - name: labels
+  #   default: ${json.marshal(request.default_labels)}
+  #   overwrite: true
+  #   type: object
+  outputs:
+  - field_name: sqlServerName
+    type: string
+    details: Hostname of the Azure SQL Server
+  - field_name: sqldbName
+    type: string
+    details: The name of the database.    
+  - field_name: sqlServerFullyQualifiedDomainName
+    type: string
+    details: The fully qualifief domain name (FQDN) of the Azure SQL Server
+  - field_name: hostname
+    type: string
+    details: Hostname of the Azure SQL Server
+  - field_name: port
+    type: integer
+    details: The port number to connect to the database on
+  - field_name: name
+    type: string
+    details: The name of the database.
+  - field_name: username
+    type: string
+    details: The username to authenticate to the database server.
+  - field_name: password
+    type: string
+    details: The password to authenticate to the database server.
+bind:
+  plan_inputs: []
+  user_inputs: []
+  computed_inputs:
+  - name: mssql_db_name
+    type: string
+    default: ${instance.details["name"]}
+    overwrite: true
+  - name: mssql_hostname
+    type: string
+    default: ${instance.details["hostname"]}
+    overwrite: true
+  - name: mssql_port
+    type: integer
+    default: ${instance.details["port"]}
+    overwrite: true
+  - name: admin_username
+    type: string
+    default: ${instance.details["username"]}
+    overwrite: true
+  - name: admin_password
+    type: string
+    default: ${instance.details["password"]}
+    overwrite: true
+  template_ref: terraform/bind-mssql.tf
+  outputs:
+  - field_name: username
+    type: string
+    details: The username to authenticate to the database instance.
+  - field_name: password
+    type: string
+    details: The password to authenticate to the database instance.  
+  - field_name: uri
+    type: string
+    details: The uri to connect to the database instance and database.
+  - field_name: jdbcUrl
+    type: string
+    details: The jdbc url to connect to the database instance and database.    
+  - field_name: jdbcUrlForAuditingEnabled
+    type: string
+    details: The audit enabled JDBC URL to connect to the database server and database.    
+  - field_name: databaseLogin
+    type: string
+    details: The username to authenticate to the database server.
+  - field_name: databaseLoginPassword
+    type: string
+    details: The password to authenticate to the database server. 
+

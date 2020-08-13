@@ -26,6 +26,7 @@ import (
 
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
 	"github.com/pivotal/cloud-service-broker/pkg/providers/tf"
+	"github.com/pivotal/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 )
 
@@ -61,8 +62,8 @@ func TestNewRegistrar(t *testing.T) {
 }
 
 func TestRegistrar_toDefinitions(t *testing.T) {
-	nopExecutor := func(c *exec.Cmd) error {
-		return nil
+	nopExecutor := func(c *exec.Cmd) (wrapper.ExecutionOutput, error) {
+		return wrapper.ExecutionOutput{}, nil
 	}
 
 	fakeDefn := func(name, id string) tf.TfServiceDefinitionV1 {

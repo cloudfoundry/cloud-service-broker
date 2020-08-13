@@ -42,7 +42,12 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 		"destroy": {Exec: func(ws *TerraformWorkspace) {
 			ws.Destroy()
 		}},
-	}
+		"import": {Exec: func(ws *TerraformWorkspace) {
+			ws.Import("", "")
+		}},
+		"show": {Exec: func(ws *TerraformWorkspace) {
+			ws.Show()
+		}},	}
 
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
@@ -57,7 +62,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 			// "running" tf
 			executorRan := false
 			cmdDir := ""
-			ws.Executor = func(cmd *exec.Cmd) error {
+			ws.Executor = func(cmd *exec.Cmd) (ExecutionOutput, error) {
 				executorRan = true
 				cmdDir = cmd.Dir
 
@@ -67,20 +72,29 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 					t.Fatalf("couldn't stat the cmd execution dir %v", err)
 				}
 
-				variables, err := ioutil.ReadFile(path.Join(cmd.Dir, "brokertemplate", "variables.tf"))
-				if err != nil {
-					t.Fatalf("couldn't read the tf file %v", err)
+				if tn == "import" {
+					variables, err := ioutil.ReadFile(path.Join(cmd.Dir, "variables.tf"))
+					if err != nil {
+						t.Fatalf("couldn't read the tf file %v", err)
+					}
+					if string(variables) != variablesTfContents {
+						t.Fatalf("Contents of %s should be %s, but got %s", path.Join(cmd.Dir, "variables.tf"), variablesTfContents, string(variables))
+					}					
+				} else {
+					variables, err := ioutil.ReadFile(path.Join(cmd.Dir, "brokertemplate", "variables.tf"))
+					if err != nil {
+						t.Fatalf("couldn't read the tf file %v", err)
+					}
+					if string(variables) != variablesTfContents {
+						t.Fatalf("Contents of %s should be %s, but got %s", path.Join(cmd.Dir, "brokertemplate", "variables.tf"), variablesTfContents, string(variables))
+					}
 				}
-				if string(variables) != variablesTfContents {
-					t.Fatalf("Contents of %s should be %s, but got %s", path.Join(cmd.Dir, "brokertemplate", "variables.tf"), variablesTfContents, string(variables))
-				}
-
 				// write dummy state file
 				if err := ioutil.WriteFile(path.Join(cmdDir, "terraform.tfstate"), []byte(tn), 0755); err != nil {
 					t.Fatal(err)
 				}
 
-				return nil
+				return ExecutionOutput{}, nil
 			}
 
 			// run function
@@ -129,6 +143,14 @@ func TestCustomTerraformExecutor(t *testing.T) {
 			Input:    exec.Command("terraform", "init", "-no-color"),
 			Expected: exec.Command(customBinary, "init", "-get-plugins=false", pluginsFlag, "-no-color"),
 		},
+		"import": {
+			Input:    exec.Command("terraform", "import", "-no-color", "tf.resource", "iaas-resource"),
+			Expected: exec.Command(customBinary, "import", "-no-color", "tf.resource", "iaas-resource"),
+		},
+		"show": {
+			Input:    exec.Command("terraform", "show", "-no-color"),
+			Expected: exec.Command(customBinary, "show", "-no-color"),
+		},		
 	}
 
 	for tn, tc := range cases {
@@ -137,9 +159,9 @@ func TestCustomTerraformExecutor(t *testing.T) {
 		t.Run(tn, func(t *testing.T) {
 			actual := exec.Command("!actual-never-got-called!")
 
-			executor := CustomTerraformExecutor(customBinary, customPlugins, func(c *exec.Cmd) error {
+			executor := CustomTerraformExecutor(customBinary, customPlugins, func(c *exec.Cmd) (ExecutionOutput, error) {
 				actual = c
-				return nil
+				return ExecutionOutput{}, nil
 			})
 
 			executor(tc.Input)
@@ -164,9 +186,9 @@ func TestCustomEnvironmentExecutor(t *testing.T) {
 	c.Env = []string{"ORIGINAL=value"}
 
 	actual := exec.Command("!actual-never-got-called!")
-	executor := CustomEnvironmentExecutor(map[string]string{"FOO": "bar"}, func(c *exec.Cmd) error {
+	executor := CustomEnvironmentExecutor(map[string]string{"FOO": "bar"}, func(c *exec.Cmd) (ExecutionOutput, error) {
 		actual = c
-		return nil
+		return ExecutionOutput{}, nil
 	})
 
 	executor(c)

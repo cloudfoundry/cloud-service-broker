@@ -107,14 +107,15 @@ type TfServiceDefinitionV1Action struct {
 	TemplateRef string						`yaml:"template_ref"`
 	Outputs    []broker.BrokerVariable      `yaml:"outputs"`
 	Templates map[string]string				`yaml:"templates"`
-	OutputsRef string						`yaml:"outputs_tf_ref"`
-	ProviderRef string						`yaml:"provider_tf_ref"`
-	VariablesRef string						`yaml:"variables_tf_ref"`
-	MainRef string							`yaml:"main_tf_ref"`
+	TemplateRefs map[string]string			`yaml:"template_refs"`
 	ImportVariables []ImportVariable		`yaml:"import_inputs"`
 }
 
 var _ validation.Validatable = (*TfServiceDefinitionV1Action)(nil)
+
+func (action *TfServiceDefinitionV1Action) IsTfImport() bool {
+	return len(action.ImportVariables) > 0
+}
 
 func loadTemplate(templatePath string) (string, error) {
 	if templatePath == "" {
@@ -138,23 +139,14 @@ func (action *TfServiceDefinitionV1Action) LoadTemplate() error {
 			return err
 		}
 	}
-	templates := []struct{ 
-		template string
-		templateRef string
-	}{
-		{"outputs", action.OutputsRef},
-		{"variables", action.VariablesRef},
-		{"provider", action.ProviderRef},
-		{"main", action.MainRef},
-	}
 
 	if action.Templates == nil {
 		action.Templates = make(map[string]string)
 	}
 
-	for _, template := range templates {
-		if template.templateRef != "" {
-			action.Templates[template.template], err = loadTemplate(template.templateRef)
+	for name, ref := range action.TemplateRefs {
+		if ref != "" {
+			action.Templates[name], err = loadTemplate(ref)
 			if err != nil {
 				return err
 			}
