@@ -156,52 +156,6 @@ func (workspace *TerraformWorkspace) Serialize() (string, error) {
 	return string(ws), nil
 }
 
-// initializeImportFS initializes the filesystem necessary to run terraform import
-func (workspace *TerraformWorkspace) initializeFsForImport() error {
-	if len(workspace.Modules) != 1 {
-		return fmt.Errorf("import only supports a single module")
-	}
-	if len(workspace.Instances) != 1 {
-		return fmt.Errorf("import only supports a single instance")
-	}
-
-	workspace.dirLock.Lock()
-	// create a temp directory
-	if dir, err := ioutil.TempDir("", "gsb"); err == nil {
-		workspace.dir = dir
-	} else {
-		return err
-	}
-
-	// write the state if it exists
-	if len(workspace.State) > 0 {
-		if err := ioutil.WriteFile(workspace.tfStatePath(), workspace.State, 0755); err != nil {
-			return err
-		}
-	}
-
-	for name, tf := range workspace.Modules[0].Definitions {
-		if err := ioutil.WriteFile(path.Join(workspace.dir, fmt.Sprintf("%s.tf", name)), []byte(tf), 0755); err != nil {
-			return err
-		}
-	}	
-
-	if variables, err := json.MarshalIndent(workspace.Instances[0].Configuration, "", "  "); err == nil {
-		if err := ioutil.WriteFile(path.Join(workspace.dir, "terraform.tfvars.json"), variables, 0755); err != nil {
-			return err
-		}
-	} else {
-		return err
-	}
-
-	// run "terraform init"
-	if _, err := workspace.runTf("init", "-no-color"); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // initializeFs initializes the filesystem directory necessary to run Terraform.
 func (workspace *TerraformWorkspace) initializeFs() error {
 	workspace.dirLock.Lock()
@@ -277,9 +231,9 @@ func (workspace *TerraformWorkspace) teardownFs() error {
 
 	workspace.State = bytes
 
-	// if err := os.RemoveAll(workspace.dir); err != nil {
-	// 	return err
-	// }
+	if err := os.RemoveAll(workspace.dir); err != nil {
+		return err
+	}
 
 	workspace.dir = ""
 	workspace.dirLock.Unlock()
@@ -343,7 +297,6 @@ func (workspace *TerraformWorkspace) Destroy() error {
 // Apply runs `terraform import` on this workspace.
 // This funciton blocks if another Terraform command is running on this workspace.
 func (workspace *TerraformWorkspace) Import(tfResource, iaasResourceID string) error {
-	// err := workspace.initializeFsForImport()
 	err := workspace.initializeFs()
 	defer workspace.teardownFs()
 	if err != nil {

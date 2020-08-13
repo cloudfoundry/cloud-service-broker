@@ -72,23 +72,14 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 					t.Fatalf("couldn't stat the cmd execution dir %v", err)
 				}
 
-				if tn == "import" {
-					variables, err := ioutil.ReadFile(path.Join(cmd.Dir, "variables.tf"))
-					if err != nil {
-						t.Fatalf("couldn't read the tf file %v", err)
-					}
-					if string(variables) != variablesTfContents {
-						t.Fatalf("Contents of %s should be %s, but got %s", path.Join(cmd.Dir, "variables.tf"), variablesTfContents, string(variables))
-					}					
-				} else {
-					variables, err := ioutil.ReadFile(path.Join(cmd.Dir, "brokertemplate", "variables.tf"))
-					if err != nil {
-						t.Fatalf("couldn't read the tf file %v", err)
-					}
-					if string(variables) != variablesTfContents {
-						t.Fatalf("Contents of %s should be %s, but got %s", path.Join(cmd.Dir, "brokertemplate", "variables.tf"), variablesTfContents, string(variables))
-					}
+				variables, err := ioutil.ReadFile(path.Join(cmd.Dir, "brokertemplate", "variables.tf"))
+				if err != nil {
+					t.Fatalf("couldn't read the tf file %v", err)
 				}
+				if string(variables) != variablesTfContents {
+					t.Fatalf("Contents of %s should be %s, but got %s", path.Join(cmd.Dir, "brokertemplate", "variables.tf"), variablesTfContents, string(variables))
+				}
+
 				// write dummy state file
 				if err := ioutil.WriteFile(path.Join(cmdDir, "terraform.tfstate"), []byte(tn), 0755); err != nil {
 					t.Fatal(err)

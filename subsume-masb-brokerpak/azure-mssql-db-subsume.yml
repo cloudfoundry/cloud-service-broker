@@ -39,12 +39,6 @@ provision:
   - field_name: admin_password
     type: string
     details: Administrator password for server hosting database to be subsumed
-  - field_name: server_name
-    type: string
-    details: Name of server hosting database to be subsumed
-  - field_name: server_resource_group
-    type: string
-    details: Resource group of server hosting database to be subsumed
   - field_name: azure_tenant_id
     type: string
     details: Azure Tenant to create resource in

@@ -50,5 +50,5 @@ func (instance *ModuleInstance) MarshalDefinition(outputs []string) (json.RawMes
 		defn["output"] = outputMap
 	}
 
-	return json.MarshalIndent(defn, "", "  ")
+	return json.Marshal(defn)
 }

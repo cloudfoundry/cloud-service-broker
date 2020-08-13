@@ -172,7 +172,7 @@ subsume-masb-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./s
 	cd ./subsume-masb-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
 .PHONY: push-broker-subsume-masb
-push-subsume-masb: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) subsume-masb-brokerpak/*.brokerpak
+push-boker-subsume-masb: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) subsume-masb-brokerpak/*.brokerpak
 	GSB_BROKERPAK_BUILTIN_PATH=./subsume-masb-brokerpak ./scripts/push-broker.sh
 
 .PHONY: run-broker-subsume-masb-docker
