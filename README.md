@@ -81,5 +81,3 @@ There are make targets for most common dev tasks.
 ## Contributing
 
 See [the contributing file](https://github.com/pivotal/cloud-service-broker/blob/master/CONTRIBUTING.md) for more information. 
-
-This is not an officially supported VMware product.
