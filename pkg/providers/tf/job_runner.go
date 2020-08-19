@@ -148,7 +148,7 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 
 	go func() {
 		for _, resource := range importResources {
-			if err := workspace.Import(fmt.Sprintf("module.instance.%s", resource.TfResource), resource.IaaSResource); err != nil {
+			if err := workspace.Import(fmt.Sprintf("%s", resource.TfResource), resource.IaaSResource); err != nil {
 				runner.operationFinished(err, workspace, deployment)
 				return
 			}

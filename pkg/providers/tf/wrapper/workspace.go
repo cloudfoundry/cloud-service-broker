@@ -156,16 +156,31 @@ func (workspace *TerraformWorkspace) Serialize() (string, error) {
 	return string(ws), nil
 }
 
-// initializeFs initializes the filesystem directory necessary to run Terraform.
-func (workspace *TerraformWorkspace) initializeFs() error {
-	workspace.dirLock.Lock()
-	// create a temp directory
-	if dir, err := ioutil.TempDir("", "gsb"); err == nil {
-		workspace.dir = dir
-	} else {
-		return err
+// initializedFsFlat initializes simple terraform directory structure
+func (workspace *TerraformWorkspace) initializedFsFlat() error {
+	if len(workspace.Modules) != 1 {
+		return fmt.Errorf("Cannot build flat terraform workspace with multiple modules")
 	}
-	
+	if len(workspace.Instances) != 1 {
+		return fmt.Errorf("Cannot build flat terraform workspace with multiple instances")		
+	}
+
+	for name, tf := range workspace.Modules[0].Definitions {
+		if err := ioutil.WriteFile(path.Join(workspace.dir, fmt.Sprintf("%s.tf", name)), []byte(tf), 0755); err != nil {
+			return err
+		}
+	}
+
+	variables, err := json.MarshalIndent(workspace.Instances[0].Configuration, "", "  ")
+
+	if err == nil {
+		err = ioutil.WriteFile(path.Join(workspace.dir, "terraform.tfvars.json"), variables, 0755)
+	}
+	return err
+}
+
+// initializeFsModules initializes multimodule terrafrom directory structure
+func (workspace *TerraformWorkspace) initializeFsModules() error {
 	outputs := make(map[string][]string)
 
 	// write the modulesTerraformWorkspace
@@ -204,6 +219,30 @@ func (workspace *TerraformWorkspace) initializeFs() error {
 		if err := ioutil.WriteFile(path.Join(workspace.dir, instance.InstanceName+".tf.json"), contents, 0755); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// initializeFs initializes the filesystem directory necessary to run Terraform.
+func (workspace *TerraformWorkspace) initializeFs() error {
+	workspace.dirLock.Lock()
+	// create a temp directory
+	if dir, err := ioutil.TempDir("", "gsb"); err == nil {
+		workspace.dir = dir
+	} else {
+		return err
+	}
+	
+	var err error
+
+	if len(workspace.Modules) == 1 && len(workspace.Modules[0].Definition) == 0 {
+		err = workspace.initializedFsFlat()
+	} else {
+		err = workspace.initializeFsModules()
+	}
+
+	if err != nil {
+		return err
 	}
 
 	// write the state if it exists

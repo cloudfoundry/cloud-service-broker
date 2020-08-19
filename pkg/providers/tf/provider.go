@@ -150,9 +150,9 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 		return tfId, err
 	}
 
-	if err = workspace.Validate(); err != nil {
-		return tfId, err
-	}
+	// if err = workspace.Validate(); err != nil {
+	// 	return tfId, err
+	// }
 
 	if err := provider.jobRunner.StageJob(ctx, tfId, workspace); err != nil {
 		provider.logger.Error("terraform provider create failed", err)
