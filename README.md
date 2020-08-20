@@ -1,31 +1,20 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# Open Service Broker for Cloud Platform (GCP, Azure, AWS)
+# Cloud Service Broker
 
-This is a service broker built to be used with [Cloud Foundry](https://docs.cloudfoundry.org/services/overview.html) and Kubernetes.
-It adheres to the [Open Service Broker API v2.13](https://github.com/openservicebrokerapi/servicebroker/blob/v2.13/spec.md).
+This is a service broker built to be used with [Cloud Foundry](https://docs.cloudfoundry.org/services/overview.html) and Kubernetes. It adheres to the [Open Service Broker API v2.13 (https://github.com/openservicebrokerapi/servicebroker/blob/v2.13/spec.md).
 
-Service brokers provide a consistent way to create resources and accounts that can access those resources across a variety of different services.
+Cloud Service Broker is an extension of the [GCP Service Broker](https://github.com/GoogleCloudPlatform/gcp-service-broker). As long as your target public cloud has a [Terraform provider] (https://www.terraform.io/docs/providers/index.html), services can be provisioned via a common interface using standard `cf` CLI commands.
 
-The service broker uses [Terraform](https://www.terraform.io/) to provision services.
-
-The service broker provides support for:
-
-| GCP | Azure | AWS |
-|-----|-------| ----|
-|[GCP Cloud SQL (MySQL)](https://cloud.google.com/sql/)|[Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/?&ef_id=EAIaIQobChMImtPm8_DK5wIVgf5kCh1lEAqOEAAYASABEgIwjfD_BwE:G:s&OCID=AID2000128_SEM_VfuRONbO&MarinID=VfuRONbO_307794721357_azure%20mysql_e_c_Qml9BhwJ_46775457259_kwd-310296951725&lnkd=Google_Azure_Brand&gclid=EAIaIQobChMImtPm8_DK5wIVgf5kCh1lEAqOEAAYASABEgIwjfD_BwE)|[Amazon RDS for MySQL](https://aws.amazon.com/rds/mysql/)|
-|[GCP Cloud SQL (PostgreSQL)](https://cloud.google.com/sql/)|[Azure Cache for Redis](https://azure.microsoft.com/en-us/services/cache/?&ef_id=EAIaIQobChMIzc-t2vHK5wIVsh-tBh3Z8wteEAAYASAAEgJ0cvD_BwE:G:s&OCID=AID2000128_SEM_SeUFPHct&MarinID=SeUFPHct_287547165334_azure%20redis_e_c__46775456859_kwd-310342681850&lnkd=Google_Azure_Brand&gclid=EAIaIQobChMIzc-t2vHK5wIVsh-tBh3Z8wteEAAYASAAEgJ0cvD_BwE)|[Amazon ElastiCache for Redis](https://aws.amazon.com/elasticache/redis/?nc=sn&loc=2&dn=1)|
-|[GCP Memorystore for Redis](https://cloud.google.com/memorystore/docs/redis/)|[MongoDB](https://docs.microsoft.com/en-us/azure/cosmos-db/mongodb-introduction) for [CosmosDB](https://azure.microsoft.com/en-us/services/cosmos-db/)|[Amazon RDS for PostgreSQL](https://aws.amazon.com/rds/postgresql/)|
-|[GCP BigQuery](https://cloud.google.com/bigquery/)|[Azure SQL](https://docs.microsoft.com/en-us/azure/sql-database/)|[Amazon S3 Bucket](https://aws.amazon.com/s3/)|
-|[GCP Spanner](https://cloud.google.com/spanner/)|[Azure SQL Failover Groups](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/)||
-|[GCP Cloud Storage](https://cloud.google.com/storage/)|[Azure Eventhubs](https://azure.microsoft.com/en-us/services/event-hubs/)||
-|[GCP Dataproc](https://cloud.google.com/dataproc/docs/overview/)|[Azure Database for PostgreSQL](https://azure.microsoft.com/en-us/services/postgresql)||
-||[Azure Storage Account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview)||
-||[Azure CosmosDB](https://azure.microsoft.com/en-us/services/cosmos-db/)||
-
+Some of the benefits over traditional, IaaS-provided, service brokers include: 
+- **Easily extensible and maintainable** Less talking to far flung teams, more getting work done. 
+- **One common broker for all brokered services.** Cloud Service Broker decouples the service broker functionality from the catalog of services that it exposes.
+- **Credhub integration out-of-the-box** CredHub encrypts and manages all the secrets associated with your usage of cloud services.
+- **Community** When you expose a service via a [Brokerpak](https://github.com/pivotal/cloud-service-broker/blob/master/docs/brokerpak-intro.md), you can make it available to everyone who uses CSB.
+- **Easy to migrate existing services using [TF Import](https://www.terraform.io/docs/import/index.html)** *Coming Soon...*
 
 ## Public Roadmap
-See our up-to-date roadmap on Trello here: https://trello.com/b/6wgNQZLB/cloud-service-broker-public-product-roadmap
+For a list of currently supported services (and broker features), see our up-to-date roadmap on Trello here: https://trello.com/b/6wgNQZLB/cloud-service-broker-public-product-roadmap
 
 ## Installation
 
@@ -34,7 +23,6 @@ This service broker can be installed as a CF application. See the instructions f
 - [AWS Installation](./docs/aws-installation.md)
 - [Azure Installation](./docs/azure-installation.md) 
 - [GCP Installation](./docs/gcp-installation.md) 
-
 
 ## Usage
 
