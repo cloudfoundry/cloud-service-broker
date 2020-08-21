@@ -27,12 +27,16 @@ import (
 type ModuleDefinition struct {
 	Name       string
 	Definition string
+	Definitions map[string]string
 }
 
 var _ (validation.Validatable) = (*ModuleDefinition)(nil)
 
 // Validate checks the validity of the ModuleDefinition struct.
 func (module *ModuleDefinition) Validate() (errs *validation.FieldError) {
+	for name, definition := range module.Definitions {
+		errs = errs.Also(validation.ErrIfNotHCL(definition, fmt.Sprintf("Definitions[%v]", name)))
+	}
 	return errs.Also(
 		validation.ErrIfBlank(module.Name, "Name"),
 		validation.ErrIfNotTerraformIdentifier(module.Name, "Name"),
@@ -40,9 +44,9 @@ func (module *ModuleDefinition) Validate() (errs *validation.FieldError) {
 	)
 }
 
-func (module *ModuleDefinition) decode() (hcl.Blocks, error) {
+func decode(body string)  (hcl.Blocks, error) {
 	parser := hclparse.NewParser()
-	f, diags := parser.ParseHCL([]byte(module.Definition), "")
+	f, diags := parser.ParseHCL([]byte(body), "")
 	if diags.HasErrors() {
 		return hcl.Blocks{}, fmt.Errorf(diags.Error())
 	}
@@ -64,6 +68,22 @@ func (module *ModuleDefinition) decode() (hcl.Blocks, error) {
 	}
 
 	return content.Blocks, nil
+}
+
+func (module *ModuleDefinition) decode() (blocks hcl.Blocks, err error) {
+	blocks, err = decode(module.Definition)
+
+	if err == nil {
+		for name, definition := range module.Definitions {
+			newBlocks, err := decode(definition)
+			if err != nil {
+				return blocks, fmt.Errorf("%v decoding definitions[%v]", err, name)
+			}
+			blocks = append(blocks, newBlocks...)
+		}
+	}
+
+	return 
 }
 
 // Inputs gets the input parameter names for the module.

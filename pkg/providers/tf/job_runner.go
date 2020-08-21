@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"regexp"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/pivotal/cloud-service-broker/db_service/models"
@@ -68,11 +69,6 @@ type TfJobRunner struct {
 func (runner *TfJobRunner) StageJob(ctx context.Context, jobId string, workspace *wrapper.TerraformWorkspace) error {
 	workspace.Executor = runner.Executor
 
-	// Validate that TF is happy with the workspace
-	if err := workspace.Validate(); err != nil {
-		return err
-	}
-
 	workspaceString, err := workspace.Serialize()
 	if err != nil {
 		return err
@@ -84,7 +80,6 @@ func (runner *TfJobRunner) StageJob(ctx context.Context, jobId string, workspace
 		deployment.LastOperationType = "validation"
 		return runner.operationFinished(nil, workspace, deployment)
 	}
-
 
 	deployment := &models.TerraformDeployment{
 		ID:                jobId,
@@ -121,6 +116,53 @@ func (runner *TfJobRunner) hydrateWorkspace(ctx context.Context, deployment *mod
 	})
 
 	return ws, nil
+}
+
+// ImportResource represents TF resource to IaaS resource ID mapping for import
+type ImportResource struct {
+	TfResource string
+	IaaSResource string
+}
+
+func cleanTFImport(tf string) string {
+	re := regexp.MustCompile(`(?m)^[\s]+(id|creation_date|default_secondary_location)[\s]*=.*$`)
+	return re.ReplaceAllString(tf, "")
+}
+
+// Import runs `terraform import` and `terraform apply` on the given workspace in the background.
+// The status of the job can be found by polling the Status function.
+func (runner *TfJobRunner) Import(ctx context.Context, id string, importResources []ImportResource) error {
+	deployment, err := db_service.GetTerraformDeploymentById(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	workspace, err := runner.hydrateWorkspace(ctx, deployment)
+	if err != nil {
+		return err
+	}
+
+	if err := runner.markJobStarted(ctx, deployment, models.ProvisionOperationType); err != nil {
+		return err
+	}
+
+	go func() {
+		for _, resource := range importResources {
+			if err := workspace.Import(fmt.Sprintf("%s", resource.TfResource), resource.IaaSResource); err != nil {
+				runner.operationFinished(err, workspace, deployment)
+				return
+			}
+		}
+		mainTf, err := workspace.Show()
+		if err == nil {
+			workspace.Modules[0].Definitions["main"] = cleanTFImport(mainTf)
+			// workspace.State = nil
+			err = workspace.Apply()
+		}
+		runner.operationFinished(err, workspace, deployment)
+	}()
+
+	return nil
 }
 
 // Create runs `terraform apply` on the given workspace in the background.
