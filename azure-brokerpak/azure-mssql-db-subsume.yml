@@ -60,11 +60,11 @@ provision:
     details: Skip automatic Azure provider registration, set to true if service principal being used does not have rights to register providers
     default: false    
   template_refs:
-    outputs: terraform/mssql-db-outputs.tf
-    provider: terraform/azure-provider.tf
-    variables: terraform/mssql-db-variables.tf
-    main: terraform/mssql-db-main.tf
-    data: terraform/mssql-db-data.tf
+    outputs: terraform/subsume-masb-mssql-db/mssql-db-outputs.tf
+    provider: terraform/subsume-masb-mssql-db/azure-provider.tf
+    variables: terraform/subsume-masb-mssql-db/mssql-db-variables.tf
+    main: terraform/subsume-masb-mssql-db/mssql-db-main.tf
+    data: terraform/subsume-masb-mssql-db/mssql-db-data.tf
   computed_inputs:
   # - name: labels
   #   default: ${json.marshal(request.default_labels)}
@@ -119,7 +119,7 @@ bind:
     type: string
     default: ${instance.details["password"]}
     overwrite: true
-  template_ref: terraform/bind-mssql.tf
+  template_ref: terraform/azure-mssql/bind-mssql.tf
   outputs:
   - field_name: username
     type: string
