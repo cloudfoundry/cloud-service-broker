@@ -73,7 +73,7 @@ func TestLoadTemplates(t *testing.T) {
 
     for tn, tc := range cases {
         t.Run(tn, func(t *testing.T) {
-			err := tc.action.LoadTemplate()
+			err := tc.action.LoadTemplate(".")
 			if err == nil {
 				if tc.expectedErr == "" {
 		            if !reflect.DeepEqual(tc.action, tc.expectedAction) {
