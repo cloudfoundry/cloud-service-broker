@@ -84,9 +84,11 @@ provision:
   - field_name: server_pair
     type: string
     details: Name of server pair from server_credential_pairs to create database upon
+    required: true
   - field_name: server_credential_pairs
     type: object
     details: 'JSON hash of server pair name to set of server credentials. { "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}'
+    required: true
   - field_name: read_write_endpoint_failover_policy
     type: string
     details: Faileover policy (Automatic or Manual)

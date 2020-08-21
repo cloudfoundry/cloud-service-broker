@@ -74,6 +74,7 @@ clean-brokerpaks:
 	-rm gcp-brokerpak/*.brokerpak
 	-rm azure-brokerpak/*.brokerpak
 	-rm aws-brokerpak/*.brokerpak
+	-rm subsume-masb-brokerpak/*.brokerpak
 
 .PHONY: clean
 clean: deps-go-binary clean-brokerpaks
@@ -133,7 +134,7 @@ azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-br
 
 .PHONY: push-broker-azure
 push-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./scripts/push-broker.sh
+	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak GSB_PROVISION_DEFAULTS='{"resource_group": "broker-cf-test"}' ./scripts/push-broker.sh
 
 .PHONY: run-broker-azure-docker
 run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux azure-brokerpak/*.brokerpak
@@ -158,7 +159,6 @@ run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux
 
 ./build/sqlfailover_*.zip: tools/sqlfailover/*.go
 	cd tools/sqlfailover; $(MAKE) build
-
 
 # AWS broker 
 .PHONY: aws-brokerpak
