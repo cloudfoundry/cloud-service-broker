@@ -17,14 +17,15 @@ package tf
 import (
 	"fmt"
 	"io/ioutil"
+	"path"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/pivotal-cf/brokerapi"
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
 	"github.com/pivotal/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/pivotal/cloud-service-broker/pkg/validation"
 	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal/cloud-service-broker/utils"
-	"github.com/pivotal-cf/brokerapi"
 	"github.com/spf13/viper"
 )
 
@@ -130,23 +131,23 @@ func loadTemplate(templatePath string) (string, error) {
 }
 
 // load template ref into template if provided
-func (action *TfServiceDefinitionV1Action) LoadTemplate() error {
-	var err error
-
+func (action *TfServiceDefinitionV1Action) LoadTemplate(srcDir string) error {
+    var err error
+ 
 	if action.TemplateRef != "" {
-		action.Template, err = loadTemplate(action.TemplateRef)
+		action.Template, err = loadTemplate(path.Join(srcDir, action.TemplateRef))
 		if err != nil {
 			return err
-		}
+	    }
 	}
 
 	if action.Templates == nil {
-		action.Templates = make(map[string]string)
-	}
+	    action.Templates = make(map[string]string)
+    }
 
 	for name, ref := range action.TemplateRefs {
 		if ref != "" {
-			action.Templates[name], err = loadTemplate(ref)
+			action.Templates[name], err = loadTemplate(path.Join(srcDir, ref))
 			if err != nil {
 				return err
 			}
@@ -302,10 +303,10 @@ func (tfb *TfServiceDefinitionV1) resolveEnvVars() (map[string]string, error) {
 }
 
 func (tfb *TfServiceDefinitionV1) loadTemplates() error {
-	err := tfb.BindSettings.LoadTemplate()
+	err := tfb.BindSettings.LoadTemplate(".")
 
 	if err == nil {
-		err = tfb.ProvisionSettings.LoadTemplate()
+		err = tfb.ProvisionSettings.LoadTemplate(".")
 	}
 
 	return err

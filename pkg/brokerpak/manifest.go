@@ -183,11 +183,11 @@ func (m *Manifest) packDefinitions(tmp, base string) error {
 			return fmt.Errorf("couldn't parse %s: %v", sd, err)
 		}
 
-		if err := defn.ProvisionSettings.LoadTemplate(); err != nil {
+		if err := defn.ProvisionSettings.LoadTemplate(base); err != nil {
 			return fmt.Errorf("couldn't load provision template %s: %v", defn.ProvisionSettings.TemplateRef, err)
 		}
 
-		if err := defn.BindSettings.LoadTemplate(); err != nil {
+		if err := defn.BindSettings.LoadTemplate(base); err != nil {
 			return fmt.Errorf("couldn't load bind template %s: %v", defn.BindSettings.TemplateRef, err)
 		}
 
