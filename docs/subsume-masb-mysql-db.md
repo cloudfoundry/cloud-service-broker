@@ -66,7 +66,7 @@ To create a new binding from the new service instance
 cf bind-service <application> <new intance name>
 ```
 
-## Purge Old Service Instance
+## 🚨 Purge Old Service Instance 🚨
 CF will still have a record of the old service instance. Use `cf purge-service-instance` to purge that record. *Do not use `cf delete-service` as MASB will delete the service instance that the CSB broker should now be in charge of!*
 ```bash
 cf purge-service-instance <masb instance>
