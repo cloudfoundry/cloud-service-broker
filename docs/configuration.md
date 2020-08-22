@@ -54,6 +54,27 @@ The broker supports passing credentials to apps via credhub references, thus kee
 | CH_SKIP_SSL_VALIDATION    |credhub.skip_ssl_validation| boolean | skip SSL validation if true | 
 | CH_CA_CERT_FILE           |credhub.ca_cert_file| path | path to cert file |
 
+### Credhub Config Example (Azure) 
+```
+azure:
+  subscription_id: your subscription id
+  tenant_id: your tenant id
+  client_id: your client id
+  client_secret: your client secret
+db:
+  host: your mysql host
+  password: your mysql password
+  user: your mysql username
+api:
+  user: someusername
+  password: somepassword
+credhub:
+  url: ...
+  uaa_url: ...
+  uaa_client_name: ...
+  uaa_client_secret: ...
+ ```
+
 ## Brokerpak Configuration
 
 Brokerpak configuration values:
