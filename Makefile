@@ -124,7 +124,7 @@ run-broker-gcp-docker: check-gcp-env-vars ./build/cloud-service-broker.linux gcp
 
 .PHONY: run-broker-azure
 run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
+	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak GSB_PROVISION_DEFAULTS='{"resource_group": "broker-cf-test"}' ./build/cloud-service-broker.$(OSFAMILY) serve
 
 build-brokerpak-azure: azure-brokerpak/*.brokerpak
 
@@ -172,11 +172,11 @@ aws-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./aws-broker
 
 .PHONY: run-broker-aws 
 run-broker-aws: check-aws-env-vars ./build/cloud-service-broker.$(OSFAMILY) aws-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./aws-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
+	GSB_BROKERPAK_BUILTIN_PATH=./aws-brokerpak GSB_PROVISION_DEFAULTS="{\"aws_vpc_id\": \"$(AWS_PAS_VPC_ID)\"}" ./build/cloud-service-broker.$(OSFAMILY) serve
 
 .PHONY: push-broker-aws
 push-broker-aws: check-aws-env-vars ./build/cloud-service-broker.$(OSFAMILY) aws-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./aws-brokerpak ./scripts/push-broker.sh	
+	GSB_BROKERPAK_BUILTIN_PATH=./aws-brokerpak  GSB_PROVISION_DEFAULTS="{\"aws_vpc_id\": \"$(AWS_PAS_VPC_ID)\"}" ./scripts/push-broker.sh	
 
 .PHONY: run-broker-aws-docker
 run-broker-aws-docker: check-aws-env-vars ./build/cloud-service-broker.linux aws-brokerpak/*.brokerpak
