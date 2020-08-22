@@ -235,7 +235,15 @@ func (workspace *TerraformWorkspace) initializeFs() error {
 	
 	var err error
 
-	if len(workspace.Modules) == 1 && len(workspace.Modules[0].Definition) == 0 {
+	terraformLen := 0
+	for _, module := range workspace.Modules {
+		terraformLen += len(module.Definition)
+		for _, def := range module.Definitions {
+			terraformLen += len(def)
+		}
+	}
+
+	if len(workspace.Modules) == 1 && len(workspace.Modules[0].Definition) == 0 && terraformLen > 0 {
 		err = workspace.initializedFsFlat()
 	} else {
 		err = workspace.initializeFsModules()
