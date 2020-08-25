@@ -93,7 +93,7 @@ resource "azurerm_mysql_server" "instance" {
   administrator_login_password     = random_password.password.result
   version                          = var.mysql_version
   ssl_enforcement_enabled          = var.use_tls
-  ssl_minimal_tls_version_enforced = length(var.tls_min_version) == 0 ? "TLSEnforcementDisabled" : var.tls_min_version
+  ssl_minimal_tls_version_enforced = var.use_tls ? var.tls_min_version : null
   tags = var.labels
 }
 
