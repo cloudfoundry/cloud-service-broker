@@ -27,6 +27,7 @@ variable sku_name { type = string }
 variable storage_gb {type = string }
 variable authorized_network {type = string}
 variable use_tls { type = bool }
+variable tls_min_version { type = string }
 variable skip_provider_registration { type = bool }
 
 provider "azurerm" {
@@ -87,12 +88,13 @@ resource "azurerm_mysql_server" "instance" {
   location            = var.location
   resource_group_name = local.resource_group
   sku_name = local.sku_name
-  storage_mb                   = var.storage_gb * 1024
-  administrator_login          = random_string.username.result
-  administrator_login_password = random_password.password.result
-  version                      = var.mysql_version
-  ssl_enforcement              = var.use_tls ? "Enabled" : "Disabled"
-  tags                         = var.labels
+  storage_mb                       = var.storage_gb * 1024
+  administrator_login              = random_string.username.result
+  administrator_login_password     = random_password.password.result
+  version                          = var.mysql_version
+  ssl_enforcement_enabled          = var.use_tls
+  ssl_minimal_tls_version_enforced = length(var.tls_min_version) == 0 ? "TLSEnforcementDisabled" : var.tls_min_version
+  tags = var.labels
 }
 
 resource "azurerm_mysql_database" "instance-db" {

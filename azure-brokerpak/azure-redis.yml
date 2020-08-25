@@ -173,6 +173,10 @@ provision:
     type: boolean
     details: Skip automatic Azure provider registration, set to true if service principal being used does not have rights to register providers
     default: false       
+  - field_name: tls_min_version
+    type: string
+    details: Minimum enforced TLS version. Possible values are 1.0, 1.1, 1.2
+    default: "1.2"
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
