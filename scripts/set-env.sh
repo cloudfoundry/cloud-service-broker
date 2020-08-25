@@ -14,7 +14,7 @@ export ROOT_SERVICE_ACCOUNT_JSON="${GCP_SERVICE_ACCOUNT_JSON}"
 export GOOGLE_CREDENTIALS="${GCP_SERVICE_ACCOUNT_JSON}"
 export GOOGLE_PROJECT=$(echo ${GOOGLE_CREDENTIALS} | jq -r .project_id)
 
-export GCP_PAS_NETSORK=$(lpass show "Shared-CF Platform Engineering/pe-cloud-service-broker/cloud service broker pipeline secrets.yml" | grep gcp-network | cut -d ' ' -f 2)
+export GCP_PAS_NETWORK=$(lpass show "Shared-CF Platform Engineering/pe-cloud-service-broker/cloud service broker pipeline secrets.yml" | grep gcp-network | cut -d ' ' -f 2)
 
 export AWS_ACCESS_KEY_ID=$(lpass show --notes "Shared-CF Platform Engineering/pe-cloud-service-broker/cloud service AWS credentials" | jq -r .access_key)
 export AWS_SECRET_ACCESS_KEY=$(lpass show --notes "Shared-CF Platform Engineering/pe-cloud-service-broker/cloud service AWS credentials" | jq -r .secret_key)
