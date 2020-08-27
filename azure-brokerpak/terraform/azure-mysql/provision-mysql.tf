@@ -54,6 +54,7 @@ locals {
   }     
   sku_name = length(var.sku_name) == 0 ? local.instance_types[var.cores] : var.sku_name    
   resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group
+  tls_version = var.use_tls == true ? var.tls_min_version : "TLSEnforcementDisabled"
 }
 
 resource "azurerm_resource_group" "azure-msyql" {
@@ -93,7 +94,7 @@ resource "azurerm_mysql_server" "instance" {
   administrator_login_password     = random_password.password.result
   version                          = var.mysql_version
   ssl_enforcement_enabled          = var.use_tls
-  ssl_minimal_tls_version_enforced = var.use_tls ? var.tls_min_version : null
+  ssl_minimal_tls_version_enforced = local.tls_version
   tags = var.labels
 }
 

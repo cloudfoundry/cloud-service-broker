@@ -76,8 +76,8 @@ provision:
     default: true      
   - field_name: tls_min_version
     type: string
-    details: Minimum enforced TLS version. Possible values are TLSEnforcementDisabled, TLS1_0, TLS1_1, and TLS1_2
-    default: TLS1_2
+    details: Minimum enforced TLS version. Possible values are TLSEnforcementDisabled, TLS1_0, TLS1_1 (default), and TLS1_2
+    default: TLS1_1
   - field_name: instance_name
     type: string
     details: Name for your MySQL instance
