@@ -67,12 +67,13 @@ output uri {
                   var.mysql_db_name) 
 }
 output jdbcUrl { 
-  value = format("jdbc:%s://%s:%s/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=%v\u0026requireSSL=false\u0026serverTimezone=GMT", 
+  value = format("jdbc:%s://%s:%s/%s?user=%s\u0026password=%s\u0026verifyServerCertificate=true\u0026useSSL=%v\u0026requireSSL=%v\u0026serverTimezone=GMT", 
                   "mysql",
                   var.mysql_hostname, 
                   var.mysql_port,
                   var.mysql_db_name, 
                   local.username, 
                   random_password.password.result,
+                  var.use_tls,
                   var.use_tls) 
 }  
