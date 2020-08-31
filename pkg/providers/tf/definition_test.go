@@ -120,6 +120,9 @@ provision:
     type: string
     details: Import prop 1
     tf_resource: resource.name
+  import_parameter_mappings:
+  - tf_variable: tf-variable
+    parameter_name: parameter-name
   plan_inputs:
   - field_name: plan_prop_1
     required: true
@@ -215,6 +218,12 @@ output output_prop_1 { value = var.plan_prop_1 }`,
 							Type: "string",
 							Details: "Import prop 1",
 							TfResource: "resource.name",
+						},
+					},
+					ImportParameterMappings: []ImportParameterMapping{
+						{
+							TfVariable: "tf-variable",
+							ParameterName: "parameter-name",
 						},
 					},
                 },
