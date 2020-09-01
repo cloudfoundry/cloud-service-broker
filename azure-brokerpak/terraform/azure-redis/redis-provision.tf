@@ -25,6 +25,7 @@ variable location { type = string }
 variable labels { type = map }
 variable skip_provider_registration { type = bool }
 variable tls_min_version { type = string }
+variable maxmemory_policy { type = string }
 
 provider "azurerm" {
   version = "~> 2.20.0"
@@ -59,6 +60,9 @@ resource "azurerm_redis_cache" "redis" {
   resource_group_name = local.resource_group
   minimum_tls_version = length(var.tls_min_version) == 0 ? "1.2" : var.tls_min_version
   tags                = var.labels
+  redis_configuration {
+    maxmemory_policy   = length(var.maxmemory_policy) == 0 ? "allkeys-lru" : var.maxmemory_policy
+  }
 }
 
 output name { value = azurerm_redis_cache.redis.name }
