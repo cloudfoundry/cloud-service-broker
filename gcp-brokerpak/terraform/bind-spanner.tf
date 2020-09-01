@@ -93,5 +93,5 @@ output "PrivateKeyData" {value = "${google_service_account_key.key.private_key}"
 output "ProjectId" {value = "${google_service_account.account.project}"}
 output instance { value = var.instance}
 output db_name { value = var.db_name }
-
+output "Credentials" { value = base64decode(google_service_account_key.key.private_key) }
 

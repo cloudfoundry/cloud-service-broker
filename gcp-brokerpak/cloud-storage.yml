@@ -149,6 +149,10 @@ bind:
     field_name: UniqueId
     type: string
     details: Unique and stable ID of the service account.
+  - required: true
+    field_name: Credentials
+    type: string
+    details: Credentials of the service account.    
 examples:
 - name: Basic Configuration
   description: Create a bucket with a service account that can create/read/delete

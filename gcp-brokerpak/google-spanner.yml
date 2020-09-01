@@ -212,7 +212,11 @@ bind:
     details: The name of the instance.
   - field_name: db_name
     type: string
-    details: The name of the database.    
+    details: The name of the database.
+  - required: true
+    field_name: Credentials
+    type: string
+    details: Credentials of the service account.        
 examples:
 - name: small configuration
   description: Create a small spanner instance

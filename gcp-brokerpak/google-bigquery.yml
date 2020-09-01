@@ -133,7 +133,11 @@ bind:
     details: Unique and stable ID of the service account. 
   - field_name: dataset_id
     type: string
-    details: The name of the BigQuery dataset.    
+    details: The name of the BigQuery dataset.  
+  - required: true
+    field_name: Credentials
+    type: string
+    details: Credentials of the service account.         
 examples:
 - name: general configuration
   description: Create a Pay as you go bigquery instance
