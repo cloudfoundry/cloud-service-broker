@@ -132,6 +132,7 @@ required_env_variables:
 | image_url* | string | The URL to an image or a data URL containing an image. |
 | documentation_url* | string | Link to documentation page for the service. |
 | support_url* | string | Link to support page for the service. |
+| plan_updateable | boolean | Set to `true` if service supports `cf update-service` 
 | plans* | array of plan objects | A list of plans for this service, schema is defined below. MUST contain at least one plan. |
 | provision* | action object | Contains configuration for the provision operation, schema is defined below. |
 | bind* | action object | Contains configuration for the bind operation, schema is defined below. |

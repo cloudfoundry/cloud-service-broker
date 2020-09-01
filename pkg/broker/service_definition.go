@@ -21,12 +21,12 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/pivotal-cf/brokerapi"
 	"github.com/pivotal/cloud-service-broker/db_service/models"
 	"github.com/pivotal/cloud-service-broker/pkg/toggles"
 	"github.com/pivotal/cloud-service-broker/pkg/validation"
 	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal/cloud-service-broker/utils"
-	"github.com/pivotal-cf/brokerapi"
 	"github.com/spf13/viper"
 )
 
@@ -132,7 +132,7 @@ func (svc *ServiceDefinition) ProvisionDefaultOverrides() map[string]interface{}
 	return viper.GetStringMap(svc.ProvisionDefaultOverrideProperty())
 }
 
-func ProvisionGlobalDefaults() map[string]interface{}{
+func ProvisionGlobalDefaults() map[string]interface{} {
 	return viper.GetStringMap(GlobalProvisionDefaults)
 }
 
@@ -356,26 +356,47 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 // For example, to create a default database name based on a user-provided instance name.
 // Therefore, they get executed conditionally if a user-provided variable does not exist.
 // Computed variables get executed either unconditionally or conditionally for greater flexibility.
+func (svc *ServiceDefinition) variables(constants map[string]interface{}, rawParameters json.RawMessage, plan ServicePlan) (*varcontext.VarContext, error) {
+	// The namespaces of these values roughly align with the OSB spec.
+	// constants := map[string]interface{}{
+	// 	"request.plan_id":        details.PlanID,
+	// 	"request.service_id":     details.ServiceID,
+	// 	"request.instance_id":    instanceId,
+	// 	"request.default_labels": utils.ExtractDefaultProvisionLabels(instanceId, details),
+	// }
+
+	builder := varcontext.Builder().
+		SetEvalConstants(constants).
+		MergeMap(ProvisionGlobalDefaults()).          // 6
+		MergeMap(svc.ProvisionDefaultOverrides()).    // 5
+		MergeJsonObject(rawParameters).               // 4
+		MergeMap(plan.ProvisionOverrides).            // 3
+		MergeDefaults(svc.provisionDefaults()).       // ?
+		MergeMap(plan.GetServiceProperties()).        // 2
+		MergeDefaults(svc.ProvisionComputedVariables) // 1
+
+	return buildAndValidate(builder, svc.ProvisionInputVariables)
+}
+
 func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details brokerapi.ProvisionDetails, plan ServicePlan) (*varcontext.VarContext, error) {
 	// The namespaces of these values roughly align with the OSB spec.
 	constants := map[string]interface{}{
 		"request.plan_id":        details.PlanID,
 		"request.service_id":     details.ServiceID,
 		"request.instance_id":    instanceId,
-		"request.default_labels": utils.ExtractDefaultLabels(instanceId, details),
+		"request.default_labels": utils.ExtractDefaultProvisionLabels(instanceId, details),
 	}
+	return svc.variables(constants, details.GetRawParameters(), plan)
+}
 
-	builder := varcontext.Builder().
-		SetEvalConstants(constants).
-		MergeMap(ProvisionGlobalDefaults()).          // 6
-		MergeMap(svc.ProvisionDefaultOverrides()).    // 5 
-		MergeJsonObject(details.GetRawParameters()).  // 4 
-		MergeMap(plan.ProvisionOverrides).            // 3 
-		MergeDefaults(svc.provisionDefaults()).       // ? 
-		MergeMap(plan.GetServiceProperties()).        // 2 
-		MergeDefaults(svc.ProvisionComputedVariables) // 1 
-
-	return buildAndValidate(builder, svc.ProvisionInputVariables)
+func (svc *ServiceDefinition) 	UpdateVariables(instanceId string, details brokerapi.UpdateDetails, plan ServicePlan) (*varcontext.VarContext, error) {
+	constants := map[string]interface{}{
+		"request.plan_id":        details.PlanID,
+		"request.service_id":     details.ServiceID,
+		"request.instance_id":    instanceId,
+		"request.default_labels": utils.ExtractDefaultUpdateLabels(instanceId, details),
+	}
+	return svc.variables(constants, details.GetRawParameters(), plan)
 }
 
 // BindVariables gets the variable resolution context for a bind request.
@@ -444,4 +465,23 @@ func buildAndValidate(builder *varcontext.ContextBuilder, vars []BrokerVariable)
 	}
 
 	return vc, nil
+}
+
+func (svc *ServiceDefinition) AllowedUpdate(details brokerapi.UpdateDetails) (bool, error) {
+	if details.GetRawParameters() == nil || len(details.GetRawParameters()) == 0 {
+		return true, nil
+	}
+
+	out := map[string]interface{}{}
+	if err := json.Unmarshal(details.GetRawParameters(), &out); err != nil {
+		return false, err
+	}
+	for _, param := range svc.ProvisionInputVariables {
+		if param.ProhibitUpdate {
+			if _, ok := out[param.FieldName]; ok {
+				return false, nil
+			} 
+		}
+	}
+	return true, nil
 }

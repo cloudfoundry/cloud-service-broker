@@ -12,13 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-variable name {type = "string"}
-variable labels {type = "map"}
-variable credentials  { type = string }
-variable project  { type = string }
-variable role { type = string }
+resource "azurerm_sql_database" "azure_sql_db" {
 
-output name { value = var.name }
-output credentials { value = var.credentials }
-output project { value = var.project }
-output role { value = var.role }
+}

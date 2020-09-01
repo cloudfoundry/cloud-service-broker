@@ -57,6 +57,7 @@ type BrokerVariable struct {
 	// associated values.
 	// http://json-schema.org/latest/json-schema-validation.html
 	Constraints map[string]interface{} `yaml:"constraints,omitempty"`
+	ProhibitUpdate bool `yaml:"prohibit_update,omitempty"`
 }
 
 var _ validation.Validatable = (*ServiceDefinition)(nil)
@@ -114,6 +115,10 @@ func (bv *BrokerVariable) ToSchema() map[string]interface{} {
 		} else {
 			schema[validation.KeyDefault] = bv.Default
 		}
+	}
+
+	if bv.ProhibitUpdate {
+		schema[validation.KeyProhibitUpdate] = bv.ProhibitUpdate
 	}
 
 	return schema

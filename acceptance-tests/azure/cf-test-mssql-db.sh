@@ -34,7 +34,7 @@ if create_service csb-azure-resource-group standard "${SERVER_RG}" "{\"instance_
 
       echo $CONFIG
 
-      ${SCRIPT_DIR}/../cf-test-spring-music.sh csb-azure-mssql-db medium "${CONFIG}"
+      ${SCRIPT_DIR}/../cf-test-spring-music.sh csb-azure-mssql-db small -u large "${CONFIG}"
       RESULT=$?
   fi
 

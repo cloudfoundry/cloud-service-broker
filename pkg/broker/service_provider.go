@@ -33,6 +33,9 @@ type ServiceProvider interface {
 	// needs to operate.
 	Provision(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
 
+	// Update makes necessary updates to resources so they match new desired configuration
+	Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) 
+
 	// Bind provisions the necessary resources for a user to be able to connect to the provisioned service.
 	// This may include creating service accounts, granting permissions, and adding users to services e.g. a SQL database user.
 	// It stores information necessary to access the service _and_ delete the binding in the returned map.

@@ -105,7 +105,7 @@ func (client *Client) Unbind(instanceId, bindingId, serviceId, planId string) *B
 
 // Update sends a patch request to change the plan
 func (client *Client) Update(instanceId, serviceId, planId string, parameters json.RawMessage) *BrokerResponse {
-	url := fmt.Sprintf("service_instances/%s", instanceId)
+	url := fmt.Sprintf("service_instances/%s?accepts_incomplete=true", instanceId)
 
 	return client.makeRequest(http.MethodPatch, url, brokerapi.UpdateDetails{
 		ServiceID:     serviceId,

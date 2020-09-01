@@ -21,6 +21,7 @@ image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquare
 documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/
 support_url: https://docs.microsoft.com/en-us/azure/sql-database/
 tags: [azure, mssql, sqlserver, preview]
+plan_updateable: true
 plans:
 - name: small
   id: fd07d12b-94f8-4f69-bd5b-e2c4e84fafc1
@@ -72,9 +73,11 @@ provision:
   - field_name: server
     type: string
     details: Name of server from server_credentials to create database upon
+    required: true
   - field_name: server_credentials
     type: object
     details: 'JSON has of server credentials. { "name1":{"server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."},"name2":{...}...}'
+    required: true
   - field_name: azure_tenant_id
     type: string
     details: Azure Tenant to create resource in

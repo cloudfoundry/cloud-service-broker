@@ -21,6 +21,7 @@ image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquare
 documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
 support_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
 tags: [azure, mssql, sqlserver, dr, failover, preview]
+plan_updateable: true
 plans:
 - name: small
   id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
@@ -65,19 +66,32 @@ provision:
       maxLength: 63
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
+    prohibit_update: true  
   - field_name: resource_group
     details: Name for the resource group for this instance
     default: ''
     constraints:
       maxLength: 64
       minLength: 0
-      pattern: ^[a-z][a-z0-9-]+$|^$   
+      pattern: ^[a-z][a-z0-9-]+$|^$ 
+    prohibit_update: true    
   - field_name: db_name
     type: string
     details: Name for your database
     default: csb-db
     constraints:
       maxLength: 64
+  - field_name: read_write_endpoint_failover_policy
+    type: string
+    details: Faileover policy (Automatic or Manual)
+    default: Automatic
+    enum:
+      Automatic: Automatic
+      Manual: Manual
+  - field_name: failover_grace_minutes
+    type: number
+    details: For automatic mode - the grace period in minutes before failover with data loss is attempted 
+    default: 60      
   - field_name: authorized_network
     type: string
     details: The subnet ID of the Azure VNET to which the instance is locked down to. If left unspecified, 
@@ -123,6 +137,7 @@ provision:
       southafricawest: South Africa West
       germanycentral: Germany Central
       germanynortheast: Germany North East
+    prohibit_update: true  
   - field_name: failover_location
     type: string
     details: The location of the failover Azure SQL server
@@ -187,7 +202,7 @@ provision:
     default: false    
   - field_name: sku_name
     type: string
-    details: Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) Will be computed from cores if empty.
+    details: Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/azure-sql/database/resource-limits-vcore-single-databases) Will be computed from cores if empty.
     default: ""     
   template_ref: terraform/azure-mssql-failover/provision-mssql-failover.tf 
   computed_inputs:
@@ -274,9 +289,15 @@ examples:
   provision_params: {}
   bind_params: {}
   bind_can_fail: true  
-- name: failover-group-azuresql-db-medium-configuration in centralus location
+- name: failover-group-azuresql-db-medium-configuration-in-centralus-location
   description: Create a medium Azure SQL Database failover group 
   plan_id: c5e8ec57-ab5a-4bbf-ac6d-5075a97ed1a5
   provision_params: { "location": "centralus" }
+  bind_params: {}
+  bind_can_fail: true  
+- name: failover-group-azuresql-db-medium-configuration manual failover
+  description: Create a medium Azure SQL Database failover group with manual failover
+  plan_id: c5e8ec57-ab5a-4bbf-ac6d-5075a97ed1a5
+  provision_params: { "read_write_endpoint_failover_policy": "Manual" }
   bind_params: {}
   bind_can_fail: true  

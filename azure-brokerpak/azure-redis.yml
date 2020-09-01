@@ -21,6 +21,7 @@ image_url: https://i7.pngguru.com/preview/368/907/617/cosmos-db-document-oriente
 documentation_url: https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/
 support_url: https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/
 tags: [azure, redis, preview]
+plan_updateable: true
 plans:
 - name: small
   id: 6b9ca24e-1dec-4e6f-8c8a-dc6e11ab5bef
@@ -104,6 +105,7 @@ provision:
       maxLength: 98
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
+    prohibit_update: true  
   - field_name: resource_group
     details: Name for the resource group for this instance
     default: ''
@@ -111,6 +113,7 @@ provision:
       maxLength: 64
       minLength: 0
       pattern: ^[a-z][a-z0-9-]+$|^$
+    prohibit_update: true  
   - field_name: location
     type: string
     details: The region of the mysql instance.
@@ -149,6 +152,7 @@ provision:
       southafricanorth: South Africa North
       southafricawest: South Africa West
       germanycentral: Germany Central
+    prohibit_update: true  
   - field_name: azure_tenant_id
     type: string
     details: Azure Tenant to create resource in
@@ -169,6 +173,10 @@ provision:
     type: boolean
     details: Skip automatic Azure provider registration, set to true if service principal being used does not have rights to register providers
     default: false       
+  - field_name: tls_min_version
+    type: string
+    details: Minimum enforced TLS version. Possible values are 1.0, 1.1, 1.2
+    default: "1.2"
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
@@ -179,7 +187,7 @@ provision:
   - field_name: name
     type: string
     details: The name of the redis.
-  - field_name: hostname
+  - field_name: host
     type: string
     details: Hostname or IP address of the exposed redis endpoint used by clients to connect to the service.
   # - field_name: port

@@ -16,14 +16,15 @@ package tf
 
 import (
 	"context"
+	"fmt"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/pivotal-cf/brokerapi"
 	"github.com/pivotal/cloud-service-broker/db_service/models"
 	"github.com/pivotal/cloud-service-broker/pkg/broker"
 	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/base"
 	"github.com/pivotal/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal-cf/brokerapi"
 )
 
 // NewTerraformProvider creates a new ServiceProvider backed by Terraform module definitions for provision and bind.
@@ -50,15 +51,43 @@ func (provider *terraformProvider) Provision(ctx context.Context, provisionConte
 		"context": provisionContext.ToMap(),
 	})
 
-	tfId, err := provider.create(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
-	if err != nil {
-		return models.ServiceInstanceDetails{}, err
+	var tfID string
+	var err error
+
+	if provider.serviceDefinition.ProvisionSettings.IsTfImport() { 
+		tfID, err = provider.importCreate(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
+		if err != nil {
+			return models.ServiceInstanceDetails{}, err
+		}	} else {
+		tfID, err = provider.create(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
+		if err != nil {
+			return models.ServiceInstanceDetails{}, err
+		}
 	}
 
 	return models.ServiceInstanceDetails{
-		OperationId:   tfId,
+		OperationId:   tfID,
 		OperationType: models.ProvisionOperationType,
 	}, nil
+}
+
+// Update makes necessary updates to resources so they match new desired configuration
+func (provider *terraformProvider) Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+	provider.logger.Info("update", lager.Data{
+		"context": provisionContext.ToMap(),
+	})
+
+	tfId := provisionContext.GetString("tf_id")
+	if err := provisionContext.Error(); err != nil {
+		return models.ServiceInstanceDetails{}, err
+	}
+
+	err :=  provider.jobRunner.Update(ctx, tfId, provisionContext.ToMap())
+
+	return models.ServiceInstanceDetails{
+		OperationId:   tfId,
+		OperationType: models.UpdateOperationType,
+	}, err
 }
 
 // Bind creates a new backing Terraform job and executes it, waiting on the result.
@@ -79,18 +108,54 @@ func (provider *terraformProvider) Bind(ctx context.Context, bindContext *varcon
 	return provider.jobRunner.Outputs(ctx, tfId, wrapper.DefaultInstanceName)
 }
 
+func (provider *terraformProvider) importCreate(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
+	tfId := vars.GetString("tf_id")
+	if err := vars.Error(); err != nil {
+		return "", err
+	}
+
+	varsMap := vars.ToMap()
+	workspace, err := wrapper.NewWorkspace(varsMap, "", action.Templates)//map[string]string{"main": action.Templates["main"]})
+	if err != nil {
+		return tfId, err
+	}
+
+	if err := provider.jobRunner.StageJob(ctx, tfId, workspace); err != nil {
+		provider.logger.Error("terraform provider create failed", err)
+		return tfId, err
+	}
+
+	var importParams []ImportResource
+
+	for _, importParam := range action.ImportVariables {
+		param, ok := varsMap[importParam.Name]
+
+		if !ok {
+			return tfId, fmt.Errorf("Missing required import variable %v", importParam.Name)
+		}
+		importParams = append(importParams, ImportResource{TfResource: importParam.TfResource, IaaSResource: fmt.Sprintf("%v", param)})
+	}
+
+	return tfId, provider.jobRunner.Import(ctx, tfId, importParams)
+}
+
 func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
 	tfId := vars.GetString("tf_id")
 	if err := vars.Error(); err != nil {
 		return "", err
 	}
 
-	workspace, err := wrapper.NewWorkspace(vars.ToMap(), action.Template)
+	workspace, err := wrapper.NewWorkspace(vars.ToMap(), action.Template, map[string]string{})
 	if err != nil {
 		return tfId, err
 	}
 
+	// if err = workspace.Validate(); err != nil {
+	// 	return tfId, err
+	// }
+
 	if err := provider.jobRunner.StageJob(ctx, tfId, workspace); err != nil {
+		provider.logger.Error("terraform provider create failed", err)
 		return tfId, err
 	}
 

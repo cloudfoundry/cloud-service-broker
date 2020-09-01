@@ -107,6 +107,6 @@ resource "aws_elasticache_replication_group" "redis" {
 }
 
 output name { value = aws_elasticache_replication_group.redis.id }
-output hostname { value = aws_elasticache_replication_group.redis.primary_endpoint_address }
+output host { value = aws_elasticache_replication_group.redis.primary_endpoint_address }
 output password { value = random_password.auth_token.result }
 output tls_port { value = local.port }

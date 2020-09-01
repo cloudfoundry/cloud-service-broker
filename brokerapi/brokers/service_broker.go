@@ -37,6 +37,7 @@ var (
 	ErrInvalidUserInput        = brokerapi.NewFailureResponse(errors.New(invalidUserInputMsg), http.StatusBadRequest, "parsing-user-request")
 	ErrGetInstancesUnsupported = brokerapi.NewFailureResponse(errors.New("the service_instances endpoint is unsupported"), http.StatusBadRequest, "unsupported")
 	ErrGetBindingsUnsupported  = brokerapi.NewFailureResponse(errors.New("the service_bindings endpoint is unsupported"), http.StatusBadRequest, "unsupported")
+	ErrNonUpdatableParameter   = brokerapi.NewFailureResponse(errors.New("attempt to update parameter that may result in service instance re-creation and data loss"), http.StatusBadRequest, "prohibited")
 )
 
 const credhubClientIdentifier = "csb"
@@ -503,8 +504,87 @@ func (broker *ServiceBroker) updateStateOnOperationCompletion(ctx context.Contex
 
 // Update a service instance plan.
 // This functionality is not implemented and will return an error indicating that plan changes are not supported.
-func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, details brokerapi.UpdateDetails, asyncAllowed bool) (brokerapi.UpdateServiceSpec, error) {
-	return brokerapi.UpdateServiceSpec{}, brokerapi.ErrPlanChangeNotSupported
+func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, details brokerapi.UpdateDetails, asyncAllowed bool) (response brokerapi.UpdateServiceSpec, err error) {
+	broker.Logger.Info("Updating", lager.Data{
+		"instance_id":        instanceID,
+		"accepts_incomplete": asyncAllowed,
+		"details":            details,
+	})
+
+	// make sure that instance actually exists
+	instance, err := db_service.GetServiceInstanceDetailsById(ctx, instanceID)
+	if err != nil {
+		return response, brokerapi.ErrInstanceDoesNotExist
+	}
+
+	brokerService, serviceHelper, err := broker.getDefinitionAndProvider(instance.ServiceId)
+	if err != nil {
+		return response, err
+	}
+
+	// verify the service exists and the plan exists
+	plan, err := brokerService.GetPlanById(details.PlanID)
+	if err != nil {
+		return response, err
+	}
+
+	// verify async provisioning is allowed if it is required
+	shouldProvisionAsync := serviceHelper.ProvisionsAsync()
+	if shouldProvisionAsync && !asyncAllowed {
+		return response, brokerapi.ErrAsyncRequired
+	}
+
+	// Give the user a better error message if they give us a bad request
+	if !isValidOrEmptyJSON(details.GetRawParameters()) {
+		return response, ErrInvalidUserInput
+	}
+
+	allowUpdate, err := brokerService.AllowedUpdate(details); 
+
+	if err != nil {
+		return response, err
+	}
+
+	if !allowUpdate {
+		return response, ErrNonUpdatableParameter
+	}
+	
+	// validate parameters meet the service's schema and merge the user vars with
+	// the plan's
+	vars, err := brokerService.UpdateVariables(instanceID, details, *plan)
+	if err != nil {
+		return response, err
+	}
+
+	// get instance details
+	newInstanceDetails, err := serviceHelper.Update(ctx, vars)
+	if err != nil {
+		return brokerapi.UpdateServiceSpec{}, err
+	}
+
+	// save instance details
+
+	instance.PlanId = newInstanceDetails.PlanId
+
+	err = db_service.SaveServiceInstanceDetails(ctx, instance)
+	if err != nil {
+		return brokerapi.UpdateServiceSpec{}, fmt.Errorf("Error saving instance details to database: %s. WARNING: this instance cannot be deprovisioned through cf. Contact your operator for cleanup", err)
+	}
+
+	// save provision request details
+	pr := models.ProvisionRequestDetails{
+		ServiceInstanceId: instanceID,
+		RequestDetails:    string(details.RawParameters),
+	}
+	if err = db_service.SaveProvisionRequestDetails(ctx, &pr); err != nil {
+		return brokerapi.UpdateServiceSpec{}, fmt.Errorf("Error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
+	}
+
+	response.IsAsync = shouldProvisionAsync
+	response.DashboardURL = ""
+	response.OperationData = newInstanceDetails.OperationId
+
+	return response, nil
 }
 
 func isValidOrEmptyJSON(msg json.RawMessage) bool {

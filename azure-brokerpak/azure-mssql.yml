@@ -21,6 +21,7 @@ image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquare
 documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/
 support_url: https://docs.microsoft.com/en-us/azure/sql-database/
 tags: [azure, mssql, sqlserver, preview]
+plan_updateable: true
 plans:
 - name: small
   id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
@@ -71,6 +72,7 @@ provision:
       maxLength: 63
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
+    prohibit_update: true  
   - field_name: resource_group
     details: Name for the resource group for this instance
     default: ''
@@ -78,6 +80,7 @@ provision:
       maxLength: 64
       minLength: 0
       pattern: ^[a-z][a-z0-9-]+$|^$
+    prohibit_update: true  
   - field_name: db_name
     type: string
     details: Name for your database
@@ -126,6 +129,7 @@ provision:
       southafricanorth: South Africa North
       southafricawest: South Africa West
       germanycentral: Germany Central
+    prohibit_update: true  
   - field_name: azure_tenant_id
     type: string
     details: Azure Tenant to create resource in
@@ -148,7 +152,7 @@ provision:
     default: false      
   - field_name: sku_name
     type: string
-    details: Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) Will be computed from cores if empty.
+    details: Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/azure-sql/database/resource-limits-vcore-single-databases) Will be computed from cores if empty.
     default: ""      
   template_ref: terraform/azure-mssql/provision-mssql.tf 
   computed_inputs:
