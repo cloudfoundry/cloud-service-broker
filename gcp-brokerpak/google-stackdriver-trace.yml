@@ -72,12 +72,10 @@ bind:
     constraints:
       minLength: 512
       pattern: ^[A-Za-z0-9+/]*=*$
-  - required: true
-    field_name: Credentials
+  - field_name: Credentials
+    required: true
     type: string
     details: Credentials of the service account.         
-  - required: true
-    field_name: ProjectId
   - field_name: ProjectId
     type: string
     details: ID of the project that owns the service account.

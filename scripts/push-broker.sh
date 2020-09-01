@@ -37,6 +37,7 @@ if [[ ${ARM_SUBSCRIPTION_ID} ]]; then
   cf set-env "${APP_NAME}" ARM_SUBSCRIPTION_ID "${ARM_SUBSCRIPTION_ID}"
 fi
 
+
 if [[ ${ARM_TENANT_ID} ]]; then
   cf set-env "${APP_NAME}" ARM_TENANT_ID "${ARM_TENANT_ID}"
 fi
