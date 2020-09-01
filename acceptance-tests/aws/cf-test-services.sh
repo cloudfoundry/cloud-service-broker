@@ -9,17 +9,11 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 RESULT=1
 
-if [ $# -eq 0 ]; then
-  echo "Usage: $0 <vpc-id>"
-  exit 1
-fi
-
-VPC_ID=$1; shift
 
 allServices=("csb-aws-mysql" "csb-aws-redis-basic" "csb-aws-redis-ha" "csb-aws-postgresql")
 
 for s in ${allServices[@]}; do
-  create_service "${s}" small "${s}-$$" "{\"aws_vpc_id\": \"${VPC_ID}\"}" &
+  create_service "${s}" small "${s}-$$" &
 done
 
 if wait; then
@@ -48,7 +42,10 @@ for s in ${allServices[@]}; do
   delete_service "${s}-$$" &
 done
 
-${SCRIPT_DIR}/test-s3-bucket.sh
+if [ ${RESULT} -eq 0 ]; then
+  ${SCRIPT_DIR}/cf-test-s3-bucket.sh
+  RESULT=$?
+fi
 
 wait
 

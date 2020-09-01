@@ -118,6 +118,10 @@ func (b *StorageBroker) Deprovision(ctx context.Context, bucket models.ServiceIn
 	return nil, nil
 }
 
+func (b *StorageBroker) Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+	return models.ServiceInstanceDetails{}, fmt.Errorf("Update unsupported")
+}
+
 func (b *StorageBroker) createClient(ctx context.Context) (*googlestorage.Client, error) {
 	co := option.WithUserAgent(utils.CustomUserAgent)
 	//ct := option.WithTokenSource(b.HttpConfig.TokenSource(ctx))

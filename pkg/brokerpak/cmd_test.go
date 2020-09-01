@@ -154,17 +154,17 @@ func TestRegistryFromLocalBrokerpak(t *testing.T) {
 	defer os.Remove(pk)
 
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("fakeBrokerpak: %v", err)
 	}
 
 	abs, err := filepath.Abs(pk)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("filepath.Abs: %v", err)
 	}
 
 	registry, err := registryFromLocalBrokerpak(abs)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("registryFromLocalBrokerpak: %v", err)
 	}
 
 	if len(registry) != 1 {

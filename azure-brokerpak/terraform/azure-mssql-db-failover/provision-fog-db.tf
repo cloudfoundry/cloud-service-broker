@@ -25,9 +25,12 @@ variable sku_name { type = string }
 variable cores { type = number }
 variable max_storage_gb { type = number }
 variable skip_provider_registration { type = bool }
+variable existing { type = bool }
+variable read_write_endpoint_failover_policy { type = string }
+variable failover_grace_minutes { type = number }
 
 provider "azurerm" {
-  version = "=2.9.0"
+  version = "~> 2.20.0"
   features {}
 
   subscription_id = var.azure_subscription_id
@@ -50,18 +53,18 @@ data "azurerm_sql_server" "secondary_sql_db_server" {
 
 locals {
   instance_types = {
-    1 = "GP_S_Gen5_1"
-    2 = "GP_S_Gen5_2"
+    1 = "GP_Gen5_1"
+    2 = "GP_Gen5_2"
     4 = "GP_Gen5_4"
     8 = "GP_Gen5_8"
     16 = "GP_Gen5_16"
-    32 = "BC_Gen5_32"
-    80 = "BC_Gen5_80"
+    32 = "GP_Gen5_32"
+    80 = "GP_Gen5_80"
   }     
   sku_name = length(var.sku_name) == 0 ? local.instance_types[var.cores] : var.sku_name 
 }
 
-resource "azurerm_sql_database" "azure_sql_db" {
+resource "azurerm_sql_database" "azure_sql_db_primary" {
   name                = var.db_name
   resource_group_name = var.server_credential_pairs[var.server_pair].primary.resource_group
   location            = data.azurerm_sql_server.primary_sql_db_server.location
@@ -69,31 +72,34 @@ resource "azurerm_sql_database" "azure_sql_db" {
   requested_service_objective_name = local.sku_name
   max_size_bytes      = var.max_storage_gb * 1024 * 1024 * 1024
   tags                = var.labels
+  count = var.existing ? 0 : 1
 }
 
 resource "azurerm_sql_failover_group" "failover_group" {
   name                = var.instance_name
   resource_group_name = var.server_credential_pairs[var.server_pair].primary.resource_group
   server_name         = data.azurerm_sql_server.primary_sql_db_server.name
-  databases           = [azurerm_sql_database.azure_sql_db.id]
+  databases           = [azurerm_sql_database.azure_sql_db_primary[0].id]
   partner_servers {
     id = data.azurerm_sql_server.secondary_sql_db_server.id
   }
 
   read_write_endpoint_failover_policy {
-    mode          = "Automatic"
-    grace_minutes = 60
+    mode          = var.read_write_endpoint_failover_policy
+    grace_minutes = var.failover_grace_minutes
   }
+  count = var.existing ? 0 : 1
 }
 
 locals {
-  serverFQDN = format("%s.database.windows.net", azurerm_sql_failover_group.failover_group.name)
+  serverFQDN = format("%s.database.windows.net", var.instance_name)
 }
-output "sqldbName" {value = azurerm_sql_database.azure_sql_db.name}
-output "sqlServerName" {value = azurerm_sql_failover_group.failover_group.name}
+
+output "sqldbName" {value = var.db_name}
+output "sqlServerName" {value = var.instance_name}
 output "sqlServerFullyQualifiedDomainName" {value = local.serverFQDN}
 output "hostname" {value = local.serverFQDN}
 output "port" {value = 1433}
-output "name" {value = azurerm_sql_database.azure_sql_db.name}
+output "name" {value = var.db_name}
 output "username" {value = var.server_credential_pairs[var.server_pair].admin_username}
 output "password" {value = var.server_credential_pairs[var.server_pair].admin_password}

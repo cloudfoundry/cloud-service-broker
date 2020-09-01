@@ -162,6 +162,11 @@ func (m *Manifest) packBinaries(tmp string) error {
 	return nil
 }
 
+func clearRefs(sd *tf.TfServiceDefinitionV1Action) {
+	sd.TemplateRef = ""
+	sd.TemplateRefs = make(map[string]string)
+}
+
 func (m *Manifest) packDefinitions(tmp, base string) error {
 	// users can place definitions in any directory structure they like, even
 	// above the current directory so we standardize their location and names
@@ -178,16 +183,16 @@ func (m *Manifest) packDefinitions(tmp, base string) error {
 			return fmt.Errorf("couldn't parse %s: %v", sd, err)
 		}
 
-		if err := defn.ProvisionSettings.LoadTemplate(); err != nil {
+		if err := defn.ProvisionSettings.LoadTemplate(base); err != nil {
 			return fmt.Errorf("couldn't load provision template %s: %v", defn.ProvisionSettings.TemplateRef, err)
 		}
 
-		if err := defn.BindSettings.LoadTemplate(); err != nil {
+		if err := defn.BindSettings.LoadTemplate(base); err != nil {
 			return fmt.Errorf("couldn't load bind template %s: %v", defn.BindSettings.TemplateRef, err)
 		}
 
-		defn.ProvisionSettings.TemplateRef = ""
-		defn.BindSettings.TemplateRef = ""
+		clearRefs(&defn.ProvisionSettings)
+		clearRefs(&defn.BindSettings)
 	
 		packedName := fmt.Sprintf("service%d-%s.yml", i, defn.Name)
 		log.Printf("\t%s/%s -> %s/definitions/%s\n", base, sd, tmp, packedName)

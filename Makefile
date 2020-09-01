@@ -15,7 +15,7 @@ GOIMPORTS=goimports
 else
 UID:=$(shell id -u)
 DOCKER_OPTS=--rm -u $(UID) -v $(HOME):$(HOME) -e HOME -e USER=$(USER) -e USERNAME=$(USER) -w $(PWD)
-GO=docker run $(DOCKER_OPTS) -e GOARCH -e GOOS golang:$(GO-VERSION) go
+GO=docker run $(DOCKER_OPTS) -e GOARCH -e GOOS -e CGO_ENABLED golang:$(GO-VERSION) go
 GOTOOLS=docker run $(DOCKER_OPTS) jare/go-tools
 GOIMPORTS=$(GOTOOLS) goimports
 HAS_GO_IMPORTS=true
@@ -74,6 +74,7 @@ clean-brokerpaks:
 	-rm gcp-brokerpak/*.brokerpak
 	-rm azure-brokerpak/*.brokerpak
 	-rm aws-brokerpak/*.brokerpak
+	-rm subsume-masb-brokerpak/*.brokerpak
 
 .PHONY: clean
 clean: deps-go-binary clean-brokerpaks
@@ -123,7 +124,7 @@ run-broker-gcp-docker: check-gcp-env-vars ./build/cloud-service-broker.linux gcp
 
 .PHONY: run-broker-azure
 run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
+	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak GSB_PROVISION_DEFAULTS='{"resource_group": "broker-cf-test"}' ./build/cloud-service-broker.$(OSFAMILY) serve
 
 build-brokerpak-azure: azure-brokerpak/*.brokerpak
 
@@ -133,7 +134,7 @@ azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-br
 
 .PHONY: push-broker-azure
 push-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak ./scripts/push-broker.sh
+	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak GSB_PROVISION_DEFAULTS='{"resource_group": "broker-cf-test"}' ./scripts/push-broker.sh
 
 .PHONY: run-broker-azure-docker
 run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux azure-brokerpak/*.brokerpak
@@ -159,7 +160,6 @@ run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux
 ./build/sqlfailover_*.zip: tools/sqlfailover/*.go
 	cd tools/sqlfailover; $(MAKE) build
 
-
 # AWS broker 
 .PHONY: aws-brokerpak
 aws-brokerpak: aws-brokerpak/*.brokerpak
@@ -172,11 +172,11 @@ aws-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./aws-broker
 
 .PHONY: run-broker-aws 
 run-broker-aws: check-aws-env-vars ./build/cloud-service-broker.$(OSFAMILY) aws-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./aws-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
+	GSB_BROKERPAK_BUILTIN_PATH=./aws-brokerpak GSB_PROVISION_DEFAULTS="{\"aws_vpc_id\": \"$(AWS_PAS_VPC_ID)\"}" ./build/cloud-service-broker.$(OSFAMILY) serve
 
 .PHONY: push-broker-aws
 push-broker-aws: check-aws-env-vars ./build/cloud-service-broker.$(OSFAMILY) aws-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./aws-brokerpak ./scripts/push-broker.sh	
+	GSB_BROKERPAK_BUILTIN_PATH=./aws-brokerpak  GSB_PROVISION_DEFAULTS="{\"aws_vpc_id\": \"$(AWS_PAS_VPC_ID)\"}" ./scripts/push-broker.sh	
 
 .PHONY: run-broker-aws-docker
 run-broker-aws-docker: check-aws-env-vars ./build/cloud-service-broker.linux aws-brokerpak/*.brokerpak

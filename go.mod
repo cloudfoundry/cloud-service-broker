@@ -42,6 +42,7 @@ require (
 	github.com/magiconair/properties v1.8.0 // indirect
 	github.com/mattn/go-sqlite3 v1.9.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.2.3 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
 	github.com/mitchellh/mapstructure v1.1.2 // indirect

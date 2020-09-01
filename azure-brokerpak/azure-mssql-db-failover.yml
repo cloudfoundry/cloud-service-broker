@@ -21,6 +21,7 @@ image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquare
 documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
 support_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
 tags: [azure, mssql, sqlserver, dr, failover, preview]
+plan_updateable: true
 plans:
 - name: small
   id: 35a7e882-9e27-4e5a-a292-9c3f3da10873
@@ -40,9 +41,19 @@ plans:
   properties:
     cores: 32
     max_storage_gb: 500
+- name: existing
+  id: 669661c1-7fe6-4c59-8004-63905e79a508
+  description: 'Connect to existing fail over group database'
+  display_name: "Existing"
+  properties: 
+    existing: true
 provision:
   plan_inputs:
   user_inputs:    
+  - field_name: existing
+    required: false
+    default: false
+    details: Connect to existing database if true
   - field_name: cores
     required: false
     type: number
@@ -73,9 +84,22 @@ provision:
   - field_name: server_pair
     type: string
     details: Name of server pair from server_credential_pairs to create database upon
+    required: true
   - field_name: server_credential_pairs
     type: object
     details: 'JSON hash of server pair name to set of server credentials. { "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}'
+    required: true
+  - field_name: read_write_endpoint_failover_policy
+    type: string
+    details: Faileover policy (Automatic or Manual)
+    default: Automatic
+    enum:
+      Automatic: Automatic
+      Manual: Manual
+  - field_name: failover_grace_minutes
+    type: number
+    details: For automatic mode - the grace period in minutes before failover with data loss is attempted 
+    default: 60
   - field_name: azure_tenant_id
     type: string
     details: Azure Tenant to create resource in
@@ -98,7 +122,7 @@ provision:
     default: false    
   - field_name: sku_name
     type: string
-    details: Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) Will be computed from cores if empty.
+    details: Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/azure-sql/database/resource-limits-vcore-single-databases) Will be computed from cores if empty.
     default: ""    
   template_ref: terraform/azure-mssql-db-failover/provision-fog-db.tf 
   computed_inputs:

@@ -38,16 +38,23 @@ var (
 	FsInitializationErr = errors.New("Filesystem must first be initialized.")
 )
 
+// ExecutionOutput captures output from tf cli execution
+type ExecutionOutput struct {
+	StdOut string
+	StdErr string
+}
+
 // TerraformExecutor is the function that shells out to Terraform.
 // It can intercept, modify or retry the given command.
-type TerraformExecutor func(*exec.Cmd) error
+type TerraformExecutor func(*exec.Cmd) (ExecutionOutput, error)
 
 // NewWorkspace creates a new TerraformWorkspace from a given template and variables to populate an instance of it.
 // The created instance will have the name specified by the DefaultInstanceName constant.
-func NewWorkspace(templateVars map[string]interface{}, terraformTemplate string) (*TerraformWorkspace, error) {
+func NewWorkspace(templateVars map[string]interface{}, terraformTemplate string, terraformTemplates map[string]string) (*TerraformWorkspace, error) {
 	tfModule := ModuleDefinition{
 		Name:       "brokertemplate",
 		Definition: terraformTemplate,
+		Definitions: terraformTemplates,
 	}
 
 	inputList, err := tfModule.Inputs()
@@ -149,16 +156,31 @@ func (workspace *TerraformWorkspace) Serialize() (string, error) {
 	return string(ws), nil
 }
 
-// initializeFs initializes the filesystem directory necessary to run Terraform.
-func (workspace *TerraformWorkspace) initializeFs() error {
-	workspace.dirLock.Lock()
-	// create a temp directory
-	if dir, err := ioutil.TempDir("", "gsb"); err != nil {
-		return err
-	} else {
-		workspace.dir = dir
+// initializedFsFlat initializes simple terraform directory structure
+func (workspace *TerraformWorkspace) initializedFsFlat() error {
+	if len(workspace.Modules) != 1 {
+		return fmt.Errorf("Cannot build flat terraform workspace with multiple modules")
+	}
+	if len(workspace.Instances) != 1 {
+		return fmt.Errorf("Cannot build flat terraform workspace with multiple instances")		
 	}
 
+	for name, tf := range workspace.Modules[0].Definitions {
+		if err := ioutil.WriteFile(path.Join(workspace.dir, fmt.Sprintf("%s.tf", name)), []byte(tf), 0755); err != nil {
+			return err
+		}
+	}
+
+	variables, err := json.MarshalIndent(workspace.Instances[0].Configuration, "", "  ")
+
+	if err == nil {
+		err = ioutil.WriteFile(path.Join(workspace.dir, "terraform.tfvars.json"), variables, 0755)
+	}
+	return err
+}
+
+// initializeFsModules initializes multimodule terrafrom directory structure
+func (workspace *TerraformWorkspace) initializeFsModules() error {
 	outputs := make(map[string][]string)
 
 	// write the modulesTerraformWorkspace
@@ -168,8 +190,16 @@ func (workspace *TerraformWorkspace) initializeFs() error {
 			return err
 		}
 
-		if err := ioutil.WriteFile(path.Join(parent, "definition.tf"), []byte(module.Definition), 0755); err != nil {
-			return err
+		if len(module.Definition) > 0 {
+			if err := ioutil.WriteFile(path.Join(parent, "definition.tf"), []byte(module.Definition), 0755); err != nil {
+				return err
+			}
+		}
+
+		for name, tf := range module.Definitions {
+			if err := ioutil.WriteFile(path.Join(parent, fmt.Sprintf("%s.tf", name)), []byte(tf), 0755); err != nil {
+				return err
+			}
 		}
 
 		var err error
@@ -190,6 +220,38 @@ func (workspace *TerraformWorkspace) initializeFs() error {
 			return err
 		}
 	}
+	return nil
+}
+
+// initializeFs initializes the filesystem directory necessary to run Terraform.
+func (workspace *TerraformWorkspace) initializeFs() error {
+	workspace.dirLock.Lock()
+	// create a temp directory
+	if dir, err := ioutil.TempDir("", "gsb"); err == nil {
+		workspace.dir = dir
+	} else {
+		return err
+	}
+	
+	var err error
+
+	terraformLen := 0
+	for _, module := range workspace.Modules {
+		terraformLen += len(module.Definition)
+		for _, def := range module.Definitions {
+			terraformLen += len(def)
+		}
+	}
+
+	if len(workspace.Modules) == 1 && len(workspace.Modules[0].Definition) == 0 && terraformLen > 0 {
+		err = workspace.initializedFsFlat()
+	} else {
+		err = workspace.initializeFsModules()
+	}
+
+	if err != nil {
+		return err
+	}
 
 	// write the state if it exists
 	if len(workspace.State) > 0 {
@@ -199,7 +261,7 @@ func (workspace *TerraformWorkspace) initializeFs() error {
 	}
 
 	// run "terraform init"
-	if err := workspace.runTf("init", "-no-color"); err != nil {
+	if _, err := workspace.runTf("init", "-no-color"); err != nil {
 		return err
 	}
 
@@ -248,7 +310,9 @@ func (workspace *TerraformWorkspace) Validate() error {
 		return err
 	}
 
-	return workspace.runTf("validate", "-no-color")
+	_, err = workspace.runTf("validate", "-no-color")
+
+	return err
 }
 
 // Apply runs `terraform apply` on this workspace.
@@ -260,7 +324,8 @@ func (workspace *TerraformWorkspace) Apply() error {
 		return err
 	}
 
-	return workspace.runTf("apply", "-auto-approve", "-no-color")
+	_, err = workspace.runTf("apply", "-auto-approve", "-no-color")
+	return err
 }
 
 // Destroy runs `terraform destroy` on this workspace.
@@ -272,14 +337,42 @@ func (workspace *TerraformWorkspace) Destroy() error {
 		return err
 	}
 
-	return workspace.runTf("destroy", "-auto-approve", "-no-color")
+	_, err = workspace.runTf("destroy", "-auto-approve", "-no-color")
+	return err
+}
+
+// Apply runs `terraform import` on this workspace.
+// This funciton blocks if another Terraform command is running on this workspace.
+func (workspace *TerraformWorkspace) Import(tfResource, iaasResourceID string) error {
+	err := workspace.initializeFs()
+	defer workspace.teardownFs()
+	if err != nil {
+		return err
+	}
+
+	_, err = workspace.runTf("import", tfResource, iaasResourceID)
+	return err
+}
+
+// Apply runs `terraform show` on this workspace.
+// This funciton blocks if another Terraform command is running on this workspace.
+func (workspace *TerraformWorkspace) Show() (string, error) {
+	err := workspace.initializeFs()
+	defer workspace.teardownFs()
+	if err != nil {
+		return "", err
+	}
+
+	output, err := workspace.runTf("show", "-no-color")
+
+	return output.StdOut, nil
 }
 
 func (workspace *TerraformWorkspace) tfStatePath() string {
 	return path.Join(workspace.dir, "terraform.tfstate")
 }
 
-func (workspace *TerraformWorkspace) runTf(subCommand string, args ...string) error {
+func (workspace *TerraformWorkspace) runTf(subCommand string, args ...string) (ExecutionOutput, error) {
 	sub := []string{subCommand}
 	sub = append(sub, args...)
 
@@ -298,7 +391,7 @@ func (workspace *TerraformWorkspace) runTf(subCommand string, args ...string) er
 // CustomEnvironmentExecutor sets custom environment variables on the Terraform
 // execution.
 func CustomEnvironmentExecutor(environment map[string]string, wrapped TerraformExecutor) TerraformExecutor {
-	return func(c *exec.Cmd) error {
+	return func(c *exec.Cmd) (ExecutionOutput, error) {
 		for k, v := range environment {
 			c.Env = append(c.Env, fmt.Sprintf("%s=%s", k, v))
 		}
@@ -321,7 +414,7 @@ func updatePath(vars []string, path string) string {
 // from a given plugin directory rather than the Terraform that's on the PATH
 // which will download provider binaries from the web.
 func CustomTerraformExecutor(tfBinaryPath, tfPluginDir string, wrapped TerraformExecutor) TerraformExecutor {
-	return func(c *exec.Cmd) error {
+	return func(c *exec.Cmd) (ExecutionOutput, error) {
 
 		// Add the -get-plugins=false and -plugin-dir={tfPluginDir} after the
 		// sub-command to force Terraform to use a particular plugin.
@@ -342,7 +435,7 @@ func CustomTerraformExecutor(tfBinaryPath, tfPluginDir string, wrapped Terraform
 
 // DefaultExecutor is the default executor that shells out to Terraform
 // and logs results to stdout.
-func DefaultExecutor(c *exec.Cmd) error {
+func DefaultExecutor(c *exec.Cmd) (ExecutionOutput, error) {
 	logger := utils.NewLogger("terraform@" + c.Dir)
 
 	logger.Info("starting process", lager.Data{
@@ -350,18 +443,19 @@ func DefaultExecutor(c *exec.Cmd) error {
 		"args": c.Args,
 		"dir":  c.Dir,
 	})
+
 	stderr, err := c.StderrPipe()
 	if err != nil {
-		return fmt.Errorf("Failed to get stderr pipe for terraform execution: %v", err)
+		return ExecutionOutput{}, fmt.Errorf("Failed to get stderr pipe for terraform execution: %v", err)
 	}
 
 	stdout, err := c.StdoutPipe()
 	if err != nil {
-		return fmt.Errorf("Failed to get stdout pipe for terraform execution: %v", err)
+		return ExecutionOutput{}, fmt.Errorf("Failed to get stdout pipe for terraform execution: %v", err)
 	}
 
 	if err := c.Start(); err != nil {
-		return fmt.Errorf("Failed to execute terraform: %v", err)
+		return ExecutionOutput{}, fmt.Errorf("Failed to execute terraform: %v", err)
 	}
 
 	output, _ := ioutil.ReadAll(stdout)
@@ -376,8 +470,11 @@ func DefaultExecutor(c *exec.Cmd) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("%s %v", strings.ReplaceAll(string(errors),"\n", ""),err)
+		return ExecutionOutput{}, fmt.Errorf("%s %v", strings.ReplaceAll(string(errors),"\n", ""),err)
 	}
 
-	return nil
+	return ExecutionOutput{
+		StdErr: string(errors),
+		StdOut: string(output),
+	}, nil
 }

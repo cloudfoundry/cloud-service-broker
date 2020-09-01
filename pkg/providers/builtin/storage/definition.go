@@ -123,6 +123,7 @@ func ServiceDefinition() *broker.ServiceDefinition {
 					Pattern("^[A-Za-z][-a-z0-9A-Z]+$").
 					Examples("US", "EU", "southamerica-east1").
 					Build(),
+				ProhibitUpdate: true,
 			},
 			{
 				FieldName:   "force_delete",

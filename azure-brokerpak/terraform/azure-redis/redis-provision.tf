@@ -24,9 +24,10 @@ variable instance_name { type = string }
 variable location { type = string }
 variable labels { type = map }
 variable skip_provider_registration { type = bool }
+variable tls_min_version { type = string }
 
 provider "azurerm" {
-  version = "=2.9.0"
+  version = "~> 2.20.0"
   features {}
 
   subscription_id = var.azure_subscription_id
@@ -56,11 +57,12 @@ resource "azurerm_redis_cache" "redis" {
   capacity            = var.capacity
   location            = var.location
   resource_group_name = local.resource_group
+  minimum_tls_version = length(var.tls_min_version) == 0 ? "1.2" : var.tls_min_version
   tags                = var.labels
 }
 
 output name { value = azurerm_redis_cache.redis.name }
-output hostname { value = azurerm_redis_cache.redis.hostname }
+output host { value = azurerm_redis_cache.redis.hostname }
 # output port { value = azurerm_redis_cache.redis.port }
 output password { value = azurerm_redis_cache.redis.primary_access_key }
 output tls_port { value = azurerm_redis_cache.redis.ssl_port }

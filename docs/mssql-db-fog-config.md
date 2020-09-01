@@ -10,7 +10,10 @@
 |------------|------|--------------|
 |small       | 2    | 50GB         |
 |medium      | 8    | 200GB        |
-|large       | 32   | 500GB          |
+|large       | 32   | 500GB        |
+|existing    | n/a  | n/a          |
+
+The `existing` plan connects to an existing failover group DB to allow applications (typically in a second foundation) to bind to the database.
 
 ## Plan Configuration Parameters
 
@@ -31,6 +34,8 @@ The following parameters may be configured during service provisioning (`cf crea
 | db_name | string | database name | csb-fog-db-*instance_id* |
 | server_pair | string | server pair from *server_credential_pairs* on which to create failover DB | |
 | server_credential_pairs | JSON | list of server pairs on which failover DB's can be created, *server_pair* must match one of *name*. Format: `{ "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}`| |
+| read_write_endpoint_failover_policy | string | Read/Write failover policy - `Automatic` or `Manual` | `Automatic` |
+| failover_grace_minutes | number | grace period in minutes before failover with data loss is attempted | 60 |
 | azure_tenant_id | string | ID of Azure tenant for instance | config file value `azure.tenant_id` |
 | azure_subscription_id | string | ID of Azure subscription for instance | config file value `azure.subscription_id` |
 | azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
@@ -74,6 +79,18 @@ service:
 A developer could create a new failover group database on *pair1* like this:
 ```bash
 cf create-service csb-azure-mssql-db-failover-group medium medium-fog -c '{"server_pair":"pair1"}'
+```
+
+To allow multiple foundations to connect to a single database (an example could be foundations in primary and secondary fail over locations) the same server credential pairs would be configured in each foundation.
+
+A developer could create a failover group DB in one foundation:
+```bash
+cf create-service csb-azure-mssql-db-failover-group medium medium-fog -c '{"server_pair":"pair1", "instance_name":"fog-instance","db_name":"db"}'
+```
+
+And then connect to that db in the second foundation:
+```bash
+cf create-service csb-azure-mssql-db-failover-group existing medium-fog -c '{"server_pair":"pair1","instance_name": "csb-failover-group-test", "db_name":"test-db"}'
 ```
 
 ### Azure Notes

@@ -14,23 +14,40 @@ These are the default plans and configuration options for MySQL across the suppo
 
 The following options can be configured across all supported platforms. Notes below document any platform specific information for mapping that might be required.
 
-| Option Name | Values | Default |
-|-------------|--------|---------|
+| Option Name | Values    | Default |
+|-------------|-----------|---------|
 | mysql_version | 5.6, 5.7| 5.7    |
-| storage_gb  | 5 - 4096| 5      |
+| storage_gb  | 5 - 4096  | 5      |
 | cores       | 1,2,4,8,16,32,64 | 1      |
-| db_name     | | csb-db |
+| db_name     |           | csb-db |
  
 ### Azure Notes - applies to *csb-azure-mysql*
 CPU/memory size mapped into [Azure sku's](https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) as follows:
 
 | Plan   | Sku       |
 |--------|-----------|
-| small  | B_Gen5_2  |
+| small  | GP_Gen5_2 |
 | medium | GP_Gen5_4 |
-| large  | MO_Gen5_8 |
+| large  | GP_Gen5_8 |
 
-> Note that the maximum vCores is dependant on the Service Tier. B_ = Basic, GP_ = General Purpose and MO_ = Memory Optimized. See below for details.
+> Note that the maximum vCores is dependent on the Service Tier. B_ = Basic, GP_ = General Purpose and MO_ = Memory Optimized. See below for details.
+
+> Note in order for `cf update-service -p <new plan>` to work, the sku's must be the same family (B, GP, or MO.) Otherwise Azure will refuse the update request.
+
+#### Storage
+[Storage auto grow](https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers#storage-auto-grow) is enabled on Azure. Initial storage sizes are per plan.
+
+#### Core to sku mapping
+
+| Cores | Instance class |
+|-------|----------------|
+| 1     | GP_Gen5_1      |
+| 2     | GP_Gen5_2      |
+| 4     | GP_Gen5_4      |
+| 8     | GP_Gen5_8      |
+| 16    | GP_Gen5_16     |
+| 32    | GP_Gen5_32     |
+| 64    | GP_Gen5_64     |
 
 #### Azure specific config parameters
 

@@ -27,10 +27,11 @@ variable sku_name { type = string }
 variable storage_gb {type = string }
 variable authorized_network {type = string}
 variable use_tls { type = bool }
+variable tls_min_version { type = string }
 variable skip_provider_registration { type = bool }
 
 provider "azurerm" {
-  version = "=2.9.0"
+  version = "~> 2.20.0"
   features {}
 
   subscription_id = var.azure_subscription_id
@@ -43,16 +44,17 @@ provider "azurerm" {
 
 locals {
   instance_types = {
-    1 = "B_Gen5_1"
-    2 = "B_Gen5_2"
+    1 = "GP_Gen5_1"
+    2 = "GP_Gen5_2"
     4 = "GP_Gen5_4"
-    8 = "MO_Gen5_8"
-    16 = "MO_Gen5_16"
-    32 = "MO_Gen5_32"
+    8 = "GP_Gen5_8"
+    16 = "GP_Gen5_16"
+    32 = "GP_Gen5_32"
     64 = "GP_Gen5_64"
   }     
   sku_name = length(var.sku_name) == 0 ? local.instance_types[var.cores] : var.sku_name    
   resource_group = length(var.resource_group) == 0 ? format("rg-%s", var.instance_name) : var.resource_group
+  tls_version = var.use_tls == true ? var.tls_min_version : "TLSEnforcementDisabled"
 }
 
 resource "azurerm_resource_group" "azure-msyql" {
@@ -87,18 +89,13 @@ resource "azurerm_mysql_server" "instance" {
   location            = var.location
   resource_group_name = local.resource_group
   sku_name = local.sku_name
-
-  storage_profile {
-    storage_mb            = var.storage_gb * 1024
-    backup_retention_days = 7
-    geo_redundant_backup  = "Disabled"
-  }
-
-  administrator_login          = random_string.username.result
-  administrator_login_password = random_password.password.result
-  version                      = var.mysql_version
-  ssl_enforcement              = var.use_tls ? "Enabled" : "Disabled"
-  tags                         = var.labels
+  storage_mb                       = var.storage_gb * 1024
+  administrator_login              = random_string.username.result
+  administrator_login_password     = random_password.password.result
+  version                          = var.mysql_version
+  ssl_enforcement_enabled          = var.use_tls
+  ssl_minimal_tls_version_enforced = local.tls_version
+  tags = var.labels
 }
 
 resource "azurerm_mysql_database" "instance-db" {

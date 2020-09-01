@@ -21,6 +21,7 @@ image_url: https://d1.awsstatic.com/rdsImages/postgresql_logo.6de4615badd9941226
 documentation_url: https://azure.microsoft.com/en-us/services/postgresql/
 support_url: https://azure.microsoft.com/en-us/services/postgresql/
 tags: [azure, postgresql, postgres, preview]
+plan_updateable: true
 plans:
 - name: small
   id: aa1cf0f0-79fe-4132-a112-859fef9bf7cc
@@ -80,13 +81,15 @@ provision:
       maxLength: 98
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
+    prohibit_update: true  
   - field_name: resource_group
     details: Name for the resource group for this instance
     default: ''
     constraints:
       maxLength: 64
       minLength: 0
-      pattern: ^[a-z][a-z0-9-]+$|^$      
+      pattern: ^[a-z][a-z0-9-]+$|^$   
+    prohibit_update: true     
   - field_name: db_name
     type: string
     details: Name for your database
@@ -135,6 +138,7 @@ provision:
       southafricanorth: South Africa North
       southafricawest: South Africa West
       germanycentral: Germany Central
+    prohibit_update: true  
   - field_name: azure_tenant_id
     type: string
     details: Azure Tenant to create resource in
