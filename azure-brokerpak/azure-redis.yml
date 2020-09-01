@@ -177,6 +177,10 @@ provision:
     type: string
     details: Minimum enforced TLS version. Possible values are 1.0, 1.1, 1.2
     default: "1.2"
+  - field_name: maxmemory_policy
+    type: string
+    details: Max memory eviction policy. Possible values are volatile-lru (default), allkeys-lru, volatile-random, allkeys-random, volatile-ttl, noeviction
+    default: volatile-lru
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
