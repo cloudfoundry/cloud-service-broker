@@ -50,7 +50,7 @@ type TerraformExecutor func(*exec.Cmd) (ExecutionOutput, error)
 
 // NewWorkspace creates a new TerraformWorkspace from a given template and variables to populate an instance of it.
 // The created instance will have the name specified by the DefaultInstanceName constant.
-func NewWorkspace(templateVars map[string]interface{}, terraformTemplate string, terraformTemplates map[string]string) (*TerraformWorkspace, error) {
+func NewWorkspace(templateVars map[string]interface{}, terraformTemplate string, terraformTemplates map[string]string, importParameterMappings []ParameterMapping) (*TerraformWorkspace, error) {
 	tfModule := ModuleDefinition{
 		Name:       "brokertemplate",
 		Definition: terraformTemplate,
@@ -76,6 +76,7 @@ func NewWorkspace(templateVars map[string]interface{}, terraformTemplate string,
 				Configuration: limitedConfig,
 			},
 		},
+		ImportParameterMappings: importParameterMappings,
 	}
 
 	return &workspace, nil
@@ -112,6 +113,7 @@ type TerraformWorkspace struct {
 	// Executor is a function that gets invoked to shell out to Terraform.
 	// If left nil, the default executor is used.
 	Executor TerraformExecutor `json:"-"`
+	ImportParameterMappings []ParameterMapping `json:"-"`
 
 	dirLock sync.Mutex
 	dir     string
