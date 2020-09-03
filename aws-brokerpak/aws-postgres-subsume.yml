@@ -1,0 +1,116 @@
+# Copyright 2018 the Service Broker Project Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+version: 1
+name: csb-aws-postgresql-subsume
+id: 0cf9ef2c-ed4a-11ea-a0fc-a32127a23257
+description: Amazon RDS for PostgreSQL
+display_name: Amazon RDS for PostgreSQL
+image_url: https://d1.awsstatic.com/rdsImages/postgresql_logo.6de4615badd99412268bc6aa8fc958a0f403dd41.png
+documentation_url: https://aws.amazon.com/rds/postgresql/
+support_url: https://aws.amazon.com/rds/postgresql/
+tags: [aws, postgresql, postgres, preview]
+plans:
+- name: small
+  id: 11eecb74-ed4a-11ea-9647-6f8a9efda4f1
+  description: 'PostgreSQL 11, minumum 2 cores, minumum 4GB ram, 5GB storage'
+  display_name: "small-exisiting"
+provision:
+  plan_inputs:
+  import_inputs:
+  - field_name: aws_db_id
+    type: string
+    details: AWS db id to subsume
+    tf_resource: aws_db_instance.db_instance      
+  user_inputs:
+  - field_name: aws_access_key_id
+    type: string
+    details: AWS access key
+    default: ${config("aws.access_key_id")}
+  - field_name: aws_secret_access_key
+    type: string
+    details: AWS secret key
+    default: ${config("aws.secret_access_key")}
+  - field_name: admin_password
+    type: string
+    details: Administrator password for AWS server  database to be subsumed
+  - field_name: region
+    type: string
+    details: region of the postgres instance      
+  computed_inputs:
+  - name: labels
+    default: ${json.marshal(request.default_labels)}
+    overwrite: true
+    type: object
+  template_refs:
+    outputs: terraform/subsume-vmware-aws-postgres/postgres-outputs.tf
+    provider: terraform/subsume-vmware-aws-postgres/aws-provider.tf
+    variables: terraform/subsume-vmware-aws-postgres/postgres-variables.tf
+    main: terraform/subsume-vmware-aws-postgres/postgres-main.tf
+  outputs:
+  - field_name: name
+    type: string
+    details: The name of the database.
+  - field_name: hostname
+    type: string
+    details: Hostname or IP address of the exposed PostgreSQL endpoint used by clients to connect to the service.
+  - field_name: port
+    type: integer
+    details: The port number of the exposed PostgreSQL instance.
+  - field_name: username
+    type: string
+    details: The username to authenticate to the database instance.
+  - field_name: password
+    type: string
+    details: The password to authenticate to the database instance.
+bind:
+  plan_inputs: []
+  user_inputs: []
+  computed_inputs:
+    - name: db_name
+      type: string
+      default: ${instance.details["name"]}
+      overwrite: true
+    - name: hostname
+      type: string
+      default: ${instance.details["hostname"]}
+      overwrite: true
+    - name: port
+      type: integer
+      default: ${instance.details["port"]}
+      overwrite: true
+    - name: admin_username
+      type: string
+      default: ${instance.details["username"]}
+      overwrite: true
+    - name: admin_password
+      type: string
+      default: ${instance.details["password"]}
+      overwrite: true
+  template_ref: terraform/postgresql-bind.tf
+  outputs: 
+    - field_name: username
+      type: string
+      details: The username to authenticate to the database instance.
+    - field_name: password
+      type: string
+      details: The password to authenticate to the database instance.  
+    - field_name: uri
+      type: string
+      details: The uri to connect to the database instance and database.
+    - field_name: jdbcUrl
+      type: string
+      details: The jdbc url to connect to the database instance and database.    
+examples:
+
