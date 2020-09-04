@@ -76,7 +76,10 @@ func NewWorkspace(templateVars map[string]interface{}, terraformTemplate string,
 				Configuration: limitedConfig,
 			},
 		},
-		ImportParameterMappings: importParameterMappings,
+		Transformer: TfTransformer{
+			ParameterMappings: importParameterMappings,
+			ParametersToRemove: []string{"id", "creation_date", "default_secondary_location", "requested_service_objective_id"},
+		},
 	}
 
 	return &workspace, nil
@@ -113,7 +116,7 @@ type TerraformWorkspace struct {
 	// Executor is a function that gets invoked to shell out to Terraform.
 	// If left nil, the default executor is used.
 	Executor TerraformExecutor `json:"-"`
-	ImportParameterMappings []ParameterMapping `json:"-"`
+	Transformer TfTransformer  `json:"transform"`
 
 	dirLock sync.Mutex
 	dir     string

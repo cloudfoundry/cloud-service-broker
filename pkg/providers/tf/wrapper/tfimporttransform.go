@@ -28,23 +28,17 @@ type ParameterMapping struct {
 
 // TfTransformer terraform transformation 
 type TfTransformer struct {
-	ParameterMappings []ParameterMapping
-	ParametersToRemove []string
+	ParameterMappings []ParameterMapping `json:"parameter_mappings"`
+	ParametersToRemove []string			 `json:"parameters_to_remove"`
 }
 
 // CleanTf removes ttf.ParametersToRemove from tf string
 func (ttf *TfTransformer) CleanTf(tf string) string {
-	removals := ""
-
-	for n, removal := range ttf.ParametersToRemove {
-		if n == 0 {
-			removals = removal
-		} else {
-			removals += fmt.Sprintf("|%s", removal)
-		}
+	for _, removal := range ttf.ParametersToRemove {
+		re := regexp.MustCompile(fmt.Sprintf(`(?m)^[\s]+%s[\s]*=.*$`, removal))
+		tf = re.ReplaceAllString(tf, "")
 	}
-	re := regexp.MustCompile(fmt.Sprintf(`(?m)^[\s]+(%s)[\s]*=.*$`, removals))
-	return re.ReplaceAllString(tf, "")	
+	return tf
 }
 
 func (ttf *TfTransformer) captureParameterValues(tf string) (map[string]string, error) {
