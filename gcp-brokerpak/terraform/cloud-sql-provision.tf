@@ -36,7 +36,7 @@ data "google_compute_network" "authorized-network" {
   name = var.authorized_network
 }
 
-resource "google_compute_global_address" "private_ip_address" {
+data "google_compute_global_address" "private_ip_address" {
   name          = "csb-dataservices"
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
@@ -49,7 +49,7 @@ resource "google_service_networking_connection" "private_vpc_connection" {
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
 }
-
+  
 locals {
   service_tiers = {
     // https://cloud.google.com/sql/pricing#2nd-gen-pricing
