@@ -29,7 +29,7 @@ MASB_DB_CONFIG="{ \
 }"
 
 RESULT=1
-if create_service azure-sqldb basic "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_DB_CONFIG}"; then
+if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_DB_CONFIG}"; then
   SUBSUME_CONFIG="{ \
     \"admin_password\": \"${SERVER_ADMIN_PASSWORD}\", \
     \"azure_db_id\": \"$(az sql db show  --name ${DB_NAME} --server ${SERVER_NAME} --resource-group ${SERVER_RESOURCE_GROUP} --query id -o tsv)\" \
@@ -38,7 +38,24 @@ if create_service azure-sqldb basic "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_DB_CON
   if create_service csb-masb-mssql-db-subsume current "${SUBSUMED_INSTANCE_NAME}" "${SUBSUME_CONFIG}"; then
     if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}"; then
       echo "subsumed masb sqldb instance test successful"
-      RESULT=0
+
+      UPDATE_CONFIG="{ \
+        \"admin_password\": \"${SERVER_ADMIN_PASSWORD}\", \
+        \"edition\": \"Standard\", \
+        \"service_objective\": \"S1\" \
+      }"
+
+      if update_service_params "${SUBSUMED_INSTANCE_NAME}" "${UPDATE_CONFIG}"; then
+        echo "subsumed masb sqldb instance update successful"      
+        if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}"; then
+          echo "subsumed masb sqldb instance update test successful"           
+          RESULT=0
+        else
+          echo "updated subsumed masb sqldb instance test failed"
+        fi
+      else
+        echo "failed to update subsumed masb sqldb instance"
+      fi
     else
       echo "subsumed masb sqldb instance test failed"
     fi
