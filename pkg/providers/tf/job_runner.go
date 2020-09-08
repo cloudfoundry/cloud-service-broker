@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"time"
-	"regexp"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/pivotal/cloud-service-broker/db_service/models"
@@ -124,11 +123,6 @@ type ImportResource struct {
 	IaaSResource string
 }
 
-func cleanTFImport(tf string) string {
-	re := regexp.MustCompile(`(?m)^[\s]+(id|creation_date|default_secondary_location)[\s]*=.*$`)
-	return re.ReplaceAllString(tf, "")
-}
-
 // Import runs `terraform import` and `terraform apply` on the given workspace in the background.
 // The status of the job can be found by polling the Status function.
 func (runner *TfJobRunner) Import(ctx context.Context, id string, importResources []ImportResource) error {
@@ -155,9 +149,20 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 		}
 		mainTf, err := workspace.Show()
 		if err == nil {
-			workspace.Modules[0].Definitions["main"] = cleanTFImport(mainTf)
-			// workspace.State = nil
-			err = workspace.Apply()
+			tf, parameterVals, err := workspace.Transformer.ReplaceParametersInTf(workspace.Transformer.CleanTf(mainTf))
+			if err == nil {
+				for pn, pv := range parameterVals {
+					workspace.Instances[0].Configuration[pn] = pv
+				}
+				workspace.Modules[0].Definitions["main"] = tf
+
+				logger := utils.NewLogger("Import")
+				logger.Info("new workspace", lager.Data{
+					"workspace": workspace,
+				})
+
+				err = workspace.Apply()
+			}
 		}
 		runner.operationFinished(err, workspace, deployment)
 	}()

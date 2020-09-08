@@ -110,6 +110,8 @@ type TfServiceDefinitionV1Action struct {
 	Templates map[string]string				`yaml:"templates"`
 	TemplateRefs map[string]string			`yaml:"template_refs"`
 	ImportVariables []ImportVariable		`yaml:"import_inputs"`
+	ImportParameterMappings []ImportParameterMapping `yaml:"import_parameter_mappings"`
+	ImportParametersToDelete []string       `yaml:"import_parameters_to_delete"`
 }
 
 var _ validation.Validatable = (*TfServiceDefinitionV1Action)(nil)
@@ -501,10 +503,16 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 	}
 }
 
-// Variable definition for TF import support
+// ImportVariable Variable definition for TF import support
 type ImportVariable struct {
 	Name string			`yaml:"field_name"`
 	Type string			`yaml:"type"`
 	Details string		`yaml:"details"`
 	TfResource string	`yaml:"tf_resource"`
+}
+
+// ImportParameterMapping mapping for tf variable to service parameter
+type ImportParameterMapping struct {
+	TfVariable string `yaml:"tf_variable"`
+	ParameterName string `yaml:"parameter_name"`
 }

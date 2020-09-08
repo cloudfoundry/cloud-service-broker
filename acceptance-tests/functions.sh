@@ -91,6 +91,24 @@ update_service_plan() {
     return ${LOCAL_RESULT}
 }
 
+update_service_params() {
+    local INSTANCE_NAME=$1; shift
+
+    cf update-service "${INSTANCE_NAME}" -c "$@"
+
+    local LOCAL_RESULT=$?
+    if [ ${LOCAL_RESULT} -eq 0 ]; then
+        if wait_for_service "${INSTANCE_NAME}" "update in progress" "update succeeded"; then
+            echo "Successfully updated ${INSTANCE_NAME}"
+        else
+            cf service "${INSTANCE_NAME}"
+            LOCAL_RESULT=1
+        fi
+    fi
+
+    return ${LOCAL_RESULT}
+}
+
 in_list() {
     local search="$1"
     shift
