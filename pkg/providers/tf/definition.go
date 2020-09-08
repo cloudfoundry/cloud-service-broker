@@ -111,6 +111,7 @@ type TfServiceDefinitionV1Action struct {
 	TemplateRefs map[string]string			`yaml:"template_refs"`
 	ImportVariables []ImportVariable		`yaml:"import_inputs"`
 	ImportParameterMappings []ImportParameterMapping `yaml:"import_parameter_mappings"`
+	ImportParametersToDelete []string       `yaml:"import_parameters_to_delete"`
 }
 
 var _ validation.Validatable = (*TfServiceDefinitionV1Action)(nil)

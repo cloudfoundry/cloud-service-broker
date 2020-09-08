@@ -39,6 +39,7 @@ provision:
     parameter_name: edition
   - tf_variable: requested_service_objective_name
     parameter_name: service_objective 
+  import_parameters_to_delete: ["id", "creation_date", "default_secondary_location", "requested_service_objective_id"]    
   plan_inputs:
   user_inputs:
   - field_name: edition
