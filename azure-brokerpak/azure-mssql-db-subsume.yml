@@ -34,8 +34,37 @@ provision:
     type: string
     details: Azure resource id for database to subsume
     tf_resource: azurerm_sql_database.azure_sql_db
+  import_parameter_mappings:
+  - tf_variable: edition
+    parameter_name: edition
+  - tf_variable: requested_service_objective_name
+    parameter_name: service_objective 
+  import_parameters_to_delete: ["id", "creation_date", "default_secondary_location", "requested_service_objective_id"]    
   plan_inputs:
   user_inputs:
+  - field_name: edition
+    type: string
+    details: The edition of the database to be created
+    enum:
+      Basic: Basic
+      Standard: Standard
+      Premium: Premium
+      DataWarehouse: DataWarehouse
+      Business: Business
+      BusinessCritical: BusinessCritical
+      Free: Free
+      GeneralPurpose: GeneralPurpose
+      Hyperscale: Hyperscale
+      Premium: Premium
+      PremiumRS: PremiumRS
+      Standard: Standard
+      Stretch: Stretch
+      System: System
+      System2: System2
+      Web: Web
+  - field_name: service_objective
+    type: string
+    details: The service objective name for the database.
   - field_name: admin_password
     type: string
     details: Administrator password for server hosting database to be subsumed
