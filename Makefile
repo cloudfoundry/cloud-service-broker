@@ -102,7 +102,7 @@ run-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-
 
 .PHONY: push-broker-gcp
 push-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./gcp-brokerpak ./scripts/push-broker.sh	
+	GSB_BROKERPAK_BUILTIN_PATH=./gcp-brokerpak GSB_PROVISION_DEFAULTS="{\"authorized_network\": \"${GCP_PAS_NETWORK}\"}" ./scripts/push-broker.sh	
 
 .PHONY: run-broker-gcp-docker
 run-broker-gcp-docker: check-gcp-env-vars ./build/cloud-service-broker.linux gcp-brokerpak/*.brokerpak
