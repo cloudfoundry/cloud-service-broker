@@ -13,44 +13,34 @@ plans:
   display_name: Standard (1 master, N workers)
   description: Basic plan with 1 master and N workers.
   properties:
-    worker_machine_type: n1-standard-1
-    worker_count: 2
-    master_machine_type: n1-standard-1
-    master_count: 1
-    preemptible_count: 0
 - id: 71cc321b-3ba3-4f0f-b058-90cfc978e743
   name: ha
   display_name: High Availability (3 masters, N workers)
   description: High availability plan with 3 masters and N workers.
   properties:
-    worker_machine_type: n1-standard-1
-    worker_count: 2
-    master_machine_type: n1-standard-1
     master_count: 3
-    preemptible_count: 0
 provision:
-  plan_inputs:
-  - required: true
+  user_inputs:
+  - default: n1-standard-1
     field_name: worker_machine_type
     type: string
     details: 'The name of a Google Compute Engine machine type to create for the worker(s).'
-  - required: true
+  - default: 2
     field_name: worker_count
     type: integer
     details: 'Specifies the number of worker nodes to create.'
-  - required: true
+  - default: n1-standard-1
     field_name: master_machine_type
     type: string
     details: 'The name of a Google Compute Engine machine type to create for the master(s).'
-  - required: true
+  - default: 1
     field_name: master_count
     type: integer
     details: 'Specifies the number of master nodes to create.'
-  - required: true
+  - default: 0
     field_name: preemptible_count
     type: integer
     details: 'Specifies the number of preemptible nodes to create. This is independent of the worker count and will be the type specified by `worker_machine_type`.'
-  user_inputs:
   - field_name: name
     type: string
     details: The name of the cluster.
@@ -81,16 +71,16 @@ provision:
     overwrite: true
     type: object
   template_ref: terraform/provision-dataproc.tf
-  
   outputs:
-  - required: true
-    field_name: bucket_name
+  - field_name: bucket_name
     type: string
     details: Name of the bucket used for staging jobs.
-  - required: true
-    field_name: name
+  - field_name: cluster_name
     type: string
     details: The name of the Dataproc cluster.
+  - field_name: region
+    type: string
+    details: The GCP region of the Dataproc cluster.
 bind:
   plan_inputs: []
   user_inputs: []
@@ -103,29 +93,26 @@ bind:
     overwrite: true
   template_ref: terraform/bind-dataproc.tf
   outputs:
-  - required: true
-    field_name: email
+  - field_name: email
     type: string
     details: Email address of the service account.
-  - required: true
-    field_name: name
-    type: string
-    details: The name of the service account.
-  - required: true
-    field_name: private_key
+  - field_name: private_key
     type: string
     details: Service account private key data. Base64 encoded JSON.
-  - required: true
-    field_name: project_id
+  - field_name: project_id
     type: string
     details: ID of the project that owns the service account.
-  - required: true
-    field_name: Credentials
+  - field_name: name
     type: string
-    details: Credentials of the service account.       
+    details: Name of service account
 examples:
-- name: Basic Configuration
+- name: basic
   description: Create a standard Dataproc cluster with a service account that can kick off jobs (roles/dataproc.editor) and has objectAdmin access to the bucket that's created.
   plan_id: ed8c2ad0-edc7-4f36-a332-fd63d81ec276
   provision_params: {}
   bind_params: {}
+- name: ha
+  description: Create a HA Dataproc cluster with a service account that can kick off jobs (roles/dataproc.editor) and has objectAdmin access to the bucket that's created.
+  plan_id: 71cc321b-3ba3-4f0f-b058-90cfc978e743
+  provision_params: {}
+  bind_params: {}  

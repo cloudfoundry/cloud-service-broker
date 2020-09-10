@@ -1,0 +1,5 @@
+---
+applications:
+- name: dataproc-test-app
+  command: node index.js
+  random-route: true 
