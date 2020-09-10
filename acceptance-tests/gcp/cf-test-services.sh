@@ -57,7 +57,7 @@ for s in ${allServices[@]}; do
 done
 
 if [ ${RESULT} -eq 0 ]; then
-  ${SCRIPT_DIR}/cf-test-stack-driver.sh
+  ${SCRIPT_DIR}/cf-test-stack-driver.sh && ${SCRIPT_DIR}/cf-test-dataproc.sh
   RESULT=$?
 fi
 

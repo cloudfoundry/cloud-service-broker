@@ -1,8 +1,8 @@
 variable worker_machine_type {type = string}
 variable master_machine_type {type = string}
-variable worker_count {type = string}
-variable master_count {type = string}
-variable preemptible_count {type = string}
+variable worker_count {type = number}
+variable master_count {type = number}
+variable preemptible_count {type = number}
 
 variable name {type = string}
 variable region {type = string}
@@ -39,5 +39,6 @@ variable labels {type = map}
       }
     }
 
-    output bucket_name {value = "${google_dataproc_cluster.cluster.cluster_config.0.bucket}"}
-    output name {value = "${google_dataproc_cluster.cluster.name}"}
+    output bucket_name {value = google_dataproc_cluster.cluster.cluster_config.0.bucket}
+    output cluster_name {value = google_dataproc_cluster.cluster.name}
+    output region {value = google_dataproc_cluster.cluster.region}
