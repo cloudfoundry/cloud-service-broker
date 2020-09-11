@@ -79,6 +79,10 @@ Add these to the `env` section of `manifest.yml`
 * `DB_USERNAME` - the database username for the service broker to use.
 * `DB_PASSWORD` - the database password for the service broker to use.
 
+### Create Private Service Connection in GCP
+
+To allow CF applications to connect to service instances created by CSB, follow [these instructions](https://cloud.google.com/vpc/docs/configure-private-services-access) to enable private service access to the VPC network that your foundation is running in.
+
 ### Fetch A Broker and GCP Brokerpak
 
 Download a release from https://github.com/pivotal/cloud-service-broker/releases. Find the latest release matching the name pattern `sb-0.1.0-rc.XXX-gcp-0.0.1-rc.YY`. This will have a broker and brokerpak that have been tested together. Follow the hyperlink into that release and download `cloud-servic-broker` and `gcp-services-0.1.0-rc.YY.brokerpak` into the same directory on your workstation.
