@@ -9,13 +9,6 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 RESULT=1
 
-if [ $# -eq 0 ]; then
-  echo "Usage: $0 <network name>"
-  exit 1
-fi
-
-NETWORK=$1; shift
-
 allServices=( "csb-google-mysql" "csb-google-redis" )
 
 # "csb-google-postgres" - does not currently allow second binding
@@ -23,9 +16,9 @@ allServices=( "csb-google-mysql" "csb-google-redis" )
 for s in ${allServices[@]}; do
   if [ ${s} == "csb-google-redis" ]
     then
-      create_service "${s}" basic "${s}-$$" "{\"authorized_network\": \"${NETWORK}\"}" &
+      create_service "${s}" basic "${s}-$$" &
     else
-      create_service "${s}" small "${s}-$$" "{\"authorized_network\": \"${NETWORK}\"}" &
+      create_service "${s}" small "${s}-$$" &
   fi
 done
 
