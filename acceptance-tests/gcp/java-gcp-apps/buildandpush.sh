@@ -1,3 +1,3 @@
 ./mvnw package
 cf push
-cf logs vcapcreds-demo
+cf logs javagcpapp-demo
