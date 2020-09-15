@@ -98,7 +98,7 @@ gcp-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./gcp-broker
 
 .PHONY: run-broker-gcp
 run-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./gcp-brokerpak ./build/cloud-service-broker.$(OSFAMILY) serve
+	GSB_BROKERPAK_BUILTIN_PATH=./gcp-brokerpak GSB_PROVISION_DEFAULTS="{\"authorized_network\": \"${GCP_PAS_NETWORK}\"}" ./build/cloud-service-broker.$(OSFAMILY) serve
 
 .PHONY: push-broker-gcp
 push-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
@@ -280,8 +280,14 @@ ifndef AWS_SECRET_ACCESS_KEY
 	$(error variable AWS_SECRET_ACCESS_KEY not defined)
 endif
 
+.PHONY: gcp_pas_network
+gcp_pas_network:
+ifndef GCP_PAS_NETWORK
+	GCP_PAS_NETWORK=default
+endif
+
 .PHONY: check-gcp-env-vars
-check-gcp-env-vars: google-credentials google-project security-user-name security-user-password db-host db-username db-password
+check-gcp-env-vars: google-credentials google-project security-user-name security-user-password db-host db-username db-password gcp_pas_network
 
 .PHONY: check-azure-env-vars
 check-azure-env-vars: arm-subscription-id arm-tenant-id arm-client-id arm-client-secret security-user-name security-user-password db-host db-username db-password

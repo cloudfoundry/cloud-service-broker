@@ -447,12 +447,29 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 				"maybe-missing": "default",
 			},
 		},		
+		"bogus global default json": {
+			ServiceProperties:  map[string]interface{}{},                 // 2
+			ProvisionOverrides: map[string]interface{}{},                 // 3
+			UserParams:         "{}",                                     // 4
+			DefaultOverride:    "{}",                                     // 5
+			GlobalDefaults:     `{"location","az"}`,                      // 6
+			ExpectedContext: map[string]interface{}{
+				"location":      "az",
+				"name":          "name-az",
+				"maybe-missing": "default",
+			},
+			ExpectedError: fmt.Errorf("Failed unmarshaling config value provision.defaults"),
+		},				
 	}
 
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			viper.Set(service.ProvisionDefaultOverrideProperty(), tc.DefaultOverride)
-			viper.Set(GlobalProvisionDefaults, tc.GlobalDefaults)
+			if len(tc.DefaultOverride) > 0 {
+				viper.Set(service.ProvisionDefaultOverrideProperty(), tc.DefaultOverride)
+			}
+			if len(tc.GlobalDefaults) > 0 {
+				viper.Set(GlobalProvisionDefaults, tc.GlobalDefaults)
+			}
 			defer viper.Reset()
 
 			details := brokerapi.ProvisionDetails{RawParameters: json.RawMessage(tc.UserParams)}
