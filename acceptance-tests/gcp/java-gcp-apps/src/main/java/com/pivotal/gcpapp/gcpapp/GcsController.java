@@ -1,4 +1,4 @@
-package com.pivotal.vcapcreds.vcapcreds;
+package com.pivotal.gcpapp.gcpapp;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -171,7 +171,7 @@ return "";
                         SpannerOptions options = SpannerOptions.newBuilder().setCredentials(googleCredentials).setProjectId(ProjectId).build();
                         Spanner spanner = options.getService();
                         DatabaseClient dbClient = spanner.getDatabaseClient(DatabaseId.of(options.getProjectId(), instance, db_name));
-
+                       
                         // dbClient.readWriteTransaction()
                         // .run(new TransactionRunner.TransactionCallable<Void>() {
                         //     public Void run(TransactionContext transaction) throws Exception {
@@ -261,7 +261,7 @@ return "";
                       BlobInfo blobInfo = BlobInfo.newBuilder(BlobId.of(bucket_name, "testapp.txt")).build();
                       String data="Test this data";
                       storage.create(blobInfo, data.getBytes());
-
+                      storage.delete(blobInfo.getBlobId());
     
                     } catch (IOException e) {
                       System.out.println(e.toString());
