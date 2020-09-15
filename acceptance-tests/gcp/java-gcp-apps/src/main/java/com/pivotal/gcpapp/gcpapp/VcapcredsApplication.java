@@ -1,4 +1,4 @@
-package com.pivotal.vcapcreds.vcapcreds;
+package com.pivotal.gcpapp.gcpapp;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
