@@ -58,7 +58,8 @@ func (provider *terraformProvider) Provision(ctx context.Context, provisionConte
 		tfID, err = provider.importCreate(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
 		if err != nil {
 			return models.ServiceInstanceDetails{}, err
-		}	} else {
+		}	
+	} else {
 		tfID, err = provider.create(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
 		if err != nil {
 			return models.ServiceInstanceDetails{}, err

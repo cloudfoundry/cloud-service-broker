@@ -128,12 +128,23 @@ func (svc *ServiceDefinition) ProvisionDefaultOverrideProperty() string {
 
 // ProvisionDefaultOverrides returns the deserialized JSON object for the
 // operator-provided property overrides.
-func (svc *ServiceDefinition) ProvisionDefaultOverrides() map[string]interface{} {
-	return viper.GetStringMap(svc.ProvisionDefaultOverrideProperty())
+func (svc *ServiceDefinition) ProvisionDefaultOverrides() (map[string]interface{}, error) {
+	return unmarshalViper(svc.ProvisionDefaultOverrideProperty())
 }
 
-func ProvisionGlobalDefaults() map[string]interface{} {
-	return viper.GetStringMap(GlobalProvisionDefaults)
+func ProvisionGlobalDefaults() (map[string]interface{}, error) {
+	return unmarshalViper(GlobalProvisionDefaults)
+}
+
+func unmarshalViper(key string) (map[string]interface{}, error) {
+	vals := make(map[string]interface{})
+	if viper.IsSet(key) {
+		val := viper.GetString(key)
+		if err := json.Unmarshal([]byte(val), &vals); err != nil {
+			return nil, fmt.Errorf("Failed unmarshaling config value %s", key)
+		}
+	}
+	return vals, nil
 }
 
 // IsRoleWhitelistEnabled returns false if the service has no default whitelist
@@ -365,10 +376,18 @@ func (svc *ServiceDefinition) variables(constants map[string]interface{}, rawPar
 	// 	"request.default_labels": utils.ExtractDefaultProvisionLabels(instanceId, details),
 	// }
 
+	globalDefaults, err := ProvisionGlobalDefaults()
+	if err != nil {
+		return nil, err
+	}
+	provisionDefaultOverrides, err := svc.ProvisionDefaultOverrides()
+	if err != nil {
+		return nil, err
+	}
 	builder := varcontext.Builder().
 		SetEvalConstants(constants).
-		MergeMap(ProvisionGlobalDefaults()).          // 6
-		MergeMap(svc.ProvisionDefaultOverrides()).    // 5
+		MergeMap(globalDefaults).          // 6
+		MergeMap(provisionDefaultOverrides).    // 5
 		MergeJsonObject(rawParameters).               // 4
 		MergeMap(plan.ProvisionOverrides).            // 3
 		MergeDefaults(svc.provisionDefaults()).       // ?
