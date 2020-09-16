@@ -29,7 +29,7 @@ if create_service csb-google-storage-bucket private "${SERVICE_NAME}" "${CSB_BUC
             echo $response
             if [ "$response" = "200" ]
             then
-            echo "javagcpapp-demo success"
+            echo "GCP Bucket success"
             else 
                 RESULT=1
                 echo "javagcpapp-demo failed to access bucket"
@@ -38,9 +38,9 @@ if create_service csb-google-storage-bucket private "${SERVICE_NAME}" "${CSB_BUC
             echo "javagcpapp-demo failed"
             cf logs javagcpapp-demo --recent
         fi
-        cf delete -f javagcpapp-demo 
+        #cf delete -f javagcpapp-demo 
     fi
-    delete_service ${SERVICE_NAME}
+    #delete_service ${SERVICE_NAME}
 fi
 
 if [ ${RESULT} -eq 0 ]; then
@@ -64,7 +64,7 @@ if create_service csb-google-bigquery standard "${BIG_QUERY_SERVICE_NAME}" ; the
             echo $response
             if [ "$response" = "200" ]
             then
-            echo "javagcpapp-demo success"
+            echo "GCP Big Query success"
             else 
                 RESULT=1
                 echo "javagcpapp-demo failed to access bigquery"
@@ -73,9 +73,9 @@ if create_service csb-google-bigquery standard "${BIG_QUERY_SERVICE_NAME}" ; the
             echo "javagcpapp-demo failed"
             cf logs javagcpapp-demo --recent
         fi
-        cf delete -f javagcpapp-demo 
+        #cf delete -f javagcpapp-demo 
     fi
-    delete_service ${BIG_QUERY_SERVICE_NAME}
+    #delete_service ${BIG_QUERY_SERVICE_NAME}
 fi
 
 if [ ${RESULT} -eq 0 ]; then
@@ -97,7 +97,7 @@ if create_service csb-google-spanner small "${SPANNER_SERVICE_NAME}" ; then
             echo $response
             if [ "$response" = "200" ]
             then
-            echo "javagcpapp-demo success"
+            echo "GCP Spanner success"
             sleep 30
             else 
                 RESULT=1
@@ -108,10 +108,14 @@ if create_service csb-google-spanner small "${SPANNER_SERVICE_NAME}" ; then
             echo "javagcpapp-demo failed"
             cf logs javagcpapp-demo --recent
         fi
-        cf delete -f javagcpapp-demo 
+        #cf delete -f javagcpapp-demo 
     fi
-    delete_service ${SPANNER_SERVICE_NAME}
+    #delete_service ${SPANNER_SERVICE_NAME}
 fi
+cf delete -f javagcpapp-demo 
+delete_service ${SERVICE_NAME}
+delete_service ${SPANNER_SERVICE_NAME}
+delete_service ${BIG_QUERY_SERVICE_NAME}
 
 if [ ${RESULT} -eq 0 ]; then
     echo "$0 SUCCESS"
