@@ -1,0 +1,11 @@
+
+---
+applications:
+- name: javaawsapp-demo
+  memory: 1GB
+  instances: 1
+  host: javaawsapp-demo
+  path: ./target/importtestapp-0.0.1-SNAPSHOT.jar
+  env:
+      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 11.+ } }'
+      JBP_CONFIG_SPRING_AUTO_RECONFIGURATION: '{ enabled: false }'
