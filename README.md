@@ -4,9 +4,9 @@
 
 # Cloud Service Broker
 
-This is a service broker built to be used with [Cloud Foundry](https://docs.cloudfoundry.org/services/overview.html) and Kubernetes. It adheres to the [Open Service Broker API v2.13 (https://github.com/openservicebrokerapi/servicebroker/blob/v2.13/spec.md).
+This is a service broker built to be used with [Cloud Foundry](https://docs.cloudfoundry.org/services/overview.html) and Kubernetes. It adheres to the [Open Service Broker API v2.13] (https://github.com/openservicebrokerapi/servicebroker/blob/v2.13/spec.md).
 
-Cloud Service Broker is an extension of the [GCP Service Broker](https://github.com/GoogleCloudPlatform/gcp-service-broker). As long as your target public cloud has a [Terraform provider](https://www.terraform.io/docs/providers/index.html), services can be provisioned via a common interface using standard `cf` CLI commands.
+Cloud Service Broker is an extension of the [GCP Service Broker](https://github.com/GoogleCloudPlatform/gcp-service-broker) and uses [Brokerpaks](https://github.com/pivotal/cloud-service-broker/blob/master/docs/brokerpak-intro.md) to expose services. As long as your target public cloud has a [Terraform provider](https://www.terraform.io/docs/providers/index.html), services can be provisioned via a common interface using standard `cf` CLI commands.
 
 Some of the benefits over traditional, IaaS-provided, service brokers include: 
 - **Easily extensible and maintainable** Less talking to far flung teams, more getting work done. 
