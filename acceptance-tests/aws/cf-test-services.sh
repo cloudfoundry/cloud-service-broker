@@ -43,7 +43,7 @@ for s in ${allServices[@]}; do
 done
 
 if [ ${RESULT} -eq 0 ]; then
-  ${SCRIPT_DIR}/cf-test-s3-bucket.sh && ${SCRIPT_DIR}/cf-test-postgres-sql-subsume.sh "${AWS-LEGACY-POSTGRES-DBINSTANCE}" "${AWS-LEGACY-POSTGRES-REGION}" "${AWS-LEGACY-POSTGRES-ADMINPASSWORD}" 
+  ${SCRIPT_DIR}/cf-test-s3-bucket.sh && ${SCRIPT_DIR}/cf-test-postgres-sql-subsume.sh "${AWS_LEGACY_POSTGRES_DBINSTANCE}" "${AWS_LEGACY_POSTGRES_REGION}" "${AWS_LEGACY_POSTGRES_ADMINPASSWORD}" 
   RESULT=$?
 fi
 
