@@ -20,6 +20,10 @@ SERVER_ADMIN_PASSWORD=$3
 DB_NAME=subsume-test-db-$$
 SUBSUMED_INSTANCE_NAME=csb-subsume-$$
 
+echo $REGION
+echo $SERVER_NAME
+echo $SERVER_ADMIN_PASSWORD
+
 CSB_INSTANCE_NAME=csb-db-$$
 CSB_DB_CONFIG="{ \
   \"aws_db_id\": \"${SERVER_NAME}\", \
