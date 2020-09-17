@@ -26,7 +26,7 @@ plans:
 - name: current
   id: 3e2464f0-9ae7-4bb8-acdb-7651bbf71d7f
   description: 'SQL Server latest version. Instance properties: General Purpose - Serverless ; 0.5 - 2 cores ; Max Memory: 6gb ; 50 GB storage ; auto-pause enabled after 1 hour of inactivity'
-  display_name: "Small"
+  display_name: "Current"
   properties:
 provision:
   import_inputs:

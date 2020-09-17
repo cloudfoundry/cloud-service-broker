@@ -95,11 +95,12 @@ locals {
   serverFQDN = format("%s.database.windows.net", var.instance_name)
 }
 
-output "sqldbName" {value = var.db_name}
-output "sqlServerName" {value = var.instance_name}
-output "sqlServerFullyQualifiedDomainName" {value = local.serverFQDN}
-output "hostname" {value = local.serverFQDN}
-output "port" {value = 1433}
-output "name" {value = var.db_name}
-output "username" {value = var.server_credential_pairs[var.server_pair].admin_username}
-output "password" {value = var.server_credential_pairs[var.server_pair].admin_password}
+output sqldbName {value = var.db_name}
+output sqlServerName {value = var.instance_name}
+output sqlServerFullyQualifiedDomainName {value = local.serverFQDN}
+output hostname {value = local.serverFQDN}
+output port {value = 1433}
+output name {value = var.db_name}
+output username {value = var.server_credential_pairs[var.server_pair].admin_username}
+output password {value = var.server_credential_pairs[var.server_pair].admin_password}
+output status {value=format("fog id: %s", azurerm_sql_failover_group.failover_group.id)}

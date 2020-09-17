@@ -447,7 +447,7 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 
 	lastOperationType := instance.OperationType
 
-	done, err := serviceProvider.PollInstance(ctx, *instance)
+	done, message, err := serviceProvider.PollInstance(ctx, *instance)
 
 	if err != nil {
 		// this is a retryable error
@@ -462,13 +462,13 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 	}
 
 	if !done {
-		return brokerapi.LastOperation{State: brokerapi.InProgress}, nil
+		return brokerapi.LastOperation{State: brokerapi.InProgress, Description: message}, nil
 	}
 
 	// the instance may have been invalidated, so we pass its primary key rather than the
 	// instance directly.
 	updateErr := broker.updateStateOnOperationCompletion(ctx, serviceProvider, lastOperationType, instanceID)
-	return brokerapi.LastOperation{State: brokerapi.Succeeded}, updateErr
+	return brokerapi.LastOperation{State: brokerapi.Succeeded, Description: message}, updateErr
 }
 
 // updateStateOnOperationCompletion handles updating/cleaning-up resources that need to be changed
