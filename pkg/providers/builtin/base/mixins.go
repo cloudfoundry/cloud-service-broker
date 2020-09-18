@@ -27,8 +27,8 @@ type synchronousBase struct{}
 
 // PollInstance does nothing but return an error because Base services are
 // provisioned synchronously so this method should not be called.
-func (b *synchronousBase) PollInstance(ctx context.Context, instance models.ServiceInstanceDetails) (bool, error) {
-	return true, brokerapi.ErrAsyncRequired
+func (b *synchronousBase) PollInstance(ctx context.Context, instance models.ServiceInstanceDetails) (bool, string, error) {
+	return true, "", brokerapi.ErrAsyncRequired
 }
 
 // ProvisionsAsync indicates if provisioning must be done asynchronously.

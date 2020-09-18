@@ -259,8 +259,15 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string) error {
 // are polling can get the results.
 func (runner *TfJobRunner) operationFinished(err error, workspace *wrapper.TerraformWorkspace, deployment *models.TerraformDeployment) error {
 	if err == nil {
+		lastOperationMessage := ""
+		outputs, err := workspace.Outputs(workspace.Instances[0].InstanceName)
+		if err == nil {
+			if status, ok := outputs["status"]; ok {
+				lastOperationMessage = fmt.Sprintf("%v", status)
+			}
+		}
 		deployment.LastOperationState = Succeeded
-		deployment.LastOperationMessage = ""
+		deployment.LastOperationMessage = lastOperationMessage
 	} else {
 		deployment.LastOperationState = Failed
 		deployment.LastOperationMessage = err.Error()
@@ -280,19 +287,19 @@ func (runner *TfJobRunner) operationFinished(err error, workspace *wrapper.Terra
 // Status gets the status of the most recent job on the workspace.
 // If isDone is true, then the status of the operation will not change again.
 // if isDone is false, then the operation is ongoing.
-func (runner *TfJobRunner) Status(ctx context.Context, id string) (isDone bool, err error) {
+func (runner *TfJobRunner) Status(ctx context.Context, id string) (bool, string, error) {
 	deployment, err := db_service.GetTerraformDeploymentById(ctx, id)
 	if err != nil {
-		return true, err
+		return true, "", err
 	}
 
 	switch deployment.LastOperationState {
 	case Succeeded:
-		return true, nil
+		return true, deployment.LastOperationMessage, nil
 	case Failed:
-		return true, errors.New(deployment.LastOperationMessage)
+		return true, deployment.LastOperationMessage, errors.New(deployment.LastOperationMessage)
 	default:
-		return false, nil
+		return false, deployment.LastOperationMessage, nil
 	}
 }
 
@@ -319,7 +326,7 @@ func (runner *TfJobRunner) Wait(ctx context.Context, id string) error {
 			return nil
 
 		case <-time.After(1 * time.Second):
-			isDone, err := runner.Status(ctx, id)
+			isDone, _, err := runner.Status(ctx, id)
 			if isDone {
 				return err
 			}

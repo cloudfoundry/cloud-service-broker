@@ -458,7 +458,17 @@ func TestTfServiceDefinitionV1Action_ValidateTemplateIO(t *testing.T) {
                 Outputs: []broker.BrokerVariable{{FieldName: "bucket_name"}},
             },
             ErrContains: "template outputs [] must match declared outputs [bucket_name]:",
-        },
+		},
+		"status output variable": {
+            Action: TfServiceDefinitionV1Action{
+				Template: `
+		output status {value=format("status")}
+		output bucket_name {value = "${var.name}"}
+        `,
+                Outputs: []broker.BrokerVariable{{FieldName: "bucket_name"}},
+            },
+            ErrContains: "",
+		},
     }
 
     for tn, tc := range cases {

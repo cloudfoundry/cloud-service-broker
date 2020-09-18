@@ -13,18 +13,18 @@
 # limitations under the License.
 ---
 version: 1
-name: csb-azure-mssql-db-subsume
-id: f2abd146-90ed-4fff-8789-f954764dac52
-description: Subsumes control of existing MSSQL DB
-display_name: Subsume Azure SQL Database
+name: csb-masb-mssql-db-subsume
+id: dd1003d8-0220-4a7e-a340-d0517bcf8733
+description: Subsume control of existing MASB created SQL database
+display_name: Subsume MASB Azure SQL Database
 image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquaretransparent1.png
-documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
-support_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
-tags: [azure, mssql, sqlserver, dr, failover, preview]
+documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/
+support_url: https://docs.microsoft.com/en-us/azure/sql-database/
+tags: [azure, mssql, sqlserver, preview]
 plan_updateable: false
 plans:
 - name: current
-  id: fa31c5f2-b9a5-4e12-9220-6f75d3816f87
+  id: 3e2464f0-9ae7-4bb8-acdb-7651bbf71d7f
   description: 'Subsumes control of a current MSSQL DB'
   display_name: "Current"
   properties:
@@ -89,11 +89,11 @@ provision:
     details: Skip automatic Azure provider registration, set to true if service principal being used does not have rights to register providers
     default: false    
   template_refs:
-    outputs: terraform/subsume-mssql-db/mssql-db-outputs.tf
-    provider: terraform/subsume-mssql-db/azure-provider.tf
-    variables: terraform/subsume-mssql-db/mssql-db-variables.tf
-    main: terraform/subsume-mssql-db/mssql-db-main.tf
-    data: terraform/subsume-mssql-db/mssql-db-data.tf
+    outputs: terraform/subsume-masb-mssql-db/mssql-db-outputs.tf
+    provider: terraform/subsume-masb-mssql-db/azure-provider.tf
+    variables: terraform/subsume-masb-mssql-db/mssql-db-variables.tf
+    main: terraform/subsume-masb-mssql-db/mssql-db-main.tf
+    data: terraform/subsume-masb-mssql-db/mssql-db-data.tf
   computed_inputs:
   # - name: labels
   #   default: ${json.marshal(request.default_labels)}

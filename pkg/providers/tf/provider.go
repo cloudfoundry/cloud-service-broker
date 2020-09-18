@@ -204,7 +204,7 @@ func (provider *terraformProvider) Deprovision(ctx context.Context, instance mod
 }
 
 // PollInstance returns the instance status of the backing job.
-func (provider *terraformProvider) PollInstance(ctx context.Context, instance models.ServiceInstanceDetails) (bool, error) {
+func (provider *terraformProvider) PollInstance(ctx context.Context, instance models.ServiceInstanceDetails) (bool, string, error) {
 	return provider.jobRunner.Status(ctx, generateTfId(instance.ID, ""))
 }
 

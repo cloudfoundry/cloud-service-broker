@@ -66,7 +66,7 @@ type FakeServiceProvider struct {
 	deprovisionsAsyncReturnsOnCall map[int]struct {
 		result1 bool
 	}
-	PollInstanceStub        func(context.Context, models.ServiceInstanceDetails) (bool, error)
+	PollInstanceStub        func(context.Context, models.ServiceInstanceDetails) (bool, string, error)
 	pollInstanceMutex       sync.RWMutex
 	pollInstanceArgsForCall []struct {
 		arg1 context.Context
@@ -74,11 +74,13 @@ type FakeServiceProvider struct {
 	}
 	pollInstanceReturns struct {
 		result1 bool
-		result2 error
+		result2 string
+		result3 error
 	}
 	pollInstanceReturnsOnCall map[int]struct {
 		result1 bool
-		result2 error
+		result2 string
+		result3 error
 	}
 	ProvisionStub        func(context.Context, *varcontext.VarContext) (models.ServiceInstanceDetails, error)
 	provisionMutex       sync.RWMutex
@@ -393,7 +395,7 @@ func (fake *FakeServiceProvider) DeprovisionsAsyncReturnsOnCall(i int, result1 b
 	}{result1}
 }
 
-func (fake *FakeServiceProvider) PollInstance(arg1 context.Context, arg2 models.ServiceInstanceDetails) (bool, error) {
+func (fake *FakeServiceProvider) PollInstance(arg1 context.Context, arg2 models.ServiceInstanceDetails) (bool, string, error) {
 	fake.pollInstanceMutex.Lock()
 	ret, specificReturn := fake.pollInstanceReturnsOnCall[len(fake.pollInstanceArgsForCall)]
 	fake.pollInstanceArgsForCall = append(fake.pollInstanceArgsForCall, struct {
@@ -406,10 +408,10 @@ func (fake *FakeServiceProvider) PollInstance(arg1 context.Context, arg2 models.
 		return fake.PollInstanceStub(arg1, arg2)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1, ret.result2, ret.result3
 	}
 	fakeReturns := fake.pollInstanceReturns
-	return fakeReturns.result1, fakeReturns.result2
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
 }
 
 func (fake *FakeServiceProvider) PollInstanceCallCount() int {
@@ -418,7 +420,7 @@ func (fake *FakeServiceProvider) PollInstanceCallCount() int {
 	return len(fake.pollInstanceArgsForCall)
 }
 
-func (fake *FakeServiceProvider) PollInstanceCalls(stub func(context.Context, models.ServiceInstanceDetails) (bool, error)) {
+func (fake *FakeServiceProvider) PollInstanceCalls(stub func(context.Context, models.ServiceInstanceDetails) (bool, string, error)) {
 	fake.pollInstanceMutex.Lock()
 	defer fake.pollInstanceMutex.Unlock()
 	fake.PollInstanceStub = stub
@@ -431,30 +433,33 @@ func (fake *FakeServiceProvider) PollInstanceArgsForCall(i int) (context.Context
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeServiceProvider) PollInstanceReturns(result1 bool, result2 error) {
+func (fake *FakeServiceProvider) PollInstanceReturns(result1 bool, result2 string, result3 error) {
 	fake.pollInstanceMutex.Lock()
 	defer fake.pollInstanceMutex.Unlock()
 	fake.PollInstanceStub = nil
 	fake.pollInstanceReturns = struct {
 		result1 bool
-		result2 error
-	}{result1, result2}
+		result2 string
+		result3 error
+	}{result1, result2, result3}
 }
 
-func (fake *FakeServiceProvider) PollInstanceReturnsOnCall(i int, result1 bool, result2 error) {
+func (fake *FakeServiceProvider) PollInstanceReturnsOnCall(i int, result1 bool, result2 string, result3 error) {
 	fake.pollInstanceMutex.Lock()
 	defer fake.pollInstanceMutex.Unlock()
 	fake.PollInstanceStub = nil
 	if fake.pollInstanceReturnsOnCall == nil {
 		fake.pollInstanceReturnsOnCall = make(map[int]struct {
 			result1 bool
-			result2 error
+			result2 string
+			result3 error
 		})
 	}
 	fake.pollInstanceReturnsOnCall[i] = struct {
 		result1 bool
-		result2 error
-	}{result1, result2}
+		result2 string
+		result3 error
+	}{result1, result2, result3}
 }
 
 func (fake *FakeServiceProvider) Provision(arg1 context.Context, arg2 *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
