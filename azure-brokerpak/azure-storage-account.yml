@@ -122,6 +122,10 @@ provision:
     type: boolean
     details: Skip automatic Azure provider registration, set to true if service principal being used does not have rights to register providers
     default: false       
+  - field_name: authorized_networks
+    type: array
+    details: A list of resource ids for subnets of the Azure Vnet authorized
+    default: []
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
