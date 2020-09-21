@@ -24,6 +24,7 @@ variable azure_client_id { type = string }
 variable azure_client_secret { type = string }
 # variable authorized_network {type = string}
 variable skip_provider_registration { type = bool }
+variable authorized_networks { type = list(string) }
 
 provider "azurerm" {
   version = "~> 2.20.0"
@@ -64,6 +65,16 @@ resource "azurerm_storage_account" "account" {
   account_kind = var.storage_account_type
 
   tags = var.labels
+}
+
+resource "azurerm_storage_account_network_rules" "account_network_rule" {
+  count = length(var.authorized_networks) != 0 ? 1 : 0
+
+  resource_group_name  = local.resource_group
+  storage_account_name = azurerm_storage_account.account.name
+
+  default_action             = "Deny"
+  virtual_network_subnet_ids = var.authorized_networks[*]
 }
 
 output primary_access_key { value = azurerm_storage_account.account.primary_access_key }

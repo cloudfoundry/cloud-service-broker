@@ -16,7 +16,14 @@ Some of the benefits over traditional, IaaS-provided, service brokers include:
 - **Easy to migrate existing services using [TF Import](https://www.terraform.io/docs/import/index.html)** *Coming Soon...*
 
 ## Public Roadmap
-For a list of currently supported services (and broker features), see our up-to-date roadmap on Trello here: https://trello.com/b/6wgNQZLB/cloud-service-broker-public-product-roadmap
+For a list of currently "Core Broker" (IaaS agnostic) features, see our up-to-date roadmap on Trello here: https://trello.com/b/m873oYyJ/csb-core-broker-public-roadmap
+
+Azure Roadmap: https://trello.com/b/IJKM3bcG/csb-azure-public-roadmap
+
+AWS Roadmap: https://trello.com/b/eBe25hzx/csb-aws-public-roadmap
+
+GCP Roadmap: https://trello.com/b/MNL1QzrQ/csb-gcp-public-roadmap
+
 
 The service broker provides support for (last updated 09/08/2020):	
 
