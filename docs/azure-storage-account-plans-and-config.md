@@ -25,6 +25,7 @@ The following parameters may be configured during service provisioning (`cf crea
 | azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
 | azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `azure.client_secret` |
 | skip_provider_registration | boolean | `true` to skip automatic Azure provider registration, set if service principal being used does not have rights to register providers | `false` |
+| authorized_networks | list (string) | A list of resource ids for subnets of the Azure Vnet authorized | `[]`
 
 ## Binding Credentials
 
