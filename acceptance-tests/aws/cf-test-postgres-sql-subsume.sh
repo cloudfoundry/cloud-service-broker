@@ -19,15 +19,7 @@ REGION=$2
 SERVER_ADMIN_PASSWORD=$3
 DB_NAME=subsume-test-db-$$
 SUBSUMED_INSTANCE_NAME=csb-subsume-$$
-
-echo $REGION
-echo $SERVER_NAME
-echo $SERVER_ADMIN_PASSWORD
-
-echo ${AWS_LEGACY_POSTGRES_DBINSTANCE}
-echo ${AWS_LEGACY_POSTGRES_DBINSTANCE}
-echo ${AWS_LEGACY_POSTGRES_DBINSTANCE}
-
+STORAGE=$(( $RANDOM % 10 + 15 ));
 
 
 CSB_INSTANCE_NAME=csb-db-$$
@@ -35,6 +27,11 @@ CSB_DB_CONFIG="{ \
   \"aws_db_id\": \"${SERVER_NAME}\", \
   \"region\": \"${REGION}\", \
   \"admin_password\": \"${SERVER_ADMIN_PASSWORD}\" \
+}"
+
+UPDATE_CONFIG="{ \
+  \"allocated_storage\": ${STORAGE}, \
+  \"region\": \"${REGION}\" \
 }"
 
 RESULT=1
@@ -62,7 +59,15 @@ if create_service csb-aws-postgresql-subsume small "${SUBSUMED_INSTANCE_NAME}" "
         fi
         cf delete -f importtestapp-demo 
     fi
+   
+fi
+
+if update_service_params "${SUBSUMED_INSTANCE_NAME}" "${UPDATE_CONFIG}"; then
+    echo "subsumed postgres instance update successful"  
+    
     cf purge-service-instance "${SUBSUMED_INSTANCE_NAME}" -f
+else 
+     echo "failed to update subsumed postgres instance"
 fi
 
 if [ ${RESULT} -eq 0 ]; then

@@ -32,7 +32,10 @@ provision:
   - field_name: aws_db_id
     type: string
     details: AWS db id to subsume
-    tf_resource: aws_db_instance.db_instance     
+    tf_resource: aws_db_instance.db_instance
+  import_parameter_mappings:
+  - tf_variable: allocated_storage
+    parameter_name: allocated_storage
   import_parameters_to_delete: ["id", "hosted_zone_id", "address","replicas","endpoint","arn","resource_id","status"]   
   user_inputs:
   - field_name: aws_access_key_id
@@ -46,9 +49,13 @@ provision:
   - field_name: admin_password
     type: string
     details: Administrator password for AWS server  database to be subsumed
+    prohibit_update: true
   - field_name: region
     type: string
-    details: region of the postgres instance      
+    details: region of the postgres instance     
+  - field_name: allocated_storage
+    type: integer
+    details: region of the postgres instance        
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
