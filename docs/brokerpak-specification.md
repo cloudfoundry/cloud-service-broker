@@ -163,7 +163,7 @@ provision or bind action, and the inputs and outputs to that template.
 | user_inputs | array of variable | Defines constraints and settings for the variables users provide as part of their request. |
 | computed_inputs | array of computed variable | Defines default values or overrides that are executed before the template is run. |
 | template | string | The complete HCL of the Terraform template to execute. |
-| template_uri | string | A path to HCL of the Terraform template to execute. If present, this will be used to populate the `template` field. |
+| template_ref | string | A path to HCL of the Terraform template to execute. If present, this will be used to populate the `template` field. |
 | outputs | array of variable | Defines constraints and settings for the outputs of the Terraform template. This MUST match the Terraform outputs and the constraints WILL be used as part of integration testing. |
 
 #### Variable object
