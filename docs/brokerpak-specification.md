@@ -232,7 +232,7 @@ provision:
   computed_inputs: []
   template: |-
     variable domain {type = string}
-    variable username {type = "string}
+    variable username {type = string}
     output email {value = "${var.username}@${var.domain}"}
 
   outputs:
