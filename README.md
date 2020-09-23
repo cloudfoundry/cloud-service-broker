@@ -13,7 +13,12 @@ Some of the benefits over traditional, IaaS-provided, service brokers include:
 - **One common broker for all brokered services.** Cloud Service Broker decouples the service broker functionality from the catalog of services that it exposes.
 - **Credhub integration out-of-the-box** CredHub encrypts and manages all the secrets associated with your usage of cloud services.
 - **Community** When you expose a service via a [Brokerpak](https://github.com/pivotal/cloud-service-broker/blob/master/docs/brokerpak-intro.md), you can make it available to everyone who uses CSB.
-- **Easy to migrate existing services using [TF Import](https://www.terraform.io/docs/import/index.html)** *Coming Soon...*
+- **Easy to migrate existing services using [TF Import](https://www.terraform.io/docs/import/index.html)** We call this "Migration-less" Migration, more on this **coming soon!** 
+
+## Architecture
+![Architecture Diagram](https://lh6.googleusercontent.com/GoNJx-4dQ51pEY6mCLkus1peKhZJbDMj4JHpdu83stfQrbcsjd45ypBPzpspfWAPPYrc63BREaawwRHS4Ht4U7m2yWAHItwaIgfuwUtn_KxfF96s6Jby7BRIliZ6BZz1HL-KhaI)
+
+
 
 ## Public Roadmap
 For a list of currently "Core Broker" (IaaS agnostic) features, see our up-to-date roadmap on Trello here: https://trello.com/b/m873oYyJ/csb-core-broker-public-roadmap
@@ -55,6 +60,7 @@ This service broker can be installed as a CF application. See the instructions f
 **For developers**: see [docs/use.md](./docs/use.md) for service options and details.
 
 You can get documentation specific to your install from the `/docs` endpoint of your deployment.
+
 
 ## Commands
 
