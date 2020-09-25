@@ -31,6 +31,7 @@ const (
 	caCertProp     = "db.ca.cert"
 	clientCertProp = "db.client.cert"
 	clientKeyProp  = "db.client.key"
+	dbTLS          = "db.tls"
 	dbHostProp     = "db.host"
 	dbUserProp     = "db.user"
 	dbPassProp     = "db.password"
@@ -47,7 +48,8 @@ func init() {
 	viper.BindEnv(caCertProp, "CA_CERT")
 	viper.BindEnv(clientCertProp, "CLIENT_CERT")
 	viper.BindEnv(clientKeyProp, "CLIENT_KEY")
-
+	viper.BindEnv(dbTLS, "DB_TLS")
+	viper.SetDefault(dbTLS, "true")
 	viper.BindEnv(dbHostProp, "DB_HOST")
 	viper.BindEnv(dbUserProp, "DB_USERNAME")
 	viper.BindEnv(dbPassProp, "DB_PASSWORD")
@@ -133,10 +135,11 @@ func generateTlsStringFromEnv() (string, error) {
 	caCert := viper.GetString(caCertProp)
 	clientCertStr := viper.GetString(clientCertProp)
 	clientKeyStr := viper.GetString(clientKeyProp)
-	tlsStr := "&tls=custom"
+	tlsStr := fmt.Sprintf("&tls=%s", viper.GetString(dbTLS))
 
 	// make sure ssl is set up for this connection
 	if caCert != "" && clientCertStr != "" && clientKeyStr != "" {
+		tlsStr = "&tls=custom"
 
 		rootCertPool := x509.NewCertPool()
 
@@ -155,8 +158,6 @@ func generateTlsStringFromEnv() (string, error) {
 			Certificates:       clientCert,
 			InsecureSkipVerify: true,
 		})
-	} else {
-		tlsStr = ""
 	}
 
 	return tlsStr, nil
