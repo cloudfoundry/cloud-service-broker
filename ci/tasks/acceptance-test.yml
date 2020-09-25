@@ -28,6 +28,7 @@ run:
       sleep 45
       export PORT=8080
       export DB_HOST=localhost
+      export DB_TLS=skip-verify
       echo "Using brokerpak dir ${GSB_BROKERPAK_BUILTIN_PATH}"
       ./build/cloud-service-broker.linux serve &
       sleep 10
