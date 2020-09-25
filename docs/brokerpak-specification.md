@@ -45,7 +45,7 @@ and which services it will provide.
 | name* | string | The name of this brokerpak. It's RECOMMENDED that this be lower-case and include only alphanumeric characters, dashes, and underscores. |
 | metadata | object | A free-form field for key/value pairs of additional information about this brokerpak. This could include the authors, creation date, source code repository, etc. |
 | platforms* | array of platform | The platforms this brokerpak will be executed on. |
-| terraform_binaries* | array of Terraform resource | The list of Terraform providers and Terraform that'll be bundled with the brokerpak. |
+| terraform_binaries* | array of Terraform resource | The list of Terraform providers and Terraform that'll be bundled with the brokerpak. *The broker currently only supports terraform v0.12.x*|
 | service_definitions* | array of string | Each entry points to a file relative to the manifest that defines a service as part of the brokerpak. |
 | parameters | array of parameter | These values are set as environment variables when Terraform is executed. |
 | required_env_variables | array of string | These are the required environment variables that will be passed through to the terraform execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution.
@@ -67,7 +67,7 @@ This structure holds information about a specific Terraform version or Resource.
 | Field | Type | Description |
 | --- | --- | --- |
 | name* | string | The name of this resource. e.g. `terraform-provider-google-beta`. |
-| version* | string | The version of the resource e.g. 1.19.0. |
+| version* | string | The version of the resource e.g. 1.19.0. *The broker currently only supports terraform version 0.12.x*|
 | source* | string | The URL to a zip of the source code for the resource. |
 | url_template | string | (optional) A custom URL template to get the release of the given tool. Available parameters are ${name}, ${version}, ${os}, and ${arch}. If unspecified the default Hashicorp Terraform download server is used. |
 
