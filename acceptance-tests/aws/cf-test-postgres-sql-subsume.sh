@@ -19,7 +19,7 @@ REGION=$2
 SERVER_ADMIN_PASSWORD=$3
 DB_NAME=subsume-test-db-$$
 SUBSUMED_INSTANCE_NAME=csb-subsume-$$
-STORAGE=$(( $RANDOM % 10 + 15 ));
+STORAGE=10;
 
 
 CSB_INSTANCE_NAME=csb-db-$$
