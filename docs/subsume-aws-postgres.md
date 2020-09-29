@@ -1,6 +1,6 @@
 # Subsuming a AWS service Broker Postgres Database Instance
 
-It is possible to subsume control over an existing Postgres database instance that was created by the AWS Service Broker. No data migration is necessary, the broker just takes over the bind, unbind and destroy lifecycle.
+It is possible to subsume control over an existing Postgres database instance that was created by the AWS-provided Service Broker. No data migration is necessary, the Cloud Service Broker just takes over the bind, unbind and destroy lifecycle.
 
 > **_WARNING:_** Some import strategies may be destructive to resources and data.  Please read and understand the processes before implementation.  If possible, test these strategies on test services and apps before applying them to important services and apps.
 
