@@ -19,7 +19,7 @@ REGION=$2
 SERVER_ADMIN_PASSWORD=$3
 DB_NAME=subsume-test-db-$$
 SUBSUMED_INSTANCE_NAME=csb-subsume-$$
-STORAGE=$(( $RANDOM % 10 + 15 ));
+STORAGE=22;
 
 
 CSB_INSTANCE_NAME=csb-db-$$
@@ -30,10 +30,11 @@ CSB_DB_CONFIG="{ \
 }"
 
 UPDATE_CONFIG="{ \
-  \"allocated_storage\": ${STORAGE}, \
+  \"allocated_storage\": "${STORAGE}", \
   \"region\": \"${REGION}\" \
-}"
+}"  
 
+echo $UPDATE_CONFIG
 RESULT=1
 
 
