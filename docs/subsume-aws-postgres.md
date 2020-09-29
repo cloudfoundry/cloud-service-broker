@@ -4,7 +4,7 @@ It is possible to subsume control over an existing Postgres database instance th
 
 > **_WARNING:_** Some import strategies may be destructive to resources and data.  Please read and understand the processes before implementation.  If possible, test these strategies on test services and apps before applying them to important services and apps.
 
-> **_KNOWN ISSUE:_** Because of a few shortcomings of PostgreSQL, please me sure to follow the steps for importing services very closely. There is an issue where if the Legacy Service Instance and the newly provisioned CSB Service Instance are both bound to the same app, it will be impossible to unbind the Legacy Service Instance from the app. 
+> **_KNOWN ISSUE:_** Because of a few shortcomings of PostgreSQL, please be sure to follow the steps for importing services very closely. There is an issue where if the Legacy Service Instance and the newly provisioned CSB Service Instance are both bound to the same app, it will be impossible to unbind the Legacy Service Instance from the app. 
 
 ## Overview
 
