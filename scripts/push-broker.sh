@@ -61,6 +61,10 @@ if [[ ${GSB_BROKERPAK_BUILTIN_PATH} ]]; then
   cf set-env "${APP_NAME}" GSB_BROKERPAK_BUILTIN_PATH "${GSB_BROKERPAK_BUILTIN_PATH}"
 fi
 
+if [[ ${DB_TLS} ]]; then
+  cf set-env "${APP_NAME}" DB_TLS "${DB_TLS}"
+fi
+
 cf bind-service "${APP_NAME}" csb-sql
 
 cf start "${APP_NAME}"
