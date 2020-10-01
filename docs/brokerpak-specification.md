@@ -159,13 +159,109 @@ provision or bind action, and the inputs and outputs to that template.
 
 | Field | Type | Description |
 | --- | --- | --- |
-| plan_inputs | array of variable | Defines constraints and settings for the variables plans provide in their properties map. |
-| user_inputs | array of variable | Defines constraints and settings for the variables users provide as part of their request. |
-| computed_inputs | array of computed variable | Defines default values or overrides that are executed before the template is run. |
+| import_inputs | array of [import-input](#import-input-object) | Defines the variables that will be passed to tf import command |
+| import_parameter_mappings | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines how tf resource variables will be replaced with broker variables between `tf import` and `tf apply` |
+| import_parameters_to_delete| array of string | list of `tf import` discovered values to remove before `tf apply`. `tf import` will return read-only values that cannot be set during `tf apply` so they should be listed here to be removed between import and apply |
+| plan_inputs | array of [variable](#variable-object) | Defines constraints and settings for the variables plans provide in their properties map. |
+| user_inputs | array of [variable](#variable-object) | Defines constraints and settings for the variables users provide as part of their request. |
+| computed_inputs | array of [computed variable](#computed-variable-object) | Defines default values or overrides that are executed before the template is run. |
 | template | string | The complete HCL of the Terraform template to execute. |
 | template_ref | string | A path to HCL of the Terraform template to execute. If present, this will be used to populate the `template` field. |
-| outputs | array of variable | Defines constraints and settings for the outputs of the Terraform template. This MUST match the Terraform outputs and the constraints WILL be used as part of integration testing. |
+| template_refs | map | standard terraform file [snippet list](#template-references) |
+| outputs | array of [variable](#variable-object) | Defines constraints and settings for the outputs of the Terraform template. This MUST match the Terraform outputs and the constraints WILL be used as part of integration testing. |
 
+#### Import Input object
+
+The import input object defines the mapping of an input parameter to a terraform resource on the `tf import` command. The presence of any import input values will trigger a `tf import` before `ft apply` upon `cf create-service`
+
+| Field | Type | Description |
+| --- | --- | --- |
+| field_name | string | the name of the user input variable to use |
+| type | string | The JSON type of the field. This MUST be a valid JSONSchema type excepting null |
+| details | string | A description of what this field is |
+| tf_resource | string | The tf resource to import given this value. |
+
+Given:
+```yaml
+  import_inputs:
+  - field_name: azure_db_id
+    type: string
+    details: Azure resource id for database to subsume
+    tf_resource: azurerm_sql_database.azure_sql_db
+```
+
+A create service call:
+```bash
+cf create-service my-service my-plan my-instance -c '{"azure_db_id":"some-id"}'
+```
+
+Will result in terraform import:
+
+```bash
+terraform import azurerm_sql_database.azure_sql_db some-id
+```
+
+#### Import Parameter Mapping object
+
+The import parameter mapping object defines the tf variable to input variable mapping that will occur between `tf import` and `tf apply`
+
+`tf import` will return current values for all variables for the service instance. In order to allow user configuration of these values to support `cf update-service`, it is necessary to enumerate the terraform resource variables that should be parameterized with broker input variables.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| tf_variable | string | the terraform resource variable name |
+| parameter_name | string | the broker input variable name |
+
+Given:
+```yaml
+  - tf_variable: requested_service_objective_name
+    parameter_name: service_objective 
+```
+
+Will convert the resulting `tf import`:
+```tf
+resource "azurerm_sql_database" "azure_sql_db" {
+    requested_service_objective_name = S0
+}
+```
+
+Into:
+```tf
+resource "azurerm_sql_database" "azure_sql_db" {
+    requested_service_objective_name = var.service_objective
+}
+```
+Between running `tf import` and `tf apply`
+
+So that:
+```bash
+cf update-service my-instance -c '{"service_objective":"S1"}'
+```
+
+Will successfully update the `requested_service_objective_name` for the instance.
+
+#### Template References
+
+It is possible to break terraform code into sections to aid reusability and better follow [terraform best practices](https://www.terraform-best-practices.com/code-structure#getting-started-with-structuring-of-terraform-configurations). It is also required to support `tf import` as main.tf is a special case during import.
+
+Given:
+```hcl
+  template_refs:
+    outputs: terraform/subsume-masb-mssql-db/mssql-db-outputs.tf
+    provider: terraform/subsume-masb-mssql-db/azure-provider.tf
+    variables: terraform/subsume-masb-mssql-db/mssql-db-variables.tf
+    main: terraform/subsume-masb-mssql-db/mssql-db-main.tf
+    data: terraform/subsume-masb-mssql-db/mssql-db-data.tf
+```
+
+Will result is a terraform workspace with the following structure:
+* outputs.tf gets contents of *terraform/subsume-masb-mssql-db/mssql-db-outputs.tf*
+* provider.tf gets contents of *terraform/subsume-masb-mssql-db/azure-provider.tf*
+* variables.tf gets contents of *terraform/subsume-masb-mssql-db/mssql-db-variables.tf*
+* main.tf gets contents of *terraform/subsume-masb-mssql-db/mssql-db-main.tf*
+* data.tf gets contents of *terraform/subsume-masb-mssql-db/mssql-db-data.tf*
+
+> If there are [import inputs](#import-input-object), a `tf import` will be run for each import input value before `tf apply` is run. Once all the import calls are complete, `tf show` is run to generate a new *main.tf*. So it is important not to put anything into *main.tf* that needs to be preserved. Put them in one of the other tf files.
 #### Variable object
 
 The variable object describes a particular input or output variable. The
@@ -181,7 +277,6 @@ Outputs are _only_ validated on integration tests.
 | default | any | The default value for this field. If `null`, the field MUST be marked as required. If a string, it will be executed as a HIL expression and cast to the appropriate type described in the `type` field. See the "Expression language reference" section for more information about what's available. |
 | enum | map of any:string | Valid values for the field and their human-readable descriptions suitable for displaying in a drop-down list. |
 | constraints | map of string:any | Holds additional JSONSchema validation for the field. The following keys are supported: `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`. |
-
 
 #### Computed Variable Object
 
