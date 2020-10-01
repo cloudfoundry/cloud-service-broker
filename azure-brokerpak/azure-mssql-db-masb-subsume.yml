@@ -65,9 +65,6 @@ provision:
   - field_name: service_objective
     type: string
     details: The service objective name for the database.
-  - field_name: admin_password
-    type: string
-    details: Administrator password for server hosting database to be subsumed
   - field_name: azure_tenant_id
     type: string
     details: Azure Tenant to create resource in
@@ -75,7 +72,15 @@ provision:
   - field_name: azure_subscription_id
     type: string
     details: Azure Subscription to create resource in
-    default: ${config("azure.subscription_id")}      
+    default: ${config("azure.subscription_id")}
+  - field_name: server
+    type: string
+    details: Name of server from server_credentials to create database upon
+    required: true    
+  - field_name: server_credentials
+    type: object
+    details: 'JSON has of server credentials. { "name1":{"server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."},"name2":{...}...}'
+    required: true
   - field_name: azure_client_id
     type: string
     details: Client ID of Azure principal 
