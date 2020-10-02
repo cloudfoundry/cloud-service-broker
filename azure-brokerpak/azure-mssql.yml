@@ -239,7 +239,7 @@ examples:
 - name: azuresql-db-small-configuration
   description: Create a small Azure SQL Database in westcentralus location
   plan_id: a556d1b4-5825-11ea-adb8-00155d4dfe6c
-  provision_params: {"location": "westcentralus"}
+  provision_params: {"location": "eastus"}
   bind_params: {}
   bind_can_fail: true  
 - name: azuresql-db-medium-configuration
