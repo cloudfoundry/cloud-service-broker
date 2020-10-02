@@ -49,7 +49,7 @@ and which services it will provide.
 | service_definitions* | array of string | Each entry points to a file relative to the manifest that defines a service as part of the brokerpak. |
 | parameters | array of parameter | These values are set as environment variables when Terraform is executed. |
 | required_env_variables | array of string | These are the required environment variables that will be passed through to the terraform execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution.
-|env_config_mapping|map[string]string|List of mappings of environment variables into config keys|
+| env_config_mapping |map[string]string | List of mappings of environment variables into config keys, see [functions](#functions) for more information on how to use these |
 
 #### Platform object
 
@@ -403,7 +403,7 @@ The following string interpolation functions are available for use:
 * `env("ENV_VAR_NAME")`
   * Returns value for environment variable `ENV_VAR_NAME`
 * `config("config.key")`
-  * Returns value for config key `config.key`  
+  * Returns value for config key `config.key`. These will come from the config file or be mapped from environment variables by the *env_config_mapping* section of the root *manifest.yml*.
 
 ### Variables
 
