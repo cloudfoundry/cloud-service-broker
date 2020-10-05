@@ -69,5 +69,5 @@ service_definitions:
 - azure-postgres.yml
 - azure-storage-account.yml
 - azure-cosmosdb-sql.yml
-#- azure-mssql-db-subsume.yml
+- azure-mssql-db-subsume.yml
 - azure-mssql-db-masb-subsume.yml

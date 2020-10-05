@@ -36,6 +36,7 @@ provision:
       maxLength: 63
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
+    required: true
   - field_name: location
     type: string
     details: The location of the Azure SQL Database

@@ -38,4 +38,15 @@ for s in ${AUTHORIZED_NETWORK_NAME_SERVICES[@]}; do
     ${SCRIPT_DIR}/../cf-create-service-should-fail.sh ${s} small '{"authorized_network":"bogus"}'
 done
 
+# missing parameters should fail
+MISSING_PARAMS_SMALL=("csb-azure-mssql-db-failover-group" "csb-azure-mssql-db")
+for s in ${MISSING_PARAMS_SMALL[@]}; do
+    ${SCRIPT_DIR}/../cf-create-service-should-fail.sh ${s} small
+done
+
+MISSING_PARAMS_STANDARD=("csb-azure-resource-group" "csb-azure-mssql-fog-run-failover" )
+for s in ${MISSING_PARAMS_STANDARD[@]}; do
+    ${SCRIPT_DIR}/../cf-create-service-should-fail.sh ${s} standard
+done
+
 echo "$0 SUCCEEDED"
