@@ -257,7 +257,7 @@ examples:
 - name: medium
   description: Create a medium mysql instance in centralus location
   plan_id: 9eb836dd-4B90-4cF7-bc06-1986103802d3
-  provision_params: { "location": "centralus" }
+  provision_params: { "location": "eastus" }
   bind_params: {}
   bind_can_fail: true
 - name: large
