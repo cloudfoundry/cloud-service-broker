@@ -100,13 +100,13 @@ type ToCServiceClass struct {
 }
 
 func generateServiceClassesToC(tocServiceClasses []ToCServiceClass) string {
-	tocTemplateText := `# GCP Service Broker usage
+	tocTemplateText := `# Cloud Service Broker usage
 
 # Overview
 
-The GCP service broker is a tool that developers use to provision access Google Cloud resources. The service broker currently supports a list of built-in services.
+The Cloud Service Broker is a tool that developers use to provision access to cloud resources. The service broker currently supports a list of built-in services.
  
-Read about creating and binding specific GCP services:
+Read about creating and binding specific services:
 {{range .serviceClasses}}
 -   [{{ .DisplayName }}]({{ .FilePath }})
 {{ end -}}
@@ -202,7 +202,7 @@ func generateServiceDocumentation(svc *broker.ServiceDefinition) string {
 {{ end }}
 ## Plans
 
-The following plans are built-in to the GCP Service Broker and may be overridden
+The following plans are built-in to the Cloud Service Broker and may be overridden
 or disabled by the broker administrator.
 
 {{ if eq (len .catalog.Plans) 0 }}_No plans available_{{ end }}
