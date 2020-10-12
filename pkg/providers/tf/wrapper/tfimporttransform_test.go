@@ -44,7 +44,7 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
     }{
         "remove-id":{
             transformer: TfTransformer{
-                ParametersToRemove: []string{"id"},
+                ParametersToRemove: []string{"azurerm_sql_database.azure_sql_db.id"},
             },
             input: `resource "azurerm_sql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
@@ -72,6 +72,7 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
         retention_days       = 0
         state                = "Disabled"
         use_server_default   = "Disabled"
+        id                   = "should be kept"
     }
 
     timeouts {}
@@ -81,7 +82,6 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
     edition                          = "Basic"
-    
     location                         = "eastus"
     max_size_bytes                   = "2147483648"
     name                             = "db"
@@ -101,7 +101,8 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
         email_addresses      = []
         retention_days       = 0
         state                = "Disabled"
-        use_server_default   = "Disabled"
+		use_server_default   = "Disabled"
+		id                   = "should be kept"		
     }
 
     timeouts {}
@@ -109,7 +110,7 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
         },
         "remove-multiple":{
             transformer: TfTransformer{
-                ParametersToRemove: []string{"id", "creation_date", "default_secondary_location"},
+                ParametersToRemove: []string{"azurerm_sql_database.azure_sql_db.id", "azurerm_sql_database.azure_sql_db.creation_date", "azurerm_sql_database.azure_sql_db.default_secondary_location"},
             },
             input: `resource "azurerm_sql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
@@ -134,7 +135,8 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
         email_addresses      = []
         retention_days       = 0
         state                = "Disabled"
-        use_server_default   = "Disabled"
+		use_server_default   = "Disabled"
+		id                   = "should be kept"		
     }
 
     timeouts {}
@@ -142,7 +144,6 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
             expected: `resource "azurerm_sql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     edition                          = "Basic"
-    
     location                         = "eastus"
     max_size_bytes                   = "2147483648"
     name                             = "db"
@@ -162,7 +163,8 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
         email_addresses      = []
         retention_days       = 0
         state                = "Disabled"
-        use_server_default   = "Disabled"
+		use_server_default   = "Disabled"
+		id                   = "should be kept"		
     }
 
     timeouts {}
@@ -197,7 +199,8 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
         email_addresses      = []
         retention_days       = 0
         state                = "Disabled"
-        use_server_default   = "Disabled"
+		use_server_default   = "Disabled"
+		id                   = "should be kept"		
     }
 
     timeouts {}
@@ -227,7 +230,8 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
         email_addresses      = []
         retention_days       = 0
         state                = "Disabled"
-        use_server_default   = "Disabled"
+		use_server_default   = "Disabled"
+		id                   = "should be kept"		
     }
 
     timeouts {}

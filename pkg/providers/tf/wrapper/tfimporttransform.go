@@ -15,10 +15,12 @@
 package wrapper
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"regexp"
+	"strings"
 )
-
 
 // ParameterMapping mapping for tf variable to service parameter
 type ParameterMapping struct {
@@ -32,13 +34,41 @@ type TfTransformer struct {
 	ParametersToRemove []string			 `json:"parameters_to_remove"`
 }
 
+func braceCount(str string, count int) int {
+	return count + strings.Count(str, "{") - strings.Count(str, "}")
+}
+
 // CleanTf removes ttf.ParametersToRemove from tf string
 func (ttf *TfTransformer) CleanTf(tf string) string {
-	for _, removal := range ttf.ParametersToRemove {
-		re := regexp.MustCompile(fmt.Sprintf(`(?m)^[\s]+%s[\s]*=.*$`, removal))
-		tf = re.ReplaceAllString(tf, "")
+	depth := 0
+	blockStack := make([]string, 64)
+	scanner := bufio.NewScanner(strings.NewReader(tf))
+	buffer := bytes.Buffer{}
+	for scanner.Scan() {
+		skipLine := false
+		line := scanner.Text()
+		depth = braceCount(line, depth)
+		resource := regexp.MustCompile(`resource "(.*)" "(.*)"` )
+		res := resource.FindStringSubmatch(line)
+		if res != nil {
+			blockStack[depth] = fmt.Sprintf("%s.%s", res[1], res[2])
+		} else {
+			value := regexp.MustCompile(`^[\s]*([^\s]*)[\s]*=[\s]*(.*)[\s]*$`)
+			res = value.FindStringSubmatch(line)
+			if res != nil {
+				for _, removal := range ttf.ParametersToRemove {
+					if fmt.Sprintf("%s.%s", blockStack[depth], res[1]) == removal {
+						skipLine = true
+						break
+					}
+				}
+			}
+		}
+		if !skipLine {
+			buffer.WriteString(fmt.Sprintf("%s\n", line))
+		}		
 	}
-	return tf
+	return buffer.String()
 }
 
 func (ttf *TfTransformer) captureParameterValues(tf string) (map[string]string, error) {

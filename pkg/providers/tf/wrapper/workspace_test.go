@@ -43,7 +43,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 			ws.Destroy()
 		}},
 		"import": {Exec: func(ws *TerraformWorkspace) {
-			ws.Import("", "")
+			ws.Import(map[string]string{})
 		}},
 		"show": {Exec: func(ws *TerraformWorkspace) {
 			ws.Show()
@@ -128,7 +128,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 			ws.Destroy()
 		}},
 		"import": {Exec: func(ws *TerraformWorkspace) {
-			ws.Import("", "")
+			ws.Import(map[string]string{})
 		}},
 		"show": {Exec: func(ws *TerraformWorkspace) {
 			ws.Show()
