@@ -39,7 +39,10 @@ provision:
     parameter_name: edition
   - tf_variable: requested_service_objective_name
     parameter_name: service_objective 
-  import_parameters_to_delete: ["id", "creation_date", "default_secondary_location", "requested_service_objective_id"]    
+  import_parameters_to_delete: [ "azurerm_sql_database.azure_sql_db.id", 
+                                 "azurerm_sql_database.azure_sql_db.creation_date", 
+                                 "azurerm_sql_database.azure_sql_db.default_secondary_location", 
+                                 "azurerm_sql_database.azure_sql_db.requested_service_objective_id"]    
   plan_inputs:
   user_inputs:
   - field_name: edition
@@ -55,9 +58,7 @@ provision:
       Free: Free
       GeneralPurpose: GeneralPurpose
       Hyperscale: Hyperscale
-      Premium: Premium
       PremiumRS: PremiumRS
-      Standard: Standard
       Stretch: Stretch
       System: System
       System2: System2

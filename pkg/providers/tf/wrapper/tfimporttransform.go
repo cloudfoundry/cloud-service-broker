@@ -40,29 +40,30 @@ func braceCount(str string, count int) int {
 
 // CleanTf removes ttf.ParametersToRemove from tf string
 func (ttf *TfTransformer) CleanTf(tf string) string {
+	resource := regexp.MustCompile(`resource "(.*)" "(.*)"` )
+	value := regexp.MustCompile(`^[\s]*([^\s]*)[\s]*=[\s]*(.*)[\s]*$`)
+	block := regexp.MustCompile(`^[\s]*([^\s]*)[\s]*{[\s]*$`)		
 	depth := 0
 	blockStack := make([]string, 64)
 	scanner := bufio.NewScanner(strings.NewReader(tf))
 	buffer := bytes.Buffer{}
+
 	for scanner.Scan() {
 		skipLine := false
 		line := scanner.Text()
 		depth = braceCount(line, depth)
-		resource := regexp.MustCompile(`resource "(.*)" "(.*)"` )
-		res := resource.FindStringSubmatch(line)
-		if res != nil {
+		
+		if res := resource.FindStringSubmatch(line); res != nil {
 			blockStack[depth] = fmt.Sprintf("%s.%s", res[1], res[2])
-		} else {
-			value := regexp.MustCompile(`^[\s]*([^\s]*)[\s]*=[\s]*(.*)[\s]*$`)
-			res = value.FindStringSubmatch(line)
-			if res != nil {
-				for _, removal := range ttf.ParametersToRemove {
-					if fmt.Sprintf("%s.%s", blockStack[depth], res[1]) == removal {
-						skipLine = true
-						break
-					}
+		} else if res = value.FindStringSubmatch(line); res != nil {
+			for _, removal := range ttf.ParametersToRemove {
+				if fmt.Sprintf("%s.%s", blockStack[depth], res[1]) == removal {
+					skipLine = true
+					break
 				}
 			}
+		} else if res := block.FindStringSubmatch(line); res != nil {
+			blockStack[depth] = fmt.Sprintf("%s.%s", blockStack[depth-1], res[1])
 		}
 		if !skipLine {
 			buffer.WriteString(fmt.Sprintf("%s\n", line))
@@ -77,9 +78,7 @@ func (ttf *TfTransformer) captureParameterValues(tf string) (map[string]string, 
 	for _, mapping := range ttf.ParameterMappings {
 		re := regexp.MustCompile(fmt.Sprintf(`(?m)^[\s]+%s[\s]*=[\s"]*(.*[^"\s])`, mapping.TfVariable))
 		res := re.FindAllStringSubmatch(tf, -1)
-		if len(res) > 1 {
-			return parameterValues, fmt.Errorf("Found more than one tf parameter %s in %s", mapping.TfVariable, tf )
-		} else if len(res) > 0 {
+		if len(res) > 0 {
 			parameterValues[mapping.ParameterName] = res[0][1]
 		}
 	}

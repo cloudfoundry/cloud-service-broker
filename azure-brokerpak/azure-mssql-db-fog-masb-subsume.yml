@@ -13,36 +13,52 @@
 # limitations under the License.
 ---
 version: 1
-name: csb-azure-mssql-db-subsume
-id: f2abd146-90ed-4fff-8789-f954764dac52
-description: Subsumes control of existing MSSQL DB
-display_name: Subsume Azure SQL Database
+name: csb-masb-mssql-fog-db-subsume
+id: 41ab030b-fb61-4a45-98db-6ce5b6756dc2
+description: Subsume control of existing MASB created SQL database failover group
+display_name: Subsume MASB Azure SQL Failover group
 image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquaretransparent1.png
 documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
 support_url: https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/
 tags: [azure, mssql, sqlserver, dr, failover, preview]
-plan_updateable: false
 plans:
 - name: current
-  id: fa31c5f2-b9a5-4e12-9220-6f75d3816f87
-  description: 'Subsumes control of a current MSSQL DB'
+  id: 5a7da844-e2e7-4688-a9f1-d35e3c1cac18
+  description: 'Subsumes control of a current MSSQL DB Failover Group'
   display_name: "Current"
   properties:
 provision:
   import_inputs:
-  - field_name: azure_db_id
+  - field_name: azure_primary_db_id
     type: string
-    details: Azure resource id for database to subsume
-    tf_resource: azurerm_sql_database.azure_sql_db
+    details: Azure resource id for primary database in failover group to subsume
+    tf_resource: azurerm_sql_database.primary_db  
+  - field_name: azure_secondary_db_id
+    type: string
+    details: Azure resource id for secondary database in failover group to subsume
+    tf_resource: azurerm_sql_database.secondary_db  
+  - field_name: auzure_fog_id
+    type: string
+    details: Azure resource id for secondary database in failover group to subsume
+    tf_resource: azurerm_sql_failover_group.failover_group  
   import_parameter_mappings:
   - tf_variable: edition
     parameter_name: edition
   - tf_variable: requested_service_objective_name
     parameter_name: service_objective 
-  import_parameters_to_delete: [ "azurerm_sql_database.azure_sql_db.id", 
-                                 "azurerm_sql_database.azure_sql_db.creation_date", 
-                                 "azurerm_sql_database.azure_sql_db.default_secondary_location", 
-                                 "azurerm_sql_database.azure_sql_db.requested_service_objective_id"]    
+  import_parameters_to_delete: [ "azurerm_sql_database.primary_db.id", 
+                                 "azurerm_sql_database.primary_db.creation_date", 
+                                 "azurerm_sql_database.primary_db.default_secondary_location", 
+                                 "azurerm_sql_database.primary_db.requested_service_objective_id",
+                                 "azurerm_sql_database.secondary_db.id", 
+                                 "azurerm_sql_database.secondary_db.creation_date", 
+                                 "azurerm_sql_database.secondary_db.default_secondary_location", 
+                                 "azurerm_sql_database.secondary_db.requested_service_objective_id",
+                                 "azurerm_sql_failover_group.failover_group.id",
+                                 "azurerm_sql_failover_group.failover_group.location",
+                                 "azurerm_sql_failover_group.failover_group.role",
+                                 "azurerm_sql_failover_group.failover_group.partner_servers.location",
+                                 "azurerm_sql_failover_group.failover_group.partner_servers.role"]    
   plan_inputs:
   user_inputs:
   - field_name: edition
@@ -65,10 +81,26 @@ provision:
       Web: Web
   - field_name: service_objective
     type: string
-    details: The service objective name for the database.
-  - field_name: admin_password
+    details: The service objective name for the database.    
+  - field_name: server_pair
     type: string
-    details: Administrator password for server hosting database to be subsumed
+    details: Name of server pair from server_credential_pairs to create database upon
+    required: true
+  - field_name: server_credential_pairs
+    type: object
+    details: 'JSON hash of server pair name to set of server credentials. { "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}'
+    required: true
+  - field_name: read_write_endpoint_failover_policy
+    type: string
+    details: Faileover policy (Automatic or Manual)
+    default: Automatic
+    enum:
+      Automatic: Automatic
+      Manual: Manual
+  - field_name: failover_grace_minutes
+    type: number
+    details: For automatic mode - the grace period in minutes before failover with data loss is attempted 
+    default: 60
   - field_name: azure_tenant_id
     type: string
     details: Azure Tenant to create resource in
@@ -88,18 +120,18 @@ provision:
   - field_name: skip_provider_registration
     type: boolean
     details: Skip automatic Azure provider registration, set to true if service principal being used does not have rights to register providers
-    default: false    
+    default: false      
   template_refs:
-    outputs: terraform/subsume-mssql-db/mssql-db-outputs.tf
-    provider: terraform/subsume-mssql-db/azure-provider.tf
-    variables: terraform/subsume-mssql-db/mssql-db-variables.tf
-    main: terraform/subsume-mssql-db/mssql-db-main.tf
-    data: terraform/subsume-mssql-db/mssql-db-data.tf
+    outputs: terraform/subsume-masb-mssql-db-fog/mssql-db-outputs.tf
+    provider: terraform/subsume-masb-mssql-db-fog/azure-provider.tf
+    variables: terraform/subsume-masb-mssql-db-fog/mssql-db-variables.tf
+    main: terraform/subsume-masb-mssql-db-fog/mssql-db-main.tf
+    data: terraform/subsume-masb-mssql-db-fog/mssql-db-data.tf    
   computed_inputs:
-  # - name: labels
-  #   default: ${json.marshal(request.default_labels)}
-  #   overwrite: true
-  #   type: object
+    # - name: labels
+    #   default: ${json.marshal(request.default_labels)}
+    #   overwrite: true
+    #   type: object
   outputs:
   - field_name: sqlServerName
     type: string
@@ -171,5 +203,4 @@ bind:
     details: The username to authenticate to the database server.
   - field_name: databaseLoginPassword
     type: string
-    details: The password to authenticate to the database server. 
-
+    details: The password to authenticate to the database server.     

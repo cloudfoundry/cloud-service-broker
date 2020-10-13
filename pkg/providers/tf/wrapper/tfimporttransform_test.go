@@ -110,7 +110,11 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
         },
         "remove-multiple":{
             transformer: TfTransformer{
-                ParametersToRemove: []string{"azurerm_sql_database.azure_sql_db.id", "azurerm_sql_database.azure_sql_db.creation_date", "azurerm_sql_database.azure_sql_db.default_secondary_location"},
+				ParametersToRemove: []string{"azurerm_sql_database.azure_sql_db.id", 
+											 "azurerm_sql_database.azure_sql_db.creation_date", 
+											 "azurerm_sql_database.azure_sql_db.default_secondary_location",
+											 "azurerm_sql_database.azure_sql_db.partner_servers.location",
+											 "azurerm_sql_database.azure_sql_db.partner_servers.role"},
             },
             input: `resource "azurerm_sql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
@@ -129,17 +133,11 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
     }
     zone_redundant                   = false
 
-    threat_detection_policy {
-        disabled_alerts      = []
-        email_account_admins = "Disabled"
-        email_addresses      = []
-        retention_days       = 0
-        state                = "Disabled"
-		use_server_default   = "Disabled"
-		id                   = "should be kept"		
+    partner_servers {
+        id       = "/subscriptions/899bf076-632b-4143-b015-43da8179e53f/resourceGroups/broker-cf-test/providers/Microsoft.Sql/servers/masb-fog-subsume-test-server"
+        location = "West US"
+        role     = "Secondary"
     }
-
-    timeouts {}
 }`,
             expected: `resource "azurerm_sql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
@@ -157,17 +155,9 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
     }
     zone_redundant                   = false
 
-    threat_detection_policy {
-        disabled_alerts      = []
-        email_account_admins = "Disabled"
-        email_addresses      = []
-        retention_days       = 0
-        state                = "Disabled"
-		use_server_default   = "Disabled"
-		id                   = "should be kept"		
+    partner_servers {
+        id       = "/subscriptions/899bf076-632b-4143-b015-43da8179e53f/resourceGroups/broker-cf-test/providers/Microsoft.Sql/servers/masb-fog-subsume-test-server"
     }
-
-    timeouts {}
 }`,
         },        
         "remove-none":{
