@@ -1,6 +1,6 @@
 # Microsoft SQL Failover Group Plans and Config
 ## Applies to service *csb-azure-mssql-failover-group*
-These are the default plans and configuration options for Azure SQL Failover Group on Azure (not currently supported on GCP or AWS.)
+These are the default plans and configuration options for SQL Failover Group on Azure (not currently supported on GCP or AWS.)
 
 ## Plans
 
