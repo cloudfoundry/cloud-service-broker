@@ -29,22 +29,6 @@ AWS Roadmap: https://trello.com/b/eBe25hzx/csb-aws-public-roadmap
 
 GCP Roadmap: https://trello.com/b/MNL1QzrQ/csb-gcp-public-roadmap
 
-
-The service broker provides support for (last updated 09/08/2020):	
-
-| GCP | Azure | AWS |	
-|-----|-------| ----|	
-|[GCP Cloud SQL (MySQL)](https://cloud.google.com/sql/)|[Azure Database for MySQL](https://azure.microsoft.com/en-us/services/mysql/?&ef_id=EAIaIQobChMImtPm8_DK5wIVgf5kCh1lEAqOEAAYASABEgIwjfD_BwE:G:s&OCID=AID2000128_SEM_VfuRONbO&MarinID=VfuRONbO_307794721357_azure%20mysql_e_c_Qml9BhwJ_46775457259_kwd-310296951725&lnkd=Google_Azure_Brand&gclid=EAIaIQobChMImtPm8_DK5wIVgf5kCh1lEAqOEAAYASABEgIwjfD_BwE)|[Amazon RDS for MySQL](https://aws.amazon.com/rds/mysql/)|	
-|[GCP Cloud SQL (PostgreSQL)](https://cloud.google.com/sql/)|[Azure Cache for Redis](https://azure.microsoft.com/en-us/services/cache/?&ef_id=EAIaIQobChMIzc-t2vHK5wIVsh-tBh3Z8wteEAAYASAAEgJ0cvD_BwE:G:s&OCID=AID2000128_SEM_SeUFPHct&MarinID=SeUFPHct_287547165334_azure%20redis_e_c__46775456859_kwd-310342681850&lnkd=Google_Azure_Brand&gclid=EAIaIQobChMIzc-t2vHK5wIVsh-tBh3Z8wteEAAYASAAEgJ0cvD_BwE)|[Amazon ElastiCache for Redis](https://aws.amazon.com/elasticache/redis/?nc=sn&loc=2&dn=1)|	
-|[GCP Memorystore for Redis](https://cloud.google.com/memorystore/docs/redis/)|[MongoDB](https://docs.microsoft.com/en-us/azure/cosmos-db/mongodb-introduction) for [CosmosDB](https://azure.microsoft.com/en-us/services/cosmos-db/)|[Amazon RDS for PostgreSQL](https://aws.amazon.com/rds/postgresql/)|	
-|[GCP BigQuery](https://cloud.google.com/bigquery/)|[Azure SQL](https://docs.microsoft.com/en-us/azure/sql-database/)|[Amazon S3 Bucket](https://aws.amazon.com/s3/)|	
-|[GCP Spanner](https://cloud.google.com/spanner/)|[Azure SQL Failover Groups](https://docs.microsoft.com/en-us/azure/sql-database/sql-database-auto-failover-group/)||	
-|[GCP Cloud Storage](https://cloud.google.com/storage/)|[Azure Eventhubs](https://azure.microsoft.com/en-us/services/event-hubs/)||	
-|[GCP Dataproc](https://cloud.google.com/dataproc/docs/overview/)|[Azure Database for PostgreSQL](https://azure.microsoft.com/en-us/services/postgresql)||	
-|[Google Stack Driver Trace](https://cloud.google.com/trace/docs)|[Azure Storage Account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview)||	
-||[Azure CosmosDB](https://azure.microsoft.com/en-us/services/cosmos-db/)||	
-
-
 ## Installation
 
 This service broker can be installed as a CF application. See the instructions for:
@@ -53,11 +37,32 @@ This service broker can be installed as a CF application. See the instructions f
 - [Azure Installation](./docs/azure-installation.md) 
 - [GCP Installation](./docs/gcp-installation.md) 
 
+
+The service broker currently provides access to the below services. **Where it exists, we have linked to the documentation for each service.** 
+
+*Note: You can also use CSB with your own custom Brokerpaks. See our [Brokerpak Developer Guide](./docs/brokerpak-development.md) for more information*
+
+| [GCP](./docs/gcp-installation.md) | [Azure]((./docs/azure-installation.md)) | [AWS]((./docs/aws-installation.md)) |	
+|-----|-------| ----|	
+|[GCP Cloud SQL (MySQL)](./docs/mysql-plans-and-config.md)|[Azure SQL](./docs/mssql-plans-and-config.md)|[Amazon RDS for MySQL](./docs/mysql-plans-and-config.md)|	
+|[GCP Cloud SQL (PostgreSQL)](./docs/postgresql-plans-and-config.md)|[Azure SQL DB](./docs/mssql-db-plans-and-config.md)|[Amazon ElastiCache for Redis](./docs/redis-plans-and-config.md)|	
+|GCP Memorystore for Redis|[Azure SQL Failover Group](./docs/mssql-fog-plans-and-config.md)|[Amazon RDS for PostgreSQL](./docs/postgresql-plans-and-config.md)|	
+|GCP BigQuery|[Azure SQL Failover Group Failover Runner](./docs/azure-fog-failover-runner.md)|[Amazon S3 Bucket](./docs/s3-bucket-plans-and-config.md)|	
+|GCP Spanner|[Azure SQL DB Failover Groups](./docs/mssql-db-fog-config.md)||	
+|GCP Cloud Storage|[Azure SQL Server](./docs/mssql-server-plans-and-config.md)||	
+|GCP Dataproc|[MySQL](docs/mysql-plans-and-config.md)||	
+|[Google Stack Driver Trace](./docs/stack-driver-trace.md)|[Azure Database for PostgreSQL](./docs/postgresql-plans-and-config.md)||	
+||[Azure Storage Account](./docs/azure-storage-account-plans-and-config.md)||
+||[Azure Redis](./docs/redis-plans-and-config.md)||
+||[Azure Eventhubs](./docs/azure-event-hubs.md)||
+||[MongoDB for CosmosDB](./docs/mongo-plans-and-config.md)||
+||Azure CosmosDB||
+
 ## Usage
 
 **For operators**: see [docs/configuration.md](./docs/configuration.md) for details about configuring the service broker.
 
-**For developers**: see [docs/use.md](./docs/use.md) for service options and details.
+**For developers**: see [docs/](./docs) ReadMe for service options and details.
 
 You can get documentation specific to your install from the `/docs` endpoint of your deployment.
 
@@ -98,4 +103,4 @@ There are make targets for most common dev tasks.
 
 ## Contributing
 
-See [the contributing file](https://github.com/pivotal/cloud-service-broker/blob/master/CONTRIBUTING.md) for more information. 
+See [the Brokerpak Developer GUide](./docs/brokerpak-development.md) for more information. 
