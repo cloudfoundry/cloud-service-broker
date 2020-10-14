@@ -21,6 +21,7 @@ image_url: https://www.edrawsoft.com/symbols/awsdatabase/elasticacheredis.png
 documentation_url: https://aws.amazon.com/elasticache/redis/resources/?nc=sn&loc=5
 support_url: https://aws.amazon.com/redis/
 tags: [aws, redis, preview]
+plan_updateable: true
 plans:
 - name: small
   id: 70544df7-0ac4-4580-ba51-c1fbdd6fdfd0
@@ -70,6 +71,7 @@ provision:
       maxLength: 40
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
+    prohibit_update: true  
   - field_name: region
     type: string
     details: The region of the mysql instance.
