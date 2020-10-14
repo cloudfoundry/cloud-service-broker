@@ -112,6 +112,8 @@ resource "aws_db_instance" "db_instance" {
   db_subnet_group_name = aws_db_subnet_group.rds-private-subnet.name
   publicly_accessible  = var.publicly_accessible
   multi_az             = var.multi_az
+  allow_major_version_upgrade = true
+  apply_immediately = true
 }
 
 output name { value = aws_db_instance.db_instance.name }

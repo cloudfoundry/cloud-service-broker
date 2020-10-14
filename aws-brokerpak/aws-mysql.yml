@@ -21,6 +21,7 @@ image_url: https://www.edrawsoft.com/symbols/awsdatabase/mysqldbinstance.png
 documentation_url: https://aws.amazon.com/rds/mysql/resources/?nc=sn&loc=5
 support_url: https://aws.amazon.com/rds/mysql/resources/?nc=sn&loc=5
 tags: [aws, mysql, preview]
+plan_updateable: true
 plans:
 - name: small
   id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
@@ -82,6 +83,7 @@ provision:
       maxLength: 98
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
+    prohibit_update: true   
   - field_name: db_name
     type: string
     details: Name for your database
