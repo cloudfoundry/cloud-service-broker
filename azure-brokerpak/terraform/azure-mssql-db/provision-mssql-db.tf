@@ -24,9 +24,10 @@ variable sku_name { type = string }
 variable cores { type = number }
 variable max_storage_gb { type = number }
 variable skip_provider_registration { type = bool }
+variable short_term_retention_days { type = number }
 
 provider "azurerm" {
-  version = "~> 2.20.0"
+  version = "~> 2.31.0"
   features {}
 
   subscription_id = var.azure_subscription_id
@@ -57,12 +58,13 @@ locals {
 
 resource "azurerm_mssql_database" "azure_sql_db" {
   name                = var.db_name
-  resource_group_name = data.azurerm_sql_server.azure_sql_db_server.resource_group_name
-  location            = data.azurerm_sql_server.azure_sql_db_server.location
-  server_name         = data.azurerm_sql_server.azure_sql_db_server.name
-  requested_service_objective_name = local.sku_name
-  max_size_bytes      = var.max_storage_gb * 1024 * 1024 * 1024
+  server_id           = data.azurerm_sql_server.azure_sql_db_server.id
+  sku_name            = local.sku_name
+  max_size_gb         = var.max_storage_gb
   tags                = var.labels
+  short_term_retention_policy {
+    retention_days = var.short_term_retention_days
+  }
 }
 
 locals {
