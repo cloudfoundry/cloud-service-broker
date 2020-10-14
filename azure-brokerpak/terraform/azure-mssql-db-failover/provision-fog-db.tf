@@ -64,7 +64,7 @@ locals {
   sku_name = length(var.sku_name) == 0 ? local.instance_types[var.cores] : var.sku_name 
 }
 
-resource "azurerm_sql_database" "azure_sql_db_primary" {
+resource "azurerm_mssql_database" "azure_sql_db_primary" {
   name                = var.db_name
   resource_group_name = var.server_credential_pairs[var.server_pair].primary.resource_group
   location            = data.azurerm_sql_server.primary_sql_db_server.location
@@ -79,7 +79,7 @@ resource "azurerm_sql_failover_group" "failover_group" {
   name                = var.instance_name
   resource_group_name = var.server_credential_pairs[var.server_pair].primary.resource_group
   server_name         = data.azurerm_sql_server.primary_sql_db_server.name
-  databases           = [azurerm_sql_database.azure_sql_db_primary[0].id]
+  databases           = [azurerm_mssql_database.azure_sql_db_primary[0].id]
   partner_servers {
     id = data.azurerm_sql_server.secondary_sql_db_server.id
   }
@@ -110,9 +110,9 @@ output status {
                                               var.azure_tenant_id,
                                               data.azurerm_sql_server.primary_sql_db_server.id) : format("created failover group %s (id: %s), primary db %s (id: %s) on server %s (id: %s), secondary db %s (id: %s/databases/%s) on server %s (id: %s) URL: https://portal.azure.com/#@%s/resource%s/failoverGroup",
                                               azurerm_sql_failover_group.failover_group[0].name, azurerm_sql_failover_group.failover_group[0].id,
-                                              azurerm_sql_database.azure_sql_db_primary[0].name, azurerm_sql_database.azure_sql_db_primary[0].id,
+                                              azurerm_mssql_database.azure_sql_db_primary[0].name, azurerm_mssql_database.azure_sql_db_primary[0].id,
                                               data.azurerm_sql_server.primary_sql_db_server.name, data.azurerm_sql_server.primary_sql_db_server.id,
-                                              azurerm_sql_database.azure_sql_db_primary[0].name, data.azurerm_sql_server.secondary_sql_db_server.id, azurerm_sql_database.azure_sql_db_primary[0].name,
+                                              azurerm_mssql_database.azure_sql_db_primary[0].name, data.azurerm_sql_server.secondary_sql_db_server.id, azurerm_mssql_database.azure_sql_db_primary[0].name,
                                               data.azurerm_sql_server.secondary_sql_db_server.name, data.azurerm_sql_server.secondary_sql_db_server.id,
                                               var.azure_tenant_id,
                                               data.azurerm_sql_server.primary_sql_db_server.id)

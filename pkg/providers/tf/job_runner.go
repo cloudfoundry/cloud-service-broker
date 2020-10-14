@@ -151,7 +151,9 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 		}
 		mainTf, err := workspace.Show()
 		if err == nil {
-			tf, parameterVals, err := workspace.Transformer.ReplaceParametersInTf(workspace.Transformer.CleanTf(mainTf))
+			var tf string
+			var parameterVals map[string]string
+			tf, parameterVals, err = workspace.Transformer.ReplaceParametersInTf(workspace.Transformer.CleanTf(mainTf))
 			if err == nil {
 				for pn, pv := range parameterVals {
 					workspace.Instances[0].Configuration[pn] = pv

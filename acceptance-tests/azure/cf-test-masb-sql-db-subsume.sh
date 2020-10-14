@@ -9,8 +9,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 echo $#
 
-if [ $# -lt 2 ]; then
-  echo "usage: $0 <server name> <resource group>"
+if [ $# -lt 4 ]; then
+  echo "usage: $0 <server name> <resource group> <admin username> <admin password>"
   exit 1
 fi
 

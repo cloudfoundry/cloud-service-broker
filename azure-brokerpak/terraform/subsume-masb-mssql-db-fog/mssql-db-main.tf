@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-resource "azurerm_sql_database" "primary_db" {
+resource "azurerm_mssql_database" "primary_db" {
 }
 
-resource "azurerm_sql_database" "secondary_db" {
+resource "azurerm_mssql_database" "secondary_db" {
 }
 
 resource "azurerm_sql_failover_group" "failover_group" {

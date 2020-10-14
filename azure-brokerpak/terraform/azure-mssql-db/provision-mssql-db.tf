@@ -55,7 +55,7 @@ locals {
   sku_name = length(var.sku_name) == 0 ? local.instance_types[var.cores] : var.sku_name  
 }
 
-resource "azurerm_sql_database" "azure_sql_db" {
+resource "azurerm_mssql_database" "azure_sql_db" {
   name                = var.db_name
   resource_group_name = data.azurerm_sql_server.azure_sql_db_server.resource_group_name
   location            = data.azurerm_sql_server.azure_sql_db_server.location
@@ -69,16 +69,16 @@ locals {
   serverFQDN = data.azurerm_sql_server.azure_sql_db_server.fqdn
 }
 
-output sqldbName {value = azurerm_sql_database.azure_sql_db.name}
+output sqldbName {value = azurerm_mssql_database.azure_sql_db.name}
 output sqlServerName {value = data.azurerm_sql_server.azure_sql_db_server.name}
 output sqlServerFullyQualifiedDomainName {value = local.serverFQDN}
 output hostname {value = local.serverFQDN}
 output port {value = 1433}
-output name {value = azurerm_sql_database.azure_sql_db.name}
+output name {value = azurerm_mssql_database.azure_sql_db.name}
 output username {value = var.server_credentials[var.server].admin_username}
 output password {value = var.server_credentials[var.server].admin_password}
 output status {value = format("created db %s (id: %s) URL: URL: https://portal.azure.com/#@%s/resource%s",
-                              azurerm_sql_database.azure_sql_db.name,
-                              azurerm_sql_database.azure_sql_db.id,
+                              azurerm_mssql_database.azure_sql_db.name,
+                              azurerm_mssql_database.azure_sql_db.id,
                               var.azure_tenant_id,
-                              azurerm_sql_database.azure_sql_db.id)}
+                              azurerm_mssql_database.azure_sql_db.id)}

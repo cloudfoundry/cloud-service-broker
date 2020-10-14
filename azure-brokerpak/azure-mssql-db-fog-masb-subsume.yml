@@ -32,11 +32,11 @@ provision:
   - field_name: azure_primary_db_id
     type: string
     details: Azure resource id for primary database in failover group to subsume
-    tf_resource: azurerm_sql_database.primary_db  
+    tf_resource: azurerm_mssql_database.primary_db  
   - field_name: azure_secondary_db_id
     type: string
     details: Azure resource id for secondary database in failover group to subsume
-    tf_resource: azurerm_sql_database.secondary_db  
+    tf_resource: azurerm_mssql_database.secondary_db  
   - field_name: auzure_fog_id
     type: string
     details: Azure resource id for secondary database in failover group to subsume
@@ -46,14 +46,16 @@ provision:
     parameter_name: edition
   - tf_variable: requested_service_objective_name
     parameter_name: service_objective 
-  import_parameters_to_delete: [ "azurerm_sql_database.primary_db.id", 
-                                 "azurerm_sql_database.primary_db.creation_date", 
-                                 "azurerm_sql_database.primary_db.default_secondary_location", 
-                                 "azurerm_sql_database.primary_db.requested_service_objective_id",
-                                 "azurerm_sql_database.secondary_db.id", 
-                                 "azurerm_sql_database.secondary_db.creation_date", 
-                                 "azurerm_sql_database.secondary_db.default_secondary_location", 
-                                 "azurerm_sql_database.secondary_db.requested_service_objective_id",
+  import_parameters_to_delete: [ "azurerm_mssql_database.primary_db.id", 
+                                 "azurerm_mssql_database.primary_db.creation_date", 
+                                 "azurerm_mssql_database.primary_db.default_secondary_location", 
+                                 "azurerm_mssql_database.primary_db.requested_service_objective_id",
+                                 "azurerm_mssql_database.primary_db.min_capacity",
+                                 "azurerm_mssql_database.secondary_db.id", 
+                                 "azurerm_mssql_database.secondary_db.creation_date", 
+                                 "azurerm_mssql_database.secondary_db.default_secondary_location", 
+                                 "azurerm_mssql_database.secondary_db.requested_service_objective_id",
+                                 "azurerm_mssql_database.secondary_db.min_capacity",
                                  "azurerm_sql_failover_group.failover_group.id",
                                  "azurerm_sql_failover_group.failover_group.location",
                                  "azurerm_sql_failover_group.failover_group.role",
