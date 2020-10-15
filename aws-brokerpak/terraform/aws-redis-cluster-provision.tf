@@ -52,6 +52,7 @@ locals {
     "3.2" = "default.redis3.2"
     "4.0" = "default.redis4.0"
     "5.0" = "default.redis5.0"
+    "6.0" = "default.redis6.x"
   }
 
   vpc_id = length(var.aws_vpc_id) == 0 ? data.aws_vpc.default.id : var.aws_vpc_id
