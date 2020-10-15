@@ -24,25 +24,25 @@ tags: [aws, redis, preview]
 plans:
 - name: small
   id: 70544df7-0ac4-4580-ba51-c1fbdd6fdfd0
-  description: 'Redis 5.0 with 1GB cache and 2 nodes.'
+  description: 'Redis 6.0 with 1GB cache and 2 nodes.'
   display_name: "Small"
   properties:
     cache_size: 1   
-    redis_version: "5.0"
+    redis_version: "6.0"
 - name: medium
   id: a4235008-80f4-4053-924b-defcce17cb63
-  description: 'Redis 5.0 with at least 4GB cache and 2 nodes.'
+  description: 'Redis 6.0 with at least 4GB cache and 2 nodes.'
   display_name: "Medium"
   properties:
     cache_size: 4
-    redis_version: "5.0"
+    redis_version: "6.0"
 - name: large
   id: f26cda6f-d4b4-473a-966c-32d238f723ef
-  description: 'Redis 5.0 with at least 16 GB cache and 2 nodes.'
+  description: 'Redis 6.0 with at least 16 GB cache and 2 nodes.'
   display_name: "Large"
   properties:
     cache_size: 16
-    redis_version: "5.0"
+    redis_version: "6.0"
 provision:
   plan_inputs:
   - field_name: cache_size
@@ -61,6 +61,7 @@ provision:
       3.2: Redis 3.2
       4.0: Redis 4.0
       5.0: Redis 5.0
+      6.0: Redis 6.x
   user_inputs:
   - field_name: instance_name
     type: string
