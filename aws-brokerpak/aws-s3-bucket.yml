@@ -21,6 +21,7 @@ image_url: https://www.pikpng.com/pngl/m/73-731373_aws-s3-logo-png-transparent-a
 documentation_url: https://aws.amazon.com/s3/
 support_url: https://aws.amazon.com/s3/
 tags: [aws, s3, preview]
+plan_updateable: true
 plans:
 - name: private
   id: 8938b4c0-d67f-4c34-9f68-a66deef99b4e
@@ -53,6 +54,7 @@ provision:
       type: string
       details: Name of bucket
       default: csb-${request.instance_id}
+      plan_updateable: true
     - field_name: region
       type: string
       details: The region of the S3 bucket instance.

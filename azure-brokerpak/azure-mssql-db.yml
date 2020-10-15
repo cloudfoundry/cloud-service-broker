@@ -102,6 +102,12 @@ provision:
     type: string
     details: Azure sku (typically, tier [GP_S,GP,BC,HS] + family [Gen4,Gen5] + cores, e.g. GP_S_Gen4_1, GP_Gen5_8) Will be computed from cores if empty.
     default: ""       
+  - field_name: short_term_retention_days
+    type: number
+    details: Retention period in days for short term retention (Point in Time Restore) policy
+    default: 7
+    constraints:
+      maximum: 35
   template_ref: terraform/azure-mssql-db/provision-mssql-db.tf 
   computed_inputs:
   - name: labels
