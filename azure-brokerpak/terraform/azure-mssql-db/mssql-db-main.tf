@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
-
 resource "azurerm_mssql_database" "azure_sql_db" {
   name                = var.db_name
   server_id           = data.azurerm_sql_server.azure_sql_db_server.id
@@ -26,4 +22,3 @@ resource "azurerm_mssql_database" "azure_sql_db" {
     retention_days = var.short_term_retention_days
   }
 }
-
