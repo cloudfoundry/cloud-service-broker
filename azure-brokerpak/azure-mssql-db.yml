@@ -57,15 +57,15 @@ provision:
     tf_resource: azurerm_mssql_database.azure_sql_db
   import_parameter_mappings:
   - tf_variable: name
-    parameter_name: db_name
+    parameter_name: var.db_name
   - tf_variable: sku_name
-    parameter_name: sku_name
+    parameter_name: local.sku_name
   - tf_variable: max_size_gb
-    parameter_name: max_storage_gb 
+    parameter_name: var.max_storage_gb 
   - tf_variable: tags
-    parameter_name: labels
+    parameter_name: var.labels
   - tf_variable: retention_days
-    parameter_name: short_term_retention_days
+    parameter_name: var.short_term_retention_days
   import_parameters_to_delete: [ "azurerm_mssql_database.azure_sql_db.id", 
                                  "azurerm_mssql_database.azure_sql_db.min_capacity",
                                  "azurerm_mssql_database.azure_sql_db.long_term_retention_policy.monthly_retention",

@@ -82,7 +82,11 @@ func (ttf *TfTransformer) captureParameterValues(tf string) (map[string]string, 
 		if res := reBlock.FindAllStringSubmatch(tf, -1); len(res) > 0 {
 			//parameterValues[mapping.ParameterName] = res[0][1]
 		} else if res := reSimple.FindAllStringSubmatch(tf, -1); len(res) > 0 {
-			parameterValues[mapping.ParameterName] = res[0][1]
+			if strings.HasPrefix(mapping.ParameterName, "var.") {
+				parameterValues[strings.TrimPrefix(mapping.ParameterName, "var.")] = res[0][1]
+			} else if strings.HasPrefix(mapping.ParameterName, "local.") {
+				parameterValues[strings.TrimPrefix(mapping.ParameterName, "local.")] = res[0][1]
+			}
 		}
 	}
 	
@@ -92,9 +96,9 @@ func (ttf *TfTransformer) captureParameterValues(tf string) (map[string]string, 
 func (ttf *TfTransformer) replaceParameters(tf string) string {	
 	for _, mapping := range ttf.ParameterMappings {
 		reBlock := regexp.MustCompile(fmt.Sprintf(`(?m)%s[\s]*=[\s]+{[\s\S.]*?}`, mapping.TfVariable))
-		tf = reBlock.ReplaceAllString(tf, fmt.Sprintf("%s = var.%s", mapping.TfVariable, mapping.ParameterName))
+		tf = reBlock.ReplaceAllString(tf, fmt.Sprintf("%s = %s", mapping.TfVariable, mapping.ParameterName))
 		reSimple := regexp.MustCompile(fmt.Sprintf(`(?m)%s[\s]*=.*$`, mapping.TfVariable))
-		tf = reSimple.ReplaceAllString(tf, fmt.Sprintf("%s = var.%s", mapping.TfVariable, mapping.ParameterName))
+		tf = reSimple.ReplaceAllString(tf, fmt.Sprintf("%s = %s", mapping.TfVariable, mapping.ParameterName))
 	}
 	
 	return tf

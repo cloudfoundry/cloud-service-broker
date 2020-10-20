@@ -4,8 +4,6 @@ set -o pipefail
 set -o nounset
 #set -o errexit
 
-# SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
 if [ $# -lt 3 ]; then
     echo "Usage: ${0} <resource group> <server name> <location>"
     exit 1
@@ -14,16 +12,18 @@ fi
 RG=${1}; shift
 SERVER_NAME=${1}; shift
 LOCATION=${1}; shift
-# SKU=B_Gen5_2
-
-# if [ $# -gt 0 ]; then
-#     SKU=${1}; shift
-# fi
-
-#DB_NAME=csb-db
 
 USERNAME=$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z' | fold -w 16 | head -n 1)
 PASSWORD=$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+
+if [ $# -gt 0 ]; then
+    USERNAME=$1; shift
+fi
+
+if [ $# -gt 0 ]; then
+    PASSWORD=$1; shift
+fi
+
 
 az sql server create --resource-group ${RG} --name ${SERVER_NAME} --location ${LOCATION} --admin-user ${USERNAME} --admin-password ${PASSWORD}
 
@@ -37,4 +37,3 @@ echo Server Details
 echo           FQDN: $(echo ${DETAILS} | jq -r .fullyQualifiedDomainName)
 echo Admin Username: ${USERNAME}@${SERVER_NAME}
 echo Admin Password: ${PASSWORD}
-#echo  Database Name: ${DB_NAME}

@@ -43,9 +43,9 @@ provision:
     tf_resource: azurerm_sql_failover_group.failover_group  
   import_parameter_mappings:
   - tf_variable: edition
-    parameter_name: edition
+    parameter_name: var.edition
   - tf_variable: requested_service_objective_name
-    parameter_name: service_objective 
+    parameter_name: var.service_objective 
   import_parameters_to_delete: [ "azurerm_mssql_database.primary_db.id", 
                                  "azurerm_mssql_database.primary_db.creation_date", 
                                  "azurerm_mssql_database.primary_db.default_secondary_location", 
