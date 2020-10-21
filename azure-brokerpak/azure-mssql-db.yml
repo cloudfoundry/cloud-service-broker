@@ -68,10 +68,7 @@ provision:
     parameter_name: var.short_term_retention_days
   import_parameters_to_delete: [ "azurerm_mssql_database.azure_sql_db.id", 
                                  "azurerm_mssql_database.azure_sql_db.min_capacity",
-                                 "azurerm_mssql_database.azure_sql_db.long_term_retention_policy.monthly_retention",
-                                 "azurerm_mssql_database.azure_sql_db.long_term_retention_policy.weekly_retention",
-                                 "azurerm_mssql_database.azure_sql_db.long_term_retention_policy.yearly_retention",
-                                 "azurerm_mssql_database.azure_sql_db.long_term_retention_policy.week_of_year",
+                                 "azurerm_mssql_database.azure_sql_db.long_term_retention_policy",
                                  "azurerm_mssql_database.azure_sql_db.extended_auditing_policy"]
   plan_inputs:
   user_inputs:

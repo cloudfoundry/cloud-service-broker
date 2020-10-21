@@ -47,9 +47,10 @@ func (ttf *TfTransformer) CleanTf(tf string) string {
 	blockStack := make([]string, 64)
 	scanner := bufio.NewScanner(strings.NewReader(tf))
 	buffer := bytes.Buffer{}
+	skipBlockDepth := 0
 
 	for scanner.Scan() {
-		skipLine := false
+		skipLine := !(skipBlockDepth == 0 || depth < skipBlockDepth)
 		line := scanner.Text()
 		depth = braceCount(line, depth)
 		
@@ -63,7 +64,15 @@ func (ttf *TfTransformer) CleanTf(tf string) string {
 				}
 			}
 		} else if res := block.FindStringSubmatch(line); res != nil {
+			skipBlockDepth = 0
 			blockStack[depth] = fmt.Sprintf("%s.%s", blockStack[depth-1], res[1])
+			for _, removal := range ttf.ParametersToRemove {
+				if blockStack[depth] == removal {
+					skipBlockDepth = depth
+					skipLine = true
+					break
+				}
+			}
 		}
 		if !skipLine {
 			buffer.WriteString(fmt.Sprintf("%s\n", line))

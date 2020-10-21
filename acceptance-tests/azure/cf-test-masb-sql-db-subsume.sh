@@ -50,9 +50,7 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
         } \
       }"
 
-      echo $SUBSUME_CONFIG
-
-      exit 1
+  echo $SUBSUME_CONFIG
 
   if create_service csb-azure-mssql-db small "${SUBSUMED_INSTANCE_NAME}" "${SUBSUME_CONFIG}"; then
     if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}"; then
