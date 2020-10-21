@@ -141,7 +141,7 @@ resource "azurerm_sql_server" "secondary_sql_db_server" {
   tags                         = var.labels
 }
 
-resource "azurerm_mssql_database" "azure_sql_db" {
+resource "azurerm_sql_database" "azure_sql_db" {
   depends_on = [ azurerm_resource_group.azure-sql-fog ]
   name                = var.db_name
   resource_group_name = local.resource_group
@@ -157,7 +157,7 @@ resource "azurerm_sql_failover_group" "failover_group" {
   name                = var.instance_name
   resource_group_name = local.resource_group
   server_name         = azurerm_sql_server.primary_azure_sql_db_server.name
-  databases           = [azurerm_mssql_database.azure_sql_db.id]
+  databases           = [azurerm_sql_database.azure_sql_db.id]
   partner_servers {
     id = azurerm_sql_server.secondary_sql_db_server.id
   }
@@ -207,19 +207,19 @@ resource "azurerm_sql_firewall_rule" "server2" {
 locals {
     serverFQDN = format("%s.database.windows.net", azurerm_sql_failover_group.failover_group.name)
 }
-output sqldbName {value = azurerm_mssql_database.azure_sql_db.name}
+output sqldbName {value = azurerm_sql_database.azure_sql_db.name}
 output sqlServerName {value = azurerm_sql_failover_group.failover_group.name}
 output sqlServerFullyQualifiedDomainName {value = local.serverFQDN}
 output hostname {value = local.serverFQDN}
 output port {value = 1433}
-output name {value = azurerm_mssql_database.azure_sql_db.name}
+output name {value = azurerm_sql_database.azure_sql_db.name}
 output username {value = random_string.username.result}
 output password {value = random_password.password.result}
 output status {value = format("created failover group %s (id: %s), primary db %s (id: %s) on server %s (id: %s), secondary db %s (id: %s/databases/%s) on server %s (id: %s) URL: https://portal.azure.com/#@%s/resource%s/failoverGroup",
                               azurerm_sql_failover_group.failover_group.name, azurerm_sql_failover_group.failover_group.id,
-                              azurerm_mssql_database.azure_sql_db.name, azurerm_mssql_database.azure_sql_db.id,
+                              azurerm_sql_database.azure_sql_db.name, azurerm_sql_database.azure_sql_db.id,
                               azurerm_sql_server.primary_azure_sql_db_server.name, azurerm_sql_server.primary_azure_sql_db_server.id,
-                              azurerm_mssql_database.azure_sql_db.name, azurerm_sql_server.secondary_sql_db_server.id, azurerm_mssql_database.azure_sql_db.name,
+                              azurerm_sql_database.azure_sql_db.name, azurerm_sql_server.secondary_sql_db_server.id, azurerm_sql_database.azure_sql_db.name,
                               azurerm_sql_server.secondary_sql_db_server.name, azurerm_sql_server.secondary_sql_db_server.id,
                               var.azure_tenant_id,
                               azurerm_sql_server.primary_azure_sql_db_server.id)}

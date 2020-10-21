@@ -49,6 +49,11 @@ plans:
   properties:
     cores: 80
     max_storage_gb: 1024
+- name: subsume
+  id: 7781fa41-f486-447a-942c-ded8cccb8299
+  description: 'Subsume control of an existing SQL Database'
+  display_name: "Subsume"
+  properties:
 provision:
   import_inputs:
   - field_name: azure_db_id
