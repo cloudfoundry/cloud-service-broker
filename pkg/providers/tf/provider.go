@@ -54,7 +54,7 @@ func (provider *terraformProvider) Provision(ctx context.Context, provisionConte
 	var tfID string
 	var err error
 
-	if provider.serviceDefinition.ProvisionSettings.IsTfImport() { 
+	if provider.serviceDefinition.ProvisionSettings.IsTfImport(provisionContext) { 
 		tfID, err = provider.importCreate(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
 		if err != nil {
 			return models.ServiceInstanceDetails{}, err
@@ -77,6 +77,10 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 	provider.logger.Info("update", lager.Data{
 		"context": provisionContext.ToMap(),
 	})
+
+	if provider.serviceDefinition.ProvisionSettings.IsTfImport(provisionContext) {
+		return models.ServiceInstanceDetails{}, fmt.Errorf("Cannot update to subsume plan")
+	}
 
 	tfId := provisionContext.GetString("tf_id")
 	if err := provisionContext.Error(); err != nil {
@@ -110,8 +114,6 @@ func (provider *terraformProvider) Bind(ctx context.Context, bindContext *varcon
 }
 
 func (provider *terraformProvider) importCreate(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
-
-
 	varsMap := vars.ToMap()
 
 	var parameterMappings []wrapper.ParameterMapping
@@ -131,17 +133,13 @@ func (provider *terraformProvider) importCreate(ctx context.Context, vars *varco
 		}
 	}
 
-	if len(importParams) > 0 && len(importParams) != len(action.ImportVariables) {
+	if len(importParams) != len(action.ImportVariables) {
 		importFields := action.ImportVariables[0].Name
 		for i := 1; i < len(action.ImportVariables); i++ {
 			importFields = fmt.Sprintf("%s, %s", importFields, action.ImportVariables[i].Name)
 		}
 
 		return "", fmt.Errorf("Must provide values for all import parameters: %s", importFields)
-	}
-
-	if len(importParams) == 0 {
-		return provider.create(ctx, vars, action)
 	}
 
 	tfId := vars.GetString("tf_id")

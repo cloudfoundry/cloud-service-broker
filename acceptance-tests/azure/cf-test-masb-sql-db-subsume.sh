@@ -74,16 +74,20 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
         } \
       }"
 
-      if update_service_plan "${SUBSUMED_INSTANCE_NAME}" large "${UPDATE_CONFIG}"; then
-        echo "subsumed masb sqldb instance update successful"      
-        if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}"; then
-          echo "subsumed masb sqldb instance update test successful"           
-          RESULT=0
-        else
-          echo "updated subsumed masb sqldb instance test failed"
-        fi
+      if update_service_plan "${SUBSUMED_INSTANCE_NAME}" subsume "${UPDATE_CONFIG}"; then
+        echo "should not have been able to update to subsume plan"
       else
-        echo "failed to update subsumed masb sqldb instance"
+        if update_service_plan "${SUBSUMED_INSTANCE_NAME}" large "${UPDATE_CONFIG}"; then
+          echo "subsumed masb sqldb instance update successful"      
+          if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}"; then
+            echo "subsumed masb sqldb instance update test successful"           
+            RESULT=0
+          else
+            echo "updated subsumed masb sqldb instance test failed"
+          fi
+        else
+          echo "failed to update subsumed masb sqldb instance"
+        fi
       fi
     else
       echo "subsumed masb sqldb instance test failed"
