@@ -49,4 +49,6 @@ for s in ${MISSING_PARAMS_STANDARD[@]}; do
     ${SCRIPT_DIR}/../cf-create-service-should-fail.sh ${s} standard
 done
 
+${SCRIPT_DIR}/../cf-create-service-should-fail.sh ${s} subsume '{"server_credentials":{},"server":"s"}'
+
 echo "$0 SUCCEEDED"

@@ -54,6 +54,7 @@ plans:
   description: 'Subsume control of an existing SQL Database'
   display_name: "Subsume"
   properties:
+    subsume: true
 provision:
   import_inputs:
   - field_name: azure_db_id
@@ -76,6 +77,10 @@ provision:
                                  "azurerm_mssql_database.azure_sql_db.long_term_retention_policy",
                                  "azurerm_mssql_database.azure_sql_db.extended_auditing_policy"]
   plan_inputs:
+  - field_name: subsume
+    type: boolean
+    default: false
+    details: Subsume existing DB
   user_inputs:
   - field_name: cores
     type: number

@@ -111,3 +111,9 @@ func (vc *VarContext) Error() error {
 	vc.errors.ErrorFormat = utils.SingleLineErrorFormatter
 	return vc.errors
 }
+
+func (vc *VarContext) HasKey(key string) bool {
+	_, ok := vc.context[key]
+
+	return ok
+}
