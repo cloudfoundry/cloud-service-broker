@@ -12,49 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-variable azure_tenant_id { type = string }
-variable azure_subscription_id { type = string }
-variable azure_client_id { type = string }
-variable azure_client_secret { type = string }
-variable db_name { type = string }
-variable server { type = string }
-variable server_credentials { type = map }
-variable labels { type = map }
-variable sku_name { type = string }
-variable cores { type = number }
-variable max_storage_gb { type = number }
-variable skip_provider_registration { type = bool }
-variable short_term_retention_days { type = number }
 
-provider "azurerm" {
-  version = "~> 2.31.0"
-  features {}
 
-  subscription_id = var.azure_subscription_id
-  client_id       = var.azure_client_id
-  client_secret   = var.azure_client_secret
-  tenant_id       = var.azure_tenant_id  
 
-  skip_provider_registration = var.skip_provider_registration
-}
-
-data "azurerm_sql_server" "azure_sql_db_server" {
-  name                         = var.server_credentials[var.server].server_name
-  resource_group_name          = var.server_credentials[var.server].server_resource_group
-}
-
-locals {
-  instance_types = {
-    1 = "GP_Gen5_1"
-    2 = "GP_Gen5_2"
-    4 = "GP_Gen5_4"
-    8 = "GP_Gen5_8"
-    16 = "GP_Gen5_16"
-    32 = "GP_Gen5_32"
-    80 = "GP_Gen5_80"
-  }     
-  sku_name = length(var.sku_name) == 0 ? local.instance_types[var.cores] : var.sku_name  
-}
 
 resource "azurerm_mssql_database" "azure_sql_db" {
   name                = var.db_name
@@ -67,20 +27,3 @@ resource "azurerm_mssql_database" "azure_sql_db" {
   }
 }
 
-locals {
-  serverFQDN = data.azurerm_sql_server.azure_sql_db_server.fqdn
-}
-
-output sqldbName {value = azurerm_mssql_database.azure_sql_db.name}
-output sqlServerName {value = data.azurerm_sql_server.azure_sql_db_server.name}
-output sqlServerFullyQualifiedDomainName {value = local.serverFQDN}
-output hostname {value = local.serverFQDN}
-output port {value = 1433}
-output name {value = azurerm_mssql_database.azure_sql_db.name}
-output username {value = var.server_credentials[var.server].admin_username}
-output password {value = var.server_credentials[var.server].admin_password}
-output status {value = format("created db %s (id: %s) URL: URL: https://portal.azure.com/#@%s/resource%s",
-                              azurerm_mssql_database.azure_sql_db.name,
-                              azurerm_mssql_database.azure_sql_db.id,
-                              var.azure_tenant_id,
-                              azurerm_mssql_database.azure_sql_db.id)}

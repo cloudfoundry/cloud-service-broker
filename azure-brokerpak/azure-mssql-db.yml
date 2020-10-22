@@ -49,7 +49,32 @@ plans:
   properties:
     cores: 80
     max_storage_gb: 1024
+- name: subsume
+  id: 7781fa41-f486-447a-942c-ded8cccb8299
+  description: 'Subsume control of an existing SQL Database'
+  display_name: "Subsume"
+  properties:
 provision:
+  import_inputs:
+  - field_name: azure_db_id
+    type: string
+    details: Azure resource id for database to subsume
+    tf_resource: azurerm_mssql_database.azure_sql_db
+  import_parameter_mappings:
+  - tf_variable: name
+    parameter_name: var.db_name
+  - tf_variable: sku_name
+    parameter_name: local.sku_name
+  - tf_variable: max_size_gb
+    parameter_name: var.max_storage_gb 
+  - tf_variable: tags
+    parameter_name: var.labels
+  - tf_variable: retention_days
+    parameter_name: var.short_term_retention_days
+  import_parameters_to_delete: [ "azurerm_mssql_database.azure_sql_db.id", 
+                                 "azurerm_mssql_database.azure_sql_db.min_capacity",
+                                 "azurerm_mssql_database.azure_sql_db.long_term_retention_policy",
+                                 "azurerm_mssql_database.azure_sql_db.extended_auditing_policy"]
   plan_inputs:
   user_inputs:
   - field_name: cores
@@ -108,7 +133,12 @@ provision:
     default: 7
     constraints:
       maximum: 35
-  template_ref: terraform/azure-mssql-db/provision-mssql-db.tf 
+  template_refs:
+    outputs: terraform/azure-mssql-db/mssql-db-outputs.tf
+    provider: terraform/azure-mssql-db/azure-provider.tf
+    variables: terraform/azure-mssql-db/mssql-db-variables.tf
+    main: terraform/azure-mssql-db/mssql-db-main.tf
+    data: terraform/azure-mssql-db/mssql-db-data.tf
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}

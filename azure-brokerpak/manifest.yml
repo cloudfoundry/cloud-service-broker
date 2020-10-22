@@ -27,8 +27,8 @@ terraform_binaries:
   version: 0.12.26
   source: https://github.com/hashicorp/terraform/archive/v0.12.26.zip  
 - name: terraform-provider-azurerm
-  version: 2.31.0
-  source: https://github.com/terraform-providers/terraform-provider-azurerm/archive/v2.31.0.zip
+  version: 2.31.1
+  source: https://github.com/terraform-providers/terraform-provider-azurerm/archive/v2.31.1.zip
 - name: terraform-provider-random
   version: 2.2.1
   source: https://releases.hashicorp.com/terraform-provider-random/2.2.1/terraform-provider-random_2.2.1_linux_amd64.zip
@@ -69,5 +69,6 @@ service_definitions:
 - azure-postgres.yml
 - azure-storage-account.yml
 - azure-cosmosdb-sql.yml
-- azure-mssql-db-subsume.yml
-- azure-mssql-db-masb-subsume.yml
+# - azure-mssql-db-subsume.yml
+# - azure-mssql-db-masb-subsume.yml
+# - azure-mssql-db-fog-masb-subsume.yml

@@ -15,10 +15,12 @@
 package wrapper
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"regexp"
+	"strings"
 )
-
 
 // ParameterMapping mapping for tf variable to service parameter
 type ParameterMapping struct {
@@ -32,25 +34,68 @@ type TfTransformer struct {
 	ParametersToRemove []string			 `json:"parameters_to_remove"`
 }
 
+func braceCount(str string, count int) int {
+	return count + strings.Count(str, "{") - strings.Count(str, "}")
+}
+
 // CleanTf removes ttf.ParametersToRemove from tf string
 func (ttf *TfTransformer) CleanTf(tf string) string {
-	for _, removal := range ttf.ParametersToRemove {
-		re := regexp.MustCompile(fmt.Sprintf(`(?m)^[\s]+%s[\s]*=.*$`, removal))
-		tf = re.ReplaceAllString(tf, "")
+	resource := regexp.MustCompile(`resource "(.*)" "(.*)"` )
+	value := regexp.MustCompile(`^[\s]*([^\s]*)[\s]*=[\s]*(.*)[\s]*$`)
+	block := regexp.MustCompile(`^[\s]*([^\s]*)[\s]*{[\s]*$`)		
+	depth := 0
+	blockStack := make([]string, 64)
+	scanner := bufio.NewScanner(strings.NewReader(tf))
+	buffer := bytes.Buffer{}
+	skipBlockDepth := 0
+
+	for scanner.Scan() {
+		skipLine := !(skipBlockDepth == 0 || depth < skipBlockDepth)
+		line := scanner.Text()
+		depth = braceCount(line, depth)
+		
+		if res := resource.FindStringSubmatch(line); res != nil {
+			blockStack[depth] = fmt.Sprintf("%s.%s", res[1], res[2])
+		} else if res = value.FindStringSubmatch(line); res != nil {
+			for _, removal := range ttf.ParametersToRemove {
+				if fmt.Sprintf("%s.%s", blockStack[depth], res[1]) == removal {
+					skipLine = true
+					break
+				}
+			}
+		} else if res := block.FindStringSubmatch(line); res != nil {
+			skipBlockDepth = 0
+			blockStack[depth] = fmt.Sprintf("%s.%s", blockStack[depth-1], res[1])
+			for _, removal := range ttf.ParametersToRemove {
+				if blockStack[depth] == removal {
+					skipBlockDepth = depth
+					skipLine = true
+					break
+				}
+			}
+		}
+		if !skipLine {
+			buffer.WriteString(fmt.Sprintf("%s\n", line))
+		}		
 	}
-	return tf
+	return buffer.String()
 }
 
 func (ttf *TfTransformer) captureParameterValues(tf string) (map[string]string, error) {
 	parameterValues := make(map[string]string)
 
 	for _, mapping := range ttf.ParameterMappings {
-		re := regexp.MustCompile(fmt.Sprintf(`(?m)^[\s]+%s[\s]*=[\s"]*(.*[^"\s])`, mapping.TfVariable))
-		res := re.FindAllStringSubmatch(tf, -1)
-		if len(res) > 1 {
-			return parameterValues, fmt.Errorf("Found more than one tf parameter %s in %s", mapping.TfVariable, tf )
-		} else if len(res) > 0 {
-			parameterValues[mapping.ParameterName] = res[0][1]
+		reBlock := regexp.MustCompile(fmt.Sprintf(`(?m)%s[\s]*=[\s]+({[\s\S.]*?})`, mapping.TfVariable))
+		reSimple := regexp.MustCompile(fmt.Sprintf(`(?m)%s[\s]*=[\s"]*(.*[^"\s])`, mapping.TfVariable))
+
+		if res := reBlock.FindAllStringSubmatch(tf, -1); len(res) > 0 {
+			//parameterValues[mapping.ParameterName] = res[0][1]
+		} else if res := reSimple.FindAllStringSubmatch(tf, -1); len(res) > 0 {
+			if strings.HasPrefix(mapping.ParameterName, "var.") {
+				parameterValues[strings.TrimPrefix(mapping.ParameterName, "var.")] = res[0][1]
+			} else if strings.HasPrefix(mapping.ParameterName, "local.") {
+				parameterValues[strings.TrimPrefix(mapping.ParameterName, "local.")] = res[0][1]
+			}
 		}
 	}
 	
@@ -59,8 +104,10 @@ func (ttf *TfTransformer) captureParameterValues(tf string) (map[string]string, 
 
 func (ttf *TfTransformer) replaceParameters(tf string) string {	
 	for _, mapping := range ttf.ParameterMappings {
-		re := regexp.MustCompile(fmt.Sprintf(`(?m)^[\s]+(%s)[\s]*=.*$`, mapping.TfVariable))
-		tf = re.ReplaceAllString(tf, fmt.Sprintf("%s = var.%s", mapping.TfVariable, mapping.ParameterName))
+		reBlock := regexp.MustCompile(fmt.Sprintf(`(?m)%s[\s]*=[\s]+{[\s\S.]*?}`, mapping.TfVariable))
+		tf = reBlock.ReplaceAllString(tf, fmt.Sprintf("%s = %s", mapping.TfVariable, mapping.ParameterName))
+		reSimple := regexp.MustCompile(fmt.Sprintf(`(?m)%s[\s]*=.*$`, mapping.TfVariable))
+		tf = reSimple.ReplaceAllString(tf, fmt.Sprintf("%s = %s", mapping.TfVariable, mapping.ParameterName))
 	}
 	
 	return tf

@@ -9,8 +9,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 echo $#
 
-if [ $# -lt 2 ]; then
-  echo "usage: $0 <server name> <resource group>"
+if [ $# -lt 4 ]; then
+  echo "usage: $0 <server name> <resource group> <admin username> <admin password>"
   exit 1
 fi
 
@@ -30,9 +30,6 @@ MASB_DB_CONFIG="{ \
 
 RESULT=1
 if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_DB_CONFIG}"; then
-  # SUBSUME_CONFIG="{ \
-  #   \"azure_db_id\": \"$(az sql db show  --name ${DB_NAME} --server ${SERVER_NAME} --resource-group ${SERVER_RESOURCE_GROUP} --query id -o tsv)\" \
-  # }"
 
   SUBSUME_CONFIG="{ \
         \"azure_db_id\": \"$(az sql db show  --name ${DB_NAME} --server ${SERVER_NAME} --resource-group ${SERVER_RESOURCE_GROUP} --query id -o tsv)\", \
@@ -53,15 +50,13 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
         } \
       }"
 
-      echo $SUBSUME_CONFIG
+  echo $SUBSUME_CONFIG
 
-  if create_service csb-masb-mssql-db-subsume current "${SUBSUMED_INSTANCE_NAME}" "${SUBSUME_CONFIG}"; then
+  if create_service csb-azure-mssql-db subsume "${SUBSUMED_INSTANCE_NAME}" "${SUBSUME_CONFIG}"; then
     if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}"; then
       echo "subsumed masb sqldb instance test successful"
 
       UPDATE_CONFIG="{ \
-        \"edition\": \"Standard\", \
-        \"service_objective\": \"S1\", \
         \"server\": \"test_server\", \
         \"server_credentials\": { \
           \"test_server\": { \
@@ -79,7 +74,7 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
         } \
       }"
 
-      if update_service_params "${SUBSUMED_INSTANCE_NAME}" "${UPDATE_CONFIG}"; then
+      if update_service_plan "${SUBSUMED_INSTANCE_NAME}" large "${UPDATE_CONFIG}"; then
         echo "subsumed masb sqldb instance update successful"      
         if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}"; then
           echo "subsumed masb sqldb instance update test successful"           
