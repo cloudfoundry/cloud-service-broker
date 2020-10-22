@@ -19,7 +19,7 @@ variable azure_tenant_id { type = string }
 variable skip_provider_registration { type = bool }
 
 provider "azurerm" {
-  version = "~> 2.31.0"
+  version = "~> 2.33.0"
   features {}
 
   subscription_id = var.azure_subscription_id

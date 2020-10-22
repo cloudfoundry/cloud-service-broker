@@ -31,7 +31,7 @@ variable failover_grace_minutes { type = number }
 variable short_term_retention_days { type = number }
 
 provider "azurerm" {
-  version = "~> 2.31.0"
+  version = "~> 2.33.0"
   features {}
 
   subscription_id = var.azure_subscription_id

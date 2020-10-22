@@ -31,7 +31,7 @@ variable read_write_endpoint_failover_policy { type = string }
 variable failover_grace_minutes { type = number }
 
 provider "azurerm" {
-  version = "~> 2.31.0"
+  version = "~> 2.33.0"
   features {}
 
   subscription_id = var.azure_subscription_id
