@@ -35,7 +35,7 @@ provision:
     tf_resource: aws_db_instance.db_instance
   import_parameter_mappings:
   - tf_variable: allocated_storage
-    parameter_name: allocated_storage
+    parameter_name: var.allocated_storage
   import_parameters_to_delete: ["id", "hosted_zone_id", "address","replicas","endpoint","arn","resource_id","status"]   
   user_inputs:
   - field_name: aws_access_key_id

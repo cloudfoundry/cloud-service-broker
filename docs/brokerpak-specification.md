@@ -187,7 +187,7 @@ Given:
   - field_name: azure_db_id
     type: string
     details: Azure resource id for database to subsume
-    tf_resource: azurerm_sql_database.azure_sql_db
+    tf_resource: azurerm_mssql_database.azure_sql_db
 ```
 
 A create service call:
@@ -198,7 +198,7 @@ cf create-service my-service my-plan my-instance -c '{"azure_db_id":"some-id"}'
 Will result in terraform import:
 
 ```bash
-terraform import azurerm_sql_database.azure_sql_db some-id
+terraform import azurerm_mssql_database.azure_sql_db some-id
 ```
 
 #### Import Parameter Mapping object
@@ -220,14 +220,14 @@ Given:
 
 Will convert the resulting `tf import`:
 ```tf
-resource "azurerm_sql_database" "azure_sql_db" {
+resource "azurerm_mssql_database" "azure_sql_db" {
     requested_service_objective_name = S0
 }
 ```
 
 Into:
 ```tf
-resource "azurerm_sql_database" "azure_sql_db" {
+resource "azurerm_mssql_database" "azure_sql_db" {
     requested_service_objective_name = var.service_objective
 }
 ```

@@ -13,5 +13,12 @@
 # limitations under the License.
 
 resource "azurerm_mssql_database" "azure_sql_db" {
-
+  name                = var.db_name
+  server_id           = data.azurerm_sql_server.azure_sql_db_server.id
+  sku_name            = local.sku_name
+  max_size_gb         = var.max_storage_gb
+  tags                = var.labels
+  short_term_retention_policy {
+    retention_days = var.short_term_retention_days
+  }
 }

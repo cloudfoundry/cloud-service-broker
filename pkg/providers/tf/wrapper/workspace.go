@@ -348,15 +348,21 @@ func (workspace *TerraformWorkspace) Destroy() error {
 
 // Apply runs `terraform import` on this workspace.
 // This funciton blocks if another Terraform command is running on this workspace.
-func (workspace *TerraformWorkspace) Import(tfResource, iaasResourceID string) error {
+func (workspace *TerraformWorkspace) Import(resources map[string]string) error {
 	err := workspace.initializeFs()
 	defer workspace.teardownFs()
 	if err != nil {
 		return err
 	}
 
-	_, err = workspace.runTf("import", tfResource, iaasResourceID)
-	return err
+	for resource, id := range resources {
+		_, err = workspace.runTf("import", resource, id)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Apply runs `terraform show` on this workspace.

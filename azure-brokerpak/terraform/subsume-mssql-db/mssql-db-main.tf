@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-resource "azurerm_sql_database" "azure_sql_db" {
+resource "azurerm_mssql_database" "azure_sql_db" {
 
 }

@@ -110,10 +110,7 @@ func (provider *terraformProvider) Bind(ctx context.Context, bindContext *varcon
 }
 
 func (provider *terraformProvider) importCreate(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
-	tfId := vars.GetString("tf_id")
-	if err := vars.Error(); err != nil {
-		return "", err
-	}
+
 
 	varsMap := vars.ToMap()
 
@@ -126,6 +123,32 @@ func (provider *terraformProvider) importCreate(ctx context.Context, vars *varco
 		})
 	}
 
+	var importParams []ImportResource
+
+	for _, importParam := range action.ImportVariables {
+		if param, ok := varsMap[importParam.Name]; ok {
+			importParams = append(importParams, ImportResource{TfResource: importParam.TfResource, IaaSResource: fmt.Sprintf("%v", param)})
+		}
+	}
+
+	if len(importParams) > 0 && len(importParams) != len(action.ImportVariables) {
+		importFields := action.ImportVariables[0].Name
+		for i := 1; i < len(action.ImportVariables); i++ {
+			importFields = fmt.Sprintf("%s, %s", importFields, action.ImportVariables[i].Name)
+		}
+
+		return "", fmt.Errorf("Must provide values for all import parameters: %s", importFields)
+	}
+
+	if len(importParams) == 0 {
+		return provider.create(ctx, vars, action)
+	}
+
+	tfId := vars.GetString("tf_id")
+	if err := vars.Error(); err != nil {
+		return "", err
+	}
+
 	workspace, err := wrapper.NewWorkspace(varsMap, "", action.Templates, parameterMappings, action.ImportParametersToDelete)
 	if err != nil {
 		return tfId, err
@@ -134,17 +157,6 @@ func (provider *terraformProvider) importCreate(ctx context.Context, vars *varco
 	if err := provider.jobRunner.StageJob(ctx, tfId, workspace); err != nil {
 		provider.logger.Error("terraform provider create failed", err)
 		return tfId, err
-	}
-
-	var importParams []ImportResource
-
-	for _, importParam := range action.ImportVariables {
-		param, ok := varsMap[importParam.Name]
-
-		if !ok {
-			return tfId, fmt.Errorf("Missing required import variable %v", importParam.Name)
-		}
-		importParams = append(importParams, ImportResource{TfResource: importParam.TfResource, IaaSResource: fmt.Sprintf("%v", param)})
 	}
 
 	return tfId, provider.jobRunner.Import(ctx, tfId, importParams)
@@ -156,7 +168,7 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 		return "", err
 	}
 
-	workspace, err := wrapper.NewWorkspace(vars.ToMap(), action.Template, map[string]string{}, []wrapper.ParameterMapping{}, []string{})
+	workspace, err := wrapper.NewWorkspace(vars.ToMap(), action.Template, action.Templates, []wrapper.ParameterMapping{}, []string{})
 	if err != nil {
 		return tfId, err
 	}

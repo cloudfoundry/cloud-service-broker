@@ -141,15 +141,19 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 	}
 
 	go func() {
+		resources := make(map[string]string)
 		for _, resource := range importResources {
-			if err := workspace.Import(fmt.Sprintf("%s", resource.TfResource), resource.IaaSResource); err != nil {
-				runner.operationFinished(err, workspace, deployment)
-				return
-			}
+			resources[fmt.Sprintf("%s", resource.TfResource)] = resource.IaaSResource
+		}
+		if err := workspace.Import(resources); err != nil {
+			runner.operationFinished(err, workspace, deployment)
+			return
 		}
 		mainTf, err := workspace.Show()
 		if err == nil {
-			tf, parameterVals, err := workspace.Transformer.ReplaceParametersInTf(workspace.Transformer.CleanTf(mainTf))
+			var tf string
+			var parameterVals map[string]string
+			tf, parameterVals, err = workspace.Transformer.ReplaceParametersInTf(workspace.Transformer.CleanTf(mainTf))
 			if err == nil {
 				for pn, pv := range parameterVals {
 					workspace.Instances[0].Configuration[pn] = pv
