@@ -20,8 +20,8 @@ metadata:
 platforms:
 - os: linux
   arch: amd64
-# - os: darwin
-#   arch: amd64
+- os: darwin
+  arch: amd64
 terraform_binaries:
 - name: terraform
   version: 0.12.26

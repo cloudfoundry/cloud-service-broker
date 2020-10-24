@@ -124,6 +124,9 @@ provision:
   - tf_variable: tf-variable
     parameter_name: parameter-name
   import_parameters_to_delete: ["id", "creation_date", "default_secondary_location", "requested_service_objective_id"]
+  import_parameters_to_add:
+  - tf_variable: resource.id.var
+    parameter_name: val
   plan_inputs:
   - field_name: plan_prop_1
     required: true
@@ -228,6 +231,12 @@ output output_prop_1 { value = var.plan_prop_1 }`,
 						},
 					},
 					ImportParametersToDelete: []string{"id", "creation_date", "default_secondary_location", "requested_service_objective_id"},
+					ImportParametersToAdd: []ImportParameterMapping{
+						{
+							TfVariable: "resource.id.var",
+							ParameterName: "val",
+						},
+					},
                 },
                 BindSettings: TfServiceDefinitionV1Action{
 
