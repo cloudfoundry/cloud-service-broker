@@ -18,7 +18,7 @@ resource "azurerm_mssql_database" "primary_db" {
   sku_name            = local.sku_name
   max_size_gb         = var.max_storage_gb
   tags                = var.labels
-  count = var.existing ? 0 : null
+  count = var.existing ? 0 : 1
   short_term_retention_policy {
     retention_days = var.short_term_retention_days
   }
@@ -37,9 +37,11 @@ resource "azurerm_sql_failover_group" "failover_group" {
     mode          = var.read_write_endpoint_failover_policy
     grace_minutes = var.failover_grace_minutes
   }
-  count = var.existing ? 0 : null
+  count = var.existing ? 0 : 1
 }
 
 resource "azurerm_mssql_database" "secondary_db" {
-  count = var.subsume ? null : 0
+  count = var.subsume ? 1 : 0
+  server_id = data.azurerm_sql_server.secondary_sql_db_server.id
+  name                = var.db_name
 }

@@ -27,6 +27,8 @@ plans:
   id: 35a7e882-9e27-4e5a-a292-9c3f3da10873
   description: 'SQL Server latest version. Instance properties: General Purpose - Serverless ; 0.5 - 2 cores ; Max Memory: 6gb ; 50 GB storage ; auto-pause enabled after 1 hour of inactivity'
   display_name: "Small"
+  properties:
+    subsume: false
 - name: medium
   id: b653c8a6-4094-4103-8958-4630a42e1c49
   description: 'SQL Server latest version. Instance properties: General Purpose - Provisioned ; Provisioned Capacity ; 8 cores ; 200 GB storage'
@@ -34,6 +36,7 @@ plans:
   properties:
     cores: 8
     max_storage_gb: 200
+    subsume: false
 - name: large
   id: 609b668e-0cf8-4512-9f42-ef684c0c8d8d
   description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 32 cores ; 500GB storage ; 1 read replica; Auto-failover group enabled'
@@ -41,12 +44,14 @@ plans:
   properties:
     cores: 32
     max_storage_gb: 500
+    subsume: false
 - name: existing
   id: 669661c1-7fe6-4c59-8004-63905e79a508
   description: 'Connect to existing fail over group database'
   display_name: "Existing"
   properties: 
     existing: true
+    subsume: false
 - name: subsume
   id: 6686c11f-8b38-41fc-9d61-0571127b8115
   description: 'Subsume control of an existing SQL Database'
