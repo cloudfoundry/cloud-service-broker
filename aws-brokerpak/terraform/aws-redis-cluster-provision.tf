@@ -24,7 +24,7 @@ variable node_type { type = string }
 variable node_count { type = number }
 
 provider "aws" {
-  version = "~> 2.0"
+  version = "~> 3.0"
   region  = var.region
   access_key = var.aws_access_key_id
   secret_key = var.aws_secret_access_key

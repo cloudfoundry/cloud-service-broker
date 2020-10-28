@@ -11,8 +11,8 @@ terraform_binaries:
   version: 0.12.23
   source: https://github.com/hashicorp/terraform/archive/v0.12.23.zip  
 - name: terraform-provider-aws
-  version: 2.57.0
-  source: https://github.com/terraform-providers/terraform-provider-aws/archive/v2.57.0.zip
+  version: 3.11.0
+  source: https://github.com/terraform-providers/terraform-provider-aws/archive/v3.11.0.zip
 - name: terraform-provider-random
   version: 2.2.1
   source: https://releases.hashicorp.com/terraform-provider-random/2.2.1/terraform-provider-random_2.2.1_linux_amd64.zip
@@ -32,6 +32,7 @@ service_definitions:
 - aws-postgresql.yml
 - aws-s3-bucket.yml
 - aws-postgres-subsume.yml
+- aws-dynamodb.yml
 
 
 
