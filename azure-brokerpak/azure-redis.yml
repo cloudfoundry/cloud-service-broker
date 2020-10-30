@@ -96,6 +96,13 @@ provision:
     constraints:
       maximum: 6
       minimum: 0
+  - field_name: tls_min_version
+    type: string
+    details: Minimum enforced TLS version. Possible values are 1.0, 1.1, 1.2
+    default: "1.2"
+  - field_name: firewall_rules
+    type: array
+    details: Array of firewall rule start/end IP pairs (e.g. [["1.2.3.4", "2.3.4.5"], ["5.6.7.8", "6.7.8.9"]])
   user_inputs:
   - field_name: instance_name
     type: string
@@ -173,10 +180,6 @@ provision:
     type: boolean
     details: Skip automatic Azure provider registration, set to true if service principal being used does not have rights to register providers
     default: false       
-  - field_name: tls_min_version
-    type: string
-    details: Minimum enforced TLS version. Possible values are 1.0, 1.1, 1.2
-    default: "1.2"
   - field_name: maxmemory_policy
     type: string
     details: Max memory eviction policy. Possible values are volatile-lru (default), allkeys-lru, volatile-random, allkeys-random, volatile-ttl, noeviction
