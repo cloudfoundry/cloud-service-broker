@@ -26,6 +26,7 @@ variable labels { type = map }
 variable skip_provider_registration { type = bool }
 variable tls_min_version { type = string }
 variable maxmemory_policy { type = string }
+variable firewall_rules { type = list(list(string)) }
 
 provider "azurerm" {
   version = "~> 2.33.0"
@@ -64,6 +65,16 @@ resource "azurerm_redis_cache" "redis" {
     maxmemory_policy   = length(var.maxmemory_policy) == 0 ? "allkeys-lru" : var.maxmemory_policy
   }
 }
+
+resource "azurerm_redis_firewall_rule" "allow_azure" {
+  name                = format("firewall_%s_%s", replace(var.instance_name, "-", "_"), count.index)
+  resource_group_name = local.resource_group
+  redis_cache_name    = azurerm_redis_cache.redis.name
+  start_ip            = var.firewall_rules[count.index][0]
+  end_ip              = var.firewall_rules[count.index][1]
+
+  count = length(var.firewall_rules)
+}    
 
 output name { value = azurerm_redis_cache.redis.name }
 output host { value = azurerm_redis_cache.redis.hostname }

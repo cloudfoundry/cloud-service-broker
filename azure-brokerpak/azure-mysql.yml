@@ -44,6 +44,14 @@ plans:
     storage_gb: 20    
 provision:
   plan_inputs:
+  - field_name: use_tls
+    type: boolean
+    details: Use TLS for connection
+    default: true      
+  - field_name: tls_min_version
+    type: string
+    details: Minimum enforced TLS version. Possible values are TLSEnforcementDisabled, TLS1_0, TLS1_1 (default), and TLS1_2
+    default: TLS1_1
   user_inputs:
   - field_name: cores
     type: integer
@@ -70,14 +78,6 @@ provision:
       "5.7": MySQL v5.7
       "8.0": MySQL v8.0
     prohibit_update: true  
-  - field_name: use_tls
-    type: boolean
-    details: Use TLS for connection
-    default: true      
-  - field_name: tls_min_version
-    type: string
-    details: Minimum enforced TLS version. Possible values are TLSEnforcementDisabled, TLS1_0, TLS1_1 (default), and TLS1_2
-    default: TLS1_1
   - field_name: instance_name
     type: string
     details: Name for your MySQL instance
@@ -167,7 +167,11 @@ provision:
     type: string
     details: Azure sku (typically, tier [B,GP,MO] + family [Gen4,Gen5] + cores, e.g. B_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) Will be computed from cores if empty.
     default: ""
-    prohibit_update: true  
+    prohibit_update: true
+  - field_name: backup_retention_days
+    type: integer
+    details: Backup retention days for the server, supported values are between 7 and 35 days.
+    default: 7
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
