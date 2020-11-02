@@ -29,6 +29,7 @@ variable authorized_network {type = string}
 variable use_tls { type = bool }
 variable tls_min_version { type = string }
 variable skip_provider_registration { type = bool }
+variable backup_retention_days { type = number }
 
 provider "azurerm" {
   version = "~> 2.33.0"
@@ -95,6 +96,7 @@ resource "azurerm_mysql_server" "instance" {
   version                          = var.mysql_version
   ssl_enforcement_enabled          = var.use_tls
   ssl_minimal_tls_version_enforced = local.tls_version
+  backup_retention_days            = var.backup_retention_days
   tags = var.labels
 }
 
