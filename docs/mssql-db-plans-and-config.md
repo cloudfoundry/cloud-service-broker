@@ -12,6 +12,11 @@
 |medium      | 8    | 200GB        |
 |large       | 32   | 500GB        |
 |extra-large | 80   | 1TB          |
+|subsume*    | N/A  | N/A          |
+
+> *The subsume plan is used to import existing Azure MSSQL DBs to bring them under the control of CSB. For more information see [Subsuming a Microsoft Azure Service Broker MSSQL Database Instance
+](./subsume-masb-mssql-db.md)
+
 
 ## Plan Configuration Parameters
 
