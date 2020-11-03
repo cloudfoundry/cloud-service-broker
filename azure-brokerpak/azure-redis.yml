@@ -31,6 +31,8 @@ plans:
     sku_name: Basic
     family: C
     capacity: 1    
+    tls_min_version: "1.2"
+    firewall_rules: []
 - name: medium
   id: 6b272c43-2116-4483-9a99-de9262c0a7d6
   description: 'A basic plan with 6GB cache and no failover. High Availability is not provided.'
@@ -39,6 +41,8 @@ plans:
     sku_name: Basic
     family: C
     capacity: 3
+    tls_min_version: "1.2"    
+    firewall_rules: []
 - name: large
   id: c3e34abc-a820-457c-b723-1c342ef42c50
   description: 'A basic plan with 26GB cache and no failover. High Availability is not provided.'
@@ -47,6 +51,8 @@ plans:
     sku_name: Basic
     family: C
     capacity: 5
+    firewall_rules: []
+    tls_min_version: "1.2"    
 - name: ha-small
   id: d27a8e60-3724-49d1-b668-44b03d99b3b3
   description: 'A standard plan with 1GB cache with high availability and no failover.'
@@ -55,6 +61,8 @@ plans:
     sku_name: Standard
     family: C
     capacity: 1      
+    firewall_rules: []
+    tls_min_version: "1.2"    
 - name: ha-medium
   id: 421b932a-b86f-48a3-97e4-64bb13d3ec13
   description: 'A standard plan with 6GB cache with high availability and no failover.'
@@ -63,6 +71,8 @@ plans:
     sku_name: Standard
     family: C
     capacity: 3
+    firewall_rules: []
+    tls_min_version: "1.2"    
 - name: ha-large
   id: e919b281-9661-465d-82cf-0a0a6e1f195a
   description: 'A standard plan with 26GB cache with high availability and no failover.'
@@ -71,6 +81,8 @@ plans:
     sku_name: Standard
     family: C
     capacity: 5          
+    firewall_rules: []
+    tls_min_version: "1.2" 
 provision:
   plan_inputs:
   - field_name: sku_name
