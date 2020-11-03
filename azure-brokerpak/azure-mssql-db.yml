@@ -62,8 +62,6 @@ provision:
     details: Azure resource id for database to subsume
     tf_resource: azurerm_mssql_database.azure_sql_db
   import_parameter_mappings:
-  - tf_variable: name
-    parameter_name: var.db_name
   - tf_variable: sku_name
     parameter_name: local.sku_name
   - tf_variable: max_size_gb
