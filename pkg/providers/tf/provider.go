@@ -79,7 +79,7 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 	})
 
 	if provider.serviceDefinition.ProvisionSettings.IsTfImport(provisionContext) {
-		return models.ServiceInstanceDetails{}, fmt.Errorf("Cannot update to subsume plan")
+		return models.ServiceInstanceDetails{}, fmt.Errorf("Cannot update to subsume plan\n\nFor OpsMan Tile users see documentation here: https://via.vmw.com/ENs4\n\nFor Open Source users deployed via 'cf push' see documentation here:  https://via.vmw.com/ENw4")
 	}
 
 	tfId := provisionContext.GetString("tf_id")
