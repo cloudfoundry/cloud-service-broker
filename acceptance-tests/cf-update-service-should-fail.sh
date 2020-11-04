@@ -25,7 +25,7 @@ fi
 SERVICE=$1; shift
 PLAN=$1; shift
 #UPDATE_FIELD=$1; shift
-SERVICE_INSTANCE_NAME="${SERVICE}-${PLAN}-$$"
+SERVICE_INSTANCE_NAME="${SERVICE}-${PLAN}-$$-uf"
 
 echo "creating service ..."
 cf create-service "${SERVICE}" "${PLAN}" "${SERVICE_INSTANCE_NAME}"
