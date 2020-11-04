@@ -104,4 +104,4 @@ There are make targets for most common dev tasks.
 ## Contributing
 We are always looking for folks to contribute Brokerpaks! 
 
-See [Brokerpak Dissection](./brokerpak-dissection.md) for more information on how to build one yourself.
+See [Brokerpak Dissection](https://github.com/pivotal/cloud-service-broker/blob/master/docs/brokerpak-dissection.md) for more information on how to build one yourself.
