@@ -9,6 +9,8 @@ wait_for_service() {
         sleep 5
     done
 
+    echo $#
+
     local LOCAL_RESULT=0
     if [ $# -gt 2 ]; then
         LOCAL_RESULT=1
@@ -63,6 +65,7 @@ create_service() {
         if wait_for_service "${NAME}" "create in progress" "create succeeded"; then
             echo "Successfully created ${NAME}"
         else
+            echo "Failed creating ${NAME}: ${LOCAL_RESULT}"
             cf service "${NAME}"
             delete_service "${NAME}"
             LOCAL_RESULT=1
