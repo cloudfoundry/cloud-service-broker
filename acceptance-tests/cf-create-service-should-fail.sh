@@ -19,7 +19,7 @@ fi
 SERVICE=$1; shift
 PLAN=$1; shift
 
-SERVICE_INSTANCE_NAME="${SERVICE}-${PLAN}-$$"
+SERVICE_INSTANCE_NAME="${SERVICE}-${PLAN}-$$-f"
 
 create_service "${SERVICE}" "${PLAN}" "${SERVICE_INSTANCE_NAME}" "$@"
 
