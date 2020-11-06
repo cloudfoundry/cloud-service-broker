@@ -332,9 +332,9 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 
 	cases := map[string]struct {
 		// precedence order - lowest number should win
-		UserParams         string                  // 2
+		UserParams         string                  // 4
 		ProvisionOverrides map[string]interface{}  // 3
-		ServiceProperties  map[string]interface{}  // 4
+		ServiceProperties  map[string]interface{}  // 2
 		DefaultOverride    string                  // 5
 		GlobalDefaults     string                  // 6
 		ExpectedError      error
@@ -350,8 +350,8 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			},
 		},
 		"service has missing param": {
-			ServiceProperties: map[string]interface{}{"maybe-missing": "custom"},   // 4
-			UserParams:        "",                                                  // 2
+			ServiceProperties: map[string]interface{}{"maybe-missing": "custom"},   // 2
+			UserParams:        "",                                                  // 4
 			ExpectedContext: map[string]interface{}{
 				"location":      "us",
 				"name":          "name-us",
@@ -485,6 +485,217 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 	}
 }
 
+func TestServiceDefinition_UpdateVariables(t *testing.T) {
+	service := ServiceDefinition{
+		Id:   "00000000-0000-0000-0000-000000000000",
+		Name: "left-handed-smoke-sifter",
+		Plans: []ServicePlan{
+			{ServicePlan: brokerapi.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
+		},
+		ProvisionInputVariables: []BrokerVariable{
+			{
+				FieldName: "location",
+				Type:      JsonTypeString,
+				Default:   "us",                                   // 7
+			},
+			{
+				FieldName: "name",
+				Type:      JsonTypeString,
+				Default:   "name-${location}",                     // 7
+				Constraints: validation.NewConstraintBuilder().
+					MaxLength(30).
+					Build(),
+			},
+		},
+		ProvisionComputedVariables: []varcontext.DefaultVariable{
+			{
+				Name:      "location",
+				Default:   "${str.truncate(10, location)}",        // 1
+				Overwrite: true,
+			},
+			{
+				Name:      "maybe-missing",
+				Default:   "default",
+				Overwrite: false,
+			},
+		},
+	}
+
+	cases := map[string]struct {
+		// precedence order - lowest number should win
+		UserParams         string                  // 4
+		ProvisionOverrides map[string]interface{}  // 3
+		ServiceProperties  map[string]interface{}  // 2
+		DefaultOverride    string                  // 5
+		GlobalDefaults     string                  // 6
+		ProvisionDetails   string                  // 5
+		ExpectedError      error
+		ExpectedContext    map[string]interface{}
+	}{
+		"empty": {
+			UserParams:        "",
+			ServiceProperties: map[string]interface{}{},
+			ExpectedContext: map[string]interface{}{
+				"location":      "us",
+				"name":          "name-us",
+				"maybe-missing": "default",
+			},
+		},
+		"service has missing param": {
+			ServiceProperties: map[string]interface{}{"maybe-missing": "custom"},   // 2
+			UserParams:        "",                                                  // 4
+			ExpectedContext: map[string]interface{}{
+				"location":      "us",
+				"name":          "name-us",
+				"maybe-missing": "custom",
+			},
+		},
+		"location gets truncated": {
+			ServiceProperties: map[string]interface{}{},              // 2
+			UserParams:        `{"location": "averylonglocation"}`,   // 4
+			ExpectedContext: map[string]interface{}{
+				"location":      "averylongl",
+				"name":          "name-averylonglocation",
+				"maybe-missing": "default",
+			},
+		},
+		"user location and name": {
+			ServiceProperties: map[string]interface{}{},              // 2
+			UserParams:        `{"location": "eu", "name":"foo"}`,    // 4
+			ExpectedContext: map[string]interface{}{
+				"location":      "eu",
+				"name":          "foo",
+				"maybe-missing": "default",
+			},
+		},
+		"user tries to overwrite service var": {
+			ServiceProperties: map[string]interface{}{"service-provided": "custom"},          // 2
+			UserParams:        `{"location": "eu", "name":"foo", "service-provided":"test"}`, // 4
+			ExpectedContext: map[string]interface{}{
+				"location":         "eu",
+				"name":             "foo",
+				"maybe-missing":    "default",
+				"service-provided": "custom",
+			},
+		},
+		"operator defaults override computed defaults": {
+			ServiceProperties: map[string]interface{}{},     // 2
+			UserParams:        "",                           // 4
+			DefaultOverride:   `{"location":"eu"}`,          // 5
+			GlobalDefaults:    `{"location":"az"}`,          // 6
+			ExpectedContext: map[string]interface{}{
+				"location":      "eu",
+				"name":          "name-eu",
+				"maybe-missing": "default",
+			},
+		},
+		"user values override operator defaults": {
+			ServiceProperties: map[string]interface{}{},     // 2
+			UserParams:        `{"location":"nz"}`,          // 4
+			DefaultOverride:   `{"location":"eu"}`,          // 5
+			GlobalDefaults:    "{}",
+			ExpectedContext: map[string]interface{}{
+				"location":      "nz",
+				"name":          "name-nz",
+				"maybe-missing": "default",
+			},
+		},
+		"operator defaults are not evaluated": {
+			ServiceProperties: map[string]interface{}{},        // 2
+			UserParams:        `{"location":"us"}`,             // 4
+			DefaultOverride:   `{"name":"foo-${location}"}`,    // 5
+			GlobalDefaults:    "{}",
+			ExpectedContext: map[string]interface{}{
+				"location":      "us",
+				"name":          "foo-${location}",
+				"maybe-missing": "default",
+			},
+		},
+		"invalid-request": {
+			UserParams:    `{"name":"some-name-that-is-longer-than-thirty-characters"}`,
+			ExpectedError: errors.New("1 error(s) occurred: name: String length must be less than or equal to 30"),
+		},
+		"provision_overrides override user params and global_defaults but not computed defaults": {
+			ServiceProperties:  map[string]interface{}{},                 // 2
+			ProvisionOverrides: map[string]interface{}{"location": "eu"}, // 3
+			UserParams:         `{"location":"us"}`,                      // 4
+			DefaultOverride:    "{}",                                     // 5
+			GlobalDefaults:     `{"location":"az"}`,                     // 6
+			ExpectedContext: map[string]interface{}{
+				"location":      "eu",
+				"name":          "name-eu",
+				"maybe-missing": "default",
+			},
+		},
+		"global_default override defaults but not computed defaults": {
+			ServiceProperties:  map[string]interface{}{},                 // 2
+			ProvisionOverrides: map[string]interface{}{},                 // 3
+			UserParams:         "{}",                                     // 4
+			DefaultOverride:    "{}",                                     // 5
+			GlobalDefaults:     `{"location":"az"}`,                      // 6
+			ExpectedContext: map[string]interface{}{
+				"location":      "az",
+				"name":          "name-az",
+				"maybe-missing": "default",
+			},
+		},		
+		"bogus global default json": {
+			ServiceProperties:  map[string]interface{}{},                 // 2
+			ProvisionOverrides: map[string]interface{}{},                 // 3
+			UserParams:         "{}",                                     // 4
+			DefaultOverride:    "{}",                                     // 5
+			GlobalDefaults:     `{"location","az"}`,                      // 6
+			ExpectedContext: map[string]interface{}{
+				"location":      "az",
+				"name":          "name-az",
+				"maybe-missing": "default",
+			},
+			ExpectedError: fmt.Errorf("Failed unmarshaling config value provision.defaults"),
+		},				
+		"provision location and name": {
+			ServiceProperties: map[string]interface{}{},             // 2
+			ProvisionDetails: `{"location": "eu", "name":"foo"}`,    // 5
+			ExpectedContext: map[string]interface{}{
+				"location":      "eu",
+				"name":          "foo",
+				"maybe-missing": "default",
+			},
+		},	
+		"update location and name": {
+			ServiceProperties: map[string]interface{}{},             // 2
+			UserParams: `{"name":"update"}`,                         // 4
+			ProvisionDetails: `{"location": "eu", "name":"foo"}`,    // 5
+			ExpectedContext: map[string]interface{}{
+				"location":      "eu",
+				"name":          "update",
+				"maybe-missing": "default",
+			},
+		},					
+	}
+
+	for tn, tc := range cases {
+		t.Run(tn, func(t *testing.T) {
+			if len(tc.DefaultOverride) > 0 {
+				viper.Set(service.ProvisionDefaultOverrideProperty(), tc.DefaultOverride)
+			}
+			if len(tc.GlobalDefaults) > 0 {
+				viper.Set(GlobalProvisionDefaults, tc.GlobalDefaults)
+			}
+			defer viper.Reset()
+
+			details := brokerapi.UpdateDetails{RawParameters: json.RawMessage(tc.UserParams)}
+			provisionDetails := json.RawMessage(tc.ProvisionDetails)
+			plan := ServicePlan{ServiceProperties: tc.ServiceProperties, ProvisionOverrides: tc.ProvisionOverrides}
+			vars, err := service.UpdateVariables("instance-id-here", details, provisionDetails, plan)
+
+			expectError(t, tc.ExpectedError, err)
+
+			if tc.ExpectedError == nil && !reflect.DeepEqual(vars.ToMap(), tc.ExpectedContext) {
+				t.Errorf("Expected context: %v got %v", tc.ExpectedContext, vars.ToMap())
+			}
+		})
+	}
+}
 func TestServiceDefinition_BindVariables(t *testing.T) {
 	service := ServiceDefinition{
 		Id:   "00000000-0000-0000-0000-000000000000",

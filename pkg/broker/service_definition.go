@@ -355,10 +355,11 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 // 1. Variables defined in your `computed_variables` JSON list.
 // 2. Variables defined by the selected service plan in its `service_properties` map.
 // 3. Variables overridden in the plan's `provision_overrides` map.
-// 4. User defined variables (in `provision_input_variables` or `bind_input_variables`)
-// 5. Operator default variables loaded from the environment.
-// 6. Global operator default variables loaded from the environemnt.
-// 7. Default variables (in `provision_input_variables` or `bind_input_variables`).
+// 4. User defined variables (in `update_input_variables`)
+// 5. User defined variables (in `provision_input_variables` or `bind_input_variables`)
+// 6. Operator default variables loaded from the environment.
+// 7. Global operator default variables loaded from the environemnt.
+// 8. Default variables (in `provision_input_variables` or `bind_input_variables`).
 //
 // Loading into the map occurs slightly differently.
 // Default variables and computed_variables get executed by interpolation.
@@ -367,7 +368,10 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 // For example, to create a default database name based on a user-provided instance name.
 // Therefore, they get executed conditionally if a user-provided variable does not exist.
 // Computed variables get executed either unconditionally or conditionally for greater flexibility.
-func (svc *ServiceDefinition) variables(constants map[string]interface{}, rawParameters json.RawMessage, plan ServicePlan) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) variables( constants map[string]interface{}, 
+										 rawProvisionParameters json.RawMessage, 
+										 rawUpdateParameters json.RawMessage,
+										 plan ServicePlan) (*varcontext.VarContext, error) {
 	// The namespaces of these values roughly align with the OSB spec.
 	// constants := map[string]interface{}{
 	// 	"request.plan_id":        details.PlanID,
@@ -386,9 +390,10 @@ func (svc *ServiceDefinition) variables(constants map[string]interface{}, rawPar
 	}
 	builder := varcontext.Builder().
 		SetEvalConstants(constants).
-		MergeMap(globalDefaults).          // 6
-		MergeMap(provisionDefaultOverrides).    // 5
-		MergeJsonObject(rawParameters).               // 4
+		MergeMap(globalDefaults).                     // 7
+		MergeMap(provisionDefaultOverrides).          // 6
+		MergeJsonObject(rawProvisionParameters).      // 5 user vars provided during provision call
+		MergeJsonObject(rawUpdateParameters).         // 4 user vars provided during update call
 		MergeMap(plan.ProvisionOverrides).            // 3
 		MergeDefaults(svc.provisionDefaults()).       // ?
 		MergeMap(plan.GetServiceProperties()).        // 2
@@ -405,17 +410,17 @@ func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details brok
 		"request.instance_id":    instanceId,
 		"request.default_labels": utils.ExtractDefaultProvisionLabels(instanceId, details),
 	}
-	return svc.variables(constants, details.GetRawParameters(), plan)
+	return svc.variables(constants, details.GetRawParameters(), json.RawMessage("{}"), plan)
 }
 
-func (svc *ServiceDefinition) 	UpdateVariables(instanceId string, details brokerapi.UpdateDetails, plan ServicePlan) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) 	UpdateVariables(instanceId string, details brokerapi.UpdateDetails, provisionDetails json.RawMessage, plan ServicePlan) (*varcontext.VarContext, error) {
 	constants := map[string]interface{}{
 		"request.plan_id":        details.PlanID,
 		"request.service_id":     details.ServiceID,
 		"request.instance_id":    instanceId,
 		"request.default_labels": utils.ExtractDefaultUpdateLabels(instanceId, details),
 	}
-	return svc.variables(constants, details.GetRawParameters(), plan)
+	return svc.variables(constants, provisionDetails, details.GetRawParameters(), plan)
 }
 
 // BindVariables gets the variable resolution context for a bind request.

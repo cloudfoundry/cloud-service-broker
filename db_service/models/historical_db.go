@@ -112,7 +112,7 @@ func (ServiceInstanceDetailsV2) TableName() string {
 type ProvisionRequestDetailsV1 struct {
 	gorm.Model
 
-	ServiceInstanceId string
+	ServiceInstanceId string `gorm:"uniqueIndex"`
 	// is a json.Marshal of models.ProvisionDetails
 	RequestDetails string
 }
