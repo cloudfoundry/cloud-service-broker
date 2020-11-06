@@ -23,6 +23,7 @@ Negative test verify that bad configuration options result in service creation f
 |----------------|----------------|
 | [aws/cf-test-services.sh](./aws/cf-test-services.sh) | [azure/cf-test-negative-responses.sh](./azure/cf-test-negative-responses.sh) |
 | [azure/cf-test-services.sh](./azure/cf-test-services.sh) | [azure/cf-test-negative-responses.sh](./azure/cf-test-negative-responses.sh) |
+| [gcp/cf-test-services.sh](./gcp/cf-test-services.sh) | [gcp/cf-test-negative-responses.sh](./gcp/cf-test-negative-responses.sh) |
 
 ## Spring Music
 
@@ -31,9 +32,10 @@ Many of the services (MySQL, PostgreSQL, SQL Server, MongoDB, Redis) are support
 2. `cf bind-service` the SpringMusic app to the provisioned service
 3. `cf restart` SpringMusic and verify that it successfully starts
 4. `cf unbind-service` SpringMusic from the service instance
-5. `cf bind-service` the [spring-music-validator](./spring-music-validator) app to the provisioned service
-6. `cf restart` spring-music-validator and verify it successfully starts 
-7. `cf delete-service` the tested instance 
+5. `cf update-service` (if called with -u <plan>) to make sure update does not result in data loss
+6. `cf bind-service` the [spring-music-validator](./spring-music-validator) app to the provisioned service
+7. `cf restart` spring-music-validator and verify it successfully starts 
+8. `cf delete-service` the tested instance 
 
 The use of the spring-music-validator app verifies all the binding credential variations that each service provides and validates that SpringMusic successfully initialed each service with its seed data.
 
