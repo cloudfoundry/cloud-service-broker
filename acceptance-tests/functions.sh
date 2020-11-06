@@ -65,10 +65,10 @@ create_service() {
         if wait_for_service "${NAME}" "create in progress" "create succeeded"; then
             echo "Successfully created ${NAME}"
         else
+            LOCAL_RESULT=$?
             echo "Failed creating ${NAME}: ${LOCAL_RESULT}"
             cf service "${NAME}"
             delete_service "${NAME}"
-            LOCAL_RESULT=1
         fi
     fi
 
