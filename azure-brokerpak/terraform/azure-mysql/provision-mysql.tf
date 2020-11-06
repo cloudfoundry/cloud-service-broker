@@ -97,6 +97,7 @@ resource "azurerm_mysql_server" "instance" {
   ssl_enforcement_enabled          = var.use_tls
   ssl_minimal_tls_version_enforced = local.tls_version
   backup_retention_days            = var.backup_retention_days
+  auto_grow_enabled = true
   tags = var.labels
 }
 
