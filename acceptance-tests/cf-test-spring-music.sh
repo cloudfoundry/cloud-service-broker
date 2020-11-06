@@ -35,7 +35,7 @@ if wait_for_service "${SERVICE_INSTANCE_NAME}" "create in progress" "create succ
     if [ $PLAN == $UPDATE_PLAN ]; then
         "${SCRIPT_DIR}/cf-run-spring-music-test.sh" ${SERVICE_INSTANCE_NAME}
     else
-        "${SCRIPT_DIR}/cf-run-spring-music-test.sh" ${SERVICE_INSTANCE_NAME} ${UPDATE_PLAN} "$@"
+        "${SCRIPT_DIR}/cf-run-spring-music-test.sh" ${SERVICE_INSTANCE_NAME} ${UPDATE_PLAN}
     fi
     RESULT=$?
 else
