@@ -42,7 +42,7 @@ The service broker currently provides access to the below services. **Where it e
 
 *Note: You can also use CSB with your own custom Brokerpaks. See our [Brokerpak Developer Guide](./docs/brokerpak-development.md) for more information*
 
-| [GCP](./docs/gcp-installation.md) | [Azure]((./docs/azure-installation.md)) | [AWS]((./docs/aws-installation.md)) |	
+| [GCP](./docs/gcp-installation.md) | [Azure](./docs/azure-installation.md) | [AWS](./docs/aws-installation.md) |	
 |-----|-------| ----|	
 |[GCP Cloud SQL (MySQL)](./docs/mysql-plans-and-config.md)|[Azure SQL](./docs/mssql-plans-and-config.md)|[Amazon RDS for MySQL](./docs/mysql-plans-and-config.md)|	
 |[GCP Cloud SQL (PostgreSQL)](./docs/postgresql-plans-and-config.md)|[Azure SQL DB](./docs/mssql-db-plans-and-config.md)|[Amazon ElastiCache for Redis](./docs/redis-plans-and-config.md)|	
