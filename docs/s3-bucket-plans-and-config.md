@@ -8,7 +8,7 @@
 | Plan | Description |
 |------|-------------|
 | private | a private S3 bucket |
-| public-read | a publicly readable bucket |
+| public-read | a publicly readable S3 bucket |
 
 ## Config parameters
 
