@@ -98,7 +98,11 @@ provision:
   - tf_variable: azurerm_mssql_database.primary_db.count
     parameter_name: 1
   - tf_variable: azurerm_sql_failover_group.failover_group.count
-    parameter_name: 1                                         
+    parameter_name: 1            
+  - tf_variable: azurerm_mssql_database.secondary_db.create_mode
+    parameter_name: '"Secondary"'
+  - tf_variable: azurerm_mssql_database.secondary_db.creation_source_database_id
+    parameter_name: azurerm_mssql_database.primary_db[0].id
   plan_inputs:
   - field_name: subsume
     type: boolean
@@ -186,11 +190,11 @@ provision:
     constraints:
       maximum: 35
   template_refs:
-    outputs: terraform/azure-mssql-db-failover/mssql-db-outputs.tf
+    outputs: terraform/azure-mssql-db-failover/mssql-db-fog-outputs.tf
     provider: terraform/azure-mssql-db-failover/azure-provider.tf
-    variables: terraform/azure-mssql-db-failover/mssql-db-variables.tf
-    main: terraform/azure-mssql-db-failover/mssql-db-main.tf
-    data: terraform/azure-mssql-db-failover/mssql-db-data.tf
+    variables: terraform/azure-mssql-db-failover/mssql-db-fog-variables.tf
+    main: terraform/azure-mssql-db-failover/mssql-db-fog-main.tf
+    data: terraform/azure-mssql-db-failover/mssql-db-fog-data.tf
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}

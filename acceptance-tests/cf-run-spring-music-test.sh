@@ -49,7 +49,7 @@ bind_service_test() {
 }
 
 if [ $# -lt 1 ]; then
-    echo "Usage: ${0} <service-instance-name> [updatge plan]"
+    echo "Usage: ${0} <service-instance-name> [update plan]"
     exit 1
 fi
 

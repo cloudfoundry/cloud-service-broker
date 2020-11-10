@@ -41,7 +41,11 @@ resource "azurerm_sql_failover_group" "failover_group" {
 }
 
 resource "azurerm_mssql_database" "secondary_db" {
-  count = var.subsume ? 1 : 0
   server_id = data.azurerm_sql_server.secondary_sql_db_server.id
   name                = var.db_name
+  create_mode         = "Secondary"
+  creation_source_database_id = azurerm_mssql_database.primary_db[0].id
+  sku_name            = local.sku_name
+  tags                = var.labels  
+  count = var.existing ? 0 : 1
 }

@@ -57,7 +57,7 @@ if create_service csb-azure-resource-group standard "${SERVER_RG}" "{\"instance_
       FOG_INSTANCE=test-fog-$$
       FOG_DR_INSTANCE=test-fog-dr-$$
       if create_service csb-azure-mssql-db-failover-group medium "${FOG_INSTANCE}" "${CONFIG}"; then
-        if ${SCRIPT_DIR}/../cf-run-spring-music-test.sh "${FOG_INSTANCE}"; then
+        if ${SCRIPT_DIR}/../cf-run-spring-music-test.sh "${FOG_INSTANCE}" large "${CONFIG}"; then
           if create_service csb-azure-mssql-db-failover-group existing "${FOG_DR_INSTANCE}" "${CONFIG}"; then
             if ${SCRIPT_DIR}/../cf-run-spring-music-test.sh "${FOG_DR_INSTANCE}"; then
               RESULT=0
