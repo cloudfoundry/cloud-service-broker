@@ -120,6 +120,7 @@ provision:
   - field_name: admin_password
     type: string
     details: Admin passwod for your importing database
+    default: ""
   - field_name: publicly_accessible
     type: boolean
     details: Make instance public if true
