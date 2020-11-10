@@ -30,7 +30,7 @@ CSB_DB_CONFIG="{ \
 }"
 
 UPDATE_CONFIG="{ \
-  \"allocated_storage\": "${STORAGE}", \
+  \"storage_gb\": "${STORAGE}", \
   \"region\": \"${REGION}\" \
 }"  
 
@@ -38,7 +38,7 @@ echo $UPDATE_CONFIG
 RESULT=1
 
 
-if create_service csb-aws-postgresql-subsume small "${SUBSUMED_INSTANCE_NAME}" "${CSB_DB_CONFIG}"; then
+if create_service csb-aws-postgresql subsume "${SUBSUMED_INSTANCE_NAME}" "${CSB_DB_CONFIG}"; then
 
     (cd "${SCRIPT_DIR}/importtestapp" && cf push --no-start)
     if cf bind-service javaawsapp-demo "${SUBSUMED_INSTANCE_NAME}" ; then
@@ -52,24 +52,28 @@ if create_service csb-aws-postgresql-subsume small "${SUBSUMED_INSTANCE_NAME}" "
             echo "javaawsapp-demo success"
             else 
                 RESULT=1
-                echo "javaawsapp-demo failed to access bucket"
+                echo "javaawsapp-demo failed to access postgres"
             fi
         else
             echo "javaawsapp-demo failed"
             cf logs javaawsapp-demo --recent
         fi
-        cf delete -f importtestapp-demo 
+        cf delete -f javaawsapp-demo
+        cf purge-service-instance "${SUBSUMED_INSTANCE_NAME}" -f
     fi
    
 fi
 
-if update_service_params "${SUBSUMED_INSTANCE_NAME}" "${UPDATE_CONFIG}"; then
-    echo "subsumed postgres instance update successful"  
+# for update we need to increment storage +1 each time we update or AWS won't let update the storage. 
+
+# if update_service_params "${SUBSUMED_INSTANCE_NAME}" "${UPDATE_CONFIG}"; then
+#     echo "subsumed postgres instance update successful"  
     
-    cf purge-service-instance "${SUBSUMED_INSTANCE_NAME}" -f
-else 
-     echo "failed to update subsumed postgres instance"
-fi
+#     cf purge-service-instance "${SUBSUMED_INSTANCE_NAME}" -f
+# else 
+#      echo "failed to update subsumed postgres instance"
+# fi
+
 
 if [ ${RESULT} -eq 0 ]; then
     echo "$0 SUCCESS"

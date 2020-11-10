@@ -31,10 +31,7 @@ service_definitions:
 - aws-redis-cluster.yml
 - aws-postgresql.yml
 - aws-s3-bucket.yml
-- aws-postgres-subsume.yml
 - aws-dynamodb.yml
-
-
 
 
 
