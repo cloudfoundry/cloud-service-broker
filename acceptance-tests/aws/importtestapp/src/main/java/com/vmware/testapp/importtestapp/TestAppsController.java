@@ -29,7 +29,7 @@ public class TestAppsController {
                 System.out.println(convertedObject);
                 System.out.println("--------------------------------");
 
-                JsonArray jsonArray = convertedObject.getAsJsonArray("csb-aws-postgresql-subsume");
+                JsonArray jsonArray = convertedObject.getAsJsonArray("csb-aws-postgresql");
                   
                   //System.out.println(jsonArray);
         
