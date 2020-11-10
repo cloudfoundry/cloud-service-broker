@@ -58,6 +58,19 @@ provision:
     type: string
     details: Minimum enforced TLS version. Possible values are TLSEnforcementDisabled, TLS1_0, TLS1_1 (default), and TLS1_2
     default: TLS1_1
+  - field_name: enable_threat_detection_policy
+    type: boolean
+    details: Enable Threat Detection Policy (default false)
+    default: false
+  - field_name: threat_detection_policy_emails
+    type: array
+    details: A list of email addresses which alerts should be sent to.
+  - field_name: threat_detection_policy_storage_endpoint
+    type: string
+    details: Azure blob storage that will hold all Threat Detection audit logs.
+  - field_name: threat_detection_policy_storage_key
+    type: string
+    details: Storage account key for Threat Detection audit logs.
   user_inputs:
   - field_name: cores
     type: integer
