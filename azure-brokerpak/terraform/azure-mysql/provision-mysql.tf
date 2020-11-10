@@ -32,8 +32,7 @@ variable skip_provider_registration { type = bool }
 variable backup_retention_days { type = number }
 variable enable_threat_detection_policy { type = bool }
 variable threat_detection_policy_emails { type = list(string) }
-variable threat_detection_policy_storage_endpoint { type = string }
-variable threat_detection_policy_storage_key { type = string }
+variable email_account_admins { type = bool }
 
 provider "azurerm" {
   version = "~> 2.33.0"
@@ -103,10 +102,9 @@ resource "azurerm_mysql_server" "instance" {
   backup_retention_days            = var.backup_retention_days
   auto_grow_enabled = true
   threat_detection_policy {
-    enabled = var.enable_threat_detection_policy
-    email_addresses = var.threat_detection_policy_emails
-    storage_endpoint = var.threat_detection_policy_storage_endpoint
-    storage_account_access_key = var.threat_detection_policy_storage_key
+    enabled              = var.enable_threat_detection_policy
+    email_addresses      = var.threat_detection_policy_emails
+    email_account_admins = var.email_account_admins
   }
   tags = var.labels
 }
