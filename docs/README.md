@@ -18,5 +18,5 @@ The service broker is deployed to CloudFoundry as a `cf push`ed application.
 * [Brokerpak Specification](./brokerpak-specification.md)
 
 ## Brokerpak Development
-* [Brokerpak Developer Guide](./brokerpak-development.md)
+* [Brokerpak Dissection](./brokerpak-dissection.md)
 

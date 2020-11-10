@@ -102,5 +102,6 @@ There are make targets for most common dev tasks.
 [File a GitHub issue](https://github.com/pivotal/cloud-service-broker/issues) for bug reports and documentation or feature requests. Please use the provided templates.  
 
 ## Contributing
+We are always looking for folks to contribute Brokerpaks! 
 
-See [the Brokerpak Developer GUide](./docs/brokerpak-development.md) for more information. 
+See [Brokerpak Dissection](https://github.com/pivotal/cloud-service-broker/blob/master/docs/brokerpak-dissection.md) for more information on how to build one yourself.

@@ -548,10 +548,15 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	if !allowUpdate {
 		return response, ErrNonUpdatableParameter
 	}
+
+	pr, err := db_service.GetProvisionRequestDetailsByInstanceId(ctx, instanceID)
+	if err != nil {
+		return response, fmt.Errorf("updating non-existent instanceid: %v", instanceID)
+	}
 	
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
-	vars, err := brokerService.UpdateVariables(instanceID, details, *plan)
+	vars, err := brokerService.UpdateVariables(instanceID, details, json.RawMessage(pr.RequestDetails), *plan)
 	if err != nil {
 		return response, err
 	}
@@ -572,13 +577,13 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	// save provision request details
-	pr := models.ProvisionRequestDetails{
-		ServiceInstanceId: instanceID,
-		RequestDetails:    string(details.RawParameters),
-	}
-	if err = db_service.SaveProvisionRequestDetails(ctx, &pr); err != nil {
-		return brokerapi.UpdateServiceSpec{}, fmt.Errorf("Error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
-	}
+	// pr := models.ProvisionRequestDetails{
+	// 	ServiceInstanceId: instanceID,
+	// 	RequestDetails:    string(details.RawParameters),
+	// }
+	// if err = db_service.SaveProvisionRequestDetails(ctx, &pr); err != nil {
+	// 	return brokerapi.UpdateServiceSpec{}, fmt.Errorf("Error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
+	// }
 
 	response.IsAsync = shouldProvisionAsync
 	response.DashboardURL = ""
