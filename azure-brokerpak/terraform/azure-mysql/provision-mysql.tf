@@ -102,9 +102,9 @@ resource "azurerm_mysql_server" "instance" {
   backup_retention_days            = var.backup_retention_days
   auto_grow_enabled = true
   threat_detection_policy {
-    enabled              = var.enable_threat_detection_policy
-    email_addresses      = var.threat_detection_policy_emails
-    email_account_admins = var.email_account_admins
+    enabled              = var.enable_threat_detection_policy == null ? false : var.enable_threat_detection_policy
+    email_addresses      = var.threat_detection_policy_emails == null ? [] : var.threat_detection_policy_emails
+    email_account_admins = var.email_account_admins == null ? false : var.email_account_admins
   }
   tags = var.labels
 }
