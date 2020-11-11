@@ -110,6 +110,8 @@ func (ttf *TfTransformer) replaceParameters(tf string) string {
 	for _, mapping := range ttf.ParameterMappings {
 		reBlock := regexp.MustCompile(fmt.Sprintf(`(?m)%s[\s]*=[\s]+{[\s\S.]*?}`, mapping.TfVariable))
 		tf = reBlock.ReplaceAllString(tf, fmt.Sprintf("%s = %s", mapping.TfVariable, mapping.ParameterName))
+		reArray := regexp.MustCompile(fmt.Sprintf(`(?m)%s[\s]*=[\s]+\[[\s\S.]*?\]`, mapping.TfVariable))
+		tf = reArray.ReplaceAllString(tf, fmt.Sprintf("%s = %s", mapping.TfVariable, mapping.ParameterName))
 		reSimple := regexp.MustCompile(fmt.Sprintf(`(?m)%s[\s]*=.*$`, mapping.TfVariable))
 		tf = reSimple.ReplaceAllString(tf, fmt.Sprintf("%s = %s", mapping.TfVariable, mapping.ParameterName))
 	}

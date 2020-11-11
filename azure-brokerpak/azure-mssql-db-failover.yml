@@ -81,6 +81,8 @@ provision:
     parameter_name: var.labels
   - tf_variable: retention_days
     parameter_name: var.short_term_retention_days    
+  - tf_variable: databases
+    parameter_name: '[azurerm_mssql_database.primary_db[0].id]'    
   import_parameters_to_delete: [ "azurerm_mssql_database.primary_db.id", 
                                  "azurerm_mssql_database.primary_db.long_term_retention_policy",
                                  "azurerm_mssql_database.primary_db.extended_auditing_policy",

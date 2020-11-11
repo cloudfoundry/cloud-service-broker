@@ -62,12 +62,6 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
                         \"admin_username\":\"${SERVER_ADMIN_USER_NAME}\", \
                         \"admin_password\":\"${SERVER_ADMIN_PASSWORD}\", \
                         \"server_resource_group\":\"${SERVER_RESOURCE_GROUP}\" \
-                      }, \
-                      \"fail_server\": { \
-                        \"server_name\":\"missing\", \
-                        \"admin_username\":\"bogus\", \
-                        \"admin_password\":\"bad-password\", \
-                        \"server_resource_group\":\"rg\" \
                       } \
                     } \
                   }"

@@ -49,7 +49,7 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
     }"
     if create_service azure-sqldb-failover-group SecondaryDatabaseWithFailoverGroup "${MASB_FOG_INSTANCE_NAME}" "${MASB_FOG_CONFIG}"; then
 
-        if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${MASB_FOG_INSTANCE_NAME}"; then
+        if bind_service_test spring-music "${MASB_FOG_INSTANCE_NAME}"; then
 
             SUBSUME_CONFIG="{ \
                 \"azure_primary_db_id\": \"$(az sql failover-group show --name ${MASB_FOG_INSTANCE_NAME} --server ${PRIMARY_SERVER_NAME} --resource-group ${SERVER_RESOURCE_GROUP} --query databases[0] -o tsv)\", \
@@ -77,7 +77,10 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
 
             SUBSUMED_INSTANCE_NAME=masb-sql-db-subsume-test-$$
             if create_service csb-azure-mssql-db-failover-group subsume "${SUBSUMED_INSTANCE_NAME}" "${SUBSUME_CONFIG}"; then
-                if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}"; then
+                    # cf purge-service-instance -f "${MASB_FOG_INSTANCE_NAME}"
+                    # cf purge-service-instance -f "${MASB_SQLDB_INSTANCE_NAME}"
+                    # exit 0
+                    if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}"; then
                     echo "subsumed masb fog instance test successful"
 
                     UPDATE_CONFIG="{ \
@@ -100,16 +103,16 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
                         } \
                     }"
 
-                    if update_service_params "${SUBSUMED_INSTANCE_NAME}" "${UPDATE_CONFIG}"; then
+                    if update_service_params "${SUBSUMED_INSTANCE_NAME}" subsume; then
+                        echo "should not have been able to update to subsume plan"
+                    else
                         echo "subsumed masb fog instance update successful"
-                        if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}"; then
+                        if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}" medium; then
                             echo "subsumed masb fog instance update test successful"
                             RESULT=0
                         else
                             echo "updated subsumed masb fog instance test failed"
                         fi
-                    else
-                        echo "failed to update subsumed masb fog instance"
                     fi
                 else
                     echo "subsumed masb fog instance test failed"

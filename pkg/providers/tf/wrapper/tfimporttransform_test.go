@@ -108,58 +108,6 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
     timeouts {}
 }`,
         },
-//         "remove-multiple": {
-//             transformer: TfTransformer{
-//                 ParametersToRemove: []string{"azurerm_mssql_database.azure_sql_db.id",
-//                     "azurerm_mssql_database.azure_sql_db.creation_date",
-//                     "azurerm_mssql_database.azure_sql_db.default_secondary_location",
-//                     "azurerm_mssql_database.azure_sql_db.partner_servers.location",
-//                     "azurerm_mssql_database.azure_sql_db.partner_servers.role"},
-//             },
-//             input: `resource "azurerm_mssql_database" "azure_sql_db" {
-//     collation                        = "SQL_Latin1_General_CP1_CI_AS"
-//     edition                          = "Basic"
-//     id                               = "/subscriptions/899bf076-632b-4143-b015-43da8179e53f/resourceGroups/broker-cf-test/providers/Microsoft.Sql/servers/masb-subsume-test-server/databases/db"
-//     location                         = "eastus"
-//     max_size_bytes                   = "2147483648"
-//     name                             = "db"
-//     read_scale                       = false
-//     requested_service_objective_id   = "dd6d99bb-f193-4ec1-86f2-43d3bccbc49c"
-//     requested_service_objective_name = "Basic"
-//     resource_group_name              = "broker-cf-test"
-//     server_name                      = "masb-subsume-test-server"
-//     tags                             = {
-//         "user-agent" = "meta-azure-service-broker"
-//     }
-//     zone_redundant                   = false
-
-//     partner_servers {
-//         id       = "/subscriptions/899bf076-632b-4143-b015-43da8179e53f/resourceGroups/broker-cf-test/providers/Microsoft.Sql/servers/masb-fog-subsume-test-server"
-//         location = "West US"
-//         role     = "Secondary"
-//     }
-// }`,
-//             expected: `resource "azurerm_mssql_database" "azure_sql_db" {
-//     collation                        = "SQL_Latin1_General_CP1_CI_AS"
-//     edition                          = "Basic"
-//     location                         = "eastus"
-//     max_size_bytes                   = "2147483648"
-//     name                             = "db"
-//     read_scale                       = false
-//     requested_service_objective_id   = "dd6d99bb-f193-4ec1-86f2-43d3bccbc49c"
-//     requested_service_objective_name = "Basic"
-//     resource_group_name              = "broker-cf-test"
-//     server_name                      = "masb-subsume-test-server"
-//     tags                             = {
-//         "user-agent" = "meta-azure-service-broker"
-//     }
-//     zone_redundant                   = false
-
-//     partner_servers {
-//         id       = "/subscriptions/899bf076-632b-4143-b015-43da8179e53f/resourceGroups/broker-cf-test/providers/Microsoft.Sql/servers/masb-fog-subsume-test-server"
-//     }
-// }`,
-//         },
         "remove-none": {
             transformer: TfTransformer{
                 ParametersToRemove: []string{},
@@ -816,7 +764,28 @@ func TestTfImportTransform_ReplaceParametersInTf(t *testing.T) {
 	timeouts {}
 	sku_name = local.sku_name
 }`,
-        },				
+        },
+        "array": {
+            transformer: TfTransformer{
+                ParameterMappings: []ParameterMapping{
+                    {
+                        TfVariable:    "an_array",
+                        ParameterName: "[local.sku_name]",
+                    },
+                },
+            },
+            expectedParameters: map[string]string{
+                //"sku_name": "GP_Gen5_4",
+            },
+            input: `resource "azurerm_mssql_database" "azure_sql_db" {
+    an_array = [
+
+	]
+}`,
+            expected: `resource "azurerm_mssql_database" "azure_sql_db" {
+    an_array = [local.sku_name]
+}`,
+        },		
     }
 
     for tn, tc := range cases {
