@@ -162,6 +162,7 @@ provision or bind action, and the inputs and outputs to that template.
 | import_inputs | array of [import-input](#import-input-object) | Defines the variables that will be passed to tf import command |
 | import_parameter_mappings | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines how tf resource variables will be replaced with broker variables between `tf import` and `tf apply` |
 | import_parameters_to_delete| array of string | list of `tf import` discovered values to remove before `tf apply`. `tf import` will return read-only values that cannot be set during `tf apply` so they should be listed here to be removed between import and apply |
+| import_parameters_to_add | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines tf resource variables to add between `tf import` and `tf apply`
 | plan_inputs | array of [variable](#variable-object) | Defines constraints and settings for the variables plans provide in their properties map. |
 | user_inputs | array of [variable](#variable-object) | Defines constraints and settings for the variables users provide as part of their request. |
 | computed_inputs | array of [computed variable](#computed-variable-object) | Defines default values or overrides that are executed before the template is run. |
@@ -215,7 +216,7 @@ The import parameter mapping object defines the tf variable to input variable ma
 Given:
 ```yaml
   - tf_variable: requested_service_objective_name
-    parameter_name: service_objective 
+    parameter_name: var.service_objective 
 ```
 
 Will convert the resulting `tf import`:
@@ -240,6 +241,35 @@ cf update-service my-instance -c '{"service_objective":"S1"}'
 
 Will successfully update the `requested_service_objective_name` for the instance.
 
+#### Removing TF Values
+
+`tf import` will often return read only values that cannot be set during `tf apply`  The *import_parameters_to_delete* field is used to specify which values to remove before `tf apply` is run.
+
+Given:
+
+```yaml
+import_parameters_to_delete: [ "azurerm_mssql_database.azure_sql_db.id" ]
+```
+
+Will convert the resulting `tf import`
+
+```tf
+resource "azurerm_mssql_database" "azure_sql_db" {
+    id = /subscriptions/899bf076-632b-4143-b015-43da8179e53f/resourceGroups/broker-cf-test/providers/Microsoft.Sql/servers/masb-subsume-test-server
+    requested_service_objective_name = S0
+}
+```
+
+into
+
+```tf
+resource "azurerm_mssql_database" "azure_sql_db" {
+    requested_service_objective_name = S0
+}
+```
+
+So that `tr apply` will not fail trying to set the read-only field *id*
+
 #### Template References
 
 It is possible to break terraform code into sections to aid reusability and better follow [terraform best practices](https://www.terraform-best-practices.com/code-structure#getting-started-with-structuring-of-terraform-configurations). It is also required to support `tf import` as main.tf is a special case during import.
@@ -262,6 +292,7 @@ Will result is a terraform workspace with the following structure:
 * data.tf gets contents of *terraform/subsume-masb-mssql-db/mssql-db-data.tf*
 
 > If there are [import inputs](#import-input-object), a `tf import` will be run for each import input value before `tf apply` is run. Once all the import calls are complete, `tf show` is run to generate a new *main.tf*. So it is important not to put anything into *main.tf* that needs to be preserved. Put them in one of the other tf files.
+> 
 #### Variable object
 
 The variable object describes a particular input or output variable. The

@@ -116,13 +116,20 @@ func (provider *terraformProvider) Bind(ctx context.Context, bindContext *varcon
 func (provider *terraformProvider) importCreate(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
 	varsMap := vars.ToMap()
 
-	var parameterMappings []wrapper.ParameterMapping
+	var parameterMappings, addParams []wrapper.ParameterMapping
 
 	for _, importParameterMapping := range action.ImportParameterMappings {
 		parameterMappings = append(parameterMappings, wrapper.ParameterMapping{
 			TfVariable: importParameterMapping.TfVariable,
 			ParameterName: importParameterMapping.ParameterName,
 		})
+	}
+
+	for _, addParam := range action.ImportParametersToAdd {
+		addParams = append(addParams, wrapper.ParameterMapping{
+			TfVariable: addParam.TfVariable,
+			ParameterName: addParam.ParameterName,
+		})	
 	}
 
 	var importParams []ImportResource
@@ -147,7 +154,7 @@ func (provider *terraformProvider) importCreate(ctx context.Context, vars *varco
 		return "", err
 	}
 
-	workspace, err := wrapper.NewWorkspace(varsMap, "", action.Templates, parameterMappings, action.ImportParametersToDelete)
+	workspace, err := wrapper.NewWorkspace(varsMap, "", action.Templates, parameterMappings, action.ImportParametersToDelete, addParams)
 	if err != nil {
 		return tfId, err
 	}
@@ -166,7 +173,7 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 		return "", err
 	}
 
-	workspace, err := wrapper.NewWorkspace(vars.ToMap(), action.Template, action.Templates, []wrapper.ParameterMapping{}, []string{})
+	workspace, err := wrapper.NewWorkspace(vars.ToMap(), action.Template, action.Templates, []wrapper.ParameterMapping{}, []string{}, []wrapper.ParameterMapping{})
 	if err != nil {
 		return tfId, err
 	}

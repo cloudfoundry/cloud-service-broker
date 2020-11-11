@@ -31,14 +31,11 @@ The basic steps to subsume control of an existing MSSQL database instance are:
         
 2. To disconnect the app from the MASB service binding run: 
 
-
         cf unbind-service <existing app> <masb service instance>
-
 
 3. To bind the app to the newly created CSB service instance run: 
 
         cf bind-service <existing app> <new service instance>
-
 
 4. To make CF forget about the MASB managed service instance run*: 
 

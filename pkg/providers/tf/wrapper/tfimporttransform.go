@@ -32,6 +32,7 @@ type ParameterMapping struct {
 type TfTransformer struct {
 	ParameterMappings []ParameterMapping `json:"parameter_mappings"`
 	ParametersToRemove []string			 `json:"parameters_to_remove"`
+	ParametersToAdd []ParameterMapping   `json:"parameters_to_add"`
 }
 
 func braceCount(str string, count int) int {
@@ -53,6 +54,10 @@ func (ttf *TfTransformer) CleanTf(tf string) string {
 		skipLine := !(skipBlockDepth == 0 || depth < skipBlockDepth)
 		line := scanner.Text()
 		depth = braceCount(line, depth)
+
+		if depth < skipBlockDepth {
+			skipBlockDepth = 0
+		}
 		
 		if res := resource.FindStringSubmatch(line); res != nil {
 			blockStack[depth] = fmt.Sprintf("%s.%s", res[1], res[2])
@@ -64,7 +69,6 @@ func (ttf *TfTransformer) CleanTf(tf string) string {
 				}
 			}
 		} else if res := block.FindStringSubmatch(line); res != nil {
-			skipBlockDepth = 0
 			blockStack[depth] = fmt.Sprintf("%s.%s", blockStack[depth-1], res[1])
 			for _, removal := range ttf.ParametersToRemove {
 				if blockStack[depth] == removal {
@@ -106,6 +110,8 @@ func (ttf *TfTransformer) replaceParameters(tf string) string {
 	for _, mapping := range ttf.ParameterMappings {
 		reBlock := regexp.MustCompile(fmt.Sprintf(`(?m)%s[\s]*=[\s]+{[\s\S.]*?}`, mapping.TfVariable))
 		tf = reBlock.ReplaceAllString(tf, fmt.Sprintf("%s = %s", mapping.TfVariable, mapping.ParameterName))
+		reArray := regexp.MustCompile(fmt.Sprintf(`(?m)%s[\s]*=[\s]+\[[\s\S.]*?\]`, mapping.TfVariable))
+		tf = reArray.ReplaceAllString(tf, fmt.Sprintf("%s = %s", mapping.TfVariable, mapping.ParameterName))
 		reSimple := regexp.MustCompile(fmt.Sprintf(`(?m)%s[\s]*=.*$`, mapping.TfVariable))
 		tf = reSimple.ReplaceAllString(tf, fmt.Sprintf("%s = %s", mapping.TfVariable, mapping.ParameterName))
 	}
@@ -121,4 +127,33 @@ func (ttf *TfTransformer) ReplaceParametersInTf(tf string) (string, map[string]s
 		tf = ttf.replaceParameters(tf) 
 	}
 	return tf, parameterValues, err
+}
+
+func (ttf *TfTransformer) AddParametersInTf(tf string) string {
+	resource := regexp.MustCompile(`resource "(.*)" "(.*)"` )
+	scanner := bufio.NewScanner(strings.NewReader(tf))
+	buffer := bytes.Buffer{}
+	depth := 0
+	blockStack := make([]string, 64)	
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		depth = braceCount(line, depth)
+		if res := resource.FindStringSubmatch(line); res != nil {
+			blockStack[depth] = fmt.Sprintf("%s.%s", res[1], res[2])
+			buffer.WriteString(fmt.Sprintf("%s\n", line))
+
+			for _, addition := range ttf.ParametersToAdd {
+				additionPrefix := addition.TfVariable[0:strings.LastIndex(addition.TfVariable, ".")]
+
+				if additionPrefix == blockStack[depth] {
+					buffer.WriteString(fmt.Sprintf("%s = %s\n", addition.TfVariable[strings.LastIndex(addition.TfVariable, ".")+1:], addition.ParameterName))
+				}
+			} 
+		} else {	
+			buffer.WriteString(fmt.Sprintf("%s\n", line))		
+		}
+	}
+
+	return buffer.String()
 }
