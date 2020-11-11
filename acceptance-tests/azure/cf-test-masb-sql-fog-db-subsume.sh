@@ -77,33 +77,11 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
 
             SUBSUMED_INSTANCE_NAME=masb-sql-db-subsume-test-$$
             if create_service csb-azure-mssql-db-failover-group subsume "${SUBSUMED_INSTANCE_NAME}" "${SUBSUME_CONFIG}"; then
-                    # cf purge-service-instance -f "${MASB_FOG_INSTANCE_NAME}"
-                    # cf purge-service-instance -f "${MASB_SQLDB_INSTANCE_NAME}"
-                    # exit 0
+
                     if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}"; then
                     echo "subsumed masb fog instance test successful"
 
-                    UPDATE_CONFIG="{ \
-                        \"edition\": \"Standard\", \
-                        \"service_objective\": \"S1\", \
-                        \"server_pair\": \"test_server\", \
-                        \"server_credential_pairs\": { \
-                            \"test_server\": { \
-                                \"admin_username\":\"${SERVER_ADMIN_USER_NAME}\", \
-                                \"admin_password\":\"${SERVER_ADMIN_PASSWORD}\", \
-                                \"primary\":{ \
-                                    \"server_name\":\"${PRIMARY_SERVER_NAME}\", \
-                                    \"resource_group\":\"${SERVER_RESOURCE_GROUP}\" \
-                                }, \
-                                \"secondary\":{ \
-                                    \"server_name\":\"${SECONDARY_SERVER_NAME}\", \
-                                    \"resource_group\":\"${SERVER_RESOURCE_GROUP}\" \
-                                } \
-                            } \
-                        } \
-                    }"
-
-                    if update_service_params "${SUBSUMED_INSTANCE_NAME}" subsume; then
+                    if update_service_plan "${SUBSUMED_INSTANCE_NAME}" subsume; then
                         echo "should not have been able to update to subsume plan"
                     else
                         echo "subsumed masb fog instance update successful"

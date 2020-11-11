@@ -54,22 +54,10 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
             echo "subsumed masb sqldb instance test successful"
             if bind_service_test spring-music "${MASB_SQLDB_INSTANCE_NAME}"; then
 
-                UPDATE_CONFIG="{ \
-                    \"server\": \"test_server\", \
-                    \"server_credentials\": { \
-                      \"test_server\": { \
-                        \"server_name\":\"${SERVER_NAME}\", \
-                        \"admin_username\":\"${SERVER_ADMIN_USER_NAME}\", \
-                        \"admin_password\":\"${SERVER_ADMIN_PASSWORD}\", \
-                        \"server_resource_group\":\"${SERVER_RESOURCE_GROUP}\" \
-                      } \
-                    } \
-                  }"
-
-                if update_service_plan "${SUBSUMED_INSTANCE_NAME}" subsume "${UPDATE_CONFIG}"; then
+                if update_service_plan "${SUBSUMED_INSTANCE_NAME}" subsume; then
                     echo "should not have been able to update to subsume plan"
                 else
-                    if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}" medium "${UPDATE_CONFIG}"; then
+                    if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}" medium; then
                         echo "subsumed masb sqldb instance update test successful"
                         RESULT=0
                     else
