@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 . "${SCRIPT_DIR}/functions.sh"
 
 if [ $# -lt 1 ]; then
-    echo "Usage: ${0} <service-instance-name> [updatge plan]"
+    echo "Usage: ${0} <service-instance-name> [update plan]"
     exit 1
 fi
 
