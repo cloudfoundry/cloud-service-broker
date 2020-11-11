@@ -81,16 +81,16 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
                     if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}"; then
                     echo "subsumed masb fog instance test successful"
 
-                    if update_service_plan "${SUBSUMED_INSTANCE_NAME}" subsume; then
-                        echo "should not have been able to update to subsume plan"
-                    else
-                        echo "subsumed masb fog instance update successful"
-                        if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}" medium; then
+                    if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${SUBSUMED_INSTANCE_NAME}" medium; then
+                        if update_service_plan "${SUBSUMED_INSTANCE_NAME}" subsume; then
+                            cf service "${SUBSUMED_INSTANCE_NAME}"
+                            echo "should not have been able to update to subsume plan"
+                        else
                             echo "subsumed masb fog instance update test successful"
                             RESULT=0
-                        else
-                            echo "updated subsumed masb fog instance test failed"
                         fi
+                    else
+                        echo "updated subsumed masb fog instance test failed"
                     fi
                 else
                     echo "subsumed masb fog instance test failed"
