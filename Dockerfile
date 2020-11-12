@@ -15,9 +15,6 @@
 FROM alpine:latest
 
 COPY ./build/cloud-service-broker.linux /bin/cloud-service-broker
-COPY ./gcp-brokerpak/*.brokerpak /gcp-brokerpak/
-COPY ./azure-brokerpak/*.brokerpak /azure-brokerpak/
-COPY ./aws-brokerpak/*.brokerpak /aws-brokerpak/
 
 ENV PORT 8080
 EXPOSE 8080/tcp
