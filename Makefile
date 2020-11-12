@@ -168,7 +168,7 @@ aws-brokerpak: aws-brokerpak/*.brokerpak
 
 build-brokerpak-aws: aws-brokerpak/*.brokerpak
 
-aws-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./aws-brokerpak/*.yml  ./aws-brokerpak/terraform/*.tf
+aws-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./aws-brokerpak/*.yml  ./aws-brokerpak/terraform/*.tf ./aws-brokerpak/terraform/*/*.tf
 	# docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/aws-brokerpak
 	cd ./aws-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
 
