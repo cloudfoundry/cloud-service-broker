@@ -10,7 +10,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 RESULT=1
 
 
-allServices=("csb-aws-mysql" "csb-aws-redis-basic" "csb-aws-redis-ha" "csb-aws-postgresql")
+allServices=("csb-aws-mysql" "csb-aws-redis" "csb-aws-postgresql")
 
 for s in ${allServices[@]}; do
   create_service "${s}" small "${s}-$$" &
@@ -28,7 +28,7 @@ if wait; then
         break
       fi
     fi
-    if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}-$$"; then
+    if "${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}-$$" medium; then
       echo "SUCCEEDED: ${SCRIPT_DIR}/../cf-run-spring-music-test.sh" "${s}-$$"
     else
       RESULT=1
@@ -43,7 +43,7 @@ for s in ${allServices[@]}; do
 done
 
 if [ ${RESULT} -eq 0 ]; then
-  ${SCRIPT_DIR}/cf-test-s3-bucket.sh && ${SCRIPT_DIR}/cf-test-update-service.sh 
+  ${SCRIPT_DIR}/cf-test-s3-bucket.sh
   RESULT=$?
 fi
 

@@ -13,7 +13,7 @@
 # limitations under the License.
 ---
 version: 1
-name: csb-aws-redis-ha
+name: csb-aws-redis
 id: e9c11b1b-0caa-45c9-b9b2-592939c9a5a6
 description: Amazon ElastiCache for Redis - multinode with automatic failover
 display_name: Amazon ElastiCache for Redis
@@ -24,23 +24,47 @@ tags: [aws, redis, preview]
 plan_updateable: true
 plans:
 - name: small
-  id: 70544df7-0ac4-4580-ba51-c1fbdd6fdfd0
-  description: 'Redis 6.0 with 1GB cache and 2 nodes.'
+  id: ad963fcd-19f7-4b79-8e6d-645756e84f7a
+  description: 'Redis 6.0 with 1GB cache and 1 node.'
   display_name: "Small"
   properties:
     cache_size: 1   
-    redis_version: "6.0"
+    redis_version: "6.0"  
+    node_count: 1
 - name: medium
-  id: a4235008-80f4-4053-924b-defcce17cb63
-  description: 'Redis 6.0 with at least 4GB cache and 2 nodes.'
-  display_name: "Medium"
+  id: df41095a-43e8-4be4-b4d6-ae2d8a35068d
+  description: 'Redis 6.0 with at least 4GB cache and 1 node.'
+  display_name: "Medium HA"
   properties:
     cache_size: 4
     redis_version: "6.0"
+    node_count: 1
 - name: large
+  id: da4dc49c-a64f-4d2a-8490-5e456cbb0577
+  description: 'Redis 6.0 with at least 16 GB cache and 1 node.'
+  display_name: "Large HA"
+  properties:
+    cache_size: 16
+    redis_version: "6.0"
+    node_count: 1
+- name: small-ha
+  id: 70544df7-0ac4-4580-ba51-c1fbdd6fdfd0
+  description: 'Redis 6.0 with 1GB cache and 2 nodes.'
+  display_name: "Small HA"
+  properties:
+    cache_size: 1   
+    redis_version: "6.0"
+- name: medium-ha
+  id: a4235008-80f4-4053-924b-defcce17cb63
+  description: 'Redis 6.0 with at least 4GB cache and 2 nodes.'
+  display_name: "Medium HA"
+  properties:
+    cache_size: 4
+    redis_version: "6.0"
+- name: large-ha
   id: f26cda6f-d4b4-473a-966c-32d238f723ef
   description: 'Redis 6.0 with at least 16 GB cache and 2 nodes.'
-  display_name: "Large"
+  display_name: "Large HA"
   properties:
     cache_size: 16
     redis_version: "6.0"
@@ -147,20 +171,35 @@ bind:
 examples:
 - name: redis-cache-small
   description: Small redis cache
-  plan_id: 70544df7-0ac4-4580-ba51-c1fbdd6fdfd0
+  plan_id: ad963fcd-19f7-4b79-8e6d-645756e84f7a
   provision_params: {}
   bind_params: {}
 - name: redis-cache-medium
+  description: Medium redis cache
+  plan_id: df41095a-43e8-4be4-b4d6-ae2d8a35068d
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-large
+  description: Large redis cache
+  plan_id: da4dc49c-a64f-4d2a-8490-5e456cbb0577
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-small-ha
+  description: Small redis cache
+  plan_id: 70544df7-0ac4-4580-ba51-c1fbdd6fdfd0
+  provision_params: {}
+  bind_params: {}
+- name: redis-cache-medium-ha
   description: Medium redis cache in us-east-1 region
   plan_id: a4235008-80f4-4053-924b-defcce17cb63
   provision_params: { "region": "us-east-1" }
   bind_params: {}
-- name: redis-cache-large
+- name: redis-cache-large-ha
   description: Large redis cache
   plan_id: f26cda6f-d4b4-473a-966c-32d238f723ef
   provision_params: {}
   bind_params: {}
-- name: redis-cache-tiny
+- name: redis-cache-tiny-ha
   description: Tiny redis cache
   plan_id: 70544df7-0ac4-4580-ba51-c1fbdd6fdfd0
   provision_params: { "node_type":"cache.t2.micro"}
