@@ -23,7 +23,7 @@ shift
 SERVER_ADMIN_PASSWORD=$1
 shift
 
-DB_NAME=testdb-$$
+DB_NAME=subsume-db-$$
 
 RESULT=1
 MASB_SQLDB_INSTANCE_NAME=mssql-db-$$
@@ -96,8 +96,8 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
                     echo "subsumed masb fog instance test failed"
                 fi
                 delete_service "${SUBSUMED_INSTANCE_NAME}"
-                cf purge-service-instance -f "${MASB_FOG_INSTANCE_NAME}"
-                cf purge-service-instance -f "${MASB_SQLDB_INSTANCE_NAME}"
+                delete_service "${MASB_FOG_INSTANCE_NAME}"
+                delete_service "${MASB_SQLDB_INSTANCE_NAME}"
             fi
         else
             echo spring music test failed on masb fog
