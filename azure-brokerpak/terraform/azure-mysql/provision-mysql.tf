@@ -30,6 +30,9 @@ variable use_tls { type = bool }
 variable tls_min_version { type = string }
 variable skip_provider_registration { type = bool }
 variable backup_retention_days { type = number }
+variable enable_threat_detection_policy { type = bool }
+variable threat_detection_policy_emails { type = list(string) }
+variable email_account_admins { type = bool }
 
 provider "azurerm" {
   version = "~> 2.33.0"
@@ -98,6 +101,11 @@ resource "azurerm_mysql_server" "instance" {
   ssl_minimal_tls_version_enforced = local.tls_version
   backup_retention_days            = var.backup_retention_days
   auto_grow_enabled = true
+  threat_detection_policy {
+    enabled              = var.enable_threat_detection_policy == null ? false : var.enable_threat_detection_policy
+    email_addresses      = var.threat_detection_policy_emails == null ? [] : var.threat_detection_policy_emails
+    email_account_admins = var.email_account_admins == null ? false : var.email_account_admins
+  }
   tags = var.labels
 }
 
@@ -114,7 +122,7 @@ resource "azurerm_mysql_virtual_network_rule" "allow_subnet_id" {
   resource_group_name = local.resource_group
   server_name         = azurerm_mysql_server.instance.name
   subnet_id           = var.authorized_network
-  count = var.authorized_network != "default" ? 1 : 0      
+  count = var.authorized_network != "default" ? 1 : 0
 }
 
 resource "azurerm_mysql_firewall_rule" "allow_azure" {

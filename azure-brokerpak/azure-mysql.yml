@@ -58,6 +58,16 @@ provision:
     type: string
     details: Minimum enforced TLS version. Possible values are TLSEnforcementDisabled, TLS1_0, TLS1_1 (default), and TLS1_2
     default: TLS1_1
+  - field_name: enable_threat_detection_policy
+    type: boolean
+    details: Enable Threat Detection Policy (default false)
+    default: false
+  - field_name: threat_detection_policy_emails
+    type: array
+    details: A list of email addresses which alerts should be sent to.
+  - field_name: email_account_admins
+    type: boolean
+    details: Should the account administrators be emailed when this alert is triggered? (default false)
   user_inputs:
   - field_name: cores
     type: integer
