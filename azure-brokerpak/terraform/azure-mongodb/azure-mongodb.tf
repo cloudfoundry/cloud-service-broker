@@ -83,6 +83,10 @@ resource "azurerm_cosmosdb_account" "mongo-account" {
 	enable_multiple_write_locations = var.enable_multiple_write_locations
 	ip_range_filter                 = var.ip_range_filter
 	tags                            = var.labels	
+
+    capabilities {
+        name = "EnableAggregationPipeline"
+    }
 }
 
 resource "azurerm_cosmosdb_mongo_database" "mongo-db" {
