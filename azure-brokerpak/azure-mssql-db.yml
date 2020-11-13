@@ -28,6 +28,7 @@ plans:
   description: 'SQL Server latest version. Instance properties: General Purpose - Serverless ; 0.5 - 2 cores ; Max Memory: 6gb ; 50 GB storage ; auto-pause enabled after 1 hour of inactivity'
   display_name: "Small"
   properties:
+    subsume: false
 - name: medium
   id: 3ee14bce-33e8-4d02-9850-023a66bfe120
   description: 'SQL Server latest version. Instance properties: General Purpose - Provisioned ; Provisioned Capacity ; 8 cores ; 200 GB storage'
@@ -35,6 +36,7 @@ plans:
   properties:
     cores: 8
     max_storage_gb: 200
+    subsume: false
 - name: large
   id: 8f1c9c7b-80b2-49c3-9365-a3a059df9907
   description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 32 cores ; 500 GB storage'
@@ -42,6 +44,7 @@ plans:
   properties:
     cores: 32
     max_storage_gb: 500
+    subsume: false
 - name: extra-large
   id: 09096759-58a8-41d0-96bf-39b02a0e4104
   description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 80 cores ; 1 TB storage'
@@ -49,6 +52,7 @@ plans:
   properties:
     cores: 80
     max_storage_gb: 1024
+    subsume: false
 - name: subsume
   id: 7781fa41-f486-447a-942c-ded8cccb8299
   description: 'Subsume control of an existing SQL Database'
@@ -77,7 +81,6 @@ provision:
   plan_inputs:
   - field_name: subsume
     type: boolean
-    default: false
     details: Subsume existing DB
   user_inputs:
   - field_name: cores

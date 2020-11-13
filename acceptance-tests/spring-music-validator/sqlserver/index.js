@@ -20,6 +20,12 @@ function sqlserverQuerySpringMusic(pool) {
 
 module.exports = async function (credentials, runServer) {
     let content = ""
+
+    if (credentials.hostname != credentials.sqlServerFullyQualifiedDomainName ||
+        credentials.name != credentials.sqldbName) {
+        console.error("hostname does not match sqlServerFullyQualifiedDomainName or name does not match sqldbName ")
+        throw new Error("badly formed credentials")
+    }
     return connectSqlserver({
         server: credentials.hostname,
         user: credentials.username,
