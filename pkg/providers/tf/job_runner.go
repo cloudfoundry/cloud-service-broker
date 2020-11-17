@@ -141,11 +141,13 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 	}
 
 	go func() {
+		logger := utils.NewLogger("Import")
 		resources := make(map[string]string)
 		for _, resource := range importResources {
 			resources[fmt.Sprintf("%s", resource.TfResource)] = resource.IaaSResource
 		}
 		if err := workspace.Import(resources); err != nil {
+			logger.Error("Import Failed", err)
 			runner.operationFinished(err, workspace, deployment)
 			return
 		}
@@ -160,9 +162,9 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 				}
 				workspace.Modules[0].Definitions["main"] = tf
 
-				logger := utils.NewLogger("Import")
 				logger.Info("new workspace", lager.Data{
 					"workspace": workspace,
+					"tf": tf,
 				})
 
 				err = workspace.Apply()
