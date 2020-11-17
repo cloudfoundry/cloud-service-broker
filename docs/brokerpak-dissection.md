@@ -190,7 +190,7 @@ terraform_binaries:
   source: https://github.com/terraform-providers/terraform-provider-postgresql/archive/v1.5.0.zip
   ```
 
-This section defines all the binaries and terraform providers that will be bundled into the brokerpak. The *os* and *arch* parameters are substituted from the platforms section above.
+This section defines all the binaries and terraform providers that will be bundled into the brokerpak when its built. The *os* and *arch* parameters are substituted from the platforms section above.
 
 | Field | Value |
 |-------|-------|
@@ -518,7 +518,7 @@ There may be zero or more plan entries.
 
 ### Provision and Bind 
 
-The provision and bind sections contain the inputs, outputs and terraform for the provision and bind operation for the service. They are identical in form, the following sections apply to both.
+The *provision* and *bind* sections contain the inputs, outputs and terraform for the provision and bind operation for the service. They are identical in form, the following sections apply to both.
 
 ```yaml
 provision:
@@ -657,3 +657,5 @@ Outputs from terraform will be collected into binding credentials.
 > output fields *must* be declared as *output* variables in terraform. Failure to do so will result in failures creating brokerpak
 
 > binding credentials will contain all output variables from both the *provision* and *bind* portions of the service yaml.
+
+> there is a special output parameter called *status* that may be declared in terraform, it does not need to be declared in the service manifest yaml. The *status* output value will be returned as the status message for the OSBAPI provision call and will be displayed to the user as the *message* portion of a `cf service <service name>` command. It is recommended that resource ID's and other information that may help a user identify the managed resource.
