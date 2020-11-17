@@ -1,16 +1,9 @@
-
-locals {
-  serverName = var.existing ? var.instance_name : azurerm_sql_failover_group.failover_group[0].name
-  serverFQDN = format("%s.database.windows.net", local.serverName)
-  dbName = var.existing ? var.db_name : azurerm_mssql_database.primary_db[0].name
-}
-
-output sqldbName {value = local.dbName}
-output sqlServerName {value = local.serverName}
-output sqlServerFullyQualifiedDomainName {value = local.serverFQDN}
-output hostname {value = local.serverFQDN}
+output sqldbName {value = var.existing ? var.db_name : azurerm_mssql_database.primary_db[0].name}
+output sqlServerName {value = var.existing ? var.instance_name : azurerm_sql_failover_group.failover_group[0].name}
+output sqlServerFullyQualifiedDomainName {value = format("%s.database.windows.net", var.existing ? var.instance_name : azurerm_sql_failover_group.failover_group[0].name)}
+output hostname {value = format("%s.database.windows.net", var.existing ? var.instance_name : azurerm_sql_failover_group.failover_group[0].name)}
 output port {value = 1433}
-output name {value = local.dbName}
+output name {value = var.existing ? var.db_name : azurerm_mssql_database.primary_db[0].name}
 output username {value = var.server_credential_pairs[var.server_pair].admin_username}
 output password {value = var.server_credential_pairs[var.server_pair].admin_password}
 output status {
