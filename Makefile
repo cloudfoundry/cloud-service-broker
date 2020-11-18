@@ -199,7 +199,7 @@ run-broker-aws-docker: check-aws-env-vars ./build/cloud-service-broker.linux aws
 # image
 
 .PHONY: build-image
-build-image: Dockerfile ./build/cloud-service-broker.linux aws-brokerpak/*.brokerpak gcp-brokerpak/*.brokerpak azure-brokerpak/*.brokerpak
+build-image: Dockerfile ./build/cloud-service-broker.linux
 	docker build --tag csb .
 
 # env vars checks
