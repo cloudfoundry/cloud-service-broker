@@ -12,9 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+FROM golang:1.14-alpine3.12 AS build
+RUN apk update
+RUN apk upgrade
+RUN apk add --update gcc g++
+WORKDIR /app
+ADD . /app
+RUN CGO_ENABLED=1 GOOS=linux go build -o ./build/cloud-service-broker
+
 FROM alpine:latest
 
-COPY ./build/cloud-service-broker.linux /bin/cloud-service-broker
+COPY --from=build /app/build/cloud-service-broker /bin/cloud-service-broker
 
 ENV PORT 8080
 EXPOSE 8080/tcp
