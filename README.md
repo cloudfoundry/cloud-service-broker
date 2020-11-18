@@ -40,7 +40,7 @@ This service broker can be installed as a CF application. See the instructions f
 
 The service broker currently provides access to the below services. **Where it exists, we have linked to the documentation for each service.** 
 
-*Note: You can also use CSB with your own custom Brokerpaks. See our [Brokerpak Developer Guide](./docs/brokerpak-development.md) for more information*
+*Note: You can also use CSB with your own custom Brokerpaks. See our [Brokerpak Developer Guide](./docs#brokerpak-development) for more information*
 
 | [GCP](./docs/gcp-installation.md) | [Azure](./docs/azure-installation.md) | [AWS](./docs/aws-installation.md) |	
 |-----|-------| ----|	
