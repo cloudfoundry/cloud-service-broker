@@ -192,3 +192,65 @@ NOTE: Alpha and Early Access plugins WILL NOT be included in official releases o
 Breaking down life cycles into distinct sets helps operators decide what amount of risk they're willing to take on.
 For example, an operator might be willing to allow an unmaintained plugin if the underlying services were GA.
 Alternatively, an operator might not want to enable `deprecated` plugins on a new install even if they're maintained.
+
+## Developing and Testing a Brokerpak
+
+See [brokerpak specificaton](./brokerpak-specification.md) and [brokerpak dissection](./brokerpak-dissection.md) for details on authoring a brokerpak.
+
+This section will outline the development tools and lifecycle for iterating on the development of a new brokerpak (or modifying an existing brokerpak.)
+
+### Broker docker image
+
+There is a docker image with the broker binary that can be used to avoid having to compile the broker binary locally.
+
+```bash
+docker pull cfplatformeng/csb
+```
+
+### Building a Brokerpak
+
+To create a brokerpak from a manifest and service yaml files:
+
+```bash
+export BROKERPAK_SRC_DIR=<absolute path to broker source directory>
+docker run --rm -v ${BROKERPAK_SRC_DIR}:/brokerpak -w /brokerpak cfplatformeng/csb pak build
+```
+
+If the broker builds successfully, the result will be *.brokerpak* file in the brokerplak source directory.
+
+### Running Examples to test a Brokerpak
+
+If the *examples* section of the brokerpak is not empty, it is possible (and advisable) to use the examples to drive a provision, bind, unbind, deprovision cycle for each example against a locally running broker.
+
+> For example purposes, this is the AWS broker, so AWS credentials are provided through environment variables. See [AWS brokerpak readme](../aws-brokerpak/README.md).
+
+#### Run Broker
+
+In one command shell, start the broker:
+
+```bash
+docker run --rm -v ${BROKERPAK_SRC_DIR}:/brokerpak -w /brokerpak \
+-p 8080:8080 \
+-e "SECURITY_USER_NAME=csb-un" \
+-e "SECURITY_USER_PASSWORD=csb-pw" \
+-e AWS_ACCESS_KEY_ID \
+-e AWS_SECRET_ACCESS_KEY \
+-e "DB_TYPE=sqlite3" \
+-e "DB_PATH=/tmp/csb-db"  \
+cfplatformeng/csb serve
+```
+
+#### Run Example Tests
+
+In a second command shell, run the examples:
+
+```bash
+docker run --rm -v ${BROKERPAK_SRC_DIR}:/brokerpak -w /brokerpak \
+-e "SECURITY_USER_NAME=csb-un" \
+-e "SECURITY_USER_PASSWORD=csb-pw" \
+-e "GSB_API_HOSTNAME=host.docker.internal" \
+-e USER \
+cfplatformeng/csb pak run-examples /brokerpak/$(ls *.brokerpak)
+```
+
+If this completes successfully, it means all the examples in the brokerpak successfully completed a provision, bind, unbind and deprovision lifecycle. 
