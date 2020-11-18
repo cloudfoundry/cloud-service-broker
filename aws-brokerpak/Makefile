@@ -1,7 +1,7 @@
 
 IAAS=aws
-DOCKER_OPTS=--rm -v $(PWD):/brokerpak -w /brokerpak
-CSB=csb
+DOCKER_OPTS=--rm -v $(PWD):/brokerpak -w /brokerpak #--network=host
+CSB=cfplatformeng/csb
 
 .PHONY: build
 build: $(IAAS)-services-*.brokerpak
@@ -12,8 +12,11 @@ $(IAAS)-services-*.brokerpak: *.yml terraform/*/*.tf terraform/*.tf
 clean:
 	- rm $(IAAS)-services-*.brokerpak
 
-.PHONY: run aws_access_key_id aws_secret_access_key
-run: build
+SECURITY_USER_NAME := $(or $(SECURITY_USER_NAME), aws-broker)
+SECURITY_USER_PASSWORD := $(or $(SECURITY_USER_PASSWORD), aws-broker-pw)
+
+.PHONY: run
+run: build aws_access_key_id aws_secret_access_key
 	GSB_BROKERPAK_BUILTIN_PATH=/brokerpak \
 	DB_TYPE=sqlite3 \
 	DB_PATH=/tmp/csb-db \
@@ -27,6 +30,22 @@ run: build
 	-e DB_PATH \
 	-e GSB_BROKERPAK_BUILTIN_PATH \
 	$(CSB) serve
+
+.PHONY: docs
+docs: build
+	GSB_BROKERPAK_BUILTIN_PATH=/brokerpak \
+	docker run $(DOCKER_OPTS) \
+	$(CSB) pak docs /brokerpak/$(IAAS)-services-0.1.0.brokerpak
+
+.PHONY: run-examples
+run-examples: build
+	GSB_BROKERPAK_BUILTIN_PATH=/brokerpak \
+	GSB_API_HOSTNAME=host.docker.internal \
+	docker run $(DOCKER_OPTS) \
+	-e SECURITY_USER_NAME \
+	-e SECURITY_USER_PASSWORD \
+	-e GSB_API_HOSTNAME \
+	$(CSB) pak run-examples /brokerpak/$(IAAS)-services-0.1.0.brokerpak
 
 .PHONY: aws_access_key_id
 aws_access_key_id:
