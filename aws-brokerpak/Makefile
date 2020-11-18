@@ -17,35 +17,29 @@ SECURITY_USER_PASSWORD := $(or $(SECURITY_USER_PASSWORD), aws-broker-pw)
 
 .PHONY: run
 run: build aws_access_key_id aws_secret_access_key
-	GSB_BROKERPAK_BUILTIN_PATH=/brokerpak \
-	DB_TYPE=sqlite3 \
-	DB_PATH=/tmp/csb-db \
 	docker run $(DOCKER_OPTS) \
 	-p 8080:8080 \
 	-e SECURITY_USER_NAME \
 	-e SECURITY_USER_PASSWORD \
 	-e AWS_ACCESS_KEY_ID \
     -e AWS_SECRET_ACCESS_KEY \
-	-e DB_TYPE \
-	-e DB_PATH \
-	-e GSB_BROKERPAK_BUILTIN_PATH \
+	-e "DB_TYPE=sqlite3" \
+	-e "DB_PATH=/tmp/csb-db" \
 	$(CSB) serve
 
 .PHONY: docs
 docs: build
-	GSB_BROKERPAK_BUILTIN_PATH=/brokerpak \
 	docker run $(DOCKER_OPTS) \
-	$(CSB) pak docs /brokerpak/$(IAAS)-services-0.1.0.brokerpak
+	$(CSB) pak docs /brokerpak/$(shell ls *.brokerpak)
 
 .PHONY: run-examples
 run-examples: build
-	GSB_BROKERPAK_BUILTIN_PATH=/brokerpak \
-	GSB_API_HOSTNAME=host.docker.internal \
 	docker run $(DOCKER_OPTS) \
 	-e SECURITY_USER_NAME \
 	-e SECURITY_USER_PASSWORD \
-	-e GSB_API_HOSTNAME \
-	$(CSB) pak run-examples /brokerpak/$(IAAS)-services-0.1.0.brokerpak
+	-e "GSB_API_HOSTNAME=host.docker.internal" \
+	-e USER \
+	$(CSB) pak run-examples /brokerpak/$(shell ls *.brokerpak)
 
 .PHONY: aws_access_key_id
 aws_access_key_id:
