@@ -10,58 +10,17 @@ Hopefully this document helps familiarize you enough with layout and details of 
 * familiarity with [yaml](https://yaml.org/spec/1.2/spec.html) - yaml glues all the pieces together.
 * knowledge of [terraform](https://www.terraform.io/docs/index.html) - terraform scripts do the heavy lifting of managing resource lifecycle.
 
-### Tools
-* [golang 1.14](https://golang.org/dl/) - the core broker is written in golang. You probably won't need to delve into the source code, but currently you'll need to build the broker locally to use it to generate and test your brokerpak.
-* make - much of the development lifecycle is automated in a makefile.
-* [docker](https://docs.docker.com/get-docker/) - some of the toolchain can currently be run in docker (the broker can be built with golang 1.14 docker image instead of having to install golang if you'd like) and eventually release versions of the core broker will be made available as a docker image so the requirement to build the broker locally will go away.
-
 ## References
 * [Brokerpak Introduction](./brokerpak-intro.md)
 * [Brokerpak Specification](./brokerpak-specification.md)
 
-## Prerequisites
-
-> The broker makefile currently supports OSX and Linux environments.
-
-### Fetch the repo
-```bash
-git clone https://github.com/pivotal/cloud-service-broker
-```
-
-### Build the broker
-#### Option 1 - with docker
-```bash
-cd cloud-service-broker
-USE_GO_CONTAINERS=1 make build
-```
-
-#### Option 2 - with golang 1.14 installed locally
-```bash
-cd cloud-service-broker
-make build
-```
-
-After building the broker there should be two executables in the `./build` directory:
-
-```bash
-$ ls ./build
-cloud-service-broker.darwin cloud-service-broker.linux
-```
-
-*cloud-service-broker.darwin* is compiled for OSX, *cloud-service-broker.linux* is compiled for Linux. 
-
-> The rest of this document assumes development on OSX and will always reference *./build/cloud-service-broker.darwin*, if you're developing on Lunix, you should use *./build/cloud-service-broker.linux*
-
 ## The Azure Brokerpak
 
-Have a look at the Azure brokerpak, starting with *manifest.yml*
+Browse the brokerpak contents [here](https://github.com/pivotal/cloud-service-broker/tree/master/azure-brokerpak)
 
-```bash
-cd azure-brokerpak
-cat manifest.yml
-```
+Have a look at the Azure brokerpak, starting with *[manifest.yml](https://github.com/pivotal/cloud-service-broker/blob/master/azure-brokerpak/manifest.yml)*
 
-The output should resemble:
+The file should resemble:
 
 ```yaml
 packversion: 1
@@ -241,7 +200,7 @@ Each of theses service yml files and their requisite terraform will be bundled i
 
 ## A Service Definition
 
-Now lets dive into one of the service yaml files, *azure-mssql-db.yml*
+Now lets dive into one of the service yaml files, *[azure-mssql-db.yml](https://github.com/pivotal/cloud-service-broker/blob/master/azure-brokerpak/azure-mssql-db.yml)*
 
 ```yaml
 version: 1
