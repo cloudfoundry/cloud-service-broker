@@ -128,7 +128,7 @@ There are no bound apps for this service.
     /subscriptions/000abc00-0000-00ab-0abc-00000000/resourceGroups/resource-group/providers/Microsoft.Sql/servers/server-name/databases/database-name
     ```
 
-### 💼 Subsume the service instance
+### 💼  Subsume the service instance
 
 3. Create a new MSSQL service instance using Cloud Service Broker  and
    import the existing MSSQL fail over group resource by choosing the "subsume" plan and including the metadata as shown:
@@ -163,7 +163,7 @@ There are no bound apps for this service.
        See Prerequisite Section above.
     * `PRIMARY-AZURE-DB-ID` , `SECONDARY-AZURE-DB-ID` and `FOG-AZURE-ID` are found in the outputs of step 2 above. 
 
-### 🔓 Disconnecting app from subsumed resource belonging to the Legacy Service Broker
+### 🔓  Disconnecting app from subsumed resource belonging to the Legacy Service Broker
 
 4. If you used MASB to create the service instance you just subsumed, disconnect the app from the MASB service binding of the service instance you just imported by running:
 
@@ -180,7 +180,7 @@ There are no bound apps for this service.
 $ cf unbind-service my-app masb-instance
 ```
 
-### 🖇 Bind to new CSB Service Instance
+### 🖇  Bind to new CSB Service Instance
 
 5. Bind the app to the new service instance by running:
 
@@ -199,7 +199,7 @@ $cf bind-service my-app secondary-db
   this creates new binding credentials for the app.
 
 
-### 🔁 Restage 
+### 🔁  Restage 
 
 6. Restage the app
 
