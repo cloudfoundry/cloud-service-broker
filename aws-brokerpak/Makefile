@@ -25,9 +25,12 @@ run: build aws_access_key_id aws_secret_access_key
 	$(CSB) serve
 
 .PHONY: docs
-docs: build
+docs: build brokerpak-user-docs.md
+
+
+brokerpak-user-docs.md: *.yml
 	docker run $(DOCKER_OPTS) \
-	$(CSB) pak docs /brokerpak/$(shell ls *.brokerpak)
+	$(CSB) pak docs /brokerpak/$(shell ls *.brokerpak) > $@
 
 .PHONY: run-examples
 run-examples: build
@@ -66,3 +69,4 @@ endif
 clean:
 	- rm $(IAAS)-services-*.brokerpak
 	- rm ./cloud-service-broker
+	- rm ./brokerpak-user-docs.md
