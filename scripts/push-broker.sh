@@ -4,9 +4,15 @@ set +x # Hide secrets
 set -o errexit
 set -o pipefail
 
-cf push --no-start
+if [[ -z ${MANIFEST} ]]; then
+  MANIFEST=manifest.yml
+fi
 
-APP_NAME=cloud-service-broker
+cf push --no-start -f "${MANIFEST}"
+
+if [[ -z ${APP_NAME} ]]; then
+  APP_NAME=cloud-service-broker
+fi
 
 if [[ -z ${SECURITY_USER_NAME} ]]; then
   echo "Missing SECURITY_USER_NAME variable"
@@ -65,10 +71,16 @@ if [[ ${DB_TLS} ]]; then
   cf set-env "${APP_NAME}" DB_TLS "${DB_TLS}"
 fi
 
-cf bind-service "${APP_NAME}" csb-sql
+if [[ -z ${MSYQL_INSTANCE} ]]; then
+  MSYQL_INSTANCE=csb-sql
+fi
+
+cf bind-service "${APP_NAME}" "${MSYQL_INSTANCE}"
 
 cf start "${APP_NAME}"
 
-BROKER_NAME=csb-$USER
+if [[ -z ${BROKER_NAME} ]]; then
+  BROKER_NAME=csb-$USER
+fi
 
 cf create-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs) --space-scoped || cf update-service-broker "${BROKER_NAME}" "${SECURITY_USER_NAME}" "${SECURITY_USER_PASSWORD}" https://$(cf app "${APP_NAME}" | grep 'routes:' | cut -d ':' -f 2 | xargs)
