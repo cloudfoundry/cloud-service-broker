@@ -467,8 +467,11 @@ This is because they can resolve variables to the user's values first.
 * `request.service_id` - _string_ The GUID of the requested service.
 * `request.plan_id` - _string_ The ID of the requested plan. Plan IDs are unique within an instance.
 * `request.instance_id` - _string_ The ID of the requested instance. Instance IDs are unique within a service.
-* `request.default_labels` - _map[string]string_ A map of labels that should be applied to the created infrastructure for billing/accounting/tracking purposes.
-
+* `request.default_labels` - _map[string]string_ A map of labels that should be applied to the created infrastructure for billing/accounting/tracking purposes. See [billing documentation](billing.md) for full details about mapping process including special handling of characters in Osb request. 
+   * `request.default_labels.pcf-organization-guid` - _string_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) `organization_guid`
+   * `request.default_labels.pcf-space-guid` - _string_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) `space_guid`
+   * `request.default_labels.pcf-instance-id` - _string_ Mapped from the ID of the requested instance. 
+   
 #### Bind
 
 * `request.binding_id` - _string_ The ID of the new binding.
