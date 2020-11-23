@@ -30,8 +30,9 @@ provider "aws" {
   secret_key = var.aws_secret_access_key
 } 
 
-data "aws_vpc" "default" {
-  default = true
+data "aws_vpc" "vpc" {
+  default = length(var.aws_vpc_id) == 0
+  id = length(var.aws_vpc_id) == 0 ? null : var.aws_vpc_id
 }
 
 locals {
@@ -55,18 +56,17 @@ locals {
     "6.0" = "default.redis6.x"
   }
 
-  vpc_id = length(var.aws_vpc_id) == 0 ? data.aws_vpc.default.id : var.aws_vpc_id
   node_type = length(var.node_type) == 0 ? local.instance_types[var.cache_size] : var.node_type
   port = 6379
 }
 
 data "aws_subnet_ids" "all" {
-  vpc_id = local.vpc_id
+  vpc_id = data.aws_vpc.vpc.id
 }
 
 resource "aws_security_group" "sg" {
   name   = format("%s-sg", var.instance_name)
-  vpc_id = local.vpc_id
+  vpc_id = data.aws_vpc.vpc.id
 }
 
 resource "aws_elasticache_subnet_group" "subnet_group" {
