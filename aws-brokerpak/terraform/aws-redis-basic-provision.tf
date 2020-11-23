@@ -30,7 +30,8 @@ provider "aws" {
 } 
 
 data "aws_vpc" "default" {
-  default = true
+  default = length(var.aws_vpc_id) == 0
+  id = length(var.aws_vpc_id) == 0 ? null : var.aws_vpc_id
 }
 
 locals {

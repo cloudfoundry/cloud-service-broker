@@ -11,8 +11,9 @@ resource "random_password" "password" {
   override_special = "~_-."
 }
 
-data "aws_vpc" "default" {
-  default = true
+data "aws_vpc" "vpc" {
+  default = length(var.aws_vpc_id) == 0
+  id = length(var.aws_vpc_id) == 0 ? null : var.aws_vpc_id
 }
 
 locals {
@@ -32,17 +33,16 @@ locals {
       "postgres" = 5432
   }
   
-  vpc_id = length(var.aws_vpc_id) == 0 ? data.aws_vpc.default.id : var.aws_vpc_id
   instance_class = length(var.instance_class) == 0 ? local.instance_types[var.cores] : var.instance_class
 }
 
 data "aws_subnet_ids" "all" {
-  vpc_id = local.vpc_id
+  vpc_id = data.aws_vpc.vpc.id
 }
 
 resource "aws_security_group" "rds-sg" {
   name   = format("%s-sg", var.instance_name)
-  vpc_id = local.vpc_id
+  vpc_id = data.aws_vpc.vpc.id
 }
 
 resource "aws_db_subnet_group" "rds-private-subnet" {

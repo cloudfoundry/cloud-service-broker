@@ -27,7 +27,6 @@ run: build aws_access_key_id aws_secret_access_key
 .PHONY: docs
 docs: build brokerpak-user-docs.md
 
-
 brokerpak-user-docs.md: *.yml
 	docker run $(DOCKER_OPTS) \
 	$(CSB) pak docs /brokerpak/$(shell ls *.brokerpak) > $@
@@ -41,6 +40,16 @@ run-examples: build
 	-e USER \
 	$(CSB) pak run-examples /brokerpak/$(shell ls *.brokerpak)
 
+.PHONY: info
+info: build
+	docker run $(DOCKER_OPTS) \
+	$(CSB) pak info /brokerpak/$(shell ls *.brokerpak)
+
+.PHONY: validate
+validate: build
+	docker run $(DOCKER_OPTS) \
+	$(CSB) pak validate /brokerpak/$(shell ls *.brokerpak)
+
 # fetching bits for cf push broker
 cloud-service-broker:
 	wget $(shell curl -sL https://api.github.com/repos/pivotal/cloud-service-broker/releases/latest | jq -r '.assets[] | select(.name == "cloud-service-broker") | .browser_download_url')
@@ -50,8 +59,8 @@ APP_NAME := $(or $(APP_NAME), cloud-service-broker-aws)
 DB_TLS := $(or $(DB_TLS), skip-verify)
 
 .PHONY: push-broker
-push-broker: cloud-service-broker build aws_access_key_id aws_secret_access_key
-	MANIFEST=cf-manifest.yml APP_NAME=$(APP_NAME) DB_TLS=$(DB_TLS) ../scripts/push-broker.sh
+push-broker: cloud-service-broker build aws_access_key_id aws_secret_access_key aws_pas_vpc_id
+	MANIFEST=cf-manifest.yml APP_NAME=$(APP_NAME) DB_TLS=$(DB_TLS) GSB_PROVISION_DEFAULTS="{\"aws_vpc_id\": \"$(AWS_PAS_VPC_ID)\"}" ../scripts/push-broker.sh
 
 .PHONY: aws_access_key_id
 aws_access_key_id:
@@ -63,6 +72,12 @@ endif
 aws_secret_access_key:
 ifndef AWS_SECRET_ACCESS_KEY
 	$(error variable AWS_SECRET_ACCESS_KEY not defined)
+endif
+
+.PHONY: aws_pas_vpc_id
+aws_pas_vpc_id:
+ifndef AWS_PAS_VPC_ID
+	$(error variable AWS_PAS_VPC_ID not defined - must be VPC ID for PAS foundation)
 endif
 
 .PHONY: clean
