@@ -36,7 +36,7 @@ resource "random_password" "password" {
 resource "null_resource" "create-sql-login" {
 
   provisioner "local-exec" {
-    command = format("psqlcmd %s %d %s %s master \"CREATE LOGIN [%s] with PASSWORD='%s'\"",
+    command = format("psqlcmd %s %d %s '%s' master \"CREATE LOGIN [%s] with PASSWORD='%s'\"",
                      var.mssql_hostname,
                      var.mssql_port,
                      var.admin_username,
@@ -47,7 +47,7 @@ resource "null_resource" "create-sql-login" {
 
   provisioner "local-exec" {
 	  when = destroy
-    command = format("psqlcmd %s %d %s %s master \"DROP LOGIN [%s]\"",
+    command = format("psqlcmd %s %d %s '%s' master \"DROP LOGIN [%s]\"",
                      var.mssql_hostname,
                      var.mssql_port,
                      var.admin_username,
@@ -59,7 +59,7 @@ resource "null_resource" "create-sql-login" {
 
 resource "null_resource" "create-sql-user" {
   provisioner "local-exec" {
-    command = format("psqlcmd %s %d %s %s %s \"CREATE USER [%s] from LOGIN %s;\"", 
+    command = format("psqlcmd %s %d %s '%s' %s \"CREATE USER [%s] from LOGIN %s;\"", 
                      var.mssql_hostname,
                      var.mssql_port,
                      var.admin_username,
@@ -71,7 +71,7 @@ resource "null_resource" "create-sql-user" {
 
   provisioner "local-exec" {
 	  when = destroy
-    command = format("psqlcmd %s %d %s %s %s \"DROP USER [%s];\"",
+    command = format("psqlcmd %s %d %s '%s' %s \"DROP USER [%s];\"",
                      var.mssql_hostname,
                      var.mssql_port,
                      var.admin_username,
@@ -94,7 +94,7 @@ resource "null_resource" "add-user-roles" {
   for_each = local.roles
 
   provisioner "local-exec" {
-    command = format("psqlcmd %s %d %s %s %s \"ALTER ROLE %s ADD MEMBER [%s];\"", 
+    command = format("psqlcmd %s %d %s '%s' %s \"ALTER ROLE %s ADD MEMBER [%s];\"", 
                      var.mssql_hostname,
                      var.mssql_port,
                      var.admin_username,
@@ -107,7 +107,7 @@ resource "null_resource" "add-user-roles" {
   provisioner "local-exec" {
 	  when = destroy
 
-    command = format("psqlcmd %s %d %s %s %s \"ALTER ROLE %s DROP MEMBER [%s]\"",
+    command = format("psqlcmd %s %d %s '%s' %s \"ALTER ROLE %s DROP MEMBER [%s]\"",
                      var.mssql_hostname,
                      var.mssql_port,
                      var.admin_username,
