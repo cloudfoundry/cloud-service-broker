@@ -48,6 +48,8 @@ locals {
   }
   
   instance_class = length(var.instance_class) == 0 ? local.instance_types[var.cores] : var.instance_class
+
+  subnet_group = length(var.rds_subnet_group) > 0 ? var.rds_subnet_group : aws_db_subnet_group.rds-private-subnet[0].name
 }
 
 data "aws_subnet_ids" "all" {
@@ -60,6 +62,7 @@ resource "aws_security_group" "rds-sg" {
 }
 
 resource "aws_db_subnet_group" "rds-private-subnet" {
+  count = length(var.rds_subnet_group) == 0 ? 1 : 0
   name = format("%s-p-sn", var.instance_name)
   subnet_ids = data.aws_subnet_ids.all.ids
 }

@@ -157,7 +157,11 @@ provision:
   - field_name: instance_class
     type: string
     details: AWS DB instance class (see https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) Will be computed from cache_size if empty.
-    default: ""    
+    default: ""
+  - field_name: rds_subnet_group
+    type: string
+    details: AWS RDS subnet group already in existence to use
+    default: ""
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}

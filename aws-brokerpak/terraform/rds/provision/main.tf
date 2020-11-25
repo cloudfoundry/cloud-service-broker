@@ -26,7 +26,7 @@ resource "aws_db_instance" "db_instance" {
   parameter_group_name = length(var.parameter_group_name) == 0 ? format("default.%s%s",var.engine,var.engine_version) : var.parameter_group_name
   tags                 = var.labels
   vpc_security_group_ids = [aws_security_group.rds-sg.id]
-  db_subnet_group_name = aws_db_subnet_group.rds-private-subnet.name
+  db_subnet_group_name = local.subnet_group
   publicly_accessible  = var.publicly_accessible
   multi_az             = var.multi_az
   allow_major_version_upgrade = true

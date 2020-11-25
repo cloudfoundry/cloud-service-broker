@@ -27,3 +27,4 @@ variable storage_autoscale { type = bool }
 variable storage_autoscale_limit_gb { type = number }
 variable storage_encrypted { type = bool }
 variable parameter_group_name { type = string }
+variable rds_subnet_group { type = string }
