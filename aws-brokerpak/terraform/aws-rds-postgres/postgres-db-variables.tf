@@ -10,3 +10,7 @@ variable instance_class { type = string }
 variable engine { type = string }
 variable engine_version { type = string }
 variable aws_vpc_id { type = string }
+variable storage_autoscale { type = bool }
+variable storage_autoscale_limit_gb { type = number }
+variable storage_encrypted { type = bool }
+variable parameter_group_name { type = string }

@@ -42,7 +42,7 @@ data "aws_subnet_ids" "all" {
 
 resource "aws_security_group" "rds-sg" {
   name   = format("%s-sg", var.instance_name)
-  vpc_id = data.aws_vpc.vpc.id
+  vpc_id = data.aws_vpc.vpc.id     
 }
 
 resource "aws_db_subnet_group" "rds-private-subnet" {
