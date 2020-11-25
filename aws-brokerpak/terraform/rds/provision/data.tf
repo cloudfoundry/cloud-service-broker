@@ -1,3 +1,17 @@
+# Copyright 2020 Pivotal Software, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 resource "random_string" "username" {
   length = 16
   special = false
@@ -19,18 +33,18 @@ data "aws_vpc" "vpc" {
 locals {
   instance_types = {
     // https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html
-    1 = "db.m1.medium"
-    2 = "db.t2.medium"
-    4 = "db.m4.xlarge"
-    8 = "db.m4.2xlarge"
-    16 = "db.m4.4xlarge"
+    1 = "db.t2.small"
+    2 = "db.t3.medium"
+    4 = "db.m5.xlarge"
+    8 = "db.m5.2xlarge"
+    16 = "db.m5.4xlarge"
     32 = "db.m5.8xlarge"
     64 = "db.m5.16xlarge"
   }   
 
   ports = {
-      "mysql" = 3306
-      "postgres" = 5432
+    "mysql" = 3306
+    "postgres" = 5432
   }
   
   instance_class = length(var.instance_class) == 0 ? local.instance_types[var.cores] : var.instance_class

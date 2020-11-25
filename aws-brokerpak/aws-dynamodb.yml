@@ -150,7 +150,11 @@ provision:
     default: ${billing_mode}
     overwrite: true
     type: string    
-  template_ref: terraform/aws-dynamodb-provision.tf
+  template_refs:
+    main: terraform/dynamodb/provision/main.tf
+    outputs: terraform/dynamodb/provision/outputs.tf
+    provider: terraform/dynamodb/provision/provider.tf
+    variables: terraform/dynamodb/provision/variables.tf
   outputs:
   - field_name: dynamodb_table_arn
     type: string
@@ -196,7 +200,12 @@ bind:
       default: ${instance.details["region"]}
       overwrite: true
       type: string                 
-  template_ref: terraform/aws-dynamodb-bind.tf
+  template_refs:
+    data: terraform/dynamodb/bind/data.tf
+    main: terraform/dynamodb/bind/main.tf
+    outputs: terraform/dynamodb/bind/outputs.tf
+    provider: terraform/dynamodb/bind/provider.tf
+    variables: terraform/dynamodb/bind/variables.tf
   outputs: 
     - field_name: dynamodb_table_arn
       type: string
