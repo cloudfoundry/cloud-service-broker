@@ -62,7 +62,7 @@ data "aws_iam_policy_document" "user_policy" {
 			"s3:AbortMultipartUpload",
 			"s3:GetObjectTorrent",
 			"s3:GetObjectVersionTorrent",
-			"s3:RestoreObject",            
+			"s3:RestoreObject",
         ]
         resources = [
             format("%s/*", var.arn)

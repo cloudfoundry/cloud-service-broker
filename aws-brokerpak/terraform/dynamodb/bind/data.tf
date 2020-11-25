@@ -19,7 +19,7 @@ data "aws_iam_policy_document" "user_policy" {
     		"dynamodb:*",
         ]
         resources = [
-            var.dynamodb_table_arn 
+            var.dynamodb_table_arn
         ]
     }
 }

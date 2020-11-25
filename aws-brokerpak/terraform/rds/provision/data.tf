@@ -20,7 +20,7 @@ resource "random_string" "username" {
 
 resource "random_password" "password" {
   length = 32
-  special = false 
+  special = false
   // https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.Constraints
   override_special = "~_-."
 }
@@ -40,13 +40,13 @@ locals {
     16 = "db.m5.4xlarge"
     32 = "db.m5.8xlarge"
     64 = "db.m5.16xlarge"
-  }   
+  }
 
   ports = {
     "mysql" = 3306
     "postgres" = 5432
   }
-  
+
   instance_class = length(var.instance_class) == 0 ? local.instance_types[var.cores] : var.instance_class
 
   subnet_group = length(var.rds_subnet_group) > 0 ? var.rds_subnet_group : aws_db_subnet_group.rds-private-subnet[0].name
@@ -62,7 +62,7 @@ data "aws_subnet_ids" "all" {
 
 resource "aws_security_group" "rds-sg" {
   name   = format("%s-sg", var.instance_name)
-  vpc_id = data.aws_vpc.vpc.id     
+  vpc_id = data.aws_vpc.vpc.id
 }
 
 resource "aws_db_subnet_group" "rds-private-subnet" {

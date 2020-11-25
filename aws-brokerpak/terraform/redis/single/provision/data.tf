@@ -29,7 +29,7 @@ locals {
     64 = "cache.r4.4xlarge"
     128 = "cache.r4.8xlarge"
     256 = "cache.r5.12xlarge"
-  }   
+  }
 
   parameter_group_names = {
     "2.6" = "default.redis5.6"

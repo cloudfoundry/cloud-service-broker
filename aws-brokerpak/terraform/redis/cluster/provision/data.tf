@@ -29,7 +29,7 @@ locals {
     64 = "cache.r4.4xlarge"
     128 = "cache.r4.8xlarge"
     256 = "cache.r5.12xlarge"
-  }   
+  }
 
   parameter_group_names = {
     "3.2" = "default.redis3.2"
@@ -71,5 +71,5 @@ resource "random_password" "auth_token" {
   override_special = "!&#$^<>-"
   min_upper = 2
   min_lower = 2
-  min_special = 2  
+  min_special = 2
 }

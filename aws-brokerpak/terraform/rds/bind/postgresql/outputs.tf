@@ -14,19 +14,19 @@
 
 output username { value = postgresql_role.new_user.name }
 output password { value = postgresql_role.new_user.password }
-output uri { 
-  value = format("postgresql://%s:%s@%s:%d/%s", 
-                  postgresql_role.new_user.name, 
-                  postgresql_role.new_user.password, 
-                  var.hostname, 
+output uri {
+  value = format("postgresql://%s:%s@%s:%d/%s",
+                  postgresql_role.new_user.name,
+                  postgresql_role.new_user.password,
+                  var.hostname,
                   var.port,
-                  var.db_name) 
+                  var.db_name)
 }
-output jdbcUrl { 
-  value = format("jdbc:postgresql://%s:%d/%s?user=%s\u0026password=%s\u0026useSSL=false", 
-                  var.hostname, 
+output jdbcUrl {
+  value = format("jdbc:postgresql://%s:%d/%s?user=%s\u0026password=%s\u0026useSSL=false",
+                  var.hostname,
                   var.port,
-                  var.db_name, 
-                  postgresql_role.new_user.name, 
-                  postgresql_role.new_user.password) 
+                  var.db_name,
+                  postgresql_role.new_user.name,
+                  postgresql_role.new_user.password)
 }

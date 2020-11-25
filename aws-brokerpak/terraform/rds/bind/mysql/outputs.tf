@@ -14,19 +14,19 @@
 
 output username { value = mysql_user.newuser.user }
 output password { value = mysql_user.newuser.plaintext_password }
-output uri { 
-  value = format("mysql://%s:%s@%s:%d/%s", 
-                  mysql_user.newuser.user, 
-                  mysql_user.newuser.plaintext_password, 
-                  var.hostname, 
+output uri {
+  value = format("mysql://%s:%s@%s:%d/%s",
+                  mysql_user.newuser.user,
+                  mysql_user.newuser.plaintext_password,
+                  var.hostname,
                   var.port,
-                  var.db_name) 
+                  var.db_name)
 }
-output jdbcUrl { 
-  value = format("jdbc:mysql://%s:%d/%s?user=%s\u0026password=%s\u0026useSSL=false", 
-                  var.hostname, 
+output jdbcUrl {
+  value = format("jdbc:mysql://%s:%d/%s?user=%s\u0026password=%s\u0026useSSL=false",
+                  var.hostname,
                   var.port,
-                  var.db_name, 
-                  mysql_user.newuser.user, 
-                  mysql_user.newuser.plaintext_password) 
+                  var.db_name,
+                  mysql_user.newuser.user,
+                  mysql_user.newuser.plaintext_password)
 }
