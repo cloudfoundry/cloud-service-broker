@@ -102,6 +102,22 @@ provision:
       maximum: 4096
       minumum: 5
   user_inputs:
+  - field_name: storage_autoscale
+    type: boolean
+    default: false
+    details: Enable storage autoscaling up to storage_autoscale_limit_gb if true
+  - field_name: storage_autoscale_limit_gb
+    type: number
+    details: Max storage size if storage_autoscale is true    
+    default: 0
+  - field_name: storage_encrypted
+    type: boolean
+    default: false
+    details: Enable encrypted storage
+  - field_name: parameter_group_name
+    type: string
+    default: ""
+    details: DB parameter group name - default 'default.postgres.<postgresql version>'
   - field_name: instance_name
     type: string
     details: Name for your PostgreSQL instance
@@ -283,4 +299,9 @@ examples:
   description: Create a small PostgreSQL v10 instance
   plan_id: ffc51616-228b-41bd-bed1-d601c18d58f5
   provision_params: { "postgres_version": "10","publicly_accessible": true }
+  bind_params: {}
+- name: small-encrypted
+  description: Create a small PostgreSQL instance with encrypted storage
+  plan_id: ffc51616-228b-41bd-bed1-d601c18d58f5
+  provision_params: { "storage_encrypted": true, "publicly_accessible": true }
   bind_params: {}
