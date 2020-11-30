@@ -12,19 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-variable arn { type = string }
-variable aws_access_key_id { type = string }
-variable aws_secret_access_key { type = string }
-variable region { type = string }
-variable user_name { type = string }
-
-provider "aws" {
-  version = "~> 3.0"
-  region  = var.region
-  access_key = var.aws_access_key_id
-  secret_key = var.aws_secret_access_key
-}  
-
 data "aws_iam_policy_document" "user_policy" {
     statement {
         sid = "bucketAccess"
@@ -75,30 +62,10 @@ data "aws_iam_policy_document" "user_policy" {
 			"s3:AbortMultipartUpload",
 			"s3:GetObjectTorrent",
 			"s3:GetObjectVersionTorrent",
-			"s3:RestoreObject",            
+			"s3:RestoreObject",
         ]
         resources = [
             format("%s/*", var.arn)
         ]
     }
 }
-
-resource "aws_iam_user" "user" {
-    name = var.user_name
-    path = "/cf/"
-}
-
-resource "aws_iam_access_key" "access_key" {
-    user = aws_iam_user.user.name
-}
-
-resource "aws_iam_user_policy" "user_policy" {
-    name = format("%s-p", var.user_name)
-
-    user = aws_iam_user.user.name
-
-    policy = data.aws_iam_policy_document.user_policy.json
-}
-
-output access_key_id { value = aws_iam_access_key.access_key.id}
-output secret_access_key { value = aws_iam_access_key.access_key.secret }

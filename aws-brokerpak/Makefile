@@ -6,7 +6,7 @@ CSB=cfplatformeng/csb
 .PHONY: build
 build: $(IAAS)-services-*.brokerpak
 
-$(IAAS)-services-*.brokerpak: *.yml terraform/*/*.tf terraform/*.tf 
+$(IAAS)-services-*.brokerpak: *.yml
 	docker run $(DOCKER_OPTS) $(CSB) pak build
 
 SECURITY_USER_NAME := $(or $(SECURITY_USER_NAME), aws-broker)
@@ -22,6 +22,7 @@ run: build aws_access_key_id aws_secret_access_key
     -e AWS_SECRET_ACCESS_KEY \
 	-e "DB_TYPE=sqlite3" \
 	-e "DB_PATH=/tmp/csb-db" \
+	-e GSB_PROVISION_DEFAULTS \
 	$(CSB) serve
 
 .PHONY: docs

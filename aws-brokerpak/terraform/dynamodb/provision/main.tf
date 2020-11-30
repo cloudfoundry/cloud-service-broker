@@ -1,42 +1,19 @@
-
-variable region { type = string }
-variable labels { type = map }
-variable aws_access_key_id { type = string }
-variable aws_secret_access_key { type = string }
-variable aws_vpc_id { type = string }
-variable instance_name { type = string }
-
-variable billing_mode { type = string }
-variable hash_key { type = string }
-variable range_key { type = string }
-variable tabel_name { type = string }
-
-variable server_side_encryption_kms_key_arn { type = string }
-variable attributes { type = list(map(string)) }
-variable local_secondary_indexes { type = any }
-variable global_secondary_indexes { type = any }
-
-variable ttl_attribute_name { type = string }
-variable ttl_enabled { type = bool }
-variable stream_enabled { type = bool }
-variable stream_view_type { type = string }
-variable server_side_encryption_enabled { type = bool }
-
-variable write_capacity { type = number }
-variable read_capacity { type = number }
-   
-
-provider "aws" {
-  version = "~> 3.0"
-  region  = var.region
-  access_key = var.aws_access_key_id
-  secret_key = var.aws_secret_access_key
-} 
-
-
+# Copyright 2020 Pivotal Software, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 resource "aws_dynamodb_table" "this" {
-  
+
   name             = var.tabel_name
   billing_mode     = var.billing_mode
   hash_key         = var.hash_key
@@ -84,7 +61,7 @@ resource "aws_dynamodb_table" "this" {
       read_capacity      = lookup(global_secondary_index.value, "read_capacity", null)
       write_capacity     = lookup(global_secondary_index.value, "write_capacity", null)
       non_key_attributes = lookup(global_secondary_index.value, "non_key_attributes", null)
-      
+
     }
   }
 
@@ -107,8 +84,3 @@ tags = var.labels
 
 
 }
-
-output region { value = var.region }
-output dynamodb_table_arn { value =element(concat(aws_dynamodb_table.this.*.arn, list("")), 0)}
-output dynamodb_table_id { value = element(concat(aws_dynamodb_table.this.*.id, list("")), 0) }
-output dynamodb_table_name { value = aws_dynamodb_table.this.name }

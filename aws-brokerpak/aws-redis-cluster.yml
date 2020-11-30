@@ -148,7 +148,12 @@ provision:
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
-  template_ref: ./terraform/aws-redis-cluster-provision.tf
+  template_refs:
+    outputs: terraform/redis/cluster/provision/outputs.tf
+    provider: terraform/redis/cluster/provision/provider.tf
+    variables: terraform/redis/cluster/provision/variables.tf
+    main: terraform/redis/cluster/provision/main.tf
+    data: terraform/redis/cluster/provision/data.tf
   outputs:
   - field_name: name
     type: string
@@ -165,9 +170,28 @@ provision:
 bind:
   plan_inputs: []
   user_inputs: []
-  computed_inputs: []
-  template: ''
-  outputs: []
+  computed_inputs:
+  - name: instance_name
+    type: string
+    default: ${instance.details["name"]}
+    overwrite: true
+  template_refs:
+    outputs: terraform/redis/cluster/bind/outputs.tf
+    variables: terraform/redis/cluster/bind/variables.tf
+    data: terraform/redis/cluster/provision/data.tf
+  outputs:
+  - field_name: name
+    type: string
+    details: The name of the redis.
+  - field_name: host
+    type: string
+    details: Hostname or IP address of the exposed redis endpoint used by clients to connect to the service.
+  - field_name: tls_port
+    type: integer
+    details: The TLS port number of the exposed redis instance.
+  - field_name: password
+    type: string
+    details: The password to authenticate to the redis instance.    
 examples:
 - name: redis-cache-small
   description: Small redis cache

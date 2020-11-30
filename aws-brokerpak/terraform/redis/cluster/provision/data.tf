@@ -12,24 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-variable cache_size { type = number }
-variable redis_version { type = string }
-variable instance_name { type = string }
-variable region { type = string }
-variable labels { type = map }
-variable aws_access_key_id { type = string }
-variable aws_secret_access_key { type = string }
-variable aws_vpc_id { type = string }
-variable node_type { type = string }
-variable node_count { type = number }
-
-provider "aws" {
-  version = "~> 3.0"
-  region  = var.region
-  access_key = var.aws_access_key_id
-  secret_key = var.aws_secret_access_key
-} 
-
 data "aws_vpc" "vpc" {
   default = length(var.aws_vpc_id) == 0
   id = length(var.aws_vpc_id) == 0 ? null : var.aws_vpc_id
@@ -47,7 +29,7 @@ locals {
     64 = "cache.r4.4xlarge"
     128 = "cache.r4.8xlarge"
     256 = "cache.r5.12xlarge"
-  }   
+  }
 
   parameter_group_names = {
     "3.2" = "default.redis3.2"
@@ -89,25 +71,5 @@ resource "random_password" "auth_token" {
   override_special = "!&#$^<>-"
   min_upper = 2
   min_lower = 2
-  min_special = 2  
+  min_special = 2
 }
-
-resource "aws_elasticache_replication_group" "redis" {
-  automatic_failover_enabled    = var.node_count > 1
-  replication_group_id          = var.instance_name
-  replication_group_description = format("%s redis", var.instance_name)
-  node_type                     = local.node_type
-  number_cache_clusters         = var.node_count
-  parameter_group_name          = local.parameter_group_names[var.redis_version]
-  port                          = local.port
-  tags                = var.labels
-  security_group_ids = [aws_security_group.sg.id]
-  subnet_group_name = aws_elasticache_subnet_group.subnet_group.name  
-  transit_encryption_enabled = true
-  auth_token = random_password.auth_token.result
-}
-
-output name { value = aws_elasticache_replication_group.redis.id }
-output host { value = aws_elasticache_replication_group.redis.primary_endpoint_address }
-output password { value = random_password.auth_token.result }
-output tls_port { value = local.port }

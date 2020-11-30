@@ -1,3 +1,17 @@
+# Copyright 2020 Pivotal Software, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 resource "random_string" "username" {
   length = 16
   special = false
@@ -6,7 +20,7 @@ resource "random_string" "username" {
 
 resource "random_password" "password" {
   length = 32
-  special = false 
+  special = false
   // https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.Constraints
   override_special = "~_-."
 }
@@ -19,21 +33,27 @@ data "aws_vpc" "vpc" {
 locals {
   instance_types = {
     // https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html
-    1 = "db.m1.medium"
-    2 = "db.t2.medium"
-    4 = "db.m4.xlarge"
-    8 = "db.m4.2xlarge"
-    16 = "db.m4.4xlarge"
+    1 = "db.t2.small"
+    2 = "db.t3.medium"
+    4 = "db.m5.xlarge"
+    8 = "db.m5.2xlarge"
+    16 = "db.m5.4xlarge"
     32 = "db.m5.8xlarge"
     64 = "db.m5.16xlarge"
-  }   
+  }
 
   ports = {
-      "mysql" = 3306
-      "postgres" = 5432
+    "mysql" = 3306
+    "postgres" = 5432
   }
-  
+
   instance_class = length(var.instance_class) == 0 ? local.instance_types[var.cores] : var.instance_class
+
+  subnet_group = length(var.rds_subnet_group) > 0 ? var.rds_subnet_group : aws_db_subnet_group.rds-private-subnet[0].name
+
+  parameter_group_name = length(var.parameter_group_name) == 0 ? format("default.%s%s",var.engine,var.engine_version) : var.parameter_group_name
+
+  max_allocated_storage = ( var.storage_autoscale && var.storage_autoscale_limit_gb > var.storage_gb ) ? var.storage_autoscale_limit_gb : null
 }
 
 data "aws_subnet_ids" "all" {
@@ -42,10 +62,11 @@ data "aws_subnet_ids" "all" {
 
 resource "aws_security_group" "rds-sg" {
   name   = format("%s-sg", var.instance_name)
-  vpc_id = data.aws_vpc.vpc.id     
+  vpc_id = data.aws_vpc.vpc.id
 }
 
 resource "aws_db_subnet_group" "rds-private-subnet" {
+  count = length(var.rds_subnet_group) == 0 ? 1 : 0
   name = format("%s-p-sn", var.instance_name)
   subnet_ids = data.aws_subnet_ids.all.ids
 }
