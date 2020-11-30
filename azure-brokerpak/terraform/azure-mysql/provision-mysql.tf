@@ -33,6 +33,7 @@ variable backup_retention_days { type = number }
 variable enable_threat_detection_policy { type = bool }
 variable threat_detection_policy_emails { type = list(string) }
 variable email_account_admins { type = bool }
+variable firewall_rules { type = list(list(string)) }
 
 provider "azurerm" {
   version = "~> 2.33.0"
@@ -101,11 +102,16 @@ resource "azurerm_mysql_server" "instance" {
   ssl_minimal_tls_version_enforced = local.tls_version
   backup_retention_days            = var.backup_retention_days
   auto_grow_enabled = true
-  threat_detection_policy {
-    enabled              = var.enable_threat_detection_policy == null ? false : var.enable_threat_detection_policy
-    email_addresses      = var.threat_detection_policy_emails == null ? [] : var.threat_detection_policy_emails
-    email_account_admins = var.email_account_admins == null ? false : var.email_account_admins
+
+  dynamic "threat_detection_policy" {
+    for_each = var.enable_threat_detection_policy == null ? [] : (var.enable_threat_detection_policy ? [1] : [])
+    content {
+      enabled              = true
+      email_addresses      = var.threat_detection_policy_emails == null ? [] : var.threat_detection_policy_emails
+      email_account_admins = var.email_account_admins == null ? false : var.email_account_admins
+    }
   }
+
   tags = var.labels
 }
 
@@ -132,6 +138,15 @@ resource "azurerm_mysql_firewall_rule" "allow_azure" {
   start_ip_address    = "0.0.0.0"
   end_ip_address      = "0.0.0.0"
   count = var.authorized_network == "default" ? 1 : 0
+}    
+
+resource "azurerm_mysql_firewall_rule" "allow_firewall" {
+  name                = format("firewall_%s_%s", replace(var.instance_name, "-", "_"), count.index)
+  resource_group_name = local.resource_group
+  server_name         = azurerm_mysql_server.instance.name
+  start_ip_address    = var.firewall_rules[count.index][0]
+  end_ip_address      = var.firewall_rules[count.index][1]
+  count = length(var.firewall_rules)
 }    
 
 output name { value = azurerm_mysql_database.instance-db.name }

@@ -30,6 +30,7 @@ plans:
   properties:
     use_tls: true
     tls_min_version: "TLS1_1"
+    firewall_rules: []
 - name: medium
   id: 9eb836dd-4B90-4cF7-bc06-1986103802d3
   description: 'Mysql v5.7. Instance properties: 4 vCores, 20 GB RAM, 10 GB storage.'
@@ -39,6 +40,7 @@ plans:
     storage_gb: 10    
     use_tls: true
     tls_min_version: "TLS1_1"
+    firewall_rules: []
 - name: large
   id: 6f8Ea44c-6840-4b0b-9068-f0cd9b17437c
   description: 'Mysql v5.7. Instance properties: 8 vCores, 40 GB RAM, 20 GB storage.'
@@ -48,6 +50,7 @@ plans:
     storage_gb: 20    
     use_tls: true
     tls_min_version: "TLS1_1"
+    firewall_rules: []
 provision:
   plan_inputs:
   - field_name: use_tls
@@ -68,6 +71,9 @@ provision:
   - field_name: email_account_admins
     type: boolean
     details: Should the account administrators be emailed when this alert is triggered? (default false)
+  - field_name: firewall_rules
+    type: array
+    details: Array of firewall rule start/end IP pairs (e.g. [["1.2.3.4", "2.3.4.5"], ["5.6.7.8", "6.7.8.9"]])
   user_inputs:
   - field_name: cores
     type: integer
