@@ -4,7 +4,7 @@ DOCKER_OPTS=--rm -v $(PWD):/brokerpak -w /brokerpak #--network=host
 CSB=cfplatformeng/csb
 
 .PHONY: build
-build: $(IAAS)-services-*.brokerpak
+build: $(IAAS)-services-*.brokerpak terraform/*/*/*.tf
 
 $(IAAS)-services-*.brokerpak: *.yml
 	docker run $(DOCKER_OPTS) $(CSB) pak build

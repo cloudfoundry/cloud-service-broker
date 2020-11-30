@@ -47,7 +47,27 @@ plans:
     cores: 8
     postgres_version: 11
     storage_gb: 20
+- name: subsume
+  id: 886cb524-1d4f-11eb-b35f-8ba96a9085d7
+  description: 'Subsume control of an existing Postgre Database'
+  display_name: "Subsume"
+  properties:
+    subsume: true      
 provision:
+  import_inputs:
+  - field_name: aws_db_id
+    type: string
+    details: AWS db id to subsume
+    tf_resource: aws_db_instance.db_instance
+  import_parameter_mappings:
+  - tf_variable: allocated_storage
+    parameter_name: var.storage_gb
+  import_parameters_to_delete: ["aws_db_instance.db_instance.id", 
+                                 "aws_db_instance.db_instance.hosted_zone_id", "aws_db_instance.db_instance.address",
+                                 "aws_db_instance.db_instance.replicas","aws_db_instance.db_instance.endpoint",
+                                 "aws_db_instance.db_instance.arn",
+                                 "aws_db_instance.db_instance.resource_id",
+                                 "aws_db_instance.db_instance.status"]   
   plan_inputs:
   - field_name: cores
     required: true
