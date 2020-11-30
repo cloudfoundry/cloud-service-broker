@@ -1,3 +1,17 @@
+# Copyright 2020 Pivotal Software, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 resource "aws_db_instance" "db_instance" {
   allocated_storage    = var.storage_gb
   storage_type         = "gp2"
@@ -9,14 +23,14 @@ resource "aws_db_instance" "db_instance" {
   name                 = var.db_name
   username             = random_string.username.result
   password             = random_password.password.result
-  parameter_group_name = length(var.parameter_group_name) == 0 ? format("default.%s%s",var.engine,var.engine_version) : var.parameter_group_name
+  parameter_group_name = local.parameter_group_name
   tags                 = var.labels
   vpc_security_group_ids = [aws_security_group.rds-sg.id]
-  db_subnet_group_name = aws_db_subnet_group.rds-private-subnet.name
+  db_subnet_group_name = local.subnet_group
   publicly_accessible  = var.publicly_accessible
   multi_az             = var.multi_az
   allow_major_version_upgrade = true
   apply_immediately = true
-  max_allocated_storage = ( var.storage_autoscale && var.storage_autoscale_limit_gb > var.storage_gb ) ? var.storage_autoscale_limit_gb : null
+  max_allocated_storage = local.max_allocated_storage
   storage_encrypted = var.storage_encrypted
 }

@@ -12,28 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-variable bucket_name { type = string }
-variable acl { type = string }
-variable region { type = string }
-variable labels { type = map }
-variable aws_access_key_id { type = string }
-variable aws_secret_access_key { type = string }
-
-provider "aws" {
-  version = "~> 3.0"
-  region  = var.region
-  access_key = var.aws_access_key_id
-  secret_key = var.aws_secret_access_key
-}  
-
-resource "aws_s3_bucket" "b" {
-  bucket = var.bucket_name
-  acl    = var.acl
-
-  tags = var.labels
-}
-
-
 output arn { value = aws_s3_bucket.b.arn}
 output bucket_domain_name { value = aws_s3_bucket.b.bucket_domain_name }
 output region { value = aws_s3_bucket.b.region }

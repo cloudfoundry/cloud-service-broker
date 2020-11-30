@@ -94,7 +94,11 @@ provision:
     default: ${json.marshal(request.default_labels)}
     overwrite: true
     type: object
-  template_ref: ./terraform/aws-s3-bucket-provision.tf
+  template_refs:
+    main: terraform/s3/provision/main.tf
+    outputs: terraform/s3/provision/outputs.tf
+    provider: terraform/s3/provision/provider.tf
+    variables: terraform/s3/provision/variables.tf
   outputs:
   - field_name: arn
     type: string
@@ -132,7 +136,12 @@ bind:
     default: csb-${request.binding_id}
     overwrite: true
     type: string
-  template_ref: ./terraform/aws-s3-bucket-bind.tf
+  template_refs:
+    data: terraform/s3/bind/data.tf
+    main: terraform/s3/bind/main.tf
+    outputs: terraform/s3/bind/outputs.tf
+    provider: terraform/s3/bind/provider.tf
+    variables: terraform/s3/bind/variables.tf
   outputs:
   - field_name: access_key_id
     type: string
