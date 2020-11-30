@@ -63,7 +63,7 @@ provision:
     type: string
     details: The version for the mysql instance.
     default: 5.7
-    enum: 
+    enum:
       5.6: MySQL v5.6
       5.7: MySQL v5.7
   - field_name: storage_gb
@@ -75,6 +75,31 @@ provision:
       maximum: 4096
       minumum: 5
   user_inputs:
+  - field_name: storage_autoscale
+    type: boolean
+    default: false
+    details: Enable storage autoscaling up to storage_autoscale_limit_gb if true
+  - field_name: storage_autoscale_limit_gb
+    type: number
+    details: Max storage size if storage_autoscale is true
+    default: 0
+  - field_name: storage_encrypted
+    type: boolean
+    default: false
+    details: Enable encrypted storage
+  - field_name: parameter_group_name
+    type: string
+    default: ""
+    details: DB parameter group name - default 'default.postgres.<postgresql version>'
+  - field_name: instance_name
+    type: string
+    details: Name for your PostgreSQL instance
+    default: csb-postgresql-${request.instance_id}
+    constraints:
+      maxLength: 98
+      minLength: 6
+      pattern: ^[a-z][a-z0-9-]+$
+    prohibit_update: true
   - field_name: instance_name
     type: string
     details: Name for your mysql instance
@@ -83,7 +108,7 @@ provision:
       maxLength: 98
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
-    prohibit_update: true   
+    prohibit_update: true
   - field_name: db_name
     type: string
     details: Name for your database
@@ -98,7 +123,7 @@ provision:
     type: string
     details: The region of the mysql instance.
     default: us-west-2
-    enum: 
+    enum:
       us-east-2 : us-east-2
       us-east-1 : us-east-1
       us-west-1 : us-west-1
@@ -155,7 +180,7 @@ provision:
   - name: engine_version
     default: ${mysql_version}
     overwrite: true
-    type: string    
+    type: string
   template_refs:
     outputs: terraform/rds/provision/outputs.tf
     provider: terraform/rds/provision/provider.tf
@@ -208,19 +233,19 @@ bind:
     variables: terraform/rds/bind/mysql/variables.tf
     main: terraform/rds/bind/mysql/main.tf
     data: terraform/rds/bind/mysql/data.tf
-  outputs: 
+  outputs:
     - field_name: username
       type: string
       details: The username to authenticate to the database instance.
     - field_name: password
       type: string
-      details: The password to authenticate to the database instance.  
+      details: The password to authenticate to the database instance.
     - field_name: uri
       type: string
       details: The uri to connect to the database instance and database.
     - field_name: jdbcUrl
       type: string
-      details: The jdbc url to connect to the database instance and database.    
+      details: The jdbc url to connect to the database instance and database.
 examples:
 - name: small
   description: Create a small mysql instance
@@ -231,6 +256,11 @@ examples:
   description: Create a small mysql v5.6 instance with 50gb storage
   plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
   provision_params: { "mysql_version": "5.6", "storage_gb": 50, "publicly_accessible": true }
+  bind_params: {}
+- name: small-encrypted
+  description: Create a small PostgreSQL instance with encrypted storage
+  plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
+  provision_params: { "storage_encrypted": true, "publicly_accessible": true }
   bind_params: {}
 - name: medium
   description: Create a medium mysql instance
@@ -246,4 +276,4 @@ examples:
   description: Create a medium mysql instance
   plan_id: f2ae0bb7-6921-43b7-bae7-6d1fe1c5d1c6
   provision_params: { "publicly_accessible": true, "multi_az": true }
-  bind_params: {}  
+  bind_params: {}
