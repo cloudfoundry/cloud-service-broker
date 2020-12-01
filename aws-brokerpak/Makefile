@@ -4,9 +4,9 @@ DOCKER_OPTS=--rm -v $(PWD):/brokerpak -w /brokerpak #--network=host
 CSB=cfplatformeng/csb
 
 .PHONY: build
-build: $(IAAS)-services-*.brokerpak terraform/*/*/*.tf
+build: $(IAAS)-services-*.brokerpak 
 
-$(IAAS)-services-*.brokerpak: *.yml
+$(IAAS)-services-*.brokerpak: *.yml terraform/*/*/*.tf
 	docker run $(DOCKER_OPTS) $(CSB) pak build
 
 SECURITY_USER_NAME := $(or $(SECURITY_USER_NAME), aws-broker)

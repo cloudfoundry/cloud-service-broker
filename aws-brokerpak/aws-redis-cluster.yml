@@ -170,28 +170,9 @@ provision:
 bind:
   plan_inputs: []
   user_inputs: []
-  computed_inputs:
-  - name: instance_name
-    type: string
-    default: ${instance.details["name"]}
-    overwrite: true
-  template_refs:
-    outputs: terraform/redis/cluster/bind/outputs.tf
-    variables: terraform/redis/cluster/bind/variables.tf
-    data: terraform/redis/cluster/provision/data.tf
-  outputs:
-  - field_name: name
-    type: string
-    details: The name of the redis.
-  - field_name: host
-    type: string
-    details: Hostname or IP address of the exposed redis endpoint used by clients to connect to the service.
-  - field_name: tls_port
-    type: integer
-    details: The TLS port number of the exposed redis instance.
-  - field_name: password
-    type: string
-    details: The password to authenticate to the redis instance.    
+  computed_inputs: []
+  template: ''
+  outputs: []
 examples:
 - name: redis-cache-small
   description: Small redis cache

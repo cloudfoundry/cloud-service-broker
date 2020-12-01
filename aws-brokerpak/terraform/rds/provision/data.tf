@@ -54,6 +54,8 @@ locals {
   parameter_group_name = length(var.parameter_group_name) == 0 ? format("default.%s%s",var.engine,var.engine_version) : var.parameter_group_name
 
   max_allocated_storage = ( var.storage_autoscale && var.storage_autoscale_limit_gb > var.storage_gb ) ? var.storage_autoscale_limit_gb : null
+
+  vpc_security_group_ids = length(var.vpc_security_group_ids) == 0 ? [aws_security_group.rds-sg[0].id] : split(",", var.vpc_security_group_ids)
 }
 
 data "aws_subnet_ids" "all" {
@@ -61,20 +63,22 @@ data "aws_subnet_ids" "all" {
 }
 
 resource "aws_security_group" "rds-sg" {
+  count = length(var.vpc_security_group_ids) == 0 && !var.subsume ? 1 : 0
   name   = format("%s-sg", var.instance_name)
   vpc_id = data.aws_vpc.vpc.id
 }
 
 resource "aws_db_subnet_group" "rds-private-subnet" {
-  count = length(var.rds_subnet_group) == 0 ? 1 : 0
+  count = length(var.rds_subnet_group) == 0 && !var.subsume ? 1 : 0
   name = format("%s-p-sn", var.instance_name)
   subnet_ids = data.aws_subnet_ids.all.ids
 }
 
 resource "aws_security_group_rule" "rds_inbound_access" {
+  count = length(var.vpc_security_group_ids) == 0 && !var.subsume ? 1 : 0
   from_port         = local.ports[var.engine]
   protocol          = "tcp"
-  security_group_id = aws_security_group.rds-sg.id
+  security_group_id = aws_security_group.rds-sg[0].id
   to_port           = local.ports[var.engine]
   type              = "ingress"
   cidr_blocks       = ["0.0.0.0/0"]

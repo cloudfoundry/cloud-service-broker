@@ -25,7 +25,7 @@ resource "aws_db_instance" "db_instance" {
   password             = random_password.password.result
   parameter_group_name = local.parameter_group_name
   tags                 = var.labels
-  vpc_security_group_ids = [aws_security_group.rds-sg.id]
+  vpc_security_group_ids = local.vpc_security_group_ids
   db_subnet_group_name = local.subnet_group
   publicly_accessible  = var.publicly_accessible
   multi_az             = var.multi_az

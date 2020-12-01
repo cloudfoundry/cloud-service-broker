@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-output username { value = mysql_user.newuser.user }
-output password { value = mysql_user.newuser.plaintext_password }
+output username { value = random_string.username.result }
+output password { value = random_password.password.result }
 output uri {
   value = format("mysql://%s:%s@%s:%d/%s",
-                  mysql_user.newuser.user,
-                  mysql_user.newuser.plaintext_password,
+                  random_string.username.result,
+                  random_password.password.result,
                   var.hostname,
                   var.port,
                   var.db_name)
@@ -27,6 +27,6 @@ output jdbcUrl {
                   var.hostname,
                   var.port,
                   var.db_name,
-                  mysql_user.newuser.user,
-                  mysql_user.newuser.plaintext_password)
+                  random_string.username.result,
+                  random_password.password.result)
 }
