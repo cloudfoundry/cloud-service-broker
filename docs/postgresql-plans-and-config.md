@@ -79,16 +79,17 @@ CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/
 | small | db.t2.medium |
 | medium | db.m4.xlarge |
 | large | db.m4.2xlarge |
+| subsume | existing posgresql db |
 
 #### Core to instance class mapping
 
 | Cores | Instance class |
 |-------|---------------|
-| 1     | db.m1.medium  |
-| 2     | db.t2.medium  |
-| 4     | db.m4.xlarge  |
-| 8     | db.m4.2xlarge |
-| 16    | db.m4.4xlarge |
+| 1     | db.t2.small  |
+| 2     | db.t3.medium  |
+| 4     | db.m5.xlarge  |
+| 8     | db.m5.2xlarge |
+| 16    | db.m5.4xlarge |
 | 32    | db.m5.8xlarge |
 | 64    | db.m5.16xlarge|
 
@@ -100,12 +101,26 @@ The following parameters (as well as those above) may be configured during servi
 |-----------|------|------|---------|
 | instance_name | string | name of AWS instance to create | csb-mysql-*instance_id* |
 | region  | string | [AWS region](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) to deploy service  | us-west-2 |
-| vpc_id | string | The VPC to connect the instance to | the default vpc |
+| aws_vpc_id | string | The VPC to connect the instance to | the default vpc |
 | aws_access_key_id | string | ID of Azure tenant for instance | config file value `aws.access_key_id` |
 | aws_secret_access_key | string | ID of Azure subscription for instance | config file value `aws.secret_access_key` |
 | instance_class | string | explicit [instance class](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.DBInstanceClass.html) *overrides* `cores` conversion into instance class per table above | | 
 | multi-az | boolean | If `true`, create multi-az ([HA](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZ.html)) instance | `false` | 
 | publicly_accessible | boolean | If `true`, make instance available to public connections | `false ` |
+| storage_autoscale | boolean | If `true`, storage will autoscale to max of *storage_autoscale_limit_gb* | `false` |
+| storage_autoscale_limit_gb | number | if *storage_autoscale* is `true`, max size storage will scale up to ||
+| storage_encrypted | boolean | If `true`, DB storage will be encrypted | `false`|
+| parameter_group_name | string | PostgreSQL parameter group name for instance | `default.postgres.<postgres version>` |
+| rds_subnet_group | string | Name of subnet to attach DB instance to, overrides *aws_vpc_id* | |
+| vpc_security_group_ids | comma delimited string | Security group ID's to assign to DB instance | |
+
+
+#### Subsume Parameters
+| Parameter | Type | Description |
+|-----------|------|------|
+| aws_db_id | string | The AWS resource ID for the postgresql DB to subsume |
+
+
 
 ## Binding Credentials
 
