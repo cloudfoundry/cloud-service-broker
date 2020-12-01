@@ -31,6 +31,7 @@ plans:
     cores: 2
     postgres_version: 11
     storage_gb: 5
+    subsume: false
 - name: medium
   id: e64d07f9-ceb2-40a6-abd9-391047fa3cf5
   description: 'PostgreSQL 11, minumum 4 cores, minumum 8GB ram, 10GB storage'
@@ -39,6 +40,7 @@ plans:
     cores: 4
     postgres_version: 11
     storage_gb: 10
+    subsume: false
 - name: large
   id: 48baef10-a14c-4ae1-aab5-25f26eba941a
   description: 'PostgreSQL 11, minumum 8 cores, minumum 16GB ram, 20GB storage'
@@ -47,6 +49,7 @@ plans:
     cores: 8
     postgres_version: 11
     storage_gb: 20
+    subsume: false
 - name: subsume
   id: 886cb524-1d4f-11eb-b35f-8ba96a9085d7
   description: 'Subsume control of an existing Postgre Database'
@@ -97,6 +100,9 @@ provision:
     constraints:
       maximum: 4096
       minumum: 5
+  - field_name: subsume
+    type: boolean
+    details: Indicates an existing PostgreSQL instnace should be subsumed
   user_inputs:
   - field_name: storage_autoscale
     type: boolean
@@ -181,6 +187,10 @@ provision:
   - field_name: rds_subnet_group
     type: string
     details: AWS RDS subnet group already in existence to use
+    default: ""
+  - field_name: vpc_security_group_ids
+    type: string
+    details: Comma delimited list of security group ID's for instance
     default: ""
   computed_inputs:
   - name: labels

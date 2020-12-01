@@ -31,6 +31,7 @@ plans:
     cores: 2
     mysql_version: 5.7
     storage_gb: 5
+    subsume: false
 - name: medium
   id: f2ae0bb7-6921-43b7-bae7-6d1fe1c5d1c6
   description: 'MySQL v5.7, minumum 4 cores, minumum 8GB ram, 10GB storage'
@@ -39,6 +40,7 @@ plans:
     cores: 4
     mysql_version: 5.7
     storage_gb: 10
+    subsume: false
 - name: large
   id: a5fea013-e87f-488f-969d-1cf038881b57
   description: 'MySQL v5.7, minumum 8 cores, minumum 16GB ram, 20GB storage'
@@ -47,6 +49,7 @@ plans:
     cores: 8
     mysql_version: 5.7
     storage_gb: 20
+    subsume: false
 provision:
   plan_inputs:
   - field_name: cores
@@ -74,6 +77,9 @@ provision:
     constraints:
       maximum: 4096
       minumum: 5
+  - field_name: subsume
+    type: boolean
+    details: Indicates an existing PostgreSQL instnace should be subsumed      
   user_inputs:
   - field_name: storage_autoscale
     type: boolean
@@ -90,16 +96,7 @@ provision:
   - field_name: parameter_group_name
     type: string
     default: ""
-    details: DB parameter group name - default 'default.postgres.<postgresql version>'
-  - field_name: instance_name
-    type: string
-    details: Name for your PostgreSQL instance
-    default: csb-postgresql-${request.instance_id}
-    constraints:
-      maxLength: 98
-      minLength: 6
-      pattern: ^[a-z][a-z0-9-]+$
-    prohibit_update: true
+    details: DB parameter group name - default 'default.mysql.<mysql version>'
   - field_name: instance_name
     type: string
     details: Name for your mysql instance
@@ -168,6 +165,10 @@ provision:
     type: string
     details: AWS RDS subnet group already in existence to use
     default: ""
+  - field_name: vpc_security_group_ids
+    type: string
+    details: Comma delimited list of security group ID's for instance
+    default: ""    
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
