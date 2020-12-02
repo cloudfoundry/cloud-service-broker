@@ -55,25 +55,28 @@ provision:
   - field_name: hash_key
     type: string
     details: The attribute to use as the hash (partition) key. Must also be defined as an attribute
-    default: ""
+    required: true
   - field_name: tabel_name
     type: string
     details: Name of the DynamoDB table
-    default: ""    
+    required: true    
   - field_name: attributes
     type: array
-    details: List of nested attribute definitions. Only required for hash_key and range_key attributes. 
+    details: List of nested attribute definitions. Only required for hash_key and range_key attributes.
+    required: true 
   - field_name: global_secondary_indexes
     type: array
     details: Describe a GSI for the table; subject to the normal limits on the number of GSIs, projected attributes, etc.
+    required: true
   - field_name: local_secondary_indexes
     type: array
     details: Describe an LSI on the table; these can only be allocated at creation so you cannot change this definition after you have created the resource.
+    required: false
     default: []            
   - field_name: range_key
     type: string
     details: The attribute to use as the range (sort) key. Must also be defined as an attribute
-    default: ""
+    drequired: true
   - field_name: ttl_attribute_name
     type: string
     details: The name of the table attribute to store the TTL timestamp in
