@@ -143,6 +143,14 @@ provision:
     type: string
     details: AWS Elasticache node type (see https://aws.amazon.com/elasticache/pricing) Will be computed from cache_size if empty.
     default: ""
+  - field_name: elasticache_subnet_group
+    type: string
+    details: AWS Elasticache subnet group already in existence to use
+    default: ""
+  - field_name: vpc_security_group_ids
+    type: string
+    details: Comma delimited list of security group ID's for instance
+    default: ""  
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
