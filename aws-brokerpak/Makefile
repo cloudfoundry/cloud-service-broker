@@ -58,10 +58,11 @@ cloud-service-broker:
 
 APP_NAME := $(or $(APP_NAME), cloud-service-broker-aws)
 DB_TLS := $(or $(DB_TLS), skip-verify)
+GSB_PROVISION_DEFAULTS := $(or $(GSB_PROVISION_DEFAULTS), {"aws_vpc_id": "$(AWS_PAS_VPC_ID)"})
 
 .PHONY: push-broker
 push-broker: cloud-service-broker build aws_access_key_id aws_secret_access_key aws_pas_vpc_id
-	MANIFEST=cf-manifest.yml APP_NAME=$(APP_NAME) DB_TLS=$(DB_TLS) GSB_PROVISION_DEFAULTS="{\"aws_vpc_id\": \"$(AWS_PAS_VPC_ID)\"}" ../scripts/push-broker.sh
+	MANIFEST=cf-manifest.yml APP_NAME=$(APP_NAME) DB_TLS=$(DB_TLS) GSB_PROVISION_DEFAULTS='$(GSB_PROVISION_DEFAULTS)' ../scripts/push-broker.sh
 
 .PHONY: aws_access_key_id
 aws_access_key_id:
