@@ -28,7 +28,7 @@ resource "aws_security_group_rule" "inbound_access" {
   count = length(var.vpc_security_group_ids) == 0 ? 1 : 0    
   from_port         = local.port
   protocol          = "tcp"
-  security_group_id = aws_security_group.sg.id
+  security_group_id = aws_security_group.sg[0].id
   to_port           = local.port
   type              = "ingress"
   cidr_blocks       = ["0.0.0.0/0"]
