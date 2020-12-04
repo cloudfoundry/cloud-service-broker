@@ -29,7 +29,9 @@ resource "aws_db_instance" "db_instance" {
   db_subnet_group_name = local.subnet_group
   publicly_accessible  = var.publicly_accessible
   multi_az             = var.multi_az
-  allow_major_version_upgrade = true
+  allow_major_version_upgrade = var.allow_major_version_upgrade
+  auto_minor_version_upgrade = var.auto_minor_version_upgrade
+  maintenance_window = var.maintenance_window
   apply_immediately = true
   max_allocated_storage = local.max_allocated_storage
   storage_encrypted = var.storage_encrypted

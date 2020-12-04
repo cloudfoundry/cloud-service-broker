@@ -169,6 +169,102 @@ provision:
     type: string
     details: Comma delimited list of security group ID's for instance
     default: ""    
+  - field_name: allow_major_version_upgrade
+    type: boolean
+    details: Allow major version upgrades. Changing this parameter does not result in an outage and the change is asynchronously applied as soon as possible.
+    default: true
+  - field_name: auto_minor_version_upgrade
+    type: boolean
+    details: Allow minor version upgrades automatically during the maintenance window
+    default: true
+  - field_name: maintenance_day
+    type: string
+    details: The preferred maintenance day
+    default: Sun
+    enum:
+      Sun: Sunday
+      Mon: Monday
+      Tue: Tuesday
+      Wed: Wednesday
+      Thu: Thursday
+      Fri: Friday
+      Sat: Saturday
+  - field_name: maintenance_start_hour
+    type: string
+    details: The preferred maintenance start hour
+    default: "00"
+    enum:
+      "00": 12 am
+      "01": 1 am
+      "02": 2 am
+      "03": 3 am
+      "04": 4 am
+      "05": 5 am
+      "06": 6 am
+      "07": 7 am
+      "08": 8 am
+      "09": 9 am
+      "10": 10 am
+      "11": 11 am
+      "12": 12 pm
+      "13": 1 pm
+      "14": 2 pm
+      "15": 3 pm
+      "16": 4 pm
+      "17": 5 pm
+      "18": 6 pm
+      "19": 7 pm
+      "20": 8 pm
+      "21": 9 pm
+      "22": 10 pm
+      "23": 11 pm
+  - field_name: maintenance_start_min
+    type: string
+    details: The preferred maintenance start minute
+    default: "00"
+    enum:
+      "00": Top of the hour
+      "15": 15 minutes
+      "30": 30 minutes
+      "45": 45 minutes
+  - field_name: maintenance_end_hour
+    type: string
+    details: The preferred maintenance end hour
+    default: "00"
+    enum:
+      "00": 12 am
+      "01": 1 am
+      "02": 2 am
+      "03": 3 am
+      "04": 4 am
+      "05": 5 am
+      "06": 6 am
+      "07": 7 am
+      "08": 8 am
+      "09": 9 am
+      "10": 10 am
+      "11": 11 am
+      "12": 12 pm
+      "13": 1 pm
+      "14": 2 pm
+      "15": 3 pm
+      "16": 4 pm
+      "17": 5 pm
+      "18": 6 pm
+      "19": 7 pm
+      "20": 8 pm
+      "21": 9 pm
+      "22": 10 pm
+      "23": 11 pm
+  - field_name: maintenance_end_min
+    type: string
+    details: The preferred maintenance end minute
+    default: "00"
+    enum:
+      "00": Top of the hour
+      "15": 15 minutes
+      "30": 30 minutes
+      "45": 45 minutes
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
@@ -180,6 +276,10 @@ provision:
     type: string
   - name: engine_version
     default: ${mysql_version}
+    overwrite: true
+    type: string
+  - name: maintenance_window
+    default: ${maintenance_day}:${maintenance_start_hour}:${maintenance_start_min}-${maintenance_day}:${maintenance_end_hour}:${maintenance_end_min}
     overwrite: true
     type: string
   template_refs:
@@ -249,32 +349,42 @@ bind:
       details: The jdbc url to connect to the database instance and database.
 examples:
 - name: small
-  description: Create a small mysql instance
+  description: Create a small MySQL instance
   plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
   provision_params: { "publicly_accessible": true }
   bind_params: {}
 - name: small-v5.6-50gb-
-  description: Create a small mysql v5.6 instance with 50gb storage
+  description: Create a small MySQL v5.6 instance with 50gb storage
   plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
   provision_params: { "mysql_version": "5.6", "storage_gb": 50, "publicly_accessible": true }
   bind_params: {}
 - name: small-encrypted
-  description: Create a small PostgreSQL instance with encrypted storage
+  description: Create a small MySQL instance with encrypted storage
   plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
   provision_params: { "storage_encrypted": true, "publicly_accessible": true }
   bind_params: {}
+- name: small-disable-upgrades
+  description: Create a small MySQL instance with disabled upgrades
+  plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
+  provision_params: { "allow_major_version_upgrade": false, "auto_minor_version_upgrade": false, "publicly_accessible": true }
+  bind_params: {}
+- name: small-with-maintenance-window
+  description: Create a small MySQL instance with encrypted storage
+  plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
+  provision_params: { "maintenance_day": "Thu", "maintenance_start_hour": "15", "maintenance_start_min": "30", "maintenance_end_hour": "17", "maintenance_end_min": "00", "publicly_accessible": true }
+  bind_params: {}
 - name: medium
-  description: Create a medium mysql instance
+  description: Create a medium MySQL instance
   plan_id: f2ae0bb7-6921-43b7-bae7-6d1fe1c5d1c6
   provision_params: { "publicly_accessible": true }
   bind_params: {}
 - name: large
-  description: Create a large mysql instance
+  description: Create a large MySQL instance
   plan_id: a5fea013-e87f-488f-969d-1cf038881b57
   provision_params: { "publicly_accessible": true }
   bind_params: {}
 - name: medium-multiaz
-  description: Create a medium mysql instance
+  description: Create a medium MySQL instance
   plan_id: f2ae0bb7-6921-43b7-bae7-6d1fe1c5d1c6
   provision_params: { "publicly_accessible": true, "multi_az": true }
   bind_params: {}
