@@ -55,7 +55,7 @@ plans:
   description: 'Subsume control of an existing Postgre Database'
   display_name: "Subsume"
   properties:
-    subsume: true      
+    subsume: true
 provision:
   import_inputs:
   - field_name: aws_db_id
@@ -65,12 +65,12 @@ provision:
   import_parameter_mappings:
   - tf_variable: allocated_storage
     parameter_name: var.storage_gb
-  import_parameters_to_delete: ["aws_db_instance.db_instance.id", 
+  import_parameters_to_delete: ["aws_db_instance.db_instance.id",
                                  "aws_db_instance.db_instance.hosted_zone_id", "aws_db_instance.db_instance.address",
                                  "aws_db_instance.db_instance.replicas","aws_db_instance.db_instance.endpoint",
                                  "aws_db_instance.db_instance.arn",
                                  "aws_db_instance.db_instance.resource_id",
-                                 "aws_db_instance.db_instance.status"]   
+                                 "aws_db_instance.db_instance.status"]
   plan_inputs:
   - field_name: cores
     required: true
@@ -86,7 +86,7 @@ provision:
     type: string
     details: The version for the PostgreSQL instance.
     default: 11
-    enum: 
+    enum:
       9.4: PostgreSQL 9.4
       9.5: PostgreSQL 9.5
       9.6: PostgreSQL 9.6
@@ -110,7 +110,7 @@ provision:
     details: Enable storage autoscaling up to storage_autoscale_limit_gb if true
   - field_name: storage_autoscale_limit_gb
     type: number
-    details: Max storage size if storage_autoscale is true    
+    details: Max storage size if storage_autoscale is true
     default: 0
   - field_name: storage_encrypted
     type: boolean
@@ -128,7 +128,7 @@ provision:
       maxLength: 98
       minLength: 6
       pattern: ^[a-z][a-z0-9-]+$
-    prohibit_update: true   
+    prohibit_update: true
   - field_name: db_name
     type: string
     details: Name for your database
@@ -143,7 +143,7 @@ provision:
     type: string
     details: The region of the PostgreSQL instance.
     default: us-west-2
-    enum: 
+    enum:
       us-east-2 : us-east-2
       us-east-1 : us-east-1
       us-west-1 : us-west-1
@@ -192,6 +192,102 @@ provision:
     type: string
     details: Comma delimited list of security group ID's for instance
     default: ""
+  - field_name: allow_major_version_upgrade
+    type: boolean
+    details: Allow major version upgrades. Changing this parameter does not result in an outage and the change is asynchronously applied as soon as possible.
+    default: true
+  - field_name: auto_minor_version_upgrade
+    type: boolean
+    details: Allow minor version upgrades automatically during the maintenance window
+    default: true
+  - field_name: maintenance_day
+    type: string
+    details: The preferred maintenance day
+    default: Sun
+    enum:
+      Sun: Sunday
+      Mon: Monday
+      Tue: Tuesday
+      Wed: Wednesday
+      Thu: Thursday
+      Fri: Friday
+      Sat: Saturday
+  - field_name: maintenance_start_hour
+    type: string
+    details: The preferred maintenance start hour
+    default: "00"
+    enum:
+      "00": 12 am
+      "01": 1 am
+      "02": 2 am
+      "03": 3 am
+      "04": 4 am
+      "05": 5 am
+      "06": 6 am
+      "07": 7 am
+      "08": 8 am
+      "09": 9 am
+      "10": 10 am
+      "11": 11 am
+      "12": 12 pm
+      "13": 1 pm
+      "14": 2 pm
+      "15": 3 pm
+      "16": 4 pm
+      "17": 5 pm
+      "18": 6 pm
+      "19": 7 pm
+      "20": 8 pm
+      "21": 9 pm
+      "22": 10 pm
+      "23": 11 pm
+  - field_name: maintenance_start_min
+    type: string
+    details: The preferred maintenance start minute
+    default: "00"
+    enum:
+      "00": Top of the hour
+      "15": 15 minutes
+      "30": 30 minutes
+      "45": 45 minutes
+  - field_name: maintenance_end_hour
+    type: string
+    details: The preferred maintenance end hour
+    default: "00"
+    enum:
+      "00": 12 am
+      "01": 1 am
+      "02": 2 am
+      "03": 3 am
+      "04": 4 am
+      "05": 5 am
+      "06": 6 am
+      "07": 7 am
+      "08": 8 am
+      "09": 9 am
+      "10": 10 am
+      "11": 11 am
+      "12": 12 pm
+      "13": 1 pm
+      "14": 2 pm
+      "15": 3 pm
+      "16": 4 pm
+      "17": 5 pm
+      "18": 6 pm
+      "19": 7 pm
+      "20": 8 pm
+      "21": 9 pm
+      "22": 10 pm
+      "23": 11 pm
+  - field_name: maintenance_end_min
+    type: string
+    details: The preferred maintenance end minute
+    default: "00"
+    enum:
+      "00": Top of the hour
+      "15": 15 minutes
+      "30": 30 minutes
+      "45": 45 minutes
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
@@ -203,6 +299,10 @@ provision:
     type: string
   - name: engine_version
     default: ${postgres_version}
+    overwrite: true
+    type: string
+  - name: maintenance_window
+    default: ${maintenance_day}:${maintenance_start_hour}:${maintenance_start_min}-${maintenance_day}:${maintenance_end_hour}:${maintenance_end_min}
     overwrite: true
     type: string
   template_refs:
@@ -257,19 +357,19 @@ bind:
     variables: ./terraform/rds/bind/postgresql/variables.tf
     main: ./terraform/rds/bind/postgresql/main.tf
     data: ./terraform/rds/bind/postgresql/data.tf
-  outputs: 
+  outputs:
   - field_name: username
     type: string
     details: The username to authenticate to the database instance.
   - field_name: password
     type: string
-    details: The password to authenticate to the database instance.  
+    details: The password to authenticate to the database instance.
   - field_name: uri
     type: string
     details: The uri to connect to the database instance and database.
   - field_name: jdbcUrl
     type: string
-    details: The jdbc url to connect to the database instance and database.    
+    details: The jdbc url to connect to the database instance and database.
 examples:
 - name: small
   description: Create a small PostgreSQL instance
@@ -295,7 +395,7 @@ examples:
   description: Create a medium PostgreSQL instance
   plan_id: e64d07f9-ceb2-40a6-abd9-391047fa3cf5
   provision_params: { "publicly_accessible": true, "multi_az": true }
-  bind_params: {}  
+  bind_params: {}
 - name: small-v9.4
   description: Create a small PostgreSQL v9.4 instance
   plan_id: ffc51616-228b-41bd-bed1-d601c18d58f5
@@ -315,4 +415,14 @@ examples:
   description: Create a small PostgreSQL instance with encrypted storage
   plan_id: ffc51616-228b-41bd-bed1-d601c18d58f5
   provision_params: { "storage_encrypted": true, "publicly_accessible": true }
+  bind_params: {}
+- name: small-disable-upgrades
+  description: Create a small PostgreSQL instance with disabled upgrades
+  plan_id: ffc51616-228b-41bd-bed1-d601c18d58f5
+  provision_params: { "allow_major_version_upgrade": false, "auto_minor_version_upgrade": false, "publicly_accessible": true }
+  bind_params: {}
+- name: small-with-maintenance-window
+  description: Create a small PostgreSQL instance with encrypted storage
+  plan_id: ffc51616-228b-41bd-bed1-d601c18d58f5
+  provision_params: { "maintenance_day": "Thu", "maintenance_start_hour": "15", "maintenance_start_min": "30", "maintenance_end_hour": "17", "maintenance_end_min": "00", "publicly_accessible": true }
   bind_params: {}
