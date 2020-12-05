@@ -33,3 +33,4 @@ variable vpc_security_group_ids { type = string }
 variable allow_major_version_upgrade { type = bool }
 variable auto_minor_version_upgrade { type = bool }
 variable maintenance_window { type = string }
+variable use_tls { type = bool }
