@@ -196,6 +196,7 @@ func RunExamples(pack string) error {
 func Docs(pack string) error {
 	registry, err := registryFromLocalBrokerpak(pack)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 

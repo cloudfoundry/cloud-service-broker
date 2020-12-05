@@ -104,6 +104,10 @@ provision:
     type: boolean
     details: Indicates an existing PostgreSQL instnace should be subsumed
   user_inputs:
+  - field_name: use_tls
+    type: boolean
+    details: Use TLS for connection
+    default: true      
   - field_name: storage_autoscale
     type: boolean
     default: false
@@ -327,6 +331,9 @@ provision:
   - field_name: password
     type: string
     details: The password to authenticate to the database instance.
+  - field_name: use_tls
+    type: boolean
+    details: Using TLS for connection
 bind:
   plan_inputs: []
   user_inputs: []
@@ -351,6 +358,10 @@ bind:
     type: string
     default: ${instance.details["password"]}
     overwrite: true
+  - name: use_tls
+    type: boolean
+    default: ${instance.details["use_tls"]}
+    overwrite: true    
   template_refs:
     outputs: ./terraform/rds/bind/postgresql/outputs.tf
     provider: ./terraform/rds/bind/postgresql/provider.tf

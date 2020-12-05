@@ -23,10 +23,11 @@ output uri {
                   var.db_name)
 }
 output jdbcUrl {
-  value = format("jdbc:mysql://%s:%d/%s?user=%s\u0026password=%s\u0026useSSL=false",
+  value = format("jdbc:mysql://%s:%d/%s?user=%s\u0026password=%s\u0026useSSL=%v",
                   var.hostname,
                   var.port,
                   var.db_name,
                   random_string.username.result,
-                  random_password.password.result)
+                  random_password.password.result,
+                  var.use_tls)
 }
