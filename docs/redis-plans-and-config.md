@@ -64,6 +64,8 @@ The following parameters (as well as those above) may be configured at service p
 | redis_version | string | Redis version to provision (`"2.6"`, `"2.8"`, `"3.2"`, `"4.0"`, `"5.0"`) | `"5.0"`|
 | cache_size | integer | Size in GB for cache: 1,2,4,8,16,32,64,128,256 | per plan |
 | node_type | string | explicit [node type](https://aws.amazon.com/elasticache/pricing/) *overrides* `cache_size` conversion into node type per table above | | 
+| elasticache_subnet_group | string | Name of subnet to attach redis instance to, overrides *aws_vpc_id* | |
+| vpc_security_group_ids | comma delimited string | Security group ID's to assign to redis instance | |
 
 ### Azure Notes - applies to *csb-azure-redis*
 

@@ -40,36 +40,14 @@ locals {
 
   node_type = length(var.node_type) == 0 ? local.instance_types[var.cache_size] : var.node_type
   port = 6379
+
+  subnet_group = length(var.elasticache_subnet_group) > 0 ? var.elasticache_subnet_group : aws_elasticache_subnet_group.subnet_group[0].name
+
+   vpc_security_group_ids = length(var.vpc_security_group_ids) == 0 ? [aws_security_group.sg[0].id] : split(",", var.vpc_security_group_ids)
 }
 
 data "aws_subnet_ids" "all" {
   vpc_id = data.aws_vpc.vpc.id
 }
 
-resource "aws_security_group" "sg" {
-  name   = format("%s-sg", var.instance_name)
-  vpc_id = data.aws_vpc.vpc.id
-}
 
-resource "aws_elasticache_subnet_group" "subnet_group" {
-  name = format("%s-p-sn", var.instance_name)
-  subnet_ids = data.aws_subnet_ids.all.ids
-}
-
-resource "aws_security_group_rule" "inbound_access" {
-  from_port         = local.port
-  protocol          = "tcp"
-  security_group_id = aws_security_group.sg.id
-  to_port           = local.port
-  type              = "ingress"
-  cidr_blocks       = ["0.0.0.0/0"]
-}
-
-resource "random_password" "auth_token" {
-  length = 64
-  // https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/auth.html
-  override_special = "!&#$^<>-"
-  min_upper = 2
-  min_lower = 2
-  min_special = 2
-}

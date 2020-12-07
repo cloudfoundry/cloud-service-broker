@@ -19,3 +19,5 @@ variable labels { type = map }
 variable aws_vpc_id { type = string }
 variable node_type { type = string }
 variable node_count { type = number }
+variable elasticache_subnet_group { type = string }
+variable vpc_security_group_ids { type = string }
