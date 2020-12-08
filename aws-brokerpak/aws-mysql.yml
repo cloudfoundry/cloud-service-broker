@@ -362,40 +362,40 @@ examples:
 - name: small
   description: Create a small MySQL instance
   plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
-  provision_params: { "publicly_accessible": true }
+  provision_params: { "publicly_accessible": true, "use_tls": false }
   bind_params: {}
 - name: small-v5.6-50gb-
   description: Create a small MySQL v5.6 instance with 50gb storage
   plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
-  provision_params: { "mysql_version": "5.6", "storage_gb": 50, "publicly_accessible": true }
+  provision_params: { "mysql_version": "5.6", "storage_gb": 50, "publicly_accessible": true, "use_tls": false }
   bind_params: {}
 - name: small-encrypted
   description: Create a small MySQL instance with encrypted storage
   plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
-  provision_params: { "storage_encrypted": true, "publicly_accessible": true }
+  provision_params: { "storage_encrypted": true, "publicly_accessible": true, "use_tls": false }
   bind_params: {}
 - name: small-disable-upgrades
   description: Create a small MySQL instance with disabled upgrades
   plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
-  provision_params: { "allow_major_version_upgrade": false, "auto_minor_version_upgrade": false, "publicly_accessible": true }
+  provision_params: { "allow_major_version_upgrade": false, "auto_minor_version_upgrade": false, "publicly_accessible": true, "use_tls": false }
   bind_params: {}
 - name: small-with-maintenance-window
   description: Create a small MySQL instance with encrypted storage
   plan_id: 2268ce43-7fd7-48dc-be2f-8611e11fb12e
-  provision_params: { "maintenance_day": "Thu", "maintenance_start_hour": "15", "maintenance_start_min": "30", "maintenance_end_hour": "17", "maintenance_end_min": "00", "publicly_accessible": true }
+  provision_params: { "maintenance_day": "Thu", "maintenance_start_hour": "15", "maintenance_start_min": "30", "maintenance_end_hour": "17", "maintenance_end_min": "00", "publicly_accessible": true, "use_tls": false }
   bind_params: {}
 - name: medium
   description: Create a medium MySQL instance
   plan_id: f2ae0bb7-6921-43b7-bae7-6d1fe1c5d1c6
-  provision_params: { "publicly_accessible": true }
+  provision_params: { "publicly_accessible": true, "use_tls": false }
   bind_params: {}
 - name: large
   description: Create a large MySQL instance
   plan_id: a5fea013-e87f-488f-969d-1cf038881b57
-  provision_params: { "publicly_accessible": true }
+  provision_params: { "publicly_accessible": true, "use_tls": false }
   bind_params: {}
 - name: medium-multiaz
   description: Create a medium MySQL instance
   plan_id: f2ae0bb7-6921-43b7-bae7-6d1fe1c5d1c6
-  provision_params: { "publicly_accessible": true, "multi_az": true }
+  provision_params: { "publicly_accessible": true, "multi_az": true, "use_tls": false }
   bind_params: {}
