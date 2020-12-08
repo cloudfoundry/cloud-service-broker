@@ -107,6 +107,7 @@ CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/
 | parameter_group_name | string | PostgreSQL parameter group name for instance | `default.mysql.<mysql version>` |
 | rds_subnet_group | string | Name of subnet to attach DB instance to, overrides *aws_vpc_id* | |
 | vpc_security_group_ids | comma delimited string | Security group ID's to assign to DB instance | |
+| use_tls | boolean |Use TLS for DB connections | `true` |
 
 ### GCP Notes
 
