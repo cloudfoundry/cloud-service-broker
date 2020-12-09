@@ -93,6 +93,7 @@ The following parameters plan options
 | ha-small | Standard | C | 1 | 1GB | yes |
 | ha-medium | Standard | C | 3 | 6GB | yes |
 | ha-large | Standard | C | 5 | 26GB | yes |
+| ha-P1 | Premium | P | 1 | 6GB | yes
 
 
 #### Configuration Options
@@ -109,6 +110,7 @@ The following parameters (as well as those above) may be configured at service p
 | azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
 | azure_client_secret | string | Secret (password) for Azure service principal to authenticate for instance creation | config file value `azure.client_secret` |
 | skip_provider_registration | boolean | `true` to skip automatic Azure provider registration, set if service principal being used does not have rights to register providers | `false` |
+| subnet_id | string | ID of the subnet in which the Redis Cache instances will be provisionned | null |
 
 #### Notes
 For consuming Azure Redis, the TLS port is used in place of the standard port.  The key for the TLS port is "tls_port".  The standard port is disabled for both the Azure Basic Plans as well as Azure High Availability Plans.

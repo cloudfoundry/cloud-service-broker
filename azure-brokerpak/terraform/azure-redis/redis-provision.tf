@@ -26,9 +26,11 @@ variable labels { type = map }
 variable skip_provider_registration { type = bool }
 variable tls_min_version { type = string }
 variable maxmemory_policy { type = string }
+variable firewall_rules { type = list(list(string)) }
+variable subnet_id { type = string }
 
 provider "azurerm" {
-  version = "~> 2.20.0"
+  version = "~> 2.33.0"
   features {}
 
   subscription_id = var.azure_subscription_id
@@ -57,6 +59,7 @@ resource "azurerm_redis_cache" "redis" {
   family              = var.family
   capacity            = var.capacity
   location            = var.location
+  subnet_id	          = length(var.subnet_id) == 0 ? "" : var.subnet_id
   resource_group_name = local.resource_group
   minimum_tls_version = length(var.tls_min_version) == 0 ? "1.2" : var.tls_min_version
   tags                = var.labels
@@ -65,8 +68,23 @@ resource "azurerm_redis_cache" "redis" {
   }
 }
 
+resource "azurerm_redis_firewall_rule" "allow_azure" {
+  name                = format("firewall_%s_%s", replace(var.instance_name, "-", "_"), count.index)
+  resource_group_name = local.resource_group
+  redis_cache_name    = azurerm_redis_cache.redis.name
+  start_ip            = var.firewall_rules[count.index][0]
+  end_ip              = var.firewall_rules[count.index][1]
+
+  count = length(var.firewall_rules)
+}    
+
 output name { value = azurerm_redis_cache.redis.name }
 output host { value = azurerm_redis_cache.redis.hostname }
 # output port { value = azurerm_redis_cache.redis.port }
 output password { value = azurerm_redis_cache.redis.primary_access_key }
 output tls_port { value = azurerm_redis_cache.redis.ssl_port }
+output status { value = format("created cache %s (id: %s) URL: URL: https://portal.azure.com/#@%s/resource%s",
+                               azurerm_redis_cache.redis.name,
+                               azurerm_redis_cache.redis.id,
+                               var.azure_tenant_id,
+                               azurerm_redis_cache.redis.id)}

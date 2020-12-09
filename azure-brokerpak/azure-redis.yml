@@ -31,6 +31,8 @@ plans:
     sku_name: Basic
     family: C
     capacity: 1    
+    tls_min_version: "1.2"
+    firewall_rules: []
 - name: medium
   id: 6b272c43-2116-4483-9a99-de9262c0a7d6
   description: 'A basic plan with 6GB cache and no failover. High Availability is not provided.'
@@ -39,6 +41,8 @@ plans:
     sku_name: Basic
     family: C
     capacity: 3
+    tls_min_version: "1.2"    
+    firewall_rules: []
 - name: large
   id: c3e34abc-a820-457c-b723-1c342ef42c50
   description: 'A basic plan with 26GB cache and no failover. High Availability is not provided.'
@@ -47,6 +51,8 @@ plans:
     sku_name: Basic
     family: C
     capacity: 5
+    firewall_rules: []
+    tls_min_version: "1.2"    
 - name: ha-small
   id: d27a8e60-3724-49d1-b668-44b03d99b3b3
   description: 'A standard plan with 1GB cache with high availability and no failover.'
@@ -55,6 +61,8 @@ plans:
     sku_name: Standard
     family: C
     capacity: 1      
+    firewall_rules: []
+    tls_min_version: "1.2"    
 - name: ha-medium
   id: 421b932a-b86f-48a3-97e4-64bb13d3ec13
   description: 'A standard plan with 6GB cache with high availability and no failover.'
@@ -63,6 +71,8 @@ plans:
     sku_name: Standard
     family: C
     capacity: 3
+    firewall_rules: []
+    tls_min_version: "1.2"    
 - name: ha-large
   id: e919b281-9661-465d-82cf-0a0a6e1f195a
   description: 'A standard plan with 26GB cache with high availability and no failover.'
@@ -71,6 +81,17 @@ plans:
     sku_name: Standard
     family: C
     capacity: 5          
+    firewall_rules: []
+    tls_min_version: "1.2" 
+- name: ha-P1
+  id: 2a63e092-ab5c-4804-abd6-2d951240f0f6
+  description: "A High Availability plan with 6GB cache and no failover"
+  display_name: "High Availability P1"
+  properties:
+    sku_name: Premium
+    family: P
+    capacity: 1
+    tls_min_version: "1.2"
 provision:
   plan_inputs:
   - field_name: sku_name
@@ -96,6 +117,18 @@ provision:
     constraints:
       maximum: 6
       minimum: 0
+  - field_name: tls_min_version
+    type: string
+    details: Minimum enforced TLS version. Possible values are 1.0, 1.1, 1.2
+    default: "1.2"
+  - field_name: firewall_rules
+    type: array
+    details: Array of firewall rule start/end IP pairs (e.g. [["1.2.3.4", "2.3.4.5"], ["5.6.7.8", "6.7.8.9"]])
+    default: []
+  - field_name: subnet_id
+    type: string
+    details: The subnet in which the redis instance will be created (only for premium plan)
+    default: ""
   user_inputs:
   - field_name: instance_name
     type: string
@@ -173,14 +206,18 @@ provision:
     type: boolean
     details: Skip automatic Azure provider registration, set to true if service principal being used does not have rights to register providers
     default: false       
-  - field_name: tls_min_version
-    type: string
-    details: Minimum enforced TLS version. Possible values are 1.0, 1.1, 1.2
-    default: "1.2"
   - field_name: maxmemory_policy
     type: string
     details: Max memory eviction policy. Possible values are volatile-lru (default), allkeys-lru, volatile-random, allkeys-random, volatile-ttl, noeviction
     default: volatile-lru
+  - field_name: subnet_id
+    type: string
+    details: Subnet in which the Redis instances will be (only available for Premium plans)
+    default: ""
+  - field_name: firewall_rules
+    type: array
+    details: Array of start and end IPs
+    default: []
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
