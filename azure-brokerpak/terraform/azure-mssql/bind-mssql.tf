@@ -36,48 +36,56 @@ resource "random_password" "password" {
 resource "null_resource" "create-sql-login" {
 
   provisioner "local-exec" {
-    command = format("psqlcmd %s %d %s '%s' master \"CREATE LOGIN [%s] with PASSWORD='%s'\"",
+    command = format("psqlcmd %s %d %s master \"CREATE LOGIN [%s] with PASSWORD='%s'\"",
                      var.mssql_hostname,
                      var.mssql_port,
                      var.admin_username,
-                     var.admin_password,
                      random_string.username.result,
                      random_password.password.result)
+    environment = {
+      MSSQL_PASSWORD = var.admin_password
+    }                     
   }
 
   provisioner "local-exec" {
-	  when = destroy
-    command = format("psqlcmd %s %d %s '%s' master \"DROP LOGIN [%s]\"",
+	when = destroy
+    command = format("psqlcmd %s %d %s master \"DROP LOGIN [%s]\"",
                      var.mssql_hostname,
                      var.mssql_port,
                      var.admin_username,
-                     var.admin_password,
                      random_string.username.result)
+    environment = {
+      MSSQL_PASSWORD = var.admin_password
+    }                     
   }
   depends_on = [random_password.password]
 }
 
 resource "null_resource" "create-sql-user" {
   provisioner "local-exec" {
-    command = format("psqlcmd %s %d %s '%s' %s \"CREATE USER [%s] from LOGIN %s;\"", 
+    command = format("psqlcmd %s %d %s %s \"CREATE USER [%s] from LOGIN %s;\"", 
                      var.mssql_hostname,
                      var.mssql_port,
                      var.admin_username,
-                     var.admin_password,
                      var.mssql_db_name,
                      random_string.username.result,
                      random_string.username.result)
+    environment = {
+      MSSQL_PASSWORD = var.admin_password
+    }  
   }
 
   provisioner "local-exec" {
-	  when = destroy
-    command = format("psqlcmd %s %d %s '%s' %s \"DROP USER [%s];\"",
+    when = destroy
+    command = format("psqlcmd %s %d %s %s \"DROP USER [%s];\"",
                      var.mssql_hostname,
                      var.mssql_port,
                      var.admin_username,
-                     var.admin_password,
                      var.mssql_db_name,
                      random_string.username.result)
+    environment = {
+      MSSQL_PASSWORD = var.admin_password
+    }
   }
 
   depends_on = [null_resource.create-sql-login]
@@ -94,27 +102,31 @@ resource "null_resource" "add-user-roles" {
   for_each = local.roles
 
   provisioner "local-exec" {
-    command = format("psqlcmd %s %d %s '%s' %s \"ALTER ROLE %s ADD MEMBER [%s];\"", 
+    command = format("psqlcmd %s %d %s %s \"ALTER ROLE %s ADD MEMBER [%s];\"", 
                      var.mssql_hostname,
                      var.mssql_port,
                      var.admin_username,
-                     var.admin_password,
                      var.mssql_db_name,
                      each.key,
                      random_string.username.result)
+    environment = {
+      MSSQL_PASSWORD = var.admin_password
+    }
   }
 
   provisioner "local-exec" {
-	  when = destroy
+	when = destroy
 
-    command = format("psqlcmd %s %d %s '%s' %s \"ALTER ROLE %s DROP MEMBER [%s]\"",
+    command = format("psqlcmd %s %d %s %s \"ALTER ROLE %s DROP MEMBER [%s]\"",
                      var.mssql_hostname,
                      var.mssql_port,
                      var.admin_username,
-                     var.admin_password,
                      var.mssql_db_name,
                      each.key,
                      random_string.username.result)
+    environment = {
+      MSSQL_PASSWORD = var.admin_password
+    }                     
   }
 
   depends_on = [null_resource.create-sql-user]
@@ -123,25 +135,29 @@ resource "null_resource" "add-user-roles" {
 # For execute permissions on stored procedures
 resource "null_resource" "add-execute-permission" {
   provisioner "local-exec" {
-    command = format("psqlcmd %s %d %s '%s' %s \"GRANT EXEC TO [%s];\"", 
+    command = format("psqlcmd %s %d %s %s \"GRANT EXEC TO [%s];\"", 
                      var.mssql_hostname,
                      var.mssql_port,
                      var.admin_username,
-                     var.admin_password,
                      var.mssql_db_name,
                      random_string.username.result)
+    environment = {
+      MSSQL_PASSWORD = var.admin_password
+    }
   }
 
   provisioner "local-exec" {
-	  when = destroy
+    when = destroy
 
-    command = format("psqlcmd %s %d %s '%s' %s \"DENY EXEC TO [%s]\"",
+    command = format("psqlcmd %s %d %s %s \"DENY EXEC TO [%s]\"",
                      var.mssql_hostname,
                      var.mssql_port,
                      var.admin_username,
-                     var.admin_password,
                      var.mssql_db_name,
                      random_string.username.result)
+    environment = {
+      MSSQL_PASSWORD = var.admin_password
+    }
   }
 
   depends_on = [null_resource.create-sql-user]
