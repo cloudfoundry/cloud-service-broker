@@ -120,6 +120,33 @@ resource "null_resource" "add-user-roles" {
   depends_on = [null_resource.create-sql-user]
 }
 
+# For execute permissions on stored procedures
+resource "null_resource" "add-execute-permission" {
+  provisioner "local-exec" {
+    command = format("psqlcmd %s %d %s '%s' %s \"GRANT EXEC TO [%s];\"", 
+                     var.mssql_hostname,
+                     var.mssql_port,
+                     var.admin_username,
+                     var.admin_password,
+                     var.mssql_db_name,
+                     random_string.username.result)
+  }
+
+  provisioner "local-exec" {
+	  when = destroy
+
+    command = format("psqlcmd %s %d %s '%s' %s \"DENY EXEC TO [%s]\"",
+                     var.mssql_hostname,
+                     var.mssql_port,
+                     var.admin_username,
+                     var.admin_password,
+                     var.mssql_db_name,
+                     random_string.username.result)
+  }
+
+  depends_on = [null_resource.create-sql-user]
+}
+
 
 output username { value = random_string.username.result }
 output password { value = random_password.password.result }
