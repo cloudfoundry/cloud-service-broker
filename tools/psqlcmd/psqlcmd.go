@@ -35,15 +35,27 @@ var database string
 var query string
 var err error
 func main() {
-	if len(os.Args) < 6 {
-		log.Fatal("Usage: psqlcmd <hostname> <port> <username> <password> <database> <query>");
+	if len(os.Args) < 5 {
+		log.Fatal("Usage: psqlcmd <hostname> <port> <username> [password] <database> <query>");
 	}
+
 	server = os.Args[1]
 	port, err = strconv.Atoi(os.Args[2])
 	user = os.Args[3]
-	password = os.Args[4]
-	database = os.Args[5]
-	query = os.Args[6]
+
+	if len(os.Args) > 6 {
+		password = os.Args[4]
+		database = os.Args[5]
+		query = os.Args[6]
+	} else {
+		ok := false
+		password, ok = os.LookupEnv("MSSQL_PASSWORD")
+		if !ok {
+			log.Fatal("Usage: psqlcmd <hostname> <port> <username> [password] <database> <query> - no password provided on command line or in environment variable MSSQL_PASSWORD");
+		}
+		database = os.Args[4]
+		query = os.Args[5]	
+	}
 
     // Build connection string
     connString := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s;",
