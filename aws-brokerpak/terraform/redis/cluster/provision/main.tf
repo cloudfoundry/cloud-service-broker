@@ -13,7 +13,7 @@
 # limitations under the License.
 
 resource "aws_security_group" "sg" {
-  count = length(var.vpc_security_group_ids) == 0 ? 1 : 0    
+  count = length(var.elasticache_vpc_security_group_ids) == 0 ? 1 : 0    
   name   = format("%s-sg", var.instance_name)
   vpc_id = data.aws_vpc.vpc.id
 }
@@ -25,7 +25,7 @@ resource "aws_elasticache_subnet_group" "subnet_group" {
 }
 
 resource "aws_security_group_rule" "inbound_access" {
-  count = length(var.vpc_security_group_ids) == 0 ? 1 : 0    
+  count = length(var.elasticache_vpc_security_group_ids) == 0 ? 1 : 0    
   from_port         = local.port
   protocol          = "tcp"
   security_group_id = aws_security_group.sg[0].id
@@ -52,7 +52,7 @@ resource "aws_elasticache_replication_group" "redis" {
   parameter_group_name          = local.parameter_group_names[var.redis_version]
   port                          = local.port
   tags                          = var.labels
-  security_group_ids            = local.vpc_security_group_ids
+  security_group_ids            = local.elasticache_vpc_security_group_ids
   subnet_group_name             = local.subnet_group
   transit_encryption_enabled    = true
   auth_token                    = random_password.auth_token.result

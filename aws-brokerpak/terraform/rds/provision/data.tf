@@ -28,7 +28,7 @@ locals {
     32 = "db.m5.8xlarge"
     64 = "db.m5.16xlarge"
   }
-
+    
   ports = {
     "mysql" = 3306
     "postgres" = 5432
@@ -42,7 +42,7 @@ locals {
 
   max_allocated_storage = ( var.storage_autoscale && var.storage_autoscale_limit_gb > var.storage_gb ) ? var.storage_autoscale_limit_gb : null
 
-  vpc_security_group_ids = length(var.vpc_security_group_ids) == 0 ? [aws_security_group.rds-sg[0].id] : split(",", var.vpc_security_group_ids)
+  rds_vpc_security_group_ids = length(var.rds_vpc_security_group_ids) == 0 ? [aws_security_group.rds-sg[0].id] : split(",", var.rds_vpc_security_group_ids)
 }
 
 data "aws_subnet_ids" "all" {

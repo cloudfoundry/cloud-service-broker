@@ -43,7 +43,7 @@ locals {
 
   subnet_group = length(var.elasticache_subnet_group) > 0 ? var.elasticache_subnet_group : aws_elasticache_subnet_group.subnet_group[0].name
 
-   vpc_security_group_ids = length(var.vpc_security_group_ids) == 0 ? [aws_security_group.sg[0].id] : split(",", var.vpc_security_group_ids)
+   elasticache_vpc_security_group_ids = length(var.elasticache_vpc_security_group_ids) == 0 ? [aws_security_group.sg[0].id] : split(",", var.elasticache_vpc_security_group_ids)
 }
 
 data "aws_subnet_ids" "all" {
