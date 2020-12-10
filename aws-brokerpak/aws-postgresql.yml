@@ -192,7 +192,7 @@ provision:
     type: string
     details: AWS RDS subnet group already in existence to use
     default: ""
-  - field_name: vpc_security_group_ids
+  - field_name: rds_vpc_security_group_ids
     type: string
     details: Comma delimited list of security group ID's for instance
     default: ""
