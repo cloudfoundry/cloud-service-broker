@@ -27,6 +27,7 @@ variable skip_provider_registration { type = bool }
 variable tls_min_version { type = string }
 variable maxmemory_policy { type = string }
 variable firewall_rules { type = list(list(string)) }
+variable subnet_id { type = string }
 
 provider "azurerm" {
   version = "~> 2.33.0"
@@ -58,6 +59,7 @@ resource "azurerm_redis_cache" "redis" {
   family              = var.family
   capacity            = var.capacity
   location            = var.location
+  subnet_id	          = length(var.subnet_id) == 0 ? "" : var.subnet_id
   resource_group_name = local.resource_group
   minimum_tls_version = length(var.tls_min_version) == 0 ? "1.2" : var.tls_min_version
   tags                = var.labels
