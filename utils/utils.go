@@ -230,8 +230,13 @@ func SingleLineErrorFormatter(es []error) string {
 func NewLogger(name string) lager.Logger {
 	logger := lager.NewLogger(name)
 
+	logLevel := lager.INFO
+    if _, debug := os.LookupEnv("GSB_DEBUG"); debug {
+        logLevel = lager.DEBUG
+	}
+		
 	logger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
-	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
+	logger.RegisterSink(lager.NewWriterSink(os.Stdout, logLevel))
 
 	return logger
 }

@@ -480,10 +480,15 @@ func DefaultExecutor(c *exec.Cmd) (ExecutionOutput, error) {
 
 	err = c.Wait();
 
-	logger.Info("results", lager.Data{
+	if err != nil ||
+	   len(errors) > 0 {
+		logger.Error("terraform execution failed", err, lager.Data{
+			"errors": string(errors),
+		})
+	}
+
+	logger.Debug("terraform output", lager.Data{
 		"output": string(output),
-		"errors": string(errors),
-		"error":  err,
 	})
 
 	if err != nil {

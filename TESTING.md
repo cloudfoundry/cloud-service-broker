@@ -23,3 +23,7 @@ See `./cloud-service-broker client run-examples --help` for more details.
 ## Acceptance Testing
 
 See [acceptance testing](acceptance-tests/README.md) for hints and tools for testing services.
+
+## Debug Logging
+
+The lager log level defaults to INFO. Setting the environment variable *GSB_DEBUG* will enable more verbose debug output in the logs. *Careful, that output may include sensitive credentials.*

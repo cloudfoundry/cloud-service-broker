@@ -47,7 +47,7 @@ type terraformProvider struct {
 // Provision creates the necessary resources that an instance of this service
 // needs to operate.
 func (provider *terraformProvider) Provision(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
-	provider.logger.Info("provision", lager.Data{
+	provider.logger.Debug("terraform-provision", lager.Data{
 		"context": provisionContext.ToMap(),
 	})
 
@@ -74,7 +74,7 @@ func (provider *terraformProvider) Provision(ctx context.Context, provisionConte
 
 // Update makes necessary updates to resources so they match new desired configuration
 func (provider *terraformProvider) Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
-	provider.logger.Info("update", lager.Data{
+	provider.logger.Debug("update", lager.Data{
 		"context": provisionContext.ToMap(),
 	})
 
@@ -97,7 +97,7 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 
 // Bind creates a new backing Terraform job and executes it, waiting on the result.
 func (provider *terraformProvider) Bind(ctx context.Context, bindContext *varcontext.VarContext) (map[string]interface{}, error) {
-	provider.logger.Info("bind", lager.Data{
+	provider.logger.Debug("terraform-bind", lager.Data{
 		"context": bindContext.ToMap(),
 	})
 
@@ -193,7 +193,7 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 // Unbind performs a terraform destroy on the binding.
 func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord models.ServiceInstanceDetails, bindRecord models.ServiceBindingCredentials) error {
 	tfId := generateTfId(instanceRecord.ID, bindRecord.BindingId)
-	provider.logger.Info("unbind", lager.Data{
+	provider.logger.Debug("terraform-unbind", lager.Data{
 		"instance": instanceRecord.ID,
 		"binding":  bindRecord.ID,
 		"tfId":     tfId,
@@ -208,7 +208,7 @@ func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord mo
 
 // Deprovision performs a terraform destroy on the instance.
 func (provider *terraformProvider) Deprovision(ctx context.Context, instance models.ServiceInstanceDetails, details brokerapi.DeprovisionDetails) (operationId *string, err error) {
-	provider.logger.Info("terraform-deprovision", lager.Data{
+	provider.logger.Debug("terraform-deprovision", lager.Data{
 		"instance": instance.ID,
 	})
 
