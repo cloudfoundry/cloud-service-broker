@@ -110,7 +110,7 @@ func (runner *TfJobRunner) hydrateWorkspace(ctx context.Context, deployment *mod
 	ws.Executor = wrapper.CustomEnvironmentExecutor(runner.EnvVars, runner.Executor)
 
 	logger := utils.NewLogger("job-runner")
-	logger.Info("wrapping", lager.Data{
+	logger.Debug("wrapping", lager.Data{
 		"wrapper": ws,
 	})
 
