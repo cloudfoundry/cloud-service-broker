@@ -152,7 +152,7 @@ resource "azurerm_mssql_database" "azure_sql_db" {
 resource "azurerm_mssql_database" "secondary_azure_sql_db" {
   name                = var.db_name
   server_id           = azurerm_sql_server.secondary_sql_db_server.id
-  sku_name            = local.sku_name
+  #sku_name            = local.sku_name
   tags                = var.labels
   create_mode         = "Secondary"
   creation_source_database_id  = azurerm_mssql_database.azure_sql_db.id

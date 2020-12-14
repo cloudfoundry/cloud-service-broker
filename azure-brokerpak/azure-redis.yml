@@ -25,7 +25,7 @@ plan_updateable: true
 plans:
 - name: small
   id: 6b9ca24e-1dec-4e6f-8c8a-dc6e11ab5bef
-  description: 'A basic plan with 1GB cache and no failover. High Availability is not provided.'
+  description: 'A basic plan with 1GB cache and no failover. High Availability is not provided, update WILL result in loss of data.'
   display_name: "Small"
   properties:
     sku_name: Basic
@@ -35,7 +35,7 @@ plans:
     firewall_rules: []
 - name: medium
   id: 6b272c43-2116-4483-9a99-de9262c0a7d6
-  description: 'A basic plan with 6GB cache and no failover. High Availability is not provided.'
+  description: 'A basic plan with 6GB cache and no failover. High Availability is not provided, update WILL result in loss of data.'
   display_name: "Medium"
   properties:
     sku_name: Basic
@@ -45,7 +45,7 @@ plans:
     firewall_rules: []
 - name: large
   id: c3e34abc-a820-457c-b723-1c342ef42c50
-  description: 'A basic plan with 26GB cache and no failover. High Availability is not provided.'
+  description: 'A basic plan with 26GB cache and no failover. High Availability is not provided, update WILL result in loss of data.'
   display_name: "Large"
   properties:
     sku_name: Basic
