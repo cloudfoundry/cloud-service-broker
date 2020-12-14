@@ -108,6 +108,13 @@ CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/
 | rds_subnet_group | string | Name of subnet to attach DB instance to, overrides *aws_vpc_id* | |
 | rds_vpc_security_group_ids | comma delimited string | Security group ID's to assign to DB instance | |
 | use_tls | boolean |Use TLS for DB connections | `true` |
+| allow_major_version_upgrade | bool | Indicates that major version upgrades are allowed. | `true` |
+| auto_minor_version_upgrade  | bool | Indicates that minor engine upgrades will be applied automatically to the DB instance during the maintenance window| `true` |
+| maintenance_day | integer | Day of week for maintenance window | See the [AWS documentation](http://docs.aws.amazon.com/cli/latest/reference/rds/create-db-instance.html) |
+| maintenance_start_hour | integer | Start hour for maintenance window | See the [AWS documentation](http://docs.aws.amazon.com/cli/latest/reference/rds/create-db-instance.html)|
+| maintenance_start_min | integer | Start minute for maintenance window | See the [AWS documentation](http://docs.aws.amazon.com/cli/latest/reference/rds/create-db-instance.html)|
+| maintenance_end_hour | integer | End hour for maintenance window | See the [AWS documentation](http://docs.aws.amazon.com/cli/latest/reference/rds/create-db-instance.html)|
+| maintenance_end_min | integer | End minute for maintenance window | See the [AWS documentation](http://docs.aws.amazon.com/cli/latest/reference/rds/create-db-instance.html)|
 
 ### GCP Notes
 
