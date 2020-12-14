@@ -68,7 +68,7 @@ provision:
     type: string
     details: Azure resource id for secondary database in failover group to subsume
     tf_resource: azurerm_mssql_database.secondary_db  
-  - field_name: auzure_fog_id
+  - field_name: azure_fog_id
     type: string
     details: Azure resource id for secondary database in failover group to subsume
     tf_resource: azurerm_sql_failover_group.failover_group  

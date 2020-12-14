@@ -124,6 +124,7 @@ in_list() {
     shift
     local list=("$@")
     for item in "${list[@]}"; do
+        echo $item
         [[ $item == $search ]] && return 0
     done
     return 1

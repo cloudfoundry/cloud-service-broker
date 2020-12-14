@@ -17,7 +17,7 @@ The basic steps to subsume control of an existing  MSSQL database fail over grou
         '{
 	"azure_primary_db_id": "PRIMARY-AZURE-DB-ID",
     "azure_secondary_db_id": "SECONDARY-AZURE-DB-ID",
-    "auzure_fog_id": "FOG-AZURE-ID",
+    "azure_fog_id": "FOG-AZURE-ID",
 	"server_pair": "FOG-SERVER-PAIR",
 	"server_credential_pairs": {
 		"FOG-SERVER-PAIR": {
@@ -138,7 +138,7 @@ There are no bound apps for this service.
         '{
 	"azure_primary_db_id": "PRIMARY-AZURE-DB-ID",
     "azure_secondary_db_id": "SECONDARY-AZURE-DB-ID",
-    "auzure_fog_id": "FOG-AZURE-ID",
+    "azure_fog_id": "FOG-AZURE-ID",
 	"server_pair": "FOG-SERVER-PAIR",
 	"server_credential_pairs": {
 		"FOG-SERVER-PAIR": {

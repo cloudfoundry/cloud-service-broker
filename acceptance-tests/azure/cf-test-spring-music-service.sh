@@ -9,10 +9,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 RESULT=1
 
-ALL_SERVICES=("csb-azure-mysql" "csb-azure-redis" "csb-azure-mssql" "csb-azure-mssql-failover-group" "csb-azure-postgresql")
+
 INSTANCES=()
 UPDATE_INSTANCES=()
-for s in ${ALL_SERVICES[@]}; do
+
+SERVICES=("csb-azure-redis")
+for s in "${SERVICES[@]}"; do
+    create_service "${s}" small "${s}-$$" &
+    INSTANCES+=("${s}-$$")
+done
+
+UPDATE_SERVICES=("csb-azure-mysql" "csb-azure-mssql" "csb-azure-mssql-failover-group" "csb-azure-postgresql")
+for s in "${UPDATE_SERVICES[@]}"; do
     create_service "${s}" small "${s}-$$" &
     INSTANCES+=("${s}-$$")
     UPDATE_INSTANCES+=("${s}-$$")
@@ -24,14 +32,14 @@ INSTANCES+=("csb-azure-mongodb-$$")
 
 NO_TLS_SERVICES=("csb-azure-mysql" "csb-azure-postgresql")
 
-for s in ${NO_TLS_SERVICES[@]}; do
+for s in "${NO_TLS_SERVICES[@]}"; do
     create_service "${s}" small "${s}-no-tls-$$" "{\"use_tls\":false}" &
     INSTANCES+=("${s}-no-tls-$$")
 done
 
 if wait; then
     RESULT=0
-    for s in ${INSTANCES[@]}; do
+    for s in "${INSTANCES[@]}"; do
         if [ $# -gt 0 ]; then
             if "${SCRIPT_DIR}/../cf-validate-credhub.sh" "${s}"; then
                 echo "SUCCEEDED: ${SCRIPT_DIR}/../cf-validate-credhub.sh ${s}"
@@ -44,7 +52,7 @@ if wait; then
 
         TEST_CMD="${SCRIPT_DIR}/../cf-run-spring-music-test.sh ${s}"
 
-        if in_list ${s} ${UPDATE_INSTANCES}; then
+        if in_list ${s} "${UPDATE_INSTANCES[@]}"; then
             echo "Will run cf update-service test on ${s}"
             TEST_CMD="${SCRIPT_DIR}/../cf-run-spring-music-test.sh ${s} medium"
         fi
@@ -61,7 +69,7 @@ else
     echo "FAILED creating one or more service instances"
 fi
 
-for s in ${INSTANCES[@]}; do
+for s in "${INSTANCES[@]}"; do
     delete_service "${s}" &
 done
 
