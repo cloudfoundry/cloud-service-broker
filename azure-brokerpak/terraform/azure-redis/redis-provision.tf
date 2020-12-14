@@ -27,6 +27,7 @@ variable skip_provider_registration { type = bool }
 variable tls_min_version { type = string }
 variable maxmemory_policy { type = string }
 variable firewall_rules { type = list(list(string)) }
+variable subnet_id { type = string }
 
 provider "azurerm" {
   version = "~> 2.33.0"
@@ -64,6 +65,7 @@ resource "azurerm_redis_cache" "redis" {
   redis_configuration {
     maxmemory_policy   = length(var.maxmemory_policy) == 0 ? "allkeys-lru" : var.maxmemory_policy
   }
+  subnet_id = lower(var.sku_name) == "premium" && length(var.subnet_id) > 0 ? var.subnet_id : null
 }
 
 resource "azurerm_redis_firewall_rule" "allow_azure" {
