@@ -104,7 +104,7 @@ CPU/memory size mapped into [AWS DB instance types](https://docs.aws.amazon.com/
 | storage_autoscale | boolean | If `true`, storage will autoscale to max of *storage_autoscale_limit_gb* | `false` |
 | storage_autoscale_limit_gb | number | if *storage_autoscale* is `true`, max size storage will scale up to ||
 | storage_encrypted | boolean | If `true`, DB storage will be encrypted | `false`|
-| parameter_group_name | string | PostgreSQL parameter group name for instance | `default.mysql.<mysql version>` |
+| parameter_group_name | string | MySQL parameter group name for instance | `default.mysql.<mysql version>` |
 | rds_subnet_group | string | Name of subnet to attach DB instance to, overrides *aws_vpc_id* | |
 | rds_vpc_security_group_ids | comma delimited string | Security group ID's to assign to DB instance | |
 | use_tls | boolean |Use TLS for DB connections | `true` |
