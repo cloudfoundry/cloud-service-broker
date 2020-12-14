@@ -33,12 +33,12 @@ data "aws_subnet_ids" "all" {
 }
 
 resource "aws_security_group" "rds-sg" {
-  name   = format("%s-sg", var.name)
+  name   = format("%s-rds-sg", var.name)
   vpc_id = var.vpc_id
 }
 
 resource "aws_db_subnet_group" "rds-private-subnet" {
-  name = format("%s-p-sn", var.name)
+  name = format("%s-rds-sn", var.name)
   subnet_ids = data.aws_subnet_ids.all.ids
 }
 

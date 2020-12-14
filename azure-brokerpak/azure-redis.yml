@@ -132,7 +132,12 @@ provision:
       maxLength: 64
       minLength: 0
       pattern: ^[a-z][a-z0-9-]+$|^$
-    prohibit_update: true  
+    prohibit_update: true
+  - field_name: subnet_id
+    type: string
+    details: The ID of the Subnet within which the Redis Cache should be deployed, valid only for Premium SKU 
+    default: default        
+    prohibit_update: true
   - field_name: location
     type: string
     details: The region of the mysql instance.

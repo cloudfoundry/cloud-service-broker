@@ -41,6 +41,6 @@ virtual_network_name = "${NETWORK_NAME}"
 subnet_cidr = "${SUBNET_CIDR}"
 EOL
 
-terraform ${TMP_DIR} init > /dev/null
-terraform ${TMP_DIR} apply -auto-approve > /dev/null
+terraform ${TMP_DIR} init #> /dev/null
+terraform ${TMP_DIR} apply -auto-approve #> /dev/null
 terraform ${TMP_DIR} output id

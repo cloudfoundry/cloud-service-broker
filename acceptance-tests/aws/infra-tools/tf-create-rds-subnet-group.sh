@@ -22,7 +22,7 @@ terraform() {
         -t hashicorp/terraform $@
 }
 
-TMP_DIR="${HOME}/.tf-infra-tools/${VPC_ID}-${NAME}"
+TMP_DIR="${HOME}/.tf-infra-tools/rds-sg-${VPC_ID}-${NAME}"
 mkdir -p "${TMP_DIR}"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
