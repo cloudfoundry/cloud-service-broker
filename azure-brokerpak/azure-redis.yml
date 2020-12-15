@@ -83,6 +83,16 @@ plans:
     capacity: 5          
     firewall_rules: []
     tls_min_version: "1.2" 
+- name: ha-P1
+  id: 2a63e092-ab5c-4804-abd6-2d951240f0f6
+  description: "A High Availability plan with 1GB cache and no failover"
+  display_name: "High Availability P1"
+  properties:
+    sku_name: Premium
+    family: P
+    capacity: 1
+    tls_min_version: "1.2"    
+    firewall_rules: []
 provision:
   plan_inputs:
   - field_name: sku_name
@@ -259,4 +269,9 @@ examples:
   description: HA large redis cache
   plan_id: e919b281-9661-465d-82cf-0a0a6e1f195a
   provision_params: {}
+  bind_params: {}
+- name: redis-cache-P1
+  description: P1 redis cache
+  provision_params: {}
+  plan_id: 2a63e092-ab5c-4804-abd6-2d951240f0f6
   bind_params: {}
