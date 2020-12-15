@@ -72,4 +72,4 @@ type CloudOperation CloudOperationV1
 
 // TerraformDeployment holds Terraform state and plan information for resources
 // that use that execution system.
-type TerraformDeployment TerraformDeploymentV1
+type TerraformDeployment TerraformDeploymentV2
