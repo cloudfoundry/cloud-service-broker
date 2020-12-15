@@ -146,7 +146,7 @@ provision:
   - field_name: subnet_id
     type: string
     details: The ID of the Subnet within which the Redis Cache should be deployed, valid only for Premium SKU 
-    default: default        
+    default: ""        
     prohibit_update: true
   - field_name: location
     type: string
