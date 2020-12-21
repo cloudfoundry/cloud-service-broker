@@ -203,7 +203,7 @@ bind:
     type: object
     details: 'JSON has of server credentials. { "name1":{"server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."},"name2":{...}...}'
     overwrite: true
-    default: ${config("azure.client_secret")}
+    default: ${config("azure.mssql_db_server_creds")}
   - name: admin_username
     type: string
     default: ${instance.details["username"]}

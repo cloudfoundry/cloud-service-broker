@@ -44,11 +44,11 @@ type ServiceProvider interface {
 	// info from the instance to create credentials for the binding.
 	BuildInstanceCredentials(ctx context.Context, bindRecord models.ServiceBindingCredentials, instance models.ServiceInstanceDetails) (*brokerapi.Binding, error)
 	// Unbind deprovisions the resources created with Bind.
-	Unbind(ctx context.Context, instance models.ServiceInstanceDetails, details models.ServiceBindingCredentials) error
+	Unbind(ctx context.Context, instance models.ServiceInstanceDetails, details models.ServiceBindingCredentials, vc *varcontext.VarContext) error
 	// Deprovision deprovisions the service.
 	// If the deprovision is asynchronous (results in a long-running job), then operationId is returned.
 	// If no error and no operationId are returned, then the deprovision is expected to have been completed successfully.
-	Deprovision(ctx context.Context, instance models.ServiceInstanceDetails, details brokerapi.DeprovisionDetails) (operationId *string, err error)
+	Deprovision(ctx context.Context, instance models.ServiceInstanceDetails, details brokerapi.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error)
 	PollInstance(ctx context.Context, instance models.ServiceInstanceDetails) (bool, string, error)
 	ProvisionsAsync() bool
 	DeprovisionsAsync() bool
