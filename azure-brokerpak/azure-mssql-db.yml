@@ -140,11 +140,11 @@ provision:
     constraints:
       maximum: 35
   template_refs:
-    outputs: terraform/azure-mssql-db/mssql-db-outputs.tf
+    outputs: terraform/azure-mssql-db/provision/mssql-db-outputs.tf
     provider: terraform/azure-mssql-db/azure-provider.tf
-    variables: terraform/azure-mssql-db/mssql-db-variables.tf
-    main: terraform/azure-mssql-db/mssql-db-main.tf
-    data: terraform/azure-mssql-db/mssql-db-data.tf
+    variables: terraform/azure-mssql-db/provision/mssql-db-variables.tf
+    main: terraform/azure-mssql-db/provision/mssql-db-main.tf
+    data: terraform/azure-mssql-db/provision/mssql-db-data.tf
   computed_inputs:
   - name: labels
     default: ${json.marshal(request.default_labels)}
@@ -175,6 +175,9 @@ provision:
   - field_name: password
     type: string
     details: The password to authenticate to the database server.
+  - field_name: server
+    type: string
+    details: Server from credentials
 bind:
   plan_inputs: []
   user_inputs: []
@@ -191,6 +194,16 @@ bind:
     type: integer
     default: ${instance.details["port"]}
     overwrite: true
+  - name: server
+    type: string
+    details: Name of server from server_credentials to create database upon
+    overwrite: true
+    default: ${instance.details["server"]}
+  - name: server_credentials
+    type: object
+    details: 'JSON has of server credentials. { "name1":{"server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."},"name2":{...}...}'
+    overwrite: true
+    default: ${config("azure.mssql_db_server_creds")}
   - name: admin_username
     type: string
     default: ${instance.details["username"]}
@@ -199,7 +212,11 @@ bind:
     type: string
     default: ${instance.details["password"]}
     overwrite: true
-  template_ref: terraform/azure-mssql/bind-mssql.tf
+  template_refs:    
+    outputs: terraform/azure-mssql-db/bind/mssql-bind-outputs.tf
+    variables: terraform/azure-mssql-db/bind/mssql-bind-variables.tf
+    main: terraform/azure-mssql-db/bind/mssql-bind-main.tf
+    data: terraform/azure-mssql-db/bind/mssql-bind-data.tf
   outputs:
   - field_name: username
     type: string

@@ -87,7 +87,7 @@ func (b *StorageBroker) Provision(ctx context.Context, provisionContext *varcont
 
 // Deprovision deletes the bucket associated with the given instance.
 // Note that all objects within the bucket must be deleted first.
-func (b *StorageBroker) Deprovision(ctx context.Context, bucket models.ServiceInstanceDetails, details brokerapi.DeprovisionDetails) (*string, error) {
+func (b *StorageBroker) Deprovision(ctx context.Context, bucket models.ServiceInstanceDetails, details brokerapi.DeprovisionDetails, vc *varcontext.VarContext) (*string, error) {
 	storageService, err := b.createClient(ctx)
 	if err != nil {
 		return nil, err

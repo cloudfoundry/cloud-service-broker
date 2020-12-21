@@ -54,6 +54,7 @@ env_config_mapping:
   ARM_TENANT_ID: azure.tenant_id
   ARM_CLIENT_ID: azure.client_id
   ARM_CLIENT_SECRET: azure.client_secret
+  MSSQL_DB_SERVER_CREDS: azure.mssql_db_server_creds
 service_definitions:
 - azure-redis.yml
 - azure-mysql.yml

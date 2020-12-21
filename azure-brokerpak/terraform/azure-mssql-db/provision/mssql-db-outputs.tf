@@ -15,3 +15,4 @@ output status {value = format("created db %s (id: %s) URL: URL: https://portal.a
                               azurerm_mssql_database.azure_sql_db.id,
                               var.azure_tenant_id,
                               azurerm_mssql_database.azure_sql_db.id)}
+output server {value = var.server}

@@ -191,7 +191,7 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 }
 
 // Unbind performs a terraform destroy on the binding.
-func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord models.ServiceInstanceDetails, bindRecord models.ServiceBindingCredentials) error {
+func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord models.ServiceInstanceDetails, bindRecord models.ServiceBindingCredentials, vc *varcontext.VarContext) error {
 	tfId := generateTfId(instanceRecord.ID, bindRecord.BindingId)
 	provider.logger.Debug("terraform-unbind", lager.Data{
 		"instance": instanceRecord.ID,
@@ -199,7 +199,7 @@ func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord mo
 		"tfId":     tfId,
 	})
 
-	if err := provider.jobRunner.Destroy(ctx, tfId); err != nil {
+	if err := provider.jobRunner.Destroy(ctx, tfId, vc.ToMap()); err != nil {
 		return err
 	}
 
@@ -207,13 +207,13 @@ func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord mo
 }
 
 // Deprovision performs a terraform destroy on the instance.
-func (provider *terraformProvider) Deprovision(ctx context.Context, instance models.ServiceInstanceDetails, details brokerapi.DeprovisionDetails) (operationId *string, err error) {
+func (provider *terraformProvider) Deprovision(ctx context.Context, instance models.ServiceInstanceDetails, details brokerapi.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error) {
 	provider.logger.Debug("terraform-deprovision", lager.Data{
 		"instance": instance.ID,
 	})
 
 	tfId := generateTfId(instance.ID, "")
-	if err := provider.jobRunner.Destroy(ctx, tfId); err != nil {
+	if err := provider.jobRunner.Destroy(ctx, tfId, vc.ToMap()); err != nil {
 		return nil, err
 	}
 
