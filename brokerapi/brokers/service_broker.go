@@ -184,7 +184,13 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return response, brokerapi.ErrInstanceDoesNotExist
 	}
 
-	_, serviceProvider, err := broker.getDefinitionAndProvider(instance.ServiceId)
+	brokerService, serviceProvider, err := broker.getDefinitionAndProvider(instance.ServiceId)
+	if err != nil {
+		return response, err
+	}
+
+	// verify the service exists and the plan exists
+	plan, err := brokerService.GetPlanById(details.PlanID)
 	if err != nil {
 		return response, err
 	}
@@ -194,7 +200,25 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return response, brokerapi.ErrAsyncRequired
 	}
 
-	operationId, err := serviceProvider.Deprovision(ctx, *instance, details)
+	pr, err := db_service.GetProvisionRequestDetailsByInstanceId(ctx, instanceID)
+	if err != nil {
+		return response, fmt.Errorf("updating non-existent instanceid: %v", instanceID)
+	}	
+
+	provisionDetails := brokerapi.ProvisionDetails{
+		ServiceID: details.ServiceID,
+		PlanID: details.PlanID,
+		RawParameters: json.RawMessage(pr.RequestDetails),
+	}
+
+	// validate parameters meet the service's schema and merge the user vars with
+	// the plan's
+	vars, err := brokerService.ProvisionVariables(instanceID, provisionDetails, *plan)
+	if err != nil {
+		return response, err
+	}	
+
+	operationId, err := serviceProvider.Deprovision(ctx, *instance, details, vars)
 	if err != nil {
 		return response, err
 	}
@@ -392,6 +416,35 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return brokerapi.UnbindSpec{}, fmt.Errorf("Error retrieving service instance details: %s", err)
 	}
 
+	// verify the service exists and the plan exists
+	plan, err := serviceDefinition.GetPlanById(details.PlanID)
+	if err != nil {
+		return brokerapi.UnbindSpec{}, err
+	}
+
+	pr, err := db_service.GetProvisionRequestDetailsByInstanceId(ctx, instanceID)
+	if err != nil {
+		return brokerapi.UnbindSpec{}, fmt.Errorf("updating non-existent instanceid: %v", instanceID)
+	}	
+
+	// validate parameters meet the service's schema and merge the plan's vars with
+	// the user's
+	bindDetails := brokerapi.BindDetails{
+		PlanID: details.PlanID,
+		ServiceID: details.ServiceID,
+		RawParameters: json.RawMessage(pr.RequestDetails),
+	}
+
+	vars, err := serviceDefinition.BindVariables(*instance, bindingID, bindDetails, plan)
+	if err != nil {
+		return brokerapi.UnbindSpec{}, err
+	}
+
+	// remove binding from service provider
+	if err := serviceProvider.Unbind(ctx, *instance, *existingBinding, vars); err != nil {
+		return brokerapi.UnbindSpec{}, err
+	}
+
 	if broker.Credstore != nil {
 		credentialName := getCredentialName(broker.getServiceName(serviceDefinition), bindingID)
 
@@ -404,11 +457,6 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		if err != nil {
 			return  brokerapi.UnbindSpec{}, err
 		}
-	}
-
-	// remove binding from service provider
-	if err := serviceProvider.Unbind(ctx, *instance, *existingBinding); err != nil {
-		return brokerapi.UnbindSpec{}, err
 	}
 
 	// remove binding from database

@@ -41,12 +41,13 @@ type FakeServiceProvider struct {
 		result1 *brokerapi.Binding
 		result2 error
 	}
-	DeprovisionStub        func(context.Context, models.ServiceInstanceDetails, brokerapi.DeprovisionDetails) (*string, error)
+	DeprovisionStub        func(context.Context, models.ServiceInstanceDetails, brokerapi.DeprovisionDetails, *varcontext.VarContext) (*string, error)
 	deprovisionMutex       sync.RWMutex
 	deprovisionArgsForCall []struct {
 		arg1 context.Context
 		arg2 models.ServiceInstanceDetails
 		arg3 brokerapi.DeprovisionDetails
+		arg4 *varcontext.VarContext
 	}
 	deprovisionReturns struct {
 		result1 *string
@@ -106,12 +107,13 @@ type FakeServiceProvider struct {
 	provisionsAsyncReturnsOnCall map[int]struct {
 		result1 bool
 	}
-	UnbindStub        func(context.Context, models.ServiceInstanceDetails, models.ServiceBindingCredentials) error
+	UnbindStub        func(context.Context, models.ServiceInstanceDetails, models.ServiceBindingCredentials, *varcontext.VarContext) error
 	unbindMutex       sync.RWMutex
 	unbindArgsForCall []struct {
 		arg1 context.Context
 		arg2 models.ServiceInstanceDetails
 		arg3 models.ServiceBindingCredentials
+		arg4 *varcontext.VarContext
 	}
 	unbindReturns struct {
 		result1 error
@@ -278,18 +280,19 @@ func (fake *FakeServiceProvider) BuildInstanceCredentialsReturnsOnCall(i int, re
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 models.ServiceInstanceDetails, arg3 brokerapi.DeprovisionDetails) (*string, error) {
+func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 models.ServiceInstanceDetails, arg3 brokerapi.DeprovisionDetails, arg4 *varcontext.VarContext) (*string, error) {
 	fake.deprovisionMutex.Lock()
 	ret, specificReturn := fake.deprovisionReturnsOnCall[len(fake.deprovisionArgsForCall)]
 	fake.deprovisionArgsForCall = append(fake.deprovisionArgsForCall, struct {
 		arg1 context.Context
 		arg2 models.ServiceInstanceDetails
 		arg3 brokerapi.DeprovisionDetails
-	}{arg1, arg2, arg3})
-	fake.recordInvocation("Deprovision", []interface{}{arg1, arg2, arg3})
+		arg4 *varcontext.VarContext
+	}{arg1, arg2, arg3, arg4})
+	fake.recordInvocation("Deprovision", []interface{}{arg1, arg2, arg3, arg4})
 	fake.deprovisionMutex.Unlock()
 	if fake.DeprovisionStub != nil {
-		return fake.DeprovisionStub(arg1, arg2, arg3)
+		return fake.DeprovisionStub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -304,17 +307,17 @@ func (fake *FakeServiceProvider) DeprovisionCallCount() int {
 	return len(fake.deprovisionArgsForCall)
 }
 
-func (fake *FakeServiceProvider) DeprovisionCalls(stub func(context.Context, models.ServiceInstanceDetails, brokerapi.DeprovisionDetails) (*string, error)) {
+func (fake *FakeServiceProvider) DeprovisionCalls(stub func(context.Context, models.ServiceInstanceDetails, brokerapi.DeprovisionDetails, *varcontext.VarContext) (*string, error)) {
 	fake.deprovisionMutex.Lock()
 	defer fake.deprovisionMutex.Unlock()
 	fake.DeprovisionStub = stub
 }
 
-func (fake *FakeServiceProvider) DeprovisionArgsForCall(i int) (context.Context, models.ServiceInstanceDetails, brokerapi.DeprovisionDetails) {
+func (fake *FakeServiceProvider) DeprovisionArgsForCall(i int) (context.Context, models.ServiceInstanceDetails, brokerapi.DeprovisionDetails, *varcontext.VarContext) {
 	fake.deprovisionMutex.RLock()
 	defer fake.deprovisionMutex.RUnlock()
 	argsForCall := fake.deprovisionArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeServiceProvider) DeprovisionReturns(result1 *string, result2 error) {
@@ -578,18 +581,19 @@ func (fake *FakeServiceProvider) ProvisionsAsyncReturnsOnCall(i int, result1 boo
 	}{result1}
 }
 
-func (fake *FakeServiceProvider) Unbind(arg1 context.Context, arg2 models.ServiceInstanceDetails, arg3 models.ServiceBindingCredentials) error {
+func (fake *FakeServiceProvider) Unbind(arg1 context.Context, arg2 models.ServiceInstanceDetails, arg3 models.ServiceBindingCredentials, arg4 *varcontext.VarContext) error {
 	fake.unbindMutex.Lock()
 	ret, specificReturn := fake.unbindReturnsOnCall[len(fake.unbindArgsForCall)]
 	fake.unbindArgsForCall = append(fake.unbindArgsForCall, struct {
 		arg1 context.Context
 		arg2 models.ServiceInstanceDetails
 		arg3 models.ServiceBindingCredentials
-	}{arg1, arg2, arg3})
-	fake.recordInvocation("Unbind", []interface{}{arg1, arg2, arg3})
+		arg4 *varcontext.VarContext
+	}{arg1, arg2, arg3, arg4})
+	fake.recordInvocation("Unbind", []interface{}{arg1, arg2, arg3, arg4})
 	fake.unbindMutex.Unlock()
 	if fake.UnbindStub != nil {
-		return fake.UnbindStub(arg1, arg2, arg3)
+		return fake.UnbindStub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1
@@ -604,17 +608,17 @@ func (fake *FakeServiceProvider) UnbindCallCount() int {
 	return len(fake.unbindArgsForCall)
 }
 
-func (fake *FakeServiceProvider) UnbindCalls(stub func(context.Context, models.ServiceInstanceDetails, models.ServiceBindingCredentials) error) {
+func (fake *FakeServiceProvider) UnbindCalls(stub func(context.Context, models.ServiceInstanceDetails, models.ServiceBindingCredentials, *varcontext.VarContext) error) {
 	fake.unbindMutex.Lock()
 	defer fake.unbindMutex.Unlock()
 	fake.UnbindStub = stub
 }
 
-func (fake *FakeServiceProvider) UnbindArgsForCall(i int) (context.Context, models.ServiceInstanceDetails, models.ServiceBindingCredentials) {
+func (fake *FakeServiceProvider) UnbindArgsForCall(i int) (context.Context, models.ServiceInstanceDetails, models.ServiceBindingCredentials, *varcontext.VarContext) {
 	fake.unbindMutex.RLock()
 	defer fake.unbindMutex.RUnlock()
 	argsForCall := fake.unbindArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeServiceProvider) UnbindReturns(result1 error) {

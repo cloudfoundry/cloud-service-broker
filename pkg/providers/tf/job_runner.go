@@ -238,7 +238,7 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 
 // Destroy runs `terraform destroy` on the given workspace in the background.
 // The status of the job can be found by polling the Status function.
-func (runner *TfJobRunner) Destroy(ctx context.Context, id string) error {
+func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars map[string]interface{}) error {
 	deployment, err := db_service.GetTerraformDeploymentById(ctx, id)
 	if err != nil {
 		return err
@@ -248,6 +248,18 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
+
+	inputList, err := workspace.Modules[0].Inputs()
+	if err != nil {
+		return err
+	}
+
+	limitedConfig := make(map[string]interface{})
+	for _, name := range inputList {
+		limitedConfig[name] = templateVars[name]
+	}	
+
+	workspace.Instances[0].Configuration = limitedConfig	
 
 	if err := runner.markJobStarted(ctx, deployment, models.DeprovisionOperationType); err != nil {
 		return err
