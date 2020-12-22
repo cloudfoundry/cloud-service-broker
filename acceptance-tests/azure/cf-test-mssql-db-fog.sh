@@ -57,7 +57,37 @@ if create_service csb-azure-resource-group standard "${SERVER_RG}" "{\"instance_
             if ${SCRIPT_DIR}/../cf-run-spring-music-test.sh "${FOG_INSTANCE}" large "${CONFIG}"; then
                 if create_service csb-azure-mssql-db-failover-group existing "${FOG_DR_INSTANCE}" "${CONFIG}"; then
                     if ${SCRIPT_DIR}/../cf-run-spring-music-test.sh "${FOG_DR_INSTANCE}"; then
-                        RESULT=0
+                        echo Test bind/unbind after changing admin passwords
+                        NEW_ADMIN_PASSWORD=Another_S0uld-3eC0mplex~
+                        update_service_params "${PRIMARY_SERVER_NAME}" "{\"admin_password\":\"${NEW_ADMIN_PASSWORD}\"}"
+                        update_service_params "${SECONDARY_SERVER_NAME}" "{\"admin_password\":\"${NEW_ADMIN_PASSWORD}\"}"
+
+                        MSSQL_DB_FOG_SERVER_PAIR_CREDS="{ \
+                            \"test\":{ \
+                                \"admin_username\":\"${USERNAME}\", \
+                                \"admin_password\":\"${NEW_ADMIN_PASSWORD}\", \
+                                \"primary\":{ \
+                                  \"server_name\":\"${PRIMARY_SERVER_NAME}\", \
+                                  \"resource_group\":\"${SERVER_RG}\" \
+                                }, \
+                                \"secondary\":{ \
+                                  \"server_name\":\"${SECONDARY_SERVER_NAME}\", \
+                                  \"resource_group\":\"${SERVER_RG}\" \
+                                } \
+                            } \
+                        }"         
+
+                        GSB_SERVICE_CSB_AZURE_MSSQL_DB_FAILOVER_GROUP_PROVISION_DEFAULTS="{ \
+                            \"server_credential_pairs\":${MSSQL_DB_FOG_SERVER_PAIR_CREDS} \
+                        }"                     
+                        cf set-env cloud-service-broker GSB_SERVICE_CSB_AZURE_MSSQL_DB_FAILOVER_GROUP_PROVISION_DEFAULTS "${GSB_SERVICE_CSB_AZURE_MSSQL_DB_FAILOVER_GROUP_PROVISION_DEFAULTS}"
+                        cf set-env cloud-service-broker MSSQL_DB_FOG_SERVER_PAIR_CREDS "${MSSQL_DB_FOG_SERVER_PAIR_CREDS}"
+                        cf restart cloud-service-broker         
+                        if ${SCRIPT_DIR}/../cf-run-spring-music-test.sh "${FOG_DR_INSTANCE}"; then
+                            RESULT=0
+                        else
+                            echo "spring music test failed after admin password change"
+                        fi  
                     else
                         echo "spring music test failed on FOG DR"
                     fi
