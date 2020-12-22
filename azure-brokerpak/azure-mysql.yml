@@ -23,202 +23,202 @@ support_url: https://docs.microsoft.com/en-us/azure/mysql/
 tags: [azure, mysql, preview]
 plan_updateable: true
 plans:
-- name: small
-  id: 828e324e-6b34-4f50-b224-9b956dd2d1b7
-  description: 'Mysql v5.7. Instance properties: 2 vCores, 10 GB RAM, 5 GB storage.'
-  display_name: "Small"
-  properties:
-    use_tls: true
-    tls_min_version: "TLS1_1"
-    firewall_rules: []
-- name: medium
-  id: 9eb836dd-4B90-4cF7-bc06-1986103802d3
-  description: 'Mysql v5.7. Instance properties: 4 vCores, 20 GB RAM, 10 GB storage.'
-  display_name: "Medium"
-  properties:
-    cores: 4
-    storage_gb: 10    
-    use_tls: true
-    tls_min_version: "TLS1_1"
-    firewall_rules: []
-- name: large
-  id: 6f8Ea44c-6840-4b0b-9068-f0cd9b17437c
-  description: 'Mysql v5.7. Instance properties: 8 vCores, 40 GB RAM, 20 GB storage.'
-  display_name: "Large"
-  properties:
-    cores: 8
-    storage_gb: 20    
-    use_tls: true
-    tls_min_version: "TLS1_1"
-    firewall_rules: []
+  - name: small
+    id: 828e324e-6b34-4f50-b224-9b956dd2d1b7
+    description: "Mysql v5.7. Instance properties: 2 vCores, 10 GB RAM, 5 GB storage."
+    display_name: "Small"
+    properties:
+      use_tls: true
+      tls_min_version: "TLS1_1"
+      firewall_rules: []
+  - name: medium
+    id: 9eb836dd-4B90-4cF7-bc06-1986103802d3
+    description: "Mysql v5.7. Instance properties: 4 vCores, 20 GB RAM, 10 GB storage."
+    display_name: "Medium"
+    properties:
+      cores: 4
+      storage_gb: 10
+      use_tls: true
+      tls_min_version: "TLS1_1"
+      firewall_rules: []
+  - name: large
+    id: 6f8Ea44c-6840-4b0b-9068-f0cd9b17437c
+    description: "Mysql v5.7. Instance properties: 8 vCores, 40 GB RAM, 20 GB storage."
+    display_name: "Large"
+    properties:
+      cores: 8
+      storage_gb: 20
+      use_tls: true
+      tls_min_version: "TLS1_1"
+      firewall_rules: []
 provision:
   plan_inputs:
-  - field_name: use_tls
-    type: boolean
-    details: Use TLS for connection
-    default: true      
-  - field_name: tls_min_version
-    type: string
-    details: Minimum enforced TLS version. Possible values are TLSEnforcementDisabled, TLS1_0, TLS1_1 (default), and TLS1_2
-    default: TLS1_1
-  - field_name: enable_threat_detection_policy
-    type: boolean
-    details: Enable Threat Detection Policy (default false)
-    default: false
-  - field_name: threat_detection_policy_emails
-    type: array
-    details: A list of email addresses which alerts should be sent to.
-  - field_name: email_account_admins
-    type: boolean
-    details: Should the account administrators be emailed when this alert is triggered? (default false)
-  - field_name: firewall_rules
-    type: array
-    details: Array of firewall rule start/end IP pairs (e.g. [["1.2.3.4", "2.3.4.5"], ["5.6.7.8", "6.7.8.9"]])
+    - field_name: use_tls
+      type: boolean
+      details: Use TLS for connection
+      default: true
+    - field_name: tls_min_version
+      type: string
+      details: Minimum enforced TLS version. Possible values are TLSEnforcementDisabled, TLS1_0, TLS1_1 (default), and TLS1_2
+      default: TLS1_1
+    - field_name: enable_threat_detection_policy
+      type: boolean
+      details: Enable Threat Detection Policy (default false)
+      default: false
+    - field_name: threat_detection_policy_emails
+      type: array
+      details: A list of email addresses which alerts should be sent to.
+    - field_name: email_account_admins
+      type: boolean
+      details: Should the account administrators be emailed when this alert is triggered? (default false)
+    - field_name: firewall_rules
+      type: array
+      details: Array of firewall rule start/end IP pairs (e.g. [["1.2.3.4", "2.3.4.5"], ["5.6.7.8", "6.7.8.9"]])
   user_inputs:
-  - field_name: cores
-    type: integer
-    default: 2
-    details: Number vcores for the instance (upto the maximum allowed for the service tier)
-    constraints:
-      maximum: 64
-      minimum: 1
-      multipleOf: 2
-  - field_name: storage_gb
-    type: integer
-    required: false
-    default: 5
-    details: Storage allocated to the database instance in GB
-    constraints:
-      maximum: 16384
-      minimum: 5      
-  - field_name: mysql_version
-    type: string
-    details: The version for the MySQL instance.
-    default: "5.7"
-    enum:
-      "5.6": MySQL v5.6
-      "5.7": MySQL v5.7
-      "8.0": MySQL v8.0
-    prohibit_update: true  
-  - field_name: instance_name
-    type: string
-    details: Name for your MySQL instance
-    default: csb-mysql-${request.instance_id}
-    constraints:
-      maxLength: 98
-      minLength: 6
-      pattern: ^[a-z][a-z0-9-]+$
-  - field_name: resource_group
-    details: Name for the resource group for this instance
-    default: ''
-    constraints:
-      maxLength: 64
-      minLength: 0
-      pattern: ^[a-z][a-z0-9-]+$|^$
-    prohibit_update: true
-  - field_name: db_name
-    type: string
-    details: Name for your database
-    default: csb-db
-    constraints:
-      maxLength: 64
-  - field_name: authorized_network
-    type: string
-    details: The subnet ID of the Azure VNET to which the instance is locked down to. If left unspecified, 
-    default: default      
-  - field_name: location
-    type: string
-    details: The location of the mysql instance.
-    default: westus
-    enum:
-      eastasia: East Asia
-      southeastasia: South East Asia
-      centralus: Central US
-      eastus: East US
-      eastus2: East US 2
-      westus: West US
-      northcentralus: North Central US
-      southcentralus: South Central US
-      northeurope: North Europe
-      westeurope: West Europe
-      japanwest: Japan West
-      japaneast: Japan East
-      brazilsouth: Brazil South
-      australiaeast: Australia East
-      australiasoutheast: Australia South East
-      australiacentral: Australia Central
-      australiacentral2: Australia Central 2
-      southindia: South India
-      centralindia: Central India
-      westindia: West India
-      canadacentral: Canada Central
-      canadaeast: Canada East
-      uksouth: UK South
-      ukwest: UK West
-      westcentralus: West Central US
-      westus2: West US 2
-      koreacentral: Korea Central
-      koreasouth: Korea South
-      francecentral: France Central
-      uaenorth: UAE North
-      southafricanorth: South Africa North
-      southafricawest: South Africa West
-      germanycentral: Germany Central
-    prohibit_update: true  
-  - field_name: azure_tenant_id
-    type: string
-    details: Azure Tenant to create resource in
-    default: ${config("azure.tenant_id")}      
-  - field_name: azure_subscription_id
-    type: string
-    details: Azure Subscription to create resource in
-    default: ${config("azure.subscription_id")}      
-  - field_name: azure_client_id
-    type: string
-    details: Client ID of Azure principal 
-    default: ${config("azure.client_id")}      
-  - field_name: azure_client_secret
-    type: string
-    details: Client secret for Azure principal
-    default: ${config("azure.client_secret")}  
-  - field_name: skip_provider_registration
-    type: boolean
-    details: Skip automatic Azure provider registration, set to true if service principal being used does not have rights to register providers
-    default: false        
-  - field_name: sku_name
-    type: string
-    details: Azure sku (typically, tier [B,GP,MO] + family [Gen4,Gen5] + cores, e.g. B_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) Will be computed from cores if empty.
-    default: ""
-    prohibit_update: true
-  - field_name: backup_retention_days
-    type: integer
-    details: Backup retention days for the server, supported values are between 7 and 35 days.
-    default: 7
+    - field_name: cores
+      type: integer
+      default: 2
+      details: Number vcores for the instance (upto the maximum allowed for the service tier)
+      constraints:
+        maximum: 64
+        minimum: 1
+        multipleOf: 2
+    - field_name: storage_gb
+      type: integer
+      required: false
+      default: 5
+      details: Storage allocated to the database instance in GB
+      constraints:
+        maximum: 16384
+        minimum: 5
+    - field_name: mysql_version
+      type: string
+      details: The version for the MySQL instance.
+      default: "5.7"
+      enum:
+        "5.6": MySQL v5.6
+        "5.7": MySQL v5.7
+        "8.0": MySQL v8.0
+      prohibit_update: true
+    - field_name: instance_name
+      type: string
+      details: Name for your MySQL instance
+      default: csb-mysql-${request.instance_id}
+      constraints:
+        maxLength: 98
+        minLength: 6
+        pattern: ^[a-z][a-z0-9-]+$
+    - field_name: resource_group
+      details: Name for the resource group for this instance
+      default: ""
+      constraints:
+        maxLength: 64
+        minLength: 0
+        pattern: ^[a-z][a-z0-9-]+$|^$
+      prohibit_update: true
+    - field_name: db_name
+      type: string
+      details: Name for your database
+      default: csb-db
+      constraints:
+        maxLength: 64
+    - field_name: authorized_network
+      type: string
+      details: The subnet ID of the Azure VNET to which the instance is locked down to. If left unspecified,
+      default: default
+    - field_name: location
+      type: string
+      details: The location of the mysql instance.
+      default: westus
+      enum:
+        eastasia: East Asia
+        southeastasia: South East Asia
+        centralus: Central US
+        eastus: East US
+        eastus2: East US 2
+        westus: West US
+        northcentralus: North Central US
+        southcentralus: South Central US
+        northeurope: North Europe
+        westeurope: West Europe
+        japanwest: Japan West
+        japaneast: Japan East
+        brazilsouth: Brazil South
+        australiaeast: Australia East
+        australiasoutheast: Australia South East
+        australiacentral: Australia Central
+        australiacentral2: Australia Central 2
+        southindia: South India
+        centralindia: Central India
+        westindia: West India
+        canadacentral: Canada Central
+        canadaeast: Canada East
+        uksouth: UK South
+        ukwest: UK West
+        westcentralus: West Central US
+        westus2: West US 2
+        koreacentral: Korea Central
+        koreasouth: Korea South
+        francecentral: France Central
+        uaenorth: UAE North
+        southafricanorth: South Africa North
+        southafricawest: South Africa West
+        germanycentral: Germany Central
+      prohibit_update: true
+    - field_name: azure_tenant_id
+      type: string
+      details: Azure Tenant to create resource in
+      default: ${config("azure.tenant_id")}
+    - field_name: azure_subscription_id
+      type: string
+      details: Azure Subscription to create resource in
+      default: ${config("azure.subscription_id")}
+    - field_name: azure_client_id
+      type: string
+      details: Client ID of Azure principal
+      default: ${config("azure.client_id")}
+    - field_name: azure_client_secret
+      type: string
+      details: Client secret for Azure principal
+      default: ${config("azure.client_secret")}
+    - field_name: skip_provider_registration
+      type: boolean
+      details: Skip automatic Azure provider registration, set to true if service principal being used does not have rights to register providers
+      default: false
+    - field_name: sku_name
+      type: string
+      details: Azure sku (typically, tier [B,GP,MO] + family [Gen4,Gen5] + cores, e.g. B_Gen4_1, GP_Gen5_8, see https://docs.microsoft.com/en-us/azure/mysql/concepts-pricing-tiers) Will be computed from cores if empty.
+      default: ""
+      prohibit_update: true
+    - field_name: backup_retention_days
+      type: integer
+      details: Backup retention days for the server, supported values are between 7 and 35 days.
+      default: 7
   computed_inputs:
-  - name: labels
-    default: ${json.marshal(request.default_labels)}
-    overwrite: true
-    type: object
+    - name: labels
+      default: ${json.marshal(request.default_labels)}
+      overwrite: true
+      type: object
   template_ref: terraform/azure-mysql/provision-mysql.tf
   outputs:
-  - field_name: name
-    type: string
-    details: The name of the database.
-  - field_name: hostname
-    type: string
-    details: Hostname or IP address of the exposed mysql endpoint used by clients to connect to the service.
-  - field_name: port
-    type: integer
-    details: The port number of the exposed mysql instance.
-  - field_name: username
-    type: string
-    details: The username to authenticate to the database instance.
-  - field_name: password
-    type: string
-    details: The password to authenticate to the database instance.
-  - field_name: use_tls
-    type: boolean
-    details: Using TLS for connection
+    - field_name: name
+      type: string
+      details: The name of the database.
+    - field_name: hostname
+      type: string
+      details: Hostname or IP address of the exposed mysql endpoint used by clients to connect to the service.
+    - field_name: port
+      type: integer
+      details: The port number of the exposed mysql instance.
+    - field_name: username
+      type: string
+      details: The username to authenticate to the database instance.
+    - field_name: password
+      type: string
+      details: The password to authenticate to the database instance.
+    - field_name: use_tls
+      type: boolean
+      details: Using TLS for connection
 bind:
   plan_inputs: []
   user_inputs: []
@@ -248,47 +248,47 @@ bind:
       default: ${instance.details["use_tls"]}
       overwrite: true
   template_ref: terraform/azure-mysql/bind-mysql.tf
-  outputs: 
+  outputs:
     - field_name: username
       type: string
       details: The username to authenticate to the database instance.
     - field_name: password
       type: string
-      details: The password to authenticate to the database instance.  
+      details: The password to authenticate to the database instance.
     - field_name: uri
       type: string
       details: The uri to connect to the database instance and database.
     - field_name: jdbcUrl
       type: string
-      details: The jdbc url to connect to the database instance and database.    
+      details: The jdbc url to connect to the database instance and database.
 examples:
-- name: small-public
-  description: Create a small mysql instance with firewall rule open to the world
-  plan_id: 828e324e-6b34-4f50-b224-9b956dd2d1b7
-  provision_params: {"firewall_rules":[["0.0.0.0", "255.255.255.255"]]}
-  bind_params: {}
-  bind_can_fail: false
-- name: small-no-tls
-  description: Create a small mysql instance with tls disabled
-  plan_id: 828e324e-6b34-4f50-b224-9b956dd2d1b7
-  provision_params: {"use_tls": false}
-  bind_params: {}
-  bind_can_fail: true  
-- name: small-v5.6-50gb-storage
-  description: Create a small mysql v5.6 instance with 50gb storage
-  plan_id: 828e324e-6b34-4f50-b224-9b956dd2d1b7
-  provision_params: { "mysql_version": "5.6", "storage_gb": 50 }
-  bind_params: {}
-  bind_can_fail: true
-- name: medium
-  description: Create a medium mysql instance in centralus location
-  plan_id: 9eb836dd-4B90-4cF7-bc06-1986103802d3
-  provision_params: { "location": "eastus" }
-  bind_params: {}
-  bind_can_fail: true
-- name: large
-  description: Create a large mysql instance
-  plan_id: 6f8Ea44c-6840-4b0b-9068-f0cd9b17437c
-  provision_params: {}
-  bind_params: {}
-  bind_can_fail: true
+  - name: small
+    description: Create a small mysql instance 
+    plan_id: 828e324e-6b34-4f50-b224-9b956dd2d1b7
+    provision_params: {}
+    bind_params: {}
+    bind_can_fail: false
+  - name: small-no-tls
+    description: Create a small mysql instance with tls disabled
+    plan_id: 828e324e-6b34-4f50-b224-9b956dd2d1b7
+    provision_params: { "use_tls": false }
+    bind_params: {}
+    bind_can_fail: true
+  - name: small-v5.6-50gb-storage
+    description: Create a small mysql v5.6 instance with 50gb storage
+    plan_id: 828e324e-6b34-4f50-b224-9b956dd2d1b7
+    provision_params: { "mysql_version": "5.6", "storage_gb": 50 }
+    bind_params: {}
+    bind_can_fail: true
+  - name: medium
+    description: Create a medium mysql instance in centralus location
+    plan_id: 9eb836dd-4B90-4cF7-bc06-1986103802d3
+    provision_params: { "location": "eastus" }
+    bind_params: {}
+    bind_can_fail: true
+  - name: large
+    description: Create a large mysql instance
+    plan_id: 6f8Ea44c-6840-4b0b-9068-f0cd9b17437c
+    provision_params: {}
+    bind_params: {}
+    bind_can_fail: true
