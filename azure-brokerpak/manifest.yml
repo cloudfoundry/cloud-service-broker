@@ -55,6 +55,7 @@ env_config_mapping:
   ARM_CLIENT_ID: azure.client_id
   ARM_CLIENT_SECRET: azure.client_secret
   MSSQL_DB_SERVER_CREDS: azure.mssql_db_server_creds
+  MSSQL_DB_FOG_SERVER_PAIR_CREDS: azure.mssql_db_fog_server_pair_creds
 service_definitions:
 - azure-redis.yml
 - azure-mysql.yml
