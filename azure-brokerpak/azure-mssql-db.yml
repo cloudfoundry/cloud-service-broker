@@ -107,7 +107,7 @@ provision:
     required: true
   - field_name: server_credentials
     type: object
-    details: 'JSON has of server credentials. { "name1":{"server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."},"name2":{...}...}'
+    details: 'JSON hash of server credentials. { "name1":{"server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."},"name2":{...}...}'
     required: true
   - field_name: azure_tenant_id
     type: string
@@ -201,7 +201,7 @@ bind:
     default: ${instance.details["server"]}
   - name: server_credentials
     type: object
-    details: 'JSON has of server credentials. { "name1":{"server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."},"name2":{...}...}'
+    details: 'JSON hash of server credentials. { "name1":{"server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."},"name2":{...}...}'
     overwrite: true
     default: ${config("azure.mssql_db_server_creds")}
   - name: admin_username

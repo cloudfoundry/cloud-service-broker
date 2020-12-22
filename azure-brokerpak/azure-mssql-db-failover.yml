@@ -227,6 +227,9 @@ provision:
   - field_name: password
     type: string
     details: The password to authenticate to the database server.
+  - field_name: server_pair
+    type: string
+    details: The server_pair the db was created on.
 bind:
   plan_inputs: []
   user_inputs: []
@@ -251,7 +254,21 @@ bind:
     type: string
     default: ${instance.details["password"]}
     overwrite: true
-  template_ref: terraform/azure-mssql/bind-mssql.tf
+  - name: server
+    type: string
+    details: Name of server pair from server_credential_pairs to create database upon
+    required: true
+    default: ${instance.details["server_pair"]}
+  - name: server_credentials
+    type: object
+    details: 'JSON hash of server pair name to set of server credentials. { "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}'
+    required: true    
+    default: ${config("azure.mssql_db_fog_server_pair_creds")}    
+  template_refs:    
+    outputs: terraform/azure-mssql-db/bind/mssql-bind-outputs.tf
+    variables: terraform/azure-mssql-db/bind/mssql-bind-variables.tf
+    main: terraform/azure-mssql-db/bind/mssql-bind-main.tf
+    data: terraform/azure-mssql-db/bind/mssql-bind-data.tf
   outputs:
   - field_name: username
     type: string

@@ -6,6 +6,7 @@ output port {value = 1433}
 output name {value = var.existing ? var.db_name : azurerm_mssql_database.primary_db[0].name}
 output username {value = var.server_credential_pairs[var.server_pair].admin_username}
 output password {value = var.server_credential_pairs[var.server_pair].admin_password}
+output server_pair { value = var.server_pair }
 output status {
     value = var.existing ? format("connected to existing failover group - primary server %s (id: %s) secondary server %s (%s) URL: https://portal.azure.com/#@%s/resource%s/failoverGroup",
                                               data.azurerm_sql_server.primary_sql_db_server.name, data.azurerm_sql_server.primary_sql_db_server.id,
