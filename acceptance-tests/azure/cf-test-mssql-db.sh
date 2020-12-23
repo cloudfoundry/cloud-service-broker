@@ -107,13 +107,14 @@ if create_service csb-azure-resource-group standard "${SERVER_RG}" "{\"instance_
             else
                 echo Bind/unbind failed after password change!
             fi
-            cf unset-env cloud-service-broker MSSQL_DB_SERVER_CREDS
+
         else
             echo Basic functionality failed!
         fi
         delete_service "${MSSQL_DB_INSTANCE}"
 
         cf unset-env cloud-service-broker GSB_SERVICE_CSB_AZURE_MSSQL_DB_PROVISION_DEFAULTS
+        cf unset-env cloud-service-broker MSSQL_DB_SERVER_CREDS
         cf restart cloud-service-broker
     fi
 

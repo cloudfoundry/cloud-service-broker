@@ -59,9 +59,11 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
                 \"azure_secondary_db_id\": \"$(az sql failover-group show --name ${MASB_FOG_INSTANCE_NAME} --server ${SECONDARY_SERVER_NAME} --resource-group ${SERVER_RESOURCE_GROUP} --query databases[0] -o tsv)\", \
                 \"azure_fog_id\": \"$(az sql failover-group show --name ${MASB_FOG_INSTANCE_NAME} --server ${PRIMARY_SERVER_NAME} --resource-group ${SERVER_RESOURCE_GROUP} --query id -o tsv)\", \
 
-                \"server_pair\": \"test_server\", \
-                \"server_credential_pairs\": { \
-                  \"test_server\": { \
+                \"server_pair\": \"test_server\" \
+            }"
+
+            MSSQL_DB_FOG_SERVER_PAIR_CREDS="{ \
+                \"test_server\": { \
                     \"admin_username\":\"${SERVER_ADMIN_USER_NAME}\", \
                     \"admin_password\":\"${SERVER_ADMIN_PASSWORD}\", \
                     \"primary\":{ \
@@ -73,10 +75,17 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
                         \"resource_group\":\"${SERVER_RESOURCE_GROUP}\" \
                     } \
                   } \
-                } \
               }"
 
-            echo $SUBSUME_CONFIG
+            #echo $SUBSUME_CONFIG
+
+            GSB_SERVICE_CSB_AZURE_MSSQL_DB_FAILOVER_GROUP_PROVISION_DEFAULTS="{ \
+                \"server_credential_pairs\":${MSSQL_DB_FOG_SERVER_PAIR_CREDS} \
+            }"
+
+            cf set-env cloud-service-broker GSB_SERVICE_CSB_AZURE_MSSQL_DB_FAILOVER_GROUP_PROVISION_DEFAULTS "${GSB_SERVICE_CSB_AZURE_MSSQL_DB_FAILOVER_GROUP_PROVISION_DEFAULTS}"
+            cf set-env cloud-service-broker MSSQL_DB_FOG_SERVER_PAIR_CREDS "${MSSQL_DB_FOG_SERVER_PAIR_CREDS}"
+            cf restart cloud-service-broker     
 
             SUBSUMED_INSTANCE_NAME=masb-sql-db-subsume-test-$$
             if create_service csb-azure-mssql-db-failover-group subsume "${SUBSUMED_INSTANCE_NAME}" "${SUBSUME_CONFIG}"; then
@@ -102,6 +111,10 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
                 delete_service "${MASB_FOG_INSTANCE_NAME}" || cf purge-service-instance -f "${MASB_FOG_INSTANCE_NAME}"
                 delete_service "${MASB_SQLDB_INSTANCE_NAME}" || cf purge-service-instance -f "${MASB_SQLDB_INSTANCE_NAME}"      
             fi
+
+            cf unset-env cloud-service-broker GSB_SERVICE_CSB_AZURE_MSSQL_DB_FAILOVER_GROUP_PROVISION_DEFAULTS
+            cf unset-env cloud-service-broker MSSQL_DB_FOG_SERVER_PAIR_CREDS
+            cf restart cloud-service-broker  
         else
             echo spring music test failed on masb fog
             delete_service "${MASB_FOG_INSTANCE_NAME}" || cf purge-service-instance -f "${MASB_FOG_INSTANCE_NAME}"

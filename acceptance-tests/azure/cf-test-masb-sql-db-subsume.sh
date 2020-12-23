@@ -31,24 +31,25 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
     if bind_service_test spring-music "${MASB_SQLDB_INSTANCE_NAME}"; then
         SUBSUME_CONFIG="{ \
           \"azure_db_id\": \"$(az sql db show --name ${DB_NAME} --server ${SERVER_NAME} --resource-group ${SERVER_RESOURCE_GROUP} --query id -o tsv)\", \
-          \"server\": \"test_server\", \
-          \"server_credentials\": { \
+          \"server\": \"test_server\" \
+        }"
+        
+        MSSQL_DB_SERVER_CREDS="{ \
             \"test_server\": { \
               \"server_name\":\"${SERVER_NAME}\", \
               \"admin_username\":\"${SERVER_ADMIN_USER_NAME}\", \
               \"admin_password\":\"${SERVER_ADMIN_PASSWORD}\", \
               \"server_resource_group\":\"${SERVER_RESOURCE_GROUP}\" \
-            }, \
-            \"fail_server\": { \
-              \"server_name\":\"missing\", \
-              \"admin_username\":\"bogus\", \
-              \"admin_password\":\"bad-password\", \
-              \"server_resource_group\":\"rg\" \
             } \
-          } \
         }"
+        GSB_SERVICE_CSB_AZURE_MSSQL_DB_PROVISION_DEFAULTS="{ \"server_credentials\": ${MSSQL_DB_SERVER_CREDS} }"
 
         echo $SUBSUME_CONFIG
+        echo $GSB_SERVICE_CSB_AZURE_MSSQL_DB_PROVISION_DEFAULTS
+
+        cf set-env cloud-service-broker GSB_SERVICE_CSB_AZURE_MSSQL_DB_PROVISION_DEFAULTS "${GSB_SERVICE_CSB_AZURE_MSSQL_DB_PROVISION_DEFAULTS}"
+        cf set-env cloud-service-broker MSSQL_DB_SERVER_CREDS "${MSSQL_DB_SERVER_CREDS}"
+        cf restart cloud-service-broker        
 
         if create_service csb-azure-mssql-db subsume "${SUBSUMED_INSTANCE_NAME}" "${SUBSUME_CONFIG}"; then
             echo "subsumed masb sqldb instance test successful"
@@ -72,6 +73,10 @@ if create_service azure-sqldb StandardS0 "${MASB_SQLDB_INSTANCE_NAME}" "${MASB_D
         else
             echo "Failed spring music test against masb db"
         fi
+
+        cf unset-env cloud-service-broker GSB_SERVICE_CSB_AZURE_MSSQL_DB_PROVISION_DEFAULTS
+        cf unset-env cloud-service-broker MSSQL_DB_SERVER_CREDS
+        cf restart cloud-service-broker
     fi
     delete_service "${MASB_SQLDB_INSTANCE_NAME}"
 fi
