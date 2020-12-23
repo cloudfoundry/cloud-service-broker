@@ -108,6 +108,7 @@ provision:
   - field_name: server_credentials
     type: object
     details: 'JSON hash of server credentials. { "name1":{"server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."},"name2":{...}...}'
+    default: ${config("azure.mssql_db_server_creds")}
     required: true
   - field_name: azure_tenant_id
     type: string

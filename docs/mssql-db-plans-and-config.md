@@ -36,7 +36,7 @@ The following parameters may be configured during service provisioning (`cf crea
 |----------------|------|-------------|---------|
 | db_name | string | database name | csb-fog-db-*instance_id* |
 | server  | string | server name from *server_credentials* on which to create the database | |
-| server_credentials | JSON | list of server credentials on which databases can be created, *server* must match one of *name*. Format: `{ "name1": { "server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."}, "name2":{"server_name":..., ...}...}`
+| server_credentials | JSON | list of server credentials on which databases can be created, *server* must match one of *name*. Format: `{ "name1": { "server_name":"...", "server_resource_group":"...", "admin_username":"...", "admin_password":"..."}, "name2":{"server_name":..., ...}...}`| config file value `azure.mssql_db_server_creds` |
 | azure_tenant_id | string | ID of Azure tenant for instance | config file value `azure.tenant_id` |
 | azure_subscription_id | string | ID of Azure subscription for instance | config file value `azure.subscription_id` |
 | azure_client_id | string | ID of Azure service principal to authenticate for instance creation | config file value `azure.client_id` |
@@ -74,12 +74,9 @@ See [configuration documentation](./configuration.md) and [Azure installation do
 To globally configure *server_credential*, include the following in the configuration file for the broker:
 
 ```yaml
-service:
-  csb-azure-mssql-db:
-    provision:
-      defaults: '{ 
-        "server_credentials": {
-          "server1": { 
+azure:
+  mssql_db_server_creds: '{ 
+        "server1": { 
             "admin_username":"...", 
             "admin_password":"...", 
             "server_name":"...", 
@@ -89,7 +86,6 @@ service:
             "admin_username":"...",
             ...
           }
-        }
       }' 
 ```
 

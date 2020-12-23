@@ -150,6 +150,7 @@ provision:
     type: object
     details: 'JSON hash of server pair name to set of server credentials. { "name": { "admin_username":"...", "admin_password":"...", "primary":{"server_name":"...", "resource_group":..."}, "secondary":{"server_name":"...", "resource_group":..."}, ...}'
     required: true
+    default: ${config("azure.mssql_db_fog_server_pair_creds")}
   - field_name: read_write_endpoint_failover_policy
     type: string
     details: Faileover policy (Automatic or Manual)
