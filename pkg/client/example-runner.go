@@ -170,6 +170,7 @@ func RunExample(client *Client, serviceExample CompleteServiceExample) error {
 	}()
 
 	if err := executor.Provision(); err != nil {
+		log.Printf("Failed to provision %v: %v", serviceExample.ServiceName, err)
 		return err
 	}
 
@@ -178,13 +179,16 @@ func RunExample(client *Client, serviceExample CompleteServiceExample) error {
 		if serviceExample.BindCanFail {
 			log.Printf("WARNING: bind failed: %v, but marked 'can fail' so treated as warning.", bindErr)
 		} else {
+			log.Printf("Failed to bind %v: %v", serviceExample.ServiceName, bindErr)
 			return bindErr
 		}
 	} else if err := executor.Unbind(); err != nil {
+		log.Printf("Failed to unbind %v: %v", serviceExample.ServiceName, err)
 		return err
 	}
 
 	if err := executor.Deprovision(); err != nil {
+		log.Printf("Failed to deprovision %v: %v", serviceExample.ServiceName, err)
 		return err
 	}
 
