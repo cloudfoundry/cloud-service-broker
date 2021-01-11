@@ -16,11 +16,6 @@ export GOOGLE_PROJECT=$(echo ${GOOGLE_CREDENTIALS} | jq -r .project_id)
 
 export GCP_PAS_NETWORK=$(lpass show "Shared-CF Platform Engineering/pe-cloud-service-broker/cloud service broker pipeline secrets.yml" | grep gcp-network | cut -d ' ' -f 2)
 
-export AWS_ACCESS_KEY_ID=$(lpass show --notes "Shared-CF Platform Engineering/pe-cloud-service-broker/cloud service AWS credentials" | jq -r .access_key)
-export AWS_SECRET_ACCESS_KEY=$(lpass show --notes "Shared-CF Platform Engineering/pe-cloud-service-broker/cloud service AWS credentials" | jq -r .secret_key)
-
-export AWS_PAS_VPC_ID=$(lpass show "Shared-CF Platform Engineering/pe-cloud-service-broker/cloud service broker pipeline secrets.yml" | grep aws-vpc-id | cut -d ' ' -f 2)
-
 export SECURITY_USER_NAME=brokeruser
 export SECURITY_USER_PASSWORD=brokeruserpassword
 export DB_HOST=localhost

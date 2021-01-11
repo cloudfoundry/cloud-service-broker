@@ -73,7 +73,6 @@ docs/customization.md:
 clean-brokerpaks:
 	-rm gcp-brokerpak/*.brokerpak
 	-rm azure-brokerpak/*.brokerpak
-	-rm aws-brokerpak/*.brokerpak
 	-rm subsume-masb-brokerpak/*.brokerpak
 
 .PHONY: clean
@@ -162,40 +161,6 @@ run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux
 ./build/sqlfailover_*.zip: tools/sqlfailover/*.go
 	cd tools/sqlfailover; $(MAKE) build
 
-# AWS broker 
-.PHONY: aws-brokerpak
-aws-brokerpak: aws-brokerpak/*.brokerpak
-
-build-brokerpak-aws: aws-brokerpak/*.brokerpak
-
-aws-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./aws-brokerpak/*.yml  ./aws-brokerpak/terraform/*/*/*.tf
-	# docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/aws-brokerpak
-	cd ./aws-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
-
-.PHONY: run-broker-aws 
-run-broker-aws: check-aws-env-vars ./build/cloud-service-broker.$(OSFAMILY) aws-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./aws-brokerpak GSB_PROVISION_DEFAULTS="{\"aws_vpc_id\": \"$(AWS_PAS_VPC_ID)\"}" DB_TLS=skip-verify ./build/cloud-service-broker.$(OSFAMILY) serve
-
-.PHONY: push-broker-aws
-push-broker-aws: check-aws-env-vars ./build/cloud-service-broker.$(OSFAMILY) aws-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./aws-brokerpak  GSB_PROVISION_DEFAULTS="{\"aws_vpc_id\": \"$(AWS_PAS_VPC_ID)\"}" DB_TLS=skip-verify ./scripts/push-broker.sh	
-
-.PHONY: run-broker-aws-docker
-run-broker-aws-docker: check-aws-env-vars ./build/cloud-service-broker.linux aws-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=/broker/aws-brokerpak \
-	DB_HOST=host.docker.internal \
-	docker run --rm -p 8080:8080 -v $(PWD):/broker \
-	-e GSB_BROKERPAK_BUILTIN_PATH \
-	-e DB_HOST \
-	-e DB_USERNAME \
-	-e DB_PASSWORD \
-	-e PORT \
-	-e SECURITY_USER_NAME \
-	-e SECURITY_USER_PASSWORD \
-	-e AWS_ACCESS_KEY_ID \
-    -e AWS_SECRET_ACCESS_KEY \
-	alpine /broker/build/cloud-service-broker.linux serve
-
 # image
 
 .PHONY: build-image
@@ -270,18 +235,6 @@ ifndef ARM_CLIENT_SECRET
 	$(error variable ARM_CLIENT_SECRET not defined)
 endif
 
-.PHONY: aws_access_key_id
-aws_access_key_id:
-ifndef AWS_ACCESS_KEY_ID
-	$(error variable AWS_ACCESS_KEY_ID not defined)
-endif
-
-.PHONY: aws_secret_access_key
-aws_secret_access_key:
-ifndef AWS_SECRET_ACCESS_KEY
-	$(error variable AWS_SECRET_ACCESS_KEY not defined)
-endif
-
 .PHONY: gcp_pas_network
 gcp_pas_network:
 ifndef GCP_PAS_NETWORK
@@ -293,6 +246,3 @@ check-gcp-env-vars: google-credentials google-project security-user-name securit
 
 .PHONY: check-azure-env-vars
 check-azure-env-vars: arm-subscription-id arm-tenant-id arm-client-id arm-client-secret security-user-name security-user-password db-host db-username db-password
-
-.PHONY: check-aws-env-vars
-check-aws-env-vars: aws_access_key_id aws_secret_access_key security-user-password db-host db-username db-password
