@@ -20,9 +20,13 @@ WORKDIR /app
 ADD . /app
 RUN CGO_ENABLED=1 GOOS=linux go build -o ./build/cloud-service-broker
 
-FROM alpine:latest
+FROM alpine/k8s:1.18.2
 
 COPY --from=build /app/build/cloud-service-broker /bin/cloud-service-broker
+
+# Install git so we can use it to grab Terraform modules
+RUN apk update
+RUN apk add --update git
 
 ENV PORT 8080
 EXPOSE 8080/tcp
