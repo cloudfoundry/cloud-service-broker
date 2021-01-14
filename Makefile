@@ -164,7 +164,7 @@ run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux
 # image
 
 .PHONY: build-image
-build-image: Dockerfile ./build/cloud-service-broker.linux
+build-image: Dockerfile
 	docker build --tag csb .
 
 # env vars checks
