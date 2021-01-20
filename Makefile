@@ -72,8 +72,6 @@ docs/customization.md:
 .PHONY: clean-brokerpaks
 clean-brokerpaks:
 	-rm gcp-brokerpak/*.brokerpak
-	-rm azure-brokerpak/*.brokerpak
-	-rm subsume-masb-brokerpak/*.brokerpak
 
 .PHONY: clean
 clean: deps-go-binary clean-brokerpaks
@@ -120,46 +118,6 @@ run-broker-gcp-docker: check-gcp-env-vars ./build/cloud-service-broker.linux gcp
 	-e GOOGLE_CREDENTIALS \
 	-e GOOGLE_PROJECT \
 	ubuntu /broker/build/cloud-service-broker.linux serve	
-
-# Azure broker
-
-.PHONY: run-broker-azure
-run-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak GSB_PROVISION_DEFAULTS='{"resource_group": "broker-cf-test"}' DB_TLS=skip-verify DB_TYPE=sqlite3 DB_PATH=/tmp/csb-db DB_TLS=skip-verify ./build/cloud-service-broker.$(OSFAMILY) serve
-
-build-brokerpak-azure: azure-brokerpak/*.brokerpak
-
-azure-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./azure-brokerpak/*.yml ./azure-brokerpak/terraform/*/*.tf ./azure-brokerpak/terraform/*/*/*.tf ./build/psqlcmd_*.zip ./build/sqlfailover_*.zip
-	# docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/azure-brokerpak
-	cd ./azure-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
-
-.PHONY: push-broker-azure
-push-broker-azure: check-azure-env-vars ./build/cloud-service-broker.$(OSFAMILY) azure-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./azure-brokerpak GSB_PROVISION_DEFAULTS='{"resource_group": "broker-cf-test"}' ./scripts/push-broker.sh
-
-.PHONY: run-broker-azure-docker
-run-broker-azure-docker: check-azure-env-vars ./build/cloud-service-broker.linux azure-brokerpak/*.brokerpak
-	docker run --rm -p 8080:8080 -v $(PWD):/broker \
-	-e "GSB_BROKERPAK_BUILTIN_PATH=/broker/azure-brokerpak" \
-	-e DB_HOST \
-	-e DB_USERNAME \
-	-e DB_PASSWORD \
-	-e PORT \
-	-e SECURITY_USER_NAME \
-	-e SECURITY_USER_PASSWORD \
-	-e ARM_SUBSCRIPTION_ID \
-	-e ARM_TENANT_ID \
-	-e ARM_CLIENT_ID \
-	-e ARM_CLIENT_SECRET \
-	-e "DB_TYPE=sqlite3" \
-	-e "DB_PATH=/tmp/csb-db" \
-	ubuntu /broker/build/cloud-service-broker.linux serve
-
-./build/psqlcmd_*.zip: tools/psqlcmd/*.go
-	cd tools/psqlcmd; $(MAKE) build
-
-./build/sqlfailover_*.zip: tools/sqlfailover/*.go
-	cd tools/sqlfailover; $(MAKE) build
 
 # image
 
@@ -243,6 +201,3 @@ endif
 
 .PHONY: check-gcp-env-vars
 check-gcp-env-vars: google-credentials google-project security-user-name security-user-password db-host db-username db-password gcp_pas_network
-
-.PHONY: check-azure-env-vars
-check-azure-env-vars: arm-subscription-id arm-tenant-id arm-client-id arm-client-secret security-user-name security-user-password db-host db-username db-password

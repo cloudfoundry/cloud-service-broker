@@ -1,5 +1,0 @@
----
-applications:
-- name: cosmosdb-test-app
-  command: node index.js
-  random-route: true  
