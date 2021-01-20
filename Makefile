@@ -122,7 +122,7 @@ run-broker-gcp-docker: check-gcp-env-vars ./build/cloud-service-broker.linux gcp
 # image
 
 .PHONY: build-image
-build-image: Dockerfile ./build/cloud-service-broker.linux
+build-image: Dockerfile
 	docker build --tag csb .
 
 # env vars checks
