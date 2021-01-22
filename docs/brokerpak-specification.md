@@ -307,7 +307,7 @@ Outputs are _only_ validated on integration tests.
 | details* | string | Provides explanation about the purpose of the variable. |
 | default | any | The default value for this field. If `null`, the field MUST be marked as required. If a string, it will be executed as a HIL expression and cast to the appropriate type described in the `type` field. See the [Expression language reference](#expression-language-reference) section for more information about what's available. |
 | enum | map of any:string | Valid values for the field and their human-readable descriptions suitable for displaying in a drop-down list. |
-| constraints | map of string:any | Holds additional JSONSchema validation for the field. The following keys are supported: `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`. |
+| constraints | map of string:any | Holds additional JSONSchema validation for the field. Feature flag `enable-catalog-schemas` controls whether to serve Json schemas in catalog. The following keys are supported: `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`. |
 
 #### Computed Variable Object
 

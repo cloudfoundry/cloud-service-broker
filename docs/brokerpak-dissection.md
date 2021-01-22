@@ -534,7 +534,7 @@ Configuration parameters that my be set as part of a plan or set by the user thr
 | type | field type |
 | details | human readable description of field |
 | default | (optional) default value for field |
-| constraints | (optional) Holds additional JSONSchema validation for the field. The following keys are supported: `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`.|
+| constraints | (optional) Holds additional JSONSchema validation for the field. Feature flag `enable-catalog-schemas` controls whether to serve Json schemas in catalog. The following keys are supported: `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`.|
 
 > input fields must be declared as terraform *variables*. Failure to do so will result in failures to build brokerpak.
 
