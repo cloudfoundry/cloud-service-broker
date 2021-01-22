@@ -42,6 +42,22 @@ Broker service configuration values:
 | <tt>SECURITY_USER_PASSWORD</tt> <b>*</b> | api.password | string | <p>Broker authentication password</p>|
 | <tt>PORT</tt> | api.port | string | <p>Port to bind broker to</p>|
 
+## Feature flags Configuration
+
+Feature flags can be toggled through the following configuration values. See also [Feature Flags section in tile.yml ](https://github.com/cloudfoundry-incubator/cloud-service-broker/blob/master/tile.yml#L133-L199) or [source code occurences of "toggles.Features.Toggle"](https://github.com/cloudfoundry-incubator/cloud-service-broker/search?q=toggles.Features.Toggle&type=code)
+| Environment Variable | Config File Value | Type | Description | Default |
+|----------------------|------|-------------|------------------|----------|
+| <tt>GSB_COMPATIBILITY_ENABLE_BUILTIN_BROKERPAKS</tt> <b>*</b> | compatibility.enable_builtin_brokerpaks | Boolean | <p>Load brokerpaks that are built-in to the software.</p>| "true" |
+| <tt>GSB_COMPATIBILITY_ENABLE_BUILTIN_SERVICES</tt> <b>*</b> | compatibility.enable_builtin_services | Boolean | <p>Enable services that are built in to the broker i.e. not brokerpaks.</p>| "true" |
+| <tt>GSB_COMPATIBILITY_ENABLE_CATALOG_SCHEMAS</tt> <b>*</b> | compatibility.enable_catalog_schemas | Boolean | <p>Enable generating JSONSchema for the service catalog.</p>| "false" |
+| <tt>GSB_COMPATIBILITY_ENABLE_CF_SHARING</tt> <b>*</b> | compatibility.enable_cf_sharing | Boolean | <p>Set all services to have the Sharable flag so they can be shared</p>| "false" |
+| <tt>GSB_COMPATIBILITY_ENABLE_EOL_SERVICES</tt> <b>*</b> | compatibility.enable_eol_services | Boolean | <p>Enable broker services that are end of life.</p>| "false" |
+| <tt>GSB_COMPATIBILITY_ENABLE_GCP_BETA_SERVICES</tt> <b>*</b> | compatibility.enable_gcp_beta_services | Boolean | <p>Enable services that are in GCP Beta. These have no SLA or support</p>| "true" |
+| <tt>GSB_COMPATIBILITY_ENABLE_GCP_DEPRECATED_SERVICES</tt> <b>*</b> | compatibility.enable_gcp_deprecated_services | Boolean | <p>Enable services that use deprecated GCP components.</p>| "false" |
+| <tt>GSB_COMPATIBILITY_ENABLE_PREVIEW_SERVICES</tt> <b>*</b> | compatibility.enable_preview_services | Boolean | <p>Enable services that are new to the broker this release.</p>| "true" |
+| <tt>GSB_COMPATIBILITY_ENABLE_TERRAFORM_SERVICES</tt> <b>*</b> | compatibility.enable_terraform_services | Boolean | <p>Enable services that use the experimental, unstable, Terraform back-end.</p>| "false" |
+| <tt>GSB_COMPATIBILITY_ENABLE_UNMAINTAINED_SERVICES</tt> <b>*</b> | compatibility.enable_unmaintained_services | Boolean | <p>Enable broker services that are unmaintained.</p>| "false" |
+
 ## Credhub Configuration
 The broker supports passing credentials to apps via [credhub references](https://github.com/cloudfoundry-incubator/credhub/blob/master/docs/secure-service-credentials.md#service-brokers), thus keeping them private to the application (they won't show up in `cf env app_name` output.)
 
