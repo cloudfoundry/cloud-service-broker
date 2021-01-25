@@ -22,9 +22,9 @@ import (
 
 	"errors"
 
-	"github.com/pivotal/cloud-service-broker/pkg/validation"
-	"github.com/pivotal/cloud-service-broker/pkg/varcontext/interpolation"
-	"github.com/pivotal/cloud-service-broker/utils"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext/interpolation"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/hashicorp/go-multierror"
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -56,8 +56,8 @@ type BrokerVariable struct {
 	// Keys are valid JSON Schema validation keywords, and values are their
 	// associated values.
 	// http://json-schema.org/latest/json-schema-validation.html
-	Constraints map[string]interface{} `yaml:"constraints,omitempty"`
-	ProhibitUpdate bool `yaml:"prohibit_update,omitempty"`
+	Constraints    map[string]interface{} `yaml:"constraints,omitempty"`
+	ProhibitUpdate bool                   `yaml:"prohibit_update,omitempty"`
 }
 
 var _ validation.Validatable = (*ServiceDefinition)(nil)

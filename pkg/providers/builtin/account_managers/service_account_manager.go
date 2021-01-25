@@ -21,10 +21,10 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/pivotal/cloud-service-broker/db_service/models"
-	"github.com/pivotal/cloud-service-broker/pkg/broker"
-	"github.com/pivotal/cloud-service-broker/pkg/validation"
-	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/jwt"

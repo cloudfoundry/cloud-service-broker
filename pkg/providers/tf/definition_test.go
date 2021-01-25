@@ -15,16 +15,16 @@
 package tf
 
 import (
-    "reflect"
-    "os"
-    "fmt"
-    "strings"
-    "testing"
+	"fmt"
+	"os"
+	"reflect"
+	"strings"
+	"testing"
 
-    "github.com/go-yaml/yaml"
-    "github.com/pivotal/cloud-service-broker/pkg/broker"
-    "github.com/pivotal/cloud-service-broker/pkg/varcontext"
-    "github.com/pivotal-cf/brokerapi"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
+	"github.com/go-yaml/yaml"
+	"github.com/pivotal-cf/brokerapi"
 )
 
 func TestLoadTemplates(t *testing.T) {

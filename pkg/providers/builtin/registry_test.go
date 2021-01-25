@@ -18,12 +18,11 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 )
 
 func TestBuiltinBrokerRegistry(t *testing.T) {
-	builtinServiceNames := []string{
-	}
+	builtinServiceNames := []string{}
 
 	sort.Strings(builtinServiceNames)
 

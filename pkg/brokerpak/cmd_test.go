@@ -23,8 +23,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pivotal/cloud-service-broker/pkg/providers/tf"
-	"github.com/pivotal/cloud-service-broker/utils/stream"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
 )
 
 func fakeBrokerpak() (string, error) {
@@ -69,7 +69,7 @@ func fakeBrokerpak() (string, error) {
 		Parameters: []ManifestParameter{
 			{Name: "TEST_PARAM", Description: "An example paramater that will be injected into Terraform's environment variables."},
 		},
-		EnvConfigMapping: map[string]string{"ENV_VAR":"env.var"},
+		EnvConfigMapping: map[string]string{"ENV_VAR": "env.var"},
 	}
 
 	if err := stream.Copy(stream.FromYaml(exampleManifest), stream.ToFile(dir, manifestName)); err != nil {

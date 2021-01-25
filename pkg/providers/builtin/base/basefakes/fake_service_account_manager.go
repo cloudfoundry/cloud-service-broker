@@ -5,9 +5,9 @@ import (
 	context "context"
 	sync "sync"
 
-	models "github.com/pivotal/cloud-service-broker/db_service/models"
-	base "github.com/pivotal/cloud-service-broker/pkg/providers/builtin/base"
-	varcontext "github.com/pivotal/cloud-service-broker/pkg/varcontext"
+	models "github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	base "github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin/base"
+	varcontext "github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 )
 
 type FakeServiceAccountManager struct {

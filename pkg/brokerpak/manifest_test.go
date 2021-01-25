@@ -19,8 +19,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 	"github.com/go-yaml/yaml"
-	"github.com/pivotal/cloud-service-broker/pkg/validation"
 )
 
 func TestNewExampleManifest(t *testing.T) {

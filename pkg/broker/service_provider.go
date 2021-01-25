@@ -17,8 +17,8 @@ package broker
 import (
 	"context"
 
-	"github.com/pivotal/cloud-service-broker/db_service/models"
-	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal-cf/brokerapi"
 )
 
@@ -34,7 +34,7 @@ type ServiceProvider interface {
 	Provision(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
 
 	// Update makes necessary updates to resources so they match new desired configuration
-	Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) 
+	Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
 
 	// Bind provisions the necessary resources for a user to be able to connect to the provisioned service.
 	// This may include creating service accounts, granting permissions, and adding users to services e.g. a SQL database user.

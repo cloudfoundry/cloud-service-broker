@@ -19,12 +19,12 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin/base"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal-cf/brokerapi"
-	"github.com/pivotal/cloud-service-broker/db_service/models"
-	"github.com/pivotal/cloud-service-broker/pkg/broker"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/base"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/tf/wrapper"
-	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
 )
 
 // NewTerraformProvider creates a new ServiceProvider backed by Terraform module definitions for provision and bind.

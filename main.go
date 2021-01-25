@@ -15,7 +15,7 @@
 package main
 
 import (
-	"github.com/pivotal/cloud-service-broker/cmd"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/cmd"
 )
 
 func main() {

@@ -21,11 +21,11 @@ import (
 	"path/filepath"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/pivotal/cloud-service-broker/pkg/broker"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/tf"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/tf/wrapper"
-	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal/cloud-service-broker/utils"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 )
@@ -80,7 +80,7 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 
 		if manifest, err := brokerPak.Manifest(); err == nil {
 			for env, config := range manifest.EnvConfigMapping {
-				viper.BindEnv(config, env)				
+				viper.BindEnv(config, env)
 			}
 		}
 

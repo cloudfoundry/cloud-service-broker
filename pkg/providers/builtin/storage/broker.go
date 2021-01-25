@@ -18,10 +18,10 @@ import (
 	"fmt"
 
 	googlestorage "cloud.google.com/go/storage"
-	"github.com/pivotal/cloud-service-broker/db_service/models"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/base"
-	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal/cloud-service-broker/utils"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin/base"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/pivotal-cf/brokerapi"
 	"golang.org/x/net/context"
 	"google.golang.org/api/option"
@@ -125,7 +125,7 @@ func (b *StorageBroker) Update(ctx context.Context, provisionContext *varcontext
 func (b *StorageBroker) createClient(ctx context.Context) (*googlestorage.Client, error) {
 	co := option.WithUserAgent(utils.CustomUserAgent)
 	//ct := option.WithTokenSource(b.HttpConfig.TokenSource(ctx))
-	storageService, err := googlestorage.NewClient(ctx, co/*, ct*/)
+	storageService, err := googlestorage.NewClient(ctx, co /*, ct*/)
 	if err != nil {
 		return nil, fmt.Errorf("Couldn't instantiate Cloud Storage API client: %s", err)
 	}

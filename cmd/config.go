@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/pivotal/cloud-service-broker/pkg/config/migration"
-	"github.com/pivotal/cloud-service-broker/utils"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/config/migration"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	yaml "gopkg.in/yaml.v2"

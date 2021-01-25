@@ -22,10 +22,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/pivotal/cloud-service-broker/pkg/providers/tf"
-	"github.com/pivotal/cloud-service-broker/pkg/validation"
-	"github.com/pivotal/cloud-service-broker/utils/stream"
-	"github.com/pivotal/cloud-service-broker/utils/ziputil"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/ziputil"
 
 	getter "github.com/hashicorp/go-getter"
 )
@@ -44,7 +44,7 @@ type Manifest struct {
 	TerraformResources []TerraformResource `yaml:"terraform_binaries"`
 	ServiceDefinitions []string            `yaml:"service_definitions"`
 	Parameters         []ManifestParameter `yaml:"parameters"`
-	RequiredEnvVars	   []string            `yaml:"required_env_variables"`
+	RequiredEnvVars    []string            `yaml:"required_env_variables"`
 	EnvConfigMapping   map[string]string   `yaml:"env_config_mapping"`
 }
 
@@ -193,13 +193,13 @@ func (m *Manifest) packDefinitions(tmp, base string) error {
 
 		clearRefs(&defn.ProvisionSettings)
 		clearRefs(&defn.BindSettings)
-	
+
 		packedName := fmt.Sprintf("service%d-%s.yml", i, defn.Name)
 		log.Printf("\t%s/%s -> %s/definitions/%s\n", base, sd, tmp, packedName)
 		if err := stream.Copy(stream.FromYaml(defn), stream.ToFile(tmp, "definitions", packedName)); err != nil {
 			return err
 		}
-		
+
 		servicePaths = append(servicePaths, "definitions/"+packedName)
 	}
 
@@ -258,5 +258,3 @@ func NewExampleManifest() Manifest {
 		},
 	}
 }
-
-

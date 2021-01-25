@@ -21,13 +21,13 @@ import (
 	"path/filepath"
 	"text/tabwriter"
 
-	"github.com/pivotal/cloud-service-broker/pkg/broker"
-	"github.com/pivotal/cloud-service-broker/pkg/client"
-	"github.com/pivotal/cloud-service-broker/pkg/generator"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/tf"
-	"github.com/pivotal/cloud-service-broker/pkg/server"
-	"github.com/pivotal/cloud-service-broker/utils/stream"
-	"github.com/pivotal/cloud-service-broker/utils/ziputil"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/generator"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/server"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/ziputil"
 )
 
 // Init initializes a new brokerpak in the given directory with an example manifest and service definition.

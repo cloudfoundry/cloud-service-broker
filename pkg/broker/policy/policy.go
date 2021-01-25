@@ -46,7 +46,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/pivotal/cloud-service-broker/utils"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 )
 
 // Conditions are a set of values that can be compared with a base truth and

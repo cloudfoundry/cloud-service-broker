@@ -1,4 +1,4 @@
-module github.com/pivotal/cloud-service-broker-tools/osdfgen
+module github.com/cloudfoundry-incubator/cloud-service-broker-tools/osdfgen
 
 go 1.12
 

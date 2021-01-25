@@ -18,15 +18,15 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/pivotal/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 	"github.com/hashicorp/hcl2/hcl"
 	"github.com/hashicorp/hcl2/hclparse"
 )
 
 // ModuleDefinition represents a module in a Terraform workspace.
 type ModuleDefinition struct {
-	Name       string
-	Definition string
+	Name        string
+	Definition  string
 	Definitions map[string]string
 }
 
@@ -44,7 +44,7 @@ func (module *ModuleDefinition) Validate() (errs *validation.FieldError) {
 	)
 }
 
-func decode(body string)  (hcl.Blocks, error) {
+func decode(body string) (hcl.Blocks, error) {
 	parser := hclparse.NewParser()
 	f, diags := parser.ParseHCL([]byte(body), "")
 	if diags.HasErrors() {
@@ -53,11 +53,11 @@ func decode(body string)  (hcl.Blocks, error) {
 	schema := hcl.BodySchema{
 		Blocks: []hcl.BlockHeaderSchema{
 			hcl.BlockHeaderSchema{
-				Type: "variable",
+				Type:       "variable",
 				LabelNames: []string{"type"},
 			},
 			hcl.BlockHeaderSchema{
-				Type: "output",
+				Type:       "output",
 				LabelNames: []string{"value"},
 			},
 		},
@@ -83,14 +83,14 @@ func (module *ModuleDefinition) decode() (blocks hcl.Blocks, err error) {
 		}
 	}
 
-	return 
+	return
 }
 
 // Inputs gets the input parameter names for the module.
 func (module *ModuleDefinition) Inputs() ([]string, error) {
 	blocks, err := module.decode()
 
-	return sortedKeys(blocks.OfType("variable")), err	
+	return sortedKeys(blocks.OfType("variable")), err
 }
 
 // Outputs gets the output parameter names for the module.

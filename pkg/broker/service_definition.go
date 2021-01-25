@@ -21,12 +21,12 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/toggles"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/pivotal-cf/brokerapi"
-	"github.com/pivotal/cloud-service-broker/db_service/models"
-	"github.com/pivotal/cloud-service-broker/pkg/toggles"
-	"github.com/pivotal/cloud-service-broker/pkg/validation"
-	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal/cloud-service-broker/utils"
 	"github.com/spf13/viper"
 )
 

@@ -20,8 +20,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/pivotal/cloud-service-broker/pkg/broker"
-	"github.com/pivotal/cloud-service-broker/pkg/toggles"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/toggles"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -86,10 +86,9 @@ func GenerateForms() TileFormsSections {
 			generateFeatureFlagForm(),
 		},
 
-		ServicePlanForms: []Form{ brokerpakConfigurationForm() },
+		ServicePlanForms: []Form{brokerpakConfigurationForm()},
 	}
 }
-
 
 // generateDatabaseForm generates the form for configuring database settings.
 func generateDatabaseForm() Form {

@@ -20,7 +20,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	. "github.com/pivotal/cloud-service-broker/pkg/config"
+	. "github.com/cloudfoundry-incubator/cloud-service-broker/pkg/config"
 )
 
 var _ = Describe("Config", func() {

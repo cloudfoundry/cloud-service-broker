@@ -18,8 +18,8 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/pivotal/cloud-service-broker/db_service/models"
-	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal-cf/brokerapi"
 )
 

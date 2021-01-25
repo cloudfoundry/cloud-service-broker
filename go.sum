@@ -419,6 +419,8 @@ github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/9
 github.com/pivotal-cf/brokerapi v4.2.1+incompatible h1:RLnPgKfdPmwCXqainTNNhaLAT/Obb0lm0SzCy1PqZZk=
 github.com/pivotal-cf/brokerapi v4.2.1+incompatible/go.mod h1:P+oA8NvkCTkq2t4DohBiyqQo69Ub15RKGcm/vKNP0gg=
 github.com/pivotal-cf/brokerapi v6.4.2+incompatible h1:TqOte2wNUUB7t/+Pt9vjviCsT9wlQtO2OUPyuZ67DeE=
+github.com/pivotal/cloud-service-broker v0.8.3-beta h1:3FojYxOvifGeZrdDN1j9lAeoltsG2E33ssxkmmpHAnM=
+github.com/pivotal/cloud-service-broker v0.8.3-beta/go.mod h1:eMsRtMJtM/y/Yu2HzkdjVaJ0cxFbnV4yd1wGCKvuPRE=
 github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4/go.mod h1:4OwLy04Bl9Ef3GJJCoec+30X3LQs/0/m4HFRt/2LUSA=
 github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
