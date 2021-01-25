@@ -1,5 +1,0 @@
----
-applications:
-- name: stack-driver-trace-test-app
-  command: node index.js
-  random-route: true 

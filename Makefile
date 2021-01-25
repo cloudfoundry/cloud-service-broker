@@ -44,10 +44,6 @@ endif
 test-units: deps-go-binary
 	$(GO) test -v ./... -tags=service_broker
 
-.PHONY: test-acceptance 
-test-acceptance: ./build/cloud-service-broker.$(OSFAMILY) security-user-name security-user-password
-	./build/cloud-service-broker.$(OSFAMILY) client run-examples
-
 ./build/cloud-service-broker.linux: $(SRC)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux $(GO) build -o ./build/cloud-service-broker.linux -ldflags ${LDFLAGS}
 
@@ -69,55 +65,14 @@ package: ./build/cloud-service-broker.$(OSFAMILY) ./tile.yml ./manifest.yml docs
 docs/customization.md:
 	./build/cloud-service-broker.$(OSFAMILY) generate customization > docs/customization.md
 
-.PHONY: clean-brokerpaks
-clean-brokerpaks:
-	-rm gcp-brokerpak/*.brokerpak
-
 .PHONY: clean
-clean: deps-go-binary clean-brokerpaks
+clean: deps-go-binary
 	-$(GO) clean --modcache
 	-rm -rf ./build
-	-cd tools/psqlcmd; $(MAKE) clean
-	-cd tools/sqlfailover; $(MAKE) clean
 
 .PHONY: lint
 lint: deps-goimports
 	git ls-files | grep '.go$$' | xargs $(GOIMPORTS) -l -w
-
-# GCP broker
-
-.PHONY:	lint-brokerpak-gcp
-build-brokerpak-gcp: gcp-brokerpak/*.brokerpak
-
-gcp-brokerpak/*.brokerpak: ./build/cloud-service-broker.$(OSFAMILY) ./gcp-brokerpak/*.yml ./gcp-brokerpak/terraform/*
-	# docker run --rm -it -v $(PWD):/broker upstreamable/yamlint /usr/local/bin/yamllint -c /broker/yamllint.conf /broker/gcp-brokerpak
-	cd ./gcp-brokerpak && ../build/cloud-service-broker.$(OSFAMILY) pak build
-
-.PHONY: run-broker-gcp
-run-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./gcp-brokerpak GSB_PROVISION_DEFAULTS="{\"authorized_network\": \"${GCP_PAS_NETWORK}\"}" DB_TLS=skip-verify ./build/cloud-service-broker.$(OSFAMILY) serve
-
-.PHONY: push-broker-gcp
-push-broker-gcp: check-gcp-env-vars ./build/cloud-service-broker.$(OSFAMILY) gcp-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=./gcp-brokerpak GSB_PROVISION_DEFAULTS="{\"authorized_network\": \"${GCP_PAS_NETWORK}\"}" DB_TLS=skip-verify ./scripts/push-broker.sh	
-
-.PHONY: run-broker-gcp-docker
-run-broker-gcp-docker: check-gcp-env-vars ./build/cloud-service-broker.linux gcp-brokerpak/*.brokerpak
-	GSB_BROKERPAK_BUILTIN_PATH=/broker/gcp-brokerpak \
-    DB_TLS=skip-verify \
-	DB_HOST=host.docker.internal \
-	docker run --rm -p 8080:8080 -v $(PWD):/broker \
-	-e GSB_BROKERPAK_BUILTIN_PATH \
-	-e DB_HOST \
-	-e DB_USERNAME \
-	-e DB_PASSWORD \
-	-e DB_TLS \
-	-e PORT \
-	-e SECURITY_USER_NAME \
-	-e SECURITY_USER_PASSWORD \
-	-e GOOGLE_CREDENTIALS \
-	-e GOOGLE_PROJECT \
-	ubuntu /broker/build/cloud-service-broker.linux serve	
 
 # image
 
@@ -126,18 +81,6 @@ build-image: Dockerfile
 	docker build --tag csb .
 
 # env vars checks
-
-.PHONY: google-credentials
-google-credentials:
-ifndef GOOGLE_CREDENTIALS
-	$(error variable GOOGLE_CREDENTIALS not defined)
-endif
-
-.PHONY: google-project
-google-project:
-ifndef GOOGLE_PROJECT
-	$(error variable GOOGLE_PROJECT not defined)
-endif
 
 .PHONY: security-user-name
 security-user-name:
@@ -169,35 +112,3 @@ ifndef DB_PASSWORD
 	$(error variable DB_PASSWORD not defined)
 endif
 
-.PHONY: arm-subscription-id
-arm-subscription-id:
-ifndef ARM_SUBSCRIPTION_ID
-	$(error variable ARM_SUBSCRIPTION_ID not defined)
-endif
-
-.PHONY: arm-tenant-id
-arm-tenant-id:
-ifndef ARM_TENANT_ID
-	$(error variable ARM_TENANT_ID not defined)
-endif
-
-.PHONY: arm-client-id
-arm-client-id:
-ifndef ARM_CLIENT_ID
-	$(error variable ARM_CLIENT_ID not defined)
-endif
-
-.PHONY: arm-client-secret
-arm-client-secret:
-ifndef ARM_CLIENT_SECRET
-	$(error variable ARM_CLIENT_SECRET not defined)
-endif
-
-.PHONY: gcp_pas_network
-gcp_pas_network:
-ifndef GCP_PAS_NETWORK
-	GCP_PAS_NETWORK=default
-endif
-
-.PHONY: check-gcp-env-vars
-check-gcp-env-vars: google-credentials google-project security-user-name security-user-password db-host db-username db-password gcp_pas_network
