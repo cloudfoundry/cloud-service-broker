@@ -23,7 +23,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/pivotal/cloud-service-broker/utils/stream"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
 )
 
 // List writes a ls -la style listing of the zipfile to the given writer.

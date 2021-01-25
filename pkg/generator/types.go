@@ -25,8 +25,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/pivotal/cloud-service-broker/pkg/broker"
-	"github.com/pivotal/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 )
 
 // CatalogDocumentation generates markdown documentation for the service catalog

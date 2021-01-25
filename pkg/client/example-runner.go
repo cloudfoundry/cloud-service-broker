@@ -27,7 +27,7 @@ import (
 
 	"github.com/pivotal-cf/brokerapi"
 
-	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 )
 
 // RunExamplesForService runs all the examples for a given service name against
@@ -45,11 +45,11 @@ func RunExamplesForService(allExamples []CompleteServiceExample, client *Client,
 	go func() {
 		defer close(examples)
 		for _, completeServiceExample := range FilterMatchingServiceExamples(allExamples, serviceName, exampleName) {
-			examples <- completeServiceExample		
+			examples <- completeServiceExample
 		}
 	}()
 
-	for i:=0; i<jobCount; i++ {
+	for i := 0; i < jobCount; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -67,7 +67,8 @@ func RunExamplesForService(allExamples []CompleteServiceExample, client *Client,
 	}()
 
 	var err error
-	for err = range errors {}
+	for err = range errors {
+	}
 
 	return err
 }
@@ -104,8 +105,8 @@ func RunExamplesFromFile(client *Client, fileName, serviceName, exampleName stri
 
 type CompleteServiceExample struct {
 	broker.ServiceExample `json: ",inline"`
-	ServiceName           string                  `json: "service_name"`
-	ServiceId             string                  `json: "service_id"`
+	ServiceName           string                 `json: "service_name"`
+	ServiceId             string                 `json: "service_id"`
 	ExpectedOutput        map[string]interface{} `json: "expected_output"`
 }
 

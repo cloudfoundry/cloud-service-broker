@@ -19,7 +19,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/pivotal/cloud-service-broker/pkg/server/fakes"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/server/fakes"
 	"github.com/pivotal-cf/brokerapi"
 )
 

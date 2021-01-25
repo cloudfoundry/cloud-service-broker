@@ -273,7 +273,7 @@ package db_service
 import (
 	"context"
 
-	"github.com/pivotal/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/jinzhu/gorm"
 )
 
@@ -376,7 +376,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pivotal/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/jinzhu/gorm"
 )
 

@@ -20,12 +20,12 @@ import (
 	"net/http/httptest"
 	"os"
 
-	"github.com/pivotal/cloud-service-broker/pkg/config"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/config"
 
-	"github.com/pivotal/cloud-service-broker/pkg/credstore"
+	"code.cloudfoundry.org/lager"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/credstore"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"code.cloudfoundry.org/lager"
 )
 
 var _ = Describe("Credhub Store", func() {

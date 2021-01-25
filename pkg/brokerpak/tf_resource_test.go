@@ -16,12 +16,12 @@ package brokerpak
 
 import (
 	"errors"
-	"path/filepath"
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
-	"github.com/pivotal/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 )
 
 func TestTerraformResource_Validate(t *testing.T) {

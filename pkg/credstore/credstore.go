@@ -15,11 +15,11 @@
 package credstore
 
 import (
-	"io/ioutil"
 	"fmt"
+	"io/ioutil"
 	"os"
 
-	"github.com/pivotal/cloud-service-broker/pkg/config"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/config"
 
 	"github.com/pkg/errors"
 

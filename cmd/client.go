@@ -20,9 +20,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/pivotal/cloud-service-broker/pkg/client"
-	"github.com/pivotal/cloud-service-broker/pkg/server"
-	"github.com/pivotal/cloud-service-broker/utils"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/server"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 )
 
 var (
@@ -32,9 +32,9 @@ var (
 	bindingId      string
 	parametersJson string
 
-	serviceName string
-	exampleName string
-	fileName    string
+	serviceName     string
+	exampleName     string
+	fileName        string
 	exampleJobCount int
 )
 

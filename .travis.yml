@@ -1,6 +1,6 @@
 language: go
 go: "1.12"
-go_import_path: github.com/pivotal/cloud-service-broker
+go_import_path: github.com/cloudfoundry-incubator/cloud-service-broker
 
 # Skip the install step. Don't `go get` dependencies. Only build with the code in vendor/
 install: skip

@@ -17,7 +17,7 @@ package account_managers
 import (
 	"testing"
 
-	"github.com/pivotal/cloud-service-broker/utils"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	cloudresourcemanager "google.golang.org/api/cloudresourcemanager/v1"
 )
 

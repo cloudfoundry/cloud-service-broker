@@ -23,7 +23,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/pivotal/cloud-service-broker/utils/stream"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
 )
 
 // A zip file with a single file with the contents "Hello, world!":

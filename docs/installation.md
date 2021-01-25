@@ -79,7 +79,7 @@ Add these to the `env` section of `manifest.yml`
 
 #### [Optional environment variables](#optional-env)
 
-See [the configuration documentation](https://github.com/pivotal/cloud-service-broker/blob/master/docs/configuration.md)
+See [the configuration documentation](https://github.com/cloudfoundry-incubator/cloud-service-broker/blob/master/docs/configuration.md)
 for instructions about providing database name and port overrides, SSL certificates, custom service plans, and more.
 
 #### [Push the service broker to CF and enable services](#push)

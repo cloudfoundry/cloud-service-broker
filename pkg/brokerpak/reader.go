@@ -20,9 +20,9 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"github.com/pivotal/cloud-service-broker/pkg/providers/tf"
-	"github.com/pivotal/cloud-service-broker/utils/stream"
-	"github.com/pivotal/cloud-service-broker/utils/ziputil"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/ziputil"
 )
 
 // BrokerPakReader reads bundled together Terraform and service definitions.

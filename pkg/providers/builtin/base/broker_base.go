@@ -18,9 +18,9 @@ import (
 	"context"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/pivotal/cloud-service-broker/db_service/models"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/builtin/account_managers"
-	"github.com/pivotal/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin/account_managers"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 )
 
 //go:generate counterfeiter . ServiceAccountManager
@@ -34,8 +34,8 @@ type ServiceAccountManager interface {
 // given settings.
 func NewBrokerBase(projectId string, logger lager.Logger) BrokerBase {
 	saManager := &account_managers.ServiceAccountManager{
-		ProjectId:  projectId,
-		Logger:     logger,
+		ProjectId: projectId,
+		Logger:    logger,
 	}
 
 	return BrokerBase{

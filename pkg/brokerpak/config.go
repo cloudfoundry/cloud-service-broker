@@ -23,9 +23,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/pivotal/cloud-service-broker/pkg/toggles"
-	"github.com/pivotal/cloud-service-broker/pkg/validation"
-	"github.com/pivotal/cloud-service-broker/utils"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/toggles"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/spf13/viper"
 )
 
@@ -165,7 +165,7 @@ func ListBrokerpaks(directory string) ([]string, error) {
 			path, err := filepath.Abs(path)
 			if err != nil {
 				return fmt.Errorf("couldn't turn dir %q into abs path: %v", path, err)
-			}			
+			}
 			paks = append(paks, path)
 		}
 

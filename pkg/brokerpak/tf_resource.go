@@ -19,7 +19,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pivotal/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 )
 
 // HashicorpUrlTemplate holds the default template for Hashicorp's terraform binary archive downloads.
@@ -72,7 +72,7 @@ func isURL(path string) bool {
 func (tr *TerraformResource) Url(platform Platform) string {
 	replacer := strings.NewReplacer("${name}", tr.Name, "${version}", tr.Version, "${os}", platform.Os, "${arch}", platform.Arch)
 	var url string
-	
+
 	if tr.UrlTemplate == "" {
 		url = HashicorpUrlTemplate
 	} else if isURL(tr.UrlTemplate) {

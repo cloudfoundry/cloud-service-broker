@@ -17,7 +17,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/pivotal/cloud-service-broker/utils"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/spf13/cobra"
 )
 

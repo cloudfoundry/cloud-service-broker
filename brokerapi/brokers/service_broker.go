@@ -26,10 +26,10 @@ import (
 
 	"encoding/json"
 
-	"github.com/pivotal/cloud-service-broker/db_service"
-	"github.com/pivotal/cloud-service-broker/db_service/models"
-	"github.com/pivotal/cloud-service-broker/pkg/credstore"
-	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/credstore"
 )
 
 var (

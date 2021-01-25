@@ -15,7 +15,7 @@
 package builtin
 
 import (
-	"github.com/pivotal/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 )
 
 // NOTE(josephlewis42) unless there are extenuating circumstances, as of 2019

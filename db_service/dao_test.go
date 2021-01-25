@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pivotal/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/jinzhu/gorm"
 )
 
@@ -35,7 +35,7 @@ func newInMemoryDatastore(t *testing.T) *SqlDatastore {
 	testDb.CreateTable(models.ServiceBindingCredentials{})
 	testDb.CreateTable(models.ProvisionRequestDetails{})
 	testDb.CreateTable(models.TerraformDeployment{})
-	
+
 	return &SqlDatastore{db: testDb}
 }
 
@@ -52,7 +52,6 @@ func createServiceInstanceDetailsInstance() (string, models.ServiceInstanceDetai
 	instance.ServiceId = "123-456-7890"
 	instance.SpaceGuid = "0000-0000-0000"
 	instance.Url = "https://google.com"
-
 
 	return testPk, instance
 }
@@ -205,7 +204,6 @@ func TestSqlDatastore_ExistsServiceInstanceDetailsById(t *testing.T) {
 	ensureExistance(t, false, exists, err)
 }
 
-
 func createServiceBindingCredentialsInstance() (uint, models.ServiceBindingCredentials) {
 	testPk := uint(42)
 
@@ -215,7 +213,6 @@ func createServiceBindingCredentialsInstance() (uint, models.ServiceBindingCrede
 	instance.OtherDetails = "{\"some\":[\"json\",\"blob\",\"here\"]}"
 	instance.ServiceId = "1111-1111-1111"
 	instance.ServiceInstanceId = "2222-2222-2222"
-
 
 	return testPk, instance
 }
@@ -464,7 +461,6 @@ func TestSqlDatastore_ExistsServiceBindingCredentialsById(t *testing.T) {
 	ensureExistance(t, false, exists, err)
 }
 
-
 func createProvisionRequestDetailsInstance() (uint, models.ProvisionRequestDetails) {
 	testPk := uint(42)
 
@@ -472,7 +468,6 @@ func createProvisionRequestDetailsInstance() (uint, models.ProvisionRequestDetai
 	instance.ID = testPk
 	instance.RequestDetails = "{\"some\":[\"json\",\"blob\",\"here\"]}"
 	instance.ServiceInstanceId = "2222-2222-2222"
-
 
 	return testPk, instance
 }
@@ -645,7 +640,6 @@ func createTerraformDeploymentInstance() (string, models.TerraformDeployment) {
 	instance.LastOperationType = "create"
 	instance.Workspace = "{}"
 
-
 	return testPk, instance
 }
 
@@ -780,7 +774,6 @@ func TestSqlDatastore_ExistsTerraformDeploymentById(t *testing.T) {
 	exists, err = ds.ExistsTerraformDeploymentById(testCtx, instance.ID)
 	ensureExistance(t, false, exists, err)
 }
-
 
 func ensureExistance(t *testing.T, expected, actual bool, err error) {
 	if err != nil {

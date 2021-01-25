@@ -14,7 +14,7 @@
 
 package broker
 
-import "github.com/pivotal/cloud-service-broker/pkg/validation"
+import "github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 
 // ServiceExample holds example configurations for a service that _should_
 // work.
@@ -31,8 +31,8 @@ type ServiceExample struct {
 
 	// BindParams is the JSON object that will be passed to bind. If nil,
 	// this example DOES NOT include a bind portion.
-	BindParams map[string]interface{} `json:"bind_params" yaml:"bind_params"`
-	BindCanFail bool `json:"bind_can_fail,omitempty" yaml:"bind_can_fail,omitempty"`
+	BindParams  map[string]interface{} `json:"bind_params" yaml:"bind_params"`
+	BindCanFail bool                   `json:"bind_can_fail,omitempty" yaml:"bind_can_fail,omitempty"`
 }
 
 var _ validation.Validatable = (*ServiceExample)(nil)

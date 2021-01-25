@@ -16,9 +16,9 @@ Hopefully this document helps familiarize you enough with layout and details of 
 
 ## The Azure Brokerpak
 
-Browse the brokerpak contents [here](https://github.com/pivotal/cloud-service-broker/tree/master/azure-brokerpak)
+Browse the brokerpak contents [here](https://github.com/cloudfoundry-incubator/cloud-service-broker/tree/master/azure-brokerpak)
 
-Have a look at the Azure brokerpak, starting with *[manifest.yml](https://github.com/pivotal/cloud-service-broker/blob/master/azure-brokerpak/manifest.yml)*
+Have a look at the Azure brokerpak, starting with *[manifest.yml](https://github.com/cloudfoundry-incubator/cloud-service-broker/blob/master/azure-brokerpak/manifest.yml)*
 
 The file should resemble:
 
@@ -200,7 +200,7 @@ Each of theses service yml files and their requisite terraform will be bundled i
 
 ## A Service Definition
 
-Now lets dive into one of the service yaml files, *[azure-mssql-db.yml](https://github.com/pivotal/cloud-service-broker/blob/master/azure-brokerpak/azure-mssql-db.yml)*
+Now lets dive into one of the service yaml files, *[azure-mssql-db.yml](https://github.com/cloudfoundry-incubator/cloud-service-broker/blob/master/azure-brokerpak/azure-mssql-db.yml)*
 
 ```yaml
 version: 1

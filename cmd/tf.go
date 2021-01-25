@@ -22,11 +22,11 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/pivotal/cloud-service-broker/db_service/models"
-	"github.com/pivotal/cloud-service-broker/db_service"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/tf"
-	"github.com/pivotal/cloud-service-broker/pkg/providers/tf/wrapper"
-	"github.com/pivotal/cloud-service-broker/utils"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/jinzhu/gorm"
 	"github.com/spf13/cobra"
 )

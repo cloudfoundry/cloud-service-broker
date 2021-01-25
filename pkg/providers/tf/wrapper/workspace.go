@@ -26,7 +26,7 @@ import (
 	"sync"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/pivotal/cloud-service-broker/utils"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 )
 
 // DefaultInstanceName is the default name of an instance of a particular module.
@@ -50,15 +50,15 @@ type TerraformExecutor func(*exec.Cmd) (ExecutionOutput, error)
 
 // NewWorkspace creates a new TerraformWorkspace from a given template and variables to populate an instance of it.
 // The created instance will have the name specified by the DefaultInstanceName constant.
-func NewWorkspace(templateVars map[string]interface{}, 
-				  terraformTemplate string, 
-				  terraformTemplates map[string]string, 
-				  importParameterMappings []ParameterMapping, 
-				  parametersToRemove []string,
-				  parametersToAdd []ParameterMapping) (*TerraformWorkspace, error) {
+func NewWorkspace(templateVars map[string]interface{},
+	terraformTemplate string,
+	terraformTemplates map[string]string,
+	importParameterMappings []ParameterMapping,
+	parametersToRemove []string,
+	parametersToAdd []ParameterMapping) (*TerraformWorkspace, error) {
 	tfModule := ModuleDefinition{
-		Name:       "brokertemplate",
-		Definition: terraformTemplate,
+		Name:        "brokertemplate",
+		Definition:  terraformTemplate,
 		Definitions: terraformTemplates,
 	}
 
@@ -82,9 +82,9 @@ func NewWorkspace(templateVars map[string]interface{},
 			},
 		},
 		Transformer: TfTransformer{
-			ParameterMappings: importParameterMappings,
+			ParameterMappings:  importParameterMappings,
 			ParametersToRemove: parametersToRemove,
-			ParametersToAdd: parametersToAdd,
+			ParametersToAdd:    parametersToAdd,
 		},
 	}
 
@@ -121,8 +121,8 @@ type TerraformWorkspace struct {
 
 	// Executor is a function that gets invoked to shell out to Terraform.
 	// If left nil, the default executor is used.
-	Executor TerraformExecutor `json:"-"`
-	Transformer TfTransformer  `json:"transform"`
+	Executor    TerraformExecutor `json:"-"`
+	Transformer TfTransformer     `json:"transform"`
 
 	dirLock sync.Mutex
 	dir     string
@@ -173,7 +173,7 @@ func (workspace *TerraformWorkspace) initializedFsFlat() error {
 		return fmt.Errorf("Cannot build flat terraform workspace with multiple modules")
 	}
 	if len(workspace.Instances) != 1 {
-		return fmt.Errorf("Cannot build flat terraform workspace with multiple instances")		
+		return fmt.Errorf("Cannot build flat terraform workspace with multiple instances")
 	}
 
 	for name, tf := range workspace.Modules[0].Definitions {
@@ -243,7 +243,7 @@ func (workspace *TerraformWorkspace) initializeFs() error {
 	} else {
 		return err
 	}
-	
+
 	var err error
 
 	terraformLen := 0
@@ -478,10 +478,10 @@ func DefaultExecutor(c *exec.Cmd) (ExecutionOutput, error) {
 	output, _ := ioutil.ReadAll(stdout)
 	errors, _ := ioutil.ReadAll(stderr)
 
-	err = c.Wait();
+	err = c.Wait()
 
 	if err != nil ||
-	   len(errors) > 0 {
+		len(errors) > 0 {
 		logger.Error("terraform execution failed", err, lager.Data{
 			"errors": string(errors),
 		})
@@ -492,7 +492,7 @@ func DefaultExecutor(c *exec.Cmd) (ExecutionOutput, error) {
 	})
 
 	if err != nil {
-		return ExecutionOutput{}, fmt.Errorf("%s %v", strings.ReplaceAll(string(errors),"\n", ""),err)
+		return ExecutionOutput{}, fmt.Errorf("%s %v", strings.ReplaceAll(string(errors), "\n", ""), err)
 	}
 
 	return ExecutionOutput{

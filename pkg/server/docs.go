@@ -19,8 +19,8 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/pivotal/cloud-service-broker/pkg/broker"
-	"github.com/pivotal/cloud-service-broker/pkg/generator"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/generator"
 	"github.com/gorilla/mux"
 	"github.com/russross/blackfriday"
 )
