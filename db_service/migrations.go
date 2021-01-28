@@ -22,7 +22,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-const numMigrations = 8
+const numMigrations = 9
 
 // runs schema migrations on the provided service broker database to get it up to date
 func RunMigrations(db *gorm.DB) error {
@@ -80,8 +80,19 @@ func RunMigrations(db *gorm.DB) error {
 		}
 	}
 
-	migrations[7] = func() error { // v4.2.0
+	migrations[7] = func() error { // v0.2.2
 		return autoMigrateTables(db, &models.TerraformDeploymentV2{})
+	}
+
+	migrations[8] = func() error { // v0.2.2
+		if db.Dialect().GetName() == "sqlite3" {
+			// sqlite does not support changing column data types.
+			// Shouldn't matter because sqlite is only for non-prod deploments,
+			// and can be re-provisioned more easily.
+			return nil
+		} else {
+			return db.Model(&models.TerraformDeploymentV2{}).ModifyColumn("workspace", "mediumtext").Error
+		}
 	}
 
 	var lastMigrationNumber = -1
