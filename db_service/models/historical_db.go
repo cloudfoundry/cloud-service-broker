@@ -225,6 +225,13 @@ type TerraformDeploymentV1 struct {
 	LastOperationMessage string `sql:"type:text"`
 }
 
+// TableName returns a consistent table name (`tf_deployment`) for gorm so
+// multiple structs from different versions of the database all operate on the
+// same table.
+func (TerraformDeploymentV1) TableName() string {
+	return "terraform_deployments"
+}
+
 // Expands the size of the Workspace column to handle deployments where the
 // Terraform workspace is greater than 64K. (mediumtext allows for workspaces up
 // to 16384K.)
@@ -248,9 +255,9 @@ type TerraformDeploymentV2 struct {
 	LastOperationMessage string `sql:"type:text"`
 }
 
-// TableName returns a consistent table name (`tf_deployment`) for gorm so
-// multiple structs from different versions of the database all operate on the
-// same table.
-func (TerraformDeploymentV1) TableName() string {
+// TableName returns a consistent table name (`provision_request_details`) for
+// gorm so multiple structs from different versions of the database all operate
+// on the same table.
+func (TerraformDeploymentV2) TableName() string {
 	return "terraform_deployments"
 }
