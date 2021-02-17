@@ -3,7 +3,7 @@ module github.com/cloudfoundry-incubator/cloud-service-broker
 go 1.14
 
 require (
-	cloud.google.com/go v0.45.1
+	cloud.google.com/go v0.77.0
 	code.cloudfoundry.org/credhub-cli v0.0.0-20200325195429-1faf152db5a4
 	code.cloudfoundry.org/lager v1.1.0
 	github.com/Azure/azure-sdk-for-go v36.2.0+incompatible
@@ -17,7 +17,6 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-sql-driver/mysql v1.4.0
 	github.com/go-yaml/yaml v2.1.0+incompatible
-	github.com/golang/protobuf v1.3.5 // indirect
 	github.com/googleapis/gax-go v2.0.0+incompatible // indirect
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/mux v1.6.2
@@ -71,16 +70,9 @@ require (
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v0.0.0-20180816142147-da425ebb7609
-	go.opencensus.io v0.22.0 // indirect
-	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a // indirect
-	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd // indirect
-	golang.org/x/text v0.3.2 // indirect
-	google.golang.org/api v0.9.0
-	google.golang.org/appengine v1.6.1 // indirect
-	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
-	google.golang.org/grpc v1.23.1 // indirect
+	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
+	golang.org/x/oauth2 v0.0.0-20210113205817-d3ed898aa8a3
+	google.golang.org/api v0.40.0
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.2.8
