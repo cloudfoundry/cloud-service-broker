@@ -40,6 +40,14 @@ This service broker can be installed as a CF application. See the instructions f
 * [GCP](https://github.com/cloudfoundry-incubator/csb-brokerpak-gcp/blob/main/docs/gcp-installation.md)
 
 
+## CSB-Provided Brokerpaks 
+
+To examine, submit issues or pull requests to the Brokerpaks which have been created for the major public clouds (AWS, Azure, GCP) see the repos below:
+
+* [AWS Brokerpak](https://github.com/cloudfoundry-incubator/csb-brokerpak-aws)
+* [Azure Brokerpak](https://github.com/cloudfoundry-incubator/csb-brokerpak-azure)
+* [GCP Brokerpak](https://github.com/cloudfoundry-incubator/csb-brokerpak-gcp)
+
 ## Usage
 
 **For operators**: see [docs/configuration.md](./docs/configuration.md) for details about configuring the service broker.
