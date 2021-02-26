@@ -34,7 +34,7 @@ require (
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
-	github.com/onsi/ginkgo v1.12.1
+	github.com/onsi/ginkgo v1.15.0
 	github.com/onsi/gomega v1.10.3
 	github.com/pborman/uuid v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.2.0 // indirect
@@ -56,7 +56,7 @@ require (
 	github.com/zclconf/go-cty v1.2.1 // indirect
 	golang.org/x/net v0.0.0-20201026091529-146b70c837a4
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	golang.org/x/tools v0.0.0-20201023174141-c8cfbd0f21e6
+	golang.org/x/tools v0.0.0-20201224043029-2b0845dc783e
 	google.golang.org/api v0.9.0
 	google.golang.org/grpc v1.23.1 // indirect
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
