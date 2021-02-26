@@ -14,9 +14,10 @@
 
 package wrapper
 
-import "encoding/json"
-
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // ModuleInstance represents the configuration of a single instance of a module.
 type ModuleInstance struct {

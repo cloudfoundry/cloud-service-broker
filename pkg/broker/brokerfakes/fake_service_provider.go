@@ -158,15 +158,16 @@ func (fake *FakeServiceProvider) Bind(arg1 context.Context, arg2 *varcontext.Var
 		arg1 context.Context
 		arg2 *varcontext.VarContext
 	}{arg1, arg2})
+	stub := fake.BindStub
+	fakeReturns := fake.bindReturns
 	fake.recordInvocation("Bind", []interface{}{arg1, arg2})
 	fake.bindMutex.Unlock()
-	if fake.BindStub != nil {
-		return fake.BindStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.bindReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -223,15 +224,16 @@ func (fake *FakeServiceProvider) BuildInstanceCredentials(arg1 context.Context, 
 		arg2 models.ServiceBindingCredentials
 		arg3 models.ServiceInstanceDetails
 	}{arg1, arg2, arg3})
+	stub := fake.BuildInstanceCredentialsStub
+	fakeReturns := fake.buildInstanceCredentialsReturns
 	fake.recordInvocation("BuildInstanceCredentials", []interface{}{arg1, arg2, arg3})
 	fake.buildInstanceCredentialsMutex.Unlock()
-	if fake.BuildInstanceCredentialsStub != nil {
-		return fake.BuildInstanceCredentialsStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.buildInstanceCredentialsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -289,15 +291,16 @@ func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 models.S
 		arg3 brokerapi.DeprovisionDetails
 		arg4 *varcontext.VarContext
 	}{arg1, arg2, arg3, arg4})
+	stub := fake.DeprovisionStub
+	fakeReturns := fake.deprovisionReturns
 	fake.recordInvocation("Deprovision", []interface{}{arg1, arg2, arg3, arg4})
 	fake.deprovisionMutex.Unlock()
-	if fake.DeprovisionStub != nil {
-		return fake.DeprovisionStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.deprovisionReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -351,15 +354,16 @@ func (fake *FakeServiceProvider) DeprovisionsAsync() bool {
 	ret, specificReturn := fake.deprovisionsAsyncReturnsOnCall[len(fake.deprovisionsAsyncArgsForCall)]
 	fake.deprovisionsAsyncArgsForCall = append(fake.deprovisionsAsyncArgsForCall, struct {
 	}{})
+	stub := fake.DeprovisionsAsyncStub
+	fakeReturns := fake.deprovisionsAsyncReturns
 	fake.recordInvocation("DeprovisionsAsync", []interface{}{})
 	fake.deprovisionsAsyncMutex.Unlock()
-	if fake.DeprovisionsAsyncStub != nil {
-		return fake.DeprovisionsAsyncStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deprovisionsAsyncReturns
 	return fakeReturns.result1
 }
 
@@ -405,15 +409,16 @@ func (fake *FakeServiceProvider) PollInstance(arg1 context.Context, arg2 models.
 		arg1 context.Context
 		arg2 models.ServiceInstanceDetails
 	}{arg1, arg2})
+	stub := fake.PollInstanceStub
+	fakeReturns := fake.pollInstanceReturns
 	fake.recordInvocation("PollInstance", []interface{}{arg1, arg2})
 	fake.pollInstanceMutex.Unlock()
-	if fake.PollInstanceStub != nil {
-		return fake.PollInstanceStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2, ret.result3
 	}
-	fakeReturns := fake.pollInstanceReturns
 	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
 }
 
@@ -472,15 +477,16 @@ func (fake *FakeServiceProvider) Provision(arg1 context.Context, arg2 *varcontex
 		arg1 context.Context
 		arg2 *varcontext.VarContext
 	}{arg1, arg2})
+	stub := fake.ProvisionStub
+	fakeReturns := fake.provisionReturns
 	fake.recordInvocation("Provision", []interface{}{arg1, arg2})
 	fake.provisionMutex.Unlock()
-	if fake.ProvisionStub != nil {
-		return fake.ProvisionStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.provisionReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -534,15 +540,16 @@ func (fake *FakeServiceProvider) ProvisionsAsync() bool {
 	ret, specificReturn := fake.provisionsAsyncReturnsOnCall[len(fake.provisionsAsyncArgsForCall)]
 	fake.provisionsAsyncArgsForCall = append(fake.provisionsAsyncArgsForCall, struct {
 	}{})
+	stub := fake.ProvisionsAsyncStub
+	fakeReturns := fake.provisionsAsyncReturns
 	fake.recordInvocation("ProvisionsAsync", []interface{}{})
 	fake.provisionsAsyncMutex.Unlock()
-	if fake.ProvisionsAsyncStub != nil {
-		return fake.ProvisionsAsyncStub()
+	if stub != nil {
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.provisionsAsyncReturns
 	return fakeReturns.result1
 }
 
@@ -590,15 +597,16 @@ func (fake *FakeServiceProvider) Unbind(arg1 context.Context, arg2 models.Servic
 		arg3 models.ServiceBindingCredentials
 		arg4 *varcontext.VarContext
 	}{arg1, arg2, arg3, arg4})
+	stub := fake.UnbindStub
+	fakeReturns := fake.unbindReturns
 	fake.recordInvocation("Unbind", []interface{}{arg1, arg2, arg3, arg4})
 	fake.unbindMutex.Unlock()
-	if fake.UnbindStub != nil {
-		return fake.UnbindStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.unbindReturns
 	return fakeReturns.result1
 }
 
@@ -651,15 +659,16 @@ func (fake *FakeServiceProvider) Update(arg1 context.Context, arg2 *varcontext.V
 		arg1 context.Context
 		arg2 *varcontext.VarContext
 	}{arg1, arg2})
+	stub := fake.UpdateStub
+	fakeReturns := fake.updateReturns
 	fake.recordInvocation("Update", []interface{}{arg1, arg2})
 	fake.updateMutex.Unlock()
-	if fake.UpdateStub != nil {
-		return fake.UpdateStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.updateReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -715,15 +724,16 @@ func (fake *FakeServiceProvider) UpdateInstanceDetails(arg1 context.Context, arg
 		arg1 context.Context
 		arg2 *models.ServiceInstanceDetails
 	}{arg1, arg2})
+	stub := fake.UpdateInstanceDetailsStub
+	fakeReturns := fake.updateInstanceDetailsReturns
 	fake.recordInvocation("UpdateInstanceDetails", []interface{}{arg1, arg2})
 	fake.updateInstanceDetailsMutex.Unlock()
-	if fake.UpdateInstanceDetailsStub != nil {
-		return fake.UpdateInstanceDetailsStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.updateInstanceDetailsReturns
 	return fakeReturns.result1
 }
 

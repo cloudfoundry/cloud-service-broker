@@ -20,7 +20,7 @@ import (
 	"github.com/pivotal-cf/brokerapi"
 )
 
-//go:generate counterfeiter -o ./fakes/servicebroker.go ../../vendor/github.com/pivotal-cf/brokerapi ServiceBroker
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o ./fakes/servicebroker.go github.com/pivotal-cf/brokerapi.ServiceBroker
 
 // CfSharingWrapper enables the Shareable flag for every service provided by
 // the broker.

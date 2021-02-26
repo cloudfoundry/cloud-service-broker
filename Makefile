@@ -61,6 +61,10 @@ test-units: deps-go-binary ## run unit tests
 .PHONY: build
 build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin ## build binary
 
+.PHONY: generate
+generate: ## generate test fakes
+	${GO} generate ./...
+
 ###### Package ################################################################
 
 .PHONY: package
@@ -94,17 +98,17 @@ fmt: ## Checks that the code is formatted correctly
 	fi
 
 vet: ## Runs go vet
-	go vet ./...
+	${GO} vet ./...
 
 staticcheck: ## Runs staticcheck
-	go run honnef.co/go/tools/cmd/staticcheck ./...
+	${GO} run honnef.co/go/tools/cmd/staticcheck ./...
 
 ###### Format #################################################################
 
 .PHONY: format ## format the source
 format:
 	gofmt -s -e -l -w .
-	git ls-files | grep '.go$$' | xargs go run golang.org/x/tools/cmd/goimports -l -w
+	git ls-files | grep '.go$$' | xargs ${GO} run golang.org/x/tools/cmd/goimports -l -w
 
 ###### Image ##################################################################
 

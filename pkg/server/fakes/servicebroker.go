@@ -2,10 +2,10 @@
 package fakes
 
 import (
-	context "context"
-	sync "sync"
+	"context"
+	"sync"
 
-	brokerapi "github.com/pivotal-cf/brokerapi"
+	"github.com/pivotal-cf/brokerapi"
 )
 
 type FakeServiceBroker struct {
@@ -178,15 +178,16 @@ func (fake *FakeServiceBroker) Bind(arg1 context.Context, arg2 string, arg3 stri
 		arg4 brokerapi.BindDetails
 		arg5 bool
 	}{arg1, arg2, arg3, arg4, arg5})
+	stub := fake.BindStub
+	fakeReturns := fake.bindReturns
 	fake.recordInvocation("Bind", []interface{}{arg1, arg2, arg3, arg4, arg5})
 	fake.bindMutex.Unlock()
-	if fake.BindStub != nil {
-		return fake.BindStub(arg1, arg2, arg3, arg4, arg5)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4, arg5)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.bindReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -244,15 +245,16 @@ func (fake *FakeServiceBroker) Deprovision(arg1 context.Context, arg2 string, ar
 		arg3 brokerapi.DeprovisionDetails
 		arg4 bool
 	}{arg1, arg2, arg3, arg4})
+	stub := fake.DeprovisionStub
+	fakeReturns := fake.deprovisionReturns
 	fake.recordInvocation("Deprovision", []interface{}{arg1, arg2, arg3, arg4})
 	fake.deprovisionMutex.Unlock()
-	if fake.DeprovisionStub != nil {
-		return fake.DeprovisionStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.deprovisionReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -309,15 +311,16 @@ func (fake *FakeServiceBroker) GetBinding(arg1 context.Context, arg2 string, arg
 		arg2 string
 		arg3 string
 	}{arg1, arg2, arg3})
+	stub := fake.GetBindingStub
+	fakeReturns := fake.getBindingReturns
 	fake.recordInvocation("GetBinding", []interface{}{arg1, arg2, arg3})
 	fake.getBindingMutex.Unlock()
-	if fake.GetBindingStub != nil {
-		return fake.GetBindingStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getBindingReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -373,15 +376,16 @@ func (fake *FakeServiceBroker) GetInstance(arg1 context.Context, arg2 string) (b
 		arg1 context.Context
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.GetInstanceStub
+	fakeReturns := fake.getInstanceReturns
 	fake.recordInvocation("GetInstance", []interface{}{arg1, arg2})
 	fake.getInstanceMutex.Unlock()
-	if fake.GetInstanceStub != nil {
-		return fake.GetInstanceStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getInstanceReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -439,15 +443,16 @@ func (fake *FakeServiceBroker) LastBindingOperation(arg1 context.Context, arg2 s
 		arg3 string
 		arg4 brokerapi.PollDetails
 	}{arg1, arg2, arg3, arg4})
+	stub := fake.LastBindingOperationStub
+	fakeReturns := fake.lastBindingOperationReturns
 	fake.recordInvocation("LastBindingOperation", []interface{}{arg1, arg2, arg3, arg4})
 	fake.lastBindingOperationMutex.Unlock()
-	if fake.LastBindingOperationStub != nil {
-		return fake.LastBindingOperationStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.lastBindingOperationReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -504,15 +509,16 @@ func (fake *FakeServiceBroker) LastOperation(arg1 context.Context, arg2 string, 
 		arg2 string
 		arg3 brokerapi.PollDetails
 	}{arg1, arg2, arg3})
+	stub := fake.LastOperationStub
+	fakeReturns := fake.lastOperationReturns
 	fake.recordInvocation("LastOperation", []interface{}{arg1, arg2, arg3})
 	fake.lastOperationMutex.Unlock()
-	if fake.LastOperationStub != nil {
-		return fake.LastOperationStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.lastOperationReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -570,15 +576,16 @@ func (fake *FakeServiceBroker) Provision(arg1 context.Context, arg2 string, arg3
 		arg3 brokerapi.ProvisionDetails
 		arg4 bool
 	}{arg1, arg2, arg3, arg4})
+	stub := fake.ProvisionStub
+	fakeReturns := fake.provisionReturns
 	fake.recordInvocation("Provision", []interface{}{arg1, arg2, arg3, arg4})
 	fake.provisionMutex.Unlock()
-	if fake.ProvisionStub != nil {
-		return fake.ProvisionStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.provisionReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -633,15 +640,16 @@ func (fake *FakeServiceBroker) Services(arg1 context.Context) ([]brokerapi.Servi
 	fake.servicesArgsForCall = append(fake.servicesArgsForCall, struct {
 		arg1 context.Context
 	}{arg1})
+	stub := fake.ServicesStub
+	fakeReturns := fake.servicesReturns
 	fake.recordInvocation("Services", []interface{}{arg1})
 	fake.servicesMutex.Unlock()
-	if fake.ServicesStub != nil {
-		return fake.ServicesStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.servicesReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -700,15 +708,16 @@ func (fake *FakeServiceBroker) Unbind(arg1 context.Context, arg2 string, arg3 st
 		arg4 brokerapi.UnbindDetails
 		arg5 bool
 	}{arg1, arg2, arg3, arg4, arg5})
+	stub := fake.UnbindStub
+	fakeReturns := fake.unbindReturns
 	fake.recordInvocation("Unbind", []interface{}{arg1, arg2, arg3, arg4, arg5})
 	fake.unbindMutex.Unlock()
-	if fake.UnbindStub != nil {
-		return fake.UnbindStub(arg1, arg2, arg3, arg4, arg5)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4, arg5)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.unbindReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -766,15 +775,16 @@ func (fake *FakeServiceBroker) Update(arg1 context.Context, arg2 string, arg3 br
 		arg3 brokerapi.UpdateDetails
 		arg4 bool
 	}{arg1, arg2, arg3, arg4})
+	stub := fake.UpdateStub
+	fakeReturns := fake.updateReturns
 	fake.recordInvocation("Update", []interface{}{arg1, arg2, arg3, arg4})
 	fake.updateMutex.Unlock()
-	if fake.UpdateStub != nil {
-		return fake.UpdateStub(arg1, arg2, arg3, arg4)
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.updateReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 

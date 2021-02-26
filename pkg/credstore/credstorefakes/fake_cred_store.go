@@ -117,15 +117,16 @@ func (fake *FakeCredStore) AddPermission(arg1 string, arg2 string, arg3 []string
 		arg2 string
 		arg3 []string
 	}{arg1, arg2, arg3Copy})
+	stub := fake.AddPermissionStub
+	fakeReturns := fake.addPermissionReturns
 	fake.recordInvocation("AddPermission", []interface{}{arg1, arg2, arg3Copy})
 	fake.addPermissionMutex.Unlock()
-	if fake.AddPermissionStub != nil {
-		return fake.AddPermissionStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.addPermissionReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -180,15 +181,16 @@ func (fake *FakeCredStore) Delete(arg1 string) error {
 	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.DeleteStub
+	fakeReturns := fake.deleteReturns
 	fake.recordInvocation("Delete", []interface{}{arg1})
 	fake.deleteMutex.Unlock()
-	if fake.DeleteStub != nil {
-		return fake.DeleteStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteReturns
 	return fakeReturns.result1
 }
 
@@ -240,15 +242,16 @@ func (fake *FakeCredStore) DeletePermission(arg1 string) error {
 	fake.deletePermissionArgsForCall = append(fake.deletePermissionArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.DeletePermissionStub
+	fakeReturns := fake.deletePermissionReturns
 	fake.recordInvocation("DeletePermission", []interface{}{arg1})
 	fake.deletePermissionMutex.Unlock()
-	if fake.DeletePermissionStub != nil {
-		return fake.DeletePermissionStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deletePermissionReturns
 	return fakeReturns.result1
 }
 
@@ -300,15 +303,16 @@ func (fake *FakeCredStore) Get(arg1 string) (interface{}, error) {
 	fake.getArgsForCall = append(fake.getArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetStub
+	fakeReturns := fake.getReturns
 	fake.recordInvocation("Get", []interface{}{arg1})
 	fake.getMutex.Unlock()
-	if fake.GetStub != nil {
-		return fake.GetStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -363,15 +367,16 @@ func (fake *FakeCredStore) GetValue(arg1 string) (string, error) {
 	fake.getValueArgsForCall = append(fake.getValueArgsForCall, struct {
 		arg1 string
 	}{arg1})
+	stub := fake.GetValueStub
+	fakeReturns := fake.getValueReturns
 	fake.recordInvocation("GetValue", []interface{}{arg1})
 	fake.getValueMutex.Unlock()
-	if fake.GetValueStub != nil {
-		return fake.GetValueStub(arg1)
+	if stub != nil {
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getValueReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -427,15 +432,16 @@ func (fake *FakeCredStore) Put(arg1 string, arg2 interface{}) (interface{}, erro
 		arg1 string
 		arg2 interface{}
 	}{arg1, arg2})
+	stub := fake.PutStub
+	fakeReturns := fake.putReturns
 	fake.recordInvocation("Put", []interface{}{arg1, arg2})
 	fake.putMutex.Unlock()
-	if fake.PutStub != nil {
-		return fake.PutStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.putReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -491,15 +497,16 @@ func (fake *FakeCredStore) PutValue(arg1 string, arg2 interface{}) (interface{},
 		arg1 string
 		arg2 interface{}
 	}{arg1, arg2})
+	stub := fake.PutValueStub
+	fakeReturns := fake.putValueReturns
 	fake.recordInvocation("PutValue", []interface{}{arg1, arg2})
 	fake.putValueMutex.Unlock()
-	if fake.PutValueStub != nil {
-		return fake.PutValueStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.putValueReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
