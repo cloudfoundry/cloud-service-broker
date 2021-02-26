@@ -44,7 +44,7 @@ help: ## list Makefile targets
 ###### Test ###################################################################
 
 .PHONY: test
-test: lint test-units ## run lint and unit tests
+test: download lint test-units ## run lint and unit tests
 
 .PHONY: test-units
 test-units: deps-go-binary ## run unit tests
@@ -64,6 +64,10 @@ build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-b
 .PHONY: generate
 generate: ## generate test fakes
 	${GO} generate ./...
+
+.PHONY: download
+download: ## download go module dependencies
+	${GO} mod download
 
 ###### Package ################################################################
 
