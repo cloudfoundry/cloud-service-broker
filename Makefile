@@ -38,13 +38,16 @@ HAS_GO_IMPORTS := $(shell command -v goimports;)
 
 .PHONY: help
 
-help:  ## list Makefile targets
+help: ## list Makefile targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 ###### Test ###################################################################
 
+.PHONY: test
+test: lint test-units ## run lint and unit tests
+
 .PHONY: test-units
-test-units: deps-go-binary  ## run unit tests
+test-units: deps-go-binary ## run unit tests
 	$(GO) test -v ./... -tags=service_broker
 
 ###### Build ##################################################################
@@ -56,12 +59,12 @@ test-units: deps-go-binary  ## run unit tests
 	GOARCH=amd64 GOOS=darwin $(GO) build -o ./build/cloud-service-broker.darwin -ldflags ${LDFLAGS}
 
 .PHONY: build
-build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin  ## build binary
+build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin ## build binary
 
 ###### Package ################################################################
 
 .PHONY: package
-package: ./build/cloud-service-broker.$(OSFAMILY) ./tile.yml ./manifest.yml docs/customization.md  ## package binary
+package: ./build/cloud-service-broker.$(OSFAMILY) ./tile.yml ./manifest.yml docs/customization.md ## package binary
 
 ./tile.yml:
 	./build/cloud-service-broker.$(OSFAMILY) generate tile > ./tile.yml
@@ -75,14 +78,14 @@ docs/customization.md:
 ###### Clean ##################################################################
 
 .PHONY: clean
-clean: deps-go-binary  ## clean up from previous builds
+clean: deps-go-binary ## clean up from previous builds
 	-$(GO) clean --modcache
 	-rm -rf ./build
 
 ###### Lint ###################################################################
 
-.PHONY: lint  ## lint the source
-lint: fmt
+.PHONY: lint ## lint the source
+lint: fmt vet staticcheck
 
 fmt: ## Checks that the code is formatted correctly
 	@@if [ -n "$$(gofmt -s -e -l -d .)" ]; then       \
@@ -90,16 +93,22 @@ fmt: ## Checks that the code is formatted correctly
 		exit 1;                                       \
 	fi
 
+vet: ## Runs go vet
+	go vet ./...
+
+staticcheck: ## Runs staticcheck
+	go run honnef.co/go/tools/cmd/staticcheck ./...
+
 ###### Format #################################################################
 
-.PHONY: format  ## format the source
+.PHONY: format ## format the source
 format:
 	gofmt -s -e -l -w .
 	git ls-files | grep '.go$$' | xargs go run golang.org/x/tools/cmd/goimports -l -w
 
 ###### Image ##################################################################
 
-.PHONY: build-image  ## build a Docker image
+.PHONY: build-image ## build a Docker image
 build-image: Dockerfile
 	docker build --tag csb .
 
