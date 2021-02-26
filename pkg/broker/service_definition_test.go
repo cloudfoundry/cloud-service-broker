@@ -24,11 +24,11 @@ import (
 func TestServiceDefinition_CheckProhibitUpdate(t *testing.T) {
 	svcDef := ServiceDefinition{
 		ProvisionInputVariables: []BrokerVariable{
-			BrokerVariable{
+			{
 				FieldName:      "prohibited",
 				ProhibitUpdate: true,
 			},
-			BrokerVariable{
+			{
 				FieldName: "allowed",
 			},
 		},

@@ -37,7 +37,7 @@ func TestBuiltinBrokerRegistry(t *testing.T) {
 	t.Run("service-names", func(t *testing.T) {
 		var actual []string
 		registry := BuiltinBrokerRegistry()
-		for name, _ := range registry {
+		for name := range registry {
 			actual = append(actual, name)
 		}
 

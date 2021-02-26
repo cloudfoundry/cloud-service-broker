@@ -87,7 +87,7 @@ func (bv *BrokerVariable) ToSchema() map[string]interface{} {
 
 	if len(bv.Enum) > 0 {
 		enumeration := []interface{}{}
-		for k, _ := range bv.Enum {
+		for k := range bv.Enum {
 			enumeration = append(enumeration, k)
 		}
 

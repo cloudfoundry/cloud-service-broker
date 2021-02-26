@@ -33,7 +33,7 @@ type CfSharingWraper struct {
 func (w *CfSharingWraper) Services(ctx context.Context) (services []brokerapi.Service, err error) {
 	services, err = w.ServiceBroker.Services(ctx)
 
-	for i, _ := range services {
+	for i := range services {
 		if services[i].Metadata == nil {
 			services[i].Metadata = &brokerapi.ServiceMetadata{}
 		}

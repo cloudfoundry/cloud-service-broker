@@ -33,17 +33,17 @@ func TestDiffStringMap(t *testing.T) {
 		"removed": {
 			Old:      map[string]string{"a": "old"},
 			New:      map[string]string{},
-			Expected: map[string]Diff{"a": Diff{Old: "old", New: ""}},
+			Expected: map[string]Diff{"a": {Old: "old", New: ""}},
 		},
 		"added": {
 			Old:      map[string]string{},
 			New:      map[string]string{"a": "new"},
-			Expected: map[string]Diff{"a": Diff{Old: "", New: "new"}},
+			Expected: map[string]Diff{"a": {Old: "", New: "new"}},
 		},
 		"changed": {
 			Old:      map[string]string{"a": "old"},
 			New:      map[string]string{"a": "new"},
-			Expected: map[string]Diff{"a": Diff{Old: "old", New: "new"}},
+			Expected: map[string]Diff{"a": {Old: "old", New: "new"}},
 		},
 		"full-gambit": {
 			Old: map[string]string{
@@ -55,9 +55,9 @@ func TestDiffStringMap(t *testing.T) {
 				"added":   "added",
 			},
 			Expected: map[string]Diff{
-				"removed": Diff{Old: "removed", New: ""},
-				"changed": Diff{Old: "orig", New: "new"},
-				"added":   Diff{Old: "", New: "added"},
+				"removed": {Old: "removed", New: ""},
+				"changed": {Old: "orig", New: "new"},
+				"added":   {Old: "", New: "added"},
 			},
 		},
 	}

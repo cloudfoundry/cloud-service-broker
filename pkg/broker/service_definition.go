@@ -204,7 +204,7 @@ func (svc *ServiceDefinition) CatalogEntry() (*Service, error) {
 	}
 
 	if enableCatalogSchemas.IsActive() {
-		for i, _ := range sd.Plans {
+		for i := range sd.Plans {
 			sd.Plans[i].Schemas = svc.createSchemas()
 		}
 	}

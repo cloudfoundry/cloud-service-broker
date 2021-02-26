@@ -203,11 +203,11 @@ func ExampleContextBuilder_BuildMap() {
 
 func TestDefaultVariable_Validate(t *testing.T) {
 	cases := map[string]validation.ValidatableTest{
-		"empty": validation.ValidatableTest{
+		"empty": {
 			Object: &DefaultVariable{},
 			Expect: errors.New("missing field(s): default, name"),
 		},
-		"bad type": validation.ValidatableTest{
+		"bad type": {
 			Object: &DefaultVariable{
 				Name:    "my-name",
 				Default: 123,
@@ -215,7 +215,7 @@ func TestDefaultVariable_Validate(t *testing.T) {
 			},
 			Expect: errors.New("field must match '^(|object|boolean|array|number|string|integer)$': type"),
 		},
-		"good": validation.ValidatableTest{
+		"good": {
 			Object: &DefaultVariable{
 				Name:    "my-name",
 				Default: 123,
