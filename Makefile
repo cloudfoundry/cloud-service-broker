@@ -11,13 +11,10 @@ endif
 
 ifeq ($(USE_GO_CONTAINERS),)
 GO=go
-GOIMPORTS=goimports
 else
 UID:=$(shell id -u)
 DOCKER_OPTS=--rm -u $(UID) -v $(HOME):$(HOME) -e HOME -e USER=$(USER) -e USERNAME=$(USER) -w $(PWD)
 GO=docker run $(DOCKER_OPTS) -e GOARCH -e GOOS -e CGO_ENABLED golang:$(GO-VERSION) go
-GOTOOLS=docker run $(DOCKER_OPTS) jare/go-tools
-GOIMPORTS=$(GOTOOLS) goimports
 HAS_GO_IMPORTS=true
 endif
 
@@ -34,11 +31,6 @@ deps-go-binary:
 	 	$(GO) version | grep $(GO-VER) > /dev/null
 
 HAS_GO_IMPORTS := $(shell command -v goimports;)
-
-deps-goimports: deps-go-binary
-ifndef HAS_GO_IMPORTS
-	go get -u golang.org/x/tools/cmd/goimports
-endif
 
 ###### Help ###################################################################
 
@@ -90,8 +82,8 @@ clean: deps-go-binary  ## clean up from previous builds
 ###### Lint ###################################################################
 
 .PHONY: lint  ## lint the source
-lint: deps-goimports
-	git ls-files | grep '.go$$' | xargs $(GOIMPORTS) -l -w
+lint:
+	git ls-files | grep '.go$$' | xargs go run golang.org/x/tools/cmd/goimports -l -w
 
 ###### Image ##################################################################
 
