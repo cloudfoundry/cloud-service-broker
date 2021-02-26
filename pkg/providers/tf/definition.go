@@ -44,11 +44,11 @@ type TfServiceDefinitionV1 struct {
 	ProvisionSettings TfServiceDefinitionV1Action `yaml:"provision"`
 	BindSettings      TfServiceDefinitionV1Action `yaml:"bind"`
 	Examples          []broker.ServiceExample     `yaml:"examples"`
-	PlanUpdateable    bool						  `yaml:"plan_updateable"`
+	PlanUpdateable    bool                        `yaml:"plan_updateable"`
 
 	// Internal SHOULD be set to true for Google maintained services.
-	Internal bool `yaml:"-"`
-	RequiredEnvVars   []string
+	Internal        bool `yaml:"-"`
+	RequiredEnvVars []string
 }
 
 // TfServiceDefinitionV1Plan represents a service plan in a human-friendly format
@@ -101,18 +101,18 @@ func (plan *TfServiceDefinitionV1Plan) ToPlan() broker.ServicePlan {
 // TfServiceDefinitionV1Action holds information needed to process user inputs
 // for a single provision or bind call.
 type TfServiceDefinitionV1Action struct {
-	PlanInputs []broker.BrokerVariable      `yaml:"plan_inputs"`
-	UserInputs []broker.BrokerVariable      `yaml:"user_inputs"`
-	Computed   []varcontext.DefaultVariable `yaml:"computed_inputs"`
-	Template   string                       `yaml:"template"`
-	TemplateRef string						`yaml:"template_ref"`
-	Outputs    []broker.BrokerVariable      `yaml:"outputs"`
-	Templates map[string]string				`yaml:"templates"`
-	TemplateRefs map[string]string			`yaml:"template_refs"`
-	ImportVariables []ImportVariable		`yaml:"import_inputs"`
-	ImportParameterMappings []ImportParameterMapping `yaml:"import_parameter_mappings"`
-	ImportParametersToDelete []string       `yaml:"import_parameters_to_delete"`
-	ImportParametersToAdd []ImportParameterMapping `yaml:"import_parameters_to_add"`
+	PlanInputs               []broker.BrokerVariable      `yaml:"plan_inputs"`
+	UserInputs               []broker.BrokerVariable      `yaml:"user_inputs"`
+	Computed                 []varcontext.DefaultVariable `yaml:"computed_inputs"`
+	Template                 string                       `yaml:"template"`
+	TemplateRef              string                       `yaml:"template_ref"`
+	Outputs                  []broker.BrokerVariable      `yaml:"outputs"`
+	Templates                map[string]string            `yaml:"templates"`
+	TemplateRefs             map[string]string            `yaml:"template_refs"`
+	ImportVariables          []ImportVariable             `yaml:"import_inputs"`
+	ImportParameterMappings  []ImportParameterMapping     `yaml:"import_parameter_mappings"`
+	ImportParametersToDelete []string                     `yaml:"import_parameters_to_delete"`
+	ImportParametersToAdd    []ImportParameterMapping     `yaml:"import_parameters_to_add"`
 }
 
 var _ validation.Validatable = (*TfServiceDefinitionV1Action)(nil)
@@ -120,7 +120,7 @@ var _ validation.Validatable = (*TfServiceDefinitionV1Action)(nil)
 func (action *TfServiceDefinitionV1Action) IsTfImport(provisionContext *varcontext.VarContext) bool {
 	subsume := "subsume"
 	for _, planInput := range action.PlanInputs {
-		if planInput.FieldName == subsume && provisionContext.HasKey(subsume) && provisionContext.GetBool(subsume){
+		if planInput.FieldName == subsume && provisionContext.HasKey(subsume) && provisionContext.GetBool(subsume) {
 			return true
 		}
 	}
@@ -132,7 +132,7 @@ func loadTemplate(templatePath string) (string, error) {
 		return "", nil
 	}
 	buff, err := ioutil.ReadFile(templatePath)
-	
+
 	if err != nil {
 		return "", err
 	}
@@ -141,18 +141,18 @@ func loadTemplate(templatePath string) (string, error) {
 
 // load template ref into template if provided
 func (action *TfServiceDefinitionV1Action) LoadTemplate(srcDir string) error {
-    var err error
- 
+	var err error
+
 	if action.TemplateRef != "" {
 		action.Template, err = loadTemplate(path.Join(srcDir, action.TemplateRef))
 		if err != nil {
 			return err
-	    }
+		}
 	}
 
 	if action.Templates == nil {
-	    action.Templates = make(map[string]string)
-    }
+		action.Templates = make(map[string]string)
+	}
 
 	for name, ref := range action.TemplateRefs {
 		if ref != "" {
@@ -185,9 +185,9 @@ func (action *TfServiceDefinitionV1Action) Validate() (errs *validation.FieldErr
 	}
 
 	errs = errs.Also(
-	 	validation.ErrIfNotHCL(action.Template, "template"),
-	 	action.validateTemplateInputs().ViaField("template"),
-	 	action.validateTemplateOutputs().ViaField("template"),
+		validation.ErrIfNotHCL(action.Template, "template"),
+		action.validateTemplateInputs().ViaField("template"),
+		action.validateTemplateOutputs().ViaField("template"),
 	)
 
 	for i, v := range action.Outputs {
@@ -512,14 +512,14 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 
 // ImportVariable Variable definition for TF import support
 type ImportVariable struct {
-	Name string			`yaml:"field_name"`
-	Type string			`yaml:"type"`
-	Details string		`yaml:"details"`
-	TfResource string	`yaml:"tf_resource"`
+	Name       string `yaml:"field_name"`
+	Type       string `yaml:"type"`
+	Details    string `yaml:"details"`
+	TfResource string `yaml:"tf_resource"`
 }
 
 // ImportParameterMapping mapping for tf variable to service parameter
 type ImportParameterMapping struct {
-	TfVariable string `yaml:"tf_variable"`
+	TfVariable    string `yaml:"tf_variable"`
 	ParameterName string `yaml:"parameter_name"`
 }

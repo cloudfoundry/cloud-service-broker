@@ -15,38 +15,38 @@
 package wrapper
 
 import (
-    "reflect"
-    "strings"
-    "testing"
-    "unicode"
+	"reflect"
+	"strings"
+	"testing"
+	"unicode"
 )
 
 func compareIgnoreWhiteSpace(str1, str2 string) bool {
-    return stripWhiteSpace(str1) == stripWhiteSpace(str2)
+	return stripWhiteSpace(str1) == stripWhiteSpace(str2)
 }
 
 func stripWhiteSpace(str string) string {
-    return strings.Map(func(r rune) rune {
-        if unicode.IsSpace(r) {
-            // if the character is a space, drop it
-            return -1
-        }
-        // else keep it in the string
-        return r
-    }, str)
+	return strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r) {
+			// if the character is a space, drop it
+			return -1
+		}
+		// else keep it in the string
+		return r
+	}, str)
 }
 
 func TestTfImportTransform_CleanTf(t *testing.T) {
-    cases := map[string]struct {
-        transformer TfTransformer
-        input       string
-        expected    string
-    }{
-        "remove-id": {
-            transformer: TfTransformer{
-                ParametersToRemove: []string{"azurerm_mssql_database.azure_sql_db.id"},
-            },
-            input: `resource "azurerm_mssql_database" "azure_sql_db" {
+	cases := map[string]struct {
+		transformer TfTransformer
+		input       string
+		expected    string
+	}{
+		"remove-id": {
+			transformer: TfTransformer{
+				ParametersToRemove: []string{"azurerm_mssql_database.azure_sql_db.id"},
+			},
+			input: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -77,7 +77,7 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
 
     timeouts {}
 }`,
-            expected: `resource "azurerm_mssql_database" "azure_sql_db" {
+			expected: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -107,12 +107,12 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
 
     timeouts {}
 }`,
-        },
-        "remove-none": {
-            transformer: TfTransformer{
-                ParametersToRemove: []string{},
-            },
-            input: `resource "azurerm_mssql_database" "azure_sql_db" {
+		},
+		"remove-none": {
+			transformer: TfTransformer{
+				ParametersToRemove: []string{},
+			},
+			input: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -143,7 +143,7 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
 
     timeouts {}
 }`,
-            expected: `resource "azurerm_mssql_database" "azure_sql_db" {
+			expected: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -175,11 +175,11 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
     timeouts {}
 }`,
 		},
-        "remove-block": {
-            transformer: TfTransformer{
-                ParametersToRemove: []string{"azurerm_mssql_database.azure_sql_db.threat_detection_policy"},
-            },
-            input: `resource "azurerm_mssql_database" "azure_sql_db" {
+		"remove-block": {
+			transformer: TfTransformer{
+				ParametersToRemove: []string{"azurerm_mssql_database.azure_sql_db.threat_detection_policy"},
+			},
+			input: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -212,7 +212,7 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
 
 	}
 }`,
-            expected: `resource "azurerm_mssql_database" "azure_sql_db" {
+			expected: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -236,22 +236,22 @@ func TestTfImportTransform_CleanTf(t *testing.T) {
 	}
 }`,
 		},
-        "remove-multiple": {
-            transformer: TfTransformer{
-                ParametersToRemove: []string{"azurerm_mssql_database.primary_db.id", 
-                                 "azurerm_mssql_database.primary_db.long_term_retention_policy",
-                                 "azurerm_mssql_database.primary_db.extended_auditing_policy",
-                                 "azurerm_mssql_database.secondary_db.long_term_retention_policy",
-                                 "azurerm_mssql_database.secondary_db.extended_auditing_policy",
-                                 "azurerm_mssql_database.secondary_db.id", 
-                                 "azurerm_mssql_database.secondary_db.threat_detection_policy",
-                                 "azurerm_sql_failover_group.failover_group.id",
-                                 "azurerm_sql_failover_group.failover_group.location",
-                                 "azurerm_sql_failover_group.failover_group.role",
-                                 "azurerm_sql_failover_group.failover_group.partner_servers.location",
-                                 "azurerm_sql_failover_group.failover_group.partner_servers.role"},
-            },
-            input: `# azurerm_mssql_database.primary_db:
+		"remove-multiple": {
+			transformer: TfTransformer{
+				ParametersToRemove: []string{"azurerm_mssql_database.primary_db.id",
+					"azurerm_mssql_database.primary_db.long_term_retention_policy",
+					"azurerm_mssql_database.primary_db.extended_auditing_policy",
+					"azurerm_mssql_database.secondary_db.long_term_retention_policy",
+					"azurerm_mssql_database.secondary_db.extended_auditing_policy",
+					"azurerm_mssql_database.secondary_db.id",
+					"azurerm_mssql_database.secondary_db.threat_detection_policy",
+					"azurerm_sql_failover_group.failover_group.id",
+					"azurerm_sql_failover_group.failover_group.location",
+					"azurerm_sql_failover_group.failover_group.role",
+					"azurerm_sql_failover_group.failover_group.partner_servers.location",
+					"azurerm_sql_failover_group.failover_group.partner_servers.role"},
+			},
+			input: `# azurerm_mssql_database.primary_db:
 resource "azurerm_mssql_database" "primary_db" {
     auto_pause_delay_in_minutes = 0
     collation                   = "SQL_Latin1_General_CP1_CI_AS"
@@ -370,7 +370,7 @@ resource "azurerm_sql_failover_group" "failover_group" {
 
     timeouts {}
 }`,
-            expected: `# azurerm_mssql_database.primary_db:
+			expected: `# azurerm_mssql_database.primary_db:
 resource "azurerm_mssql_database" "primary_db" {
     auto_pause_delay_in_minutes = 0
     collation                   = "SQL_Latin1_General_CP1_CI_AS"
@@ -459,31 +459,31 @@ resource "azurerm_sql_failover_group" "failover_group" {
     timeouts {}
 }`,
 		},
-    }
+	}
 
-    for tn, tc := range cases {
-        t.Run(tn, func(t *testing.T) {
-            output := tc.transformer.CleanTf(tc.input)
-            if !compareIgnoreWhiteSpace(output, tc.expected) {
-                t.Fatalf("Expected %s, actual %s", tc.expected, output)
-            }
-        })
-    }
+	for tn, tc := range cases {
+		t.Run(tn, func(t *testing.T) {
+			output := tc.transformer.CleanTf(tc.input)
+			if !compareIgnoreWhiteSpace(output, tc.expected) {
+				t.Fatalf("Expected %s, actual %s", tc.expected, output)
+			}
+		})
+	}
 }
 
 func TestTfImportTransform_ReplaceParametersInTf(t *testing.T) {
-    cases := map[string]struct {
-        transformer        TfTransformer
-        input              string
-        expected           string
-        expectedParameters map[string]string
-    }{
-        "none": {
-            transformer: TfTransformer{
-                ParameterMappings: []ParameterMapping{},
-            },
-            expectedParameters: map[string]string{},
-            input: `resource "azurerm_mssql_database" "azure_sql_db" {
+	cases := map[string]struct {
+		transformer        TfTransformer
+		input              string
+		expected           string
+		expectedParameters map[string]string
+	}{
+		"none": {
+			transformer: TfTransformer{
+				ParameterMappings: []ParameterMapping{},
+			},
+			expectedParameters: map[string]string{},
+			input: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -513,7 +513,7 @@ func TestTfImportTransform_ReplaceParametersInTf(t *testing.T) {
 
     timeouts {}
 }`,
-            expected: `resource "azurerm_mssql_database" "azure_sql_db" {
+			expected: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -543,20 +543,20 @@ func TestTfImportTransform_ReplaceParametersInTf(t *testing.T) {
 
     timeouts {}
 }`,
-        },
-        "edition": {
-            transformer: TfTransformer{
-                ParameterMappings: []ParameterMapping{
-                    {
-                        TfVariable:    "edition",
-                        ParameterName: "var.edition",
-                    },
-                },
-            },
-            expectedParameters: map[string]string{
-                "edition": "Basic",
-            },
-            input: `resource "azurerm_mssql_database" "azure_sql_db" {
+		},
+		"edition": {
+			transformer: TfTransformer{
+				ParameterMappings: []ParameterMapping{
+					{
+						TfVariable:    "edition",
+						ParameterName: "var.edition",
+					},
+				},
+			},
+			expectedParameters: map[string]string{
+				"edition": "Basic",
+			},
+			input: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -586,7 +586,7 @@ func TestTfImportTransform_ReplaceParametersInTf(t *testing.T) {
 
     timeouts {}
 }`,
-            expected: `resource "azurerm_mssql_database" "azure_sql_db" {
+			expected: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -616,22 +616,22 @@ func TestTfImportTransform_ReplaceParametersInTf(t *testing.T) {
 
     timeouts {}
 }`,
-        },
-        "tags": {
-            transformer: TfTransformer{
-                ParameterMappings: []ParameterMapping{
-                    {
-                        TfVariable:    "tags",
-                        ParameterName: "var.labels",
-                    },
-                },
-            },
-            expectedParameters: map[string]string{
-    //             "labels": `{
-    //     "user-agent" = "meta-azure-service-broker"
-    // }`,
-            },
-            input: `resource "azurerm_mssql_database" "azure_sql_db" {
+		},
+		"tags": {
+			transformer: TfTransformer{
+				ParameterMappings: []ParameterMapping{
+					{
+						TfVariable:    "tags",
+						ParameterName: "var.labels",
+					},
+				},
+			},
+			expectedParameters: map[string]string{
+				//             "labels": `{
+				//     "user-agent" = "meta-azure-service-broker"
+				// }`,
+			},
+			input: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -661,7 +661,7 @@ func TestTfImportTransform_ReplaceParametersInTf(t *testing.T) {
 
     timeouts {}
 }`,
-            expected: `resource "azurerm_mssql_database" "azure_sql_db" {
+			expected: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -690,19 +690,19 @@ func TestTfImportTransform_ReplaceParametersInTf(t *testing.T) {
     timeouts {}
 }`,
 		},
-        "local": {
-            transformer: TfTransformer{
-                ParameterMappings: []ParameterMapping{
-                    {
-                        TfVariable:    "sku_name",
-                        ParameterName: "local.sku_name",
-                    },
-                },
-            },
-            expectedParameters: map[string]string{
-                "sku_name": "GP_Gen5_4",
-            },
-            input: `resource "azurerm_mssql_database" "azure_sql_db" {
+		"local": {
+			transformer: TfTransformer{
+				ParameterMappings: []ParameterMapping{
+					{
+						TfVariable:    "sku_name",
+						ParameterName: "local.sku_name",
+					},
+				},
+			},
+			expectedParameters: map[string]string{
+				"sku_name": "GP_Gen5_4",
+			},
+			input: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -733,7 +733,7 @@ func TestTfImportTransform_ReplaceParametersInTf(t *testing.T) {
     timeouts {}
 	sku_name = "GP_Gen5_4"
 }`,
-            expected: `resource "azurerm_mssql_database" "azure_sql_db" {
+			expected: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -764,57 +764,57 @@ func TestTfImportTransform_ReplaceParametersInTf(t *testing.T) {
 	timeouts {}
 	sku_name = local.sku_name
 }`,
-        },
-        "array": {
-            transformer: TfTransformer{
-                ParameterMappings: []ParameterMapping{
-                    {
-                        TfVariable:    "an_array",
-                        ParameterName: "[local.sku_name]",
-                    },
-                },
-            },
-            expectedParameters: map[string]string{
-                //"sku_name": "GP_Gen5_4",
-            },
-            input: `resource "azurerm_mssql_database" "azure_sql_db" {
+		},
+		"array": {
+			transformer: TfTransformer{
+				ParameterMappings: []ParameterMapping{
+					{
+						TfVariable:    "an_array",
+						ParameterName: "[local.sku_name]",
+					},
+				},
+			},
+			expectedParameters: map[string]string{
+				//"sku_name": "GP_Gen5_4",
+			},
+			input: `resource "azurerm_mssql_database" "azure_sql_db" {
     an_array = [
 
 	]
 }`,
-            expected: `resource "azurerm_mssql_database" "azure_sql_db" {
+			expected: `resource "azurerm_mssql_database" "azure_sql_db" {
     an_array = [local.sku_name]
 }`,
-        },		
-    }
+		},
+	}
 
-    for tn, tc := range cases {
-        t.Run(tn, func(t *testing.T) {
-            output, parameters, err := tc.transformer.ReplaceParametersInTf(tc.input)
-            if err != nil {
-                t.Fatal(err)
-            }
-            if !compareIgnoreWhiteSpace(output, tc.expected) {
-                t.Fatalf("Expected %s, actual %s", tc.expected, output)
-            }
-            if !reflect.DeepEqual(parameters, tc.expectedParameters) {
-                t.Fatalf("Expected %v, actual %v", tc.expectedParameters, parameters)
-            }
-        })
-    }
+	for tn, tc := range cases {
+		t.Run(tn, func(t *testing.T) {
+			output, parameters, err := tc.transformer.ReplaceParametersInTf(tc.input)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !compareIgnoreWhiteSpace(output, tc.expected) {
+				t.Fatalf("Expected %s, actual %s", tc.expected, output)
+			}
+			if !reflect.DeepEqual(parameters, tc.expectedParameters) {
+				t.Fatalf("Expected %v, actual %v", tc.expectedParameters, parameters)
+			}
+		})
+	}
 }
 
 func TestTfImportTransform_AddTf(t *testing.T) {
-    cases := map[string]struct {
-        transformer TfTransformer
-        input       string
-        expected    string
-    }{
-		"none":{
+	cases := map[string]struct {
+		transformer TfTransformer
+		input       string
+		expected    string
+	}{
+		"none": {
 			transformer: TfTransformer{
 				ParametersToAdd: []ParameterMapping{},
 			},
-        input: `resource "azurerm_mssql_database" "azure_sql_db" {
+			input: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -844,7 +844,7 @@ func TestTfImportTransform_AddTf(t *testing.T) {
 
     timeouts {}
 }`,
-            expected: `resource "azurerm_mssql_database" "azure_sql_db" {
+			expected: `resource "azurerm_mssql_database" "azure_sql_db" {
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -875,16 +875,16 @@ func TestTfImportTransform_AddTf(t *testing.T) {
     timeouts {}
 }`,
 		},
-		"count":{
+		"count": {
 			transformer: TfTransformer{
 				ParametersToAdd: []ParameterMapping{
-					{ 
-						TfVariable: "azurerm_mssql_database.azure_sql_db.count",
+					{
+						TfVariable:    "azurerm_mssql_database.azure_sql_db.count",
 						ParameterName: "1",
 					},
 				},
 			},
-        input: `resource "azurerm_mssql_database" "azure_sql_db" {
+			input: `resource "azurerm_mssql_database" "azure_sql_db" {
 	collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
     default_secondary_location       = "West US"
@@ -914,7 +914,7 @@ func TestTfImportTransform_AddTf(t *testing.T) {
 
     timeouts {}
 }`,
-            expected: `resource "azurerm_mssql_database" "azure_sql_db" {
+			expected: `resource "azurerm_mssql_database" "azure_sql_db" {
 	count = 1				
     collation                        = "SQL_Latin1_General_CP1_CI_AS"
     creation_date                    = "2020-08-26T18:15:12.057Z"
@@ -945,15 +945,15 @@ func TestTfImportTransform_AddTf(t *testing.T) {
 
     timeouts {}
 }`,
-        },		
+		},
 	}
 
-    for tn, tc := range cases {
-        t.Run(tn, func(t *testing.T) {
-            output := tc.transformer.AddParametersInTf(tc.input)
-            if !compareIgnoreWhiteSpace(output, tc.expected) {
-                t.Fatalf("Expected %s, actual %s", tc.expected, output)
-            }
-        })
-    }	
+	for tn, tc := range cases {
+		t.Run(tn, func(t *testing.T) {
+			output := tc.transformer.AddParametersInTf(tc.input)
+			if !compareIgnoreWhiteSpace(output, tc.expected) {
+				t.Fatalf("Expected %s, actual %s", tc.expected, output)
+			}
+		})
+	}
 }

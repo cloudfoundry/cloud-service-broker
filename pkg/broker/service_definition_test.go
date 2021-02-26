@@ -17,15 +17,15 @@ package broker
 import (
 	"encoding/json"
 	"testing"
+
 	"github.com/pivotal-cf/brokerapi"
 )
-
 
 func TestServiceDefinition_CheckProhibitUpdate(t *testing.T) {
 	svcDef := ServiceDefinition{
 		ProvisionInputVariables: []BrokerVariable{
 			BrokerVariable{
-				FieldName:  "prohibited",
+				FieldName:      "prohibited",
 				ProhibitUpdate: true,
 			},
 			BrokerVariable{
@@ -35,37 +35,37 @@ func TestServiceDefinition_CheckProhibitUpdate(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		rawParams string
+		rawParams      string
 		expectedResult bool
-		expectErr bool
+		expectErr      bool
 	}{
 		"allowed": {
-			rawParams: `{"allowed":"some_val"}`,
+			rawParams:      `{"allowed":"some_val"}`,
 			expectedResult: true,
-			expectErr: false,
+			expectErr:      false,
 		},
 		"prohibited": {
-			rawParams: `{"prohibited":"some_val"}`,
+			rawParams:      `{"prohibited":"some_val"}`,
 			expectedResult: false,
-			expectErr: false,
+			expectErr:      false,
 		},
 		"bad json": {
-			rawParams: `{"bogus"}`,
+			rawParams:      `{"bogus"}`,
 			expectedResult: false,
-			expectErr: true,			
+			expectErr:      true,
 		},
 		"empty": {
 			expectedResult: true,
-			expectErr: false,
+			expectErr:      false,
 		},
 	}
 
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			actual, err := svcDef.AllowedUpdate(brokerapi.UpdateDetails{ 
-				RawParameters: json.RawMessage(tc.rawParams), 
+			actual, err := svcDef.AllowedUpdate(brokerapi.UpdateDetails{
+				RawParameters: json.RawMessage(tc.rawParams),
 			})
-			if ( err == nil ) == tc.expectErr {
+			if (err == nil) == tc.expectErr {
 				t.Errorf("Did not get exected error result")
 
 			}

@@ -22,8 +22,8 @@ import (
 	"github.com/hashicorp/hil/ast"
 )
 
-// there seems to be a race condition in the hil functions, 
-// specifically github.com/hashicorp/hil.registerBuiltins(), so 
+// there seems to be a race condition in the hil functions,
+// specifically github.com/hashicorp/hil.registerBuiltins(), so
 // synchronize use
 var hilMutex sync.Mutex
 

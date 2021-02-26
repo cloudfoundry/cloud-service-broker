@@ -49,7 +49,7 @@ func createStandardLibrary() map[string]ast.Function {
 		"json.marshal":    hilFuncJSONMarshal(),
 		"map.flatten":     hilFuncMapFlatten(),
 		"env":             hilFuncEnv(),
-		"config":		   hilFuncConfig(),
+		"config":          hilFuncConfig(),
 	}
 }
 

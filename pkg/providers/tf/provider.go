@@ -54,11 +54,11 @@ func (provider *terraformProvider) Provision(ctx context.Context, provisionConte
 	var tfID string
 	var err error
 
-	if provider.serviceDefinition.ProvisionSettings.IsTfImport(provisionContext) { 
+	if provider.serviceDefinition.ProvisionSettings.IsTfImport(provisionContext) {
 		tfID, err = provider.importCreate(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
 		if err != nil {
 			return models.ServiceInstanceDetails{}, err
-		}	
+		}
 	} else {
 		tfID, err = provider.create(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
 		if err != nil {
@@ -87,7 +87,7 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	err :=  provider.jobRunner.Update(ctx, tfId, provisionContext.ToMap())
+	err := provider.jobRunner.Update(ctx, tfId, provisionContext.ToMap())
 
 	return models.ServiceInstanceDetails{
 		OperationId:   tfId,
@@ -120,16 +120,16 @@ func (provider *terraformProvider) importCreate(ctx context.Context, vars *varco
 
 	for _, importParameterMapping := range action.ImportParameterMappings {
 		parameterMappings = append(parameterMappings, wrapper.ParameterMapping{
-			TfVariable: importParameterMapping.TfVariable,
+			TfVariable:    importParameterMapping.TfVariable,
 			ParameterName: importParameterMapping.ParameterName,
 		})
 	}
 
 	for _, addParam := range action.ImportParametersToAdd {
 		addParams = append(addParams, wrapper.ParameterMapping{
-			TfVariable: addParam.TfVariable,
+			TfVariable:    addParam.TfVariable,
 			ParameterName: addParam.ParameterName,
-		})	
+		})
 	}
 
 	var importParams []ImportResource
