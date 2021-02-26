@@ -40,9 +40,22 @@ ifndef HAS_GO_IMPORTS
 	go get -u golang.org/x/tools/cmd/goimports
 endif
 
+###### Help ###################################################################
+
+.DEFAULT_GOAL = help
+
+.PHONY: help
+
+help:  ## list Makefile targets
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+###### Test ###################################################################
+
 .PHONY: test-units
-test-units: deps-go-binary
+test-units: deps-go-binary  ## run unit tests
 	$(GO) test -v ./... -tags=service_broker
+
+###### Build ##################################################################
 
 ./build/cloud-service-broker.linux: $(SRC)
 	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux $(GO) build -o ./build/cloud-service-broker.linux -ldflags ${LDFLAGS}
@@ -51,10 +64,12 @@ test-units: deps-go-binary
 	GOARCH=amd64 GOOS=darwin $(GO) build -o ./build/cloud-service-broker.darwin -ldflags ${LDFLAGS}
 
 .PHONY: build
-build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin
+build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin  ## build binary
+
+###### Package ################################################################
 
 .PHONY: package
-package: ./build/cloud-service-broker.$(OSFAMILY) ./tile.yml ./manifest.yml docs/customization.md
+package: ./build/cloud-service-broker.$(OSFAMILY) ./tile.yml ./manifest.yml docs/customization.md  ## package binary
 
 ./tile.yml:
 	./build/cloud-service-broker.$(OSFAMILY) generate tile > ./tile.yml
@@ -65,22 +80,26 @@ package: ./build/cloud-service-broker.$(OSFAMILY) ./tile.yml ./manifest.yml docs
 docs/customization.md:
 	./build/cloud-service-broker.$(OSFAMILY) generate customization > docs/customization.md
 
+###### Clean ##################################################################
+
 .PHONY: clean
-clean: deps-go-binary
+clean: deps-go-binary  ## clean up from previous builds
 	-$(GO) clean --modcache
 	-rm -rf ./build
 
-.PHONY: lint
+###### Lint ###################################################################
+
+.PHONY: lint  ## lint the source
 lint: deps-goimports
 	git ls-files | grep '.go$$' | xargs $(GOIMPORTS) -l -w
 
-# image
+###### Image ##################################################################
 
-.PHONY: build-image
+.PHONY: build-image  ## build a Docker image
 build-image: Dockerfile
 	docker build --tag csb .
 
-# env vars checks
+###### Env Var Checks #########################################################
 
 .PHONY: security-user-name
 security-user-name:
@@ -112,3 +131,4 @@ ifndef DB_PASSWORD
 	$(error variable DB_PASSWORD not defined)
 endif
 
+###### End ####################################################################
