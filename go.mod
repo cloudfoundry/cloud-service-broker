@@ -5,11 +5,10 @@ go 1.14
 require (
 	cloud.google.com/go v0.45.1
 	code.cloudfoundry.org/credhub-cli v0.0.0-20200325195429-1faf152db5a4
-	code.cloudfoundry.org/lager v1.1.0
+	code.cloudfoundry.org/lager v1.1.1-0.20191008172124-a9afc05ee5be
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/aws/aws-sdk-go v1.25.3 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e // indirect
-	github.com/drewolson/testflight v1.0.0 // indirect
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/go-sql-driver/mysql v1.4.0
 	github.com/go-yaml/yaml v2.1.0+incompatible
@@ -37,8 +36,8 @@ require (
 	github.com/onsi/gomega v1.10.5
 	github.com/pborman/uuid v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.2.0 // indirect
-	github.com/pivotal-cf/brokerapi v4.2.1+incompatible
-	github.com/pkg/errors v0.8.1
+	github.com/pivotal-cf/brokerapi/v7 v7.5.0
+	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.1.1-0.20190813114604-4efc3ccc7a66 // indirect
 	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4 // indirect
 	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d
@@ -61,5 +60,5 @@ require (
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.4.0
-	honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc
+	honnef.co/go/tools v0.0.1-2020.1.5
 )
