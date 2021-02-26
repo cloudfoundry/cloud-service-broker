@@ -15,7 +15,6 @@
 package wrapper
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -271,6 +270,6 @@ func TestCustomEnvironmentExecutor(t *testing.T) {
 	expected := []string{"ORIGINAL=value", "FOO=bar"}
 
 	if !reflect.DeepEqual(expected, actual.Env) {
-		fmt.Errorf("Expected %v actual %v", expected, actual)
+		t.Fatalf("Expected %v actual %v", expected, actual)
 	}
 }

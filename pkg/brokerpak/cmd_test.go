@@ -144,7 +144,7 @@ func TestFinfo(t *testing.T) {
 	actual := string(buf.Bytes())
 	for _, str := range importantStrings {
 		if !strings.Contains(actual, str) {
-			fmt.Errorf("Expected output to contain %s but it didn't", str)
+			t.Fatalf("Expected output to contain %s but it didn't", str)
 		}
 	}
 }

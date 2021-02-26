@@ -67,7 +67,7 @@ func Find(z *zip.Reader, path ...string) *zip.File {
 func Open(z *zip.Reader, path ...string) (io.ReadCloser, error) {
 	f := Find(z, path...)
 	if f == nil {
-		fmt.Errorf("no such file: %q", Join(path...))
+		return nil, fmt.Errorf("no such file: %q", Join(path...))
 	}
 
 	return f.Open()

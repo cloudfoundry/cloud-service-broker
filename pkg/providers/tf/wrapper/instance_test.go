@@ -33,7 +33,7 @@ func ExampleModuleInstance_MarshalDefinition() {
 	// {"module":{"instance":{"foo":"bar","source":"./foo-module"}},"output":{"output1":{"value":"${module.instance.output1}"},"output2":{"value":"${module.instance.output2}"}}}
 }
 
-func ExampleModuleInstance_MarshalDefinitionEmptyOutputs() {
+func ExampleModuleInstance_MarshalDefinition_emptyOutputs() {
 	instance := ModuleInstance{
 		ModuleName:    "foo-module",
 		InstanceName:  "instance",

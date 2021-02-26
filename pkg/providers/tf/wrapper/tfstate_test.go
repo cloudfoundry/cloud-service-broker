@@ -16,7 +16,7 @@ package wrapper
 
 import "fmt"
 
-func ExampleNewTfstate_Good() {
+func ExampleNewTfstate_good() {
 	state := `{
     "version": 4,
     "terraform_version": "0.12.20",
@@ -53,7 +53,7 @@ func ExampleNewTfstate_Good() {
 	// Output: <nil>
 }
 
-func ExampleNewTfstate_BadVersion() {
+func ExampleNewTfstate_badVersion() {
 	state := `{
     "version": 5,
     "terraform_version": "0.12.20",
