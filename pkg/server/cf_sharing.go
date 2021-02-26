@@ -17,7 +17,7 @@ package server
 import (
 	"context"
 
-	"github.com/pivotal-cf/brokerapi"
+	"github.com/pivotal-cf/brokerapi/v7"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o ./fakes/servicebroker.go github.com/pivotal-cf/brokerapi.ServiceBroker

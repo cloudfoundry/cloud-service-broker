@@ -17,7 +17,7 @@ package broker
 import (
 	"testing"
 
-	"github.com/pivotal-cf/brokerapi"
+	"github.com/pivotal-cf/brokerapi/v7"
 	"github.com/spf13/viper"
 )
 

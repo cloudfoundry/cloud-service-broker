@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/server/fakes"
-	"github.com/pivotal-cf/brokerapi"
+	"github.com/pivotal-cf/brokerapi/v7"
 )
 
 func TestCfSharingWraper_Services(t *testing.T) {

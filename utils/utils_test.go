@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pivotal-cf/brokerapi"
+	"github.com/pivotal-cf/brokerapi/v7"
 )
 
 func ExamplePropertyToEnv() {

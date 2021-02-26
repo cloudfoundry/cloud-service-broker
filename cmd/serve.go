@@ -28,7 +28,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/toggles"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/gorilla/mux"
-	"github.com/pivotal-cf/brokerapi"
+	"github.com/pivotal-cf/brokerapi/v7"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

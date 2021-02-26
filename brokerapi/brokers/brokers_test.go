@@ -34,7 +34,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
-	"github.com/pivotal-cf/brokerapi"
+	"github.com/pivotal-cf/brokerapi/v7"
 	"google.golang.org/api/googleapi"
 
 	"code.cloudfoundry.org/lager"

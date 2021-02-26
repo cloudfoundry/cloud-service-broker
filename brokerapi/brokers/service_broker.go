@@ -21,7 +21,7 @@ import (
 	"net/http"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/pivotal-cf/brokerapi"
+	"github.com/pivotal-cf/brokerapi/v7"
 	"google.golang.org/api/googleapi"
 
 	"encoding/json"
