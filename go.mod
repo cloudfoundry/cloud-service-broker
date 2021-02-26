@@ -61,6 +61,6 @@ require (
 	google.golang.org/grpc v1.23.1 // indirect
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
 	honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc
 )
