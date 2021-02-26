@@ -136,6 +136,7 @@ func ServiceDefinition() *broker.ServiceDefinition {
 		},
 		ProvisionComputedVariables: []varcontext.DefaultVariable{
 			{Name: "labels", Default: "${json.marshal(request.default_labels)}", Overwrite: true},
+			{Name: "originatingIdentity", Default: "${json.marshal(request.x_broker_api_originating_identity)}", Overwrite: true},
 		},
 		DefaultRoleWhitelist: roleWhitelist,
 		BindInputVariables:   accountmanagers.ServiceAccountWhitelistWithDefault(roleWhitelist, "storage.objectAdmin"),

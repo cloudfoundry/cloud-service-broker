@@ -291,6 +291,20 @@ func TestGCPServiceBroker_Provision(t *testing.T) {
 				assertEqual(t, "provision calls should match", 1, stub.Provider.ProvisionCallCount())
 			},
 		},
+		"originating-header": {
+			AsyncService: true,
+			ServiceState: StateNone,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
+				newContext := context.WithValue(context.Background(), "originatingIdentity", header)
+				broker.Provision(newContext, fakeInstanceId, stub.ProvisionDetails(), true)
+				assertEqual(t, "provision calls should match", 1, stub.Provider.ProvisionCallCount())
+				_, actualVarContext := stub.Provider.ProvisionArgsForCall(0)
+				expectedOriginatingIdentityMap := `{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`
+
+				assertEqual(t, "originatingIdentity should match", expectedOriginatingIdentityMap, actualVarContext.GetString("originatingIdentity"))
+			},
+		},
 		"duplicate-request": {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
@@ -348,6 +362,22 @@ func TestGCPServiceBroker_Deprovision(t *testing.T) {
 				failIfErr(t, "deprovisioning", err)
 
 				assertEqual(t, "deprovision calls should match", 1, stub.Provider.DeprovisionCallCount())
+			},
+		},
+		"originating-header": {
+			AsyncService: true,
+			ServiceState: StateProvisioned,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
+				newContext := context.WithValue(context.Background(), "originatingIdentity", header)
+				_, err := broker.Deprovision(newContext, fakeInstanceId, stub.DeprovisionDetails(), true)
+				failIfErr(t, "deprovisioning", err)
+
+				assertEqual(t, "deprovision calls should match", 1, stub.Provider.DeprovisionCallCount())
+				_, _, _,actualVarContext := stub.Provider.DeprovisionArgsForCall(0)
+				expectedOriginatingIdentityMap := `{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`
+
+				assertEqual(t, "originatingIdentity should match", expectedOriginatingIdentityMap, actualVarContext.GetString("originatingIdentity"))
 			},
 		},
 		"duplicate-deprovision": {
