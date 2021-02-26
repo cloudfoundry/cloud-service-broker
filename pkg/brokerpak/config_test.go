@@ -99,7 +99,7 @@ func TestServiceConfig_Validate(t *testing.T) {
 			Cfg: ServerConfig{
 				Config: "{}",
 				Brokerpaks: map[string]BrokerpakSourceConfig{
-					"good-key": BrokerpakSourceConfig{
+					"good-key": {
 						BrokerpakUri: "file:///some/path",
 						Config:       "{}aaa",
 					},

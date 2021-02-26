@@ -52,11 +52,11 @@ func decode(body string) (hcl.Blocks, error) {
 	}
 	schema := hcl.BodySchema{
 		Blocks: []hcl.BlockHeaderSchema{
-			hcl.BlockHeaderSchema{
+			{
 				Type:       "variable",
 				LabelNames: []string{"type"},
 			},
-			hcl.BlockHeaderSchema{
+			{
 				Type:       "output",
 				LabelNames: []string{"value"},
 			},

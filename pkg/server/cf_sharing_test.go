@@ -39,20 +39,20 @@ func TestCfSharingWraper_Services(t *testing.T) {
 
 		"single service": {
 			Services: []brokerapi.Service{
-				brokerapi.Service{Name: "foo", Metadata: &brokerapi.ServiceMetadata{}},
+				{Name: "foo", Metadata: &brokerapi.ServiceMetadata{}},
 			},
 			Error: nil,
 		},
 		"missing metadata": {
 			Services: []brokerapi.Service{
-				brokerapi.Service{Name: "foo"},
+				{Name: "foo"},
 			},
 			Error: nil,
 		},
 		"multiple services": {
 			Services: []brokerapi.Service{
-				brokerapi.Service{Name: "foo", Metadata: &brokerapi.ServiceMetadata{}},
-				brokerapi.Service{Name: "bar", Metadata: &brokerapi.ServiceMetadata{}},
+				{Name: "foo", Metadata: &brokerapi.ServiceMetadata{}},
+				{Name: "bar", Metadata: &brokerapi.ServiceMetadata{}},
 			},
 			Error: nil,
 		},
@@ -62,8 +62,8 @@ func TestCfSharingWraper_Services(t *testing.T) {
 		},
 		"services and err": {
 			Services: []brokerapi.Service{
-				brokerapi.Service{Name: "foo", Metadata: &brokerapi.ServiceMetadata{}},
-				brokerapi.Service{Name: "bar", Metadata: &brokerapi.ServiceMetadata{}},
+				{Name: "foo", Metadata: &brokerapi.ServiceMetadata{}},
+				{Name: "bar", Metadata: &brokerapi.ServiceMetadata{}},
 			},
 			Error: errors.New("returned error"),
 		},

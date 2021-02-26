@@ -225,7 +225,7 @@ func TestRegistrar_walk(t *testing.T) {
 				},
 			},
 			Expected: map[string]map[string]interface{}{
-				"example": map[string]interface{}{},
+				"example": {},
 			},
 		},
 		"server-config": {
@@ -236,7 +236,7 @@ func TestRegistrar_walk(t *testing.T) {
 				},
 			},
 			Expected: map[string]map[string]interface{}{
-				"example": map[string]interface{}{"foo": "bar"},
+				"example": {"foo": "bar"},
 			},
 		},
 		"override": {
@@ -247,7 +247,7 @@ func TestRegistrar_walk(t *testing.T) {
 				},
 			},
 			Expected: map[string]map[string]interface{}{
-				"example": map[string]interface{}{"foo": "bazz"},
+				"example": {"foo": "bazz"},
 			},
 		},
 		"additive configs": {
@@ -258,7 +258,7 @@ func TestRegistrar_walk(t *testing.T) {
 				},
 			},
 			Expected: map[string]map[string]interface{}{
-				"example": map[string]interface{}{"foo": "bar", "bar": "bazz"},
+				"example": {"foo": "bar", "bar": "bazz"},
 			},
 		},
 	}

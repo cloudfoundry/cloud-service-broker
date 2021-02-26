@@ -94,7 +94,7 @@ fmt: ## Checks that the code is formatted correctly
 
 .PHONY: format  ## format the source
 format:
-	gofmt -d -e -l -w .
+	gofmt -s -e -l -w .
 	git ls-files | grep '.go$$' | xargs go run golang.org/x/tools/cmd/goimports -l -w
 
 ###### Image ##################################################################
