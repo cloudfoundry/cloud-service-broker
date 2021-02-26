@@ -82,7 +82,19 @@ clean: deps-go-binary  ## clean up from previous builds
 ###### Lint ###################################################################
 
 .PHONY: lint  ## lint the source
-lint:
+lint: fmt
+
+fmt: ## Checks that the code is formatted correctly
+	@@if [ -n "$$(gofmt -s -e -l -d .)" ]; then       \
+		echo "gofmt check failed: run 'make format'"; \
+		exit 1;                                       \
+	fi
+
+###### Format #################################################################
+
+.PHONY: format  ## format the source
+format:
+	gofmt -d -e -l -w .
 	git ls-files | grep '.go$$' | xargs go run golang.org/x/tools/cmd/goimports -l -w
 
 ###### Image ##################################################################
