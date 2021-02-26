@@ -203,11 +203,11 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 	pr, err := db_service.GetProvisionRequestDetailsByInstanceId(ctx, instanceID)
 	if err != nil {
 		return response, fmt.Errorf("updating non-existent instanceid: %v", instanceID)
-	}	
+	}
 
 	provisionDetails := brokerapi.ProvisionDetails{
-		ServiceID: details.ServiceID,
-		PlanID: details.PlanID,
+		ServiceID:     details.ServiceID,
+		PlanID:        details.PlanID,
 		RawParameters: json.RawMessage(pr.RequestDetails),
 	}
 
@@ -216,7 +216,7 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 	vars, err := brokerService.ProvisionVariables(instanceID, provisionDetails, *plan)
 	if err != nil {
 		return response, err
-	}	
+	}
 
 	operationId, err := serviceProvider.Deprovision(ctx, *instance, details, vars)
 	if err != nil {
@@ -425,13 +425,13 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	pr, err := db_service.GetProvisionRequestDetailsByInstanceId(ctx, instanceID)
 	if err != nil {
 		return brokerapi.UnbindSpec{}, fmt.Errorf("updating non-existent instanceid: %v", instanceID)
-	}	
+	}
 
 	// validate parameters meet the service's schema and merge the plan's vars with
 	// the user's
 	bindDetails := brokerapi.BindDetails{
-		PlanID: details.PlanID,
-		ServiceID: details.ServiceID,
+		PlanID:        details.PlanID,
+		ServiceID:     details.ServiceID,
 		RawParameters: json.RawMessage(pr.RequestDetails),
 	}
 
@@ -455,7 +455,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 
 		err := broker.Credstore.Delete(credentialName)
 		if err != nil {
-			return  brokerapi.UnbindSpec{}, err
+			return brokerapi.UnbindSpec{}, err
 		}
 	}
 
@@ -587,7 +587,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return response, ErrInvalidUserInput
 	}
 
-	allowUpdate, err := brokerService.AllowedUpdate(details); 
+	allowUpdate, err := brokerService.AllowedUpdate(details)
 
 	if err != nil {
 		return response, err
@@ -601,7 +601,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	if err != nil {
 		return response, fmt.Errorf("updating non-existent instanceid: %v", instanceID)
 	}
-	
+
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
 	vars, err := brokerService.UpdateVariables(instanceID, details, json.RawMessage(pr.RequestDetails), *plan)

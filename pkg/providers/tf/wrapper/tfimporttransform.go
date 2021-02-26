@@ -24,15 +24,15 @@ import (
 
 // ParameterMapping mapping for tf variable to service parameter
 type ParameterMapping struct {
-	TfVariable string `yaml:"tf_variable"`
+	TfVariable    string `yaml:"tf_variable"`
 	ParameterName string `yaml:"parameter_name"`
 }
 
-// TfTransformer terraform transformation 
+// TfTransformer terraform transformation
 type TfTransformer struct {
-	ParameterMappings []ParameterMapping `json:"parameter_mappings"`
-	ParametersToRemove []string			 `json:"parameters_to_remove"`
-	ParametersToAdd []ParameterMapping   `json:"parameters_to_add"`
+	ParameterMappings  []ParameterMapping `json:"parameter_mappings"`
+	ParametersToRemove []string           `json:"parameters_to_remove"`
+	ParametersToAdd    []ParameterMapping `json:"parameters_to_add"`
 }
 
 func braceCount(str string, count int) int {
@@ -41,9 +41,9 @@ func braceCount(str string, count int) int {
 
 // CleanTf removes ttf.ParametersToRemove from tf string
 func (ttf *TfTransformer) CleanTf(tf string) string {
-	resource := regexp.MustCompile(`resource "(.*)" "(.*)"` )
+	resource := regexp.MustCompile(`resource "(.*)" "(.*)"`)
 	value := regexp.MustCompile(`^[\s]*([^\s]*)[\s]*=[\s]*(.*)[\s]*$`)
-	block := regexp.MustCompile(`^[\s]*([^\s]*)[\s]*{[\s]*$`)		
+	block := regexp.MustCompile(`^[\s]*([^\s]*)[\s]*{[\s]*$`)
 	depth := 0
 	blockStack := make([]string, 64)
 	scanner := bufio.NewScanner(strings.NewReader(tf))
@@ -58,7 +58,7 @@ func (ttf *TfTransformer) CleanTf(tf string) string {
 		if depth < skipBlockDepth {
 			skipBlockDepth = 0
 		}
-		
+
 		if res := resource.FindStringSubmatch(line); res != nil {
 			blockStack[depth] = fmt.Sprintf("%s.%s", res[1], res[2])
 		} else if res = value.FindStringSubmatch(line); res != nil {
@@ -80,7 +80,7 @@ func (ttf *TfTransformer) CleanTf(tf string) string {
 		}
 		if !skipLine {
 			buffer.WriteString(fmt.Sprintf("%s\n", line))
-		}		
+		}
 	}
 	return buffer.String()
 }
@@ -102,11 +102,11 @@ func (ttf *TfTransformer) captureParameterValues(tf string) (map[string]string, 
 			}
 		}
 	}
-	
+
 	return parameterValues, nil
 }
 
-func (ttf *TfTransformer) replaceParameters(tf string) string {	
+func (ttf *TfTransformer) replaceParameters(tf string) string {
 	for _, mapping := range ttf.ParameterMappings {
 		reBlock := regexp.MustCompile(fmt.Sprintf(`(?m)%s[\s]*=[\s]+{[\s\S.]*?}`, mapping.TfVariable))
 		tf = reBlock.ReplaceAllString(tf, fmt.Sprintf("%s = %s", mapping.TfVariable, mapping.ParameterName))
@@ -115,7 +115,7 @@ func (ttf *TfTransformer) replaceParameters(tf string) string {
 		reSimple := regexp.MustCompile(fmt.Sprintf(`(?m)%s[\s]*=.*$`, mapping.TfVariable))
 		tf = reSimple.ReplaceAllString(tf, fmt.Sprintf("%s = %s", mapping.TfVariable, mapping.ParameterName))
 	}
-	
+
 	return tf
 }
 
@@ -124,17 +124,17 @@ func (ttf *TfTransformer) ReplaceParametersInTf(tf string) (string, map[string]s
 	parameterValues, err := ttf.captureParameterValues(tf)
 
 	if err == nil {
-		tf = ttf.replaceParameters(tf) 
+		tf = ttf.replaceParameters(tf)
 	}
 	return tf, parameterValues, err
 }
 
 func (ttf *TfTransformer) AddParametersInTf(tf string) string {
-	resource := regexp.MustCompile(`resource "(.*)" "(.*)"` )
+	resource := regexp.MustCompile(`resource "(.*)" "(.*)"`)
 	scanner := bufio.NewScanner(strings.NewReader(tf))
 	buffer := bytes.Buffer{}
 	depth := 0
-	blockStack := make([]string, 64)	
+	blockStack := make([]string, 64)
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -149,9 +149,9 @@ func (ttf *TfTransformer) AddParametersInTf(tf string) string {
 				if additionPrefix == blockStack[depth] {
 					buffer.WriteString(fmt.Sprintf("%s = %s\n", addition.TfVariable[strings.LastIndex(addition.TfVariable, ".")+1:], addition.ParameterName))
 				}
-			} 
-		} else {	
-			buffer.WriteString(fmt.Sprintf("%s\n", line))		
+			}
+		} else {
+			buffer.WriteString(fmt.Sprintf("%s\n", line))
 		}
 	}
 

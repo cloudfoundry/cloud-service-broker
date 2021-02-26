@@ -19,12 +19,12 @@ import (
 )
 
 const (
-	credhubURL = "credhub.url"
-	credhubUaaURL = "credhub.uaa_url"
-	credhubUaaClientName = "credhub.uaa_client_name"
-	credhubUaaClientSecret = "credhub.uaa_client_secret"
-	credhubSkipSSLValidation = "credhub.skip_ssl_validation"
-	credhubCaCertFile = "credhub.ca_cert_file"
+	credhubURL                  = "credhub.url"
+	credhubUaaURL               = "credhub.uaa_url"
+	credhubUaaClientName        = "credhub.uaa_client_name"
+	credhubUaaClientSecret      = "credhub.uaa_client_secret"
+	credhubSkipSSLValidation    = "credhub.skip_ssl_validation"
+	credhubCaCertFile           = "credhub.ca_cert_file"
 	credhubStoreBindCredentials = "credhub.store_bind_credentials"
 )
 
@@ -39,7 +39,7 @@ type CredStoreConfig struct {
 }
 
 type Config struct {
-	CredStoreConfig     CredStoreConfig `mapstructure:"credhub"`
+	CredStoreConfig CredStoreConfig `mapstructure:"credhub"`
 }
 
 func Parse() (*Config, error) {
@@ -63,5 +63,3 @@ func Parse() (*Config, error) {
 func (c *CredStoreConfig) HasCredHubConfig() bool {
 	return c.CredHubURL != ""
 }
-
-

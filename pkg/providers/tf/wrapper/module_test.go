@@ -19,13 +19,13 @@ import (
 	"testing"
 )
 
-func compareStringArrays( a1, a2 []string) bool {
+func compareStringArrays(a1, a2 []string) bool {
 	if len(a1) != len(a2) {
 		return false
 	}
 	for n := range a1 {
 		if a1[n] != a2[n] {
-			return false 
+			return false
 		}
 	}
 	return true
@@ -49,7 +49,7 @@ func TestModuleDefinition_Inputs(t *testing.T) {
 		    }
 		`,
 			},
-			Inputs: []string{ "name", "storage_class" },
+			Inputs: []string{"name", "storage_class"},
 		},
 		"definitions": {
 			Module: ModuleDefinition{
@@ -59,12 +59,12 @@ func TestModuleDefinition_Inputs(t *testing.T) {
 			      name     = "${var.name}"
 			      storage_class = "${var.storage_class}"
 			    }`,
-				Definitions: map[string]string{ "variables": `
+				Definitions: map[string]string{"variables": `
 				    variable name {type = "string"}
 					variable storage_class {type = "string"}
-				`,},
+				`},
 			},
-			Inputs: []string{ "name", "storage_class" },
+			Inputs: []string{"name", "storage_class"},
 		},
 	}
 
@@ -83,7 +83,7 @@ func TestModuleDefinition_Inputs(t *testing.T) {
 
 func TestModuleDefinition_Outputs(t *testing.T) {
 	cases := map[string]struct {
-		Module ModuleDefinition
+		Module  ModuleDefinition
 		Outputs []string
 	}{
 		"definition": {
@@ -109,10 +109,10 @@ func TestModuleDefinition_Outputs(t *testing.T) {
 		      name     = "my-bucket"
 		      storage_class = "STANDARD"
 			}`,
-				Definitions: map[string]string{ "outputs": `
+				Definitions: map[string]string{"outputs": `
 			    output id {value = "${google_storage_bucket.bucket.id}"}
 				output bucket_name {value = "my-bucket"}
-				`,},
+				`},
 			},
 			Outputs: []string{"bucket_name", "id"},
 		},
@@ -170,21 +170,21 @@ func TestModuleDefinition_Validate(t *testing.T) {
 		"nominal-definitions": {
 			Module: ModuleDefinition{
 				Name: "my_module",
-				Definitions: map[string]string{ "main": `
+				Definitions: map[string]string{"main": `
           resource "google_storage_bucket" "bucket" {
             name     = "my-bucket"
             storage_class = "STANDARD"
-          }`, },
+          }`},
 			},
 			ErrContains: "",
 		},
 		"bad-hcl-definitions": {
 			Module: ModuleDefinition{
 				Name: "my_module",
-				Definitions: map[string]string{ "main": `
+				Definitions: map[string]string{"main": `
           resource "bucket" {
 			name     = "my-bucket"`,
-		  },
+				},
 			},
 			ErrContains: "invalid HCL: Definitions[main]",
 		},

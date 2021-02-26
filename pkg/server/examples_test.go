@@ -22,7 +22,7 @@ func TestNewExampleHandler(t *testing.T) {
 
 	// save in case we want to test examples on brokerpak
 	//
-	
+
 	// // Validate that the handler returns the correct Content-Type
 	// handler := NewExampleHandler(builtin.BuiltinBrokerRegistry())
 	// request := httptest.NewRequest(http.MethodGet, "/examples", nil)

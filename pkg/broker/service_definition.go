@@ -368,10 +368,10 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 // For example, to create a default database name based on a user-provided instance name.
 // Therefore, they get executed conditionally if a user-provided variable does not exist.
 // Computed variables get executed either unconditionally or conditionally for greater flexibility.
-func (svc *ServiceDefinition) variables( constants map[string]interface{}, 
-										 rawProvisionParameters json.RawMessage, 
-										 rawUpdateParameters json.RawMessage,
-										 plan ServicePlan) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) variables(constants map[string]interface{},
+	rawProvisionParameters json.RawMessage,
+	rawUpdateParameters json.RawMessage,
+	plan ServicePlan) (*varcontext.VarContext, error) {
 	// The namespaces of these values roughly align with the OSB spec.
 	// constants := map[string]interface{}{
 	// 	"request.plan_id":        details.PlanID,
@@ -413,7 +413,7 @@ func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details brok
 	return svc.variables(constants, details.GetRawParameters(), json.RawMessage("{}"), plan)
 }
 
-func (svc *ServiceDefinition) 	UpdateVariables(instanceId string, details brokerapi.UpdateDetails, provisionDetails json.RawMessage, plan ServicePlan) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) UpdateVariables(instanceId string, details brokerapi.UpdateDetails, provisionDetails json.RawMessage, plan ServicePlan) (*varcontext.VarContext, error) {
 	constants := map[string]interface{}{
 		"request.plan_id":        details.PlanID,
 		"request.service_id":     details.ServiceID,
@@ -504,7 +504,7 @@ func (svc *ServiceDefinition) AllowedUpdate(details brokerapi.UpdateDetails) (bo
 		if param.ProhibitUpdate {
 			if _, ok := out[param.FieldName]; ok {
 				return false, nil
-			} 
+			}
 		}
 	}
 	return true, nil

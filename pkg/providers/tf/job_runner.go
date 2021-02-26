@@ -56,7 +56,7 @@ func NewTfJobRunnerForProject(envVars map[string]string) *TfJobRunner {
 // The TfJobRunner keeps track of the workspace and the Terraform state file so
 // subsequent commands will operate on the same structure.
 type TfJobRunner struct {
-	// EnvVars is a list of environment variables that should be included in executor 
+	// EnvVars is a list of environment variables that should be included in executor
 	// env (usually Terraform provider credentials)
 	EnvVars map[string]string
 	// Executor holds a custom executor that will be called when commands are run.
@@ -119,7 +119,7 @@ func (runner *TfJobRunner) hydrateWorkspace(ctx context.Context, deployment *mod
 
 // ImportResource represents TF resource to IaaS resource ID mapping for import
 type ImportResource struct {
-	TfResource string
+	TfResource   string
 	IaaSResource string
 }
 
@@ -164,7 +164,7 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 
 				logger.Info("new workspace", lager.Data{
 					"workspace": workspace,
-					"tf": tf,
+					"tf":        tf,
 				})
 
 				err = workspace.Apply()
@@ -220,7 +220,7 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 	limitedConfig := make(map[string]interface{})
 	for _, name := range inputList {
 		limitedConfig[name] = templateVars[name]
-	}	
+	}
 
 	workspace.Instances[0].Configuration = limitedConfig
 
@@ -257,9 +257,9 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 	limitedConfig := make(map[string]interface{})
 	for _, name := range inputList {
 		limitedConfig[name] = templateVars[name]
-	}	
+	}
 
-	workspace.Instances[0].Configuration = limitedConfig	
+	workspace.Instances[0].Configuration = limitedConfig
 
 	if err := runner.markJobStarted(ctx, deployment, models.DeprovisionOperationType); err != nil {
 		return err

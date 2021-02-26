@@ -16,10 +16,11 @@ package db_service
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/spf13/viper"
 	"os"
 	"testing"
+
+	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 func ExampleUseVcapServices() {

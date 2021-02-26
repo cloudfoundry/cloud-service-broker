@@ -113,7 +113,6 @@ func (s *serviceStub) UpdateDetails() brokerapi.UpdateDetails {
 	}
 }
 
-
 // fakeService creates a ServiceDefinition with a mock ServiceProvider and
 // references to some important properties.
 func fakeService(t *testing.T, isAsync bool) *serviceStub {
@@ -168,7 +167,7 @@ func newStubbedBroker(t *testing.T, registry broker.BrokerRegistry, cs credstore
 	}
 
 	config := &BrokerConfig{
-		Registry: registry,
+		Registry:  registry,
 		Credstore: cs,
 	}
 
@@ -220,7 +219,7 @@ type BrokerEndpointTestCase struct {
 
 	// Check is used to validate the state of the world and is where you should
 	// put your test cases.
-	Check func(t *testing.T, broker *ServiceBroker, stub *serviceStub)
+	Check     func(t *testing.T, broker *ServiceBroker, stub *serviceStub)
 	Credstore credstore.CredStore
 }
 
@@ -473,12 +472,12 @@ func TestGCPServiceBroker_Bind(t *testing.T) {
 				failIfErr(t, "binding", err)
 				credMap, ok := bindResult.Credentials.(map[string]interface{})
 				assertTrue(t, "bind result credentials should be a map", ok)
-				assertTrue(t, "value foo missing", credMap["foo"] == nil)	
-				assertTrue(t, "cred-hub ref exists", credMap["credhub-ref"] != nil)	
-				assertEqual(t, "cred-hub ref has correct value", "/c/csb/google-storage/override-params/secrets-and-services", credMap["credhub-ref"].(string))		
+				assertTrue(t, "value foo missing", credMap["foo"] == nil)
+				assertTrue(t, "cred-hub ref exists", credMap["credhub-ref"] != nil)
+				assertEqual(t, "cred-hub ref has correct value", "/c/csb/google-storage/override-params/secrets-and-services", credMap["credhub-ref"].(string))
 			},
 			Credstore: &credstorefakes.FakeCredStore{},
-		},	
+		},
 	}
 
 	cases.Run(t)
@@ -655,7 +654,7 @@ func TestGCPServiceBroker_Update(t *testing.T) {
 
 				assertEqual(t, "expect update error to be instance does not exist", brokerapi.ErrInstanceDoesNotExist, err)
 			},
-		},		
+		},
 		"requires-async": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,
@@ -680,7 +679,7 @@ func TestGCPServiceBroker_Update(t *testing.T) {
 				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
 				assertEqual(t, "errors should match", ErrInvalidUserInput, err)
 			},
-		},		
+		},
 		"attempt-to-update-non-updatable-parameter": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,

@@ -18,7 +18,6 @@ import (
 	"testing"
 
 	"code.cloudfoundry.org/lager"
-
 )
 
 func TestNewBrokerConfigFromEnv(t *testing.T) {

@@ -26,8 +26,8 @@ import (
 )
 
 type BrokerConfig struct {
-	Registry   broker.BrokerRegistry
-	Credstore  credstore.CredStore
+	Registry  broker.BrokerRegistry
+	Credstore credstore.CredStore
 }
 
 func NewBrokerConfigFromEnv(logger lager.Logger) (*BrokerConfig, error) {
@@ -45,14 +45,14 @@ func NewBrokerConfigFromEnv(logger lager.Logger) (*BrokerConfig, error) {
 
 	if config.CredStoreConfig.HasCredHubConfig() {
 		var err error
-		cs, err = credstore.NewCredhubStore( &config.CredStoreConfig, logger )
+		cs, err = credstore.NewCredhubStore(&config.CredStoreConfig, logger)
 		if err != nil {
 			return nil, fmt.Errorf("Failed creating credstore: %v", err)
 		}
 	}
 
 	return &BrokerConfig{
-		Registry:   registry,
-		Credstore:  cs,
+		Registry:  registry,
+		Credstore: cs,
 	}, nil
 }
