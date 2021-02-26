@@ -462,7 +462,7 @@ Note that the order the variables are combined in code is slightly different.
 Moving default variables to be loaded third allow their computed values to make more sense.
 This is because they can resolve variables to the user's values first.
 
-#### Provision
+#### Provision/Deprovision
 
 * `request.service_id` - _string_ The GUID of the requested service.
 * `request.plan_id` - _string_ The ID of the requested plan. Plan IDs are unique within an instance.
@@ -471,8 +471,10 @@ This is because they can resolve variables to the user's values first.
    * `request.default_labels.pcf-organization-guid` - _string_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) `organization_guid`
    * `request.default_labels.pcf-space-guid` - _string_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) `space_guid`
    * `request.default_labels.pcf-instance-id` - _string_ Mapped from the ID of the requested instance. 
+* `request.context` - _map[string]any_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object).
+* `request.x_broker_api_originating_identity` - _map[string]any_ Mapped from [cloudfoundry `x_broker_api_originating_identity` header](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#originating-identity-header)
    
-#### Bind
+#### Bind/Unbind
 
 * `request.binding_id` - _string_ The ID of the new binding.
 * `request.instance_id` - _string_ The ID of the existing instance to bind to.

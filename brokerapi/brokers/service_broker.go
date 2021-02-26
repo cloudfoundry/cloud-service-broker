@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/request"
 	"net/http"
 
 	"encoding/json"
@@ -32,7 +33,7 @@ import (
 )
 
 var (
-	invalidUserInputMsg        = "User supplied paramaters must be in the form of a valid JSON map."
+	invalidUserInputMsg        = "User supplied parameters must be in the form of a valid JSON map."
 	ErrInvalidUserInput        = brokerapi.NewFailureResponse(errors.New(invalidUserInputMsg), http.StatusBadRequest, "parsing-user-request")
 	ErrGetInstancesUnsupported = brokerapi.NewFailureResponse(errors.New("the service_instances endpoint is unsupported"), http.StatusBadRequest, "unsupported")
 	ErrGetBindingsUnsupported  = brokerapi.NewFailureResponse(errors.New("the service_bindings endpoint is unsupported"), http.StatusBadRequest, "unsupported")
@@ -132,7 +133,7 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
-	vars, err := brokerService.ProvisionVariables(instanceID, details, *plan)
+	vars, err := brokerService.ProvisionVariables(instanceID, details, *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return brokerapi.ProvisionedServiceSpec{}, err
 	}
@@ -212,7 +213,7 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
-	vars, err := brokerService.ProvisionVariables(instanceID, provisionDetails, *plan)
+	vars, err := brokerService.ProvisionVariables(instanceID, provisionDetails, *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return response, err
 	}
@@ -634,3 +635,5 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 func isValidOrEmptyJSON(msg json.RawMessage) bool {
 	return msg == nil || len(msg) == 0 || json.Valid(msg)
 }
+
+
