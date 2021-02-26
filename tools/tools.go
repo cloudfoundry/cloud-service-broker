@@ -3,6 +3,7 @@
 package tools
 
 import (
+	_ "github.com/maxbrunsfeld/counterfeiter/v6"
 	_ "golang.org/x/tools/cmd/goimports"
 	_ "honnef.co/go/tools/cmd/staticcheck"
 )

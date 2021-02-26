@@ -29,7 +29,7 @@ import (
 	"code.cloudfoundry.org/lager"
 )
 
-//go:generate counterfeiter ./ CredStore
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 ./ CredStore
 type CredStore interface {
 	Put(key string, credentials interface{}) (interface{}, error)
 	PutValue(key string, credentials interface{}) (interface{}, error)

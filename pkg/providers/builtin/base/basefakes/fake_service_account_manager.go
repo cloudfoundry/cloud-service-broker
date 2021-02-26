@@ -2,12 +2,12 @@
 package basefakes
 
 import (
-	context "context"
-	sync "sync"
+	"context"
+	"sync"
 
-	models "github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	base "github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin/base"
-	varcontext "github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin/base"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 )
 
 type FakeServiceAccountManager struct {
@@ -48,15 +48,16 @@ func (fake *FakeServiceAccountManager) CreateCredentials(arg1 context.Context, a
 		arg1 context.Context
 		arg2 *varcontext.VarContext
 	}{arg1, arg2})
+	stub := fake.CreateCredentialsStub
+	fakeReturns := fake.createCredentialsReturns
 	fake.recordInvocation("CreateCredentials", []interface{}{arg1, arg2})
 	fake.createCredentialsMutex.Unlock()
-	if fake.CreateCredentialsStub != nil {
-		return fake.CreateCredentialsStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.createCredentialsReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
@@ -112,15 +113,16 @@ func (fake *FakeServiceAccountManager) DeleteCredentials(arg1 context.Context, a
 		arg1 context.Context
 		arg2 models.ServiceBindingCredentials
 	}{arg1, arg2})
+	stub := fake.DeleteCredentialsStub
+	fakeReturns := fake.deleteCredentialsReturns
 	fake.recordInvocation("DeleteCredentials", []interface{}{arg1, arg2})
 	fake.deleteCredentialsMutex.Unlock()
-	if fake.DeleteCredentialsStub != nil {
-		return fake.DeleteCredentialsStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.deleteCredentialsReturns
 	return fakeReturns.result1
 }
 
