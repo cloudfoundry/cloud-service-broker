@@ -206,7 +206,7 @@ func (PlanDetailsV1) TableName() string {
 
 // TerraformDeploymentV1 describes the state of a Terraform resource deployment.
 type TerraformDeploymentV1 struct {
-	ID        string `gorm:"primary_key",sql:"type:varchar(1024)"`
+	ID        string `gorm:"primary_key" sql:"type:varchar(1024)"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time
@@ -236,7 +236,7 @@ func (TerraformDeploymentV1) TableName() string {
 // Terraform workspace is greater than 64K. (mediumtext allows for workspaces up
 // to 16384K.)
 type TerraformDeploymentV2 struct {
-	ID        string `gorm:"primary_key",sql:"type:varchar(1024)"`
+	ID        string `gorm:"primary_key" sql:"type:varchar(1024)"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time

@@ -9,7 +9,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 )
 
-func ExampleGetAllCompleteServiceExamples_jsonSpec() {
+func ExampleCompleteServiceExample_jsonSpec() {
 
 	allExamples := []CompleteServiceExample{
 		{

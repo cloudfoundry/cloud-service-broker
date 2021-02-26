@@ -104,10 +104,10 @@ func RunExamplesFromFile(client *Client, fileName, serviceName, exampleName stri
 }
 
 type CompleteServiceExample struct {
-	broker.ServiceExample `json: ",inline"`
-	ServiceName           string                 `json: "service_name"`
-	ServiceId             string                 `json: "service_id"`
-	ExpectedOutput        map[string]interface{} `json: "expected_output"`
+	broker.ServiceExample `json:",inline"`
+	ServiceName           string                 `json:"service_name"`
+	ServiceId             string                 `json:"service_id"`
+	ExpectedOutput        map[string]interface{} `json:"expected_output"`
 }
 
 func GetExamplesForAService(service *broker.ServiceDefinition) ([]CompleteServiceExample, error) {

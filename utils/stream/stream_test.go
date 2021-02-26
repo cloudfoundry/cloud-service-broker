@@ -92,7 +92,7 @@ func TestCopy(t *testing.T) {
 	}
 }
 
-func ExampleYaml() {
+func ExampleCopy_yaml() {
 	type Test struct {
 		Str string `yaml:"s"`
 		Num int    `yaml:"i"`
@@ -111,7 +111,7 @@ func ExampleYaml() {
 	// Output: stream.Test{Str:"foo", Num:42}
 }
 
-func ExampleFile() {
+func ExampleCopy_file() {
 	td, err := ioutil.TempDir("", "test")
 	if err != nil {
 		panic(err)
@@ -137,7 +137,7 @@ func ExampleMultiCloser() {
 	// Output: closed: <nil>
 }
 
-func ExampleMultiCloser_Error() {
+func ExampleMultiCloser_error() {
 	var mc MultiCloser
 
 	closer := errWriteCloser{nil, errors.New("example close error")}
