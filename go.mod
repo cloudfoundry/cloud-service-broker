@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go v1.25.3 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e // indirect
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
-	github.com/go-sql-driver/mysql v1.4.0
+	github.com/go-sql-driver/mysql v1.5.0
 	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-getter v1.4.2-0.20200106182914-9813cbd4eb02
@@ -34,7 +34,6 @@ require (
 	github.com/pivotal-cf/brokerapi/v7 v7.5.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.1.1-0.20190813114604-4efc3ccc7a66 // indirect
-	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4 // indirect
 	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d
 	github.com/russross/blackfriday v1.5.2
 	github.com/spf13/afero v1.2.1 // indirect
