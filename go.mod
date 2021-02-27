@@ -3,7 +3,7 @@ module github.com/cloudfoundry-incubator/cloud-service-broker
 go 1.14
 
 require (
-	cloud.google.com/go/storage v1.0.0
+	cloud.google.com/go/storage v1.10.0
 	code.cloudfoundry.org/credhub-cli v0.0.0-20200325195429-1faf152db5a4
 	code.cloudfoundry.org/lager v1.1.1-0.20191008172124-a9afc05ee5be
 	github.com/agext/levenshtein v1.2.2 // indirect
@@ -12,7 +12,6 @@ require (
 	github.com/erikstmartin/go-testdb v0.0.0-20160219214506-8d10e4a1bae5 // indirect
 	github.com/go-sql-driver/mysql v1.4.0
 	github.com/go-yaml/yaml v2.1.0+incompatible
-	github.com/google/uuid v1.1.1 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-getter v1.4.2-0.20200106182914-9813cbd4eb02
 	github.com/hashicorp/go-multierror v1.1.0
@@ -46,11 +45,10 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v0.0.0-20180816142147-da425ebb7609
 	github.com/zclconf/go-cty v1.2.1 // indirect
-	golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	golang.org/x/tools v0.0.0-20201224043029-2b0845dc783e
-	google.golang.org/api v0.13.0
-	google.golang.org/grpc v1.23.1 // indirect
+	golang.org/x/net v0.0.0-20201209123823-ac852fbbde11
+	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5
+	golang.org/x/tools v0.0.0-20210105154028-b0ab187a4818
+	google.golang.org/api v0.40.0
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.4.0
