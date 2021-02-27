@@ -3,7 +3,7 @@ module github.com/cloudfoundry-incubator/cloud-service-broker
 go 1.14
 
 require (
-	cloud.google.com/go v0.46.3
+	cloud.google.com/go/storage v1.0.0
 	code.cloudfoundry.org/credhub-cli v0.0.0-20200325195429-1faf152db5a4
 	code.cloudfoundry.org/lager v1.1.1-0.20191008172124-a9afc05ee5be
 	github.com/agext/levenshtein v1.2.2 // indirect
@@ -14,10 +14,8 @@ require (
 	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/gorilla/mux v1.8.0
-	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
 	github.com/hashicorp/go-getter v1.4.2-0.20200106182914-9813cbd4eb02
 	github.com/hashicorp/go-multierror v1.1.0
-	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl2 v0.0.0-20191002203319-fb75b3253c80
 	github.com/hashicorp/hil v0.0.0-20190212132231-97b3a9cdfa93
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
@@ -34,7 +32,6 @@ require (
 	github.com/onsi/ginkgo v1.15.0
 	github.com/onsi/gomega v1.10.5
 	github.com/pborman/uuid v1.2.0 // indirect
-	github.com/pelletier/go-toml v1.2.0 // indirect
 	github.com/pivotal-cf/brokerapi/v7 v7.5.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.1.1-0.20190813114604-4efc3ccc7a66 // indirect
@@ -44,7 +41,6 @@ require (
 	github.com/spf13/afero v1.2.1 // indirect
 	github.com/spf13/cast v1.3.0
 	github.com/spf13/cobra v0.0.3
-	github.com/spf13/pflag v1.0.3 // indirect
 	github.com/spf13/viper v1.7.1
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
