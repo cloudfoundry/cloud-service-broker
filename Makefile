@@ -93,12 +93,18 @@ clean: deps-go-binary ## clean up from previous builds
 ###### Lint ###################################################################
 
 .PHONY: lint ## lint the source
-lint: fmt vet staticcheck
+lint: checkformat checkimports vet staticcheck
 
-fmt: ## Checks that the code is formatted correctly
+checkformat: ## Checks that the code is formatted correctly
 	@@if [ -n "$$(gofmt -s -e -l -d .)" ]; then       \
 		echo "gofmt check failed: run 'make format'"; \
 		exit 1;                                       \
+	fi
+
+checkimports: ## Checks that imports are formatted correctly
+	@@if [ -n "$$(${GO} run golang.org/x/tools/cmd/goimports -l -d .)" ]; then \
+		echo "goimports check failed: run 'make format'";                      \
+		exit 1;                                                                \
 	fi
 
 vet: ## Runs go vet
@@ -112,7 +118,7 @@ staticcheck: ## Runs staticcheck
 .PHONY: format ## format the source
 format:
 	gofmt -s -e -l -w .
-	git ls-files | grep '.go$$' | xargs ${GO} run golang.org/x/tools/cmd/goimports -l -w
+	${GO} run golang.org/x/tools/cmd/goimports -l -w .
 
 ###### Image ##################################################################
 
