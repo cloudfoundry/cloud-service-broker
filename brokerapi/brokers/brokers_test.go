@@ -374,7 +374,7 @@ func TestGCPServiceBroker_Deprovision(t *testing.T) {
 				failIfErr(t, "deprovisioning", err)
 
 				assertEqual(t, "deprovision calls should match", 1, stub.Provider.DeprovisionCallCount())
-				_, _, _,actualVarContext := stub.Provider.DeprovisionArgsForCall(0)
+				_, _, _, actualVarContext := stub.Provider.DeprovisionArgsForCall(0)
 				expectedOriginatingIdentityMap := `{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`
 
 				assertEqual(t, "originatingIdentity should match", expectedOriginatingIdentityMap, actualVarContext.GetString("originatingIdentity"))

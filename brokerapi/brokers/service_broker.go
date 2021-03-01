@@ -644,5 +644,3 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 func isValidOrEmptyJSON(msg json.RawMessage) bool {
 	return msg == nil || len(msg) == 0 || json.Valid(msg)
 }
-
-
