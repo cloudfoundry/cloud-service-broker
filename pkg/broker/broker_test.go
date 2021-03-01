@@ -347,7 +347,6 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 		OriginatingIdentity map[string]interface{}
 		// precedence order - lowest number should win
 		UserParams         string                 // 4
-		ProvisionComputedVariables 	[]varcontext.DefaultVariable // 7
 		ProvisionOverrides map[string]interface{} // 3
 		ServiceProperties  map[string]interface{} // 2
 		DefaultOverride    string                 // 5
@@ -802,6 +801,18 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 				Default:   `${request.plan_properties["service-property"]}`,
 				Overwrite: true,
 			},
+			{
+				Name:      "osb_context",
+				Default:   `${json.marshal(request.context)}`,
+				Overwrite: true,
+				Type:      "object",
+			},
+			{
+				Name:      "originatingIdentity",
+				Default:   `${json.marshal(request.x_broker_api_originating_identity)}`,
+				Overwrite: true,
+				Type:      "object",
+			},
 		},
 	}
 
@@ -812,6 +823,8 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 		ExpectedError   error
 		ExpectedContext map[string]interface{}
 		InstanceVars    string
+		RawContext string
+		OriginatingIdentity map[string]interface{}
 	}{
 		"empty": {
 			UserParams:   "",
@@ -821,6 +834,32 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 				"name":         "name-us",
 				"instance-foo": "",
 				"service-prop": "operator-set",
+				"osb_context": map[string]interface{}{},
+				"originatingIdentity": map[string]interface{}{},
+			},
+		},
+		"includes request context information": {
+			UserParams:        "",
+			RawContext:  `{"platform": "cloudfoundry", "organization_name": "acceptance"}`,
+			OriginatingIdentity:  map[string]interface{}{
+				"platform": "cloudfoundry",
+				"value": map[string]string{
+					"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360",
+				}},
+			InstanceVars: `{"foo":""}`,
+			ExpectedContext: map[string]interface{}{
+				"location":      "us",
+				"name":          "name-us",
+				"instance-foo": "",
+				"service-prop": "operator-set",
+				"osb_context": map[string]interface{}{
+					"platform": "cloudfoundry",
+					"organization_name": "acceptance",
+				},
+				"originatingIdentity": map[string]interface{}{
+					"platform": "cloudfoundry",
+					"value": map[string]interface{}{"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360"},
+				},
 			},
 		},
 		"location gets truncated": {
@@ -831,6 +870,8 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 				"name":         "name-averylonglocation",
 				"instance-foo": "default",
 				"service-prop": "operator-set",
+				"osb_context": map[string]interface{}{},
+				"originatingIdentity": map[string]interface{}{},
 			},
 		},
 		"user location and name": {
@@ -841,6 +882,8 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 				"name":         "foo",
 				"instance-foo": "default",
 				"service-prop": "operator-set",
+				"osb_context": map[string]interface{}{},
+				"originatingIdentity": map[string]interface{}{},
 			},
 		},
 		"operator defaults override computed defaults": {
@@ -852,6 +895,8 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 				"name":         "name-eu",
 				"instance-foo": "default",
 				"service-prop": "operator-set",
+				"osb_context": map[string]interface{}{},
+				"originatingIdentity": map[string]interface{}{},
 			},
 		},
 		"user values override operator defaults": {
@@ -863,6 +908,9 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 				"name":         "name-nz",
 				"instance-foo": "default",
 				"service-prop": "operator-set",
+				"osb_context": map[string]interface{}{},
+				"originatingIdentity": map[string]interface{}{},
+
 			},
 		},
 		"operator defaults are not evaluated": {
@@ -874,6 +922,8 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 				"name":         "foo-${location}",
 				"instance-foo": "default",
 				"service-prop": "operator-set",
+				"osb_context": map[string]interface{}{},
+				"originatingIdentity": map[string]interface{}{},
 			},
 		},
 		"instance info can get parsed": {
@@ -884,6 +934,8 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 				"name":         "name-us",
 				"instance-foo": "bar",
 				"service-prop": "operator-set",
+				"osb_context": map[string]interface{}{},
+				"originatingIdentity": map[string]interface{}{},
 			},
 		},
 		"invalid-request": {
@@ -900,6 +952,8 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 				"name":         "name-eu",
 				"instance-foo": "default",
 				"service-prop": "operator-set",
+				"osb_context": map[string]interface{}{},
+				"originatingIdentity": map[string]interface{}{},
 			},
 		},
 	}
@@ -909,10 +963,10 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 			viper.Set(service.BindDefaultOverrideProperty(), tc.DefaultOverride)
 			defer viper.Reset()
 
-			details := brokerapi.BindDetails{RawParameters: json.RawMessage(tc.UserParams)}
+			details := brokerapi.BindDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
 			instance := models.ServiceInstanceDetails{OtherDetails: tc.InstanceVars}
 			service.Plans[0].BindOverrides = tc.BindOverrides
-			vars, err := service.BindVariables(instance, "binding-id-here", details, &service.Plans[0])
+			vars, err := service.BindVariables(instance, "binding-id-here", details, &service.Plans[0], tc.OriginatingIdentity)
 
 			expectError(t, tc.ExpectedError, err)
 
