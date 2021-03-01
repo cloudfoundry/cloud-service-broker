@@ -20,11 +20,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"encoding/json"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/pivotal-cf/brokerapi/v7"
-	"google.golang.org/api/googleapi"
-
-	"encoding/json"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
@@ -498,14 +497,6 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 	done, message, err := serviceProvider.PollInstance(ctx, *instance)
 
 	if err != nil {
-		// this is a retryable error
-		if gerr, ok := err.(*googleapi.Error); ok {
-			if gerr.Code == 503 {
-				return brokerapi.LastOperation{State: brokerapi.InProgress, Description: err.Error()}, nil
-			}
-		}
-
-		// This is not a retryable error. Return fail
 		return brokerapi.LastOperation{State: brokerapi.Failed, Description: err.Error()}, nil
 	}
 

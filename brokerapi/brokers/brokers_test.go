@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"testing"
 
+	"code.cloudfoundry.org/lager"
 	. "github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/brokers"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
@@ -31,15 +32,11 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/credstore/credstorefakes"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin/base"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
-	"github.com/pivotal-cf/brokerapi/v7"
-	"google.golang.org/api/googleapi"
-
-	"code.cloudfoundry.org/lager"
-
 	"github.com/jinzhu/gorm"
+	"github.com/pborman/uuid"
+	"github.com/pivotal-cf/brokerapi/v7"
 )
 
 // InstanceState holds the lifecycle state of a provisioned service instance.
@@ -116,7 +113,18 @@ func (s *serviceStub) UpdateDetails() brokerapi.UpdateDetails {
 // fakeService creates a ServiceDefinition with a mock ServiceProvider and
 // references to some important properties.
 func fakeService(t *testing.T, isAsync bool) *serviceStub {
-	defn := storage.ServiceDefinition()
+	defn := &broker.ServiceDefinition{
+		Id:   uuid.New(),
+		Name: "fake-service-name",
+		Plans: []broker.ServicePlan{
+			{
+				ServicePlan: brokerapi.ServicePlan{
+					ID:   "fake-plan-id",
+					Name: "fake-plan-name",
+				},
+			},
+		},
+	}
 	svc, err := defn.CatalogEntry()
 	if err != nil {
 		t.Fatal(err)
@@ -272,7 +280,7 @@ func initService(t *testing.T, state InstanceState, broker *ServiceBroker, stub 
 	}
 }
 
-func TestGCPServiceBroker_Services(t *testing.T) {
+func TestServiceBroker_Services(t *testing.T) {
 	registry := builtin.BuiltinBrokerRegistry()
 	broker, closer := newStubbedBroker(t, registry, nil)
 	defer closer()
@@ -282,7 +290,7 @@ func TestGCPServiceBroker_Services(t *testing.T) {
 	assertEqual(t, "service count should be the same", len(registry), len(services))
 }
 
-func TestGCPServiceBroker_Provision(t *testing.T) {
+func TestServiceBroker_Provision(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"good-request": {
 			ServiceState: StateProvisioned,
@@ -339,7 +347,7 @@ func TestGCPServiceBroker_Provision(t *testing.T) {
 	cases.Run(t)
 }
 
-func TestGCPServiceBroker_Deprovision(t *testing.T) {
+func TestServiceBroker_Deprovision(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"good-request": {
 			ServiceState: StateProvisioned,
@@ -406,7 +414,7 @@ func TestGCPServiceBroker_Deprovision(t *testing.T) {
 	cases.Run(t)
 }
 
-func TestGCPServiceBroker_Bind(t *testing.T) {
+func TestServiceBroker_Bind(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"good-request": {
 			ServiceState: StateBound,
@@ -437,11 +445,12 @@ func TestGCPServiceBroker_Bind(t *testing.T) {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				req := stub.BindDetails()
-				req.RawParameters = json.RawMessage(`{"role":"project.admin"}`)
+				stub.Provider.BindStub = func(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error) {
+					return nil, errors.New("fake error")
+				}
 
-				expectedErr := "1 error(s) occurred: role: role must be one of the following: \"storage.objectAdmin\", \"storage.objectCreator\", \"storage.objectViewer\""
 				_, err := broker.Bind(context.Background(), fakeInstanceId, "bad-bind-call", req, true)
-				assertEqual(t, "errors should match", expectedErr, err.Error())
+				assertEqual(t, "errors should match", "fake error", err.Error())
 			},
 		},
 		"bad-request-json": {
@@ -474,7 +483,7 @@ func TestGCPServiceBroker_Bind(t *testing.T) {
 				assertTrue(t, "bind result credentials should be a map", ok)
 				assertTrue(t, "value foo missing", credMap["foo"] == nil)
 				assertTrue(t, "cred-hub ref exists", credMap["credhub-ref"] != nil)
-				assertEqual(t, "cred-hub ref has correct value", "/c/csb/google-storage/override-params/secrets-and-services", credMap["credhub-ref"].(string))
+				assertEqual(t, "cred-hub ref has correct value", "/c/csb/fake-service-name/override-params/secrets-and-services", credMap["credhub-ref"].(string))
 			},
 			Credstore: &credstorefakes.FakeCredStore{},
 		},
@@ -483,7 +492,7 @@ func TestGCPServiceBroker_Bind(t *testing.T) {
 	cases.Run(t)
 }
 
-func TestGCPServiceBroker_Unbind(t *testing.T) {
+func TestServiceBroker_Unbind(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"good-request": {
 			ServiceState: StateBound,
@@ -515,7 +524,7 @@ func TestGCPServiceBroker_Unbind(t *testing.T) {
 	cases.Run(t)
 }
 
-func TestGCPServiceBroker_LastOperation(t *testing.T) {
+func TestServiceBroker_LastOperation(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"missing-instance": {
 			ServiceState: StateProvisioned,
@@ -539,17 +548,6 @@ func TestGCPServiceBroker_LastOperation(t *testing.T) {
 				failIfErr(t, "shouldn't be called on async service", err)
 
 				assertEqual(t, "PollInstanceCallCount should match", 1, stub.Provider.PollInstanceCallCount())
-			},
-		},
-		"poll-returns-retryable-error": {
-			AsyncService: true,
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
-				stub.Provider.PollInstanceReturns(false, "", &googleapi.Error{Code: 503})
-				status, err := broker.LastOperation(context.Background(), fakeInstanceId, brokerapi.PollDetails{OperationData: "operationtoken"})
-				failIfErr(t, "checking last operation", err)
-				assertEqual(t, "retryable errors should result in in-progress state", brokerapi.InProgress, status.State)
-				assertEqual(t, "description should be error string", "googleapi: got HTTP response code 503 with body: ", status.Description)
 			},
 		},
 		"poll-returns-failure": {
@@ -589,7 +587,7 @@ func TestGCPServiceBroker_LastOperation(t *testing.T) {
 	cases.Run(t)
 }
 
-func TestGCPServiceBroker_GetBinding(t *testing.T) {
+func TestServiceBroker_GetBinding(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"called-on-bound": {
 			ServiceState: StateBound,
@@ -604,7 +602,7 @@ func TestGCPServiceBroker_GetBinding(t *testing.T) {
 	cases.Run(t)
 }
 
-func TestGCPServiceBroker_GetInstance(t *testing.T) {
+func TestServiceBroker_GetInstance(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"called-while-provisioned": {
 			ServiceState: StateProvisioned,
@@ -619,7 +617,7 @@ func TestGCPServiceBroker_GetInstance(t *testing.T) {
 	cases.Run(t)
 }
 
-func TestGCPServiceBroker_LastBindingOperation(t *testing.T) {
+func TestServiceBroker_LastBindingOperation(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"called-while-bound": {
 			ServiceState: StateProvisioned,
@@ -635,7 +633,7 @@ func TestGCPServiceBroker_LastBindingOperation(t *testing.T) {
 	cases.Run(t)
 }
 
-func TestGCPServiceBroker_Update(t *testing.T) {
+func TestServiceBroker_Update(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"good-request": {
 			ServiceState: StateProvisioned,
@@ -685,7 +683,10 @@ func TestGCPServiceBroker_Update(t *testing.T) {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				req := stub.UpdateDetails()
-				req.RawParameters = json.RawMessage(`{"location":"new-location"}`)
+				stub.Provider.UpdateStub = func(ctx context.Context, varContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+					return models.ServiceInstanceDetails{}, ErrNonUpdatableParameter
+				}
+
 				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
 				assertEqual(t, "errors should match", ErrNonUpdatableParameter, err)
 			},
