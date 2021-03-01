@@ -343,7 +343,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		RawContext string
+		RawContext          string
 		OriginatingIdentity map[string]interface{}
 		// precedence order - lowest number should win
 		UserParams         string                 // 4
@@ -358,17 +358,17 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			UserParams:        "",
 			ServiceProperties: map[string]interface{}{},
 			ExpectedContext: map[string]interface{}{
-				"location":      "us",
-				"name":          "name-us",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "us",
+				"name":                "name-us",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
 		"includes request context information": {
-			UserParams:        "",
-			RawContext:  `{"platform": "cloudfoundry", "organization_name": "acceptance"}`,
-			OriginatingIdentity:  map[string]interface{}{
+			UserParams: "",
+			RawContext: `{"platform": "cloudfoundry", "organization_name": "acceptance"}`,
+			OriginatingIdentity: map[string]interface{}{
 				"platform": "cloudfoundry",
 				"value": map[string]string{
 					"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360",
@@ -379,12 +379,12 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 				"name":          "name-us",
 				"maybe-missing": "default",
 				"osb_context": map[string]interface{}{
-					"platform": "cloudfoundry",
+					"platform":          "cloudfoundry",
 					"organization_name": "acceptance",
-				 },
+				},
 				"originatingIdentity": map[string]interface{}{
 					"platform": "cloudfoundry",
-					"value": map[string]interface{}{"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360"},
+					"value":    map[string]interface{}{"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360"},
 				},
 			},
 		},
@@ -392,10 +392,10 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			ServiceProperties: map[string]interface{}{"maybe-missing": "custom"}, // 2
 			UserParams:        "",                                                // 4
 			ExpectedContext: map[string]interface{}{
-				"location":      "us",
-				"name":          "name-us",
-				"maybe-missing": "custom",
-				"osb_context": map[string]interface{}{},
+				"location":            "us",
+				"name":                "name-us",
+				"maybe-missing":       "custom",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -403,10 +403,10 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			ServiceProperties: map[string]interface{}{},            // 2
 			UserParams:        `{"location": "averylonglocation"}`, // 4
 			ExpectedContext: map[string]interface{}{
-				"location":      "averylongl",
-				"name":          "name-averylonglocation",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "averylongl",
+				"name":                "name-averylonglocation",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -414,10 +414,10 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			ServiceProperties: map[string]interface{}{},           // 2
 			UserParams:        `{"location": "eu", "name":"foo"}`, // 4
 			ExpectedContext: map[string]interface{}{
-				"location":      "eu",
-				"name":          "foo",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "eu",
+				"name":                "foo",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -425,11 +425,11 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			ServiceProperties: map[string]interface{}{"service-provided": "custom"},          // 2
 			UserParams:        `{"location": "eu", "name":"foo", "service-provided":"test"}`, // 4
 			ExpectedContext: map[string]interface{}{
-				"location":         "eu",
-				"name":             "foo",
-				"maybe-missing":    "default",
-				"service-provided": "custom",
-				"osb_context": map[string]interface{}{},
+				"location":            "eu",
+				"name":                "foo",
+				"maybe-missing":       "default",
+				"service-provided":    "custom",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -439,10 +439,10 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			DefaultOverride:   `{"location":"eu"}`,      // 5
 			GlobalDefaults:    `{"location":"az"}`,      // 6
 			ExpectedContext: map[string]interface{}{
-				"location":      "eu",
-				"name":          "name-eu",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "eu",
+				"name":                "name-eu",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -452,10 +452,10 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			DefaultOverride:   `{"location":"eu"}`,      // 5
 			GlobalDefaults:    "{}",
 			ExpectedContext: map[string]interface{}{
-				"location":      "nz",
-				"name":          "name-nz",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "nz",
+				"name":                "name-nz",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -465,10 +465,10 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			DefaultOverride:   `{"name":"foo-${location}"}`, // 5
 			GlobalDefaults:    "{}",
 			ExpectedContext: map[string]interface{}{
-				"location":      "us",
-				"name":          "foo-${location}",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "us",
+				"name":                "foo-${location}",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -483,10 +483,10 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			DefaultOverride:    "{}",                                     // 5
 			GlobalDefaults:     `{"location":"az"}`,                      // 6
 			ExpectedContext: map[string]interface{}{
-				"location":      "eu",
-				"name":          "name-eu",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "eu",
+				"name":                "name-eu",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -497,10 +497,10 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			DefaultOverride:    "{}",                     // 5
 			GlobalDefaults:     `{"location":"az"}`,      // 6
 			ExpectedContext: map[string]interface{}{
-				"location":      "az",
-				"name":          "name-az",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "az",
+				"name":                "name-az",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -511,10 +511,10 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			DefaultOverride:    "{}",                     // 5
 			GlobalDefaults:     `{"location","az"}`,      // 6
 			ExpectedContext: map[string]interface{}{
-				"location":      "az",
-				"name":          "name-az",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "az",
+				"name":                "name-az",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 			ExpectedError: fmt.Errorf("Failed unmarshaling config value provision.defaults"),
@@ -593,7 +593,7 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		RawContext string
+		RawContext          string
 		OriginatingIdentity map[string]interface{}
 		// precedence order - lowest number should win
 		UserParams         string                 // 4
@@ -609,17 +609,17 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			UserParams:        "",
 			ServiceProperties: map[string]interface{}{},
 			ExpectedContext: map[string]interface{}{
-				"location":      "us",
-				"name":          "name-us",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "us",
+				"name":                "name-us",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
 		"includes request context information": {
-			UserParams:        "",
-			RawContext:  `{"platform": "cloudfoundry", "organization_name": "acceptance"}`,
-			OriginatingIdentity:  map[string]interface{}{
+			UserParams: "",
+			RawContext: `{"platform": "cloudfoundry", "organization_name": "acceptance"}`,
+			OriginatingIdentity: map[string]interface{}{
 				"platform": "cloudfoundry",
 				"value": map[string]string{
 					"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360",
@@ -630,12 +630,12 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 				"name":          "name-us",
 				"maybe-missing": "default",
 				"osb_context": map[string]interface{}{
-					"platform": "cloudfoundry",
+					"platform":          "cloudfoundry",
 					"organization_name": "acceptance",
 				},
 				"originatingIdentity": map[string]interface{}{
 					"platform": "cloudfoundry",
-					"value": map[string]interface{}{"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360"},
+					"value":    map[string]interface{}{"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360"},
 				},
 			},
 		},
@@ -643,10 +643,10 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			ServiceProperties: map[string]interface{}{"maybe-missing": "custom"}, // 2
 			UserParams:        "",                                                // 4
 			ExpectedContext: map[string]interface{}{
-				"location":      "us",
-				"name":          "name-us",
-				"maybe-missing": "custom",
-				"osb_context": map[string]interface{}{},
+				"location":            "us",
+				"name":                "name-us",
+				"maybe-missing":       "custom",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -654,10 +654,10 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			ServiceProperties: map[string]interface{}{},            // 2
 			UserParams:        `{"location": "averylonglocation"}`, // 4
 			ExpectedContext: map[string]interface{}{
-				"location":      "averylongl",
-				"name":          "name-averylonglocation",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "averylongl",
+				"name":                "name-averylonglocation",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -665,10 +665,10 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			ServiceProperties: map[string]interface{}{},           // 2
 			UserParams:        `{"location": "eu", "name":"foo"}`, // 4
 			ExpectedContext: map[string]interface{}{
-				"location":      "eu",
-				"name":          "foo",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "eu",
+				"name":                "foo",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -676,11 +676,11 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			ServiceProperties: map[string]interface{}{"service-provided": "custom"},          // 2
 			UserParams:        `{"location": "eu", "name":"foo", "service-provided":"test"}`, // 4
 			ExpectedContext: map[string]interface{}{
-				"location":         "eu",
-				"name":             "foo",
-				"maybe-missing":    "default",
-				"service-provided": "custom",
-				"osb_context": map[string]interface{}{},
+				"location":            "eu",
+				"name":                "foo",
+				"maybe-missing":       "default",
+				"service-provided":    "custom",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -690,10 +690,10 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			DefaultOverride:   `{"location":"eu"}`,      // 5
 			GlobalDefaults:    `{"location":"az"}`,      // 6
 			ExpectedContext: map[string]interface{}{
-				"location":      "eu",
-				"name":          "name-eu",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "eu",
+				"name":                "name-eu",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -703,10 +703,10 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			DefaultOverride:   `{"location":"eu"}`,      // 5
 			GlobalDefaults:    "{}",
 			ExpectedContext: map[string]interface{}{
-				"location":      "nz",
-				"name":          "name-nz",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "nz",
+				"name":                "name-nz",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -716,10 +716,10 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			DefaultOverride:   `{"name":"foo-${location}"}`, // 5
 			GlobalDefaults:    "{}",
 			ExpectedContext: map[string]interface{}{
-				"location":      "us",
-				"name":          "foo-${location}",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "us",
+				"name":                "foo-${location}",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -734,10 +734,10 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			DefaultOverride:    "{}",                                     // 5
 			GlobalDefaults:     `{"location":"az"}`,                      // 6
 			ExpectedContext: map[string]interface{}{
-				"location":      "eu",
-				"name":          "name-eu",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "eu",
+				"name":                "name-eu",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -748,10 +748,10 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			DefaultOverride:    "{}",                     // 5
 			GlobalDefaults:     `{"location":"az"}`,      // 6
 			ExpectedContext: map[string]interface{}{
-				"location":      "az",
-				"name":          "name-az",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "az",
+				"name":                "name-az",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -762,10 +762,10 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			DefaultOverride:    "{}",                     // 5
 			GlobalDefaults:     `{"location","az"}`,      // 6
 			ExpectedContext: map[string]interface{}{
-				"location":      "az",
-				"name":          "name-az",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "az",
+				"name":                "name-az",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 			ExpectedError: fmt.Errorf("Failed unmarshaling config value provision.defaults"),
@@ -774,10 +774,10 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			ServiceProperties: map[string]interface{}{},           // 2
 			ProvisionDetails:  `{"location": "eu", "name":"foo"}`, // 5
 			ExpectedContext: map[string]interface{}{
-				"location":      "eu",
-				"name":          "foo",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "eu",
+				"name":                "foo",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -786,10 +786,10 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			UserParams:        `{"name":"update"}`,                // 4
 			ProvisionDetails:  `{"location": "eu", "name":"foo"}`, // 5
 			ExpectedContext: map[string]interface{}{
-				"location":      "eu",
-				"name":          "update",
-				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{},
+				"location":            "eu",
+				"name":                "update",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -880,48 +880,48 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 	}
 
 	cases := map[string]struct {
-		UserParams      string
-		DefaultOverride string
-		BindOverrides   map[string]interface{}
-		ExpectedError   error
-		ExpectedContext map[string]interface{}
-		InstanceVars    string
-		RawContext string
+		UserParams          string
+		DefaultOverride     string
+		BindOverrides       map[string]interface{}
+		ExpectedError       error
+		ExpectedContext     map[string]interface{}
+		InstanceVars        string
+		RawContext          string
 		OriginatingIdentity map[string]interface{}
 	}{
 		"empty": {
 			UserParams:   "",
 			InstanceVars: `{"foo":""}`,
 			ExpectedContext: map[string]interface{}{
-				"location":     "us",
-				"name":         "name-us",
-				"instance-foo": "",
-				"service-prop": "operator-set",
-				"osb_context": map[string]interface{}{},
+				"location":            "us",
+				"name":                "name-us",
+				"instance-foo":        "",
+				"service-prop":        "operator-set",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
 		"includes request context information": {
-			UserParams:        "",
-			RawContext:  `{"platform": "cloudfoundry", "organization_name": "acceptance"}`,
-			OriginatingIdentity:  map[string]interface{}{
+			UserParams: "",
+			RawContext: `{"platform": "cloudfoundry", "organization_name": "acceptance"}`,
+			OriginatingIdentity: map[string]interface{}{
 				"platform": "cloudfoundry",
 				"value": map[string]string{
 					"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360",
 				}},
 			InstanceVars: `{"foo":""}`,
 			ExpectedContext: map[string]interface{}{
-				"location":      "us",
-				"name":          "name-us",
+				"location":     "us",
+				"name":         "name-us",
 				"instance-foo": "",
 				"service-prop": "operator-set",
 				"osb_context": map[string]interface{}{
-					"platform": "cloudfoundry",
+					"platform":          "cloudfoundry",
 					"organization_name": "acceptance",
 				},
 				"originatingIdentity": map[string]interface{}{
 					"platform": "cloudfoundry",
-					"value": map[string]interface{}{"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360"},
+					"value":    map[string]interface{}{"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360"},
 				},
 			},
 		},
@@ -929,11 +929,11 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 			UserParams:   `{"location": "averylonglocation"}`,
 			InstanceVars: `{"foo":"default"}`,
 			ExpectedContext: map[string]interface{}{
-				"location":     "averylongl",
-				"name":         "name-averylonglocation",
-				"instance-foo": "default",
-				"service-prop": "operator-set",
-				"osb_context": map[string]interface{}{},
+				"location":            "averylongl",
+				"name":                "name-averylonglocation",
+				"instance-foo":        "default",
+				"service-prop":        "operator-set",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -941,11 +941,11 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 			UserParams:   `{"location": "eu", "name":"foo"}`,
 			InstanceVars: `{"foo":"default"}`,
 			ExpectedContext: map[string]interface{}{
-				"location":     "eu",
-				"name":         "foo",
-				"instance-foo": "default",
-				"service-prop": "operator-set",
-				"osb_context": map[string]interface{}{},
+				"location":            "eu",
+				"name":                "foo",
+				"instance-foo":        "default",
+				"service-prop":        "operator-set",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -954,11 +954,11 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 			InstanceVars:    `{"foo":"default"}`,
 			DefaultOverride: `{"location":"eu"}`,
 			ExpectedContext: map[string]interface{}{
-				"location":     "eu",
-				"name":         "name-eu",
-				"instance-foo": "default",
-				"service-prop": "operator-set",
-				"osb_context": map[string]interface{}{},
+				"location":            "eu",
+				"name":                "name-eu",
+				"instance-foo":        "default",
+				"service-prop":        "operator-set",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -967,13 +967,12 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 			InstanceVars:    `{"foo":"default"}`,
 			DefaultOverride: `{"location":"eu"}`,
 			ExpectedContext: map[string]interface{}{
-				"location":     "nz",
-				"name":         "name-nz",
-				"instance-foo": "default",
-				"service-prop": "operator-set",
-				"osb_context": map[string]interface{}{},
+				"location":            "nz",
+				"name":                "name-nz",
+				"instance-foo":        "default",
+				"service-prop":        "operator-set",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
-
 			},
 		},
 		"operator defaults are not evaluated": {
@@ -981,11 +980,11 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 			InstanceVars:    `{"foo":"default"}`,
 			DefaultOverride: `{"name":"foo-${location}"}`,
 			ExpectedContext: map[string]interface{}{
-				"location":     "us",
-				"name":         "foo-${location}",
-				"instance-foo": "default",
-				"service-prop": "operator-set",
-				"osb_context": map[string]interface{}{},
+				"location":            "us",
+				"name":                "foo-${location}",
+				"instance-foo":        "default",
+				"service-prop":        "operator-set",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -993,11 +992,11 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 			UserParams:   `{"location":"us"}`,
 			InstanceVars: `{"foo":"bar"}`,
 			ExpectedContext: map[string]interface{}{
-				"location":     "us",
-				"name":         "name-us",
-				"instance-foo": "bar",
-				"service-prop": "operator-set",
-				"osb_context": map[string]interface{}{},
+				"location":            "us",
+				"name":                "name-us",
+				"instance-foo":        "bar",
+				"service-prop":        "operator-set",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
@@ -1011,11 +1010,11 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 			InstanceVars:  `{"foo":"default"}`,
 			BindOverrides: map[string]interface{}{"location": "eu"},
 			ExpectedContext: map[string]interface{}{
-				"location":     "eu",
-				"name":         "name-eu",
-				"instance-foo": "default",
-				"service-prop": "operator-set",
-				"osb_context": map[string]interface{}{},
+				"location":            "eu",
+				"name":                "name-eu",
+				"instance-foo":        "default",
+				"service-prop":        "operator-set",
+				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
 		},
