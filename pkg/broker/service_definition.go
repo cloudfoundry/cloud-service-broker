@@ -403,30 +403,35 @@ func (svc *ServiceDefinition) variables(constants map[string]interface{},
 }
 
 func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details brokerapi.ProvisionDetails, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
-	rawContextMap := map[string]interface{}{}
-	json.Unmarshal(details.GetRawContext(), &rawContextMap)
-
 	// The namespaces of these values roughly align with the OSB spec.
 	constants := map[string]interface{}{
 		"request.plan_id":        details.PlanID,
 		"request.service_id":     details.ServiceID,
 		"request.instance_id":    instanceId,
 		"request.default_labels": utils.ExtractDefaultProvisionLabels(instanceId, details),
-		"request.context": rawContextMap,
+		"request.context": unmarshalJsonToMap(details.GetRawContext()),
 		"request.x_broker_api_originating_identity": originatingIdentity,
 	}
 
 	return svc.variables(constants, details.GetRawParameters(), json.RawMessage("{}"), plan)
 }
 
-func (svc *ServiceDefinition) UpdateVariables(instanceId string, details brokerapi.UpdateDetails, provisionDetails json.RawMessage, plan ServicePlan) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) UpdateVariables(instanceId string, details brokerapi.UpdateDetails, provisionDetails json.RawMessage, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
 	constants := map[string]interface{}{
-		"request.plan_id":        details.PlanID,
-		"request.service_id":     details.ServiceID,
-		"request.instance_id":    instanceId,
-		"request.default_labels": utils.ExtractDefaultUpdateLabels(instanceId, details),
+		"request.plan_id":                           details.PlanID,
+		"request.service_id":                        details.ServiceID,
+		"request.instance_id":                       instanceId,
+		"request.default_labels":                    utils.ExtractDefaultUpdateLabels(instanceId, details),
+		"request.context":                           unmarshalJsonToMap(details.GetRawContext()),
+		"request.x_broker_api_originating_identity": originatingIdentity,
 	}
 	return svc.variables(constants, provisionDetails, details.GetRawParameters(), plan)
+}
+
+func unmarshalJsonToMap(rawContext json.RawMessage) map[string]interface{} {
+	rawContextMap := map[string]interface{}{}
+	json.Unmarshal(rawContext, &rawContextMap)
+	return rawContextMap
 }
 
 // BindVariables gets the variable resolution context for a bind request.
@@ -450,9 +455,6 @@ func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetai
 		appGuid = details.BindResource.AppGuid
 	}
 
-	rawContextMap := map[string]interface{}{}
-	json.Unmarshal(details.GetRawContext(), &rawContextMap)
-
 	// The namespaces of these values roughly align with the OSB spec.
 	constants := map[string]interface{}{
 		"request.x_broker_api_originating_identity": originatingIdentity,
@@ -460,7 +462,7 @@ func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetai
 		// specified in the URL
 		"request.binding_id":  bindingID,
 		"request.instance_id": instance.ID,
-		"request.context": rawContextMap,
+		"request.context": unmarshalJsonToMap(details.GetRawContext()),
 
 		// specified in the request body
 		// Note: the value in instance is considered the official record so values

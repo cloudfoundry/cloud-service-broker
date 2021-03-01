@@ -605,7 +605,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
-	vars, err := brokerService.UpdateVariables(instanceID, details, json.RawMessage(pr.RequestDetails), *plan)
+	vars, err := brokerService.UpdateVariables(instanceID, details, json.RawMessage(pr.RequestDetails), *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return response, err
 	}

@@ -702,6 +702,19 @@ func TestGCPServiceBroker_Update(t *testing.T) {
 				failIfErr(t, "update", err)
 			},
 		},
+		"originating-header": {
+			ServiceState: StateProvisioned,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
+				newContext := context.WithValue(context.Background(), "originatingIdentity", header)
+				broker.Update(newContext, fakeInstanceId, stub.UpdateDetails(), true)
+				assertEqual(t, "update calls should match", 1, stub.Provider.UpdateCallCount())
+				_, actualVarContext := stub.Provider.UpdateArgsForCall(0)
+				expectedOriginatingIdentityMap := `{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`
+
+				assertEqual(t, "originatingIdentity should match", expectedOriginatingIdentityMap, actualVarContext.GetString("originatingIdentity"))
+			},
+		},
 		"missing-instance": {
 			ServiceState: StateProvisioned,
 			AsyncService: true,
