@@ -16,20 +16,18 @@ package brokers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/request"
 	"net/http"
 
-	"encoding/json"
-
 	"code.cloudfoundry.org/lager"
-	"github.com/pivotal-cf/brokerapi/v7"
-
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/credstore"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/request"
+	"github.com/pivotal-cf/brokerapi/v7"
 )
 
 var (
