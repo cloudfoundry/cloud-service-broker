@@ -287,7 +287,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 
 	// validate parameters meet the service's schema and merge the plan's vars with
 	// the user's
-	vars, err := serviceDefinition.BindVariables(*instanceRecord, bindingID, details, plan)
+	vars, err := serviceDefinition.BindVariables(*instanceRecord, bindingID, details, plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return brokerapi.Binding{}, err
 	}
@@ -436,7 +436,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		RawParameters: json.RawMessage(pr.RequestDetails),
 	}
 
-	vars, err := serviceDefinition.BindVariables(*instance, bindingID, bindDetails, plan)
+	vars, err := serviceDefinition.BindVariables(*instance, bindingID, bindDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return brokerapi.UnbindSpec{}, err
 	}

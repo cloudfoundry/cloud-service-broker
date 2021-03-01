@@ -211,7 +211,9 @@ func ServiceDefinition() *broker.ServiceDefinition {
 				},
 			},
 		},
-		BindComputedVariables: accountmanagers.ServiceAccountBindComputedVariables(),
+		BindComputedVariables: append(
+			accountmanagers.ServiceAccountBindComputedVariables(),
+			varcontext.DefaultVariable{Name: "originatingIdentity", Default: "${json.marshal(request.x_broker_api_originating_identity)}", Overwrite: true}),
 		ProviderBuilder: func(logger lager.Logger) broker.ServiceProvider {
 			bb := base.NewBrokerBase(os.Getenv("GOOGLE_CLOUD_PROJECT"), logger)
 			return &StorageBroker{BrokerBase: bb}

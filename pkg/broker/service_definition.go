@@ -439,7 +439,7 @@ func (svc *ServiceDefinition) UpdateVariables(instanceId string, details brokera
 // 4. Operator default variables loaded from the environment.
 // 5. Default variables (in `bind_input_variables`).
 //
-func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetails, bindingID string, details brokerapi.BindDetails, plan *ServicePlan) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetails, bindingID string, details brokerapi.BindDetails, plan *ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
 	otherDetails := make(map[string]interface{})
 	if err := instance.GetOtherDetails(&otherDetails); err != nil {
 		return nil, err
@@ -450,11 +450,17 @@ func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetai
 		appGuid = details.BindResource.AppGuid
 	}
 
+	rawContextMap := map[string]interface{}{}
+	json.Unmarshal(details.GetRawContext(), &rawContextMap)
+
 	// The namespaces of these values roughly align with the OSB spec.
 	constants := map[string]interface{}{
+		"request.x_broker_api_originating_identity": originatingIdentity,
+
 		// specified in the URL
 		"request.binding_id":  bindingID,
 		"request.instance_id": instance.ID,
+		"request.context": rawContextMap,
 
 		// specified in the request body
 		// Note: the value in instance is considered the official record so values
@@ -468,6 +474,7 @@ func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetai
 		// specified by the existing instance
 		"instance.name":    instance.Name,
 		"instance.details": otherDetails,
+
 	}
 
 	builder := varcontext.Builder().

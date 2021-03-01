@@ -456,6 +456,19 @@ func TestGCPServiceBroker_Bind(t *testing.T) {
 			},
 			Credstore: &credstorefakes.FakeCredStore{},
 		},
+		"originating-header": {
+			ServiceState: StateProvisioned,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
+				newContext := context.WithValue(context.Background(), "originatingIdentity", header)
+				broker.Bind(newContext, fakeInstanceId, fakeBindingId, stub.BindDetails(), true)
+				assertEqual(t, "bind calls should match", 1, stub.Provider.BindCallCount())
+				_, actualVarContext := stub.Provider.BindArgsForCall(0)
+				expectedOriginatingIdentityMap := `{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`
+
+				assertEqual(t, "originatingIdentity should match", expectedOriginatingIdentityMap, actualVarContext.GetString("originatingIdentity"))
+			},
+		},
 		"duplicate-request": {
 			ServiceState: StateBound,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
@@ -532,6 +545,19 @@ func TestGCPServiceBroker_Unbind(t *testing.T) {
 				assertEqual(t, "Credstore Delete call count should match", 1, fcs.DeleteCallCount())
 			},
 			Credstore: &credstorefakes.FakeCredStore{},
+		},
+		"originating-header": {
+			ServiceState: StateBound,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
+				newContext := context.WithValue(context.Background(), "originatingIdentity", header)
+				broker.Unbind(newContext, fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
+				assertEqual(t, "unbind calls should match", 1, stub.Provider.UnbindCallCount())
+				_, _, _, actualVarContext := stub.Provider.UnbindArgsForCall(0)
+				expectedOriginatingIdentityMap := `{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`
+
+				assertEqual(t, "originatingIdentity should match", expectedOriginatingIdentityMap, actualVarContext.GetString("originatingIdentity"))
+			},
 		},
 		"multiple-unbinds": {
 			ServiceState: StateUnbound,
