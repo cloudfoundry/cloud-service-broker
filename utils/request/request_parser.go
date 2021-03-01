@@ -28,7 +28,7 @@ func DecodeOriginatingIdentityHeader(ctx context.Context) map[string]interface{}
 	return originatingIdentityMap
 }
 
-func unmarshallBase64JSON(input string) ( result map[string]interface{} ) {
+func unmarshallBase64JSON(input string) (result map[string]interface{}) {
 	value, err := b64.StdEncoding.DecodeString(input)
 	if err != nil {
 		return nil
