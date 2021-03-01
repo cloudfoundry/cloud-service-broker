@@ -405,11 +405,11 @@ func (svc *ServiceDefinition) variables(constants map[string]interface{},
 func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details brokerapi.ProvisionDetails, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
 	// The namespaces of these values roughly align with the OSB spec.
 	constants := map[string]interface{}{
-		"request.plan_id":        details.PlanID,
-		"request.service_id":     details.ServiceID,
-		"request.instance_id":    instanceId,
-		"request.default_labels": utils.ExtractDefaultProvisionLabels(instanceId, details),
-		"request.context": unmarshalJsonToMap(details.GetRawContext()),
+		"request.plan_id":                           details.PlanID,
+		"request.service_id":                        details.ServiceID,
+		"request.instance_id":                       instanceId,
+		"request.default_labels":                    utils.ExtractDefaultProvisionLabels(instanceId, details),
+		"request.context":                           unmarshalJsonToMap(details.GetRawContext()),
 		"request.x_broker_api_originating_identity": originatingIdentity,
 	}
 
@@ -462,7 +462,7 @@ func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetai
 		// specified in the URL
 		"request.binding_id":  bindingID,
 		"request.instance_id": instance.ID,
-		"request.context": unmarshalJsonToMap(details.GetRawContext()),
+		"request.context":     unmarshalJsonToMap(details.GetRawContext()),
 
 		// specified in the request body
 		// Note: the value in instance is considered the official record so values
@@ -476,7 +476,6 @@ func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetai
 		// specified by the existing instance
 		"instance.name":    instance.Name,
 		"instance.details": otherDetails,
-
 	}
 
 	builder := varcontext.Builder().
