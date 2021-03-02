@@ -11,11 +11,12 @@ endif
 
 ifeq ($(USE_GO_CONTAINERS),)
 GO=go
+GOFMT=gofmt
 else
 UID:=$(shell id -u)
 DOCKER_OPTS=--rm -u $(UID) -v $(HOME):$(HOME) -e HOME -e USER=$(USER) -e USERNAME=$(USER) -w $(PWD)
 GO=docker run $(DOCKER_OPTS) -e GOARCH -e GOOS -e CGO_ENABLED golang:$(GO-VERSION) go
-HAS_GO_IMPORTS=true
+GOFMT=docker run $(DOCKER_OPTS) -e GOARCH -e GOOS -e CGO_ENABLED golang:$(GO-VERSION) gofmt
 endif
 
 SRC = $(shell find . -name "*.go" | grep -v "_test\." )
@@ -29,8 +30,6 @@ deps-go-binary:
 	echo "Expect: $(GO-VER)" && \
 		echo "Actual: $$($(GO) version)" && \
 	 	$(GO) version | grep $(GO-VER) > /dev/null
-
-HAS_GO_IMPORTS := $(shell command -v goimports;)
 
 ###### Help ###################################################################
 
@@ -96,7 +95,7 @@ clean: deps-go-binary ## clean up from previous builds
 lint: checkformat checkimports vet staticcheck
 
 checkformat: ## Checks that the code is formatted correctly
-	@@if [ -n "$$(gofmt -s -e -l -d .)" ]; then       \
+	@@if [ -n "$$(${GOFMT} -s -e -l -d .)" ]; then       \
 		echo "gofmt check failed: run 'make format'"; \
 		exit 1;                                       \
 	fi
@@ -117,7 +116,7 @@ staticcheck: ## Runs staticcheck
 
 .PHONY: format ## format the source
 format:
-	gofmt -s -e -l -w .
+	${GOFMT} -s -e -l -w .
 	${GO} run golang.org/x/tools/cmd/goimports -l -w .
 
 ###### Image ##################################################################
