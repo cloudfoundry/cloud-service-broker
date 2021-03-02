@@ -99,7 +99,7 @@ func init() {
 
 				elapsed := ""
 				if result.LastOperationState == tf.InProgress {
-					elapsed = time.Now().Sub(result.UpdatedAt).Truncate(time.Second).String()
+					elapsed = time.Since(result.UpdatedAt).Truncate(time.Second).String()
 				}
 
 				fmt.Fprintf(w, "%q\t%s\t%s\t%s\t%s\t%q\n", result.ID, result.LastOperationType, result.LastOperationState, lastUpdate, elapsed, result.LastOperationMessage)
