@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
+[![test](https://github.com/cloudfoundry-incubator/cloud-service-broker/workflows/test/badge.svg?branch=master)](https://github.com/cloudfoundry-incubator/cloud-service-broker/actions?query=workflow%3Atest+branch%3Amaster)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cloudfoundry-incubator/cloud-service-broker)](https://goreportcard.com/report/github.com/cloudfoundry-incubator/cloud-service-broker)
 
 # Cloud Service Broker
