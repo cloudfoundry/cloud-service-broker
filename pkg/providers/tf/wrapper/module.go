@@ -103,9 +103,7 @@ func (module *ModuleDefinition) Outputs() ([]string, error) {
 func sortedKeys(m hcl.Blocks) []string {
 	var keys []string
 	for _, block := range m {
-		for _, lable := range block.Labels {
-			keys = append(keys, lable)
-		}
+		keys = append(keys, block.Labels...)
 	}
 
 	sort.Slice(keys, func(i int, j int) bool { return keys[i] < keys[j] })
