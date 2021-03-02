@@ -141,7 +141,7 @@ func TestFinfo(t *testing.T) {
 		"src/terraform.zip",                      // file
 
 	}
-	actual := string(buf.Bytes())
+	actual := buf.String()
 	for _, str := range importantStrings {
 		if !strings.Contains(actual, str) {
 			t.Fatalf("Expected output to contain %s but it didn't", str)
