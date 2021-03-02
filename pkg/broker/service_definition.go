@@ -69,45 +69,45 @@ type ServiceDefinition struct {
 var _ validation.Validatable = (*ServiceDefinition)(nil)
 
 // Validate implements validation.Validatable.
-func (sd *ServiceDefinition) Validate() (errs *validation.FieldError) {
+func (svc *ServiceDefinition) Validate() (errs *validation.FieldError) {
 	errs = errs.Also(
-		validation.ErrIfNotUUID(sd.Id, "Id"),
-		validation.ErrIfNotOSBName(sd.Name, "Name"),
+		validation.ErrIfNotUUID(svc.Id, "Id"),
+		validation.ErrIfNotOSBName(svc.Name, "Name"),
 	)
 
-	if sd.ImageUrl != "" {
-		errs = errs.Also(validation.ErrIfNotURL(sd.ImageUrl, "ImageUrl"))
+	if svc.ImageUrl != "" {
+		errs = errs.Also(validation.ErrIfNotURL(svc.ImageUrl, "ImageUrl"))
 	}
 
-	if sd.DocumentationUrl != "" {
-		errs = errs.Also(validation.ErrIfNotURL(sd.DocumentationUrl, "DocumentationUrl"))
+	if svc.DocumentationUrl != "" {
+		errs = errs.Also(validation.ErrIfNotURL(svc.DocumentationUrl, "DocumentationUrl"))
 	}
 
-	if sd.SupportUrl != "" {
-		errs = errs.Also(validation.ErrIfNotURL(sd.SupportUrl, "SupportUrl"))
+	if svc.SupportUrl != "" {
+		errs = errs.Also(validation.ErrIfNotURL(svc.SupportUrl, "SupportUrl"))
 	}
 
-	for i, v := range sd.ProvisionInputVariables {
+	for i, v := range svc.ProvisionInputVariables {
 		errs = errs.Also(v.Validate().ViaFieldIndex("ProvisionInputVariables", i))
 	}
 
-	for i, v := range sd.ProvisionComputedVariables {
+	for i, v := range svc.ProvisionComputedVariables {
 		errs = errs.Also(v.Validate().ViaFieldIndex("ProvisionComputedVariables", i))
 	}
 
-	for i, v := range sd.BindInputVariables {
+	for i, v := range svc.BindInputVariables {
 		errs = errs.Also(v.Validate().ViaFieldIndex("BindInputVariables", i))
 	}
 
-	for i, v := range sd.BindOutputVariables {
+	for i, v := range svc.BindOutputVariables {
 		errs = errs.Also(v.Validate().ViaFieldIndex("BindOutputVariables", i))
 	}
 
-	for i, v := range sd.BindComputedVariables {
+	for i, v := range svc.BindComputedVariables {
 		errs = errs.Also(v.Validate().ViaFieldIndex("BindComputedVariables", i))
 	}
 
-	for i, v := range sd.PlanVariables {
+	for i, v := range svc.PlanVariables {
 		errs = errs.Also(v.Validate().ViaFieldIndex("PlanVariables", i))
 	}
 
@@ -358,12 +358,12 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 // 4. User defined variables (in `update_input_variables`)
 // 5. User defined variables (in `provision_input_variables` or `bind_input_variables`)
 // 6. Operator default variables loaded from the environment.
-// 7. Global operator default variables loaded from the environemnt.
+// 7. Global operator default variables loaded from the environment.
 // 8. Default variables (in `provision_input_variables` or `bind_input_variables`).
 //
 // Loading into the map occurs slightly differently.
 // Default variables and computed_variables get executed by interpolation.
-// User defined varaibles are not to prevent side-channel attacks.
+// User defined variables are not to prevent side-channel attacks.
 // Default variables may reference user provided variables.
 // For example, to create a default database name based on a user-provided instance name.
 // Therefore, they get executed conditionally if a user-provided variable does not exist.

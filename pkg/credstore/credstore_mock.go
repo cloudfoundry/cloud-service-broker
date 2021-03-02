@@ -68,12 +68,14 @@ func (c *credHubStoreMock) GetValue(key string) (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "Failed to open file for mock credstore")
 	}
+	defer file.Close()
 
 	content, err := ioutil.ReadAll(file)
-	file.Close()
-	s := string(content)
+	if err != nil {
+		return "", errors.Wrap(err, "Failed to read file for mock credstore")
+	}
 
-	return s, nil
+	return string(content), nil
 }
 
 func (c *credHubStoreMock) Get(key string) (interface{}, error) {
