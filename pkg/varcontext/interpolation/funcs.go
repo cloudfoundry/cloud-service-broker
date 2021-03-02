@@ -234,10 +234,10 @@ func hilFuncMapFlatten() ast.Function {
 
 func hilToInterface(arg interface{}) (interface{}, error) {
 	// The types here cover what HIL supports.
-	switch arg.(type) {
+	switch a := arg.(type) {
 	case map[string]ast.Variable:
 		out := make(map[string]interface{})
-		for key, v := range arg.(map[string]ast.Variable) {
+		for key, v := range a {
 			val, verr := hilToInterface(v)
 			if verr != nil {
 				return nil, verr
@@ -249,7 +249,7 @@ func hilToInterface(arg interface{}) (interface{}, error) {
 
 	case []ast.Variable:
 		var out []interface{}
-		for _, v := range arg.([]ast.Variable) {
+		for _, v := range a {
 			unwrapped, err := hil.VariableToInterface(v)
 			if err != nil {
 				return nil, err
@@ -259,7 +259,7 @@ func hilToInterface(arg interface{}) (interface{}, error) {
 		return out, nil
 
 	case ast.Variable:
-		return hil.VariableToInterface(arg.(ast.Variable))
+		return hil.VariableToInterface(a)
 
 	default:
 		return arg, nil
