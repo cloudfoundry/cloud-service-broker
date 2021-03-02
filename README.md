@@ -21,13 +21,9 @@ Some of the benefits over traditional, IaaS-provided, service brokers include:
 
 
 ## Public Roadmap
-For a list of currently "Core Broker" (IaaS agnostic) features, see our up-to-date roadmap on Trello here: https://trello.com/b/m873oYyJ/csb-core-broker-public-roadmap
+The previously mentioned Trello roadmap has been archived in favor of a new Roadmap, which will live in Github, is TBD. 
 
-Azure Roadmap: https://trello.com/b/IJKM3bcG/csb-azure-public-roadmap
-
-AWS Roadmap: https://trello.com/b/eBe25hzx/csb-aws-public-roadmap
-
-GCP Roadmap: https://trello.com/b/MNL1QzrQ/csb-gcp-public-roadmap
+For updates on this roadmap, please reach out on the #cloudservicebroker channel in the [Cloud Foundry Slack](https://slack.cloudfoundry.org/)! 
 
 ## Installation
 

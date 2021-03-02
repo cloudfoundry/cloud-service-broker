@@ -402,25 +402,36 @@ func (svc *ServiceDefinition) variables(constants map[string]interface{},
 	return buildAndValidate(builder, svc.ProvisionInputVariables)
 }
 
-func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details brokerapi.ProvisionDetails, plan ServicePlan) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details brokerapi.ProvisionDetails, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
 	// The namespaces of these values roughly align with the OSB spec.
 	constants := map[string]interface{}{
-		"request.plan_id":        details.PlanID,
-		"request.service_id":     details.ServiceID,
-		"request.instance_id":    instanceId,
-		"request.default_labels": utils.ExtractDefaultProvisionLabels(instanceId, details),
+		"request.plan_id":                           details.PlanID,
+		"request.service_id":                        details.ServiceID,
+		"request.instance_id":                       instanceId,
+		"request.default_labels":                    utils.ExtractDefaultProvisionLabels(instanceId, details),
+		"request.context":                           unmarshalJsonToMap(details.GetRawContext()),
+		"request.x_broker_api_originating_identity": originatingIdentity,
 	}
+
 	return svc.variables(constants, details.GetRawParameters(), json.RawMessage("{}"), plan)
 }
 
-func (svc *ServiceDefinition) UpdateVariables(instanceId string, details brokerapi.UpdateDetails, provisionDetails json.RawMessage, plan ServicePlan) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) UpdateVariables(instanceId string, details brokerapi.UpdateDetails, provisionDetails json.RawMessage, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
 	constants := map[string]interface{}{
-		"request.plan_id":        details.PlanID,
-		"request.service_id":     details.ServiceID,
-		"request.instance_id":    instanceId,
-		"request.default_labels": utils.ExtractDefaultUpdateLabels(instanceId, details),
+		"request.plan_id":                           details.PlanID,
+		"request.service_id":                        details.ServiceID,
+		"request.instance_id":                       instanceId,
+		"request.default_labels":                    utils.ExtractDefaultUpdateLabels(instanceId, details),
+		"request.context":                           unmarshalJsonToMap(details.GetRawContext()),
+		"request.x_broker_api_originating_identity": originatingIdentity,
 	}
 	return svc.variables(constants, provisionDetails, details.GetRawParameters(), plan)
+}
+
+func unmarshalJsonToMap(rawContext json.RawMessage) map[string]interface{} {
+	rawContextMap := map[string]interface{}{}
+	json.Unmarshal(rawContext, &rawContextMap)
+	return rawContextMap
 }
 
 // BindVariables gets the variable resolution context for a bind request.
@@ -433,7 +444,7 @@ func (svc *ServiceDefinition) UpdateVariables(instanceId string, details brokera
 // 4. Operator default variables loaded from the environment.
 // 5. Default variables (in `bind_input_variables`).
 //
-func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetails, bindingID string, details brokerapi.BindDetails, plan *ServicePlan) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetails, bindingID string, details brokerapi.BindDetails, plan *ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
 	otherDetails := make(map[string]interface{})
 	if err := instance.GetOtherDetails(&otherDetails); err != nil {
 		return nil, err
@@ -446,9 +457,12 @@ func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetai
 
 	// The namespaces of these values roughly align with the OSB spec.
 	constants := map[string]interface{}{
+		"request.x_broker_api_originating_identity": originatingIdentity,
+
 		// specified in the URL
 		"request.binding_id":  bindingID,
 		"request.instance_id": instance.ID,
+		"request.context":     unmarshalJsonToMap(details.GetRawContext()),
 
 		// specified in the request body
 		// Note: the value in instance is considered the official record so values

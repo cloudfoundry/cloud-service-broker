@@ -16,24 +16,22 @@ package brokers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/pivotal-cf/brokerapi/v7"
-	"google.golang.org/api/googleapi"
-
-	"encoding/json"
-
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/credstore"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/request"
+	"github.com/pivotal-cf/brokerapi/v7"
 )
 
 var (
-	invalidUserInputMsg        = "User supplied paramaters must be in the form of a valid JSON map."
+	invalidUserInputMsg        = "User supplied parameters must be in the form of a valid JSON map."
 	ErrInvalidUserInput        = brokerapi.NewFailureResponse(errors.New(invalidUserInputMsg), http.StatusBadRequest, "parsing-user-request")
 	ErrGetInstancesUnsupported = brokerapi.NewFailureResponse(errors.New("the service_instances endpoint is unsupported"), http.StatusBadRequest, "unsupported")
 	ErrGetBindingsUnsupported  = brokerapi.NewFailureResponse(errors.New("the service_bindings endpoint is unsupported"), http.StatusBadRequest, "unsupported")
@@ -133,7 +131,7 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
-	vars, err := brokerService.ProvisionVariables(instanceID, details, *plan)
+	vars, err := brokerService.ProvisionVariables(instanceID, details, *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return brokerapi.ProvisionedServiceSpec{}, err
 	}
@@ -213,7 +211,7 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
-	vars, err := brokerService.ProvisionVariables(instanceID, provisionDetails, *plan)
+	vars, err := brokerService.ProvisionVariables(instanceID, provisionDetails, *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return response, err
 	}
@@ -286,7 +284,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 
 	// validate parameters meet the service's schema and merge the plan's vars with
 	// the user's
-	vars, err := serviceDefinition.BindVariables(*instanceRecord, bindingID, details, plan)
+	vars, err := serviceDefinition.BindVariables(*instanceRecord, bindingID, details, plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return brokerapi.Binding{}, err
 	}
@@ -435,7 +433,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		RawParameters: json.RawMessage(pr.RequestDetails),
 	}
 
-	vars, err := serviceDefinition.BindVariables(*instance, bindingID, bindDetails, plan)
+	vars, err := serviceDefinition.BindVariables(*instance, bindingID, bindDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return brokerapi.UnbindSpec{}, err
 	}
@@ -498,14 +496,6 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 	done, message, err := serviceProvider.PollInstance(ctx, *instance)
 
 	if err != nil {
-		// this is a retryable error
-		if gerr, ok := err.(*googleapi.Error); ok {
-			if gerr.Code == 503 {
-				return brokerapi.LastOperation{State: brokerapi.InProgress, Description: err.Error()}, nil
-			}
-		}
-
-		// This is not a retryable error. Return fail
 		return brokerapi.LastOperation{State: brokerapi.Failed, Description: err.Error()}, nil
 	}
 
@@ -604,7 +594,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
-	vars, err := brokerService.UpdateVariables(instanceID, details, json.RawMessage(pr.RequestDetails), *plan)
+	vars, err := brokerService.UpdateVariables(instanceID, details, json.RawMessage(pr.RequestDetails), *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return response, err
 	}

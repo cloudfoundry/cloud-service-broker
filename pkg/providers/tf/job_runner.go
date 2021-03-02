@@ -144,7 +144,7 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 		logger := utils.NewLogger("Import")
 		resources := make(map[string]string)
 		for _, resource := range importResources {
-			resources[fmt.Sprintf("%s", resource.TfResource)] = resource.IaaSResource
+			resources[resource.TfResource] = resource.IaaSResource
 		}
 		if err := workspace.Import(resources); err != nil {
 			logger.Error("Import Failed", err)
