@@ -93,7 +93,7 @@ func FullMigration() Migration {
 
 	return Migration{
 		Name:       "Full Migration",
-		TileScript: string(buf.Bytes()),
+		TileScript: buf.String(),
 		GoFunc: func(env map[string]string) {
 			for _, migration := range migrations {
 				migration.GoFunc(env)
