@@ -92,11 +92,12 @@ DLgHJRgZ5Bkp6yhm2RRzuQeMbozry9wXJg9MN14aLjfUNkB08+BX7kDk4H7ZgQ4S
 GqdyaKP2/eZ04RHn1TYI/UGRnzk=
 -----END CERTIFICATE-----`)
 		tmpfile, err := ioutil.TempFile("", ".pem")
+		Expect(err).NotTo(HaveOccurred())
 
 		_, err = tmpfile.Write(content)
-		Expect(err).To(BeNil())
+		Expect(err).NotTo(HaveOccurred())
 		err = tmpfile.Close()
-		Expect(err).To(BeNil())
+		Expect(err).NotTo(HaveOccurred())
 
 		credStoreConfig := &config.CredStoreConfig{
 			CredHubURL:           chTestServer.URL,
