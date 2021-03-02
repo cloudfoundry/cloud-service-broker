@@ -67,12 +67,7 @@ type ToggleSet struct {
 // Toggles returns a list of all registered toggles sorted lexicographically by
 // their property name.
 func (set *ToggleSet) Toggles() []Toggle {
-	var copy []Toggle
-
-	for _, tgl := range set.toggles {
-		copy = append(copy, tgl)
-	}
-
+	copy := append([]Toggle{}, set.toggles...)
 	sort.Slice(copy, func(i, j int) bool { return copy[i].Name < copy[j].Name })
 	return copy
 }
