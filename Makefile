@@ -66,7 +66,7 @@ generate: ## generate test fakes
 
 .PHONY: download
 download: ## download go module dependencies
-	${GO} mod download
+	${GO} mod download -x
 
 ###### Package ################################################################
 
