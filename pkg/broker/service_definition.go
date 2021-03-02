@@ -358,12 +358,12 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 // 4. User defined variables (in `update_input_variables`)
 // 5. User defined variables (in `provision_input_variables` or `bind_input_variables`)
 // 6. Operator default variables loaded from the environment.
-// 7. Global operator default variables loaded from the environemnt.
+// 7. Global operator default variables loaded from the environment.
 // 8. Default variables (in `provision_input_variables` or `bind_input_variables`).
 //
 // Loading into the map occurs slightly differently.
 // Default variables and computed_variables get executed by interpolation.
-// User defined varaibles are not to prevent side-channel attacks.
+// User defined variables are not to prevent side-channel attacks.
 // Default variables may reference user provided variables.
 // For example, to create a default database name based on a user-provided instance name.
 // Therefore, they get executed conditionally if a user-provided variable does not exist.

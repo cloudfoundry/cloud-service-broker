@@ -16,7 +16,6 @@ package wrapper
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -32,10 +31,6 @@ import (
 // DefaultInstanceName is the default name of an instance of a particular module.
 const (
 	DefaultInstanceName = "instance"
-)
-
-var (
-	FsInitializationErr = errors.New("Filesystem must first be initialized.")
 )
 
 // ExecutionOutput captures output from tf cli execution
@@ -103,7 +98,7 @@ func DeserializeWorkspace(definition string) (*TerraformWorkspace, error) {
 }
 
 // TerraformWorkspace represents the directory layout of a Terraform execution.
-// The structure is strict, consiting of several Terraform modules and instances
+// The structure is strict, consisting of several Terraform modules and instances
 // of those modules. The strictness is artificial, but maintains a clear
 // separation between data and code.
 //
@@ -313,7 +308,7 @@ func (workspace *TerraformWorkspace) Outputs(instance string) (map[string]interf
 }
 
 // Validate runs `terraform Validate` on this workspace.
-// This funciton blocks if another Terraform command is running on this workspace.
+// This function blocks if another Terraform command is running on this workspace.
 func (workspace *TerraformWorkspace) Validate() error {
 	err := workspace.initializeFs()
 	defer workspace.teardownFs()
@@ -327,7 +322,7 @@ func (workspace *TerraformWorkspace) Validate() error {
 }
 
 // Apply runs `terraform apply` on this workspace.
-// This funciton blocks if another Terraform command is running on this workspace.
+// This function blocks if another Terraform command is running on this workspace.
 func (workspace *TerraformWorkspace) Apply() error {
 	err := workspace.initializeFs()
 	defer workspace.teardownFs()
@@ -340,7 +335,7 @@ func (workspace *TerraformWorkspace) Apply() error {
 }
 
 // Destroy runs `terraform destroy` on this workspace.
-// This funciton blocks if another Terraform command is running on this workspace.
+// This function blocks if another Terraform command is running on this workspace.
 func (workspace *TerraformWorkspace) Destroy() error {
 	err := workspace.initializeFs()
 	defer workspace.teardownFs()
@@ -353,7 +348,7 @@ func (workspace *TerraformWorkspace) Destroy() error {
 }
 
 // Apply runs `terraform import` on this workspace.
-// This funciton blocks if another Terraform command is running on this workspace.
+// This function blocks if another Terraform command is running on this workspace.
 func (workspace *TerraformWorkspace) Import(resources map[string]string) error {
 	err := workspace.initializeFs()
 	defer workspace.teardownFs()
@@ -372,7 +367,7 @@ func (workspace *TerraformWorkspace) Import(resources map[string]string) error {
 }
 
 // Apply runs `terraform show` on this workspace.
-// This funciton blocks if another Terraform command is running on this workspace.
+// This function blocks if another Terraform command is running on this workspace.
 func (workspace *TerraformWorkspace) Show() (string, error) {
 	err := workspace.initializeFs()
 	defer workspace.teardownFs()
@@ -381,6 +376,9 @@ func (workspace *TerraformWorkspace) Show() (string, error) {
 	}
 
 	output, err := workspace.runTf("show", "-no-color")
+	if err != nil {
+		return "", err
+	}
 
 	return output.StdOut, nil
 }
