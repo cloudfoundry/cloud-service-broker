@@ -381,6 +381,9 @@ func (workspace *TerraformWorkspace) Show() (string, error) {
 	}
 
 	output, err := workspace.runTf("show", "-no-color")
+	if err != nil {
+		return "", err
+	}
 
 	return output.StdOut, nil
 }
