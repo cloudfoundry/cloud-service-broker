@@ -18,7 +18,6 @@ require (
 	github.com/hashicorp/hcl2 v0.0.0-20191002203319-fb75b3253c80
 	github.com/hashicorp/hil v0.0.0-20190212132231-97b3a9cdfa93
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jinzhu/gorm v1.9.1
 	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a // indirect
 	github.com/jinzhu/now v1.1.1 // indirect
@@ -26,7 +25,6 @@ require (
 	github.com/lib/pq v1.3.0 // indirect
 	github.com/mattn/go-sqlite3 v1.9.0 // indirect
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
-	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
 	github.com/onsi/ginkgo v1.15.0
 	github.com/onsi/gomega v1.10.5
@@ -38,7 +36,7 @@ require (
 	github.com/russross/blackfriday v1.6.0
 	github.com/spf13/afero v1.2.1 // indirect
 	github.com/spf13/cast v1.3.0
-	github.com/spf13/cobra v0.0.3
+	github.com/spf13/cobra v0.0.7
 	github.com/spf13/viper v1.7.1
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
