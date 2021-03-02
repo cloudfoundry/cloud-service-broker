@@ -16,7 +16,6 @@ package wrapper
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -32,10 +31,6 @@ import (
 // DefaultInstanceName is the default name of an instance of a particular module.
 const (
 	DefaultInstanceName = "instance"
-)
-
-var (
-	FsInitializationErr = errors.New("Filesystem must first be initialized.")
 )
 
 // ExecutionOutput captures output from tf cli execution
