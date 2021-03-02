@@ -86,7 +86,7 @@ func (vc *VarContext) GetStringMapString(key string) (res map[string]string) {
 	return
 }
 
-// ToMap gets the underlying map representaiton of the variable context.
+// ToMap gets the underlying map representation of the variable context.
 func (vc *VarContext) ToMap() map[string]interface{} {
 	output := make(map[string]interface{})
 
@@ -97,7 +97,7 @@ func (vc *VarContext) ToMap() map[string]interface{} {
 	return output
 }
 
-// ToJson gets the underlying JSON representaiton of the variable context.
+// ToJson gets the underlying JSON representation of the variable context.
 func (vc *VarContext) ToJson() (json.RawMessage, error) {
 	return json.Marshal(vc.ToMap())
 }

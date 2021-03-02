@@ -123,7 +123,7 @@ func (gsGetter) objectAt(client *storage.Client, u *url.URL) *storage.ObjectHand
 func (gsGetter) client(ctx context.Context) (*storage.Client, error) {
 	creds, err := google.CredentialsFromJSON(ctx, []byte(utils.GetServiceAccountJson()), storage.ScopeReadOnly)
 	if err != nil {
-		return nil, errors.New("couldn't get JSON credentials from the enviornment")
+		return nil, errors.New("couldn't get JSON credentials from the environment")
 	}
 
 	client, err := storage.NewClient(ctx, option.WithCredentials(creds), option.WithUserAgent(utils.CustomUserAgent))

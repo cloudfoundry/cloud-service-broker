@@ -38,7 +38,7 @@ type TerraformResource struct {
 	Source string `yaml:"source"`
 
 	// UrlTemplate holds a custom URL template to get the release of the given tool.
-	// Paramaters available are ${name}, ${version}, ${os}, and ${arch}.
+	// Parameters available are ${name}, ${version}, ${os}, and ${arch}.
 	// If non is specified HashicorpUrlTemplate is used.
 	UrlTemplate string `yaml:"url_template,omitempty"`
 }
