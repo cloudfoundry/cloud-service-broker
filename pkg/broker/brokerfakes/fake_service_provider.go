@@ -8,7 +8,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal-cf/brokerapi/v7"
+	"github.com/pivotal-cf/brokerapi/v7/domain"
 )
 
 type FakeServiceProvider struct {
@@ -26,7 +26,7 @@ type FakeServiceProvider struct {
 		result1 map[string]interface{}
 		result2 error
 	}
-	BuildInstanceCredentialsStub        func(context.Context, models.ServiceBindingCredentials, models.ServiceInstanceDetails) (*brokerapi.Binding, error)
+	BuildInstanceCredentialsStub        func(context.Context, models.ServiceBindingCredentials, models.ServiceInstanceDetails) (*domain.Binding, error)
 	buildInstanceCredentialsMutex       sync.RWMutex
 	buildInstanceCredentialsArgsForCall []struct {
 		arg1 context.Context
@@ -34,19 +34,19 @@ type FakeServiceProvider struct {
 		arg3 models.ServiceInstanceDetails
 	}
 	buildInstanceCredentialsReturns struct {
-		result1 *brokerapi.Binding
+		result1 *domain.Binding
 		result2 error
 	}
 	buildInstanceCredentialsReturnsOnCall map[int]struct {
-		result1 *brokerapi.Binding
+		result1 *domain.Binding
 		result2 error
 	}
-	DeprovisionStub        func(context.Context, models.ServiceInstanceDetails, brokerapi.DeprovisionDetails, *varcontext.VarContext) (*string, error)
+	DeprovisionStub        func(context.Context, models.ServiceInstanceDetails, domain.DeprovisionDetails, *varcontext.VarContext) (*string, error)
 	deprovisionMutex       sync.RWMutex
 	deprovisionArgsForCall []struct {
 		arg1 context.Context
 		arg2 models.ServiceInstanceDetails
-		arg3 brokerapi.DeprovisionDetails
+		arg3 domain.DeprovisionDetails
 		arg4 *varcontext.VarContext
 	}
 	deprovisionReturns struct {
@@ -216,7 +216,7 @@ func (fake *FakeServiceProvider) BindReturnsOnCall(i int, result1 map[string]int
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) BuildInstanceCredentials(arg1 context.Context, arg2 models.ServiceBindingCredentials, arg3 models.ServiceInstanceDetails) (*brokerapi.Binding, error) {
+func (fake *FakeServiceProvider) BuildInstanceCredentials(arg1 context.Context, arg2 models.ServiceBindingCredentials, arg3 models.ServiceInstanceDetails) (*domain.Binding, error) {
 	fake.buildInstanceCredentialsMutex.Lock()
 	ret, specificReturn := fake.buildInstanceCredentialsReturnsOnCall[len(fake.buildInstanceCredentialsArgsForCall)]
 	fake.buildInstanceCredentialsArgsForCall = append(fake.buildInstanceCredentialsArgsForCall, struct {
@@ -243,7 +243,7 @@ func (fake *FakeServiceProvider) BuildInstanceCredentialsCallCount() int {
 	return len(fake.buildInstanceCredentialsArgsForCall)
 }
 
-func (fake *FakeServiceProvider) BuildInstanceCredentialsCalls(stub func(context.Context, models.ServiceBindingCredentials, models.ServiceInstanceDetails) (*brokerapi.Binding, error)) {
+func (fake *FakeServiceProvider) BuildInstanceCredentialsCalls(stub func(context.Context, models.ServiceBindingCredentials, models.ServiceInstanceDetails) (*domain.Binding, error)) {
 	fake.buildInstanceCredentialsMutex.Lock()
 	defer fake.buildInstanceCredentialsMutex.Unlock()
 	fake.BuildInstanceCredentialsStub = stub
@@ -256,39 +256,39 @@ func (fake *FakeServiceProvider) BuildInstanceCredentialsArgsForCall(i int) (con
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeServiceProvider) BuildInstanceCredentialsReturns(result1 *brokerapi.Binding, result2 error) {
+func (fake *FakeServiceProvider) BuildInstanceCredentialsReturns(result1 *domain.Binding, result2 error) {
 	fake.buildInstanceCredentialsMutex.Lock()
 	defer fake.buildInstanceCredentialsMutex.Unlock()
 	fake.BuildInstanceCredentialsStub = nil
 	fake.buildInstanceCredentialsReturns = struct {
-		result1 *brokerapi.Binding
+		result1 *domain.Binding
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) BuildInstanceCredentialsReturnsOnCall(i int, result1 *brokerapi.Binding, result2 error) {
+func (fake *FakeServiceProvider) BuildInstanceCredentialsReturnsOnCall(i int, result1 *domain.Binding, result2 error) {
 	fake.buildInstanceCredentialsMutex.Lock()
 	defer fake.buildInstanceCredentialsMutex.Unlock()
 	fake.BuildInstanceCredentialsStub = nil
 	if fake.buildInstanceCredentialsReturnsOnCall == nil {
 		fake.buildInstanceCredentialsReturnsOnCall = make(map[int]struct {
-			result1 *brokerapi.Binding
+			result1 *domain.Binding
 			result2 error
 		})
 	}
 	fake.buildInstanceCredentialsReturnsOnCall[i] = struct {
-		result1 *brokerapi.Binding
+		result1 *domain.Binding
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 models.ServiceInstanceDetails, arg3 brokerapi.DeprovisionDetails, arg4 *varcontext.VarContext) (*string, error) {
+func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 models.ServiceInstanceDetails, arg3 domain.DeprovisionDetails, arg4 *varcontext.VarContext) (*string, error) {
 	fake.deprovisionMutex.Lock()
 	ret, specificReturn := fake.deprovisionReturnsOnCall[len(fake.deprovisionArgsForCall)]
 	fake.deprovisionArgsForCall = append(fake.deprovisionArgsForCall, struct {
 		arg1 context.Context
 		arg2 models.ServiceInstanceDetails
-		arg3 brokerapi.DeprovisionDetails
+		arg3 domain.DeprovisionDetails
 		arg4 *varcontext.VarContext
 	}{arg1, arg2, arg3, arg4})
 	stub := fake.DeprovisionStub
@@ -310,13 +310,13 @@ func (fake *FakeServiceProvider) DeprovisionCallCount() int {
 	return len(fake.deprovisionArgsForCall)
 }
 
-func (fake *FakeServiceProvider) DeprovisionCalls(stub func(context.Context, models.ServiceInstanceDetails, brokerapi.DeprovisionDetails, *varcontext.VarContext) (*string, error)) {
+func (fake *FakeServiceProvider) DeprovisionCalls(stub func(context.Context, models.ServiceInstanceDetails, domain.DeprovisionDetails, *varcontext.VarContext) (*string, error)) {
 	fake.deprovisionMutex.Lock()
 	defer fake.deprovisionMutex.Unlock()
 	fake.DeprovisionStub = stub
 }
 
-func (fake *FakeServiceProvider) DeprovisionArgsForCall(i int) (context.Context, models.ServiceInstanceDetails, brokerapi.DeprovisionDetails, *varcontext.VarContext) {
+func (fake *FakeServiceProvider) DeprovisionArgsForCall(i int) (context.Context, models.ServiceInstanceDetails, domain.DeprovisionDetails, *varcontext.VarContext) {
 	fake.deprovisionMutex.RLock()
 	defer fake.deprovisionMutex.RUnlock()
 	argsForCall := fake.deprovisionArgsForCall[i]
