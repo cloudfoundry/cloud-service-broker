@@ -225,7 +225,7 @@ func retry(timeout, period time.Duration, function func() (tryAgain bool, err er
 	for {
 		select {
 		case <-to:
-			return errors.New("Timeout while waiting for result")
+			return errors.New("timeout while waiting for result")
 		case <-tick:
 			tryAgain, err := function()
 
@@ -247,7 +247,7 @@ func pollUntilFinished(client *Client, instanceId string) error {
 
 		if resp.StatusCode != 200 {
 			log.Printf("Bad status code %d, needed 200", resp.StatusCode)
-			return false, fmt.Errorf("Broker responded with statuscode %v", resp.StatusCode)
+			return false, fmt.Errorf("broker responded with statuscode %v", resp.StatusCode)
 		}
 
 		var responseBody map[string]string
@@ -331,7 +331,7 @@ func (ee *exampleExecutor) Provision() error {
 	case 202:
 		return ee.pollUntilFinished()
 	default:
-		return fmt.Errorf("Unexpected response code %d", resp.StatusCode)
+		return fmt.Errorf("unexpected response code %d", resp.StatusCode)
 	}
 }
 
@@ -355,7 +355,7 @@ func (ee *exampleExecutor) Deprovision() error {
 	case 202:
 		return ee.pollUntilFinished()
 	default:
-		return fmt.Errorf("Unexpected response code %d", resp.StatusCode)
+		return fmt.Errorf("unexpected response code %d", resp.StatusCode)
 	}
 }
 
@@ -374,7 +374,7 @@ func (ee *exampleExecutor) Unbind() error {
 			return false, nil
 		}
 
-		return false, fmt.Errorf("Unexpected response code %d", resp.StatusCode)
+		return false, fmt.Errorf("unexpected response code %d", resp.StatusCode)
 	})
 }
 
@@ -394,7 +394,7 @@ func (ee *exampleExecutor) Bind() (json.RawMessage, error) {
 		return resp.ResponseBody, nil
 	}
 
-	return nil, fmt.Errorf("Unexpected response code %d", resp.StatusCode)
+	return nil, fmt.Errorf("unexpected response code %d", resp.StatusCode)
 }
 
 // LogTestInfo writes information about the running example and a manual backout

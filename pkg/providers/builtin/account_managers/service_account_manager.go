@@ -77,7 +77,7 @@ func (sam *ServiceAccountManager) CreateCredentials(ctx context.Context, vc *var
 	// create and save key
 	newSAKey, err := sam.createServiceAccountKey(ctx, newSA)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating new service account key: %s", err)
+		return nil, fmt.Errorf("error creating new service account key: %s", err)
 	}
 
 	newSAInfo := ServiceAccountInfo{
@@ -96,17 +96,17 @@ func (sam *ServiceAccountManager) DeleteCredentials(ctx context.Context, binding
 
 	var saCreds ServiceAccountInfo
 	if err := json.Unmarshal([]byte(binding.OtherDetails), &saCreds); err != nil {
-		return fmt.Errorf("Error unmarshalling credentials: %s", err)
+		return fmt.Errorf("error unmarshalling credentials: %s", err)
 	}
 
 	iamService, err := iam.New(sam.HttpConfig.Client(ctx))
 	if err != nil {
-		return fmt.Errorf("Error creating IAM service: %s", err)
+		return fmt.Errorf("error creating IAM service: %s", err)
 	}
 
 	// Clean up account permissions
 	if err := sam.revokeRolesFromAccount(ctx, saCreds.Email); err != nil {
-		return fmt.Errorf("Error deleting role bindings from service account: %s", err)
+		return fmt.Errorf("error deleting role bindings from service account: %s", err)
 	}
 
 	resourceName := projectResourcePrefix + sam.ProjectId + "/serviceAccounts/" + saCreds.UniqueId
@@ -115,7 +115,7 @@ func (sam *ServiceAccountManager) DeleteCredentials(ctx context.Context, binding
 			return nil
 		}
 
-		return fmt.Errorf("Error deleting service account: %s", err)
+		return fmt.Errorf("error deleting service account: %s", err)
 	}
 
 	return nil
@@ -125,7 +125,7 @@ func (sam *ServiceAccountManager) createServiceAccount(ctx context.Context, acco
 	client := sam.HttpConfig.Client(ctx)
 	iamService, err := iam.New(client)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating new IAM service: %s", err)
+		return nil, fmt.Errorf("error creating new IAM service: %s", err)
 	}
 
 	resourceName := projectResourcePrefix + sam.ProjectId
@@ -145,7 +145,7 @@ func (sam *ServiceAccountManager) createServiceAccountKey(ctx context.Context, a
 	client := sam.HttpConfig.Client(ctx)
 	iamService, err := iam.New(client)
 	if err != nil {
-		return nil, fmt.Errorf("Error creating new IAM service: %s", err)
+		return nil, fmt.Errorf("error creating new IAM service: %s", err)
 	}
 
 	saKeyService := iam.NewProjectsServiceAccountsKeysService(iamService)
@@ -157,13 +157,13 @@ func (sam *ServiceAccountManager) grantRoleToAccount(ctx context.Context, role s
 
 	cloudresService, err := cloudres.New(client)
 	if err != nil {
-		return fmt.Errorf("Error creating new cloud resource management service: %s", err)
+		return fmt.Errorf("error creating new cloud resource management service: %s", err)
 	}
 
 	for attempt := 0; attempt < 3; attempt++ {
 		currPolicy, err := cloudresService.Projects.GetIamPolicy(sam.ProjectId, &cloudres.GetIamPolicyRequest{}).Do()
 		if err != nil {
-			return fmt.Errorf("Error getting current project iam policy: %s", err)
+			return fmt.Errorf("error getting current project iam policy: %s", err)
 		}
 
 		currPolicy.Bindings = mergeBindings(append(currPolicy.Bindings, &cloudres.Binding{
@@ -183,7 +183,7 @@ func (sam *ServiceAccountManager) grantRoleToAccount(ctx context.Context, role s
 			time.Sleep(5 * time.Second)
 			continue
 		} else {
-			return fmt.Errorf("Error assigning policy to service account: %s", err)
+			return fmt.Errorf("error assigning policy to service account: %s", err)
 		}
 	}
 
@@ -195,13 +195,13 @@ func (sam *ServiceAccountManager) revokeRolesFromAccount(ctx context.Context, em
 
 	cloudresService, err := cloudres.New(client)
 	if err != nil {
-		return fmt.Errorf("Error creating new cloud resource management service: %s", err)
+		return fmt.Errorf("error creating new cloud resource management service: %s", err)
 	}
 
 	for attempt := 0; attempt < 3; attempt++ {
 		currPolicy, err := cloudresService.Projects.GetIamPolicy(sam.ProjectId, &cloudres.GetIamPolicyRequest{}).Do()
 		if err != nil {
-			return fmt.Errorf("Error getting current project iam policy: %s", err)
+			return fmt.Errorf("error getting current project iam policy: %s", err)
 		}
 
 		currPolicy.Bindings = mergeBindings(removeMemberFromBindings(currPolicy.Bindings, saResourcePrefix+email))
@@ -219,7 +219,7 @@ func (sam *ServiceAccountManager) revokeRolesFromAccount(ctx context.Context, em
 			time.Sleep(5 * time.Second)
 			continue
 		} else {
-			return fmt.Errorf("Error updating iam policy: %s", err)
+			return fmt.Errorf("error updating iam policy: %s", err)
 		}
 	}
 	return err

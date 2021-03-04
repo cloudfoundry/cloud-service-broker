@@ -76,7 +76,7 @@ func SetupDb(logger lager.Logger) *gorm.DB {
 	}
 	switch dbType {
 	default:
-		logger.Error("Database Setup", fmt.Errorf("Invalid database type %q, valid types are: sqlite3 and mysql", dbType))
+		logger.Error("Database Setup", fmt.Errorf("invalid database type %q, valid types are: sqlite3 and mysql", dbType))
 		os.Exit(1)
 	case DbTypeMysql:
 		db, err = setupMysqlDb(logger)
@@ -95,7 +95,7 @@ func SetupDb(logger lager.Logger) *gorm.DB {
 func setupSqlite3Db(logger lager.Logger) (*gorm.DB, error) {
 	dbPath := viper.GetString(dbPathProp)
 	if dbPath == "" {
-		return nil, fmt.Errorf("You must set a database path when using SQLite3 databases")
+		return nil, fmt.Errorf("you must set a database path when using SQLite3 databases")
 	}
 
 	logger.Info("WARNING: DO NOT USE SQLITE3 IN PRODUCTION!")
@@ -110,7 +110,7 @@ func setupMysqlDb(logger lager.Logger) (*gorm.DB, error) {
 	dbPassword := viper.GetString(dbPassProp)
 
 	if dbPassword == "" || dbHost == "" || dbUsername == "" {
-		return nil, errors.New("DB_HOST, DB_USERNAME and DB_PASSWORD are required environment variables.")
+		return nil, errors.New("DB_HOST, DB_USERNAME and DB_PASSWORD are required environment variables")
 	}
 
 	dbPort := viper.GetString(dbPortProp)
@@ -118,7 +118,7 @@ func setupMysqlDb(logger lager.Logger) (*gorm.DB, error) {
 
 	tlsStr, err := generateTlsStringFromEnv()
 	if err != nil {
-		return nil, fmt.Errorf("Error generating TLS string from env: %s", err)
+		return nil, fmt.Errorf("error generating TLS string from env: %s", err)
 	}
 
 	logger.Info("Connecting to MySQL Database", lager.Data{
@@ -144,13 +144,13 @@ func generateTlsStringFromEnv() (string, error) {
 		rootCertPool := x509.NewCertPool()
 
 		if ok := rootCertPool.AppendCertsFromPEM([]byte(caCert)); !ok {
-			return "", fmt.Errorf("Error appending cert: %s", errors.New(""))
+			return "", fmt.Errorf("error appending cert: %s", errors.New(""))
 		}
 		clientCert := make([]tls.Certificate, 0, 1)
 
 		certs, err := tls.X509KeyPair([]byte(clientCertStr), []byte(clientKeyStr))
 		if err != nil {
-			return "", fmt.Errorf("Error parsing cert pair: %s", err)
+			return "", fmt.Errorf("error parsing cert pair: %s", err)
 		}
 		clientCert = append(clientCert, certs)
 		mysql.RegisterTLSConfig("custom", &tls.Config{

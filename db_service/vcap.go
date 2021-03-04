@@ -44,7 +44,7 @@ func UseVcapServices() error {
 
 	vcapService, err := ParseVcapServices(vcapData)
 	if err != nil {
-		return fmt.Errorf("Error parsing VCAP_SERVICES: %s", err)
+		return fmt.Errorf("error parsing VCAP_SERVICES: %s", err)
 	}
 
 	return SetDatabaseCredentials(vcapService)
@@ -54,7 +54,7 @@ func SetDatabaseCredentials(vcapService VcapService) error {
 
 	u, err := url.Parse(coalesce(vcapService.Credentials["uri"]))
 	if err != nil {
-		return fmt.Errorf("Error parsing credentials uri field: %s", err)
+		return fmt.Errorf("error parsing credentials uri field: %s", err)
 	}
 
 	// Set up database credentials using environment variables
@@ -97,18 +97,18 @@ func ParseVcapServices(vcapServicesData string) (VcapService, error) {
 	var vcapMap map[string][]VcapService
 	err := json.Unmarshal([]byte(vcapServicesData), &vcapMap)
 	if err != nil {
-		return VcapService{}, fmt.Errorf("Error unmarshalling VCAP_SERVICES: %s", err)
+		return VcapService{}, fmt.Errorf("error unmarshalling VCAP_SERVICES: %s", err)
 	}
 
 	for _, vcapArray := range vcapMap {
 		vcapService, err := findMySqlTag(vcapArray, "mysql")
 		if err != nil {
-			return VcapService{}, fmt.Errorf("Error finding MySQL tag: %s", err)
+			return VcapService{}, fmt.Errorf("error finding MySQL tag: %s", err)
 		}
 		return vcapService, nil
 	}
 
-	return VcapService{}, fmt.Errorf("Error parsing VCAP_SERVICES")
+	return VcapService{}, fmt.Errorf("error parsing VCAP_SERVICES")
 }
 
 // whether a given string array arr contains string key
@@ -132,7 +132,7 @@ func findMySqlTag(vcapServices []VcapService, key string) (VcapService, error) {
 		}
 	}
 	if count != 1 {
-		return VcapService{}, fmt.Errorf("The variable VCAP_SERVICES must have one VCAP service with a tag of %s. There are currently %d VCAP services with the tag %s.", "'mysql'", count, "'mysql'")
+		return VcapService{}, fmt.Errorf("the variable VCAP_SERVICES must have one VCAP service with a tag of %s. There are currently %d VCAP services with the tag %s", "'mysql'", count, "'mysql'")
 	}
 	return vcapServices[index], nil
 }
