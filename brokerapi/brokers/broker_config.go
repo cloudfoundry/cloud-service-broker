@@ -33,12 +33,12 @@ type BrokerConfig struct {
 func NewBrokerConfigFromEnv(logger lager.Logger) (*BrokerConfig, error) {
 	registry := broker.BrokerRegistry{}
 	if err := brokerpak.RegisterAll(registry); err != nil {
-		return nil, fmt.Errorf("Error loading brokerpaks: %v", err)
+		return nil, fmt.Errorf("error loading brokerpaks: %v", err)
 	}
 
 	config, err := config.Parse()
 	if err != nil {
-		return nil, fmt.Errorf("Failed loading config: %v", err)
+		return nil, fmt.Errorf("failed loading config: %v", err)
 	}
 
 	var cs credstore.CredStore
@@ -47,7 +47,7 @@ func NewBrokerConfigFromEnv(logger lager.Logger) (*BrokerConfig, error) {
 		var err error
 		cs, err = credstore.NewCredhubStore(&config.CredStoreConfig, logger)
 		if err != nil {
-			return nil, fmt.Errorf("Failed creating credstore: %v", err)
+			return nil, fmt.Errorf("failed creating credstore: %v", err)
 		}
 	}
 

@@ -141,7 +141,7 @@ func unmarshalViper(key string) (map[string]interface{}, error) {
 	if viper.IsSet(key) {
 		val := viper.GetString(key)
 		if err := json.Unmarshal([]byte(val), &vals); err != nil {
-			return nil, fmt.Errorf("Failed unmarshaling config value %s", key)
+			return nil, fmt.Errorf("failed unmarshaling config value %s", key)
 		}
 	}
 	return vals, nil
@@ -242,7 +242,7 @@ func (svc *ServiceDefinition) GetPlanById(planId string) (*ServicePlan, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("Plan ID %q could not be found", planId)
+	return nil, fmt.Errorf("plan ID %q could not be found", planId)
 }
 
 // UserDefinedPlans extracts user defined plans from the environment, failing if

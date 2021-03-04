@@ -89,7 +89,7 @@ func ExampleServiceDefinition_GetPlanById() {
 
 	// Output: builtin-plan: "Builtin!" <nil>
 	// custom-plan: "Custom!" <nil>
-	// missing-plan: Plan ID "missing-plan" could not be found
+	// missing-plan: plan ID "missing-plan" could not be found
 }
 
 func TestServiceDefinition_UserDefinedPlans(t *testing.T) {
@@ -517,7 +517,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
-			ExpectedError: fmt.Errorf("Failed unmarshaling config value provision.defaults"),
+			ExpectedError: fmt.Errorf("failed unmarshaling config value provision.defaults"),
 		},
 	}
 
@@ -768,7 +768,7 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 				"osb_context":         map[string]interface{}{},
 				"originatingIdentity": map[string]interface{}{},
 			},
-			ExpectedError: fmt.Errorf("Failed unmarshaling config value provision.defaults"),
+			ExpectedError: fmt.Errorf("failed unmarshaling config value provision.defaults"),
 		},
 		"provision location and name": {
 			ServiceProperties: map[string]interface{}{},           // 2

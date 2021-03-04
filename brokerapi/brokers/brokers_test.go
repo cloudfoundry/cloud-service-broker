@@ -340,7 +340,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 				req := stub.ProvisionDetails()
 				req.ServiceID = "bad-service-id"
 				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
-				assertEqual(t, "errors should match", errors.New("Unknown service ID: \"bad-service-id\""), err)
+				assertEqual(t, "errors should match", errors.New(`unknown service ID: "bad-service-id"`), err)
 			},
 		},
 		"unknown-plan-id": {
@@ -349,7 +349,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 				req := stub.ProvisionDetails()
 				req.PlanID = "bad-plan-id"
 				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
-				assertEqual(t, "errors should match", errors.New("Plan ID \"bad-plan-id\" could not be found"), err)
+				assertEqual(t, "errors should match", errors.New(`plan ID "bad-plan-id" could not be found`), err)
 			},
 		},
 		"bad-request-json": {

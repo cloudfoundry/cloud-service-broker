@@ -68,7 +68,7 @@ func TestParseVcapServices(t *testing.T) {
 	}{
 		"empty vcap service": {
 			VcapServiceData: "",
-			ExpectedError:   errors.New("Error unmarshalling VCAP_SERVICES: unexpected end of JSON input"),
+			ExpectedError:   errors.New("error unmarshalling VCAP_SERVICES: unexpected end of JSON input"),
 		},
 		"google-cloud vcap-service": {
 			VcapServiceData: `{
@@ -194,7 +194,7 @@ func TestParseVcapServices(t *testing.T) {
     }
   ]
 }`,
-			ExpectedError: errors.New("Error finding MySQL tag: The variable VCAP_SERVICES must have one VCAP service with a tag of 'mysql'. There are currently 2 VCAP services with the tag 'mysql'."),
+			ExpectedError: errors.New("error finding MySQL tag: the variable VCAP_SERVICES must have one VCAP service with a tag of 'mysql'. There are currently 2 VCAP services with the tag 'mysql'"),
 		},
 		"invalid vcap service - zero mysql tags": {
 			VcapServiceData: `{
@@ -222,7 +222,7 @@ func TestParseVcapServices(t *testing.T) {
   ]
 }
 `,
-			ExpectedError: errors.New("Error finding MySQL tag: The variable VCAP_SERVICES must have one VCAP service with a tag of 'mysql'. There are currently 0 VCAP services with the tag 'mysql'."),
+			ExpectedError: errors.New("error finding MySQL tag: the variable VCAP_SERVICES must have one VCAP service with a tag of 'mysql'. There are currently 0 VCAP services with the tag 'mysql'"),
 		},
 	}
 
@@ -316,7 +316,7 @@ func TestSetDatabaseCredentials(t *testing.T) {
 					"username": "fefcbe8360854a18a7994b870e7b0bf5",
 				},
 			},
-			ExpectedError: errors.New(`Error parsing credentials uri field: parse "mys@!ql://fefcbe8360854a18a7994b870e7b0bf5:z9z6eskdbs1rhtxt@10.0.0.20:3306/service_instance_db?reconnect=true": first path segment in URL cannot contain colon`),
+			ExpectedError: errors.New(`error parsing credentials uri field: parse "mys@!ql://fefcbe8360854a18a7994b870e7b0bf5:z9z6eskdbs1rhtxt@10.0.0.20:3306/service_instance_db?reconnect=true": first path segment in URL cannot contain colon`),
 		},
 	}
 

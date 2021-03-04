@@ -79,7 +79,7 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 	})
 
 	if provider.serviceDefinition.ProvisionSettings.IsTfImport(provisionContext) {
-		return models.ServiceInstanceDetails{}, fmt.Errorf("Cannot update to subsume plan\n\nFor OpsMan Tile users see documentation here: https://via.vmw.com/ENs4\n\nFor Open Source users deployed via 'cf push' see documentation here:  https://via.vmw.com/ENw4")
+		return models.ServiceInstanceDetails{}, fmt.Errorf("cannot update to subsume plan\n\nFor OpsMan Tile users see documentation here: https://via.vmw.com/ENs4\n\nFor Open Source users deployed via 'cf push' see documentation here:  https://via.vmw.com/ENw4")
 	}
 
 	tfId := provisionContext.GetString("tf_id")
@@ -146,7 +146,7 @@ func (provider *terraformProvider) importCreate(ctx context.Context, vars *varco
 			importFields = fmt.Sprintf("%s, %s", importFields, action.ImportVariables[i].Name)
 		}
 
-		return "", fmt.Errorf("Must provide values for all import parameters: %s", importFields)
+		return "", fmt.Errorf("must provide values for all import parameters: %s", importFields)
 	}
 
 	tfId := vars.GetString("tf_id")

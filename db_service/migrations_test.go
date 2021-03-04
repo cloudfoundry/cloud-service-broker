@@ -36,7 +36,7 @@ func TestValidateLastMigration(t *testing.T) {
 		},
 		"before-v2": {
 			LastMigration: 0,
-			Expected:      errors.New("Migration from broker versions <= 2.0 is no longer supported, upgrade using a v3.x broker then try again."),
+			Expected:      errors.New("migration from broker versions <= 2.0 is no longer supported, upgrade using a v3.x broker then try again"),
 		},
 		"v3-to-v4": {
 			LastMigration: 1,
@@ -56,11 +56,11 @@ func TestValidateLastMigration(t *testing.T) {
 		},
 		"future": {
 			LastMigration: numMigrations,
-			Expected:      errors.New("The database you're connected to is newer than this tool supports."),
+			Expected:      errors.New("the database you're connected to is newer than this tool supports"),
 		},
 		"far-future": {
 			LastMigration: math.MaxInt32,
-			Expected:      errors.New("The database you're connected to is newer than this tool supports."),
+			Expected:      errors.New("the database you're connected to is newer than this tool supports"),
 		},
 	}
 
@@ -82,15 +82,15 @@ func TestRunMigrations_Failures(t *testing.T) {
 	}{
 		"before-v2": {
 			LastMigration: 0,
-			Expected:      errors.New("Migration from broker versions <= 2.0 is no longer supported, upgrade using a v3.x broker then try again."),
+			Expected:      errors.New("migration from broker versions <= 2.0 is no longer supported, upgrade using a v3.x broker then try again"),
 		},
 		"future": {
 			LastMigration: numMigrations,
-			Expected:      errors.New("The database you're connected to is newer than this tool supports."),
+			Expected:      errors.New("the database you're connected to is newer than this tool supports"),
 		},
 		"far-future": {
 			LastMigration: math.MaxInt32,
-			Expected:      errors.New("The database you're connected to is newer than this tool supports."),
+			Expected:      errors.New("the database you're connected to is newer than this tool supports"),
 		},
 	}
 

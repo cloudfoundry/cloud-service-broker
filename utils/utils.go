@@ -51,7 +51,7 @@ func GetAuthedConfig() (*jwt.Config, error) {
 	rootCreds := GetServiceAccountJson()
 	conf, err := google.JWTConfigFromJSON([]byte(rootCreds), cloudPlatformScope)
 	if err != nil {
-		return nil, fmt.Errorf("Error initializing config from credentials: %s", err)
+		return nil, fmt.Errorf("error initializing config from credentials: %s", err)
 	}
 	return conf, nil
 }

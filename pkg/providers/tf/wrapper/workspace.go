@@ -165,10 +165,10 @@ func (workspace *TerraformWorkspace) Serialize() (string, error) {
 // initializedFsFlat initializes simple terraform directory structure
 func (workspace *TerraformWorkspace) initializedFsFlat() error {
 	if len(workspace.Modules) != 1 {
-		return fmt.Errorf("Cannot build flat terraform workspace with multiple modules")
+		return fmt.Errorf("cannot build flat terraform workspace with multiple modules")
 	}
 	if len(workspace.Instances) != 1 {
-		return fmt.Errorf("Cannot build flat terraform workspace with multiple instances")
+		return fmt.Errorf("cannot build flat terraform workspace with multiple instances")
 	}
 
 	for name, tf := range workspace.Modules[0].Definitions {
@@ -461,16 +461,16 @@ func DefaultExecutor(c *exec.Cmd) (ExecutionOutput, error) {
 
 	stderr, err := c.StderrPipe()
 	if err != nil {
-		return ExecutionOutput{}, fmt.Errorf("Failed to get stderr pipe for terraform execution: %v", err)
+		return ExecutionOutput{}, fmt.Errorf("failed to get stderr pipe for terraform execution: %v", err)
 	}
 
 	stdout, err := c.StdoutPipe()
 	if err != nil {
-		return ExecutionOutput{}, fmt.Errorf("Failed to get stdout pipe for terraform execution: %v", err)
+		return ExecutionOutput{}, fmt.Errorf("failed to get stdout pipe for terraform execution: %v", err)
 	}
 
 	if err := c.Start(); err != nil {
-		return ExecutionOutput{}, fmt.Errorf("Failed to execute terraform: %v", err)
+		return ExecutionOutput{}, fmt.Errorf("failed to execute terraform: %v", err)
 	}
 
 	output, _ := ioutil.ReadAll(stdout)

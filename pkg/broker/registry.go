@@ -120,5 +120,5 @@ func (brokerRegistry BrokerRegistry) GetServiceById(id string) (*ServiceDefiniti
 		}
 	}
 
-	return nil, fmt.Errorf("Unknown service ID: %q", id)
+	return nil, fmt.Errorf("unknown service ID: %q", id)
 }

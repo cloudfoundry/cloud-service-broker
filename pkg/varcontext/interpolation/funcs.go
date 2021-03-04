@@ -62,7 +62,7 @@ func hilFuncConfig() ast.Function {
 			if viper.IsSet(args[0].(string)) {
 				return viper.GetString(args[0].(string)), nil
 			}
-			return "", fmt.Errorf("Missing config value %s", args[0].(string))
+			return "", fmt.Errorf("missing config value %s", args[0].(string))
 		},
 	}
 }
@@ -76,7 +76,7 @@ func hilFuncEnv() ast.Function {
 			if val, ok := os.LookupEnv(args[0].(string)); ok {
 				return val, nil
 			}
-			return "", fmt.Errorf("Missing environment variable %s", args[0].(string))
+			return "", fmt.Errorf("missing environment variable %s", args[0].(string))
 		},
 	}
 }
@@ -178,7 +178,7 @@ func hilFuncAssert() ast.Function {
 			message := args[1].(string)
 
 			if !condition {
-				return false, fmt.Errorf("Assertion failed: %s", message)
+				return false, fmt.Errorf("assertion failed: %s", message)
 			}
 
 			return true, nil

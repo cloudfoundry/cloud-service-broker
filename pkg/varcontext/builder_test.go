@@ -197,7 +197,7 @@ func ExampleContextBuilder_BuildMap() {
 	m, _ := Builder().MergeEvalResult("a", "${1+1}", "string").BuildMap()
 	fmt.Printf("Map: %v\n", m)
 
-	//Output: Error: 1 error(s) occurred: couldn't compute the value for "a", template: "${assert(false, \"failure!\")}", assert: Assertion failed: failure!
+	//Output: Error: 1 error(s) occurred: couldn't compute the value for "a", template: "${assert(false, \"failure!\")}", assert: assertion failed: failure!
 	// Map: map[a:2]
 }
 
