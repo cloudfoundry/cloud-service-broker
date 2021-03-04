@@ -19,14 +19,11 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/config"
-
-	"github.com/pkg/errors"
-
 	"code.cloudfoundry.org/credhub-cli/credhub"
 	"code.cloudfoundry.org/credhub-cli/credhub/auth"
 	"code.cloudfoundry.org/credhub-cli/credhub/permissions"
 	"code.cloudfoundry.org/lager"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/config"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 ./ CredStore
@@ -53,7 +50,7 @@ func NewCredhubStore(credStoreConfig *config.CredStoreConfig, logger lager.Logge
 	}
 
 	if !credStoreConfig.HasCredHubConfig() {
-		return nil, errors.Errorf("CredHubConfig not found")
+		return nil, fmt.Errorf("CredHubConfig not found")
 	}
 	options := []credhub.Option{
 		credhub.SkipTLSValidation(credStoreConfig.SkipSSLValidation),
@@ -68,7 +65,7 @@ func NewCredhubStore(credStoreConfig *config.CredStoreConfig, logger lager.Logge
 		}
 
 		if dat == nil {
-			return nil, errors.Errorf("CredHub certificate is not valid: %s", credStoreConfig.CaCertFile)
+			return nil, fmt.Errorf("CredHub certificate is not valid: %s", credStoreConfig.CaCertFile)
 		}
 		options = append(options, credhub.CaCerts(string(dat)))
 	}

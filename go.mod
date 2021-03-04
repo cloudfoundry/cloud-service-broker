@@ -5,7 +5,7 @@ go 1.14
 require (
 	cloud.google.com/go/storage v1.14.0
 	code.cloudfoundry.org/credhub-cli v0.0.0-20200325195429-1faf152db5a4
-	code.cloudfoundry.org/lager v1.1.1-0.20191008172124-a9afc05ee5be
+	code.cloudfoundry.org/lager v2.0.0+incompatible
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/aws/aws-sdk-go v1.25.3 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e // indirect
@@ -27,13 +27,12 @@ require (
 	github.com/onsi/gomega v1.10.5
 	github.com/pborman/uuid v1.2.1
 	github.com/pivotal-cf/brokerapi/v7 v7.5.0
-	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.1.1-0.20190813114604-4efc3ccc7a66 // indirect
 	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d
 	github.com/russross/blackfriday v1.6.0
 	github.com/spf13/afero v1.2.1 // indirect
 	github.com/spf13/cast v1.3.1
-	github.com/spf13/cobra v0.0.7
+	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
