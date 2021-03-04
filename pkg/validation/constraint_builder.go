@@ -46,7 +46,7 @@ func NewConstraintBuilder() ConstraintBuilder {
 	return ConstraintBuilder{}
 }
 
-// A builder for JSON Schema compliant constraint lists
+// ConstraintBuilder - A builder for JSON Schema compliant constraint lists
 type ConstraintBuilder map[string]interface{}
 
 // Type adds a type constrinat.
