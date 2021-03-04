@@ -49,7 +49,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 )
 
-// Conditions are a set of values that can be compared with a base truth and
+// Condition is a set of values that can be compared with a base truth and
 // return true if all of the facets of the condition match.
 type Condition map[string]string
 

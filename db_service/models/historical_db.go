@@ -232,7 +232,7 @@ func (TerraformDeploymentV1) TableName() string {
 	return "terraform_deployments"
 }
 
-// Expands the size of the Workspace column to handle deployments where the
+// TerraformDeploymentV2 expands the size of the Workspace column to handle deployments where the
 // Terraform workspace is greater than 64K. (mediumtext allows for workspaces up
 // to 16384K.)
 type TerraformDeploymentV2 struct {

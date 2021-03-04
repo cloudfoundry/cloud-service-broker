@@ -24,13 +24,13 @@ import (
 
 // CfSharingWrapper enables the Shareable flag for every service provided by
 // the broker.
-type CfSharingWraper struct {
+type CfSharingWrapper struct {
 	brokerapi.ServiceBroker
 }
 
 // Services augments the response from the wrapped ServiceBroker by adding
 // the shareable flag.
-func (w *CfSharingWraper) Services(ctx context.Context) (services []brokerapi.Service, err error) {
+func (w *CfSharingWrapper) Services(ctx context.Context) (services []brokerapi.Service, err error) {
 	services, err = w.ServiceBroker.Services(ctx)
 
 	for i := range services {
@@ -47,5 +47,5 @@ func (w *CfSharingWraper) Services(ctx context.Context) (services []brokerapi.Se
 // NewCfSharingWrapper wraps the given servicebroker with the augmenter that
 // sets the Shareable flag on all services.
 func NewCfSharingWrapper(wrapped brokerapi.ServiceBroker) brokerapi.ServiceBroker {
-	return &CfSharingWraper{ServiceBroker: wrapped}
+	return &CfSharingWrapper{ServiceBroker: wrapped}
 }

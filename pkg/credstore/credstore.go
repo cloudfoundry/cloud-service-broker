@@ -30,6 +30,7 @@ import (
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 ./ CredStore
+
 type CredStore interface {
 	Put(key string, credentials interface{}) (interface{}, error)
 	PutValue(key string, credentials interface{}) (interface{}, error)
