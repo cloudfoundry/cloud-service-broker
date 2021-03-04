@@ -77,7 +77,7 @@ func (plan *TfServiceDefinitionV1Plan) Validate() (errs *validation.FieldError) 
 	)
 }
 
-// Converts this plan definition to a broker.ServicePlan.
+// ToPlan converts this plan definition to a broker.ServicePlan.
 func (plan *TfServiceDefinitionV1Plan) ToPlan() broker.ServicePlan {
 	masterPlan := brokerapi.ServicePlan{
 		ID:          plan.Id,
@@ -139,7 +139,7 @@ func loadTemplate(templatePath string) (string, error) {
 	return string(buff), nil
 }
 
-// load template ref into template if provided
+// LoadTemplate loads template ref into template if provided
 func (action *TfServiceDefinitionV1Action) LoadTemplate(srcDir string) error {
 	var err error
 

@@ -65,7 +65,7 @@ func init() {
 	viper.BindEnv(dbPathProp, "DB_PATH")
 }
 
-// pulls db credentials from the environment, connects to the db, and returns the db connection
+// SetupDb pulls db credentials from the environment, connects to the db, and returns the db connection
 func SetupDb(logger lager.Logger) *gorm.DB {
 	dbType := viper.GetString(dbTypeProp)
 	var db *gorm.DB

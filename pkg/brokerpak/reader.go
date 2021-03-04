@@ -119,7 +119,7 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 	return ziputil.Extract(&pak.contents.Reader, bindir, destination)
 }
 
-// Opens the file at the given path as a BrokerPakReader.
+// OpenBrokerPak opens the file at the given path as a BrokerPakReader.
 func OpenBrokerPak(pakPath string) (*BrokerPakReader, error) {
 	rc, err := zip.OpenReader(pakPath)
 	if err != nil {

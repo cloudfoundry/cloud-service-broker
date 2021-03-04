@@ -36,7 +36,7 @@ func List(z *zip.Reader, w io.Writer) {
 	sw.Flush()
 }
 
-// Joins a path for use in a zip file.
+// Join joins a path for use in a zip file.
 func Join(path ...string) string {
 	return strings.Join(path, "/")
 }
@@ -63,7 +63,7 @@ func Find(z *zip.Reader, path ...string) *zip.File {
 	return nil
 }
 
-// Opens the file at the given path if possible, otherwise returns an error.
+// Open the file at the given path if possible, otherwise returns an error.
 func Open(z *zip.Reader, path ...string) (io.ReadCloser, error) {
 	f := Find(z, path...)
 	if f == nil {
@@ -73,7 +73,7 @@ func Open(z *zip.Reader, path ...string) (io.ReadCloser, error) {
 	return f.Open()
 }
 
-// Extracts the contents of the zipDirectory to the given OS osDirectory.
+// Extract the contents of the zipDirectory to the given OS osDirectory.
 // This routine is overly strict and doesn't allow extracting _any_ files that
 // contain "..".
 func Extract(z *zip.Reader, zipDirectory, osDirectory string) error {

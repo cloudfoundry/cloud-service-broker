@@ -88,7 +88,7 @@ func (set *ToggleSet) Toggle(name string, value bool, description string) Toggle
 	return toggle
 }
 
-// NewFlagSet returns a new, empty toggle set with the specified property prefix.
+// NewToggleSet returns a new, empty toggle set with the specified property prefix.
 // The property prefix will be prepended to any toggles exactly as-is. You MUST
 // specify a trailing period if you want your properties to be namespaced.
 func NewToggleSet(propertyPrefix string) *ToggleSet {
