@@ -40,7 +40,7 @@ func newInMemoryDatastore(t *testing.T) *SqlDatastore {
 }
 
 func createServiceInstanceDetailsInstance() (string, models.ServiceInstanceDetails) {
-	testPk := string(42)
+	testPk := "42"
 
 	instance := models.ServiceInstanceDetails{}
 	instance.ID = testPk
@@ -597,7 +597,7 @@ func TestSqlDatastore_ExistsProvisionRequestDetailsById(t *testing.T) {
 }
 
 func createTerraformDeploymentInstance() (string, models.TerraformDeployment) {
-	testPk := string(42)
+	testPk := "42"
 
 	instance := models.TerraformDeployment{}
 	instance.ID = testPk

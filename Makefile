@@ -27,9 +27,11 @@ LDFLAGS="-X github.com/cloudfoundry-incubator/cloud-service-broker/utils.Version
 
 .PHONY: deps-go-binary
 deps-go-binary:
+ifeq ($(SKIP_GO_VERSION_CHECK),)
 	echo "Expect: $(GO-VER)" && \
 		echo "Actual: $$($(GO) version)" && \
 	 	$(GO) version | grep $(GO-VER) > /dev/null
+endif
 
 ###### Help ###################################################################
 
