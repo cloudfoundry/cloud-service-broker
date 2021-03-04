@@ -63,6 +63,7 @@ build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-b
 .PHONY: generate
 generate: ## generate test fakes
 	${GO} generate ./...
+	make format
 
 .PHONY: download
 download: ## download go module dependencies

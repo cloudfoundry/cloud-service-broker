@@ -97,7 +97,9 @@ func main() {
 }
 
 func createDao(models []crudModel) {
-	f, err := os.Create("dao.go")
+	const name = "dao.go"
+	fmt.Printf("Writing to `%s`\n", name)
+	f, err := os.Create(name)
 	die(err)
 	defer f.Close()
 
@@ -111,7 +113,9 @@ func createDao(models []crudModel) {
 }
 
 func createDaoTest(models []crudModel) {
-	f, err := os.Create("dao_test.go")
+	const name = "dao_test.go"
+	fmt.Printf("Writing to `%s`\n", name)
+	f, err := os.Create(name)
 	die(err)
 	defer f.Close()
 
@@ -301,9 +305,7 @@ func {{$fn}}(ctx context.Context, {{ $key.Args }}) error { return defaultDatasto
 func (ds *SqlDatastore) {{$fn}}(ctx context.Context, {{ $key.Args }}) error {
 	return ds.db.{{ $key.WhereClause }}.Delete(&models.{{$type}}{}).Error
 }
-
 {{ end }}
-
 // Delete{{.Type}} soft-deletes the record.
 func {{funcName "Delete" .Type}}(ctx context.Context, record *models.{{.Type}}) error { return defaultDatastore().{{funcName "Delete" .Type}}(ctx, record) }
 func (ds *SqlDatastore) {{funcName "Delete" .Type}}(ctx context.Context, record *models.{{.Type}}) error {

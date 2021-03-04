@@ -1,4 +1,4 @@
-// Copyright 2019 the Service Broker Project Authors.
+// Copyright 2021 the Service Broker Project Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -226,18 +226,6 @@ func GetProvisionRequestDetailsById(ctx context.Context, id uint) (*models.Provi
 func (ds *SqlDatastore) GetProvisionRequestDetailsById(ctx context.Context, id uint) (*models.ProvisionRequestDetails, error) {
 	record := models.ProvisionRequestDetails{}
 	if err := ds.db.Where("id = ?", id).First(&record).Error; err != nil {
-		return nil, err
-	}
-
-	return &record, nil
-}
-
-func GetProvisionRequestDetailsByInstanceId(ctx context.Context, instanceId string) (*models.ProvisionRequestDetails, error) {
-	return defaultDatastore().GetProvisionRequestDetailsByInstanceId(ctx, instanceId)
-}
-func (ds *SqlDatastore) GetProvisionRequestDetailsByInstanceId(ctx context.Context, instanceId string) (*models.ProvisionRequestDetails, error) {
-	record := models.ProvisionRequestDetails{}
-	if err := ds.db.Where("service_instance_id = ?", instanceId).First(&record).Error; err != nil {
 		return nil, err
 	}
 
