@@ -15,11 +15,10 @@
 package credstore
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
-
-	"github.com/pkg/errors"
 
 	"code.cloudfoundry.org/credhub-cli/credhub/permissions"
 )
@@ -41,12 +40,12 @@ func (c *credHubStoreMock) PutValue(key string, credentials interface{}) (interf
 	if _, err := os.Stat(credstorePath); os.IsNotExist(err) {
 		err = os.MkdirAll(credstorePath, 0777)
 		if err != nil {
-			return nil, errors.Wrap(err, "Failed to create directory for mock credstore")
+			return nil, fmt.Errorf("failed to create directory for mock credstore: %w", err)
 		}
 	}
 	file, err := os.Create(credstorePath + "/" + getFileName(key))
 	if err != nil {
-		return nil, errors.Wrap(err, "Failed to create file for mock credstore")
+		return nil, fmt.Errorf("failed to create file for mock credstore: %w", err)
 	}
 
 	s := credentials.(string)
@@ -54,7 +53,7 @@ func (c *credHubStoreMock) PutValue(key string, credentials interface{}) (interf
 
 	_, err = file.Write(b)
 	if err != nil {
-		return nil, errors.Wrap(err, "Failed to write to file for mock credstore")
+		return nil, fmt.Errorf("failed to write to file for mock credstore: %w", err)
 	}
 
 	file.Close()
@@ -66,13 +65,13 @@ func (c *credHubStoreMock) GetValue(key string) (string, error) {
 	credstorePath := os.Getenv("DEV_MODE_ONLY")
 	file, err := os.Open(credstorePath + "/" + getFileName(key))
 	if err != nil {
-		return "", errors.Wrap(err, "Failed to open file for mock credstore")
+		return "", fmt.Errorf("failed to open file for mock credstore: %w", err)
 	}
 	defer file.Close()
 
 	content, err := ioutil.ReadAll(file)
 	if err != nil {
-		return "", errors.Wrap(err, "Failed to read file for mock credstore")
+		return "", fmt.Errorf("failed to read file for mock credstore: %w", err)
 	}
 
 	return string(content), nil

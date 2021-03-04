@@ -15,11 +15,11 @@
 package db_service
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
