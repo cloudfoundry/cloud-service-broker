@@ -94,8 +94,8 @@ clean: deps-go-binary ## clean up from previous builds
 
 ###### Lint ###################################################################
 
-.PHONY: lint ## lint the source
-lint: checkformat checkimports vet staticcheck
+.PHONY: lint
+lint: checkformat checkimports vet staticcheck ## lint the source
 
 checkformat: ## Checks that the code is formatted correctly
 	@@if [ -n "$$(${GOFMT} -s -e -l -d .)" ]; then       \
@@ -117,15 +117,15 @@ staticcheck: ## Runs staticcheck
 
 ###### Format #################################################################
 
-.PHONY: format ## format the source
-format:
+.PHONY: format
+format: ## format the source
 	${GOFMT} -s -e -l -w .
 	${GO} run golang.org/x/tools/cmd/goimports -l -w .
 
 ###### Image ##################################################################
 
-.PHONY: build-image ## build a Docker image
-build-image: Dockerfile
+.PHONY: build-image
+build-image: Dockerfile ## build a Docker image
 	docker build --tag csb .
 
 ###### Env Var Checks #########################################################
