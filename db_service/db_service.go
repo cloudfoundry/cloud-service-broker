@@ -29,7 +29,7 @@ import (
 var DbConnection *gorm.DB
 var once sync.Once
 
-// Instantiates the db connection and runs migrations
+// New instantiates the db connection and runs migrations
 func New(logger lager.Logger) *gorm.DB {
 	once.Do(func() {
 		DbConnection = SetupDb(logger)

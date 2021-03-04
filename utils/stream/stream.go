@@ -74,7 +74,7 @@ func FromBytes(b []byte) Source {
 	return FromReader(bytes.NewReader(b))
 }
 
-// FromBytes streams the given bytes as a buffer.
+// FromString streams the given string as a buffer.
 func FromString(s string) Source {
 	return FromBytes([]byte(s))
 }

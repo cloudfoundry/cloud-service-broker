@@ -148,7 +148,7 @@ func fieldNameToLabel(fieldName string) string {
 	return strings.Join(components, " ")
 }
 
-// Apply defaults adds default values for missing broker variables.
+// ApplyDefaults adds default values for missing broker variables.
 func ApplyDefaults(parameters map[string]interface{}, variables []BrokerVariable) {
 
 	for _, v := range variables {
@@ -164,7 +164,7 @@ func ValidateVariables(parameters map[string]interface{}, variables []BrokerVari
 	return ValidateVariablesAgainstSchema(parameters, schema)
 }
 
-// ValidateVariables validates a list of BrokerVariables are adhering to their JSONSchema.
+// ValidateVariablesAgainstSchema validates a list of BrokerVariables are adhering to their JSONSchema.
 func ValidateVariablesAgainstSchema(parameters map[string]interface{}, schema map[string]interface{}) error {
 
 	result, err := gojsonschema.Validate(gojsonschema.NewGoLoader(schema), gojsonschema.NewGoLoader(parameters))

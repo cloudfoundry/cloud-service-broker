@@ -42,7 +42,7 @@ var (
 // by the Service Broker.
 type BrokerRegistry map[string]*ServiceDefinition
 
-// Registers a ServiceDefinition with the service registry that various commands
+// Register registers a ServiceDefinition with the service registry that various commands
 // poll to create the catalog, documentation, etc.
 func (brokerRegistry BrokerRegistry) Register(service *ServiceDefinition) {
 	name := service.Name

@@ -24,7 +24,7 @@ import (
 
 const numMigrations = 9
 
-// runs schema migrations on the provided service broker database to get it up to date
+// RunMigrations runs schema migrations on the provided service broker database to get it up to date
 func RunMigrations(db *gorm.DB) error {
 	migrations := make([]func() error, numMigrations)
 

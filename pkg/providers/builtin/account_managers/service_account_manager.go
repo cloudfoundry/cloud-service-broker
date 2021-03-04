@@ -45,7 +45,7 @@ type ServiceAccountManager struct {
 	Logger     lager.Logger
 }
 
-// If roleWhitelist is specified, then the extracted role is validated against it and an error is returned if
+// CreateCredentials - if roleWhitelist is specified, then the extracted role is validated against it and an error is returned if
 // the role is not contained within the whitelist
 func (sam *ServiceAccountManager) CreateCredentials(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error) {
 	role := vc.GetString("role")
@@ -91,7 +91,7 @@ func (sam *ServiceAccountManager) CreateCredentials(ctx context.Context, vc *var
 	return varcontext.Builder().MergeStruct(newSAInfo).BuildMap()
 }
 
-// deletes the given service account from Google
+// DeleteCredentials deletes the given service account from Google
 func (sam *ServiceAccountManager) DeleteCredentials(ctx context.Context, binding models.ServiceBindingCredentials) error {
 
 	var saCreds ServiceAccountInfo
@@ -275,7 +275,7 @@ func FixedRoleBindComputedVariables(role string) []varcontext.DefaultVariable {
 	return append(ServiceAccountBindComputedVariables(), fixedRoleVar)
 }
 
-// Variables output by all brokers that return service account info
+// ServiceAccountBindOutputVariables returns variables output by all brokers that return service account info
 func ServiceAccountBindOutputVariables() []broker.BrokerVariable {
 	return []broker.BrokerVariable{
 		{

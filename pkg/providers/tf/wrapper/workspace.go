@@ -347,7 +347,7 @@ func (workspace *TerraformWorkspace) Destroy() error {
 	return err
 }
 
-// Apply runs `terraform import` on this workspace.
+// Import runs `terraform import` on this workspace.
 // This function blocks if another Terraform command is running on this workspace.
 func (workspace *TerraformWorkspace) Import(resources map[string]string) error {
 	err := workspace.initializeFs()
@@ -366,7 +366,7 @@ func (workspace *TerraformWorkspace) Import(resources map[string]string) error {
 	return nil
 }
 
-// Apply runs `terraform show` on this workspace.
+// Show runs `terraform show` on this workspace.
 // This function blocks if another Terraform command is running on this workspace.
 func (workspace *TerraformWorkspace) Show() (string, error) {
 	err := workspace.initializeFs()

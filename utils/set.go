@@ -27,7 +27,7 @@ func NewStringSet(contents ...string) StringSet {
 	return set
 }
 
-// NewStringSet creates a new string set with the given contents.
+// NewStringSetFromStringMapKeys creates a new string set with the given contents.
 func NewStringSetFromStringMapKeys(contents map[string]string) StringSet {
 	set := StringSet{}
 	for k := range contents {
@@ -74,7 +74,7 @@ func (set StringSet) Contains(other string) bool {
 	return ok
 }
 
-// Returns a copy of this set with every string in the other removed.
+// Minus returns a copy of this set with every string in the other removed.
 func (set StringSet) Minus(other StringSet) StringSet {
 	difference := NewStringSet()
 

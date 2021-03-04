@@ -118,7 +118,7 @@ func SetParameter(input json.RawMessage, key string, value interface{}) (json.Ra
 	return json.Marshal(params)
 }
 
-// UnmarshalObjectRemaidner unmarshals an object into v and returns the
+// UnmarshalObjectRemainder unmarshals an object into v and returns the
 // remaining key/value pairs as a JSON string by doing a set difference.
 func UnmarshalObjectRemainder(data []byte, v interface{}) ([]byte, error) {
 	if err := json.Unmarshal(data, v); err != nil {
@@ -154,7 +154,7 @@ func jsonDiff(superset, subset json.RawMessage) ([]byte, error) {
 	return json.Marshal(remainder)
 }
 
-// GetDefaultProject gets the default project id for the service broker based
+// GetDefaultProjectId gets the default project id for the service broker based
 // on the JSON Service Account key.
 func GetDefaultProjectId() (string, error) {
 	serviceAccount := make(map[string]string)
@@ -171,7 +171,7 @@ func GetServiceAccountJson() string {
 	return viper.GetString("google.account")
 }
 
-// ExtractDefaultLabels creates a map[string]string of labels that should be
+// ExtractDefaultProvisionLabels creates a map[string]string of labels that should be
 // applied to a resource on creation if the resource supports labels.
 // These include the organization, space, and instance id.
 func ExtractDefaultProvisionLabels(instanceId string, details brokerapi.ProvisionDetails) map[string]string {

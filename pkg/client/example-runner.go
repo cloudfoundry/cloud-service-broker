@@ -134,7 +134,7 @@ func GetExamplesForAService(service *broker.ServiceDefinition) ([]CompleteServic
 	return examples, nil
 }
 
-// Do not run example if:
+// FilterMatchingServiceExamples should not be run example if:
 // 1. The service name is specified and does not match the current example's ServiceName
 // 2. The service name is specified and matches the current example's ServiceName, and the example name is specified and does not match the current example's ExampleName
 func FilterMatchingServiceExamples(allExamples []CompleteServiceExample, serviceName, exampleName string) []CompleteServiceExample {

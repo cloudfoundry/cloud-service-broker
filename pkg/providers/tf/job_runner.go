@@ -38,7 +38,7 @@ func NewTfJobRunerFromEnv() (*TfJobRunner, error) {
 	return NewTfJobRunnerForProject(map[string]string{}), nil
 }
 
-// Construct a new JobRunner for the given project.
+// NewTfJobRunnerForProject constructs a new JobRunner for the given project.
 func NewTfJobRunnerForProject(envVars map[string]string) *TfJobRunner {
 	return &TfJobRunner{
 		EnvVars: envVars,
