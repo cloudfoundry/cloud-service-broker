@@ -4,7 +4,7 @@ about: Request documentation for anything CSB. Requesting here helps us improve 
   product for everyone.
 title: "[DOCS]"
 labels: documentation, enhancement
-assignees: omerbensaadon
+assignees: winnab
 
 ---
 
