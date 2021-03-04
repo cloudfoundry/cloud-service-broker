@@ -215,7 +215,7 @@ func RunExample(client *Client, serviceExample CompleteServiceExample) error {
 
 func retry(timeout, period time.Duration, function func() (tryAgain bool, err error)) error {
 	to := time.After(timeout)
-	tick := time.Tick(period)
+	tick := time.NewTicker(period).C
 
 	if tryAgain, err := function(); !tryAgain {
 		return err
