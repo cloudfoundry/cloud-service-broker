@@ -112,6 +112,18 @@ user-defined plans.
 		return client.Update(instanceId, serviceId, planId, json.RawMessage(parametersJson))
 	})
 
+	examplesCmd := &cobra.Command{
+		Use:   "examples",
+		Short: "Display available examples",
+		Long:  "Display available examples",
+		Run: func(cmd *cobra.Command, args []string) {
+			log.Printf("%s: %s\n\n", "example name", "service name")
+			for _, e := range server.GetExamplesFromServer() {
+				log.Printf("%s: %s\n", e.Name, e.ServiceName)
+			}
+		},
+	}
+
 	runExamplesCmd := &cobra.Command{
 		Use:   "run-examples",
 		Short: "Run all examples in the use command.",
@@ -139,7 +151,7 @@ user-defined plans.
 		},
 	}
 
-	clientCmd.AddCommand(clientCatalogCmd, provisionCmd, deprovisionCmd, bindCmd, unbindCmd, lastCmd, runExamplesCmd, updateCmd)
+	clientCmd.AddCommand(clientCatalogCmd, provisionCmd, deprovisionCmd, bindCmd, unbindCmd, lastCmd, runExamplesCmd, updateCmd, examplesCmd)
 
 	bindFlag := func(dest *string, name, description string, commands ...*cobra.Command) {
 		for _, sc := range commands {
