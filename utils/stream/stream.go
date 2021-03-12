@@ -24,8 +24,8 @@ import (
 	"sync"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
-	multierror "github.com/hashicorp/go-multierror"
-	yaml "gopkg.in/yaml.v2"
+	"github.com/hashicorp/go-multierror"
+	"gopkg.in/yaml.v3"
 )
 
 type Source func() (io.ReadCloser, error)
