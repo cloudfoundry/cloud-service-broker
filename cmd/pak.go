@@ -141,11 +141,7 @@ dependencies, services it provides, and the contents.
 		Short: "run the examples from a brokerpak",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			if err := brokerpak.RunExamples(args[0]); err != nil {
-				log.Fatalf("Error executing examples: %v", err)
-			}
-
-			log.Println("Success")
+			brokerpak.RunExamples(args[0])
 		},
 	})
 
