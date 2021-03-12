@@ -23,8 +23,8 @@ import (
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
-	"github.com/go-yaml/yaml"
 	"github.com/pivotal-cf/brokerapi/v7"
+	"gopkg.in/yaml.v3"
 )
 
 func TestLoadTemplates(t *testing.T) {

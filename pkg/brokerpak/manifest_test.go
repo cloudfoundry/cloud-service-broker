@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
-	"github.com/go-yaml/yaml"
+	"gopkg.in/yaml.v3"
 )
 
 func TestNewExampleManifest(t *testing.T) {
