@@ -17,6 +17,7 @@ package brokerpak
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"text/tabwriter"
@@ -173,23 +174,23 @@ func RegisterAll(registry broker.BrokerRegistry) error {
 }
 
 // RunExamples executes the examples from a brokerpak.
-func RunExamples(pack string) error {
+func RunExamples(pack string) {
 	registry, err := registryFromLocalBrokerpak(pack)
 	if err != nil {
-		return err
+		log.Fatalf("Error executing examples (registry): %v", err)
 	}
 
 	apiClient, err := client.NewClientFromEnv()
 	if err != nil {
-		return err
+		log.Fatalf("Error executing examples (client): %v", err)
 	}
 
 	allExamples, err := server.GetAllCompleteServiceExamples(registry)
 	if err != nil {
-		return err
+		log.Fatalf("Error executing examples (getting): %v", err)
 	}
 
-	return client.RunExamplesForService(allExamples, apiClient, "", "", 1)
+	client.RunExamplesForService(allExamples, apiClient, "", "", 1)
 }
 
 // Docs generates the markdown usage docs for the given pack and writes them to stdout.

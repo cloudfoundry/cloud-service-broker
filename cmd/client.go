@@ -137,17 +137,14 @@ user-defined plans.
 				log.Fatalf("Error creating client: %v", err)
 			}
 
-			if exampleName != "" && serviceName == "" {
+			switch {
+			case exampleName != "" && serviceName == "":
 				log.Fatalf("If an example name is specified, you must provide an accompanying service name.")
-			} else if fileName != "" {
-				if err := client.RunExamplesFromFile(apiClient, fileName, serviceName, exampleName); err != nil {
-					log.Fatalf("Error executing examples from file: %v", err)
-				}
-			} else if err := client.RunExamplesForService(server.GetExamplesFromServer(), apiClient, serviceName, exampleName, exampleJobCount); err != nil {
-				log.Fatalf("Error executing examples: %v", err)
+			case fileName != "":
+				client.RunExamplesFromFile(apiClient, fileName, serviceName, exampleName)
+			default:
+				client.RunExamplesForService(server.GetExamplesFromServer(), apiClient, serviceName, exampleName, exampleJobCount)
 			}
-
-			log.Println("Success")
 		},
 	}
 
