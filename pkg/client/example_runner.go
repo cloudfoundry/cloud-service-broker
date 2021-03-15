@@ -20,14 +20,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"math/rand"
-	"os"
 	"sync"
 	"time"
 
-	"github.com/pivotal-cf/brokerapi/v7"
-
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	"github.com/pborman/uuid"
+	"github.com/pivotal-cf/brokerapi/v7"
 )
 
 // RunExamplesForService runs all the examples for a given service name against
@@ -55,13 +53,10 @@ func RunExamplesFromFile(client *Client, fileName, serviceName, exampleName stri
 }
 
 func runExamples(workers int, client *Client, examples []CompleteServiceExample) {
-	rand.Seed(time.Now().UTC().UnixNano())
-
 	type result struct {
-		id       string
-		name     string
-		duration time.Duration
-		err      error
+		id, name, service string
+		duration          time.Duration
+		err               error
 	}
 	var results []result
 	var resultsLock sync.Mutex
@@ -86,6 +81,7 @@ func runExamples(workers int, client *Client, examples []CompleteServiceExample)
 				addResult(result{
 					id:       w.id,
 					name:     w.example.Name,
+					service:  w.example.ServiceName,
 					duration: time.Since(start),
 					err:      err,
 				})
@@ -107,15 +103,15 @@ func runExamples(workers int, client *Client, examples []CompleteServiceExample)
 	log.Println()
 	log.Println("RESULTS:")
 	log.Println()
-	log.Println("id | name | duration | result")
-	log.Println("-- | ---- | -------- | ------")
+	log.Println("id | name | service | duration | result")
+	log.Println("-- | ---- | ------- | -------- | ------")
 	for _, r := range results {
 		switch r.err {
 		case nil:
-			log.Printf("%s | %s | %s | PASS\n", r.id, r.name, r.duration)
+			log.Printf("%s | %s | %s | %s | PASS\n", r.id, r.name, r.service, r.duration)
 		default:
 			failed++
-			log.Printf("%s | %s | %s | FAILED %s\n", r.id, r.name, r.duration, r.err)
+			log.Printf("%s | %s | %s | %s | FAILED %s\n", r.id, r.name, r.service, r.duration, r.err)
 		}
 	}
 	log.Println()
@@ -276,8 +272,8 @@ func newExampleExecutor(logger *exampleLogger, id string, client *Client, servic
 		Name:       fmt.Sprintf("%s/%s", serviceExample.ServiceName, serviceExample.ServiceExample.Name),
 		ServiceId:  serviceExample.ServiceId,
 		PlanId:     serviceExample.ServiceExample.PlanId,
-		InstanceId: fmt.Sprintf("ex%s-%s", id, os.ExpandEnv("${USER}")),
-		BindingId:  fmt.Sprintf("ex%s", id),
+		InstanceId: uuid.New(),
+		BindingId:  uuid.New(),
 
 		ProvisionParams: provisionParams,
 		BindParams:      bindParams,
