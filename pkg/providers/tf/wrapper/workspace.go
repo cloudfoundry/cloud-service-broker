@@ -334,7 +334,7 @@ func (workspace *TerraformWorkspace) Apply() error {
 	return err
 }
 
-// Apply runs `terraform apply` on this workspace.
+// Apply runs `terraform refresh` on this workspace.
 // This function blocks if another Terraform command is running on this workspace.
 func (workspace *TerraformWorkspace) Refresh() error {
 	err := workspace.initializeFs()
