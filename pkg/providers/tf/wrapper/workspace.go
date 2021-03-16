@@ -334,6 +334,19 @@ func (workspace *TerraformWorkspace) Apply() error {
 	return err
 }
 
+// Apply runs `terraform apply` on this workspace.
+// This function blocks if another Terraform command is running on this workspace.
+func (workspace *TerraformWorkspace) Refresh() error {
+	err := workspace.initializeFs()
+	defer workspace.teardownFs()
+	if err != nil {
+		return err
+	}
+
+	_, err = workspace.runTf("refresh", "-no-color")
+	return err
+}
+
 // Destroy runs `terraform destroy` on this workspace.
 // This function blocks if another Terraform command is running on this workspace.
 func (workspace *TerraformWorkspace) Destroy() error {

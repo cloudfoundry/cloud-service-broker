@@ -167,7 +167,7 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 					"tf":        tf,
 				})
 
-				err = workspace.Apply()
+				err = workspace.Refresh()
 			}
 		}
 		runner.operationFinished(err, workspace, deployment)

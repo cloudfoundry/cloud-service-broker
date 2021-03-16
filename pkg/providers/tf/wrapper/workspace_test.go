@@ -46,6 +46,9 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 		}},
 		"show": {Exec: func(ws *TerraformWorkspace) {
 			ws.Show()
+		}},
+		"refresh": {Exec: func(ws *TerraformWorkspace) {
+			ws.Refresh()
 		}}}
 
 	for tn, tc := range cases {
@@ -131,6 +134,9 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 		}},
 		"show": {Exec: func(ws *TerraformWorkspace) {
 			ws.Show()
+		}},
+		"refresh": {Exec: func(ws *TerraformWorkspace) {
+			ws.Refresh()
 		}}}
 
 	for tn, tc := range cases {
@@ -225,6 +231,10 @@ func TestCustomTerraformExecutor(t *testing.T) {
 		"show": {
 			Input:    exec.Command("terraform", "show", "-no-color"),
 			Expected: exec.Command(customBinary, "show", "-no-color"),
+		},
+		"refresh": {
+			Input:    exec.Command("terraform", "refresh", "-no-color"),
+			Expected: exec.Command(customBinary, "refresh", "-no-color"),
 		},
 	}
 
