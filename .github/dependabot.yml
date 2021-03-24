@@ -10,11 +10,6 @@ updates:
   schedule:
     interval: daily
     time: "11:00"
-- package-ecosystem: terraform
-  directory: "/pkg/providers/tf/testdata"
-  schedule:
-    interval: daily
-    time: "11:00"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
