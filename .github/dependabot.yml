@@ -11,7 +11,7 @@ updates:
     interval: daily
     time: "11:00"
 - package-ecosystem: terraform
-  directory: "/"
+  directory: "/pkg/providers/tf"
   schedule:
     interval: daily
     time: "11:00"
