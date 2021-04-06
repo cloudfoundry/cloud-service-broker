@@ -26,7 +26,8 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/config"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 ./ CredStore
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate . CredStore
 
 type CredStore interface {
 	Put(key string, credentials interface{}) (interface{}, error)
