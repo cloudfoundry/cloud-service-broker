@@ -22,7 +22,8 @@ import (
 	"github.com/pivotal-cf/brokerapi/v7"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . ServiceProvider
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate . ServiceProvider
 
 // ServiceProvider performs the actual provisoning/deprovisioning part of a service broker request.
 // The broker will handle storing state and validating inputs while a ServiceProvider changes GCP to match the desired state.
