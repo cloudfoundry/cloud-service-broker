@@ -23,7 +23,8 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . ServiceAccountManager
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate . ServiceAccountManager
 
 type ServiceAccountManager interface {
 	CreateCredentials(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error)
