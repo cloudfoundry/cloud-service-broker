@@ -17,10 +17,8 @@ package generator
 import (
 	"fmt"
 	"log"
-	"sort"
 	"strings"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/toggles"
 	"gopkg.in/yaml.v3"
 )
@@ -146,64 +144,6 @@ func generateFeatureFlagForm() Form {
 	}
 }
 
-// generateServicePlanForm creates a form for adding additional service plans
-// to the broker for an existing service.
-func generateServicePlanForm(svc *broker.ServiceDefinition) (Form, error) {
-	entry, err := svc.CatalogEntry()
-	if err != nil {
-		return Form{}, err
-	}
-
-	displayName := entry.Metadata.DisplayName
-	planForm := Form{
-		Name:        strings.ToLower(svc.TileUserDefinedPlansVariable()),
-		Description: fmt.Sprintf("Generate custom plans for %s.", displayName),
-		Label:       fmt.Sprintf("%s Custom Plans", displayName),
-		Optional:    true,
-		Properties: []FormProperty{
-			{
-				Name:         "display_name",
-				Label:        "Display Name",
-				Type:         "string",
-				Description:  "Name of the plan to be displayed to users.",
-				Configurable: true,
-			},
-			{
-				Name:         "description",
-				Label:        "Plan description",
-				Type:         "string",
-				Description:  "The description of the plan shown to users.",
-				Configurable: true,
-			},
-			{
-				Name:         "service",
-				Label:        "Service",
-				Type:         "dropdown_select",
-				Description:  "The service this plan is associated with.",
-				Default:      entry.ID,
-				Optional:     false,
-				Configurable: true,
-				Options: []FormOption{
-					{
-						Name:  entry.ID,
-						Label: displayName,
-					},
-				},
-			},
-		},
-	}
-
-	// Along with the above three fixed properties, each plan has optional
-	// additional properties.
-
-	for _, v := range svc.PlanVariables {
-		prop := brokerVariableToFormProperty(v)
-		planForm.Properties = append(planForm.Properties, prop)
-	}
-
-	return planForm, nil
-}
-
 func generateBrokerpakForm() Form {
 	return Form{
 		Name:  "brokerpaks",
@@ -277,47 +217,6 @@ func brokerpakConfigurationForm() Form {
 			},
 		},
 	}
-}
-
-func brokerVariableToFormProperty(v broker.BrokerVariable) FormProperty {
-	formInput := FormProperty{
-		Name:         v.FieldName,
-		Label:        propertyToLabel(v.FieldName),
-		Type:         string(v.Type),
-		Description:  v.Details,
-		Configurable: true,
-		Optional:     !v.Required,
-		Default:      v.Default,
-	}
-
-	if v.Enum != nil {
-		formInput.Type = "dropdown_select"
-
-		opts := []FormOption{}
-		for name, label := range v.Enum {
-			opts = append(opts, FormOption{Name: fmt.Sprintf("%v", name), Label: label})
-		}
-
-		// Sort the options by human-readable label so they end up in a deterministic
-		// order to prevent odd stuff from coming up during diffs.
-		sort.Slice(opts, func(i, j int) bool {
-			return opts[i].Label < opts[j].Label
-		})
-
-		formInput.Options = opts
-
-		if len(opts) == 1 {
-			formInput.Default = opts[0].Name
-		}
-	}
-
-	return formInput
-}
-
-// propertyToLabel converts a JSON snake-case property into a title case
-// human-readable alternative.
-func propertyToLabel(property string) string {
-	return strings.Title(strings.NewReplacer("_", " ").Replace(property))
 }
 
 func singleLine(text string) string {
