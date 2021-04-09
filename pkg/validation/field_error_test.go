@@ -25,14 +25,6 @@ import (
 	"time"
 )
 
-type testStruct struct {
-	Name string `json:"name"`
-}
-
-type unexported struct {
-	unexportedField int
-}
-
 func TestFieldError(t *testing.T) {
 	tests := []struct {
 		name     string

@@ -109,12 +109,3 @@ func sortedKeys(m hcl.Blocks) []string {
 	sort.Slice(keys, func(i int, j int) bool { return keys[i] < keys[j] })
 	return keys
 }
-
-// terraformModuleHcl is a struct used for marshaling/unmarshaling details about
-// Terraform modules.
-//
-// See https://www.terraform.io/docs/modules/create.html for their structure.
-type terraformModuleHcl struct {
-	Inputs  map[string]interface{} //`hcl:"variable"`
-	Outputs map[string]interface{} //`hcl:"output"`
-}
