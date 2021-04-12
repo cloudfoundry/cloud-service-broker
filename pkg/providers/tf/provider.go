@@ -24,6 +24,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin/base"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
 	"github.com/pivotal-cf/brokerapi/v7"
 )
 
@@ -47,7 +48,7 @@ type terraformProvider struct {
 // Provision creates the necessary resources that an instance of this service
 // needs to operate.
 func (provider *terraformProvider) Provision(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
-	provider.logger.Debug("terraform-provision", lager.Data{
+	provider.logger.Debug("terraform-provision", correlation.ID(ctx), lager.Data{
 		"context": provisionContext.ToMap(),
 	})
 

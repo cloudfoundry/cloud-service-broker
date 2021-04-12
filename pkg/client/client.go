@@ -62,16 +62,16 @@ type Client struct {
 }
 
 // Catalog fetches the service catalog
-func (client *Client) Catalog() *BrokerResponse {
-	return client.makeRequest(http.MethodGet, "catalog", nil)
+func (client *Client) Catalog(requestID string) *BrokerResponse {
+	return client.makeRequest(http.MethodGet, "catalog", requestID, nil)
 }
 
 // Provision creates a new service with the given instanceId, of type serviceId,
 // from the plan planId, with additional details provisioningDetails
-func (client *Client) Provision(instanceId, serviceId, planId string, provisioningDetails json.RawMessage) *BrokerResponse {
+func (client *Client) Provision(instanceId, serviceId, planId, requestID string, provisioningDetails json.RawMessage) *BrokerResponse {
 	url := fmt.Sprintf("service_instances/%s?accepts_incomplete=true", instanceId)
 
-	return client.makeRequest(http.MethodPut, url, brokerapi.ProvisionDetails{
+	return client.makeRequest(http.MethodPut, url, requestID, brokerapi.ProvisionDetails{
 		ServiceID:     serviceId,
 		PlanID:        planId,
 		RawParameters: provisioningDetails,
@@ -79,17 +79,17 @@ func (client *Client) Provision(instanceId, serviceId, planId string, provisioni
 }
 
 // Deprovision destroys a service instance of type instanceId
-func (client *Client) Deprovision(instanceId, serviceId, planId string) *BrokerResponse {
+func (client *Client) Deprovision(instanceId, serviceId, planId, requestID string) *BrokerResponse {
 	url := fmt.Sprintf("service_instances/%s?accepts_incomplete=true&service_id=%s&plan_id=%s", instanceId, serviceId, planId)
 
-	return client.makeRequest(http.MethodDelete, url, nil)
+	return client.makeRequest(http.MethodDelete, url, requestID, nil)
 }
 
 // Bind creates an account identified by bindingId and gives it access to instanceId
-func (client *Client) Bind(instanceId, bindingId, serviceId, planId string, parameters json.RawMessage) *BrokerResponse {
+func (client *Client) Bind(instanceId, bindingId, serviceId, planId, requestID string, parameters json.RawMessage) *BrokerResponse {
 	url := fmt.Sprintf("service_instances/%s/service_bindings/%s", instanceId, bindingId)
 
-	return client.makeRequest(http.MethodPut, url, brokerapi.BindDetails{
+	return client.makeRequest(http.MethodPut, url, requestID, brokerapi.BindDetails{
 		ServiceID:     serviceId,
 		PlanID:        planId,
 		RawParameters: parameters,
@@ -97,17 +97,17 @@ func (client *Client) Bind(instanceId, bindingId, serviceId, planId string, para
 }
 
 // Unbind destroys an account identified by bindingId
-func (client *Client) Unbind(instanceId, bindingId, serviceId, planId string) *BrokerResponse {
+func (client *Client) Unbind(instanceId, bindingId, serviceId, planId, requestID string) *BrokerResponse {
 	url := fmt.Sprintf("service_instances/%s/service_bindings/%s?service_id=%s&plan_id=%s", instanceId, bindingId, serviceId, planId)
 
-	return client.makeRequest(http.MethodDelete, url, nil)
+	return client.makeRequest(http.MethodDelete, url, requestID, nil)
 }
 
 // Update sends a patch request to change the plan
-func (client *Client) Update(instanceId, serviceId, planId string, parameters json.RawMessage) *BrokerResponse {
+func (client *Client) Update(instanceId, serviceId, planId, requestID string, parameters json.RawMessage) *BrokerResponse {
 	url := fmt.Sprintf("service_instances/%s?accepts_incomplete=true", instanceId)
 
-	return client.makeRequest(http.MethodPatch, url, brokerapi.UpdateDetails{
+	return client.makeRequest(http.MethodPatch, url, requestID, brokerapi.UpdateDetails{
 		ServiceID:     serviceId,
 		PlanID:        planId,
 		RawParameters: parameters,
@@ -115,16 +115,16 @@ func (client *Client) Update(instanceId, serviceId, planId string, parameters js
 }
 
 // LastOperation queries the status of a long-running job on the server
-func (client *Client) LastOperation(instanceId string) *BrokerResponse {
+func (client *Client) LastOperation(instanceId, requestID string) *BrokerResponse {
 	url := fmt.Sprintf("service_instances/%s/last_operation", instanceId)
 
-	return client.makeRequest(http.MethodGet, url, nil)
+	return client.makeRequest(http.MethodGet, url, requestID, nil)
 }
 
-func (client *Client) makeRequest(method, path string, body interface{}) *BrokerResponse {
+func (client *Client) makeRequest(method, path, requestID string, body interface{}) *BrokerResponse {
 	br := BrokerResponse{}
 
-	req, err := client.newRequest(method, path, body)
+	req, err := client.newRequest(method, path, requestID, body)
 	br.UpdateRequest(req)
 	br.UpdateError(err)
 	if br.InError() {
@@ -139,7 +139,7 @@ func (client *Client) makeRequest(method, path string, body interface{}) *Broker
 	return &br
 }
 
-func (client *Client) newRequest(method, path string, body interface{}) (*http.Request, error) {
+func (client *Client) newRequest(method, path, requestID string, body interface{}) (*http.Request, error) {
 	url, err := client.BaseUrl.Parse(path)
 	if err != nil {
 		return nil, err
@@ -161,6 +161,8 @@ func (client *Client) newRequest(method, path string, body interface{}) (*http.R
 		return nil, err
 	}
 
+	// brokerapi v7 does not support the OSBAPI 'X-Broker-API-Request-Identity' header
+	request.Header.Set("X-Correlation-ID", requestID)
 	request.Header.Set("X-Broker-Api-Version", ClientsBrokerApiVersion)
 	if body != nil {
 		request.Header.Set("Content-Type", "application/json")
