@@ -18,11 +18,11 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/spf13/cobra"
-
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/server"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
+	"github.com/pborman/uuid"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -85,31 +85,31 @@ user-defined plans.
 	rootCmd.AddCommand(clientCmd)
 
 	clientCatalogCmd := newClientCommand("catalog", "Show the service catalog", func(client *client.Client) *client.BrokerResponse {
-		return client.Catalog()
+		return client.Catalog(uuid.New())
 	})
 
 	provisionCmd := newClientCommand("provision", "Provision a service", func(client *client.Client) *client.BrokerResponse {
-		return client.Provision(instanceId, serviceId, planId, json.RawMessage(parametersJson))
+		return client.Provision(instanceId, serviceId, planId, uuid.New(), json.RawMessage(parametersJson))
 	})
 
 	deprovisionCmd := newClientCommand("deprovision", "Deprovision a service", func(client *client.Client) *client.BrokerResponse {
-		return client.Deprovision(instanceId, serviceId, planId)
+		return client.Deprovision(instanceId, serviceId, planId, uuid.New())
 	})
 
 	bindCmd := newClientCommand("bind", "Bind to a service", func(client *client.Client) *client.BrokerResponse {
-		return client.Bind(instanceId, bindingId, serviceId, planId, json.RawMessage(parametersJson))
+		return client.Bind(instanceId, bindingId, serviceId, planId, uuid.New(), json.RawMessage(parametersJson))
 	})
 
 	unbindCmd := newClientCommand("unbind", "Unbind a service", func(client *client.Client) *client.BrokerResponse {
-		return client.Unbind(instanceId, bindingId, serviceId, planId)
+		return client.Unbind(instanceId, bindingId, serviceId, planId, uuid.New())
 	})
 
 	lastCmd := newClientCommand("last", "Get the status of the last operation", func(client *client.Client) *client.BrokerResponse {
-		return client.LastOperation(instanceId)
+		return client.LastOperation(instanceId, uuid.New())
 	})
 
 	updateCmd := newClientCommand("update", "Update the instance details", func(client *client.Client) *client.BrokerResponse {
-		return client.Update(instanceId, serviceId, planId, json.RawMessage(parametersJson))
+		return client.Update(instanceId, serviceId, planId, uuid.New(), json.RawMessage(parametersJson))
 	})
 
 	examplesCmd := &cobra.Command{

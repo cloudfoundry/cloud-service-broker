@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"sync"
 	"time"
 
@@ -304,9 +305,10 @@ type exampleExecutor struct {
 // If the response is an async result, Provision will attempt to wait until
 // the Provision is complete.
 func (ee *exampleExecutor) Provision() error {
-	ee.logger.Printf("Provisioning %s\n", ee.Name)
+	requestID := uuid.New()
+	ee.logger.Printf("Provisioning %s (id: %s)\n", ee.Name, requestID)
 
-	resp := ee.client.Provision(ee.InstanceId, ee.ServiceId, ee.PlanId, ee.ProvisionParams)
+	resp := ee.client.Provision(ee.InstanceId, ee.ServiceId, ee.PlanId, requestID, ee.ProvisionParams)
 
 	ee.logger.Println(resp.String())
 	if resp.InError() {
@@ -314,9 +316,9 @@ func (ee *exampleExecutor) Provision() error {
 	}
 
 	switch resp.StatusCode {
-	case 201:
+	case http.StatusCreated:
 		return nil
-	case 202:
+	case http.StatusAccepted:
 		return ee.pollUntilFinished()
 	default:
 		return fmt.Errorf("unexpected response code %d", resp.StatusCode)
@@ -325,14 +327,15 @@ func (ee *exampleExecutor) Provision() error {
 
 func (ee *exampleExecutor) pollUntilFinished() error {
 	return retry(45*time.Minute, 30*time.Second, func() (bool, error) {
-		ee.logger.Println("Polling for async job")
+		requestID := uuid.New()
+		ee.logger.Printf("Polling for async job (id: %s)\n", requestID)
 
-		resp := ee.client.LastOperation(ee.InstanceId)
+		resp := ee.client.LastOperation(ee.InstanceId, requestID)
 		if resp.InError() {
 			return false, resp.Error
 		}
 
-		if resp.StatusCode != 200 {
+		if resp.StatusCode != http.StatusOK {
 			ee.logger.Printf("Bad status code %d, needed 200", resp.StatusCode)
 			return false, fmt.Errorf("broker responded with statuscode %v", resp.StatusCode)
 		}
@@ -358,8 +361,9 @@ func (ee *exampleExecutor) pollUntilFinished() error {
 
 // Deprovision destroys the instance created by a call to Provision.
 func (ee *exampleExecutor) Deprovision() error {
-	ee.logger.Printf("Deprovisioning %s\n", ee.Name)
-	resp := ee.client.Deprovision(ee.InstanceId, ee.ServiceId, ee.PlanId)
+	requestID := uuid.New()
+	ee.logger.Printf("Deprovisioning %s (id: %s)\n", ee.Name, requestID)
+	resp := ee.client.Deprovision(ee.InstanceId, ee.ServiceId, ee.PlanId, requestID)
 
 	ee.logger.Println(resp.String())
 	if resp.InError() {
@@ -367,9 +371,9 @@ func (ee *exampleExecutor) Deprovision() error {
 	}
 
 	switch resp.StatusCode {
-	case 200:
+	case http.StatusOK:
 		return nil
-	case 202:
+	case http.StatusAccepted:
 		return ee.pollUntilFinished()
 	default:
 		return fmt.Errorf("unexpected response code %d", resp.StatusCode)
@@ -379,15 +383,16 @@ func (ee *exampleExecutor) Deprovision() error {
 // Unbind unbinds the exact binding created by a call to Bind.
 func (ee *exampleExecutor) Unbind() error {
 	return retry(15*time.Minute, 15*time.Second, func() (bool, error) {
-		ee.logger.Printf("Unbinding %s\n", ee.Name)
-		resp := ee.client.Unbind(ee.InstanceId, ee.BindingId, ee.ServiceId, ee.PlanId)
+		requestID := uuid.New()
+		ee.logger.Printf("Unbinding %s (id: %s)\n", ee.Name, requestID)
+		resp := ee.client.Unbind(ee.InstanceId, ee.BindingId, ee.ServiceId, ee.PlanId, requestID)
 
 		ee.logger.Println(resp.String())
 		if resp.InError() {
 			return false, resp.Error
 		}
 
-		if resp.StatusCode == 200 {
+		if resp.StatusCode == http.StatusOK {
 			return false, nil
 		}
 
@@ -399,15 +404,16 @@ func (ee *exampleExecutor) Unbind() error {
 // once successfully as subsequent binds will attempt to create bindings with
 // the same ID.
 func (ee *exampleExecutor) Bind() (json.RawMessage, error) {
-	ee.logger.Printf("Binding %s\n", ee.Name)
-	resp := ee.client.Bind(ee.InstanceId, ee.BindingId, ee.ServiceId, ee.PlanId, ee.BindParams)
+	requestID := uuid.New()
+	ee.logger.Printf("Binding %s (id: %s)\n", ee.Name, requestID)
+	resp := ee.client.Bind(ee.InstanceId, ee.BindingId, ee.ServiceId, ee.PlanId, requestID, ee.BindParams)
 
 	ee.logger.Println(resp.String())
 	if resp.InError() {
 		return nil, resp.Error
 	}
 
-	if resp.StatusCode == 201 {
+	if resp.StatusCode == http.StatusCreated {
 		return resp.ResponseBody, nil
 	}
 

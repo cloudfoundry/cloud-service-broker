@@ -26,6 +26,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/credstore"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/request"
 	"github.com/pivotal-cf/brokerapi/v7"
 )
@@ -92,7 +93,7 @@ func (broker *ServiceBroker) getDefinitionAndProvider(serviceId string) (*broker
 // Provision creates a new instance of a service.
 // It is bound to the `PUT /v2/service_instances/:instance_id` endpoint and can be called using the `cf create-service` command.
 func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, details brokerapi.ProvisionDetails, clientSupportsAsync bool) (brokerapi.ProvisionedServiceSpec, error) {
-	broker.Logger.Info("Provisioning", lager.Data{
+	broker.Logger.Info("Provisioning", correlation.ID(ctx), lager.Data{
 		"instanceId":         instanceID,
 		"accepts_incomplete": clientSupportsAsync,
 		"details":            details,
