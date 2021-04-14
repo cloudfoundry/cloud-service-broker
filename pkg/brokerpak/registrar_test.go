@@ -15,6 +15,7 @@
 package brokerpak
 
 import (
+	"context"
 	"errors"
 	"os"
 	"os/exec"
@@ -62,7 +63,7 @@ func TestNewRegistrar(t *testing.T) {
 }
 
 func TestRegistrar_toDefinitions(t *testing.T) {
-	nopExecutor := func(c *exec.Cmd) (wrapper.ExecutionOutput, error) {
+	nopExecutor := func(context.Context, *exec.Cmd) (wrapper.ExecutionOutput, error) {
 		return wrapper.ExecutionOutput{}, nil
 	}
 

@@ -171,7 +171,7 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 // It is bound to the `DELETE /v2/service_instances/:instance_id` endpoint and can be called using the `cf delete-service` command.
 // If a deprovision is asynchronous, the returned DeprovisionServiceSpec will contain the operation ID for tracking its progress.
 func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string, details brokerapi.DeprovisionDetails, clientSupportsAsync bool) (response brokerapi.DeprovisionServiceSpec, err error) {
-	broker.Logger.Info("Deprovisioning", lager.Data{
+	broker.Logger.Info("Deprovisioning", correlation.ID(ctx), lager.Data{
 		"instance_id":        instanceID,
 		"accepts_incomplete": clientSupportsAsync,
 		"details":            details,
@@ -246,7 +246,7 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 // Bind creates an account with credentials to access an instance of a service.
 // It is bound to the `PUT /v2/service_instances/:instance_id/service_bindings/:binding_id` endpoint and can be called using the `cf bind-service` command.
 func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID string, details brokerapi.BindDetails, clientSupportsAsync bool) (brokerapi.Binding, error) {
-	broker.Logger.Info("Binding", lager.Data{
+	broker.Logger.Info("Binding", correlation.ID(ctx), lager.Data{
 		"instance_id": instanceID,
 		"binding_id":  bindingID,
 		"details":     details,
@@ -353,7 +353,7 @@ func getCredentialName(serviceName, bindingID string) string {
 //
 // NOTE: This functionality is not implemented.
 func (broker *ServiceBroker) GetBinding(ctx context.Context, instanceID, bindingID string) (brokerapi.GetBindingSpec, error) {
-	broker.Logger.Info("GetBinding", lager.Data{
+	broker.Logger.Info("GetBinding", correlation.ID(ctx), lager.Data{
 		"instance_id": instanceID,
 		"binding_id":  bindingID,
 	})
@@ -366,7 +366,7 @@ func (broker *ServiceBroker) GetBinding(ctx context.Context, instanceID, binding
 //
 // NOTE: This functionality is not implemented.
 func (broker *ServiceBroker) GetInstance(ctx context.Context, instanceID string) (brokerapi.GetInstanceDetailsSpec, error) {
-	broker.Logger.Info("GetInstance", lager.Data{
+	broker.Logger.Info("GetInstance", correlation.ID(ctx), lager.Data{
 		"instance_id": instanceID,
 	})
 
@@ -378,7 +378,7 @@ func (broker *ServiceBroker) GetInstance(ctx context.Context, instanceID string)
 //
 // NOTE: This functionality is not implemented.
 func (broker *ServiceBroker) LastBindingOperation(ctx context.Context, instanceID, bindingID string, details brokerapi.PollDetails) (brokerapi.LastOperation, error) {
-	broker.Logger.Info("LastBindingOperation", lager.Data{
+	broker.Logger.Info("LastBindingOperation", correlation.ID(ctx), lager.Data{
 		"instance_id":    instanceID,
 		"binding_id":     bindingID,
 		"plan_id":        details.PlanID,
@@ -392,7 +392,7 @@ func (broker *ServiceBroker) LastBindingOperation(ctx context.Context, instanceI
 // Unbind destroys an account and credentials with access to an instance of a service.
 // It is bound to the `DELETE /v2/service_instances/:instance_id/service_bindings/:binding_id` endpoint and can be called using the `cf unbind-service` command.
 func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID string, details brokerapi.UnbindDetails, asyncSupported bool) (brokerapi.UnbindSpec, error) {
-	broker.Logger.Info("Unbinding", lager.Data{
+	broker.Logger.Info("Unbinding", correlation.ID(ctx), lager.Data{
 		"instance_id": instanceID,
 		"binding_id":  bindingID,
 		"details":     details,
@@ -470,7 +470,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 // It is bound to the `GET /v2/service_instances/:instance_id/last_operation` endpoint.
 // It is called by `cf create-service` or `cf delete-service` if the operation was asynchronous.
 func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID string, details brokerapi.PollDetails) (brokerapi.LastOperation, error) {
-	broker.Logger.Info("Last Operation", lager.Data{
+	broker.Logger.Info("Last Operation", correlation.ID(ctx), lager.Data{
 		"instance_id":    instanceID,
 		"plan_id":        details.PlanID,
 		"service_id":     details.ServiceID,
@@ -544,7 +544,7 @@ func (broker *ServiceBroker) updateStateOnOperationCompletion(ctx context.Contex
 // Update a service instance plan.
 // This functionality is not implemented and will return an error indicating that plan changes are not supported.
 func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, details brokerapi.UpdateDetails, asyncAllowed bool) (response brokerapi.UpdateServiceSpec, err error) {
-	broker.Logger.Info("Updating", lager.Data{
+	broker.Logger.Info("Updating", correlation.ID(ctx), lager.Data{
 		"instance_id":        instanceID,
 		"accepts_incomplete": asyncAllowed,
 		"details":            details,

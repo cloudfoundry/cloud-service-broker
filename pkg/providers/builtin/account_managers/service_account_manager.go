@@ -25,7 +25,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
-
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/jwt"
 	cloudres "google.golang.org/api/cloudresourcemanager/v1"
@@ -56,7 +56,7 @@ func (sam *ServiceAccountManager) CreateCredentials(ctx context.Context, vc *var
 		return nil, err
 	}
 
-	sam.Logger.Info("create-service-account", lager.Data{
+	sam.Logger.Info("create-service-account", correlation.ID(ctx), lager.Data{
 		"role":                         role,
 		"service_account_name":         accountId,
 		"service_account_display_name": displayName,

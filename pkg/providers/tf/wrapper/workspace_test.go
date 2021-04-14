@@ -15,6 +15,7 @@
 package wrapper
 
 import (
+	"context"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -33,19 +34,19 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 		Exec func(ws *TerraformWorkspace)
 	}{
 		"validate": {Exec: func(ws *TerraformWorkspace) {
-			ws.Validate()
+			ws.Validate(context.TODO())
 		}},
 		"apply": {Exec: func(ws *TerraformWorkspace) {
-			ws.Apply()
+			ws.Apply(context.TODO())
 		}},
 		"destroy": {Exec: func(ws *TerraformWorkspace) {
-			ws.Destroy()
+			ws.Destroy(context.TODO())
 		}},
 		"import": {Exec: func(ws *TerraformWorkspace) {
-			ws.Import(map[string]string{})
+			ws.Import(context.TODO(), map[string]string{})
 		}},
 		"show": {Exec: func(ws *TerraformWorkspace) {
-			ws.Show()
+			ws.Show(context.TODO())
 		}}}
 
 	for tn, tc := range cases {
@@ -61,7 +62,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 			// "running" tf
 			executorRan := false
 			cmdDir := ""
-			ws.Executor = func(cmd *exec.Cmd) (ExecutionOutput, error) {
+			ws.Executor = func(ctx context.Context, cmd *exec.Cmd) (ExecutionOutput, error) {
 				executorRan = true
 				cmdDir = cmd.Dir
 
@@ -118,19 +119,19 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 		Exec func(ws *TerraformWorkspace)
 	}{
 		"validate": {Exec: func(ws *TerraformWorkspace) {
-			ws.Validate()
+			ws.Validate(context.TODO())
 		}},
 		"apply": {Exec: func(ws *TerraformWorkspace) {
-			ws.Apply()
+			ws.Apply(context.TODO())
 		}},
 		"destroy": {Exec: func(ws *TerraformWorkspace) {
-			ws.Destroy()
+			ws.Destroy(context.TODO())
 		}},
 		"import": {Exec: func(ws *TerraformWorkspace) {
-			ws.Import(map[string]string{})
+			ws.Import(context.TODO(), map[string]string{})
 		}},
 		"show": {Exec: func(ws *TerraformWorkspace) {
-			ws.Show()
+			ws.Show(context.TODO())
 		}}}
 
 	for tn, tc := range cases {
@@ -146,7 +147,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 			// "running" tf
 			executorRan := false
 			cmdDir := ""
-			ws.Executor = func(cmd *exec.Cmd) (ExecutionOutput, error) {
+			ws.Executor = func(ctx context.Context, cmd *exec.Cmd) (ExecutionOutput, error) {
 				executorRan = true
 				cmdDir = cmd.Dir
 
@@ -234,12 +235,12 @@ func TestCustomTerraformExecutor(t *testing.T) {
 		t.Run(tn, func(t *testing.T) {
 			actual := exec.Command("!actual-never-got-called!")
 
-			executor := CustomTerraformExecutor(customBinary, customPlugins, func(c *exec.Cmd) (ExecutionOutput, error) {
+			executor := CustomTerraformExecutor(customBinary, customPlugins, func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
 				actual = c
 				return ExecutionOutput{}, nil
 			})
 
-			executor(tc.Input)
+			executor(context.TODO(), tc.Input)
 
 			if actual.Path != tc.Expected.Path {
 				t.Errorf("path wasn't updated, expected: %q, actual: %q", tc.Expected.Path, actual.Path)
@@ -261,12 +262,12 @@ func TestCustomEnvironmentExecutor(t *testing.T) {
 	c.Env = []string{"ORIGINAL=value"}
 
 	actual := exec.Command("!actual-never-got-called!")
-	executor := CustomEnvironmentExecutor(map[string]string{"FOO": "bar"}, func(c *exec.Cmd) (ExecutionOutput, error) {
+	executor := CustomEnvironmentExecutor(map[string]string{"FOO": "bar"}, func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
 		actual = c
 		return ExecutionOutput{}, nil
 	})
 
-	executor(c)
+	executor(context.TODO(), c)
 	expected := []string{"ORIGINAL=value", "FOO=bar"}
 
 	if !reflect.DeepEqual(expected, actual.Env) {

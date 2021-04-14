@@ -15,6 +15,7 @@
 package wrapper
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -26,6 +27,7 @@ import (
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
 )
 
 // DefaultInstanceName is the default name of an instance of a particular module.
@@ -41,7 +43,7 @@ type ExecutionOutput struct {
 
 // TerraformExecutor is the function that shells out to Terraform.
 // It can intercept, modify or retry the given command.
-type TerraformExecutor func(*exec.Cmd) (ExecutionOutput, error)
+type TerraformExecutor func(context.Context, *exec.Cmd) (ExecutionOutput, error)
 
 // NewWorkspace creates a new TerraformWorkspace from a given template and variables to populate an instance of it.
 // The created instance will have the name specified by the DefaultInstanceName constant.
@@ -230,7 +232,7 @@ func (workspace *TerraformWorkspace) initializeFsModules() error {
 }
 
 // initializeFs initializes the filesystem directory necessary to run Terraform.
-func (workspace *TerraformWorkspace) initializeFs() error {
+func (workspace *TerraformWorkspace) initializeFs(ctx context.Context) error {
 	workspace.dirLock.Lock()
 	// create a temp directory
 	if dir, err := ioutil.TempDir("", "gsb"); err == nil {
@@ -267,7 +269,7 @@ func (workspace *TerraformWorkspace) initializeFs() error {
 	}
 
 	// run "terraform init"
-	if _, err := workspace.runTf("init", "-no-color"); err != nil {
+	if _, err := workspace.runTf(ctx, "init", "-no-color"); err != nil {
 		return err
 	}
 
@@ -309,55 +311,55 @@ func (workspace *TerraformWorkspace) Outputs(instance string) (map[string]interf
 
 // Validate runs `terraform Validate` on this workspace.
 // This function blocks if another Terraform command is running on this workspace.
-func (workspace *TerraformWorkspace) Validate() error {
-	err := workspace.initializeFs()
+func (workspace *TerraformWorkspace) Validate(ctx context.Context) error {
+	err := workspace.initializeFs(ctx)
 	defer workspace.teardownFs()
 	if err != nil {
 		return err
 	}
 
-	_, err = workspace.runTf("validate", "-no-color")
+	_, err = workspace.runTf(ctx, "validate", "-no-color")
 
 	return err
 }
 
 // Apply runs `terraform apply` on this workspace.
 // This function blocks if another Terraform command is running on this workspace.
-func (workspace *TerraformWorkspace) Apply() error {
-	err := workspace.initializeFs()
+func (workspace *TerraformWorkspace) Apply(ctx context.Context) error {
+	err := workspace.initializeFs(ctx)
 	defer workspace.teardownFs()
 	if err != nil {
 		return err
 	}
 
-	_, err = workspace.runTf("apply", "-auto-approve", "-no-color")
+	_, err = workspace.runTf(ctx, "apply", "-auto-approve", "-no-color")
 	return err
 }
 
 // Destroy runs `terraform destroy` on this workspace.
 // This function blocks if another Terraform command is running on this workspace.
-func (workspace *TerraformWorkspace) Destroy() error {
-	err := workspace.initializeFs()
+func (workspace *TerraformWorkspace) Destroy(ctx context.Context) error {
+	err := workspace.initializeFs(ctx)
 	defer workspace.teardownFs()
 	if err != nil {
 		return err
 	}
 
-	_, err = workspace.runTf("destroy", "-auto-approve", "-no-color")
+	_, err = workspace.runTf(ctx, "destroy", "-auto-approve", "-no-color")
 	return err
 }
 
 // Import runs `terraform import` on this workspace.
 // This function blocks if another Terraform command is running on this workspace.
-func (workspace *TerraformWorkspace) Import(resources map[string]string) error {
-	err := workspace.initializeFs()
+func (workspace *TerraformWorkspace) Import(ctx context.Context, resources map[string]string) error {
+	err := workspace.initializeFs(ctx)
 	defer workspace.teardownFs()
 	if err != nil {
 		return err
 	}
 
 	for resource, id := range resources {
-		_, err = workspace.runTf("import", resource, id)
+		_, err = workspace.runTf(ctx, "import", resource, id)
 		if err != nil {
 			return err
 		}
@@ -368,14 +370,14 @@ func (workspace *TerraformWorkspace) Import(resources map[string]string) error {
 
 // Show runs `terraform show` on this workspace.
 // This function blocks if another Terraform command is running on this workspace.
-func (workspace *TerraformWorkspace) Show() (string, error) {
-	err := workspace.initializeFs()
+func (workspace *TerraformWorkspace) Show(ctx context.Context) (string, error) {
+	err := workspace.initializeFs(ctx)
 	defer workspace.teardownFs()
 	if err != nil {
 		return "", err
 	}
 
-	output, err := workspace.runTf("show", "-no-color")
+	output, err := workspace.runTf(ctx, "show", "-no-color")
 	if err != nil {
 		return "", err
 	}
@@ -387,7 +389,7 @@ func (workspace *TerraformWorkspace) tfStatePath() string {
 	return path.Join(workspace.dir, "terraform.tfstate")
 }
 
-func (workspace *TerraformWorkspace) runTf(subCommand string, args ...string) (ExecutionOutput, error) {
+func (workspace *TerraformWorkspace) runTf(ctx context.Context, subCommand string, args ...string) (ExecutionOutput, error) {
 	sub := []string{subCommand}
 	sub = append(sub, args...)
 
@@ -400,18 +402,18 @@ func (workspace *TerraformWorkspace) runTf(subCommand string, args ...string) (E
 		executor = workspace.Executor
 	}
 
-	return executor(c)
+	return executor(ctx, c)
 }
 
 // CustomEnvironmentExecutor sets custom environment variables on the Terraform
 // execution.
 func CustomEnvironmentExecutor(environment map[string]string, wrapped TerraformExecutor) TerraformExecutor {
-	return func(c *exec.Cmd) (ExecutionOutput, error) {
+	return func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
 		for k, v := range environment {
 			c.Env = append(c.Env, fmt.Sprintf("%s=%s", k, v))
 		}
 
-		return wrapped(c)
+		return wrapped(ctx, c)
 	}
 }
 
@@ -429,7 +431,7 @@ func updatePath(vars []string, path string) string {
 // from a given plugin directory rather than the Terraform that's on the PATH
 // which will download provider binaries from the web.
 func CustomTerraformExecutor(tfBinaryPath, tfPluginDir string, wrapped TerraformExecutor) TerraformExecutor {
-	return func(c *exec.Cmd) (ExecutionOutput, error) {
+	return func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
 
 		// Add the -get-plugins=false and -plugin-dir={tfPluginDir} after the
 		// sub-command to force Terraform to use a particular plugin.
@@ -444,14 +446,14 @@ func CustomTerraformExecutor(tfBinaryPath, tfPluginDir string, wrapped Terraform
 		newCmd := exec.Command(tfBinaryPath, allArgs...)
 		newCmd.Dir = c.Dir
 		newCmd.Env = append(c.Env, updatePath(c.Env, tfPluginDir))
-		return wrapped(newCmd)
+		return wrapped(ctx, newCmd)
 	}
 }
 
 // DefaultExecutor is the default executor that shells out to Terraform
 // and logs results to stdout.
-func DefaultExecutor(c *exec.Cmd) (ExecutionOutput, error) {
-	logger := utils.NewLogger("terraform@" + c.Dir)
+func DefaultExecutor(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
+	logger := utils.NewLogger("terraform@" + c.Dir).WithData(correlation.ID(ctx))
 
 	logger.Info("starting process", lager.Data{
 		"path": c.Path,
@@ -485,6 +487,7 @@ func DefaultExecutor(c *exec.Cmd) (ExecutionOutput, error) {
 		})
 	}
 
+	logger.Info("finished process")
 	logger.Debug("terraform output", lager.Data{
 		"output": string(output),
 	})

@@ -75,7 +75,7 @@ func (provider *terraformProvider) Provision(ctx context.Context, provisionConte
 
 // Update makes necessary updates to resources so they match new desired configuration
 func (provider *terraformProvider) Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
-	provider.logger.Debug("update", lager.Data{
+	provider.logger.Debug("update", correlation.ID(ctx), lager.Data{
 		"context": provisionContext.ToMap(),
 	})
 
@@ -98,7 +98,7 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 
 // Bind creates a new backing Terraform job and executes it, waiting on the result.
 func (provider *terraformProvider) Bind(ctx context.Context, bindContext *varcontext.VarContext) (map[string]interface{}, error) {
-	provider.logger.Debug("terraform-bind", lager.Data{
+	provider.logger.Debug("terraform-bind", correlation.ID(ctx), lager.Data{
 		"context": bindContext.ToMap(),
 	})
 
@@ -194,7 +194,7 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 // Unbind performs a terraform destroy on the binding.
 func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord models.ServiceInstanceDetails, bindRecord models.ServiceBindingCredentials, vc *varcontext.VarContext) error {
 	tfId := generateTfId(instanceRecord.ID, bindRecord.BindingId)
-	provider.logger.Debug("terraform-unbind", lager.Data{
+	provider.logger.Debug("terraform-unbind", correlation.ID(ctx), lager.Data{
 		"instance": instanceRecord.ID,
 		"binding":  bindRecord.ID,
 		"tfId":     tfId,
@@ -209,7 +209,7 @@ func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord mo
 
 // Deprovision performs a terraform destroy on the instance.
 func (provider *terraformProvider) Deprovision(ctx context.Context, instance models.ServiceInstanceDetails, details brokerapi.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error) {
-	provider.logger.Debug("terraform-deprovision", lager.Data{
+	provider.logger.Debug("terraform-deprovision", correlation.ID(ctx), lager.Data{
 		"instance": instance.ID,
 	})
 
