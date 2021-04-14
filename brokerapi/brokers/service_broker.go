@@ -28,7 +28,8 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/credstore"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/request"
-	"github.com/pivotal-cf/brokerapi/v7"
+	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 var (
@@ -352,7 +353,7 @@ func getCredentialName(serviceName, bindingID string) string {
 // GET /v2/service_instances/{instance_id}/service_bindings/{binding_id}
 //
 // NOTE: This functionality is not implemented.
-func (broker *ServiceBroker) GetBinding(ctx context.Context, instanceID, bindingID string) (brokerapi.GetBindingSpec, error) {
+func (broker *ServiceBroker) GetBinding(ctx context.Context, instanceID, bindingID string, details domain.FetchBindingDetails) (brokerapi.GetBindingSpec, error) {
 	broker.Logger.Info("GetBinding", correlation.ID(ctx), lager.Data{
 		"instance_id": instanceID,
 		"binding_id":  bindingID,
@@ -365,7 +366,7 @@ func (broker *ServiceBroker) GetBinding(ctx context.Context, instanceID, binding
 // GET /v2/service_instances/{instance_id}
 //
 // NOTE: This functionality is not implemented.
-func (broker *ServiceBroker) GetInstance(ctx context.Context, instanceID string) (brokerapi.GetInstanceDetailsSpec, error) {
+func (broker *ServiceBroker) GetInstance(ctx context.Context, instanceID string, details domain.FetchInstanceDetails) (brokerapi.GetInstanceDetailsSpec, error) {
 	broker.Logger.Info("GetInstance", correlation.ID(ctx), lager.Data{
 		"instance_id": instanceID,
 	})

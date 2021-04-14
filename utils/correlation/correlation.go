@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/pivotal-cf/brokerapi/v7/middlewares"
+	"github.com/pivotal-cf/brokerapi/v8/middlewares"
 )
 
 func ID(ctx context.Context) lager.Data {
@@ -13,10 +13,9 @@ func ID(ctx context.Context) lager.Data {
 		result["correlation-id"] = cid
 	}
 
-	// When brokerapi supports the request ID:
-	//if rid, ok := ctx.Value(middlewares.RequestIDKey).(string); ok {
-	//	result["request-id"] = rid
-	//}
+	if rid, ok := ctx.Value(middlewares.RequestIdentityKey).(string); ok {
+		result["request-id"] = rid
+	}
 
 	return result
 }
