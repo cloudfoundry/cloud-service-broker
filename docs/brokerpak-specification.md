@@ -173,7 +173,7 @@ provision or bind action, and the inputs and outputs to that template.
 
 #### Import Input object
 
-The import input object defines the mapping of an input parameter to a terraform resource on the `tf import` command. The presence of any import input values will trigger a `tf import` before `ft apply` upon `cf create-service`
+The import input object defines the mapping of an input parameter to a terraform resource on the `tf import` command. The presence of any import input values will trigger a `tf import` before `tf apply` upon `cf create-service`
 
 | Field | Type | Description |
 | --- | --- | --- |
