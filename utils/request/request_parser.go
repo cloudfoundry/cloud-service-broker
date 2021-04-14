@@ -5,12 +5,14 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"strings"
+
+	"github.com/pivotal-cf/brokerapi/v8/middlewares"
 )
 
 func DecodeOriginatingIdentityHeader(ctx context.Context) map[string]interface{} {
 	var originatingIdentityMap map[string]interface{}
 
-	originatingIdentityHeader := ctx.Value("originatingIdentity")
+	originatingIdentityHeader := ctx.Value(middlewares.OriginatingIdentityKey)
 	if originatingIdentityHeader != nil {
 		if headerAsString, ok := originatingIdentityHeader.(string); ok {
 			platform, value := parseHeader(headerAsString)
