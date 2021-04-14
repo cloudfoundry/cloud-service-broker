@@ -38,6 +38,7 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v8"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/pivotal-cf/brokerapi/v8/middlewares"
 )
 
 // InstanceState holds the lifecycle state of a provisioned service instance.
@@ -310,7 +311,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 			ServiceState: StateNone,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
-				newContext := context.WithValue(context.Background(), "originatingIdentity", header)
+				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
 				broker.Provision(newContext, fakeInstanceId, stub.ProvisionDetails(), true)
 				assertEqual(t, "provision calls should match", 1, stub.Provider.ProvisionCallCount())
 				_, actualVarContext := stub.Provider.ProvisionArgsForCall(0)
@@ -383,7 +384,7 @@ func TestServiceBroker_Deprovision(t *testing.T) {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
-				newContext := context.WithValue(context.Background(), "originatingIdentity", header)
+				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
 				_, err := broker.Deprovision(newContext, fakeInstanceId, stub.DeprovisionDetails(), true)
 				failIfErr(t, "deprovisioning", err)
 
@@ -474,7 +475,7 @@ func TestServiceBroker_Bind(t *testing.T) {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
-				newContext := context.WithValue(context.Background(), "originatingIdentity", header)
+				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
 				broker.Bind(newContext, fakeInstanceId, fakeBindingId, stub.BindDetails(), true)
 				assertEqual(t, "bind calls should match", 1, stub.Provider.BindCallCount())
 				_, actualVarContext := stub.Provider.BindArgsForCall(0)
@@ -565,7 +566,7 @@ func TestServiceBroker_Unbind(t *testing.T) {
 			ServiceState: StateBound,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
-				newContext := context.WithValue(context.Background(), "originatingIdentity", header)
+				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
 				broker.Unbind(newContext, fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
 				assertEqual(t, "unbind calls should match", 1, stub.Provider.UnbindCallCount())
 				_, _, _, actualVarContext := stub.Provider.UnbindArgsForCall(0)
@@ -710,7 +711,7 @@ func TestServiceBroker_Update(t *testing.T) {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
-				newContext := context.WithValue(context.Background(), "originatingIdentity", header)
+				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
 				broker.Update(newContext, fakeInstanceId, stub.UpdateDetails(), true)
 				assertEqual(t, "update calls should match", 1, stub.Provider.UpdateCallCount())
 				_, actualVarContext := stub.Provider.UpdateArgsForCall(0)
