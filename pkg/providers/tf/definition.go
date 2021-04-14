@@ -25,7 +25,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
-	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/spf13/viper"
 )
 
@@ -79,12 +79,12 @@ func (plan *TfServiceDefinitionV1Plan) Validate() (errs *validation.FieldError) 
 
 // ToPlan converts this plan definition to a broker.ServicePlan.
 func (plan *TfServiceDefinitionV1Plan) ToPlan() broker.ServicePlan {
-	masterPlan := brokerapi.ServicePlan{
+	masterPlan := domain.ServicePlan{
 		ID:          plan.Id,
 		Description: plan.Description,
 		Name:        plan.Name,
-		Free:        brokerapi.FreeValue(plan.Free),
-		Metadata: &brokerapi.ServicePlanMetadata{
+		Free:        domain.FreeValue(plan.Free),
+		Metadata: &domain.ServicePlanMetadata{
 			Bullets:     plan.Bullets,
 			DisplayName: plan.DisplayName,
 		},

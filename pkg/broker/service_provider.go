@@ -19,7 +19,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
@@ -43,13 +43,13 @@ type ServiceProvider interface {
 	Bind(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error)
 	// BuildInstanceCredentials combines the bindRecord with any additional
 	// info from the instance to create credentials for the binding.
-	BuildInstanceCredentials(ctx context.Context, bindRecord models.ServiceBindingCredentials, instance models.ServiceInstanceDetails) (*brokerapi.Binding, error)
+	BuildInstanceCredentials(ctx context.Context, bindRecord models.ServiceBindingCredentials, instance models.ServiceInstanceDetails) (*domain.Binding, error)
 	// Unbind deprovisions the resources created with Bind.
 	Unbind(ctx context.Context, instance models.ServiceInstanceDetails, details models.ServiceBindingCredentials, vc *varcontext.VarContext) error
 	// Deprovision deprovisions the service.
 	// If the deprovision is asynchronous (results in a long-running job), then operationId is returned.
 	// If no error and no operationId are returned, then the deprovision is expected to have been completed successfully.
-	Deprovision(ctx context.Context, instance models.ServiceInstanceDetails, details brokerapi.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error)
+	Deprovision(ctx context.Context, instance models.ServiceInstanceDetails, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error)
 	PollInstance(ctx context.Context, instance models.ServiceInstanceDetails) (bool, string, error)
 	ProvisionsAsync() bool
 	DeprovisionsAsync() bool

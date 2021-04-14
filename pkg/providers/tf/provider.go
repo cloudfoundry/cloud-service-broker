@@ -25,7 +25,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
-	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 // NewTerraformProvider creates a new ServiceProvider backed by Terraform module definitions for provision and bind.
@@ -208,7 +208,7 @@ func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord mo
 }
 
 // Deprovision performs a terraform destroy on the instance.
-func (provider *terraformProvider) Deprovision(ctx context.Context, instance models.ServiceInstanceDetails, details brokerapi.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error) {
+func (provider *terraformProvider) Deprovision(ctx context.Context, instance models.ServiceInstanceDetails, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error) {
 	provider.logger.Debug("terraform-deprovision", correlation.ID(ctx), lager.Data{
 		"instance": instance.ID,
 	})

@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 func TestServiceDefinition_CheckProhibitUpdate(t *testing.T) {
@@ -62,7 +62,7 @@ func TestServiceDefinition_CheckProhibitUpdate(t *testing.T) {
 
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			actual, err := svcDef.AllowedUpdate(brokerapi.UpdateDetails{
+			actual, err := svcDef.AllowedUpdate(domain.UpdateDetails{
 				RawParameters: json.RawMessage(tc.rawParams),
 			})
 			if (err == nil) == tc.expectErr {

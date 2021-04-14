@@ -17,7 +17,7 @@ package broker
 import (
 	"testing"
 
-	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/spf13/viper"
 )
 
@@ -58,7 +58,7 @@ func TestRegistry_GetEnabledServices(t *testing.T) {
 				Tags: []string{"gcp", tc.Tag},
 				Plans: []ServicePlan{
 					{
-						ServicePlan: brokerapi.ServicePlan{
+						ServicePlan: domain.ServicePlan{
 							ID:          "e1d11f65-da66-46ad-977c-6d56513baf43",
 							Name:        "Builtin!",
 							Description: "Standard storage class",
