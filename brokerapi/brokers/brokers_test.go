@@ -36,7 +36,8 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/jinzhu/gorm"
 	"github.com/pborman/uuid"
-	"github.com/pivotal-cf/brokerapi/v7"
+	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 // InstanceState holds the lifecycle state of a provisioned service instance.
@@ -653,7 +654,7 @@ func TestServiceBroker_GetBinding(t *testing.T) {
 		"called-on-bound": {
 			ServiceState: StateBound,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
-				_, err := broker.GetBinding(context.Background(), fakeInstanceId, fakeBindingId)
+				_, err := broker.GetBinding(context.Background(), fakeInstanceId, fakeBindingId, domain.FetchBindingDetails{})
 
 				assertEqual(t, "expect get binding not supported err", ErrGetBindingsUnsupported, err)
 			},
@@ -668,7 +669,7 @@ func TestServiceBroker_GetInstance(t *testing.T) {
 		"called-while-provisioned": {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
-				_, err := broker.GetInstance(context.Background(), fakeInstanceId)
+				_, err := broker.GetInstance(context.Background(), fakeInstanceId, domain.FetchInstanceDetails{})
 
 				assertEqual(t, "expect get instances not supported err", ErrGetInstancesUnsupported, err)
 			},
