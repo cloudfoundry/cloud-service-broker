@@ -15,7 +15,7 @@
 package broker
 
 import (
-	"github.com/pivotal-cf/brokerapi/v7"
+	"github.com/pivotal-cf/brokerapi/v8"
 )
 
 // Service overrides the canonical Service Broker service type using a custom
