@@ -25,6 +25,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
 )
 
 const (
@@ -110,7 +111,7 @@ func (runner *TfJobRunner) hydrateWorkspace(ctx context.Context, deployment *mod
 	ws.Executor = wrapper.CustomEnvironmentExecutor(runner.EnvVars, runner.Executor)
 
 	logger := utils.NewLogger("job-runner")
-	logger.Debug("wrapping", lager.Data{
+	logger.Debug("wrapping", correlation.ID(ctx), lager.Data{
 		"wrapper": ws,
 	})
 
@@ -141,17 +142,17 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 	}
 
 	go func() {
-		logger := utils.NewLogger("Import")
+		logger := utils.NewLogger("Import").WithData(correlation.ID(ctx))
 		resources := make(map[string]string)
 		for _, resource := range importResources {
 			resources[resource.TfResource] = resource.IaaSResource
 		}
-		if err := workspace.Import(resources); err != nil {
+		if err := workspace.Import(ctx, resources); err != nil {
 			logger.Error("Import Failed", err)
 			runner.operationFinished(err, workspace, deployment)
 			return
 		}
-		mainTf, err := workspace.Show()
+		mainTf, err := workspace.Show(ctx)
 		if err == nil {
 			var tf string
 			var parameterVals map[string]string
@@ -167,7 +168,7 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 					"tf":        tf,
 				})
 
-				err = workspace.Apply()
+				err = workspace.Apply(ctx)
 			}
 		}
 		runner.operationFinished(err, workspace, deployment)
@@ -194,7 +195,7 @@ func (runner *TfJobRunner) Create(ctx context.Context, id string) error {
 	}
 
 	go func() {
-		err := workspace.Apply()
+		err := workspace.Apply(ctx)
 		runner.operationFinished(err, workspace, deployment)
 	}()
 
@@ -229,7 +230,7 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 	}
 
 	go func() {
-		err := workspace.Apply()
+		err := workspace.Apply(ctx)
 		runner.operationFinished(err, workspace, deployment)
 	}()
 
@@ -266,7 +267,7 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 	}
 
 	go func() {
-		err := workspace.Destroy()
+		err := workspace.Destroy(ctx)
 		runner.operationFinished(err, workspace, deployment)
 	}()
 
