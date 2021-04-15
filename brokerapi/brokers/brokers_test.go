@@ -38,6 +38,7 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v8"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 	"github.com/pivotal-cf/brokerapi/v8/middlewares"
 )
 
@@ -67,10 +68,10 @@ type serviceStub struct {
 	ServiceDefinition *broker.ServiceDefinition
 }
 
-// ProvisionDetails creates a brokerapi.ProvisionDetails object valid for
+// ProvisionDetails creates a domain.ProvisionDetails object valid for
 // the given service.
-func (s *serviceStub) ProvisionDetails() brokerapi.ProvisionDetails {
-	return brokerapi.ProvisionDetails{
+func (s *serviceStub) ProvisionDetails() domain.ProvisionDetails {
+	return domain.ProvisionDetails{
 		ServiceID: s.ServiceId,
 		PlanID:    s.PlanId,
 	}
@@ -78,35 +79,35 @@ func (s *serviceStub) ProvisionDetails() brokerapi.ProvisionDetails {
 
 // DeprovisionDetails creates a brokerapi.DeprovisionDetails object valid for
 // the given service.
-func (s *serviceStub) DeprovisionDetails() brokerapi.DeprovisionDetails {
-	return brokerapi.DeprovisionDetails{
+func (s *serviceStub) DeprovisionDetails() domain.DeprovisionDetails {
+	return domain.DeprovisionDetails{
 		ServiceID: s.ServiceId,
 		PlanID:    s.PlanId,
 	}
 }
 
-// BindDetails creates a brokerapi.BindDetails object valid for
+// BindDetails creates a domain.BindDetails object valid for
 // the given service.
-func (s *serviceStub) BindDetails() brokerapi.BindDetails {
-	return brokerapi.BindDetails{
+func (s *serviceStub) BindDetails() domain.BindDetails {
+	return domain.BindDetails{
 		ServiceID: s.ServiceId,
 		PlanID:    s.PlanId,
 	}
 }
 
-// UnbindDetails creates a brokerapi.UnbindDetails object valid for
+// UnbindDetails creates a domain.UnbindDetails object valid for
 // the given service.
-func (s *serviceStub) UnbindDetails() brokerapi.UnbindDetails {
-	return brokerapi.UnbindDetails{
+func (s *serviceStub) UnbindDetails() domain.UnbindDetails {
+	return domain.UnbindDetails{
 		ServiceID: s.ServiceId,
 		PlanID:    s.PlanId,
 	}
 }
 
-// UpdateDetails creates a brokerapi.UpdateDetails object valid for
+// UpdateDetails creates a domain.UpdateDetails object valid for
 // the given service.
-func (s *serviceStub) UpdateDetails() brokerapi.UpdateDetails {
-	return brokerapi.UpdateDetails{
+func (s *serviceStub) UpdateDetails() domain.UpdateDetails {
+	return domain.UpdateDetails{
 		ServiceID: s.ServiceId,
 		PlanID:    s.PlanId,
 	}
@@ -120,7 +121,7 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 		Name: "fake-service-name",
 		Plans: []broker.ServicePlan{
 			{
-				ServicePlan: brokerapi.ServicePlan{
+				ServicePlan: domain.ServicePlan{
 					ID:   "fake-plan-id",
 					Name: "fake-plan-name",
 				},
@@ -151,7 +152,7 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 			BindStub: func(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error) {
 				return map[string]interface{}{"foo": "bar"}, nil
 			},
-			BuildInstanceCredentialsStub: func(ctx context.Context, bc models.ServiceBindingCredentials, id models.ServiceInstanceDetails) (*brokerapi.Binding, error) {
+			BuildInstanceCredentialsStub: func(ctx context.Context, bc models.ServiceBindingCredentials, id models.ServiceInstanceDetails) (*domain.Binding, error) {
 				mixin := base.MergedInstanceCredsMixin{}
 				return mixin.BuildInstanceCredentials(ctx, bc, id)
 			},
@@ -324,7 +325,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				_, err := broker.Provision(context.Background(), fakeInstanceId, stub.ProvisionDetails(), true)
-				assertEqual(t, "errors should match", brokerapi.ErrInstanceAlreadyExists, err)
+				assertEqual(t, "errors should match", apiresponses.ErrInstanceAlreadyExists, err)
 			},
 		},
 		"requires-async": {
@@ -333,7 +334,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				// false for async support
 				_, err := broker.Provision(context.Background(), fakeInstanceId, stub.ProvisionDetails(), false)
-				assertEqual(t, "errors should match", brokerapi.ErrAsyncRequired, err)
+				assertEqual(t, "errors should match", apiresponses.ErrAsyncRequired, err)
 			},
 		},
 		"unknown-service-id": {
@@ -592,22 +593,22 @@ func TestServiceBroker_LastOperation(t *testing.T) {
 		"missing-instance": {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
-				_, err := broker.LastOperation(context.Background(), "invalid-instance-id", brokerapi.PollDetails{OperationData: "operationtoken"})
-				assertEqual(t, "errors should match", brokerapi.ErrInstanceDoesNotExist, err)
+				_, err := broker.LastOperation(context.Background(), "invalid-instance-id", domain.PollDetails{OperationData: "operationtoken"})
+				assertEqual(t, "errors should match", apiresponses.ErrInstanceDoesNotExist, err)
 			},
 		},
 		"called-on-synchronous-service": {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
-				_, err := broker.LastOperation(context.Background(), fakeInstanceId, brokerapi.PollDetails{OperationData: "operationtoken"})
-				assertEqual(t, "errors should match", brokerapi.ErrAsyncRequired, err)
+				_, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
+				assertEqual(t, "errors should match", apiresponses.ErrAsyncRequired, err)
 			},
 		},
 		"called-on-async-service": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
-				_, err := broker.LastOperation(context.Background(), fakeInstanceId, brokerapi.PollDetails{OperationData: "operationtoken"})
+				_, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
 				failIfErr(t, "shouldn't be called on async service", err)
 
 				assertEqual(t, "PollInstanceCallCount should match", 1, stub.Provider.PollInstanceCallCount())
@@ -618,9 +619,9 @@ func TestServiceBroker_LastOperation(t *testing.T) {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				stub.Provider.PollInstanceReturns(false, "", errors.New("not-retryable"))
-				status, err := broker.LastOperation(context.Background(), fakeInstanceId, brokerapi.PollDetails{OperationData: "operationtoken"})
+				status, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
 				failIfErr(t, "checking last operation", err)
-				assertEqual(t, "non-retryable errors should result in a failure state", brokerapi.Failed, status.State)
+				assertEqual(t, "non-retryable errors should result in a failure state", domain.Failed, status.State)
 				assertEqual(t, "description should be error string", "not-retryable", status.Description)
 			},
 		},
@@ -629,9 +630,9 @@ func TestServiceBroker_LastOperation(t *testing.T) {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				stub.Provider.PollInstanceReturns(false, "", nil)
-				status, err := broker.LastOperation(context.Background(), fakeInstanceId, brokerapi.PollDetails{OperationData: "operationtoken"})
+				status, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
 				failIfErr(t, "checking last operation", err)
-				assertEqual(t, "polls that return no error should result in an in-progress state", brokerapi.InProgress, status.State)
+				assertEqual(t, "polls that return no error should result in an in-progress state", domain.InProgress, status.State)
 			},
 		},
 		"poll-returns-success": {
@@ -639,9 +640,9 @@ func TestServiceBroker_LastOperation(t *testing.T) {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				stub.Provider.PollInstanceReturns(true, "message", nil)
-				status, err := broker.LastOperation(context.Background(), fakeInstanceId, brokerapi.PollDetails{OperationData: "operationtoken"})
+				status, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
 				failIfErr(t, "checking last operation", err)
-				assertEqual(t, "polls that return finished should result in a succeeded state", brokerapi.Succeeded, status.State)
+				assertEqual(t, "polls that return finished should result in a succeeded state", domain.Succeeded, status.State)
 				assertEqual(t, "polls that return finished should have status message", "message", status.Description)
 			},
 		},
@@ -686,9 +687,9 @@ func TestServiceBroker_LastBindingOperation(t *testing.T) {
 			ServiceState: StateProvisioned,
 			AsyncService: true,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
-				_, err := broker.LastBindingOperation(context.Background(), fakeInstanceId, fakeBindingId, brokerapi.PollDetails{})
+				_, err := broker.LastBindingOperation(context.Background(), fakeInstanceId, fakeBindingId, domain.PollDetails{})
 
-				assertEqual(t, "expect last binding to return async required", brokerapi.ErrAsyncRequired, err)
+				assertEqual(t, "expect last binding to return async required", apiresponses.ErrAsyncRequired, err)
 			},
 		},
 	}

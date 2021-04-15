@@ -21,6 +21,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 type synchronousBase struct{}
@@ -76,7 +77,7 @@ type MergedInstanceCredsMixin struct{}
 
 // BuildInstanceCredentials combines the bind credentials with the connection
 // information in the instance details to get a full set of connection details.
-func (b *MergedInstanceCredsMixin) BuildInstanceCredentials(ctx context.Context, bindRecord models.ServiceBindingCredentials, instanceRecord models.ServiceInstanceDetails) (*brokerapi.Binding, error) {
+func (b *MergedInstanceCredsMixin) BuildInstanceCredentials(ctx context.Context, bindRecord models.ServiceBindingCredentials, instanceRecord models.ServiceInstanceDetails) (*domain.Binding, error) {
 	vc, err := varcontext.Builder().
 		MergeJsonObject(json.RawMessage(instanceRecord.OtherDetails)).
 		MergeJsonObject(json.RawMessage(bindRecord.OtherDetails)).
@@ -85,5 +86,5 @@ func (b *MergedInstanceCredsMixin) BuildInstanceCredentials(ctx context.Context,
 		return nil, err
 	}
 
-	return &brokerapi.Binding{Credentials: vc.ToMap()}, nil
+	return &domain.Binding{Credentials: vc.ToMap()}, nil
 }

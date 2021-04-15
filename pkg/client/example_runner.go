@@ -27,6 +27,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 // RunExamplesForService runs all the examples for a given service name against
@@ -217,7 +218,7 @@ func runExample(client *Client, id string, serviceExample CompleteServiceExample
 
 	if bindErr == nil {
 		// Check that the binding response has the same fields as expected
-		var binding brokerapi.Binding
+		var binding domain.Binding
 		err = json.Unmarshal(bindResponse, &binding)
 		if err != nil {
 			return err

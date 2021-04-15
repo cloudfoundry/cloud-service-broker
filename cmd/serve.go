@@ -29,6 +29,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/gorilla/mux"
 	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -75,7 +76,7 @@ func serve() {
 	if err != nil {
 		logger.Fatal("Error initializing service broker config: %s", err)
 	}
-	var serviceBroker brokerapi.ServiceBroker
+	var serviceBroker domain.ServiceBroker
 	serviceBroker, err = brokers.New(cfg, logger)
 	if err != nil {
 		logger.Fatal("Error initializing service broker: %s", err)

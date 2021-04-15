@@ -26,7 +26,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
-	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/spf13/viper"
 )
 
@@ -184,11 +184,11 @@ func (svc *ServiceDefinition) CatalogEntry() (*Service, error) {
 	}
 
 	sd := &Service{
-		Service: brokerapi.Service{
+		Service: domain.Service{
 			ID:          svc.Id,
 			Name:        svc.Name,
 			Description: svc.Description,
-			Metadata: &brokerapi.ServiceMetadata{
+			Metadata: &domain.ServiceMetadata{
 				DisplayName:     svc.DisplayName,
 				LongDescription: svc.Description,
 
@@ -214,15 +214,15 @@ func (svc *ServiceDefinition) CatalogEntry() (*Service, error) {
 
 // createSchemas creates JSONSchemas compatible with the OSB spec for provision and bind.
 // It leaves the instance update schema empty to indicate updates are not supported.
-func (svc *ServiceDefinition) createSchemas() *brokerapi.ServiceSchemas {
-	return &brokerapi.ServiceSchemas{
-		Instance: brokerapi.ServiceInstanceSchema{
-			Create: brokerapi.Schema{
+func (svc *ServiceDefinition) createSchemas() *domain.ServiceSchemas {
+	return &domain.ServiceSchemas{
+		Instance: domain.ServiceInstanceSchema{
+			Create: domain.Schema{
 				Parameters: CreateJsonSchema(svc.ProvisionInputVariables),
 			},
 		},
-		Binding: brokerapi.ServiceBindingSchema{
-			Create: brokerapi.Schema{
+		Binding: domain.ServiceBindingSchema{
+			Create: domain.Schema{
 				Parameters: CreateJsonSchema(svc.BindInputVariables),
 			},
 		},
@@ -402,7 +402,7 @@ func (svc *ServiceDefinition) variables(constants map[string]interface{},
 	return buildAndValidate(builder, svc.ProvisionInputVariables)
 }
 
-func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details brokerapi.ProvisionDetails, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details domain.ProvisionDetails, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
 	// The namespaces of these values roughly align with the OSB spec.
 	constants := map[string]interface{}{
 		"request.plan_id":                           details.PlanID,
@@ -416,7 +416,7 @@ func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details brok
 	return svc.variables(constants, details.GetRawParameters(), json.RawMessage("{}"), plan)
 }
 
-func (svc *ServiceDefinition) UpdateVariables(instanceId string, details brokerapi.UpdateDetails, provisionDetails json.RawMessage, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) UpdateVariables(instanceId string, details domain.UpdateDetails, provisionDetails json.RawMessage, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
 	constants := map[string]interface{}{
 		"request.plan_id":                           details.PlanID,
 		"request.service_id":                        details.ServiceID,
@@ -444,7 +444,7 @@ func unmarshalJsonToMap(rawContext json.RawMessage) map[string]interface{} {
 // 4. Operator default variables loaded from the environment.
 // 5. Default variables (in `bind_input_variables`).
 //
-func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetails, bindingID string, details brokerapi.BindDetails, plan *ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetails, bindingID string, details domain.BindDetails, plan *ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
 	otherDetails := make(map[string]interface{})
 	if err := instance.GetOtherDetails(&otherDetails); err != nil {
 		return nil, err
@@ -505,7 +505,7 @@ func buildAndValidate(builder *varcontext.ContextBuilder, vars []BrokerVariable)
 	return vc, nil
 }
 
-func (svc *ServiceDefinition) AllowedUpdate(details brokerapi.UpdateDetails) (bool, error) {
+func (svc *ServiceDefinition) AllowedUpdate(details domain.UpdateDetails) (bool, error) {
 	if details.GetRawParameters() == nil || len(details.GetRawParameters()) == 0 {
 		return true, nil
 	}

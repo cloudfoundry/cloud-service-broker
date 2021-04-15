@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/spf13/viper"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/jwt"
@@ -174,7 +174,7 @@ func GetServiceAccountJson() string {
 // ExtractDefaultProvisionLabels creates a map[string]string of labels that should be
 // applied to a resource on creation if the resource supports labels.
 // These include the organization, space, and instance id.
-func ExtractDefaultProvisionLabels(instanceId string, details brokerapi.ProvisionDetails) map[string]string {
+func ExtractDefaultProvisionLabels(instanceId string, details domain.ProvisionDetails) map[string]string {
 	labels := map[string]string{
 		"pcf-organization-guid": details.OrganizationGUID,
 		"pcf-space-guid":        details.SpaceGUID,
@@ -201,7 +201,7 @@ func ExtractDefaultProvisionLabels(instanceId string, details brokerapi.Provisio
 	return sanitized
 }
 
-func ExtractDefaultUpdateLabels(instanceId string, details brokerapi.UpdateDetails) map[string]string {
+func ExtractDefaultUpdateLabels(instanceId string, details domain.UpdateDetails) map[string]string {
 	labels := map[string]string{
 		"pcf-organization-guid": details.PreviousValues.OrgID,
 		"pcf-space-guid":        details.PreviousValues.SpaceID,
