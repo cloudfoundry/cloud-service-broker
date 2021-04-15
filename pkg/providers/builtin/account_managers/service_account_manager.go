@@ -30,7 +30,8 @@ import (
 	"golang.org/x/oauth2/jwt"
 	cloudres "google.golang.org/api/cloudresourcemanager/v1"
 	"google.golang.org/api/googleapi"
-	iam "google.golang.org/api/iam/v1"
+	"google.golang.org/api/iam/v1"
+	"google.golang.org/api/option"
 )
 
 const (
@@ -99,7 +100,7 @@ func (sam *ServiceAccountManager) DeleteCredentials(ctx context.Context, binding
 		return fmt.Errorf("error unmarshalling credentials: %s", err)
 	}
 
-	iamService, err := iam.New(sam.HttpConfig.Client(ctx))
+	iamService, err := iam.NewService(ctx, option.WithHTTPClient(sam.HttpConfig.Client(ctx)))
 	if err != nil {
 		return fmt.Errorf("error creating IAM service: %s", err)
 	}
@@ -123,7 +124,7 @@ func (sam *ServiceAccountManager) DeleteCredentials(ctx context.Context, binding
 
 func (sam *ServiceAccountManager) createServiceAccount(ctx context.Context, accountId, displayName string) (*iam.ServiceAccount, error) {
 	client := sam.HttpConfig.Client(ctx)
-	iamService, err := iam.New(client)
+	iamService, err := iam.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
 		return nil, fmt.Errorf("error creating new IAM service: %s", err)
 	}
@@ -143,7 +144,7 @@ func (sam *ServiceAccountManager) createServiceAccount(ctx context.Context, acco
 
 func (sam *ServiceAccountManager) createServiceAccountKey(ctx context.Context, account *iam.ServiceAccount) (*iam.ServiceAccountKey, error) {
 	client := sam.HttpConfig.Client(ctx)
-	iamService, err := iam.New(client)
+	iamService, err := iam.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
 		return nil, fmt.Errorf("error creating new IAM service: %s", err)
 	}
@@ -155,7 +156,7 @@ func (sam *ServiceAccountManager) createServiceAccountKey(ctx context.Context, a
 func (sam *ServiceAccountManager) grantRoleToAccount(ctx context.Context, role string, account *iam.ServiceAccount) error {
 	client := sam.HttpConfig.Client(ctx)
 
-	cloudresService, err := cloudres.New(client)
+	cloudresService, err := cloudres.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
 		return fmt.Errorf("error creating new cloud resource management service: %s", err)
 	}
@@ -193,7 +194,7 @@ func (sam *ServiceAccountManager) grantRoleToAccount(ctx context.Context, role s
 func (sam *ServiceAccountManager) revokeRolesFromAccount(ctx context.Context, email string) error {
 	client := sam.HttpConfig.Client(ctx)
 
-	cloudresService, err := cloudres.New(client)
+	cloudresService, err := cloudres.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
 		return fmt.Errorf("error creating new cloud resource management service: %s", err)
 	}
