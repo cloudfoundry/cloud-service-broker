@@ -25,7 +25,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/spf13/viper"
 )
 
@@ -71,7 +71,7 @@ func ExampleServiceDefinition_GetPlanById() {
 		Id:   "00000000-0000-0000-0000-000000000000",
 		Name: "left-handed-smoke-sifter",
 		Plans: []ServicePlan{
-			{ServicePlan: brokerapi.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
+			{ServicePlan: domain.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
 		},
 	}
 
@@ -260,7 +260,7 @@ func ExampleServiceDefinition_CatalogEntry() {
 		Id:   "00000000-0000-0000-0000-000000000000",
 		Name: "left-handed-smoke-sifter",
 		Plans: []ServicePlan{
-			{ServicePlan: brokerapi.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
+			{ServicePlan: domain.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
 		},
 		ProvisionInputVariables: []BrokerVariable{
 			{FieldName: "location", Type: JsonTypeString, Default: "us"},
@@ -299,7 +299,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 		Id:   "00000000-0000-0000-0000-000000000000",
 		Name: "left-handed-smoke-sifter",
 		Plans: []ServicePlan{
-			{ServicePlan: brokerapi.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
+			{ServicePlan: domain.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
 		},
 		ProvisionInputVariables: []BrokerVariable{
 			{
@@ -531,7 +531,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			}
 			defer viper.Reset()
 
-			details := brokerapi.ProvisionDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
+			details := domain.ProvisionDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
 			plan := ServicePlan{ServiceProperties: tc.ServiceProperties, ProvisionOverrides: tc.ProvisionOverrides}
 			vars, err := service.ProvisionVariables("instance-id-here", details, plan, tc.OriginatingIdentity)
 
@@ -549,7 +549,7 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 		Id:   "00000000-0000-0000-0000-000000000000",
 		Name: "left-handed-smoke-sifter",
 		Plans: []ServicePlan{
-			{ServicePlan: brokerapi.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
+			{ServicePlan: domain.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
 		},
 		ProvisionInputVariables: []BrokerVariable{
 			{
@@ -805,7 +805,7 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			}
 			defer viper.Reset()
 
-			details := brokerapi.UpdateDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
+			details := domain.UpdateDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
 			provisionDetails := json.RawMessage(tc.ProvisionDetails)
 			plan := ServicePlan{ServiceProperties: tc.ServiceProperties, ProvisionOverrides: tc.ProvisionOverrides}
 			vars, err := service.UpdateVariables("instance-id-here", details, provisionDetails, plan, tc.OriginatingIdentity)
@@ -824,7 +824,7 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 		Name: "left-handed-smoke-sifter",
 		Plans: []ServicePlan{
 			{
-				ServicePlan: brokerapi.ServicePlan{
+				ServicePlan: domain.ServicePlan{
 					ID:   "builtin-plan",
 					Name: "Builtin!",
 				},
@@ -1025,7 +1025,7 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 			viper.Set(service.BindDefaultOverrideProperty(), tc.DefaultOverride)
 			defer viper.Reset()
 
-			details := brokerapi.BindDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
+			details := domain.BindDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
 			instance := models.ServiceInstanceDetails{OtherDetails: tc.InstanceVars}
 			service.Plans[0].BindOverrides = tc.BindOverrides
 			vars, err := service.BindVariables(instance, "binding-id-here", details, &service.Plans[0], tc.OriginatingIdentity)
@@ -1044,7 +1044,7 @@ func TestServiceDefinition_createSchemas(t *testing.T) {
 		Id:   "00000000-0000-0000-0000-000000000000",
 		Name: "left-handed-smoke-sifter",
 		Plans: []ServicePlan{
-			{ServicePlan: brokerapi.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
+			{ServicePlan: domain.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
 		},
 		ProvisionInputVariables: []BrokerVariable{
 			{FieldName: "location", Type: JsonTypeString, Default: "us"},

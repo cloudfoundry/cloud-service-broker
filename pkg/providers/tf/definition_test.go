@@ -23,7 +23,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"gopkg.in/yaml.v3"
 )
 
@@ -614,12 +614,12 @@ func TestTfServiceDefinitionV1Plan_ToPlan(t *testing.T) {
 				},
 			},
 			Expected: broker.ServicePlan{
-				ServicePlan: brokerapi.ServicePlan{
+				ServicePlan: domain.ServicePlan{
 					ID:          "00000000-0000-0000-0000-000000000001",
 					Name:        "example-email-plan",
 					Description: "Builds emails for example.com.",
-					Free:        brokerapi.FreeValue(false),
-					Metadata: &brokerapi.ServicePlanMetadata{
+					Free:        domain.FreeValue(false),
+					Metadata: &domain.ServicePlanMetadata{
 						Bullets:     []string{"information point 1", "information point 2", "some caveat here"},
 						DisplayName: "example.com email builder",
 					},

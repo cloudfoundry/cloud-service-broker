@@ -16,6 +16,7 @@ package broker
 
 import (
 	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 // Service overrides the canonical Service Broker service type using a custom
@@ -27,9 +28,9 @@ type Service struct {
 }
 
 // ToPlain converts this service to a plain PCF Service definition.
-func (s Service) ToPlain() brokerapi.Service {
+func (s Service) ToPlain() domain.Service {
 	plain := s.Service
-	plainPlans := []brokerapi.ServicePlan{}
+	var plainPlans []domain.ServicePlan
 
 	for _, plan := range s.Plans {
 		plainPlans = append(plainPlans, plan.ServicePlan)

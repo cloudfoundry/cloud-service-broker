@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 func ExamplePropertyToEnv() {
@@ -90,12 +90,12 @@ func ExampleGetDefaultProjectId() {
 func TestExtractDefaultProvisionLabels(t *testing.T) {
 	tests := map[string]struct {
 		instanceId string
-		details    brokerapi.ProvisionDetails
+		details    domain.ProvisionDetails
 		expected   map[string]string
 	}{
 		"empty everything": {
 			instanceId: "",
-			details:    brokerapi.ProvisionDetails{},
+			details:    domain.ProvisionDetails{},
 			expected: map[string]string{
 				"pcf-organization-guid": "",
 				"pcf-space-guid":        "",
@@ -104,7 +104,7 @@ func TestExtractDefaultProvisionLabels(t *testing.T) {
 		},
 		"osb 2.13": {
 			instanceId: "my-instance",
-			details:    brokerapi.ProvisionDetails{OrganizationGUID: "org-guid", SpaceGUID: "space-guid"},
+			details:    domain.ProvisionDetails{OrganizationGUID: "org-guid", SpaceGUID: "space-guid"},
 			expected: map[string]string{
 				"pcf-organization-guid": "org-guid",
 				"pcf-space-guid":        "space-guid",
@@ -113,7 +113,7 @@ func TestExtractDefaultProvisionLabels(t *testing.T) {
 		},
 		"osb future": {
 			instanceId: "my-instance",
-			details: brokerapi.ProvisionDetails{
+			details: domain.ProvisionDetails{
 				OrganizationGUID: "org-guid",
 				SpaceGUID:        "space-guid",
 				RawContext:       json.RawMessage(`{"organization_guid":"org-override", "space_guid":"space-override"}`),
@@ -126,7 +126,7 @@ func TestExtractDefaultProvisionLabels(t *testing.T) {
 		},
 		"osb special characters": {
 			instanceId: "my~instance.",
-			details:    brokerapi.ProvisionDetails{},
+			details:    domain.ProvisionDetails{},
 			expected: map[string]string{
 				"pcf-organization-guid": "",
 				"pcf-space-guid":        "",

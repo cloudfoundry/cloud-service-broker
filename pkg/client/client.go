@@ -22,7 +22,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/spf13/viper"
 )
 
@@ -71,7 +71,7 @@ func (client *Client) Catalog(requestID string) *BrokerResponse {
 func (client *Client) Provision(instanceId, serviceId, planId, requestID string, provisioningDetails json.RawMessage) *BrokerResponse {
 	url := fmt.Sprintf("service_instances/%s?accepts_incomplete=true", instanceId)
 
-	return client.makeRequest(http.MethodPut, url, requestID, brokerapi.ProvisionDetails{
+	return client.makeRequest(http.MethodPut, url, requestID, domain.ProvisionDetails{
 		ServiceID:     serviceId,
 		PlanID:        planId,
 		RawParameters: provisioningDetails,
@@ -89,7 +89,7 @@ func (client *Client) Deprovision(instanceId, serviceId, planId, requestID strin
 func (client *Client) Bind(instanceId, bindingId, serviceId, planId, requestID string, parameters json.RawMessage) *BrokerResponse {
 	url := fmt.Sprintf("service_instances/%s/service_bindings/%s", instanceId, bindingId)
 
-	return client.makeRequest(http.MethodPut, url, requestID, brokerapi.BindDetails{
+	return client.makeRequest(http.MethodPut, url, requestID, domain.BindDetails{
 		ServiceID:     serviceId,
 		PlanID:        planId,
 		RawParameters: parameters,
@@ -107,7 +107,7 @@ func (client *Client) Unbind(instanceId, bindingId, serviceId, planId, requestID
 func (client *Client) Update(instanceId, serviceId, planId, requestID string, parameters json.RawMessage) *BrokerResponse {
 	url := fmt.Sprintf("service_instances/%s?accepts_incomplete=true", instanceId)
 
-	return client.makeRequest(http.MethodPatch, url, requestID, brokerapi.UpdateDetails{
+	return client.makeRequest(http.MethodPatch, url, requestID, domain.UpdateDetails{
 		ServiceID:     serviceId,
 		PlanID:        planId,
 		RawParameters: parameters,

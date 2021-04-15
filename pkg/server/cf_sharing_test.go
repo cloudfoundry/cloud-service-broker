@@ -19,13 +19,14 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/server/fakes"
-	"github.com/pivotal-cf/brokerapi/v8"
 )
 
 func TestCfSharingWraper_Services(t *testing.T) {
 	cases := map[string]struct {
-		Services []brokerapi.Service
+		Services []domain.Service
 		Error    error
 	}{
 		"nil services": {
@@ -33,26 +34,26 @@ func TestCfSharingWraper_Services(t *testing.T) {
 			Error:    nil,
 		},
 		"empty services": {
-			Services: []brokerapi.Service{},
+			Services: []domain.Service{},
 			Error:    nil,
 		},
 
 		"single service": {
-			Services: []brokerapi.Service{
-				{Name: "foo", Metadata: &brokerapi.ServiceMetadata{}},
+			Services: []domain.Service{
+				{Name: "foo", Metadata: &domain.ServiceMetadata{}},
 			},
 			Error: nil,
 		},
 		"missing metadata": {
-			Services: []brokerapi.Service{
+			Services: []domain.Service{
 				{Name: "foo"},
 			},
 			Error: nil,
 		},
 		"multiple services": {
-			Services: []brokerapi.Service{
-				{Name: "foo", Metadata: &brokerapi.ServiceMetadata{}},
-				{Name: "bar", Metadata: &brokerapi.ServiceMetadata{}},
+			Services: []domain.Service{
+				{Name: "foo", Metadata: &domain.ServiceMetadata{}},
+				{Name: "bar", Metadata: &domain.ServiceMetadata{}},
 			},
 			Error: nil,
 		},
@@ -61,9 +62,9 @@ func TestCfSharingWraper_Services(t *testing.T) {
 			Error:    errors.New("returned error"),
 		},
 		"services and err": {
-			Services: []brokerapi.Service{
-				{Name: "foo", Metadata: &brokerapi.ServiceMetadata{}},
-				{Name: "bar", Metadata: &brokerapi.ServiceMetadata{}},
+			Services: []domain.Service{
+				{Name: "foo", Metadata: &domain.ServiceMetadata{}},
+				{Name: "bar", Metadata: &domain.ServiceMetadata{}},
 			},
 			Error: errors.New("returned error"),
 		},

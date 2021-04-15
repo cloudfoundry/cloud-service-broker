@@ -17,11 +17,13 @@ package server
 import (
 	"context"
 
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+
 	"github.com/pivotal-cf/brokerapi/v8"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
-//counterfeiter:generate -o ./fakes/servicebroker.go github.com/pivotal-cf/brokerapi/v8.ServiceBroker
+//counterfeiter:generate -o ./fakes/servicebroker.go github.com/pivotal-cf/brokerapi/v8/domain.ServiceBroker
 
 // CfSharingWrapper enables the Shareable flag for every service provided by the broker.
 type CfSharingWrapper struct {
@@ -30,15 +32,15 @@ type CfSharingWrapper struct {
 
 // Services augments the response from the wrapped ServiceBroker by adding
 // the shareable flag.
-func (w *CfSharingWrapper) Services(ctx context.Context) (services []brokerapi.Service, err error) {
+func (w *CfSharingWrapper) Services(ctx context.Context) (services []domain.Service, err error) {
 	services, err = w.ServiceBroker.Services(ctx)
 
 	for i := range services {
 		if services[i].Metadata == nil {
-			services[i].Metadata = &brokerapi.ServiceMetadata{}
+			services[i].Metadata = &domain.ServiceMetadata{}
 		}
 
-		services[i].Metadata.Shareable = brokerapi.BindableValue(true)
+		services[i].Metadata.Shareable = domain.BindableValue(true)
 	}
 
 	return
@@ -46,6 +48,6 @@ func (w *CfSharingWrapper) Services(ctx context.Context) (services []brokerapi.S
 
 // NewCfSharingWrapper wraps the given servicebroker with the augmenter that
 // sets the Shareable flag on all services.
-func NewCfSharingWrapper(wrapped brokerapi.ServiceBroker) brokerapi.ServiceBroker {
+func NewCfSharingWrapper(wrapped domain.ServiceBroker) domain.ServiceBroker {
 	return &CfSharingWrapper{ServiceBroker: wrapped}
 }
