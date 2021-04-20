@@ -20,56 +20,8 @@ import (
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal-cf/brokerapi/v8"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
-
-type synchronousBase struct{}
-
-// PollInstance does nothing but return an error because Base services are
-// provisioned synchronously so this method should not be called.
-func (b *synchronousBase) PollInstance(ctx context.Context, instance models.ServiceInstanceDetails) (bool, string, error) {
-	return true, "", brokerapi.ErrAsyncRequired
-}
-
-// ProvisionsAsync indicates if provisioning must be done asynchronously.
-func (b *synchronousBase) ProvisionsAsync() bool {
-	return false
-}
-
-// DeprovisionsAsync indicates if deprovisioning must be done asynchronously.
-func (b *synchronousBase) DeprovisionsAsync() bool {
-	return false
-}
-
-// AsynchronousInstanceMixin sets ProvisionAsync and DeprovisionsAsync functions
-// to be true.
-type AsynchronousInstanceMixin struct{}
-
-// ProvisionsAsync indicates if provisioning must be done asynchronously.
-func (b *AsynchronousInstanceMixin) ProvisionsAsync() bool {
-	return true
-}
-
-// DeprovisionsAsync indicates if deprovisioning must be done asynchronously.
-func (b *AsynchronousInstanceMixin) DeprovisionsAsync() bool {
-	return true
-}
-
-// NoOpBindMixin does a no-op binding. This can be used when you still want a
-// service to be bindable but nothing is required server-side to support it.
-// For example, when the service requires no authentication.
-type NoOpBindMixin struct{}
-
-// Bind does a no-op bind.
-func (m *NoOpBindMixin) Bind(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error) {
-	return make(map[string]interface{}), nil
-}
-
-// Unbind does a no-op unbind.
-func (m *NoOpBindMixin) Unbind(ctx context.Context, instance models.ServiceInstanceDetails, creds models.ServiceBindingCredentials) error {
-	return nil
-}
 
 // MergedInstanceCredsMixin adds the BuildInstanceCredentials function that
 // merges the OtherDetails of the bind and instance records.

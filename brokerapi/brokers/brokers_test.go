@@ -30,7 +30,6 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/credstore"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/credstore/credstorefakes"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin/base"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
@@ -286,16 +285,6 @@ func initService(t *testing.T, state InstanceState, broker *ServiceBroker, stub 
 		_, err := broker.Deprovision(context.Background(), fakeInstanceId, stub.DeprovisionDetails(), true)
 		failIfErr(t, "deprovisioning", err)
 	}
-}
-
-func TestServiceBroker_Services(t *testing.T) {
-	registry := builtin.BuiltinBrokerRegistry()
-	broker, closer := newStubbedBroker(t, registry, nil)
-	defer closer()
-
-	services, err := broker.Services(context.Background())
-	failIfErr(t, "getting services", err)
-	assertEqual(t, "service count should be the same", len(registry), len(services))
 }
 
 func TestServiceBroker_Provision(t *testing.T) {
