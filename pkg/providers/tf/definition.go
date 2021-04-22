@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path"
+	"path/filepath"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
@@ -109,6 +110,8 @@ type TfServiceDefinitionV1Action struct {
 	Outputs                  []broker.BrokerVariable      `yaml:"outputs"`
 	Templates                map[string]string            `yaml:"templates"`
 	TemplateRefs             map[string]string            `yaml:"template_refs"`
+	LocalFiles               map[string]string            `yaml:"localfiles"`
+	LocalFileRefs            []string                     `yaml:"localfile_refs"`
 	ImportVariables          []ImportVariable             `yaml:"import_inputs"`
 	ImportParameterMappings  []ImportParameterMapping     `yaml:"import_parameter_mappings"`
 	ImportParametersToDelete []string                     `yaml:"import_parameters_to_delete"`
@@ -157,6 +160,39 @@ func (action *TfServiceDefinitionV1Action) LoadTemplate(srcDir string) error {
 	for name, ref := range action.TemplateRefs {
 		if ref != "" {
 			action.Templates[name], err = loadTemplate(path.Join(srcDir, ref))
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func loadLocalFile(filePath string) (string, error) {
+	if filePath == "" {
+		return "", nil
+	}
+	buff, err := ioutil.ReadFile(filePath)
+
+	if err != nil {
+		return "", err
+	}
+	return string(buff), nil
+}
+
+// LoadLocalFile loads local file refs if provided
+func (action *TfServiceDefinitionV1Action) LoadLocalFile(srcDir string) error {
+	var err error
+
+	if action.LocalFiles == nil {
+		action.LocalFiles = make(map[string]string)
+	}
+
+	for _, ref := range action.LocalFileRefs {
+		if ref != "" {
+			name := filepath.Base(ref)
+			action.LocalFiles[name], err = loadLocalFile(path.Join(srcDir, ref))
 			if err != nil {
 				return err
 			}
@@ -321,10 +357,25 @@ func (tfb *TfServiceDefinitionV1) loadTemplates() error {
 	return err
 }
 
+// Load additionnals local files for terraform file
+func (tfb *TfServiceDefinitionV1) loadLocalFiles() error {
+	err := tfb.BindSettings.LoadLocalFile(".")
+
+	if err == nil {
+		err = tfb.ProvisionSettings.LoadLocalFile(".")
+	}
+
+	return err
+}
+
 // ToService converts the flat TfServiceDefinitionV1 into a broker.ServiceDefinition
 // that the registry can use.
 func (tfb *TfServiceDefinitionV1) ToService(executor wrapper.TerraformExecutor) (*broker.ServiceDefinition, error) {
 	if err := tfb.loadTemplates(); err != nil {
+		return nil, err
+	}
+
+	if err := tfb.loadLocalFiles(); err != nil {
 		return nil, err
 	}
 

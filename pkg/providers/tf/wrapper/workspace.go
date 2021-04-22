@@ -50,6 +50,7 @@ type TerraformExecutor func(context.Context, *exec.Cmd) (ExecutionOutput, error)
 func NewWorkspace(templateVars map[string]interface{},
 	terraformTemplate string,
 	terraformTemplates map[string]string,
+	terraformLocalFiles map[string]string,
 	importParameterMappings []ParameterMapping,
 	parametersToRemove []string,
 	parametersToAdd []ParameterMapping) (*TerraformWorkspace, error) {
@@ -70,7 +71,8 @@ func NewWorkspace(templateVars map[string]interface{},
 	}
 
 	workspace := TerraformWorkspace{
-		Modules: []ModuleDefinition{tfModule},
+		LocalFiles: terraformLocalFiles,
+		Modules:    []ModuleDefinition{tfModule},
 		Instances: []ModuleInstance{
 			{
 				ModuleName:    tfModule.Name,
@@ -116,6 +118,9 @@ type TerraformWorkspace struct {
 	Instances []ModuleInstance   `json:"instances"`
 	State     []byte             `json:"tfstate"`
 
+	// terraform local files
+	LocalFiles map[string]string `json:"localfiles"`
+
 	// Executor is a function that gets invoked to shell out to Terraform.
 	// If left nil, the default executor is used.
 	Executor    TerraformExecutor `json:"-"`
@@ -133,6 +138,7 @@ func (workspace *TerraformWorkspace) String() string {
 	b.WriteString("# Terraform Workspace\n")
 	fmt.Fprintf(&b, "modules: %d\n", len(workspace.Modules))
 	fmt.Fprintf(&b, "instances: %d\n", len(workspace.Instances))
+	fmt.Fprintf(&b, "localfiles: %d\n", len(workspace.LocalFiles))
 	fmt.Fprintln(&b)
 
 	for _, instance := range workspace.Instances {
@@ -207,6 +213,15 @@ func (workspace *TerraformWorkspace) initializeFsModules() error {
 		for name, tf := range module.Definitions {
 			if err := ioutil.WriteFile(path.Join(parent, fmt.Sprintf("%s.tf", name)), []byte(tf), 0755); err != nil {
 				return err
+			}
+		}
+
+		// init local files
+		if len(workspace.LocalFiles) > 0 {
+			for name, lf := range workspace.LocalFiles {
+				if err := ioutil.WriteFile(path.Join(parent, name), []byte(lf), 0755); err != nil {
+					return err
+				}
 			}
 		}
 

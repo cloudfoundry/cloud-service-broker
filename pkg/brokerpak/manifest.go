@@ -187,8 +187,16 @@ func (m *Manifest) packDefinitions(tmp, base string) error {
 			return fmt.Errorf("couldn't load provision template %s: %v", defn.ProvisionSettings.TemplateRef, err)
 		}
 
+		if err := defn.ProvisionSettings.LoadLocalFile(base); err != nil {
+			return fmt.Errorf("couldn't load provision local files: %v", err)
+		}
+
 		if err := defn.BindSettings.LoadTemplate(base); err != nil {
 			return fmt.Errorf("couldn't load bind template %s: %v", defn.BindSettings.TemplateRef, err)
+		}
+
+		if err := defn.BindSettings.LoadLocalFile(base); err != nil {
+			return fmt.Errorf("couldn't load bind local files: %v", err)
 		}
 
 		clearRefs(&defn.ProvisionSettings)
