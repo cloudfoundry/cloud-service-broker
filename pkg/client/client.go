@@ -48,7 +48,8 @@ func NewClientFromEnv() (*Client, error) {
 
 // New creates a new OSB Client connected to the given resource.
 func New(username, password, hostname string, port int) (*Client, error) {
-	base := fmt.Sprintf("http://%s:%s@%s:%d/v2/", username, password, hostname, port)
+	pwd := url.QueryEscape(password)
+	base := fmt.Sprintf("http://%s:%s@%s:%d/v2/", username, pwd, hostname, port)
 	baseUrl, err := url.Parse(base)
 	if err != nil {
 		return nil, err
