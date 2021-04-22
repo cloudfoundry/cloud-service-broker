@@ -53,7 +53,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 		t.Run(tn, func(t *testing.T) {
 			// construct workspace
 			const definitionTfContents = "variable azure_tenant_id { type = string }"
-			ws, err := NewWorkspace(map[string]interface{}{}, definitionTfContents, map[string]string{}, []ParameterMapping{}, []string{}, []ParameterMapping{})
+			ws, err := NewWorkspace(map[string]interface{}{}, definitionTfContents, map[string]string{}, map[string]string{}, []ParameterMapping{}, []string{}, []ParameterMapping{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -138,7 +138,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 		t.Run(tn, func(t *testing.T) {
 			// construct workspace
 			const variablesTfContents = "variable azure_tenant_id { type = string }"
-			ws, err := NewWorkspace(map[string]interface{}{}, ``, map[string]string{"variables": variablesTfContents}, []ParameterMapping{}, []string{}, []ParameterMapping{})
+			ws, err := NewWorkspace(map[string]interface{}{}, ``, map[string]string{"variables": variablesTfContents}, map[string]string{}, []ParameterMapping{}, []string{}, []ParameterMapping{})
 			if err != nil {
 				t.Fatal(err)
 			}
