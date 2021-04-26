@@ -217,7 +217,7 @@ func TestCustomTerraformExecutor(t *testing.T) {
 		},
 		"init": {
 			Input:    exec.Command("terraform", "init", "-no-color"),
-			Expected: exec.Command(customBinary, "init", "-get-plugins=false", pluginsFlag, "-no-color"),
+			Expected: exec.Command(customBinary, "init", pluginsFlag, "-no-color"),
 		},
 		"import": {
 			Input:    exec.Command("terraform", "import", "-no-color", "tf.resource", "iaas-resource"),
