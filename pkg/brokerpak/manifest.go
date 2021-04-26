@@ -294,7 +294,7 @@ func (m *Manifest) packProviders(tmp, base string) error {
 	// duplicated providers are removed
 	providers := make(map[string]bool)
 	for _, platform := range m.Platforms {
-		for tfDir, _ := range tfDirs {
+		for tfDir := range tfDirs {
 			platformPath := filepath.Join(tmp, "bin", platform.Os, platform.Arch)
 
 			// terraform path
