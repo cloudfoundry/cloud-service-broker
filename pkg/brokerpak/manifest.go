@@ -18,6 +18,7 @@ package brokerpak
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -170,6 +171,37 @@ func (m *Manifest) packBinaries(tmp string) error {
 	return nil
 }
 
+func CopyProvider(sourcePath, destPath string) error {
+	// open source file
+	inputFile, err := os.Open(sourcePath)
+	if err != nil {
+		return fmt.Errorf("Couldn't open source file: %s", err)
+	}
+
+	// create a new one
+	outputFile, err := os.Create(destPath)
+	if err != nil {
+		inputFile.Close()
+		return fmt.Errorf("Couldn't open dest file: %s", err)
+	}
+
+	// copy source content to destination
+	defer outputFile.Close()
+	_, err = io.Copy(outputFile, inputFile)
+	inputFile.Close()
+	if err != nil {
+		return fmt.Errorf("Writing to dest file failed: %s", err)
+	}
+
+	// change permission
+	err = os.Chmod(destPath, 0755)
+	if err != nil {
+		return fmt.Errorf("Change perm on dest file failed: %s", err)
+	}
+
+	return nil
+}
+
 func visitTfFolder(tfCur string, tfTmp string, providers *map[string]bool) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -207,9 +239,9 @@ func visitTfFolder(tfCur string, tfTmp string, providers *map[string]bool) filep
 					(*providers)[tfBin] = true
 
 					// move the provider binary in the temp folder
-					err := os.Rename(path, filepath.Join(tfTmp, s[1]))
+					err := CopyProvider(path, filepath.Join(tfTmp, s[1]))
 					if err != nil {
-						return fmt.Errorf("unable to move provider in tmp %v", err)
+						return fmt.Errorf("unable to copy provider in tmp %v", err)
 					}
 				}
 			}
@@ -265,8 +297,13 @@ func (m *Manifest) packProviders(tmp, base string) error {
 		for tfDir, _ := range tfDirs {
 			platformPath := filepath.Join(tmp, "bin", platform.Os, platform.Arch)
 
-			// exec terraform
+			// terraform path
 			tfDirPath := filepath.Join(base, tfDir)
+
+			// clean up terraform folder
+			os.RemoveAll(tfDirPath + "/.terraform/")
+
+			// execute terraform
 			cmd := exec.Command(platformPath+"/terraform", "init")
 			cmd.Dir = tfDirPath
 
