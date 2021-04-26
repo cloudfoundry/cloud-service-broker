@@ -119,6 +119,13 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 	return ziputil.Extract(&pak.contents.Reader, bindir, destination)
 }
 
+// ExtractProvidersBins extracts the providers binaries to the given destination.
+func (pak *BrokerPakReader) ExtractProvidersBins(destination string) error {
+	// extract terraform providers from pack
+	bindir := ziputil.Join("terraform.d")
+	return ziputil.Extract(&pak.contents.Reader, bindir, destination)
+}
+
 // OpenBrokerPak opens the file at the given path as a BrokerPakReader.
 func OpenBrokerPak(pakPath string) (*BrokerPakReader, error) {
 	rc, err := zip.OpenReader(pakPath)

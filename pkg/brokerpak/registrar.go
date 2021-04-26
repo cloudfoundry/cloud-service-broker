@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"code.cloudfoundry.org/lager"
@@ -121,8 +122,19 @@ func (r *Registrar) createExecutor(brokerPak *BrokerPakReader, vc *varcontext.Va
 		return nil, err
 	}
 
+	// extract the Terraform providers
+	if err := brokerPak.ExtractProvidersBins(dir); err != nil {
+		return nil, err
+	}
+
+	// detect plugins path, old version of terraform is also supported
+	providersPath := filepath.Join(dir, "providers")
+	if _, err := os.Stat(filepath.Join(dir, "plugins")); os.IsExist(err) {
+		providersPath = filepath.Join(dir, "plugins")
+	}
+
 	binPath := filepath.Join(dir, "terraform")
-	executor := wrapper.CustomTerraformExecutor(binPath, dir, wrapper.DefaultExecutor)
+	executor := wrapper.CustomTerraformExecutor(binPath, providersPath, wrapper.DefaultExecutor)
 
 	manifest, err := brokerPak.Manifest()
 	if err != nil {

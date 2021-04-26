@@ -439,7 +439,8 @@ func CustomTerraformExecutor(tfBinaryPath, tfPluginDir string, wrapped Terraform
 		subCommandArgs := c.Args[2:]
 
 		if subCommand == "init" {
-			subCommandArgs = append([]string{"-get-plugins=false", fmt.Sprintf("-plugin-dir=%s", tfPluginDir)}, subCommandArgs...)
+			///subCommandArgs = append([]string{"-get-plugins=false", fmt.Sprintf("-plugin-dir=%s", tfPluginDir)}, subCommandArgs...)
+			subCommandArgs = append([]string{fmt.Sprintf("-plugin-dir=%s", tfPluginDir)}, subCommandArgs...)
 		}
 
 		allArgs := append([]string{subCommand}, subCommandArgs...)
