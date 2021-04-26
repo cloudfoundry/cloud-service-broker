@@ -175,14 +175,14 @@ func CopyProvider(sourcePath, destPath string) error {
 	// open source file
 	inputFile, err := os.Open(sourcePath)
 	if err != nil {
-		return fmt.Errorf("Couldn't open source file: %s", err)
+		return fmt.Errorf("couldn't open source file: %s", err)
 	}
 
 	// create a new one
 	outputFile, err := os.Create(destPath)
 	if err != nil {
 		inputFile.Close()
-		return fmt.Errorf("Couldn't open dest file: %s", err)
+		return fmt.Errorf("couldn't open dest file: %s", err)
 	}
 
 	// copy source content to destination
@@ -190,13 +190,13 @@ func CopyProvider(sourcePath, destPath string) error {
 	_, err = io.Copy(outputFile, inputFile)
 	inputFile.Close()
 	if err != nil {
-		return fmt.Errorf("Writing to dest file failed: %s", err)
+		return fmt.Errorf("writing to dest file failed: %s", err)
 	}
 
 	// change permission
 	err = os.Chmod(destPath, 0755)
 	if err != nil {
-		return fmt.Errorf("Change perm on dest file failed: %s", err)
+		return fmt.Errorf("change perm on dest file failed: %s", err)
 	}
 
 	return nil
@@ -217,7 +217,7 @@ func visitTfFolder(tfCur string, tfTmp string, providers *map[string]bool) filep
 		s := strings.Split(path, tfCur+"/.terraform/")
 
 		// create folder if not exists in tmp folder
-		if info.IsDir() == true {
+		if info.IsDir() {
 			_, err := os.Stat(filepath.Join(tfTmp, s[1]))
 			if os.IsNotExist(err) {
 				err := os.MkdirAll(filepath.Join(tfTmp, s[1]), 0755)
@@ -228,13 +228,13 @@ func visitTfFolder(tfCur string, tfTmp string, providers *map[string]bool) filep
 		}
 
 		// file ?
-		if info.IsDir() == false {
+		if !info.IsDir() {
 			tfBin := filepath.Base(path)
 
 			// just take in account file starting with terraform-provider
-			if strings.HasPrefix(tfBin, "terraform-provider-") == true {
+			if strings.HasPrefix(tfBin, "terraform-provider-") {
 				exists := (*providers)[tfBin]
-				if exists == false {
+				if !exists {
 					log.Printf("\t%s", tfBin)
 					(*providers)[tfBin] = true
 
