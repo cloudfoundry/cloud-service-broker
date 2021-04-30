@@ -190,7 +190,7 @@ func (workspace *TerraformWorkspace) initializedFsFlat() error {
 	if err == nil {
 		err = ioutil.WriteFile(path.Join(workspace.dir, "terraform.tfvars.json"), variables, 0755)
 	}
-	
+
 	// init local files ?
 	if len(workspace.LocalFiles) > 0 {
 		for name, lf := range workspace.LocalFiles {
@@ -199,7 +199,7 @@ func (workspace *TerraformWorkspace) initializedFsFlat() error {
 			}
 		}
 	}
-	
+
 	return err
 }
 
