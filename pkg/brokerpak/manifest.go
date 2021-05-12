@@ -175,7 +175,11 @@ func (m *Manifest) packDefinitions(tmp, base string) error {
 	// provision and bind templates are loaded from any template ref and packed inline
 	manifestCopy := *m
 
-	var servicePaths []string
+	var (
+		servicePaths []string
+		catalog      tf.TfCatalogDefinitionV1
+	)
+
 	for i, sd := range m.ServiceDefinitions {
 
 		defn := &tf.TfServiceDefinitionV1{}
@@ -201,6 +205,11 @@ func (m *Manifest) packDefinitions(tmp, base string) error {
 		}
 
 		servicePaths = append(servicePaths, "definitions/"+packedName)
+		catalog = append(catalog, defn)
+	}
+
+	if err := catalog.Validate(); err != nil {
+		return err
 	}
 
 	manifestCopy.ServiceDefinitions = servicePaths

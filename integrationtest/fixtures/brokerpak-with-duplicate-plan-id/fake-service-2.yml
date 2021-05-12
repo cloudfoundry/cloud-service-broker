@@ -1,0 +1,17 @@
+version: 1
+name: fake-service-2
+id: 75745704-b26b-11eb-9f64-1f6d2ee5efe8
+description: description
+display_name: Fake
+image_url: https://example.com/icon.jpg
+documentation_url: https://example.com
+support_url: https://example.com/support.html
+plans:
+- name: alpha
+  id: 2ec36502-b26b-11eb-a317-5b1534ec9448
+  description: Alpha plan
+  display_name: Alpha
+- name: beta
+  id: 8b52a460-b246-11eb-a8f5-d349948e2480
+  description: Beta plan
+  display_name: Beta
