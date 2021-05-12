@@ -23,6 +23,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
+	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"gopkg.in/yaml.v3"
 )
@@ -761,5 +762,82 @@ func TestTfServiceDefinitionV1_ToService(t *testing.T) {
 		if service.ProviderBuilder == nil {
 			t.Fatal("Expected provider builder to not be nil")
 		}
+	})
+}
+
+func TestTfServiceDefinitionV1_Validate(t *testing.T) {
+	t.Run("duplicate plan name", func(t *testing.T) {
+		s := TfServiceDefinitionV1{
+			Plans: []TfServiceDefinitionV1Plan{
+				{Name: "foo"},
+				{Name: "bar"},
+				{Name: "foo"},
+			},
+		}
+
+		NewGomegaWithT(t).Expect(s.Validate()).To(MatchError(ContainSubstring(
+			"duplicated value, must be unique: foo: plans[2].Name\n",
+		)))
+	})
+
+	t.Run("duplicate plan id", func(t *testing.T) {
+		s := TfServiceDefinitionV1{
+			Plans: []TfServiceDefinitionV1Plan{
+				{Id: "ae3a8ac4-b269-11eb-b8f9-e317511cded7"},
+				{Id: "b5448608-b269-11eb-bd1f-0b1e6e25b27f"},
+				{Id: "ae3a8ac4-b269-11eb-b8f9-e317511cded7"},
+			},
+		}
+
+		NewGomegaWithT(t).Expect(s.Validate()).To(MatchError(ContainSubstring(
+			"duplicated value, must be unique: ae3a8ac4-b269-11eb-b8f9-e317511cded7: plans[2].Id\n",
+		)))
+	})
+}
+
+func TestTfCatalogDefinitionV1_Validate(t *testing.T) {
+	t.Run("duplicate service ID", func(t *testing.T) {
+		c := TfCatalogDefinitionV1{
+			{Id: "b0483caa-b25d-11eb-ad49-a700595fec11"},
+			{Id: "b1133018-b25d-11eb-ad63-3bfeffe76efd"},
+			{Id: "b0483caa-b25d-11eb-ad49-a700595fec11"},
+		}
+
+		NewGomegaWithT(t).Expect(c.Validate()).To(MatchError(ContainSubstring(
+			"duplicated value, must be unique: b0483caa-b25d-11eb-ad49-a700595fec11: services[2].Id\n",
+		)))
+	})
+
+	t.Run("duplicate service name", func(t *testing.T) {
+		c := TfCatalogDefinitionV1{
+			{Name: "foo"},
+			{Name: "bar"},
+			{Name: "foo"},
+		}
+
+		NewGomegaWithT(t).Expect(c.Validate()).To(MatchError(ContainSubstring(
+			"duplicated value, must be unique: foo: services[2].Name\n",
+		)))
+	})
+
+	t.Run("duplicate plan ID in different services", func(t *testing.T) {
+		c := TfCatalogDefinitionV1{
+			{
+				Plans: []TfServiceDefinitionV1Plan{
+					{Id: "0408bd68-b26a-11eb-afdc-1734105012f6"},
+					{Id: "19cea3a6-b26a-11eb-b407-53fc71cf3ccb"},
+				},
+			},
+			{
+				Plans: []TfServiceDefinitionV1Plan{
+					{Id: "2635011c-b26a-11eb-b811-5b19288fe81b"},
+					{Id: "0408bd68-b26a-11eb-afdc-1734105012f6"},
+				},
+			},
+		}
+
+		NewGomegaWithT(t).Expect(c.Validate()).To(MatchError(ContainSubstring(
+			"duplicated value, must be unique: 0408bd68-b26a-11eb-afdc-1734105012f6: services[1].plans[1].Id\n",
+		)))
 	})
 }

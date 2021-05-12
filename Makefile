@@ -49,7 +49,7 @@ test: download lint test-units ## run lint and unit tests
 
 .PHONY: test-units
 test-units: deps-go-binary ## run unit tests
-	$(GO) test -v ./... -tags=service_broker
+	$(GO) test ./... -tags=service_broker
 
 ###### Build ##################################################################
 

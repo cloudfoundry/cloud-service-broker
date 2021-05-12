@@ -133,6 +133,16 @@ func ErrMustMatch(value string, regex *regexp.Regexp, field string) *FieldError 
 	}
 }
 
+// ErrIfDuplicate returns error when a value is duplicated when it should be unique.
+// State is stored in the cache which must be provided for every call in the set.
+func ErrIfDuplicate(field, value string, cache map[string]struct{}) *FieldError {
+	if _, dup := cache[value]; dup {
+		return ErrDuplicate(value, field)
+	}
+	cache[value] = struct{}{}
+	return nil
+}
+
 // Validatable indicates that a particular type may have its fields validated.
 type Validatable interface {
 	// Validate checks the validity of this types fields.
