@@ -1,6 +1,6 @@
 module github.com/cloudfoundry-incubator/cloud-service-broker
 
-go 1.14
+go 1.16
 
 require (
 	cloud.google.com/go/storage v1.15.0 // indirect
