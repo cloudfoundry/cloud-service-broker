@@ -31,7 +31,7 @@ const (
 
 	buildpack     = "go_buildpack"
 	goPackageName = "github.com/cloudfoundry-incubator/cloud-service-broker"
-	goVersion     = "go1.14"
+	goVersion     = "go1.16"
 
 	copyrightHeader = `# Copyright the Service Broker Project Authors. All rights reserved.
 #
