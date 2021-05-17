@@ -17,7 +17,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -56,7 +56,7 @@ func (br *BrokerResponse) UpdateResponse(res *http.Response) {
 
 	br.StatusCode = res.StatusCode
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		br.UpdateError(err)
 	} else {

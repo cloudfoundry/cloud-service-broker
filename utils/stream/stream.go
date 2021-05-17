@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -107,7 +106,7 @@ func FromReadCloser(rc io.ReadCloser) Source {
 // FromReader converts a Reader to a Source.
 func FromReader(rc io.Reader) Source {
 	return func() (io.ReadCloser, error) {
-		return ioutil.NopCloser(rc), nil
+		return io.NopCloser(rc), nil
 	}
 }
 
@@ -153,7 +152,7 @@ func ToError(err error) Dest {
 
 // ToDiscard discards any data written to it.
 func ToDiscard() Dest {
-	return ToWriter(ioutil.Discard)
+	return ToWriter(io.Discard)
 }
 
 // ToWriter forwards data to the given writer, this function WILL NOT close the
