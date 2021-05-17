@@ -15,21 +15,11 @@
 package brokerpak
 
 import (
-	"context"
-	"errors"
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
-	"time"
 
-	"cloud.google.com/go/storage"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
 	getter "github.com/hashicorp/go-getter"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/option"
 )
 
 // fetchArchive uses go-getter to download archives. By default go-getter
@@ -38,9 +28,7 @@ func fetchArchive(src, dest string) error {
 	return newFileGetterClient(src, dest).Get()
 }
 
-// fetchBrokerpak downloads a local or remote brokerpak; brokerpaks can be
-// fetched remotely using the gs:// prefix which will load them from a
-// Cloud Storage bucket with the broker's credentials.
+// fetchBrokerpak downloads;
 // Relative paths are resolved relative to the executable.
 func fetchBrokerpak(src, dest string) error {
 	execWd := filepath.Dir(os.Args[0])
@@ -50,7 +38,6 @@ func fetchBrokerpak(src, dest string) error {
 	}
 
 	client := newFileGetterClient(src, dest)
-	client.Getters["gs"] = &gsGetter{}
 	client.Pwd = execDir
 
 	return client.Get()
@@ -76,59 +63,4 @@ func newFileGetterClient(src, dest string) *getter.Client {
 		Getters:       defaultGetters(),
 		Decompressors: map[string]getter.Decompressor{},
 	}
-}
-
-// gsGetter is a go-getter that works on Cloud Storage using the broker's
-// service account. It's incomplete in that it doesn't support directories.
-type gsGetter struct{}
-
-// ClientMode is unsupported for gsGetter.
-func (g *gsGetter) ClientMode(u *url.URL) (getter.ClientMode, error) {
-	return getter.ClientModeInvalid, errors.New("mode is not supported for this client")
-}
-
-// Get clones a remote destination to a local directory.
-func (g *gsGetter) Get(dst string, u *url.URL) error {
-	return errors.New("getting directories is not supported for this client")
-}
-
-// GetFile downloads the give URL into the given path. The URL must
-// reference a single file. If possible, the Getter should check if
-// the remote end contains the same file and no-op this operation.
-func (g *gsGetter) GetFile(dst string, u *url.URL) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	defer cancel()
-
-	client, err := g.client(ctx)
-	if err != nil {
-		return err
-	}
-
-	reader, err := g.objectAt(client, u).NewReader(ctx)
-	if err != nil {
-		return fmt.Errorf("couldn't open object at %q: %v", u.String(), err)
-	}
-
-	return stream.Copy(stream.FromReadCloser(reader), stream.ToFile(dst))
-}
-
-func (g *gsGetter) SetClient(_ *getter.Client) {
-
-}
-
-func (gsGetter) objectAt(client *storage.Client, u *url.URL) *storage.ObjectHandle {
-	return client.Bucket(u.Hostname()).Object(strings.TrimPrefix(u.Path, "/"))
-}
-
-func (gsGetter) client(ctx context.Context) (*storage.Client, error) {
-	creds, err := google.CredentialsFromJSON(ctx, []byte(utils.GetServiceAccountJson()), storage.ScopeReadOnly)
-	if err != nil {
-		return nil, errors.New("couldn't get JSON credentials from the environment")
-	}
-
-	client, err := storage.NewClient(ctx, option.WithCredentials(creds), option.WithUserAgent(utils.CustomUserAgent))
-	if err != nil {
-		return nil, fmt.Errorf("couldn't connect to Cloud Storage: %v", err)
-	}
-	return client, nil
 }
