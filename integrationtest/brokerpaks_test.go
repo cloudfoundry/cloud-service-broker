@@ -1,7 +1,6 @@
 package integrationtest_test
 
 import (
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -27,7 +26,7 @@ var _ = Describe("Brokerpaks", func() {
 		Expect(err).NotTo(HaveOccurred())
 		fixturesDir = path.Join(originalDir, "fixtures")
 
-		workDir, err = ioutil.TempDir("", "*-csb-test")
+		workDir, err = os.MkdirTemp("", "*-csb-test")
 		Expect(err).NotTo(HaveOccurred())
 		err = os.Chdir(workDir)
 		Expect(err).NotTo(HaveOccurred())

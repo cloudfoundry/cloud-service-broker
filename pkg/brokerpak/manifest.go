@@ -17,7 +17,6 @@ package brokerpak
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -110,7 +109,7 @@ func (m *Manifest) Pack(base, dest string) error {
 	// needs to be human readable rather than JSON.
 	log.Println("Packing...")
 
-	dir, err := ioutil.TempDir("", "brokerpak")
+	dir, err := os.MkdirTemp("", "brokerpak")
 	if err != nil {
 		return err
 	}
