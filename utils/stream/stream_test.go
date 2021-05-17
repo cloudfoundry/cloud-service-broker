@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -76,7 +75,7 @@ func TestCopy(t *testing.T) {
 		"Dest Close Err": {
 			src: FromString(""),
 			dest: func() (io.WriteCloser, error) {
-				return errWriteCloser{ioutil.Discard, errors.New("closerr")}, nil
+				return errWriteCloser{io.Discard, errors.New("closerr")}, nil
 			},
 			expected: errors.New("copy couldn't close streams: 1 error(s) occurred: closerr"),
 		},
@@ -112,7 +111,7 @@ func ExampleCopy_yaml() {
 }
 
 func ExampleCopy_file() {
-	td, err := ioutil.TempDir("", "test")
+	td, err := os.MkdirTemp("", "test")
 	if err != nil {
 		panic(err)
 	}
@@ -130,7 +129,7 @@ func ExampleCopy_file() {
 func ExampleMultiCloser() {
 	var mc MultiCloser
 
-	mc.Add(ioutil.NopCloser(nil))
+	mc.Add(io.NopCloser(nil))
 
 	fmt.Println("closed:", mc.Close())
 

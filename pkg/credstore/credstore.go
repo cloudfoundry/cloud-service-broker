@@ -16,7 +16,6 @@ package credstore
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"code.cloudfoundry.org/credhub-cli/credhub"
@@ -60,7 +59,7 @@ func NewCredhubStore(credStoreConfig *config.CredStoreConfig, logger lager.Logge
 	}
 
 	if credStoreConfig.CaCertFile != "" {
-		dat, err := ioutil.ReadFile(credStoreConfig.CaCertFile)
+		dat, err := os.ReadFile(credStoreConfig.CaCertFile)
 		if err != nil {
 			return nil, err
 		}

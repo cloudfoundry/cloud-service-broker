@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -87,12 +86,12 @@ func TestMostLikelyLicense(t *testing.T) {
 }
 
 func ExampleDetectLicenses() {
-	dir, err := ioutil.TempDir("", "lic")
+	dir, err := os.MkdirTemp("", "lic")
 	if err != nil {
 		panic(err)
 	}
 
-	if err := ioutil.WriteFile(filepath.Join(dir, "LICENSE"), []byte(ExampleLicense), 0666); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "LICENSE"), []byte(ExampleLicense), 0666); err != nil {
 		panic(err)
 	}
 
@@ -107,7 +106,7 @@ func ExampleDetectLicenses() {
 }
 
 func ExampleGetLicenseText() {
-	dir, err := ioutil.TempDir("", "lic")
+	dir, err := os.MkdirTemp("", "lic")
 	if err != nil {
 		panic(err)
 	}
@@ -124,7 +123,7 @@ func ExampleGetLicenseText() {
 		panic(err)
 	}
 
-	if err := ioutil.WriteFile(filepath.Join(proj.Directory(), "LICENSE"), []byte(ExampleLicense), 0666); err != nil {
+	if err := os.WriteFile(filepath.Join(proj.Directory(), "LICENSE"), []byte(ExampleLicense), 0666); err != nil {
 		panic(err)
 	}
 
@@ -153,7 +152,7 @@ func ExampleGetLicenseText() {
 }
 
 func ExampleGetProjects() {
-	dir, err := ioutil.TempDir("", "")
+	dir, err := os.MkdirTemp("", "")
 	if err != nil {
 		panic(err)
 	}
@@ -176,7 +175,7 @@ func ExampleGetProjects() {
   version = "v1.0.0"
 `
 
-	if err := ioutil.WriteFile(filepath.Join(dir, "Gopkg.lock"), []byte(lockFile), 0666); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "Gopkg.lock"), []byte(lockFile), 0666); err != nil {
 		panic(err)
 	}
 
