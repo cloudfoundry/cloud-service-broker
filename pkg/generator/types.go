@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -71,7 +70,7 @@ func CatalogDocumentationToDir(registry broker.BrokerRegistry, dstDir string) {
 		out = cleanMdOutput(out)
 
 		saveClassPath := filepath.Join(classesDir, svc.Name+mdExt)
-		err := ioutil.WriteFile(saveClassPath, []byte(out), perms)
+		err := os.WriteFile(saveClassPath, []byte(out), perms)
 		if err != nil {
 			log.Fatalf("Cannot save %s documentation class into %s: %v", svc.Name, saveClassPath, err)
 		}
@@ -89,7 +88,7 @@ func CatalogDocumentationToDir(registry broker.BrokerRegistry, dstDir string) {
 
 	toc := generateServiceClassesToC(tocServiceClasses)
 	tocFileName := filepath.Join(dstDir, "use.md")
-	if err := ioutil.WriteFile(tocFileName, []byte(toc), perms); err != nil {
+	if err := os.WriteFile(tocFileName, []byte(toc), perms); err != nil {
 		log.Fatalf("Cannot save documentation from %s class into %s", "", "")
 	}
 }
