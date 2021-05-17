@@ -16,7 +16,7 @@ package credstore
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 
@@ -69,7 +69,7 @@ func (c *credHubStoreMock) GetValue(key string) (string, error) {
 	}
 	defer file.Close()
 
-	content, err := ioutil.ReadAll(file)
+	content, err := io.ReadAll(file)
 	if err != nil {
 		return "", fmt.Errorf("failed to read file for mock credstore: %w", err)
 	}

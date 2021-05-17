@@ -15,14 +15,12 @@
 package credstore_test
 
 import (
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/config"
-
 	"code.cloudfoundry.org/lager"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/config"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/credstore"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -91,7 +89,7 @@ WiaQqAkK41aqRSDOzUV4worM5HEeFGmSowrLRJOk1Wf1EGw8fD51pO3Zl4hv+PxN
 DLgHJRgZ5Bkp6yhm2RRzuQeMbozry9wXJg9MN14aLjfUNkB08+BX7kDk4H7ZgQ4S
 GqdyaKP2/eZ04RHn1TYI/UGRnzk=
 -----END CERTIFICATE-----`)
-		tmpfile, err := ioutil.TempFile("", ".pem")
+		tmpfile, err := os.CreateTemp("", ".pem")
 		Expect(err).NotTo(HaveOccurred())
 
 		_, err = tmpfile.Write(content)

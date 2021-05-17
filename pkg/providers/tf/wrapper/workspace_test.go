@@ -16,7 +16,6 @@ package wrapper
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -72,7 +71,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 					t.Fatalf("couldn't stat the cmd execution dir %v", err)
 				}
 
-				variables, err := ioutil.ReadFile(path.Join(cmd.Dir, "brokertemplate", "definition.tf"))
+				variables, err := os.ReadFile(path.Join(cmd.Dir, "brokertemplate", "definition.tf"))
 				if err != nil {
 					t.Fatalf("couldn't read the tf file %v", err)
 				}
@@ -81,7 +80,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 				}
 
 				// write dummy state file
-				if err := ioutil.WriteFile(path.Join(cmdDir, "terraform.tfstate"), []byte(tn), 0755); err != nil {
+				if err := os.WriteFile(path.Join(cmdDir, "terraform.tfstate"), []byte(tn), 0755); err != nil {
 					t.Fatal(err)
 				}
 
@@ -157,7 +156,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 					t.Fatalf("couldn't stat the cmd execution dir %v", err)
 				}
 
-				variables, err := ioutil.ReadFile(path.Join(cmd.Dir, "variables.tf"))
+				variables, err := os.ReadFile(path.Join(cmd.Dir, "variables.tf"))
 				if err != nil {
 					t.Fatalf("couldn't read the tf file %v", err)
 				}
@@ -166,7 +165,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 				}
 
 				// write dummy state file
-				if err := ioutil.WriteFile(path.Join(cmdDir, "terraform.tfstate"), []byte(tn), 0755); err != nil {
+				if err := os.WriteFile(path.Join(cmdDir, "terraform.tfstate"), []byte(tn), 0755); err != nil {
 					t.Fatal(err)
 				}
 

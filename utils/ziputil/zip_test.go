@@ -18,7 +18,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -75,7 +74,7 @@ func ExampleOpen() {
 }
 
 func ExampleExtract() {
-	tmp, err := ioutil.TempDir("", "ziptest")
+	tmp, err := os.MkdirTemp("", "ziptest")
 	if err != nil {
 		panic(err)
 	}

@@ -16,7 +16,7 @@ package tf
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 
 	"code.cloudfoundry.org/lager"
@@ -374,7 +374,7 @@ func loadTemplate(templatePath string) (string, error) {
 	if templatePath == "" {
 		return "", nil
 	}
-	buff, err := ioutil.ReadFile(templatePath)
+	buff, err := os.ReadFile(templatePath)
 
 	if err != nil {
 		return "", err

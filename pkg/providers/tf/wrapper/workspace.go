@@ -18,7 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 	"path"
@@ -174,7 +174,7 @@ func (workspace *TerraformWorkspace) initializedFsFlat() error {
 	}
 
 	for name, tf := range workspace.Modules[0].Definitions {
-		if err := ioutil.WriteFile(path.Join(workspace.dir, fmt.Sprintf("%s.tf", name)), []byte(tf), 0755); err != nil {
+		if err := os.WriteFile(path.Join(workspace.dir, fmt.Sprintf("%s.tf", name)), []byte(tf), 0755); err != nil {
 			return err
 		}
 	}
@@ -182,7 +182,7 @@ func (workspace *TerraformWorkspace) initializedFsFlat() error {
 	variables, err := json.MarshalIndent(workspace.Instances[0].Configuration, "", "  ")
 
 	if err == nil {
-		err = ioutil.WriteFile(path.Join(workspace.dir, "terraform.tfvars.json"), variables, 0755)
+		err = os.WriteFile(path.Join(workspace.dir, "terraform.tfvars.json"), variables, 0755)
 	}
 	return err
 }
@@ -199,13 +199,13 @@ func (workspace *TerraformWorkspace) initializeFsModules() error {
 		}
 
 		if len(module.Definition) > 0 {
-			if err := ioutil.WriteFile(path.Join(parent, "definition.tf"), []byte(module.Definition), 0755); err != nil {
+			if err := os.WriteFile(path.Join(parent, "definition.tf"), []byte(module.Definition), 0755); err != nil {
 				return err
 			}
 		}
 
 		for name, tf := range module.Definitions {
-			if err := ioutil.WriteFile(path.Join(parent, fmt.Sprintf("%s.tf", name)), []byte(tf), 0755); err != nil {
+			if err := os.WriteFile(path.Join(parent, fmt.Sprintf("%s.tf", name)), []byte(tf), 0755); err != nil {
 				return err
 			}
 		}
@@ -224,7 +224,7 @@ func (workspace *TerraformWorkspace) initializeFsModules() error {
 			return err
 		}
 
-		if err := ioutil.WriteFile(path.Join(workspace.dir, instance.InstanceName+".tf.json"), contents, 0755); err != nil {
+		if err := os.WriteFile(path.Join(workspace.dir, instance.InstanceName+".tf.json"), contents, 0755); err != nil {
 			return err
 		}
 	}
@@ -235,7 +235,7 @@ func (workspace *TerraformWorkspace) initializeFsModules() error {
 func (workspace *TerraformWorkspace) initializeFs(ctx context.Context) error {
 	workspace.dirLock.Lock()
 	// create a temp directory
-	if dir, err := ioutil.TempDir("", "gsb"); err == nil {
+	if dir, err := os.MkdirTemp("", "gsb"); err == nil {
 		workspace.dir = dir
 	} else {
 		return err
@@ -263,7 +263,7 @@ func (workspace *TerraformWorkspace) initializeFs(ctx context.Context) error {
 
 	// write the state if it exists
 	if len(workspace.State) > 0 {
-		if err := ioutil.WriteFile(workspace.tfStatePath(), workspace.State, 0755); err != nil {
+		if err := os.WriteFile(workspace.tfStatePath(), workspace.State, 0755); err != nil {
 			return err
 		}
 	}
@@ -279,7 +279,7 @@ func (workspace *TerraformWorkspace) initializeFs(ctx context.Context) error {
 // TeardownFs removes the directory we executed Terraform in and updates the
 // state from it.
 func (workspace *TerraformWorkspace) teardownFs() error {
-	bytes, err := ioutil.ReadFile(workspace.tfStatePath())
+	bytes, err := os.ReadFile(workspace.tfStatePath())
 	if err != nil {
 		return err
 	}
@@ -475,8 +475,8 @@ func DefaultExecutor(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) 
 		return ExecutionOutput{}, fmt.Errorf("failed to execute terraform: %v", err)
 	}
 
-	output, _ := ioutil.ReadAll(stdout)
-	errors, _ := ioutil.ReadAll(stderr)
+	output, _ := io.ReadAll(stdout)
+	errors, _ := io.ReadAll(stderr)
 
 	err = c.Wait()
 

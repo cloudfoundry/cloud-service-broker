@@ -17,7 +17,7 @@ package brokerpak
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"code.cloudfoundry.org/lager"
@@ -111,7 +111,7 @@ func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config Broke
 }
 
 func (r *Registrar) createExecutor(brokerPak *BrokerPakReader, vc *varcontext.VarContext) (wrapper.TerraformExecutor, error) {
-	dir, err := ioutil.TempDir("", "brokerpak")
+	dir, err := os.MkdirTemp("", "brokerpak")
 	if err != nil {
 		return nil, err
 	}

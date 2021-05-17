@@ -17,7 +17,6 @@ package brokerpak
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,7 +27,7 @@ import (
 )
 
 func fakeBrokerpak() (string, error) {
-	dir, err := ioutil.TempDir("", "fakepak")
+	dir, err := os.MkdirTemp("", "fakepak")
 	if err != nil {
 		return "", err
 	}

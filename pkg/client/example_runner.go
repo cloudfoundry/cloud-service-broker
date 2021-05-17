@@ -18,9 +18,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -42,8 +42,7 @@ func RunExamplesForService(allExamples []CompleteServiceExample, client *Client,
 // All examples in the list get run if serviceName is blank. If exampleName
 // is non-blank then only the example with the given name is run.
 func RunExamplesFromFile(client *Client, fileName, serviceName, exampleName string) {
-	// ioutil is deprecated in Go 1.16, but the replacement os.ReadFile is not available in Go 1.14
-	data, err := ioutil.ReadFile(fileName)
+	data, err := os.ReadFile(fileName)
 	if err != nil {
 		log.Fatalf("Error opening file: %v", err)
 	}

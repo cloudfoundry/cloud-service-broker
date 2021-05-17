@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -161,7 +160,7 @@ dependencies, services it provides, and the contents.
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			// Runs a quick and dirty e2e test for the development pattern
-			td, err := ioutil.TempDir("", "test-brokerpak")
+			td, err := os.MkdirTemp("", "test-brokerpak")
 			if err != nil {
 				log.Fatalf("couldn't initialize temp directory: %v", err)
 			}
