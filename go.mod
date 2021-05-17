@@ -3,7 +3,7 @@ module github.com/cloudfoundry-incubator/cloud-service-broker
 go 1.16
 
 require (
-	cloud.google.com/go/storage v1.15.0
+	cloud.google.com/go/storage v1.15.0 // indirect
 	code.cloudfoundry.org/credhub-cli v0.0.0-20200325195429-1faf152db5a4
 	code.cloudfoundry.org/lager v2.0.0+incompatible
 	github.com/agext/levenshtein v1.2.2 // indirect
@@ -39,7 +39,7 @@ require (
 	github.com/zclconf/go-cty v1.2.1 // indirect
 	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
 	golang.org/x/tools v0.1.0
-	google.golang.org/api v0.46.0
+	google.golang.org/api v0.46.0 // indirect
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
