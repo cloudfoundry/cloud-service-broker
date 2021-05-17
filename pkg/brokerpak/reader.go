@@ -17,7 +17,7 @@ package brokerpak
 import (
 	"archive/zip"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
@@ -132,7 +132,7 @@ func OpenBrokerPak(pakPath string) (*BrokerPakReader, error) {
 // the local filesystem and opens it.
 func DownloadAndOpenBrokerpak(pakUri string) (*BrokerPakReader, error) {
 	// create a temp directory to hold the pak
-	pakDir, err := ioutil.TempDir("", "brokerpak-staging")
+	pakDir, err := os.MkdirTemp("", "brokerpak-staging")
 	if err != nil {
 		return nil, fmt.Errorf("couldn't create brokerpak staging area for %q: %v", pakUri, err)
 	}
