@@ -38,7 +38,7 @@ require (
 	github.com/xeipuuv/gojsonschema v0.0.0-20180816142147-da425ebb7609
 	github.com/zclconf/go-cty v1.2.1 // indirect
 	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
-	golang.org/x/tools v0.1.0
+	golang.org/x/tools v0.1.1
 	google.golang.org/api v0.46.0 // indirect
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
