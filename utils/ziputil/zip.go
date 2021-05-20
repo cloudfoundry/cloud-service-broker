@@ -144,21 +144,28 @@ func Archive(sourceFolder, destinationZip string) error {
 	w := zip.NewWriter(fd)
 	defer w.Close()
 
-	return filepath.Walk(sourceFolder, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
+	return filepath.Walk(sourceFolder, func(path string, info os.FileInfo, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+
+		if path == sourceFolder {
+			return nil
 		}
 
 		header, err := zip.FileInfoHeader(info)
 		if err != nil {
 			return err
 		}
-		header.Name = Clean(strings.TrimPrefix(path, sourceFolder))
 		header.Method = zip.Deflate
 
 		if info.IsDir() {
-			w.CreateHeader(header)
+			header.Name = fmt.Sprintf("%s%c", Clean(strings.TrimPrefix(path, sourceFolder)), os.PathSeparator)
+			if _, err = w.CreateHeader(header); err != nil {
+				return err
+			}
 		} else {
+			header.Name = Clean(strings.TrimPrefix(path, sourceFolder))
 			fd, err := w.CreateHeader(header)
 			if err != nil {
 				return err
