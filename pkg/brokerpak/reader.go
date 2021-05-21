@@ -15,23 +15,23 @@
 package brokerpak
 
 import (
-	"archive/zip"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/zippy"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/ziputil"
 )
 
 // BrokerPakReader reads bundled together Terraform and service definitions.
 type BrokerPakReader struct {
-	contents *zip.ReadCloser
+	contents zippy.ZipReader
 }
 
 func (pak *BrokerPakReader) readYaml(name string, v interface{}) error {
-	fd := ziputil.Find(&pak.contents.Reader, name)
+	fd := pak.contents.Find(name)
 	if fd == nil {
 		return fmt.Errorf("couldn't find the file with the name %q", name)
 	}
@@ -99,7 +99,8 @@ func (pak *BrokerPakReader) Validate() error {
 
 // Close closes the underlying reader for the BrokerPakReader.
 func (pak *BrokerPakReader) Close() error {
-	return pak.contents.Close()
+	pak.contents.Close()
+	return nil
 }
 
 // ExtractPlatformBins extracts the binaries for the current platform to the
@@ -115,13 +116,13 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 		return fmt.Errorf("the package %q doesn't contain binaries compatible with the current platform %q", mf.Name, curr.String())
 	}
 
-	bindir := ziputil.Join("bin", curr.Os, curr.Arch)
-	return ziputil.Extract(&pak.contents.Reader, bindir, destination)
+	bindir := path.Join("bin", curr.Os, curr.Arch)
+	return pak.contents.Extract(bindir, destination)
 }
 
 // OpenBrokerPak opens the file at the given path as a BrokerPakReader.
 func OpenBrokerPak(pakPath string) (*BrokerPakReader, error) {
-	rc, err := zip.OpenReader(pakPath)
+	rc, err := zippy.Open(pakPath)
 	if err != nil {
 		return nil, err
 	}
