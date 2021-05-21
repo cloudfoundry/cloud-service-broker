@@ -21,11 +21,10 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/zippy"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/ziputil"
-
 	getter "github.com/hashicorp/go-getter"
 )
 
@@ -132,7 +131,7 @@ func (m *Manifest) Pack(base, dest string) error {
 	}
 
 	log.Println("Creating archive:", dest)
-	return ziputil.Archive(dir, dest)
+	return zippy.Archive(dir, dest)
 }
 
 func (m *Manifest) packSources(tmp string) error {
