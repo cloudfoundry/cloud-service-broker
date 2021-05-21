@@ -20,7 +20,8 @@ var _ = Describe("Archive", func() {
 	})
 
 	AfterEach(func() {
-		os.RemoveAll(tmpdir)
+		err := os.RemoveAll(tmpdir)
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("creates a zip", func() {
