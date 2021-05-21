@@ -28,7 +28,6 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/server"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/ziputil"
 )
 
 // Init initializes a new brokerpak in the given directory with an example manifest and service definition.
@@ -140,7 +139,12 @@ func finfo(pack string, out io.Writer) error {
 	}
 
 	fmt.Fprintln(out, "Contents")
-	ziputil.List(&brokerPak.contents.Reader, out)
+	sw := tabwriter.NewWriter(out, 0, 0, 2, ' ', tabwriter.StripEscape)
+	fmt.Fprintln(sw, "MODE\tSIZE\tNAME")
+	for _, fd := range brokerPak.contents.List() {
+		fmt.Fprintf(sw, "%s\t%d\t%s\n", fd.Mode().String(), fd.UncompressedSize64, fd.Name)
+	}
+	sw.Flush()
 	fmt.Fprintln(out)
 
 	return nil
