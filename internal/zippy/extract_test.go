@@ -61,10 +61,7 @@ var _ = Describe("Extract", func() {
 			zr, err := zippy.Open("./fixtures/brokerpak.zip")
 			Expect(err).NotTo(HaveOccurred())
 
-			const readOnly = 0
-			os.Chmod(tmpdir, readOnly)
-
-			err = zr.Extract("", tmpdir)
+			err = zr.Extract("", "/dev/zero/cannot/write/here")
 			Expect(err).To(MatchError(ContainSubstring("copy couldn't open destination")))
 		})
 	})
