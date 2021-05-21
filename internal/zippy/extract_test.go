@@ -21,7 +21,8 @@ var _ = Describe("Extract", func() {
 	})
 
 	AfterEach(func() {
-		os.RemoveAll(tmpdir)
+		err := os.RemoveAll(tmpdir)
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("can extract the whole zip", func() {
@@ -60,7 +61,10 @@ var _ = Describe("Extract", func() {
 			zr, err := zippy.Open("./fixtures/brokerpak.zip")
 			Expect(err).NotTo(HaveOccurred())
 
-			err = zr.Extract("", "/can/not/write/here")
+			const readOnly = 0
+			os.Chmod(tmpdir, readOnly)
+
+			err = zr.Extract("", tmpdir)
 			Expect(err).To(MatchError(ContainSubstring("copy couldn't open destination")))
 		})
 	})
