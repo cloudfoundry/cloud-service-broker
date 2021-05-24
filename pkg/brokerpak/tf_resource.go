@@ -50,7 +50,6 @@ func (tr *TerraformResource) Validate() (errs *validation.FieldError) {
 	return errs.Also(
 		validation.ErrIfBlank(tr.Name, "name"),
 		validation.ErrIfBlank(tr.Version, "version"),
-		validation.ErrIfBlank(tr.Source, "source"),
 	)
 }
 

@@ -68,8 +68,8 @@ This structure holds information about a specific Terraform version or Resource.
 | --- | --- | --- |
 | name* | string | The name of this resource. e.g. `terraform-provider-google-beta`. |
 | version* | string | The version of the resource e.g. 1.19.0. *The broker currently only supports terraform version 0.12.x*|
-| source* | string | The URL to a zip of the source code for the resource. |
-| url_template | string | (optional) A custom URL template to get the release of the given tool. Available parameters are ${name}, ${version}, ${os}, and ${arch}. If unspecified the default Hashicorp Terraform download server is used. |
+| source | string | (optional) The URL to a zip of the source code for the resource. |
+| url_template | string | (optional) A custom URL template to get the release of the given tool. Available parameters are ${name}, ${version}, ${os}, and ${arch}. If unspecified the default Hashicorp Terraform download server is used. Can be a local file. |
 
 #### Parameter object
 

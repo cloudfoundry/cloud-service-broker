@@ -28,7 +28,7 @@ func TestTerraformResource_Validate(t *testing.T) {
 	cases := map[string]validation.ValidatableTest{
 		"blank obj": {
 			Object: &TerraformResource{},
-			Expect: errors.New("missing field(s): name, source, version"),
+			Expect: errors.New("missing field(s): name, version"),
 		},
 		"good obj": {
 			Object: &TerraformResource{

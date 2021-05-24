@@ -136,6 +136,10 @@ func (m *Manifest) Pack(base, dest string) error {
 
 func (m *Manifest) packSources(tmp string) error {
 	for _, resource := range m.TerraformResources {
+		if resource.Source == "" {
+			continue
+		}
+
 		destination := filepath.Join(tmp, "src", resource.Name+".zip")
 
 		log.Println("\t", resource.Source, "->", destination)
