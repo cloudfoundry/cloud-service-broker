@@ -23,7 +23,7 @@ require (
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.4.1
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
 	github.com/onsi/ginkgo v1.16.2
-	github.com/onsi/gomega v1.12.0
+	github.com/onsi/gomega v1.13.0
 	github.com/pborman/uuid v1.2.1
 	github.com/pivotal-cf/brokerapi/v8 v8.0.0
 	github.com/prometheus/client_golang v1.1.1-0.20190813114604-4efc3ccc7a66 // indirect
