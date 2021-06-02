@@ -25,7 +25,7 @@ require (
 	github.com/onsi/ginkgo v1.16.2
 	github.com/onsi/gomega v1.13.0
 	github.com/pborman/uuid v1.2.1
-	github.com/pivotal-cf/brokerapi/v8 v8.0.0
+	github.com/pivotal-cf/brokerapi/v8 v8.1.0
 	github.com/prometheus/client_golang v1.1.1-0.20190813114604-4efc3ccc7a66 // indirect
 	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d
 	github.com/russross/blackfriday v1.6.0
