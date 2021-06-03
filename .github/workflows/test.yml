@@ -1,6 +1,9 @@
 name: test
 
-on: [push, pull_request_target]
+on: 
+  push:
+    branches: [ main ]
+  pull_request_target:
 
 jobs:
   test:
@@ -13,7 +16,12 @@ jobs:
     - uses: actions/setup-go@v2
       with:
         go-version: ${{ matrix.version }}
-    - uses: actions/checkout@v2
+    - if: ${{ github.event_name == 'pull_request_target' }}
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ format('refs/pull/{0}/merge', github.event.number) }}
+    - if: ${{ github.event_name == 'push' }}
+      uses: actions/checkout@v2
     - run: make test
   automerge:
     needs: test
