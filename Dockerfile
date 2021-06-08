@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.16.4-alpine3.12 AS build
+FROM golang:1.16.5-alpine3.12 AS build
 RUN apk update
 RUN apk upgrade
 RUN apk add --update gcc g++
