@@ -490,7 +490,7 @@ func TestServiceBroker_Bind(t *testing.T) {
 				}
 
 				_, err := broker.Bind(context.Background(), fakeInstanceId, "bad-bind-call", req, true)
-				assertEqual(t, "errors should match", "fake error", err.Error())
+				assertEqual(t, "errors should match", "error performing bind: fake error", err.Error())
 			},
 		},
 		"bad-request-json": {

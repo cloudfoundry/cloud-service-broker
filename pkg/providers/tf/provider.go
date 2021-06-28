@@ -104,11 +104,11 @@ func (provider *terraformProvider) Bind(ctx context.Context, bindContext *varcon
 
 	tfId, err := provider.create(ctx, bindContext, provider.serviceDefinition.BindSettings)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error from provider bind: %w", err)
 	}
 
 	if err := provider.jobRunner.Wait(ctx, tfId); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error from job runner: %w", err)
 	}
 
 	return provider.jobRunner.Outputs(ctx, tfId, wrapper.DefaultInstanceName)
@@ -176,7 +176,7 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 
 	workspace, err := wrapper.NewWorkspace(vars.ToMap(), action.Template, action.Templates, []wrapper.ParameterMapping{}, []string{}, []wrapper.ParameterMapping{})
 	if err != nil {
-		return tfId, err
+		return tfId, fmt.Errorf("error creating workspace: %w", err)
 	}
 
 	// if err = workspace.Validate(); err != nil {
@@ -185,7 +185,7 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 
 	if err := provider.jobRunner.StageJob(ctx, tfId, workspace); err != nil {
 		provider.logger.Error("terraform provider create failed", err)
-		return tfId, err
+		return tfId, fmt.Errorf("terraform provider create failed: %w", err)
 	}
 
 	return tfId, provider.jobRunner.Create(ctx, tfId)

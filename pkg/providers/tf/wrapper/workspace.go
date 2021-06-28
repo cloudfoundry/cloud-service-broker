@@ -302,7 +302,7 @@ func (workspace *TerraformWorkspace) teardownFs() error {
 func (workspace *TerraformWorkspace) Outputs(instance string) (map[string]interface{}, error) {
 	state, err := NewTfstate(workspace.State)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating TF state: %w", err)
 	}
 
 	// All root project modules get put under the "root" namespace

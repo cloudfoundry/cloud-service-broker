@@ -27,7 +27,7 @@ const (
 func NewTfstate(stateFile []byte) (*Tfstate, error) {
 	state := Tfstate{}
 	if err := json.Unmarshal(stateFile, &state); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error unmarshalling JSON state: %w", err)
 	}
 
 	if state.Version != supportedTfStateVersion {

@@ -182,16 +182,16 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 func (runner *TfJobRunner) Create(ctx context.Context, id string) error {
 	deployment, err := db_service.GetTerraformDeploymentById(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("error getting TF deployment: %w", err)
 	}
 
 	workspace, err := runner.hydrateWorkspace(ctx, deployment)
 	if err != nil {
-		return err
+		return fmt.Errorf("error hydrating workspace: %w", err)
 	}
 
 	if err := runner.markJobStarted(ctx, deployment, models.ProvisionOperationType); err != nil {
-		return err
+		return fmt.Errorf("error marking job started: %w", err)
 	}
 
 	go func() {
@@ -326,12 +326,12 @@ func (runner *TfJobRunner) Status(ctx context.Context, id string) (bool, string,
 func (runner *TfJobRunner) Outputs(ctx context.Context, id, instanceName string) (map[string]interface{}, error) {
 	deployment, err := db_service.GetTerraformDeploymentById(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting TF deployment: %w", err)
 	}
 
 	ws, err := wrapper.DeserializeWorkspace(deployment.Workspace)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error deserializing workspace: %w", err)
 	}
 
 	return ws.Outputs(instanceName)

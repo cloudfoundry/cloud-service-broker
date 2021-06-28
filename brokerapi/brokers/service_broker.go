@@ -257,7 +257,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	// check for existing binding
 	exists, err := db_service.ExistsServiceBindingCredentialsByServiceInstanceIdAndBindingId(ctx, instanceID, bindingID)
 	if err != nil {
-		return domain.Binding{}, fmt.Errorf("error checking for existing binding: %s", err)
+		return domain.Binding{}, fmt.Errorf("error checking for existing binding: %w", err)
 	}
 	if exists {
 		return domain.Binding{}, apiresponses.ErrBindingAlreadyExists
@@ -266,18 +266,18 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	// get existing service instance details
 	instanceRecord, err := db_service.GetServiceInstanceDetailsById(ctx, instanceID)
 	if err != nil {
-		return domain.Binding{}, fmt.Errorf("error retrieving service instance details: %s", err)
+		return domain.Binding{}, fmt.Errorf("error retrieving service instance details: %w", err)
 	}
 
 	serviceDefinition, serviceProvider, err := broker.getDefinitionAndProvider(instanceRecord.ServiceId)
 	if err != nil {
-		return domain.Binding{}, err
+		return domain.Binding{}, fmt.Errorf("error retrieving service definition: %w", err)
 	}
 
 	// verify the service exists and the plan exists
 	plan, err := serviceDefinition.GetPlanById(details.PlanID)
 	if err != nil {
-		return domain.Binding{}, err
+		return domain.Binding{}, fmt.Errorf("error getting service plan: %w", err)
 	}
 
 	// Give the user a better error message if they give us a bad request
@@ -289,18 +289,18 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	// the user's
 	vars, err := serviceDefinition.BindVariables(*instanceRecord, bindingID, details, plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
-		return domain.Binding{}, err
+		return domain.Binding{}, fmt.Errorf("error generating bind variabled: %w", err)
 	}
 
 	// create binding
 	credsDetails, err := serviceProvider.Bind(ctx, vars)
 	if err != nil {
-		return domain.Binding{}, err
+		return domain.Binding{}, fmt.Errorf("error performing bind: %w", err)
 	}
 
 	serializedCreds, err := json.Marshal(credsDetails)
 	if err != nil {
-		return domain.Binding{}, fmt.Errorf("error serializing credentials: %s. WARNING: these credentials cannot be unbound through cf. Please contact your operator for cleanup", err)
+		return domain.Binding{}, fmt.Errorf("error serializing credentials: %w. WARNING: these credentials cannot be unbound through cf. Please contact your operator for cleanup", err)
 	}
 
 	// save binding to database
@@ -312,13 +312,13 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	}
 
 	if err := db_service.CreateServiceBindingCredentials(ctx, &newCreds); err != nil {
-		return domain.Binding{}, fmt.Errorf("error saving credentials to database: %s. WARNING: these credentials cannot be unbound through cf. Please contact your operator for cleanup",
+		return domain.Binding{}, fmt.Errorf("error saving credentials to database: %w. WARNING: these credentials cannot be unbound through cf. Please contact your operator for cleanup",
 			err)
 	}
 
 	binding, err := serviceProvider.BuildInstanceCredentials(ctx, newCreds, *instanceRecord)
 	if err != nil {
-		return domain.Binding{}, err
+		return domain.Binding{}, fmt.Errorf("error building credentials: %w", err)
 	}
 
 	if broker.Credstore != nil {
@@ -326,12 +326,12 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 
 		_, err := broker.Credstore.Put(credentialName, binding.Credentials)
 		if err != nil {
-			return domain.Binding{}, fmt.Errorf("Bind failure: unable to put credentials in Credstore: %v", err)
+			return domain.Binding{}, fmt.Errorf("bind failure: unable to put credentials in Credstore: %w", err)
 		}
 
 		_, err = broker.Credstore.AddPermission(credentialName, "mtls-app:"+details.AppGUID, []string{"read"})
 		if err != nil {
-			return domain.Binding{}, fmt.Errorf("Bind failure: Unable to add Credstore permissions to app: %v", err)
+			return domain.Binding{}, fmt.Errorf("bind failure: unable to add Credstore permissions to app: %w", err)
 		}
 
 		binding.Credentials = map[string]interface{}{
