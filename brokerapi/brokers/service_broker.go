@@ -160,8 +160,9 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	// save provision request details
 	pr := models.ProvisionRequestDetails{
 		ServiceInstanceId: instanceID,
-		RequestDetails:    string(details.RawParameters),
 	}
+	pr.SetRequestDetails(details.RawParameters)
+
 	if err = db_service.CreateProvisionRequestDetails(ctx, &pr); err != nil {
 		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
 	}
@@ -209,7 +210,7 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 	provisionDetails := domain.ProvisionDetails{
 		ServiceID:     details.ServiceID,
 		PlanID:        details.PlanID,
-		RawParameters: json.RawMessage(pr.RequestDetails),
+		RawParameters: pr.GetRequestDetails(),
 	}
 
 	// validate parameters meet the service's schema and merge the user vars with
@@ -298,17 +299,15 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 		return domain.Binding{}, fmt.Errorf("error performing bind: %w", err)
 	}
 
-	serializedCreds, err := json.Marshal(credsDetails)
-	if err != nil {
-		return domain.Binding{}, fmt.Errorf("error serializing credentials: %w. WARNING: these credentials cannot be unbound through cf. Please contact your operator for cleanup", err)
-	}
-
 	// save binding to database
 	newCreds := models.ServiceBindingCredentials{
 		ServiceInstanceId: instanceID,
 		BindingId:         bindingID,
 		ServiceId:         details.ServiceID,
-		OtherDetails:      string(serializedCreds),
+	}
+
+	if err := newCreds.SetOtherDetails(credsDetails); err != nil {
+		return domain.Binding{}, fmt.Errorf("error serializing credentials: %w. WARNING: these credentials cannot be unbound through cf. Please contact your operator for cleanup", err)
 	}
 
 	if err := db_service.CreateServiceBindingCredentials(ctx, &newCreds); err != nil {
@@ -433,7 +432,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	bindDetails := domain.BindDetails{
 		PlanID:        details.PlanID,
 		ServiceID:     details.ServiceID,
-		RawParameters: json.RawMessage(pr.RequestDetails),
+		RawParameters: pr.GetRequestDetails(),
 	}
 
 	vars, err := serviceDefinition.BindVariables(*instance, bindingID, bindDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
@@ -597,7 +596,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
-	vars, err := brokerService.UpdateVariables(instanceID, details, json.RawMessage(pr.RequestDetails), *plan, request.DecodeOriginatingIdentityHeader(ctx))
+	vars, err := brokerService.UpdateVariables(instanceID, details, pr.GetRequestDetails(), *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return response, err
 	}
