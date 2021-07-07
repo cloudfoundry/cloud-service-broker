@@ -25,7 +25,6 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-// TODO see if we need accessors for encrypted fields
 func newInMemoryDatastore(t *testing.T) *SqlDatastore {
 	testDb, err := gorm.Open("sqlite3", ":memory:")
 	if err != nil {

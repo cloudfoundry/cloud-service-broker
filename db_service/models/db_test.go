@@ -2,6 +2,7 @@ package models_test
 
 import (
 	"encoding/json"
+
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
