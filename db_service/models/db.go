@@ -33,6 +33,28 @@ const (
 // binding to a service.
 type ServiceBindingCredentials ServiceBindingCredentialsV1
 
+// SetOtherDetails marshals the value passed in into a JSON string and sets
+// OtherDetails to it if marshalling was successful.
+func (sbc *ServiceBindingCredentials) SetOtherDetails(toSet interface{}) error {
+	out, err := json.Marshal(toSet)
+	if err != nil {
+		return err
+	}
+
+	sbc.OtherDetails = string(out)
+	return nil
+}
+
+// GetOtherDetails returns and unmarshalls the OtherDetails field into the given
+// struct. An empty OtherDetails field does not get unmarshalled and does not error.
+func (sbc ServiceBindingCredentials) GetOtherDetails(v interface{}) error {
+	if sbc.OtherDetails == "" {
+		return nil
+	}
+
+	return json.Unmarshal([]byte(sbc.OtherDetails), v)
+}
+
 // ServiceInstanceDetails holds information about provisioned services.
 type ServiceInstanceDetails ServiceInstanceDetailsV2
 
@@ -61,6 +83,14 @@ func (si ServiceInstanceDetails) GetOtherDetails(v interface{}) error {
 // ProvisionRequestDetails holds user-defined properties passed to a call
 // to provision a service.
 type ProvisionRequestDetails ProvisionRequestDetailsV1
+
+func (pr *ProvisionRequestDetails) SetRequestDetails(rawMessage json.RawMessage) {
+	pr.RequestDetails = string(rawMessage)
+}
+
+func (pr ProvisionRequestDetails) GetRequestDetails() json.RawMessage {
+	return json.RawMessage(pr.RequestDetails)
+}
 
 // Migration represents the mgirations table. It holds a monotonically
 // increasing number that gets incremented with every database schema revision.

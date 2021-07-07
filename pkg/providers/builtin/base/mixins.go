@@ -16,7 +16,6 @@ package base
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
@@ -30,9 +29,22 @@ type MergedInstanceCredsMixin struct{}
 // BuildInstanceCredentials combines the bind credentials with the connection
 // information in the instance details to get a full set of connection details.
 func (b *MergedInstanceCredsMixin) BuildInstanceCredentials(ctx context.Context, bindRecord models.ServiceBindingCredentials, instanceRecord models.ServiceInstanceDetails) (*domain.Binding, error) {
-	vc, err := varcontext.Builder().
-		MergeJsonObject(json.RawMessage(instanceRecord.OtherDetails)).
-		MergeJsonObject(json.RawMessage(bindRecord.OtherDetails)).
+	var instanceOtherDetails map[string]interface{}
+	err := instanceRecord.GetOtherDetails(&instanceOtherDetails)
+	if err != nil {
+		return nil, err
+	}
+
+	var bindOtherDetails map[string]interface{}
+	err = bindRecord.GetOtherDetails(&bindOtherDetails)
+	if err != nil {
+		return nil, err
+	}
+
+	var vc *varcontext.VarContext
+	vc, err = varcontext.Builder().
+		MergeMap(instanceOtherDetails).
+		MergeMap(bindOtherDetails).
 		Build()
 	if err != nil {
 		return nil, err
