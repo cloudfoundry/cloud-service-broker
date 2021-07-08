@@ -94,6 +94,24 @@ var _ = Describe("Db", func() {
 				Expect(actualOtherDetails).To(BeNil())
 			})
 		})
+
+		It("Can decrypt what it had previously encrypted", func() {
+			var arrayOfInterface []interface{}
+			arrayOfInterface = append(arrayOfInterface, "json", "blob", "here")
+			otherDetails := map[string]interface{}{
+				"some": arrayOfInterface,
+			}
+			credentials := models.ServiceBindingCredentials{}
+
+			credentials.SetOtherDetails(otherDetails)
+
+			var actualOtherDetails map[string]interface{}
+			err := credentials.GetOtherDetails(&actualOtherDetails)
+
+			Expect(err).To(BeNil(), "Should not have returned an error")
+
+			Expect(actualOtherDetails).To(Equal(otherDetails))
+		})
 	})
 
 	Describe("ServiceInstanceDetails", func() {
@@ -180,6 +198,27 @@ var _ = Describe("Db", func() {
 
 				Expect(actualOtherDetails).To(BeNil())
 			})
+		})
+
+		It("Can decrypt what it had previously encrypted", func() {
+			serviceInstanceDetails := models.ServiceInstanceDetails{}
+			input := map[string]interface{}{
+				"some": []string{"json", "blob", "here"},
+			}
+			serviceInstanceDetails.SetOtherDetails(input)
+
+			var actualOtherDetails map[string]interface{}
+			err := serviceInstanceDetails.GetOtherDetails(&actualOtherDetails)
+
+			Expect(err).To(BeNil(), "Should not have returned an error")
+
+			var arrayOfInterface []interface{}
+			arrayOfInterface = append(arrayOfInterface, "json", "blob", "here")
+			expectedOtherDetails := map[string]interface{}{
+				"some": arrayOfInterface,
+			}
+
+			Expect(actualOtherDetails).To(Equal(expectedOtherDetails))
 		})
 	})
 

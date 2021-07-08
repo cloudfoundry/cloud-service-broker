@@ -1026,7 +1026,8 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 			defer viper.Reset()
 
 			details := domain.BindDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
-			instance := models.ServiceInstanceDetails{OtherDetails: tc.InstanceVars}
+			instance := models.ServiceInstanceDetails{}
+			instance.SetOtherDetails(tc.InstanceVars)
 			service.Plans[0].BindOverrides = tc.BindOverrides
 			vars, err := service.BindVariables(instance, "binding-id-here", details, &service.Plans[0], tc.OriginatingIdentity)
 
