@@ -9,6 +9,9 @@ import (
 )
 
 var _ = Describe("Db", func() {
+	BeforeEach(func() {
+		models.NewKey()
+	})
 
 	Describe("ServiceBindingCredentials", func() {
 		Describe("SetOtherDetails", func() {
@@ -106,7 +109,8 @@ var _ = Describe("Db", func() {
 				err := details.SetOtherDetails(otherDetails)
 
 				Expect(err).To(BeNil(), "Should not have returned an error")
-				Expect(details.OtherDetails).To(Equal("{\"some\":[\"json\",\"blob\",\"here\"]}"))
+				decryptedDetails, _ := models.Decrypt([]byte(details.OtherDetails), &models.Key)
+				Expect(string(decryptedDetails)).To(Equal("{\"some\":[\"json\",\"blob\",\"here\"]}"))
 			})
 
 			It("marshalls nil into json null", func() {
@@ -115,7 +119,8 @@ var _ = Describe("Db", func() {
 				err := details.SetOtherDetails(nil)
 
 				Expect(err).To(BeNil(), "Should not have returned an error")
-				Expect(details.OtherDetails).To(Equal("null"))
+				decryptedDetails, _ := models.Decrypt([]byte(details.OtherDetails), &models.Key)
+				Expect(string(decryptedDetails)).To(Equal("null"))
 			})
 
 			It("returns an error if it cannot marshall", func() {
@@ -133,8 +138,9 @@ var _ = Describe("Db", func() {
 
 		Describe("GetOtherDetails", func() {
 			It("unmarshalls json content", func() {
+				encryptedDetails, _ := models.Encrypt([]byte("{\"some\":[\"json\",\"blob\",\"here\"]}"), &models.Key)
 				serviceInstanceDetails := models.ServiceInstanceDetails{
-					OtherDetails: "{\"some\":[\"json\",\"blob\",\"here\"]}",
+					OtherDetails: string(encryptedDetails),
 				}
 
 				var actualOtherDetails map[string]interface{}
@@ -162,8 +168,9 @@ var _ = Describe("Db", func() {
 			})
 
 			It("returns an error if unmarshalling fails", func() {
+				encryptedDetails, _ := models.Encrypt([]byte("{\"some\":\"badjson\", \"here\"]}"), &models.Key)
 				serviceInstanceDetails := models.ServiceInstanceDetails{
-					OtherDetails: "{\"some\":\"badjson\", \"here\"]}",
+					OtherDetails: string(encryptedDetails),
 				}
 
 				var actualOtherDetails map[string]interface{}

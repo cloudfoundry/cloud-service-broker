@@ -66,7 +66,12 @@ func (si *ServiceInstanceDetails) SetOtherDetails(toSet interface{}) error {
 		return err
 	}
 
-	si.OtherDetails = string(out)
+	encryptedDetails, err := Encrypt(out, &Key)
+	if err != nil {
+		return err
+	}
+
+	si.OtherDetails = string(encryptedDetails)
 	return nil
 }
 
@@ -77,7 +82,12 @@ func (si ServiceInstanceDetails) GetOtherDetails(v interface{}) error {
 		return nil
 	}
 
-	return json.Unmarshal([]byte(si.OtherDetails), v)
+	decryptedDetails, err := Decrypt([]byte(si.OtherDetails), &Key)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(decryptedDetails, v)
 }
 
 // ProvisionRequestDetails holds user-defined properties passed to a call
