@@ -116,7 +116,7 @@ var _ = Describe("Db", func() {
 
 	Describe("ServiceInstanceDetails", func() {
 		Describe("SetOtherDetails", func() {
-			It("marshalls json content", func() {
+			It("marshalls and encrypts json content", func() {
 				var arrayOfInterface []interface{}
 				arrayOfInterface = append(arrayOfInterface, "json", "blob", "here")
 				otherDetails := map[string]interface{}{
@@ -155,7 +155,7 @@ var _ = Describe("Db", func() {
 		})
 
 		Describe("GetOtherDetails", func() {
-			It("unmarshalls json content", func() {
+			It("decrypts and unmarshalls json content", func() {
 				encryptedDetails, _ := models.Encrypt([]byte("{\"some\":[\"json\",\"blob\",\"here\"]}"), &models.Key)
 				serviceInstanceDetails := models.ServiceInstanceDetails{
 					OtherDetails: string(encryptedDetails),

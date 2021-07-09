@@ -290,7 +290,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	// the user's
 	vars, err := serviceDefinition.BindVariables(*instanceRecord, bindingID, details, plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
-		return domain.Binding{}, fmt.Errorf("error generating bind variabled: %w", err)
+		return domain.Binding{}, fmt.Errorf("error generating bind variables: %w", err)
 	}
 
 	// create binding

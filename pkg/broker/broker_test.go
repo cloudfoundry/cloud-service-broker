@@ -885,13 +885,13 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 		BindOverrides       map[string]interface{}
 		ExpectedError       error
 		ExpectedContext     map[string]interface{}
-		InstanceVars        string
+		InstanceVars        map[string]interface{}
 		RawContext          string
 		OriginatingIdentity map[string]interface{}
 	}{
 		"empty": {
 			UserParams:   "",
-			InstanceVars: `{"foo":""}`,
+			InstanceVars: map[string]interface{}{"foo": ""},
 			ExpectedContext: map[string]interface{}{
 				"location":            "us",
 				"name":                "name-us",
@@ -909,7 +909,7 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 				"value": map[string]string{
 					"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360",
 				}},
-			InstanceVars: `{"foo":""}`,
+			InstanceVars: map[string]interface{}{"foo": ""},
 			ExpectedContext: map[string]interface{}{
 				"location":     "us",
 				"name":         "name-us",
@@ -927,7 +927,7 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 		},
 		"location gets truncated": {
 			UserParams:   `{"location": "averylonglocation"}`,
-			InstanceVars: `{"foo":"default"}`,
+			InstanceVars: map[string]interface{}{"foo": "default"},
 			ExpectedContext: map[string]interface{}{
 				"location":            "averylongl",
 				"name":                "name-averylonglocation",
@@ -939,7 +939,7 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 		},
 		"user location and name": {
 			UserParams:   `{"location": "eu", "name":"foo"}`,
-			InstanceVars: `{"foo":"default"}`,
+			InstanceVars: map[string]interface{}{"foo": "default"},
 			ExpectedContext: map[string]interface{}{
 				"location":            "eu",
 				"name":                "foo",
@@ -951,7 +951,7 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 		},
 		"operator defaults override computed defaults": {
 			UserParams:      "",
-			InstanceVars:    `{"foo":"default"}`,
+			InstanceVars:    map[string]interface{}{"foo": "default"},
 			DefaultOverride: `{"location":"eu"}`,
 			ExpectedContext: map[string]interface{}{
 				"location":            "eu",
@@ -964,7 +964,7 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 		},
 		"user values override operator defaults": {
 			UserParams:      `{"location":"nz"}`,
-			InstanceVars:    `{"foo":"default"}`,
+			InstanceVars:    map[string]interface{}{"foo": "default"},
 			DefaultOverride: `{"location":"eu"}`,
 			ExpectedContext: map[string]interface{}{
 				"location":            "nz",
@@ -977,7 +977,7 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 		},
 		"operator defaults are not evaluated": {
 			UserParams:      `{"location":"us"}`,
-			InstanceVars:    `{"foo":"default"}`,
+			InstanceVars:    map[string]interface{}{"foo": "default"},
 			DefaultOverride: `{"name":"foo-${location}"}`,
 			ExpectedContext: map[string]interface{}{
 				"location":            "us",
@@ -990,7 +990,7 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 		},
 		"instance info can get parsed": {
 			UserParams:   `{"location":"us"}`,
-			InstanceVars: `{"foo":"bar"}`,
+			InstanceVars: map[string]interface{}{"foo": "bar"},
 			ExpectedContext: map[string]interface{}{
 				"location":            "us",
 				"name":                "name-us",
@@ -1002,12 +1002,12 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 		},
 		"invalid-request": {
 			UserParams:    `{"name":"some-name-that-is-longer-than-thirty-characters"}`,
-			InstanceVars:  `{"foo":""}`,
+			InstanceVars:  map[string]interface{}{"foo": ""},
 			ExpectedError: errors.New("1 error(s) occurred: name: String length must be less than or equal to 30"),
 		},
 		"bind_overrides override user params but not computed defaults": {
 			UserParams:    `{"location":"us"}`,
-			InstanceVars:  `{"foo":"default"}`,
+			InstanceVars:  map[string]interface{}{"foo": "default"},
 			BindOverrides: map[string]interface{}{"location": "eu"},
 			ExpectedContext: map[string]interface{}{
 				"location":            "eu",

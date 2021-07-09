@@ -146,7 +146,9 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 			ProvisionsAsyncStub:   func() bool { return isAsync },
 			DeprovisionsAsyncStub: func() bool { return isAsync },
 			ProvisionStub: func(ctx context.Context, vc *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
-				return models.ServiceInstanceDetails{OtherDetails: "{\"mynameis\": \"instancename\", \"foo\": \"baz\" }"}, nil
+				instance := models.ServiceInstanceDetails{}
+				instance.SetOtherDetails(map[string]interface{}{"mynameis": "instancename", "foo": "baz"})
+				return instance, nil
 			},
 			BindStub: func(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error) {
 				return map[string]interface{}{"foo": "bar"}, nil
