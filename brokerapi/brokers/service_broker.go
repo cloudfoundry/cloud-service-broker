@@ -207,10 +207,12 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return response, fmt.Errorf("updating non-existent instanceid: %v", instanceID)
 	}
 
+	// TODO
+	rawParameters, _ := pr.GetRequestDetails()
 	provisionDetails := domain.ProvisionDetails{
 		ServiceID:     details.ServiceID,
 		PlanID:        details.PlanID,
-		RawParameters: pr.GetRequestDetails(),
+		RawParameters: rawParameters,
 	}
 
 	// validate parameters meet the service's schema and merge the user vars with
@@ -429,10 +431,13 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 
 	// validate parameters meet the service's schema and merge the plan's vars with
 	// the user's
+
+	// TODO
+	rawParameters, _ := pr.GetRequestDetails()
 	bindDetails := domain.BindDetails{
 		PlanID:        details.PlanID,
 		ServiceID:     details.ServiceID,
-		RawParameters: pr.GetRequestDetails(),
+		RawParameters: rawParameters,
 	}
 
 	vars, err := serviceDefinition.BindVariables(*instance, bindingID, bindDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
@@ -596,7 +601,9 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
-	vars, err := brokerService.UpdateVariables(instanceID, details, pr.GetRequestDetails(), *plan, request.DecodeOriginatingIdentityHeader(ctx))
+	// TODO
+	provisionDetails, _ := pr.GetRequestDetails()
+	vars, err := brokerService.UpdateVariables(instanceID, details, provisionDetails, *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return response, err
 	}

@@ -248,6 +248,7 @@ type BrokerEndpointTestSuite map[string]BrokerEndpointTestCase
 func (cases BrokerEndpointTestSuite) Run(t *testing.T) {
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
+			models.SetEncryptor(models.NewNoopEncryptor())
 			stub := fakeService(t, tc.AsyncService)
 
 			t.Log("Creating broker")

@@ -29,6 +29,22 @@ const (
 	ClearOperationType       = ""
 )
 
+var encryptorInstance Encryptor = nil
+
+func SetEncryptor(encryptor Encryptor) {
+	encryptorInstance = encryptor
+}
+
+func GetEncryptor() Encryptor {
+	return encryptorInstance
+}
+
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o fakes/fake_encryption.go . Encryptor
+type Encryptor interface {
+	Encrypt(plaintext []byte) ([]byte, error)
+	Decrypt(ciphertext []byte) ([]byte, error)
+}
+
 // ServiceBindingCredentials holds credentials returned to the users after
 // binding to a service.
 type ServiceBindingCredentials ServiceBindingCredentialsV1
@@ -66,7 +82,7 @@ func (si *ServiceInstanceDetails) SetOtherDetails(toSet interface{}) error {
 		return err
 	}
 
-	encryptedDetails, err := Encrypt(out, &Key)
+	encryptedDetails, err := encryptorInstance.Encrypt(out)
 	if err != nil {
 		return err
 	}
@@ -82,7 +98,7 @@ func (si ServiceInstanceDetails) GetOtherDetails(v interface{}) error {
 		return nil
 	}
 
-	decryptedDetails, err := Decrypt([]byte(si.OtherDetails), &Key)
+	decryptedDetails, err := encryptorInstance.Decrypt([]byte(si.OtherDetails))
 	if err != nil {
 		return err
 	}
@@ -94,12 +110,23 @@ func (si ServiceInstanceDetails) GetOtherDetails(v interface{}) error {
 // to provision a service.
 type ProvisionRequestDetails ProvisionRequestDetailsV1
 
-func (pr *ProvisionRequestDetails) SetRequestDetails(rawMessage json.RawMessage) {
-	pr.RequestDetails = string(rawMessage)
+func (pr *ProvisionRequestDetails) SetRequestDetails(rawMessage json.RawMessage) error {
+	encryptedDetails, err := encryptorInstance.Encrypt(rawMessage)
+	if err != nil {
+		return err
+	}
+
+	pr.RequestDetails = string(encryptedDetails)
+	return nil
 }
 
-func (pr ProvisionRequestDetails) GetRequestDetails() json.RawMessage {
-	return json.RawMessage(pr.RequestDetails)
+func (pr ProvisionRequestDetails) GetRequestDetails() (json.RawMessage, error) {
+	decryptedDetails, err := encryptorInstance.Decrypt([]byte(pr.RequestDetails))
+	if err != nil {
+		return nil, err
+	}
+
+	return decryptedDetails, nil
 }
 
 // Migration represents the mgirations table. It holds a monotonically

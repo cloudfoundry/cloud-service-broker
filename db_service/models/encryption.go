@@ -8,9 +8,17 @@ import (
 	"io"
 )
 
-func Encrypt(plaintext []byte, key *[32]byte) (ciphertext []byte, err error) {
+type GCMEncryptor struct {
+	Key *[32]byte
+}
+
+func NewGCMEncryptor(key *[32]byte) GCMEncryptor {
+	return GCMEncryptor{Key: key}
+}
+
+func (d GCMEncryptor) Encrypt(plaintext []byte) (ciphertext []byte, err error) {
 	// Initialize an AES block cipher
-	block, err := aes.NewCipher(key[:])
+	block, err := aes.NewCipher(d.Key[:])
 	if err != nil {
 		return nil, err
 	}
@@ -32,9 +40,9 @@ func Encrypt(plaintext []byte, key *[32]byte) (ciphertext []byte, err error) {
 	return gcm.Seal(nonce, nonce, plaintext, nil), nil
 }
 
-func Decrypt(ciphertext []byte, key *[32]byte) (plaintext []byte, err error) {
+func (d GCMEncryptor) Decrypt(ciphertext []byte) (plaintext []byte, err error) {
 	// Initialize an AES block cipher
-	block, err := aes.NewCipher(key[:])
+	block, err := aes.NewCipher(d.Key[:])
 	if err != nil {
 		return nil, err
 	}
@@ -52,4 +60,19 @@ func Decrypt(ciphertext []byte, key *[32]byte) (plaintext []byte, err error) {
 		ciphertext[gcm.NonceSize():],
 		nil,
 	)
+}
+
+type NoopEncryptor struct {
+}
+
+func (d NoopEncryptor) Encrypt(plaintext []byte) (ciphertext []byte, err error) {
+	return plaintext, nil
+}
+
+func (d NoopEncryptor) Decrypt(ciphertext []byte) (plaintext []byte, err error) {
+	return ciphertext, nil
+}
+
+func NewNoopEncryptor() NoopEncryptor {
+	return NoopEncryptor{}
 }
