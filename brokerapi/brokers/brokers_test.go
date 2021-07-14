@@ -18,8 +18,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models/fakes"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"code.cloudfoundry.org/lager"
@@ -356,6 +358,17 @@ func TestServiceBroker_Provision(t *testing.T) {
 				assertEqual(t, "errors should match", ErrInvalidUserInput, err)
 			},
 		},
+		"error-setting-request-details": {
+			ServiceState: StateNone,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				req := stub.ProvisionDetails()
+				encryptor := fakes.FakeEncryptor{}
+				encryptor.EncryptReturns(nil, errors.New("error while encrypting"))
+				models.SetEncryptor(&encryptor)
+				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
+				assertTrue(t, "errors should match", strings.Contains(err.Error(), "error while encrypting"))
+			},
+		},
 	}
 
 	cases.Run(t)
@@ -437,6 +450,21 @@ func TestServiceBroker_Deprovision(t *testing.T) {
 
 				assertEqual(t, "OperationId should be set as the data", operationId, details.OperationId)
 				assertEqual(t, "OperationType should be set as Deprovision", models.DeprovisionOperationType, details.OperationType)
+			},
+		},
+		"error-getting-request-details": {
+			AsyncService: true,
+			ServiceState: StateProvisioned,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				operationId := "my-operation-id"
+				stub.Provider.DeprovisionReturns(&operationId, nil)
+				encryptor := fakes.FakeEncryptor{}
+				encryptor.DecryptReturns(nil, errors.New("error while decrypting"))
+				models.SetEncryptor(&encryptor)
+
+				_, err := broker.Deprovision(context.Background(), fakeInstanceId, stub.DeprovisionDetails(), true)
+				assertTrue(t, "Should have returned error", err != nil)
+				assertTrue(t, "errors should match", strings.Contains(err.Error(), "error while decrypting"))
 			},
 		},
 	}
@@ -573,6 +601,19 @@ func TestServiceBroker_Unbind(t *testing.T) {
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				_, err := broker.Unbind(context.Background(), fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
 				assertEqual(t, "errors should match", brokerapi.ErrBindingDoesNotExist, err)
+			},
+		},
+		"error-getting-request-details": {
+			AsyncService: true,
+			ServiceState: StateBound,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				encryptor := fakes.FakeEncryptor{}
+				encryptor.DecryptReturnsOnCall(0, nil, errors.New("error while decrypting"))
+				models.SetEncryptor(&encryptor)
+
+				_, err := broker.Unbind(context.Background(), fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
+				assertTrue(t, "Should have returned error", err != nil)
+				assertTrue(t, "errors should match", strings.Contains(err.Error(), "error while decrypting"))
 			},
 		},
 	}
