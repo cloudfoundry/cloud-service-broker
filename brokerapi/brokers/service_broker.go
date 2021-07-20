@@ -610,7 +610,11 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
 	// TODO
-	provisionDetails, _ := pr.GetRequestDetails()
+	provisionDetails, err := pr.GetRequestDetails()
+	if err != nil {
+		return response, fmt.Errorf("retrieving request details: %s", err)
+	}
+
 	vars, err := brokerService.UpdateVariables(instanceID, details, provisionDetails, *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return response, err

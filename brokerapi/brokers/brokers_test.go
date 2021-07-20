@@ -812,6 +812,22 @@ func TestServiceBroker_Update(t *testing.T) {
 				failIfErr(t, "update", err)
 			},
 		},
+
+		"error-getting-request-details": {
+			ServiceState: StateProvisioned,
+			AsyncService: true,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				req := stub.UpdateDetails()
+				encryptor := fakes.FakeEncryptor{}
+				encryptor.DecryptReturns(nil, errors.New("error while decrypting"))
+				models.SetEncryptor(&encryptor)
+
+				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
+
+				assertTrue(t, "Should have returned error", err != nil)
+				assertTrue(t, "errors should match", strings.Contains(err.Error(), "error while decrypting"))
+			},
+		},
 	}
 
 	cases.Run(t)
