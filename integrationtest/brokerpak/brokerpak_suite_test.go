@@ -11,7 +11,7 @@ import (
 
 func TestIntegration(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Integration Test Suite")
+	RunSpecs(t, "Brokerpak Integration Test Suite")
 }
 
 var csb string
