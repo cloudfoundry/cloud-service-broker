@@ -163,7 +163,6 @@ provision or bind action, and the inputs and outputs to that template.
 | --- | --- | --- |
 | import_inputs | array of [import-input](#import-input-object) | Defines the variables that will be passed to tf import command |
 | import_parameter_mappings | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines how tf resource variables will be replaced with broker variables between `tf import` and `tf apply` |
-| import_parameter_mappings | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines how tf resource variables will be replaced with broker variables between `tf import` and `tf apply` |
 | import_parameters_to_delete| array of string | list of `tf import` discovered values to remove before `tf apply`. `tf import` will return read-only values that cannot be set during `tf apply` so they should be listed here to be removed between import and apply |
 | import_parameters_to_add | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines tf resource variables to add between `tf import` and `tf apply`
 | plan_inputs | array of [variable](#variable-object) | Defines constraints and settings for the variables plans provide in their properties map. It is used to validate [plan objects](#plan-object) properties field.  |
