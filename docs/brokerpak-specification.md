@@ -133,10 +133,10 @@ required_env_variables:
 | documentation_url* | string | Link to documentation page for the service. |
 | support_url* | string | Link to support page for the service. |
 | plan_updateable | boolean | Set to `true` if service supports `cf update-service` 
-| plans* | array of plan objects | A list of plans for this service, schema is defined below. MUST contain at least one plan. |
-| provision* | action object | Contains configuration for the provision operation, schema is defined below. |
-| bind* | action object | Contains configuration for the bind operation, schema is defined below. |
-| examples* | example object | Contains examples for the service, used in documentation and testing.  MUST contain at least one example. |
+| plans* | array of [plan objects](#plan-object) | A list of plans for this service, schema is defined below. MUST contain at least one plan. |
+| provision* | [action object](#action-object) | Contains configuration for the provision operation, schema is defined below. |
+| bind* | [action object](#action-object) | Contains configuration for the bind operation, schema is defined below. |
+| examples* | [example object](#example) | Contains examples for the service, used in documentation and testing.  MUST contain at least one example. |
 
 #### Plan object
 
@@ -150,7 +150,9 @@ A service plan in a human-friendly format that can be converted into an OSB comp
 | display_name* | string | The name of the plan to be displayed in graphical clients. |
 | bullets | array of string | Features of this plan, to be displayed in a bulleted-list. |
 | free | boolean | When false, Service Instances of this plan have a cost. The default is false. |
-| properties* | map of string:string | Default values for the provision and bind calls. |
+| properties* | map of string:any | Constant values for the provision and bind calls. They take precedent over any other definition of the same field. |
+| provision_overrides | map of string:any | Constant values to be overwritten for the provision calls. |
+| bind_overrides | map of string:aany |  Constant values to be overwritten for the bind calls. |
 
 #### Action object
 
@@ -161,13 +163,15 @@ provision or bind action, and the inputs and outputs to that template.
 | --- | --- | --- |
 | import_inputs | array of [import-input](#import-input-object) | Defines the variables that will be passed to tf import command |
 | import_parameter_mappings | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines how tf resource variables will be replaced with broker variables between `tf import` and `tf apply` |
+| import_parameter_mappings | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines how tf resource variables will be replaced with broker variables between `tf import` and `tf apply` |
 | import_parameters_to_delete| array of string | list of `tf import` discovered values to remove before `tf apply`. `tf import` will return read-only values that cannot be set during `tf apply` so they should be listed here to be removed between import and apply |
 | import_parameters_to_add | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines tf resource variables to add between `tf import` and `tf apply`
-| plan_inputs | array of [variable](#variable-object) | Defines constraints and settings for the variables plans provide in their properties map. |
-| user_inputs | array of [variable](#variable-object) | Defines constraints and settings for the variables users provide as part of their request. |
+| plan_inputs | array of [variable](#variable-object) | Defines constraints and settings for the variables plans provide in their properties map. It is used to validate [plan objects](#plan-object) properties field.  |
+| user_inputs | array of [variable](#variable-object) | Defines constraints and defaults for the variables users provide as part of their request. |
 | computed_inputs | array of [computed variable](#computed-variable-object) | Defines default values or overrides that are executed before the template is run. |
 | template | string | The complete HCL of the Terraform template to execute. |
 | template_ref | string | A path to HCL of the Terraform template to execute. If present, this will be used to populate the `template` field. |
+| templates | map | The complete HCL of the Terraform templates to execute. |
 | template_refs | map | standard terraform file [snippet list](#template-references) |
 | outputs | array of [variable](#variable-object) | Defines constraints and settings for the outputs of the Terraform template. This MUST match the Terraform outputs and the constraints WILL be used as part of integration testing. |
 
@@ -308,6 +312,7 @@ Outputs are _only_ validated on integration tests.
 | default | any | The default value for this field. If `null`, the field MUST be marked as required. If a string, it will be executed as a HIL expression and cast to the appropriate type described in the `type` field. See the [Expression language reference](#expression-language-reference) section for more information about what's available. |
 | enum | map of any:string | Valid values for the field and their human-readable descriptions suitable for displaying in a drop-down list. |
 | constraints | map of string:any | Holds additional JSONSchema validation for the field. Feature flag `enable-catalog-schemas` controls whether to serve Json schemas in catalog. The following keys are supported: `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`. |
+| prohibit_update | boolean | Defines if the field value can be updated on update operation. |
 
 #### Computed Variable Object
 
@@ -442,25 +447,23 @@ The broker makes additional variables available to be used during provision and 
 
 #### Resolution
 
-The variables fed into your Terraform services file are resolved in the following order:
-
-* Variables defined in your `computed_variables` JSON list.
-* Variables defined by the selected service plan in its `service_properties` map.
-* Variables overridden by the plan (in `provision_overrides` or `bind_overrides`).
-* User defined variables (in `provision_input_variables` or `bind_input_variables`).
-* Operator default variables loaded from the environment.
-* Default variables (in `provision_input_variables` or `bind_input_variables`).
-
-Note that the order the variables are combined in code is slightly different.
-
-* Operator default variables loaded from the environment.
-* User defined variables (in `provision_input_variables` or `bind_input_variables`)
-* **If the variables are not defined yet** default variables (in `provision_input_variables` or `bind_input_variables`).
-* Variables defined by the selected service plan in its `service_properties` map.
-* Variables defined in your `computed_variables` JSON list.
-
-Moving default variables to be loaded third allow their computed values to make more sense.
-This is because they can resolve variables to the user's values first.
+The order of combining all plan properties before invoking Terraform is as follows:
+1. Operator default variables loaded from the environment.
+   * `GSB_PROVISION_DEFAULTS` values first and then `GSB_SERVICE_*SERVICE_NAME*_PROVISION_DEFAULTS`. 
+1. User defined variables provided during provision/bind call.
+   * The variable constraints are defined in `service_definitions.provision.user_inputs` or `service_definitions.bind.user_inputs` 
+   * These values overwrite the above values if set.
+1. (If the operation is an update) User defined variables provided during update call.
+   * The variable constraints are defined in `service_definitions.provision.user_inputs` or `service_definitions.bind.user_inputs`
+   * These values overwrite the above values if set.
+1. Default variables and values as configured in `service_definitions.plans[0].provision_overrides`. 
+   * These values overwrite the above values if set.
+1. Default properties and values for any variables that is defined in `service_definitions.provision.user_input` and the user has not provided. 
+   * These values do not override user defined params if they are already set by step 2 or 3.
+1. Constant properties and values for any field that is defined in `service_definitions.plans[0].properties`. 
+   * These values overwrite the above values if set.
+1. Computed fields that are defined in `service_definitions.provision.computed_inputs`.
+   * The service definition for `computed_inputs` specifies if these values will overwrite previous steps.
 
 #### Provision/Deprovision
 
