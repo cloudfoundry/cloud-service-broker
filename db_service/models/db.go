@@ -16,6 +16,7 @@ package models
 
 import (
 	"encoding/json"
+	"strings"
 )
 
 const (
@@ -35,8 +36,17 @@ func SetEncryptor(encryptor Encryptor) {
 	encryptorInstance = encryptor
 }
 
-func GetEncryptor() Encryptor {
-	return encryptorInstance
+func ConfigureEncryption(encryptionKey string) Encryptor {
+	encryptor := Encryptor(NewNoopEncryptor())
+	if (strings.TrimSpace(encryptionKey) == encryptionKey) && len(encryptionKey) > 0 {
+		key := []byte(encryptionKey)
+		var keyAs32ByteArray [32]byte
+		copy(keyAs32ByteArray[:], key)
+		encryptor = NewGCMEncryptor(&keyAs32ByteArray)
+	}
+	// TODO else should probably return an error to be on the safe side
+
+	return encryptor
 }
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o fakes/fake_encryption.go . Encryptor

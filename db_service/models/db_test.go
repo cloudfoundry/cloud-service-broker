@@ -3,6 +3,8 @@ package models_test
 import (
 	"encoding/json"
 	"errors"
+	"reflect"
+	"strings"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models/fakes"
@@ -508,5 +510,49 @@ var _ = Describe("Db", func() {
 			})
 
 		})
+	})
+
+	Describe("ConfigureEncryption", func() {
+		Context("No key provided", func() {
+			When("Key is empty", func() {
+				It("Skips encryption", func() {
+					encryptor := models.ConfigureEncryption("")
+
+					Expect(encryptor).To(Equal(models.NewNoopEncryptor()))
+				})
+			})
+
+			When("Key is blank", func() {
+				It("Skips encryption", func() {
+					encryptor := models.ConfigureEncryption("    \t   \n")
+
+					Expect(encryptor).To(Equal(models.NewNoopEncryptor()))
+				})
+			})
+		})
+
+		Context("Key provided", func() {
+			When("Key is valid", func() {
+				It("Sets up encryptor with the key", func() {
+					encryptor := models.ConfigureEncryption("one-key-here-with-32-bytes-in-it")
+
+					Expect(reflect.TypeOf(encryptor).Name()).To(Equal("GCMEncryptor"))
+					gcmEncryptor, _ := encryptor.(models.GCMEncryptor)
+					Expect(strings.TrimSpace(string(gcmEncryptor.Key[:]))).To(Equal("one-key-here-with-32-bytes-in-it"))
+				})
+			})
+
+			// TODO key failing validations here - in the above only contemplated length, but that test could change if other validations are needed
+
+			When("Key has surrounding spaces", func() {
+				It("skips encryption", func() {
+					encryptor := models.ConfigureEncryption("\t  one-key-here  \n")
+
+					Expect(encryptor).To(Equal(models.NewNoopEncryptor()))
+					// TODO should also return an error
+				})
+			})
+		})
+
 	})
 })
