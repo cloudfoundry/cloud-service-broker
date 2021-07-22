@@ -1,0 +1,19 @@
+packversion: 1
+name: fake-brokerpak
+version: 0.1.0
+metadata:
+  author: noone@nowhere.com
+platforms:
+- os: linux
+  arch: amd64
+- os: darwin
+  arch: amd64
+terraform_binaries:
+- name: terraform
+  version: 0.12.21
+  source: https://github.com/hashicorp/terraform/archive/v0.12.21.zip
+- name: cloud-service-broker
+  version: 0.2.6
+  url_template: https://github.com/cloudfoundry-incubator/${name}/releases/download/${version}/${name}.${os}
+service_definitions:
+- fake-service.yml

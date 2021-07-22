@@ -1,0 +1,17 @@
+version: 1
+name: fake-service
+id: 76c5725c-b246-11eb-871f-ffc97563fbd0
+description: description
+display_name: Fake
+image_url: https://example.com/icon.jpg
+documentation_url: https://example.com
+support_url: https://example.com/support.html
+plans:
+- name: first
+  id: 8b52a460-b246-11eb-a8f5-d349948e2480
+  description: First plan
+  display_name: First
+- name: second
+  id: 2249d13a-b26b-11eb-9da1-63ee79b039c1
+  description: Second plan
+  display_name: Second

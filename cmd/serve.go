@@ -17,6 +17,7 @@ package cmd
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"net/http"
 
 	"code.cloudfoundry.org/lager"
@@ -38,6 +39,7 @@ const (
 	apiUserProp     = "api.user"
 	apiPasswordProp = "api.password"
 	apiPortProp     = "api.port"
+	apiHostProp     = "api.host"
 )
 
 var cfCompatibilityToggle = toggles.Features.Toggle("enable-cf-sharing", false, `Set all services to have the Sharable flag so they can be shared
@@ -65,6 +67,7 @@ func init() {
 	viper.BindEnv(apiUserProp, "SECURITY_USER_NAME")
 	viper.BindEnv(apiPasswordProp, "SECURITY_USER_PASSWORD")
 	viper.BindEnv(apiPortProp, "PORT")
+	viper.BindEnv(apiHostProp, "CSB_LISTENER_HOST")
 }
 
 func serve() {
@@ -129,6 +132,7 @@ func startServer(registry broker.BrokerRegistry, db *sql.DB, brokerapi http.Hand
 	server.AddHealthHandler(router, db)
 
 	port := viper.GetString(apiPortProp)
+	host := viper.GetString(apiHostProp)
 	logger.Info("Serving", lager.Data{"port": port})
-	http.ListenAndServe(":"+port, router)
+	http.ListenAndServe(fmt.Sprintf("%s:%s", host, port), router)
 }
