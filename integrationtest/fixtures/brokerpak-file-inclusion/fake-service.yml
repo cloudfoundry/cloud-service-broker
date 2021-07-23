@@ -15,3 +15,8 @@ plans:
   id: 2249d13a-b26b-11eb-9da1-63ee79b039c1
   description: Second plan
   display_name: Second
+provision:
+  template_ref: fake-provision.tf
+bind:
+  template_refs:
+    main: fake-bind.tf
