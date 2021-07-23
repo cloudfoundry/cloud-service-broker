@@ -1,0 +1,1 @@
+output output_variable { value = "output-constant-value" }
