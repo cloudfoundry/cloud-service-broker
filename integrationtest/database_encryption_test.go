@@ -95,7 +95,7 @@ var _ = Describe("Database Encryption", func() {
 			os.Environ(),
 			"CSB_LISTENER_HOST=localhost",
 			"DB_TYPE=sqlite3",
-			fmt.Sprintf("ENCRYPTION_KEY=%s", encryptionKey),
+			fmt.Sprintf("EXPERIMENTAL_ENCRYPTION_KEY=%s", encryptionKey),
 			fmt.Sprintf("DB_PATH=%s", databaseFile),
 			fmt.Sprintf("PORT=%d", brokerPort),
 			fmt.Sprintf("SECURITY_USER_NAME=%s", brokerUsername),

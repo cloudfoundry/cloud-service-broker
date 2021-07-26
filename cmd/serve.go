@@ -71,7 +71,7 @@ func init() {
 	viper.BindEnv(apiPasswordProp, "SECURITY_USER_PASSWORD")
 	viper.BindEnv(apiPortProp, "PORT")
 	viper.BindEnv(apiHostProp, "CSB_LISTENER_HOST")
-	viper.BindEnv(encryptionKey, "ENCRYPTION_KEY")
+	viper.BindEnv(encryptionKey, "EXPERIMENTAL_ENCRYPTION_KEY")
 }
 
 func serve() {
