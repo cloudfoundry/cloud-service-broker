@@ -1,4 +1,4 @@
-package models
+package encryption
 
 import (
 	"crypto/aes"

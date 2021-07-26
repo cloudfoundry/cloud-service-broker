@@ -161,8 +161,8 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	pr := models.ProvisionRequestDetails{
 		ServiceInstanceId: instanceID,
 	}
-	err = pr.SetRequestDetails(details.RawParameters)
-	if err != nil {
+
+	if err := pr.SetRequestDetails(details.RawParameters); err != nil {
 		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving request details to database: %s. WARNING: this instance cannot be deprovisioned through cf. Contact your operator for cleanup", err)
 	}
 
@@ -609,7 +609,6 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
-	// TODO
 	provisionDetails, err := pr.GetRequestDetails()
 	if err != nil {
 		return response, fmt.Errorf("retrieving request details: %s", err)

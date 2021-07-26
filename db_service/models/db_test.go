@@ -1,16 +1,27 @@
 package models_test
 
 import (
+	"crypto/rand"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
+	"io"
 	"reflect"
 	"strings"
+
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models/fakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+func newKey() [32]byte {
+	dbKey := make([]byte, 32)
+	io.ReadFull(rand.Reader, dbKey)
+	return sha256.Sum256(dbKey)
+}
 
 var _ = Describe("Db", func() {
 	var encryptor models.Encryptor
@@ -123,8 +134,8 @@ var _ = Describe("Db", func() {
 	Describe("ServiceInstanceDetails", func() {
 		Context("GCM encryptor", func() {
 			BeforeEach(func() {
-				models.NewKey()
-				encryptor = models.NewGCMEncryptor(&models.Key)
+				key := newKey()
+				encryptor = encryption.NewGCMEncryptor(&key)
 				models.SetEncryptor(encryptor)
 			})
 
@@ -212,7 +223,7 @@ var _ = Describe("Db", func() {
 
 		Context("Noop encryptor", func() {
 			BeforeEach(func() {
-				encryptor = models.NewNoopEncryptor()
+				encryptor = encryption.NewNoopEncryptor()
 				models.SetEncryptor(encryptor)
 			})
 
@@ -356,8 +367,8 @@ var _ = Describe("Db", func() {
 	Describe("ProvisionRequestDetails", func() {
 		Context("GCM encryptor", func() {
 			BeforeEach(func() {
-				models.NewKey()
-				encryptor = models.NewGCMEncryptor(&models.Key)
+				key := newKey()
+				encryptor = encryption.NewGCMEncryptor(&key)
 				models.SetEncryptor(encryptor)
 			})
 
@@ -422,7 +433,7 @@ var _ = Describe("Db", func() {
 
 		Context("Noop encryptor", func() {
 			BeforeEach(func() {
-				encryptor = models.NewNoopEncryptor()
+				encryptor = encryption.NewNoopEncryptor()
 				models.SetEncryptor(encryptor)
 			})
 
@@ -518,7 +529,7 @@ var _ = Describe("Db", func() {
 				It("Skips encryption", func() {
 					encryptor := models.ConfigureEncryption("")
 
-					Expect(encryptor).To(Equal(models.NewNoopEncryptor()))
+					Expect(encryptor).To(Equal(encryption.NewNoopEncryptor()))
 				})
 			})
 
@@ -526,7 +537,7 @@ var _ = Describe("Db", func() {
 				It("Skips encryption", func() {
 					encryptor := models.ConfigureEncryption("    \t   \n")
 
-					Expect(encryptor).To(Equal(models.NewNoopEncryptor()))
+					Expect(encryptor).To(Equal(encryption.NewNoopEncryptor()))
 				})
 			})
 		})
@@ -537,19 +548,16 @@ var _ = Describe("Db", func() {
 					encryptor := models.ConfigureEncryption("one-key-here-with-32-bytes-in-it")
 
 					Expect(reflect.TypeOf(encryptor).Name()).To(Equal("GCMEncryptor"))
-					gcmEncryptor, _ := encryptor.(models.GCMEncryptor)
+					gcmEncryptor, _ := encryptor.(encryption.GCMEncryptor)
 					Expect(strings.TrimSpace(string(gcmEncryptor.Key[:]))).To(Equal("one-key-here-with-32-bytes-in-it"))
 				})
 			})
-
-			// TODO key failing validations here - in the above only contemplated length, but that test could change if other validations are needed
 
 			When("Key has surrounding spaces", func() {
 				It("skips encryption", func() {
 					encryptor := models.ConfigureEncryption("\t  one-key-here  \n")
 
-					Expect(encryptor).To(Equal(models.NewNoopEncryptor()))
-					// TODO should also return an error
+					Expect(encryptor).To(Equal(encryption.NewNoopEncryptor()))
 				})
 			})
 		})

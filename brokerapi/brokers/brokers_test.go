@@ -23,6 +23,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
+
 	"code.cloudfoundry.org/lager"
 	. "github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/brokers"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
@@ -250,7 +252,7 @@ type BrokerEndpointTestSuite map[string]BrokerEndpointTestCase
 func (cases BrokerEndpointTestSuite) Run(t *testing.T) {
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			models.SetEncryptor(models.NewNoopEncryptor())
+			models.SetEncryptor(encryption.NewNoopEncryptor())
 			stub := fakeService(t, tc.AsyncService)
 
 			t.Log("Creating broker")

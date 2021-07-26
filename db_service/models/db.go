@@ -17,6 +17,8 @@ package models
 import (
 	"encoding/json"
 	"strings"
+
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
 )
 
 const (
@@ -37,15 +39,13 @@ func SetEncryptor(encryptor Encryptor) {
 }
 
 func ConfigureEncryption(encryptionKey string) Encryptor {
-	encryptor := Encryptor(NewNoopEncryptor())
+	encryptor := Encryptor(encryption.NewNoopEncryptor())
 	if (strings.TrimSpace(encryptionKey) == encryptionKey) && len(encryptionKey) > 0 {
 		key := []byte(encryptionKey)
 		var keyAs32ByteArray [32]byte
 		copy(keyAs32ByteArray[:], key)
-		encryptor = NewGCMEncryptor(&keyAs32ByteArray)
+		encryptor = encryption.NewGCMEncryptor(&keyAs32ByteArray)
 	}
-	// TODO else should probably return an error to be on the safe side
-
 	return encryptor
 }
 
