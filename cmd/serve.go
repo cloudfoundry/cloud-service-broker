@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/brokers"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
@@ -40,6 +42,7 @@ const (
 	apiPasswordProp = "api.password"
 	apiPortProp     = "api.port"
 	apiHostProp     = "api.host"
+	encryptionKey   = "encryption.key"
 )
 
 var cfCompatibilityToggle = toggles.Features.Toggle("enable-cf-sharing", false, `Set all services to have the Sharable flag so they can be shared
@@ -68,11 +71,13 @@ func init() {
 	viper.BindEnv(apiPasswordProp, "SECURITY_USER_PASSWORD")
 	viper.BindEnv(apiPortProp, "PORT")
 	viper.BindEnv(apiHostProp, "CSB_LISTENER_HOST")
+	viper.BindEnv(encryptionKey, "EXPERIMENTAL_ENCRYPTION_KEY")
 }
 
 func serve() {
 	logger := utils.NewLogger("cloud-service-broker")
 	db := db_service.New(logger)
+	models.SetEncryptor(models.ConfigureEncryption(viper.GetString(encryptionKey)))
 
 	// init broker
 	cfg, err := brokers.NewBrokerConfigFromEnv(logger)
