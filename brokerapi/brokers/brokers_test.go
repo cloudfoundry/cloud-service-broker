@@ -20,12 +20,16 @@ import (
 	"errors"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
+
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
 
 	"code.cloudfoundry.org/lager"
 	. "github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/brokers"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models/fakes"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/credstore"
@@ -146,7 +150,9 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 			ProvisionsAsyncStub:   func() bool { return isAsync },
 			DeprovisionsAsyncStub: func() bool { return isAsync },
 			ProvisionStub: func(ctx context.Context, vc *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
-				return models.ServiceInstanceDetails{OtherDetails: "{\"mynameis\": \"instancename\", \"foo\": \"baz\" }"}, nil
+				instance := models.ServiceInstanceDetails{}
+				instance.SetOtherDetails(map[string]interface{}{"mynameis": "instancename", "foo": "baz"})
+				return instance, nil
 			},
 			BindStub: func(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error) {
 				return map[string]interface{}{"foo": "bar"}, nil
@@ -246,6 +252,7 @@ type BrokerEndpointTestSuite map[string]BrokerEndpointTestCase
 func (cases BrokerEndpointTestSuite) Run(t *testing.T) {
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
+			models.SetEncryptor(encryption.NewNoopEncryptor())
 			stub := fakeService(t, tc.AsyncService)
 
 			t.Log("Creating broker")
@@ -353,6 +360,17 @@ func TestServiceBroker_Provision(t *testing.T) {
 				assertEqual(t, "errors should match", ErrInvalidUserInput, err)
 			},
 		},
+		"error-setting-request-details": {
+			ServiceState: StateNone,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				req := stub.ProvisionDetails()
+				encryptor := fakes.FakeEncryptor{}
+				encryptor.EncryptReturns(nil, errors.New("error while encrypting"))
+				models.SetEncryptor(&encryptor)
+				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
+				assertTrue(t, "errors should match", strings.Contains(err.Error(), "error while encrypting"))
+			},
+		},
 	}
 
 	cases.Run(t)
@@ -434,6 +452,21 @@ func TestServiceBroker_Deprovision(t *testing.T) {
 
 				assertEqual(t, "OperationId should be set as the data", operationId, details.OperationId)
 				assertEqual(t, "OperationType should be set as Deprovision", models.DeprovisionOperationType, details.OperationType)
+			},
+		},
+		"error-getting-request-details": {
+			AsyncService: true,
+			ServiceState: StateProvisioned,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				operationId := "my-operation-id"
+				stub.Provider.DeprovisionReturns(&operationId, nil)
+				encryptor := fakes.FakeEncryptor{}
+				encryptor.DecryptReturns(nil, errors.New("error while decrypting"))
+				models.SetEncryptor(&encryptor)
+
+				_, err := broker.Deprovision(context.Background(), fakeInstanceId, stub.DeprovisionDetails(), true)
+				assertTrue(t, "Should have returned error", err != nil)
+				assertTrue(t, "errors should match", strings.Contains(err.Error(), "error while decrypting"))
 			},
 		},
 	}
@@ -570,6 +603,19 @@ func TestServiceBroker_Unbind(t *testing.T) {
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				_, err := broker.Unbind(context.Background(), fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
 				assertEqual(t, "errors should match", brokerapi.ErrBindingDoesNotExist, err)
+			},
+		},
+		"error-getting-request-details": {
+			AsyncService: true,
+			ServiceState: StateBound,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				encryptor := fakes.FakeEncryptor{}
+				encryptor.DecryptReturnsOnCall(0, nil, errors.New("error while decrypting"))
+				models.SetEncryptor(&encryptor)
+
+				_, err := broker.Unbind(context.Background(), fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
+				assertTrue(t, "Should have returned error", err != nil)
+				assertTrue(t, "errors should match", strings.Contains(err.Error(), "error while decrypting"))
 			},
 		},
 	}
@@ -766,6 +812,22 @@ func TestServiceBroker_Update(t *testing.T) {
 				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
 
 				failIfErr(t, "update", err)
+			},
+		},
+
+		"error-getting-request-details": {
+			ServiceState: StateProvisioned,
+			AsyncService: true,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				req := stub.UpdateDetails()
+				encryptor := fakes.FakeEncryptor{}
+				encryptor.DecryptReturns(nil, errors.New("error while decrypting"))
+				models.SetEncryptor(&encryptor)
+
+				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
+
+				assertTrue(t, "Should have returned error", err != nil)
+				assertTrue(t, "errors should match", strings.Contains(err.Error(), "error while decrypting"))
 			},
 		},
 	}

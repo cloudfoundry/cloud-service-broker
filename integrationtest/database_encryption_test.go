@@ -1,6 +1,7 @@
 package integrationtest_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -8,6 +9,8 @@ import (
 	"os/exec"
 	"path"
 	"time"
+
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
@@ -20,42 +23,79 @@ import (
 )
 
 var _ = Describe("Database Encryption", func() {
-	var (
-		originalDir    string
-		fixturesDir    string
-		workDir        string
-		brokerPort     int
-		brokerSession  *Session
-		brokerUsername string
-		brokerPassword string
-		databaseFile   string
+	const (
+		provisionParams     = `{"foo":"bar"}`
+		serviceOfferingGUID = "76c5725c-b246-11eb-871f-ffc97563fbd0"
+		servicePlanGUID     = "8b52a460-b246-11eb-a8f5-d349948e2480"
+		terraformOutput     = `{"output_variable":"output-constant-value"}`
 	)
 
-	BeforeEach(func() {
+	var (
+		originalDir         string
+		fixturesDir         string
+		workDir             string
+		brokerPort          int
+		brokerSession       *Session
+		brokerUsername      string
+		brokerPassword      string
+		databaseFile        string
+		encryptionKey       string
+		serviceInstanceGUID string
+	)
+
+	persistedRequestDetails := func() string {
+		db, err := gorm.Open("sqlite3", databaseFile)
+		Expect(err).NotTo(HaveOccurred())
+		defer db.Close()
+		record := models.ProvisionRequestDetails{}
+		err = db.Where("service_instance_id = ?", serviceInstanceGUID).First(&record).Error
+		Expect(err).NotTo(HaveOccurred())
+		return record.RequestDetails
+	}
+
+	persistedServiceInstanceDetails := func() string {
+		db, err := gorm.Open("sqlite3", databaseFile)
+		Expect(err).NotTo(HaveOccurred())
+		defer db.Close()
+		record := models.ServiceInstanceDetails{}
+		err = db.Where("id = ?", serviceInstanceGUID).First(&record).Error
+		Expect(err).NotTo(HaveOccurred())
+		return record.OtherDetails
+	}
+
+	JustBeforeEach(func() {
 		var err error
 		originalDir, err = os.Getwd()
 		Expect(err).NotTo(HaveOccurred())
-		fixturesDir = path.Join(originalDir, "fixtures")
+		fixturesDir = path.Join(originalDir, "fixtures", "brokerpak-with-fake-provider")
 
 		workDir, err = os.MkdirTemp("", "*-csb-test")
 		Expect(err).NotTo(HaveOccurred())
 		err = os.Chdir(workDir)
 		Expect(err).NotTo(HaveOccurred())
 
-		buildBrokerpakCommand := exec.Command(csb, "pak", "build", path.Join(fixturesDir, "brokerpak-with-fake-provider"))
+		files, err := os.ReadDir(fixturesDir)
+		Expect(err).ToNot(HaveOccurred())
+		for _, file := range files {
+			bytes, _ := os.ReadFile(path.Join(fixturesDir, file.Name()))
+			os.WriteFile(path.Join(workDir, file.Name()), bytes, 0666)
+		}
+
+		buildBrokerpakCommand := exec.Command(csb, "pak", "build")
 		session, err := Start(buildBrokerpakCommand, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 		Eventually(session, time.Minute).Should(Exit(0))
 
-		runBrokerCommand := exec.Command(csb, "serve")
-		databaseFile = path.Join(workDir, "databaseFile.dat")
-		brokerPort = freePort()
 		brokerUsername = uuid.New()
 		brokerPassword = uuid.New()
+		brokerPort = freePort()
+		databaseFile = path.Join(workDir, "databaseFile.dat")
+		runBrokerCommand := exec.Command(csb, "serve")
 		runBrokerCommand.Env = append(
 			os.Environ(),
 			"CSB_LISTENER_HOST=localhost",
 			"DB_TYPE=sqlite3",
+			fmt.Sprintf("EXPERIMENTAL_ENCRYPTION_KEY=%s", encryptionKey),
 			fmt.Sprintf("DB_PATH=%s", databaseFile),
 			fmt.Sprintf("PORT=%d", brokerPort),
 			fmt.Sprintf("SECURITY_USER_NAME=%s", brokerUsername),
@@ -64,6 +104,26 @@ var _ = Describe("Database Encryption", func() {
 		brokerSession, err = Start(runBrokerCommand, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 		Eventually(func() bool { return checkAlive(brokerPort) }, 30*time.Second).Should(BeTrue())
+
+		brokerClient, err := client.New(brokerUsername, brokerPassword, "localhost", brokerPort)
+		Expect(err).NotTo(HaveOccurred())
+
+		serviceInstanceGUID = uuid.New()
+		requestID := uuid.New()
+		provisionResponse := brokerClient.Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID, []byte(provisionParams))
+		Expect(provisionResponse.Error).NotTo(HaveOccurred())
+		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
+
+		Eventually(func() bool {
+			lastOperationResponse := brokerClient.LastOperation(serviceInstanceGUID, requestID)
+			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
+			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
+			var receiver domain.LastOperation
+			err = json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(receiver.State).NotTo(Equal("failed"))
+			return receiver.State == "succeeded"
+		}, time.Minute*2, time.Second*10).Should(BeTrue())
 	})
 
 	AfterEach(func() {
@@ -76,32 +136,29 @@ var _ = Describe("Database Encryption", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	It("stores the request parameters in plaintext", func() {
-		const (
-			provisionParams     = `{"foo":"bar"}`
-			serviceOfferingGUID = "76c5725c-b246-11eb-871f-ffc97563fbd0"
-			servicePlanGUID     = "8b52a460-b246-11eb-a8f5-d349948e2480"
-		)
+	When("no encryption key is configured", func() {
+		BeforeEach(func() {
+			encryptionKey = ""
+		})
 
-		By("provisioning a service instance")
-		brokerClient, err := client.New(brokerUsername, brokerPassword, "localhost", brokerPort)
-		Expect(err).NotTo(HaveOccurred())
-
-		serviceInstanceGUID := uuid.New()
-		requestID := uuid.New()
-		provisionResponse := brokerClient.Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID, []byte(provisionParams))
-		Expect(provisionResponse.Error).NotTo(HaveOccurred())
-		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
-
-		By("inspecting the database")
-		db, err := gorm.Open("sqlite3", databaseFile)
-		Expect(err).NotTo(HaveOccurred())
-		record := models.ProvisionRequestDetails{}
-		err = db.Where("service_instance_id = ?", serviceInstanceGUID).First(&record).Error
-		Expect(err).NotTo(HaveOccurred())
-
-		Expect(record.RequestDetails).To(Equal(provisionParams))
+		It("stores the request parameters in plaintext", func() {
+			Expect(persistedRequestDetails()).To(Equal(provisionParams))
+			Expect(persistedServiceInstanceDetails()).To(Equal(terraformOutput))
+		})
 	})
+
+	When("the encryption key is configured", func() {
+		BeforeEach(func() {
+			encryptionKey = "one-key-here-with-32-bytes-in-it"
+		})
+
+		It("stores the request parameters encrypted", func() {
+			Expect(persistedRequestDetails()).NotTo(Equal(provisionParams))
+			Expect(persistedServiceInstanceDetails()).NotTo(Equal(terraformOutput))
+		})
+
+	})
+
 })
 
 func freePort() int {

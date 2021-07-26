@@ -11,7 +11,10 @@ plans:
   id: 8b52a460-b246-11eb-a8f5-d349948e2480
   description: First plan
   display_name: First
-- name: second
-  id: 2249d13a-b26b-11eb-9da1-63ee79b039c1
-  description: Second plan
-  display_name: Second
+provision:
+  template_refs:
+    main: fake-service.tf
+  outputs:
+    - field_name: output_variable
+      type: string
+      details: test output variable
