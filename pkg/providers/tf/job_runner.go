@@ -76,16 +76,22 @@ func (runner *TfJobRunner) StageJob(ctx context.Context, jobId string, workspace
 
 	if deployment, err := db_service.GetTerraformDeploymentById(ctx, jobId); err == nil {
 		// deployment exists, update
-		deployment.Workspace = workspaceString
+		if err := deployment.SetWorkspace(workspaceString); err != nil {
+			return err
+		}
+
 		deployment.LastOperationType = "validation"
 		return runner.operationFinished(nil, workspace, deployment)
 	}
 
 	deployment := &models.TerraformDeployment{
 		ID:                jobId,
-		Workspace:         workspaceString,
 		LastOperationType: "validation",
 	}
+	if err := deployment.SetWorkspace(workspaceString); err != nil {
+		return err
+	}
+
 	return runner.operationFinished(nil, workspace, deployment)
 }
 
@@ -103,7 +109,11 @@ func (runner *TfJobRunner) markJobStarted(ctx context.Context, deployment *model
 }
 
 func (runner *TfJobRunner) hydrateWorkspace(ctx context.Context, deployment *models.TerraformDeployment) (*wrapper.TerraformWorkspace, error) {
-	ws, err := wrapper.DeserializeWorkspace(deployment.Workspace)
+	w, err := deployment.GetWorkspace()
+	if err != nil {
+		return nil, err
+	}
+	ws, err := wrapper.DeserializeWorkspace(w)
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +308,10 @@ func (runner *TfJobRunner) operationFinished(err error, workspace *wrapper.Terra
 		deployment.LastOperationMessage = fmt.Sprintf("couldn't serialize workspace, contact your operator for cleanup: %s", err.Error())
 	}
 
-	deployment.Workspace = workspaceString
+	if err := deployment.SetWorkspace(workspaceString); err != nil {
+		deployment.LastOperationState = Failed
+		deployment.LastOperationMessage = fmt.Sprintf("couldn't save workspace, contact your operator for cleanup: %s", err.Error())
+	}
 
 	return db_service.SaveTerraformDeployment(context.Background(), deployment)
 }
@@ -329,7 +342,11 @@ func (runner *TfJobRunner) Outputs(ctx context.Context, id, instanceName string)
 		return nil, fmt.Errorf("error getting TF deployment: %w", err)
 	}
 
-	ws, err := wrapper.DeserializeWorkspace(deployment.Workspace)
+	w, err := deployment.GetWorkspace()
+	if err != nil {
+		return nil, fmt.Errorf("error reading workspace: %w", err)
+	}
+	ws, err := wrapper.DeserializeWorkspace(w)
 	if err != nil {
 		return nil, fmt.Errorf("error deserializing workspace: %w", err)
 	}

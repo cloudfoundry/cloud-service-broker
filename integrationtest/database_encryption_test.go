@@ -24,12 +24,15 @@ import (
 
 var _ = Describe("Database Encryption", func() {
 	const (
-		provisionParams     = `{"foo":"bar"}`
-		bindParams          = `{"baz":"quz"}`
-		provisionOutput     = `{"provision_output":"provision output value"}`
-		bindOutput          = `{"bind_output":"provision output value and bind output value"}`
-		serviceOfferingGUID = "76c5725c-b246-11eb-871f-ffc97563fbd0"
-		servicePlanGUID     = "8b52a460-b246-11eb-a8f5-d349948e2480"
+		provisionParams      = `{"foo":"bar"}`
+		bindParams           = `{"baz":"quz"}`
+		provisionOutput      = `{"provision_output":"provision output value"}`
+		provisionOutputValue = `value = \"provision output value\"`
+		bindOutput           = `{"bind_output":"provision output value and bind output value"}`
+		bindOutputValue      = `value = \"${var.provision_output} and bind output value\"`
+		tfStateKey           = `"tfstate":`
+		serviceOfferingGUID  = "76c5725c-b246-11eb-871f-ffc97563fbd0"
+		servicePlanGUID      = "8b52a460-b246-11eb-a8f5-d349948e2480"
 	)
 
 	var (
@@ -67,6 +70,16 @@ var _ = Describe("Database Encryption", func() {
 		return record.OtherDetails
 	}
 
+	persistedServiceInstanceTerraformWorkspace := func() string {
+		db, err := gorm.Open("sqlite3", databaseFile)
+		Expect(err).NotTo(HaveOccurred())
+		defer db.Close()
+		record := models.TerraformDeployment{}
+		err = db.Where("id = ?", fmt.Sprintf("tf:%s:", serviceInstanceGUID)).First(&record).Error
+		Expect(err).NotTo(HaveOccurred())
+		return record.Workspace
+	}
+
 	persistedServiceBindingDetails := func() string {
 		db, err := gorm.Open("sqlite3", databaseFile)
 		Expect(err).NotTo(HaveOccurred())
@@ -75,6 +88,16 @@ var _ = Describe("Database Encryption", func() {
 		err = db.Where("service_instance_id = ?", serviceInstanceGUID).First(&record).Error
 		Expect(err).NotTo(HaveOccurred())
 		return record.OtherDetails
+	}
+
+	persistedServiceBindingTerraformWorkspace := func() string {
+		db, err := gorm.Open("sqlite3", databaseFile)
+		Expect(err).NotTo(HaveOccurred())
+		defer db.Close()
+		record := models.TerraformDeployment{}
+		err = db.Where("id = ?", fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, serviceBindingGUID)).First(&record).Error
+		Expect(err).NotTo(HaveOccurred())
+		return record.Workspace
 	}
 
 	createBinding := func() {
@@ -164,10 +187,18 @@ var _ = Describe("Database Encryption", func() {
 			By("checking the provision fields")
 			Expect(persistedRequestDetails()).To(Equal(provisionParams))
 			Expect(persistedServiceInstanceDetails()).To(Equal(provisionOutput))
+			Expect(persistedServiceInstanceTerraformWorkspace()).To(SatisfyAll(
+				ContainSubstring(provisionOutputValue),
+				ContainSubstring(tfStateKey),
+			))
 
 			By("checking the binding fields")
 			createBinding()
 			Expect(persistedServiceBindingDetails()).To(Equal(bindOutput))
+			Expect(persistedServiceBindingTerraformWorkspace()).To(SatisfyAll(
+				ContainSubstring(bindOutputValue),
+				ContainSubstring(tfStateKey),
+			))
 		})
 	})
 
@@ -180,10 +211,18 @@ var _ = Describe("Database Encryption", func() {
 			By("checking the provision fields")
 			Expect(persistedRequestDetails()).NotTo(Equal(provisionParams))
 			Expect(persistedServiceInstanceDetails()).NotTo(Equal(provisionOutput))
+			Expect(persistedServiceInstanceTerraformWorkspace()).NotTo(SatisfyAny(
+				ContainSubstring(provisionOutputValue),
+				ContainSubstring(tfStateKey),
+			))
 
 			By("checking the binding fields")
 			createBinding()
 			Expect(persistedServiceBindingDetails()).NotTo(Equal(bindOutput))
+			Expect(persistedServiceBindingTerraformWorkspace()).NotTo(SatisfyAny(
+				ContainSubstring(bindOutputValue),
+				ContainSubstring(tfStateKey),
+			))
 		})
 	})
 })
