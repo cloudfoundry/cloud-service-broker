@@ -61,7 +61,11 @@ func init() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			ws, err := wrapper.DeserializeWorkspace(deployment.Workspace)
+			w, err := deployment.GetWorkspace()
+			if err != nil {
+				log.Fatal(err)
+			}
+			ws, err := wrapper.DeserializeWorkspace(w)
 			if err != nil {
 				fmt.Printf("Error: %s\n", err.Error())
 				log.Fatal(err)

@@ -160,3 +160,21 @@ type CloudOperation CloudOperationV1
 // TerraformDeployment holds Terraform state and plan information for resources
 // that use that execution system.
 type TerraformDeployment TerraformDeploymentV2
+
+func (t *TerraformDeployment) SetWorkspace(value string) error {
+	encrypted, err := encryptorInstance.Encrypt([]byte(value))
+	if err != nil {
+		return err
+	}
+
+	t.Workspace = string(encrypted)
+	return nil
+}
+
+func (t *TerraformDeployment) GetWorkspace() (string, error) {
+	decrypted, err := encryptorInstance.Decrypt([]byte(t.Workspace))
+	if err != nil {
+		return "", err
+	}
+	return string(decrypted), nil
+}
