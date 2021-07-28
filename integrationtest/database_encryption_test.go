@@ -25,9 +25,11 @@ import (
 var _ = Describe("Database Encryption", func() {
 	const (
 		provisionParams     = `{"foo":"bar"}`
+		bindParams          = `{"baz":"quz"}`
+		provisionOutput     = `{"provision_output":"provision output value"}`
+		bindOutput          = `{"bind_output":"provision output value and bind output value"}`
 		serviceOfferingGUID = "76c5725c-b246-11eb-871f-ffc97563fbd0"
 		servicePlanGUID     = "8b52a460-b246-11eb-a8f5-d349948e2480"
-		terraformOutput     = `{"output_variable":"output-constant-value"}`
 	)
 
 	var (
@@ -35,12 +37,14 @@ var _ = Describe("Database Encryption", func() {
 		fixturesDir         string
 		workDir             string
 		brokerPort          int
-		brokerSession       *Session
 		brokerUsername      string
 		brokerPassword      string
+		brokerSession       *Session
+		brokerClient        *client.Client
 		databaseFile        string
 		encryptionKey       string
 		serviceInstanceGUID string
+		serviceBindingGUID  string
 	)
 
 	persistedRequestDetails := func() string {
@@ -61,6 +65,22 @@ var _ = Describe("Database Encryption", func() {
 		err = db.Where("id = ?", serviceInstanceGUID).First(&record).Error
 		Expect(err).NotTo(HaveOccurred())
 		return record.OtherDetails
+	}
+
+	persistedServiceBindingDetails := func() string {
+		db, err := gorm.Open("sqlite3", databaseFile)
+		Expect(err).NotTo(HaveOccurred())
+		defer db.Close()
+		record := models.ServiceBindingCredentials{}
+		err = db.Where("service_instance_id = ?", serviceInstanceGUID).First(&record).Error
+		Expect(err).NotTo(HaveOccurred())
+		return record.OtherDetails
+	}
+
+	createBinding := func() {
+		serviceBindingGUID = uuid.New()
+		bindResponse := brokerClient.Bind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(bindParams))
+		Expect(bindResponse.Error).NotTo(HaveOccurred())
 	}
 
 	JustBeforeEach(func() {
@@ -105,17 +125,16 @@ var _ = Describe("Database Encryption", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Eventually(func() bool { return checkAlive(brokerPort) }, 30*time.Second).Should(BeTrue())
 
-		brokerClient, err := client.New(brokerUsername, brokerPassword, "localhost", brokerPort)
+		brokerClient, err = client.New(brokerUsername, brokerPassword, "localhost", brokerPort)
 		Expect(err).NotTo(HaveOccurred())
 
 		serviceInstanceGUID = uuid.New()
-		requestID := uuid.New()
-		provisionResponse := brokerClient.Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID, []byte(provisionParams))
+		provisionResponse := brokerClient.Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(provisionParams))
 		Expect(provisionResponse.Error).NotTo(HaveOccurred())
 		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
 
 		Eventually(func() bool {
-			lastOperationResponse := brokerClient.LastOperation(serviceInstanceGUID, requestID)
+			lastOperationResponse := brokerClient.LastOperation(serviceInstanceGUID, requestID())
 			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
 			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
 			var receiver domain.LastOperation
@@ -141,9 +160,14 @@ var _ = Describe("Database Encryption", func() {
 			encryptionKey = ""
 		})
 
-		It("stores the request parameters in plaintext", func() {
+		It("stores sensitive fields in plaintext", func() {
+			By("checking the provision fields")
 			Expect(persistedRequestDetails()).To(Equal(provisionParams))
-			Expect(persistedServiceInstanceDetails()).To(Equal(terraformOutput))
+			Expect(persistedServiceInstanceDetails()).To(Equal(provisionOutput))
+
+			By("checking the binding fields")
+			createBinding()
+			Expect(persistedServiceBindingDetails()).To(Equal(bindOutput))
 		})
 	})
 
@@ -152,13 +176,16 @@ var _ = Describe("Database Encryption", func() {
 			encryptionKey = "one-key-here-with-32-bytes-in-it"
 		})
 
-		It("stores the request parameters encrypted", func() {
+		It("encrypts sensitive fields", func() {
+			By("checking the provision fields")
 			Expect(persistedRequestDetails()).NotTo(Equal(provisionParams))
-			Expect(persistedServiceInstanceDetails()).NotTo(Equal(terraformOutput))
+			Expect(persistedServiceInstanceDetails()).NotTo(Equal(provisionOutput))
+
+			By("checking the binding fields")
+			createBinding()
+			Expect(persistedServiceBindingDetails()).NotTo(Equal(bindOutput))
 		})
-
 	})
-
 })
 
 func freePort() int {
@@ -172,4 +199,8 @@ func checkAlive(port int) bool {
 	response, err := http.Head(fmt.Sprintf("http://localhost:%d", port))
 	Expect(err).NotTo(HaveOccurred())
 	return response.StatusCode == http.StatusOK
+}
+
+func requestID() string {
+	return uuid.New()
 }
