@@ -67,7 +67,12 @@ func (sbc *ServiceBindingCredentials) SetOtherDetails(toSet interface{}) error {
 		return err
 	}
 
-	sbc.OtherDetails = string(out)
+	encryptedDetails, err := encryptorInstance.Encrypt(out)
+	if err != nil {
+		return err
+	}
+
+	sbc.OtherDetails = string(encryptedDetails)
 	return nil
 }
 
@@ -78,7 +83,12 @@ func (sbc ServiceBindingCredentials) GetOtherDetails(v interface{}) error {
 		return nil
 	}
 
-	return json.Unmarshal([]byte(sbc.OtherDetails), v)
+	decryptedDetails, err := encryptorInstance.Decrypt([]byte(sbc.OtherDetails))
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(decryptedDetails, v)
 }
 
 // ServiceInstanceDetails holds information about provisioned services.

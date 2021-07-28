@@ -13,8 +13,18 @@ plans:
   display_name: First
 provision:
   template_refs:
-    main: fake-service.tf
+    main: fake-provision.tf
   outputs:
-    - field_name: output_variable
+    - field_name: provision_output
       type: string
-      details: test output variable
+      details: provision output
+bind:
+  template_ref: fake-bind.tf
+  computed_inputs:
+    - name: provision_output
+      type: string
+      default: ${instance.details["provision_output"]}
+  outputs:
+    - field_name: bind_output
+      type: string
+      details: bind output
