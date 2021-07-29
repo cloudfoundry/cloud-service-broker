@@ -51,8 +51,8 @@ func ConfigureEncryption(encryptionKey string) Encryptor {
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o fakes/fake_encryption.go . Encryptor
 type Encryptor interface {
-	Encrypt(plaintext []byte) ([]byte, error)
-	Decrypt(ciphertext []byte) ([]byte, error)
+	Encrypt(plaintext []byte) (string, error)
+	Decrypt(ciphertext string) ([]byte, error)
 }
 
 // ServiceBindingCredentials holds credentials returned to the users after
@@ -83,7 +83,7 @@ func (sbc ServiceBindingCredentials) GetOtherDetails(v interface{}) error {
 		return nil
 	}
 
-	decryptedDetails, err := encryptorInstance.Decrypt([]byte(sbc.OtherDetails))
+	decryptedDetails, err := encryptorInstance.Decrypt(sbc.OtherDetails)
 	if err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func (si ServiceInstanceDetails) GetOtherDetails(v interface{}) error {
 		return nil
 	}
 
-	decryptedDetails, err := encryptorInstance.Decrypt([]byte(si.OtherDetails))
+	decryptedDetails, err := encryptorInstance.Decrypt(si.OtherDetails)
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func (pr *ProvisionRequestDetails) SetRequestDetails(rawMessage json.RawMessage)
 }
 
 func (pr ProvisionRequestDetails) GetRequestDetails() (json.RawMessage, error) {
-	decryptedDetails, err := encryptorInstance.Decrypt([]byte(pr.RequestDetails))
+	decryptedDetails, err := encryptorInstance.Decrypt(pr.RequestDetails)
 	if err != nil {
 		return nil, err
 	}

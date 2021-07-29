@@ -8,10 +8,10 @@ import (
 )
 
 type FakeEncryptor struct {
-	DecryptStub        func([]byte) ([]byte, error)
+	DecryptStub        func(string) ([]byte, error)
 	decryptMutex       sync.RWMutex
 	decryptArgsForCall []struct {
-		arg1 []byte
+		arg1 string
 	}
 	decryptReturns struct {
 		result1 []byte
@@ -21,37 +21,32 @@ type FakeEncryptor struct {
 		result1 []byte
 		result2 error
 	}
-	EncryptStub        func([]byte) ([]byte, error)
+	EncryptStub        func([]byte) (string, error)
 	encryptMutex       sync.RWMutex
 	encryptArgsForCall []struct {
 		arg1 []byte
 	}
 	encryptReturns struct {
-		result1 []byte
+		result1 string
 		result2 error
 	}
 	encryptReturnsOnCall map[int]struct {
-		result1 []byte
+		result1 string
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeEncryptor) Decrypt(arg1 []byte) ([]byte, error) {
-	var arg1Copy []byte
-	if arg1 != nil {
-		arg1Copy = make([]byte, len(arg1))
-		copy(arg1Copy, arg1)
-	}
+func (fake *FakeEncryptor) Decrypt(arg1 string) ([]byte, error) {
 	fake.decryptMutex.Lock()
 	ret, specificReturn := fake.decryptReturnsOnCall[len(fake.decryptArgsForCall)]
 	fake.decryptArgsForCall = append(fake.decryptArgsForCall, struct {
-		arg1 []byte
-	}{arg1Copy})
+		arg1 string
+	}{arg1})
 	stub := fake.DecryptStub
 	fakeReturns := fake.decryptReturns
-	fake.recordInvocation("Decrypt", []interface{}{arg1Copy})
+	fake.recordInvocation("Decrypt", []interface{}{arg1})
 	fake.decryptMutex.Unlock()
 	if stub != nil {
 		return stub(arg1)
@@ -68,13 +63,13 @@ func (fake *FakeEncryptor) DecryptCallCount() int {
 	return len(fake.decryptArgsForCall)
 }
 
-func (fake *FakeEncryptor) DecryptCalls(stub func([]byte) ([]byte, error)) {
+func (fake *FakeEncryptor) DecryptCalls(stub func(string) ([]byte, error)) {
 	fake.decryptMutex.Lock()
 	defer fake.decryptMutex.Unlock()
 	fake.DecryptStub = stub
 }
 
-func (fake *FakeEncryptor) DecryptArgsForCall(i int) []byte {
+func (fake *FakeEncryptor) DecryptArgsForCall(i int) string {
 	fake.decryptMutex.RLock()
 	defer fake.decryptMutex.RUnlock()
 	argsForCall := fake.decryptArgsForCall[i]
@@ -107,7 +102,7 @@ func (fake *FakeEncryptor) DecryptReturnsOnCall(i int, result1 []byte, result2 e
 	}{result1, result2}
 }
 
-func (fake *FakeEncryptor) Encrypt(arg1 []byte) ([]byte, error) {
+func (fake *FakeEncryptor) Encrypt(arg1 []byte) (string, error) {
 	var arg1Copy []byte
 	if arg1 != nil {
 		arg1Copy = make([]byte, len(arg1))
@@ -137,7 +132,7 @@ func (fake *FakeEncryptor) EncryptCallCount() int {
 	return len(fake.encryptArgsForCall)
 }
 
-func (fake *FakeEncryptor) EncryptCalls(stub func([]byte) ([]byte, error)) {
+func (fake *FakeEncryptor) EncryptCalls(stub func([]byte) (string, error)) {
 	fake.encryptMutex.Lock()
 	defer fake.encryptMutex.Unlock()
 	fake.EncryptStub = stub
@@ -150,28 +145,28 @@ func (fake *FakeEncryptor) EncryptArgsForCall(i int) []byte {
 	return argsForCall.arg1
 }
 
-func (fake *FakeEncryptor) EncryptReturns(result1 []byte, result2 error) {
+func (fake *FakeEncryptor) EncryptReturns(result1 string, result2 error) {
 	fake.encryptMutex.Lock()
 	defer fake.encryptMutex.Unlock()
 	fake.EncryptStub = nil
 	fake.encryptReturns = struct {
-		result1 []byte
+		result1 string
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeEncryptor) EncryptReturnsOnCall(i int, result1 []byte, result2 error) {
+func (fake *FakeEncryptor) EncryptReturnsOnCall(i int, result1 string, result2 error) {
 	fake.encryptMutex.Lock()
 	defer fake.encryptMutex.Unlock()
 	fake.EncryptStub = nil
 	if fake.encryptReturnsOnCall == nil {
 		fake.encryptReturnsOnCall = make(map[int]struct {
-			result1 []byte
+			result1 string
 			result2 error
 		})
 	}
 	fake.encryptReturnsOnCall[i] = struct {
-		result1 []byte
+		result1 string
 		result2 error
 	}{result1, result2}
 }
