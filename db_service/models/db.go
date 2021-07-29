@@ -167,12 +167,12 @@ func (t *TerraformDeployment) SetWorkspace(value string) error {
 		return err
 	}
 
-	t.Workspace = string(encrypted)
+	t.Workspace = encrypted
 	return nil
 }
 
 func (t *TerraformDeployment) GetWorkspace() (string, error) {
-	decrypted, err := encryptorInstance.Decrypt([]byte(t.Workspace))
+	decrypted, err := encryptorInstance.Decrypt(t.Workspace)
 	if err != nil {
 		return "", err
 	}
