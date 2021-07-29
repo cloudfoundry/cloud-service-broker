@@ -617,7 +617,7 @@ var _ = Describe("Db", func() {
 					Expect(t.Workspace).NotTo(Equal(plaintext))
 
 					By("being able to decrypt it")
-					p, err := encryptor.Decrypt([]byte(t.Workspace))
+					p, err := encryptor.Decrypt(t.Workspace)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(p).To(Equal([]byte(plaintext)))
 				})
@@ -672,7 +672,7 @@ var _ = Describe("Db", func() {
 			Describe("SetWorkspace", func() {
 				BeforeEach(func() {
 					fakeEncryptor := &fakes.FakeEncryptor{}
-					fakeEncryptor.EncryptReturns(nil, errors.New("fake encryption error"))
+					fakeEncryptor.EncryptReturns("", errors.New("fake encryption error"))
 
 					encryptor = fakeEncryptor
 					models.SetEncryptor(encryptor)
