@@ -365,7 +365,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
 				req := stub.ProvisionDetails()
 				encryptor := fakes.FakeEncryptor{}
-				encryptor.EncryptReturns(nil, errors.New("error while encrypting"))
+				encryptor.EncryptReturns("", errors.New("error while encrypting"))
 				models.SetEncryptor(&encryptor)
 				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
 				assertTrue(t, "errors should match", strings.Contains(err.Error(), "error while encrypting"))

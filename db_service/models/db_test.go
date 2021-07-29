@@ -47,13 +47,15 @@ var _ = Describe("Db", func() {
 
 					credentials := models.ServiceBindingCredentials{}
 					err := credentials.SetOtherDetails(otherDetails)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					By("checking that it's no longer in plaintext")
-					Expect(credentials.OtherDetails).NotTo(Equal(expectedJSON))
+					Expect(credentials.OtherDetails).ToNot(Equal(expectedJSON))
 
 					By("being able to decrypt to get the value")
-					Expect(encryptor.Decrypt([]byte(credentials.OtherDetails))).To(Equal([]byte(expectedJSON)))
+					decrypted, err := encryptor.Decrypt(credentials.OtherDetails)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(string(decrypted)).To(Equal(expectedJSON))
 				})
 			})
 
@@ -67,12 +69,12 @@ var _ = Describe("Db", func() {
 					credentials.SetOtherDetails(otherDetails)
 
 					By("checking that it's encrypted")
-					Expect(credentials.OtherDetails).NotTo(ContainSubstring("some"))
+					Expect(credentials.OtherDetails).ToNot(ContainSubstring("some"))
 
 					By("decrypting that field")
 					var actualOtherDetails map[string]interface{}
 					err := credentials.GetOtherDetails(&actualOtherDetails)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(actualOtherDetails).To(HaveLen(1))
 					Expect(actualOtherDetails).To(HaveKeyWithValue("some", ConsistOf("json", "blob", "here")))
@@ -94,7 +96,7 @@ var _ = Describe("Db", func() {
 
 					credentials := models.ServiceBindingCredentials{}
 					err := credentials.SetOtherDetails(otherDetails)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(credentials.OtherDetails).To(Equal(`{"some":["json","blob","here"]}`))
 				})
@@ -102,7 +104,7 @@ var _ = Describe("Db", func() {
 				It("marshalls nil into json null", func() {
 					credentials := models.ServiceBindingCredentials{}
 					err := credentials.SetOtherDetails(nil)
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(credentials.OtherDetails).To(Equal("null"))
 				})
@@ -127,7 +129,7 @@ var _ = Describe("Db", func() {
 					var actualOtherDetails map[string]interface{}
 					err := serviceBindingCredentials.GetOtherDetails(&actualOtherDetails)
 
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(actualOtherDetails).To(HaveLen(1))
 					Expect(actualOtherDetails).To(HaveKeyWithValue("some", ConsistOf("json", "blob", "here")))
 				})
@@ -138,7 +140,7 @@ var _ = Describe("Db", func() {
 					var actualOtherDetails map[string]interface{}
 					err := serviceBindingCredentials.GetOtherDetails(&actualOtherDetails)
 
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(actualOtherDetails).To(BeNil())
 				})
@@ -162,7 +164,7 @@ var _ = Describe("Db", func() {
 			Describe("SetOtherDetails", func() {
 				BeforeEach(func() {
 					fakeEncryptor := &fakes.FakeEncryptor{}
-					fakeEncryptor.EncryptReturns(nil, errors.New("fake encrypt error"))
+					fakeEncryptor.EncryptReturns("", errors.New("fake encrypt error"))
 
 					encryptor = fakeEncryptor
 					models.SetEncryptor(encryptor)
@@ -214,9 +216,10 @@ var _ = Describe("Db", func() {
 					details := models.ServiceInstanceDetails{}
 
 					err := details.SetOtherDetails(otherDetails)
+					Expect(err).ToNot(HaveOccurred())
 
-					Expect(err).NotTo(HaveOccurred())
-					decryptedDetails, _ := encryptor.Decrypt([]byte(details.OtherDetails))
+					decryptedDetails, err := encryptor.Decrypt(details.OtherDetails)
+					Expect(err).ToNot(HaveOccurred())
 					Expect(string(decryptedDetails)).To(Equal(`{"some":["json","blob","here"]}`))
 				})
 
@@ -225,8 +228,9 @@ var _ = Describe("Db", func() {
 
 					err := details.SetOtherDetails(nil)
 
-					Expect(err).NotTo(HaveOccurred())
-					decryptedDetails, _ := encryptor.Decrypt([]byte(details.OtherDetails))
+					Expect(err).ToNot(HaveOccurred())
+					decryptedDetails, err := encryptor.Decrypt(details.OtherDetails)
+					Expect(err).ToNot(HaveOccurred())
 					Expect(string(decryptedDetails)).To(Equal("null"))
 				})
 			})
@@ -241,7 +245,7 @@ var _ = Describe("Db", func() {
 					var actualOtherDetails map[string]interface{}
 					err := serviceInstanceDetails.GetOtherDetails(&actualOtherDetails)
 
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					var arrayOfInterface []interface{}
 					arrayOfInterface = append(arrayOfInterface, "json", "blob", "here")
@@ -257,7 +261,7 @@ var _ = Describe("Db", func() {
 					var actualOtherDetails map[string]interface{}
 					err := serviceInstanceDetails.GetOtherDetails(&actualOtherDetails)
 
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(actualOtherDetails).To(BeNil())
 				})
@@ -274,7 +278,7 @@ var _ = Describe("Db", func() {
 				var actualOtherDetails map[string]interface{}
 				err := serviceInstanceDetails.GetOtherDetails(&actualOtherDetails)
 
-				Expect(err).NotTo(HaveOccurred())
+				Expect(err).ToNot(HaveOccurred())
 
 				var arrayOfInterface []interface{}
 				arrayOfInterface = append(arrayOfInterface, "json", "blob", "here")
@@ -301,7 +305,7 @@ var _ = Describe("Db", func() {
 
 					err := details.SetOtherDetails(otherDetails)
 
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(details.OtherDetails).To(Equal(`{"some":["json","blob","here"]}`))
 				})
 
@@ -310,7 +314,7 @@ var _ = Describe("Db", func() {
 
 					err := details.SetOtherDetails(nil)
 
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(details.OtherDetails).To(Equal("null"))
 				})
 			})
@@ -324,7 +328,7 @@ var _ = Describe("Db", func() {
 					var actualOtherDetails map[string]interface{}
 					err := serviceInstanceDetails.GetOtherDetails(&actualOtherDetails)
 
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					var arrayOfInterface []interface{}
 					arrayOfInterface = append(arrayOfInterface, "json", "blob", "here")
@@ -340,7 +344,7 @@ var _ = Describe("Db", func() {
 					var actualOtherDetails map[string]interface{}
 					err := serviceInstanceDetails.GetOtherDetails(&actualOtherDetails)
 
-					Expect(err).NotTo(HaveOccurred())
+					Expect(err).ToNot(HaveOccurred())
 
 					Expect(actualOtherDetails).To(BeNil())
 				})
@@ -358,14 +362,14 @@ var _ = Describe("Db", func() {
 						F func()
 					}{F: func() {}})
 
-					Expect(err).ToNot(BeNil(), "Should have returned an error")
+					Expect(err).To(HaveOccurred(), "Should have returned an error")
 					Expect(details.OtherDetails).To(BeEmpty())
 				})
 
 				Context("When there are errors while encrypting", func() {
 					BeforeEach(func() {
 						fakeEncryptor := &fakes.FakeEncryptor{}
-						fakeEncryptor.EncryptReturns(nil, errors.New("some error"))
+						fakeEncryptor.EncryptReturns("", errors.New("some error"))
 
 						encryptor = fakeEncryptor
 						models.SetEncryptor(encryptor)
@@ -445,7 +449,8 @@ var _ = Describe("Db", func() {
 					rawMessage := []byte(`{"key":"value"}`)
 					details.SetRequestDetails(rawMessage)
 
-					decryptedDetails, _ := encryptor.Decrypt([]byte(details.RequestDetails))
+					decryptedDetails, err := encryptor.Decrypt(details.RequestDetails)
+					Expect(err).ToNot(HaveOccurred())
 					Expect(string(decryptedDetails)).To(Equal(`{"key":"value"}`))
 				})
 
@@ -454,7 +459,8 @@ var _ = Describe("Db", func() {
 
 					details.SetRequestDetails(nil)
 
-					decryptedDetails, _ := encryptor.Decrypt([]byte(details.RequestDetails))
+					decryptedDetails, err := encryptor.Decrypt(details.RequestDetails)
+					Expect(err).ToNot(HaveOccurred())
 					Expect(decryptedDetails).To(BeEmpty())
 				})
 
@@ -463,7 +469,8 @@ var _ = Describe("Db", func() {
 					var rawMessage []byte
 					details.SetRequestDetails(rawMessage)
 
-					decryptedDetails, _ := encryptor.Decrypt([]byte(details.RequestDetails))
+					decryptedDetails, err := encryptor.Decrypt(details.RequestDetails)
+					Expect(err).ToNot(HaveOccurred())
 					Expect(decryptedDetails).To(BeEmpty())
 				})
 			})
@@ -479,7 +486,7 @@ var _ = Describe("Db", func() {
 
 					rawMessage := json.RawMessage(`{"some":["json","blob","here"]}`)
 
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(details).To(Equal(rawMessage))
 				})
 			})
@@ -492,7 +499,7 @@ var _ = Describe("Db", func() {
 
 				actualDetails, err := details.GetRequestDetails()
 
-				Expect(err).To(BeNil())
+				Expect(err).ToNot(HaveOccurred())
 				Expect(actualDetails).To(Equal(rawMessage))
 			})
 		})
@@ -540,7 +547,7 @@ var _ = Describe("Db", func() {
 
 					rawMessage := json.RawMessage(`{"some":["json","blob","here"]}`)
 
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 					Expect(details).To(Equal(rawMessage))
 				})
 			})
@@ -550,7 +557,7 @@ var _ = Describe("Db", func() {
 			Context("SetRequestDetails", func() {
 				BeforeEach(func() {
 					fakeEncryptor := &fakes.FakeEncryptor{}
-					fakeEncryptor.EncryptReturns(nil, errors.New("some error"))
+					fakeEncryptor.EncryptReturns("", errors.New("some error"))
 
 					encryptor = fakeEncryptor
 					models.SetEncryptor(encryptor)
