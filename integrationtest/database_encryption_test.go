@@ -236,8 +236,7 @@ func freePort() int {
 
 func checkAlive(port int) bool {
 	response, err := http.Head(fmt.Sprintf("http://localhost:%d", port))
-	Expect(err).NotTo(HaveOccurred())
-	return response.StatusCode == http.StatusOK
+	return err == nil && response.StatusCode == http.StatusOK
 }
 
 func requestID() string {
