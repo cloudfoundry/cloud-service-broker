@@ -360,7 +360,7 @@ type TfServiceDefinitionV1Action struct {
 var _ validation.Validatable = (*TfServiceDefinitionV1Action)(nil)
 
 func (action *TfServiceDefinitionV1Action) IsTfImport(provisionContext *varcontext.VarContext) bool {
-	subsume := "subsume"
+	const subsume = "subsume"
 	for _, planInput := range action.PlanInputs {
 		if planInput.FieldName == subsume && provisionContext.HasKey(subsume) && provisionContext.GetBool(subsume) {
 			return true
