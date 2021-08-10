@@ -53,14 +53,17 @@ func (d GCMEncryptor) Decrypt(ciphertext string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	// Specify a GCM block cipher mode
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return nil, err
 	}
+
 	if len(decoded) < gcm.NonceSize() {
 		return nil, errors.New("malformed ciphertext")
 	}
+
 	// The encrypted text comes after the nonce
 	return gcm.Open(nil,
 		decoded[:gcm.NonceSize()],
