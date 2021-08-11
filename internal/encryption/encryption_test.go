@@ -24,7 +24,7 @@ var _ = Describe("GCMEncryptor", func() {
 		encryptor = NewGCMEncryptor(&key)
 	})
 
-	It("Can decrypt what it encrypted", func() {
+	It("can decrypt what it encrypted", func() {
 		encrypted, err := encryptor.Encrypt([]byte("Text to Encrypt"))
 		Expect(err).ToNot(HaveOccurred())
 		Expect(encrypted).ToNot(ContainSubstring("Encrypt"))
@@ -36,20 +36,21 @@ var _ = Describe("GCMEncryptor", func() {
 	})
 
 	Describe("Encrypt", func() {
-		It("Encrypts data using a nonce", func() {
+		It("encrypts data using a nonce", func() {
 			By("encrypting a few times and checking we dont get the same result")
-			result1, err := encryptor.Encrypt([]byte("Text to Encrypt"))
+			const textToEncrypt = "Text to Encrypt"
+			result1, err := encryptor.Encrypt([]byte(textToEncrypt))
 			Expect(err).ToNot(HaveOccurred())
-			result2, err := encryptor.Encrypt([]byte("Text to Encrypt"))
+			result2, err := encryptor.Encrypt([]byte(textToEncrypt))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(result2).ToNot(Equal(result1))
-			result3, err := encryptor.Encrypt([]byte("Text to Encrypt"))
+			result3, err := encryptor.Encrypt([]byte(textToEncrypt))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(result3).ToNot(Equal(result1))
 			Expect(result3).ToNot(Equal(result2))
 		})
 
-		It("Encodes in b64", func() {
+		It("encodes in b64", func() {
 			encoded, err := encryptor.Encrypt([]byte("Text to Encrypt"))
 			Expect(err).ToNot(HaveOccurred())
 			_, err = b64.StdEncoding.DecodeString(encoded)
@@ -90,14 +91,14 @@ var _ = Describe("NoopEncryptor", func() {
 
 	Describe("Encrypt", func() {
 		It("is a noop", func() {
-			text := "my funny text to encrypt"
+			const text = "my funny text to encrypt"
 			Expect(encryptor.Encrypt([]byte(text))).To(Equal(text))
 		})
 	})
 
 	Describe("Decrypt", func() {
 		It("is a noop", func() {
-			text := "my funny text to decrypt"
+			const text = "my funny text to decrypt"
 			Expect(encryptor.Decrypt(text)).To(Equal([]byte(text)))
 		})
 	})
