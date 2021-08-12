@@ -35,6 +35,9 @@ var _ = Describe("Database Encryption", func() {
 		tfStateKey                = `"tfstate":`
 		serviceOfferingGUID       = "76c5725c-b246-11eb-871f-ffc97563fbd0"
 		servicePlanGUID           = "8b52a460-b246-11eb-a8f5-d349948e2480"
+		serviceInstanceFKQuery    = "service_instance_id = ?"
+		serviceInstanceIdQuery    = "id = ?"
+		tfWorkspaceIdQuery        = "id = ?"
 	)
 
 	var (
@@ -52,44 +55,42 @@ var _ = Describe("Database Encryption", func() {
 		serviceBindingGUID  string
 	)
 
-	persistedRequestDetails := func() string {
+	findRecord := func(dest interface{}, query, guid string) {
 		db, err := gorm.Open("sqlite3", databaseFile)
 		Expect(err).NotTo(HaveOccurred())
 		defer db.Close()
+		err = db.Where(query, guid).First(dest).Error
+		ExpectWithOffset(1, err).NotTo(HaveOccurred())
+	}
+
+	persistedRequestDetails := func() string {
 		record := models.ProvisionRequestDetails{}
-		err = db.Where("service_instance_id = ?", serviceInstanceGUID).First(&record).Error
-		Expect(err).NotTo(HaveOccurred())
+		findRecord(&record, serviceInstanceFKQuery, serviceInstanceGUID)
 		return record.RequestDetails
 	}
 
 	persistedServiceInstanceDetails := func() string {
-		db, err := gorm.Open("sqlite3", databaseFile)
-		Expect(err).NotTo(HaveOccurred())
-		defer db.Close()
 		record := models.ServiceInstanceDetails{}
-		err = db.Where("id = ?", serviceInstanceGUID).First(&record).Error
-		Expect(err).NotTo(HaveOccurred())
+		findRecord(&record, serviceInstanceIdQuery, serviceInstanceGUID)
 		return record.OtherDetails
 	}
 
 	persistedServiceInstanceTerraformWorkspace := func() string {
-		db, err := gorm.Open("sqlite3", databaseFile)
-		Expect(err).NotTo(HaveOccurred())
-		defer db.Close()
 		record := models.TerraformDeployment{}
-		err = db.Where("id = ?", fmt.Sprintf("tf:%s:", serviceInstanceGUID)).First(&record).Error
-		Expect(err).NotTo(HaveOccurred())
+		findRecord(&record, tfWorkspaceIdQuery, fmt.Sprintf("tf:%s:", serviceInstanceGUID))
 		return record.Workspace
 	}
 
 	persistedServiceBindingDetails := func() string {
-		db, err := gorm.Open("sqlite3", databaseFile)
-		Expect(err).NotTo(HaveOccurred())
-		defer db.Close()
 		record := models.ServiceBindingCredentials{}
-		err = db.Where("service_instance_id = ?", serviceInstanceGUID).First(&record).Error
-		Expect(err).NotTo(HaveOccurred())
+		findRecord(&record, serviceInstanceFKQuery, serviceInstanceGUID)
 		return record.OtherDetails
+	}
+
+	persistedServiceBindingTerraformWorkspace := func() string {
+		record := models.TerraformDeployment{}
+		findRecord(&record, tfWorkspaceIdQuery, fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, serviceBindingGUID))
+		return record.Workspace
 	}
 
 	expectServiceBindingDetailsToNotExist := func() {
@@ -106,18 +107,8 @@ var _ = Describe("Database Encryption", func() {
 		Expect(err).NotTo(HaveOccurred())
 		defer db.Close()
 		record := models.ServiceInstanceDetails{}
-		err = db.Where("id = ?", serviceInstanceGUID).First(&record).Error
+		err = db.Where(serviceInstanceIdQuery, serviceInstanceGUID).First(&record).Error
 		Expect(err).To(Equal(gorm.ErrRecordNotFound))
-	}
-
-	persistedServiceBindingTerraformWorkspace := func() string {
-		db, err := gorm.Open("sqlite3", databaseFile)
-		Expect(err).NotTo(HaveOccurred())
-		defer db.Close()
-		record := models.TerraformDeployment{}
-		err = db.Where("id = ?", fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, serviceBindingGUID)).First(&record).Error
-		Expect(err).NotTo(HaveOccurred())
-		return record.Workspace
 	}
 
 	createBinding := func() {
@@ -157,7 +148,6 @@ var _ = Describe("Database Encryption", func() {
 		Expect(deprovisionResponse.StatusCode).To(Equal(http.StatusAccepted))
 		waitForAsyncRequest()
 	}
-
 
 	JustBeforeEach(func() {
 		var err error
@@ -255,7 +245,7 @@ var _ = Describe("Database Encryption", func() {
 				ContainSubstring(tfStateKey),
 			))
 
-			By("ckecking the service instance fields after deprovision", func(){
+			By("ckecking the service instance fields after deprovision", func() {
 				deprovisionServiceInstance()
 				expectServiceInstanceDetailsToNotExist()
 				Expect(persistedServiceInstanceTerraformWorkspace()).To(SatisfyAll(
@@ -307,7 +297,7 @@ var _ = Describe("Database Encryption", func() {
 				ContainSubstring(tfStateKey),
 			))
 
-			By("ckecking the service instance fields after deprovision", func(){
+			By("ckecking the service instance fields after deprovision", func() {
 				deprovisionServiceInstance()
 				expectServiceInstanceDetailsToNotExist()
 				Expect(persistedServiceInstanceTerraformWorkspace()).NotTo(SatisfyAny(
