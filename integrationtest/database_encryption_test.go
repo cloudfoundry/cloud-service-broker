@@ -3,7 +3,6 @@ package integrationtest_test
 import (
 	"encoding/json"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -117,14 +116,7 @@ var _ = Describe("Database Encryption", func() {
 		err = os.Chdir(workDir)
 		Expect(err).NotTo(HaveOccurred())
 
-		files, err := os.ReadDir(fixturesDir)
-		Expect(err).ToNot(HaveOccurred())
-		for _, file := range files {
-			bytes, _ := os.ReadFile(path.Join(fixturesDir, file.Name()))
-			os.WriteFile(path.Join(workDir, file.Name()), bytes, 0666)
-		}
-
-		buildBrokerpakCommand := exec.Command(csb, "pak", "build")
+		buildBrokerpakCommand := exec.Command(csb, "pak", "build", fixturesDir)
 		session, err := Start(buildBrokerpakCommand, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
 		Eventually(session, time.Minute).Should(Exit(0))
@@ -226,19 +218,3 @@ var _ = Describe("Database Encryption", func() {
 		})
 	})
 })
-
-func freePort() int {
-	listener, err := net.Listen("tcp", "localhost:0")
-	Expect(err).NotTo(HaveOccurred())
-	defer listener.Close()
-	return listener.Addr().(*net.TCPAddr).Port
-}
-
-func checkAlive(port int) bool {
-	response, err := http.Head(fmt.Sprintf("http://localhost:%d", port))
-	return err == nil && response.StatusCode == http.StatusOK
-}
-
-func requestID() string {
-	return uuid.New()
-}

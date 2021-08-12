@@ -178,7 +178,12 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 					"tf":        tf,
 				})
 
-				err = workspace.Apply(ctx)
+				err = workspace.Plan(ctx)
+				if err != nil {
+					logger.Error("plan failed", err)
+				} else {
+					err = workspace.Apply(ctx)
+				}
 			}
 		}
 		runner.operationFinished(err, workspace, deployment)
