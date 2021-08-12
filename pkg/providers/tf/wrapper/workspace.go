@@ -22,6 +22,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -44,6 +45,8 @@ type ExecutionOutput struct {
 // TerraformExecutor is the function that shells out to Terraform.
 // It can intercept, modify or retry the given command.
 type TerraformExecutor func(context.Context, *exec.Cmd) (ExecutionOutput, error)
+
+var planMessageMatcher = regexp.MustCompile(`Plan: \d+ to add, \d+ to change, (\d+) to destroy\.`)
 
 // NewWorkspace creates a new TerraformWorkspace from a given template and variables to populate an instance of it.
 // The created instance will have the name specified by the DefaultInstanceName constant.
@@ -334,6 +337,34 @@ func (workspace *TerraformWorkspace) Apply(ctx context.Context) error {
 
 	_, err = workspace.runTf(ctx, "apply", "-auto-approve", "-no-color")
 	return err
+}
+
+func (workspace *TerraformWorkspace) Plan(ctx context.Context) error {
+	logger := utils.NewLogger("terraform-plan").WithData(correlation.ID(ctx))
+
+	err := workspace.initializeFs(ctx)
+	defer workspace.teardownFs()
+	if err != nil {
+		return err
+	}
+
+	output, err := workspace.runTf(ctx, "plan", "-no-color")
+	if err != nil {
+		return err
+	}
+
+	matches := planMessageMatcher.FindStringSubmatch(output.StdOut)
+	switch {
+	case len(matches) == 0: // presumably: "No changes. Infrastructure is up-to-date."
+		logger.Info("No match on plan message")
+	case len(matches) == 2 && matches[1] == "0":
+		logger.Info("Plan shows that no resources will be destroyed")
+	default:
+		logger.Info("Plan message shows that resources will be destroyed")
+		return fmt.Errorf("terraform plan shows that resources would be destroyed - cancelling subsume")
+	}
+
+	return nil
 }
 
 // Destroy runs `terraform destroy` on this workspace.
