@@ -23,15 +23,18 @@ import (
 
 var _ = Describe("Database Encryption", func() {
 	const (
-		provisionParams      = `{"foo":"bar"}`
-		bindParams           = `{"baz":"quz"}`
-		provisionOutput      = `{"provision_output":"provision output value"}`
-		provisionOutputValue = `value = \"provision output value\"`
-		bindOutput           = `{"bind_output":"provision output value and bind output value"}`
-		bindOutputValue      = `value = \"${var.provision_output} and bind output value\"`
-		tfStateKey           = `"tfstate":`
-		serviceOfferingGUID  = "76c5725c-b246-11eb-871f-ffc97563fbd0"
-		servicePlanGUID      = "8b52a460-b246-11eb-a8f5-d349948e2480"
+		provisionParams           = `{"foo":"bar"}`
+		bindParams                = `{"baz":"quz"}`
+		updateParams              = `{"update_output": "update output value"}`
+		provisionOutput           = `{"provision_output":"provision output value"}`
+		provisionOutputStateValue = `value = \"provision output value\"`
+		updateOutput              = `{"provision_output":"provision output value","update_output_output":"update output value"}`
+		updateOutputStateValue    = `value = \"${var.update_output}\"`
+		bindOutput                = `{"bind_output":"provision output value and bind output value"}`
+		bindOutputStateValue      = `value = \"${var.provision_output} and bind output value\"`
+		tfStateKey                = `"tfstate":`
+		serviceOfferingGUID       = "76c5725c-b246-11eb-871f-ffc97563fbd0"
+		servicePlanGUID           = "8b52a460-b246-11eb-a8f5-d349948e2480"
 	)
 
 	var (
@@ -89,6 +92,24 @@ var _ = Describe("Database Encryption", func() {
 		return record.OtherDetails
 	}
 
+	expectServiceBindingDetailsToNotExist := func() {
+		db, err := gorm.Open("sqlite3", databaseFile)
+		Expect(err).NotTo(HaveOccurred())
+		defer db.Close()
+		record := models.ServiceBindingCredentials{}
+		err = db.Where("service_instance_id = ?", serviceInstanceGUID).First(&record).Error
+		Expect(err).To(Equal(gorm.ErrRecordNotFound))
+	}
+
+	expectServiceInstanceDetailsToNotExist := func() {
+		db, err := gorm.Open("sqlite3", databaseFile)
+		Expect(err).NotTo(HaveOccurred())
+		defer db.Close()
+		record := models.ServiceInstanceDetails{}
+		err = db.Where("id = ?", serviceInstanceGUID).First(&record).Error
+		Expect(err).To(Equal(gorm.ErrRecordNotFound))
+	}
+
 	persistedServiceBindingTerraformWorkspace := func() string {
 		db, err := gorm.Open("sqlite3", databaseFile)
 		Expect(err).NotTo(HaveOccurred())
@@ -104,6 +125,39 @@ var _ = Describe("Database Encryption", func() {
 		bindResponse := brokerClient.Bind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(bindParams))
 		Expect(bindResponse.Error).NotTo(HaveOccurred())
 	}
+
+	deleteBinding := func() {
+		unbindResponse := brokerClient.Unbind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID())
+		Expect(unbindResponse.Error).NotTo(HaveOccurred())
+	}
+
+	waitForAsyncRequest := func() {
+		Eventually(func() bool {
+			lastOperationResponse := brokerClient.LastOperation(serviceInstanceGUID, requestID())
+			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
+			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
+			var receiver domain.LastOperation
+			err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(receiver.State).NotTo(Equal("failed"))
+			return receiver.State == "succeeded"
+		}, time.Minute*2, time.Second*10).Should(BeTrue())
+	}
+
+	updateServiceInstance := func() {
+		updateResponse := brokerClient.Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateParams))
+		Expect(updateResponse.Error).NotTo(HaveOccurred())
+		Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
+		waitForAsyncRequest()
+	}
+
+	deprovisionServiceInstance := func() {
+		deprovisionResponse := brokerClient.Deprovision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID())
+		Expect(deprovisionResponse.Error).NotTo(HaveOccurred())
+		Expect(deprovisionResponse.StatusCode).To(Equal(http.StatusAccepted))
+		waitForAsyncRequest()
+	}
+
 
 	JustBeforeEach(func() {
 		var err error
@@ -148,16 +202,7 @@ var _ = Describe("Database Encryption", func() {
 		Expect(provisionResponse.Error).NotTo(HaveOccurred())
 		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
 
-		Eventually(func() bool {
-			lastOperationResponse := brokerClient.LastOperation(serviceInstanceGUID, requestID())
-			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
-			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
-			var receiver domain.LastOperation
-			err = json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(receiver.State).NotTo(Equal("failed"))
-			return receiver.State == "succeeded"
-		}, time.Minute*2, time.Second*10).Should(BeTrue())
+		waitForAsyncRequest()
 	})
 
 	AfterEach(func() {
@@ -180,7 +225,7 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedRequestDetails()).To(Equal(provisionParams))
 			Expect(persistedServiceInstanceDetails()).To(Equal(provisionOutput))
 			Expect(persistedServiceInstanceTerraformWorkspace()).To(SatisfyAll(
-				ContainSubstring(provisionOutputValue),
+				ContainSubstring(provisionOutputStateValue),
 				ContainSubstring(tfStateKey),
 			))
 
@@ -188,9 +233,37 @@ var _ = Describe("Database Encryption", func() {
 			createBinding()
 			Expect(persistedServiceBindingDetails()).To(Equal(bindOutput))
 			Expect(persistedServiceBindingTerraformWorkspace()).To(SatisfyAll(
-				ContainSubstring(bindOutputValue),
+				ContainSubstring(bindOutputStateValue),
 				ContainSubstring(tfStateKey),
 			))
+
+			By("checking how update persists service instance fields")
+			updateServiceInstance()
+			Expect(persistedRequestDetails()).To(Equal(provisionParams))
+			Expect(persistedServiceInstanceDetails()).To(Equal(updateOutput))
+			Expect(persistedServiceInstanceTerraformWorkspace()).To(SatisfyAll(
+				ContainSubstring(provisionOutputStateValue),
+				ContainSubstring(updateOutputStateValue),
+				ContainSubstring(tfStateKey),
+			))
+
+			By("checking the binding fields after unbind")
+			deleteBinding()
+			expectServiceBindingDetailsToNotExist()
+			Expect(persistedServiceBindingTerraformWorkspace()).To(SatisfyAll(
+				ContainSubstring(bindOutputStateValue),
+				ContainSubstring(tfStateKey),
+			))
+
+			By("ckecking the service instance fields after deprovision", func(){
+				deprovisionServiceInstance()
+				expectServiceInstanceDetailsToNotExist()
+				Expect(persistedServiceInstanceTerraformWorkspace()).To(SatisfyAll(
+					ContainSubstring(provisionOutputStateValue),
+					ContainSubstring(updateOutputStateValue),
+					ContainSubstring(tfStateKey),
+				))
+			})
 		})
 	})
 
@@ -204,7 +277,7 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedRequestDetails()).NotTo(Equal(provisionParams))
 			Expect(persistedServiceInstanceDetails()).NotTo(Equal(provisionOutput))
 			Expect(persistedServiceInstanceTerraformWorkspace()).NotTo(SatisfyAny(
-				ContainSubstring(provisionOutputValue),
+				ContainSubstring(provisionOutputStateValue),
 				ContainSubstring(tfStateKey),
 			))
 
@@ -212,9 +285,37 @@ var _ = Describe("Database Encryption", func() {
 			createBinding()
 			Expect(persistedServiceBindingDetails()).NotTo(Equal(bindOutput))
 			Expect(persistedServiceBindingTerraformWorkspace()).NotTo(SatisfyAny(
-				ContainSubstring(bindOutputValue),
+				ContainSubstring(bindOutputStateValue),
 				ContainSubstring(tfStateKey),
 			))
+
+			By("checking how update persists service instance fields")
+			updateServiceInstance()
+			Expect(persistedRequestDetails()).NotTo(Equal(provisionParams))
+			Expect(persistedServiceInstanceDetails()).NotTo(Equal(updateOutput))
+			Expect(persistedServiceInstanceTerraformWorkspace()).NotTo(SatisfyAny(
+				ContainSubstring(provisionOutputStateValue),
+				ContainSubstring(updateOutputStateValue),
+				ContainSubstring(tfStateKey),
+			))
+
+			By("checking the binding fields after unbind")
+			deleteBinding()
+			expectServiceBindingDetailsToNotExist()
+			Expect(persistedServiceBindingTerraformWorkspace()).NotTo(SatisfyAny(
+				ContainSubstring(bindOutputStateValue),
+				ContainSubstring(tfStateKey),
+			))
+
+			By("ckecking the service instance fields after deprovision", func(){
+				deprovisionServiceInstance()
+				expectServiceInstanceDetailsToNotExist()
+				Expect(persistedServiceInstanceTerraformWorkspace()).NotTo(SatisfyAny(
+					ContainSubstring(provisionOutputStateValue),
+					ContainSubstring(updateOutputStateValue),
+					ContainSubstring(tfStateKey),
+				))
+			})
 		})
 	})
 })

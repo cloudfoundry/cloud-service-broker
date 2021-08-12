@@ -14,10 +14,17 @@ plans:
 provision:
   template_refs:
     main: fake-provision.tf
+  user_inputs:
+    - field_name: update_output
+      type: string
+      details: output that to be overriden during update
   outputs:
     - field_name: provision_output
       type: string
       details: provision output
+    - field_name: update_output_output
+      type: string
+      details: update output
 bind:
   template_ref: fake-bind.tf
   computed_inputs:
