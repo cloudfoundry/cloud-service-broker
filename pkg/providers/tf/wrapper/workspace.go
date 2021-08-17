@@ -356,11 +356,11 @@ func (workspace *TerraformWorkspace) Plan(ctx context.Context) error {
 	matches := planMessageMatcher.FindStringSubmatch(output.StdOut)
 	switch {
 	case len(matches) == 0: // presumably: "No changes. Infrastructure is up-to-date."
-		logger.Info("No match on plan message")
+		logger.Info("no-match")
 	case len(matches) == 2 && matches[1] == "0":
-		logger.Info("Plan shows that no resources will be destroyed")
+		logger.Info("no-destroyed")
 	default:
-		logger.Info("Plan message shows that resources will be destroyed")
+		logger.Info("cancelling-destroy", lager.Data{"stdout": output.StdOut, "stderr": output.StdErr})
 		return fmt.Errorf("terraform plan shows that resources would be destroyed - cancelling subsume")
 	}
 
