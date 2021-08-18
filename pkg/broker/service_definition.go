@@ -209,6 +209,11 @@ func (svc *ServiceDefinition) CatalogEntry() (*Service, error) {
 		}
 	}
 
+	err = sd.Validate()
+	if err != nil {
+		return nil, err
+	}
+
 	return sd, nil
 }
 

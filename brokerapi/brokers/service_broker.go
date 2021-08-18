@@ -70,7 +70,6 @@ func (broker *ServiceBroker) Services(ctx context.Context) ([]domain.Service, er
 	if err != nil {
 		return nil, err
 	}
-
 	for _, service := range enabledServices {
 		entry, err := service.CatalogEntry()
 		if err != nil {
@@ -78,6 +77,9 @@ func (broker *ServiceBroker) Services(ctx context.Context) ([]domain.Service, er
 		}
 		svcs = append(svcs, entry.ToPlain())
 	}
+	// add validation for same plan on different services
+	// if validated here it will fail on serve when collecting the services
+	// (rather then when Reg        istering the services
 
 	return svcs, nil
 }

@@ -125,7 +125,7 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 		Plans: []broker.ServicePlan{
 			{
 				ServicePlan: domain.ServicePlan{
-					ID:   "fake-plan-id",
+					ID:   "3dcc45e8-0020-11ec-8ae1-f7abb5d2e742",
 					Name: "fake-plan-name",
 				},
 			},
