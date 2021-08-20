@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"testing"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -36,9 +37,12 @@ func freePort() int {
 	return listener.Addr().(*net.TCPAddr).Port
 }
 
-func checkAlive(port int) bool {
-	response, err := http.Head(fmt.Sprintf("http://localhost:%d", port))
-	return err == nil && response.StatusCode == http.StatusOK
+func waitForBrokerToStart(port int) {
+	ping := func() (*http.Response, error) {
+		return http.Head(fmt.Sprintf("http://localhost:%d", port))
+	}
+
+	Eventually(ping, 30*time.Second).Should(HaveHTTPStatus(http.StatusOK))
 }
 
 func requestID() string {
