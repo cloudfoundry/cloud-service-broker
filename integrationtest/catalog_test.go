@@ -121,7 +121,7 @@ var _ = Describe("Catalog", func() {
 			brokerSession.Wait(time.Minute)
 
 			Expect(brokerSession.ExitCode()).NotTo(BeZero())
-			Expect(brokerSession.Err).To(Say("duplicated value, must be unique: 8b52a460-b246-11eb-a8f5-d349948e2480: services[1].Plans\\[1\\].Id\n"))
+			Expect(brokerSession.Err).To(Say("duplicated value, must be unique: 8b52a460-b246-11eb-a8f5-d349948e2480: services\\[1\\].Plans\\[1\\].Id\n"))
 		})
 	})
 })
