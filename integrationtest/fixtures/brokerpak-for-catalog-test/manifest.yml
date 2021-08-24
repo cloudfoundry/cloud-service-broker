@@ -13,4 +13,5 @@ terraform_binaries:
   version: 0.12.21
   source: https://github.com/hashicorp/terraform/archive/v0.12.21.zip
 service_definitions:
-- fake-service.yml
+  - fake-service-1.yml
+  - fake-service-2.yml

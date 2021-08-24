@@ -137,11 +137,7 @@ func GetExamplesForAService(service *broker.ServiceDefinition) ([]CompleteServic
 	var examples []CompleteServiceExample
 
 	for _, example := range service.Examples {
-		serviceCatalogEntry, err := service.CatalogEntry()
-
-		if err != nil {
-			return nil, err
-		}
+		serviceCatalogEntry := service.CatalogEntry()
 
 		var completeServiceExample = CompleteServiceExample{
 			ServiceExample: example,

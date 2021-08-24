@@ -111,6 +111,16 @@ func (svc *ServiceDefinition) Validate() (errs *validation.FieldError) {
 		errs = errs.Also(v.Validate().ViaFieldIndex("PlanVariables", i))
 	}
 
+	names := make(map[string]struct{})
+	ids := make(map[string]struct{})
+	for i, v := range svc.Plans {
+		errs = errs.Also(
+			v.Validate().ViaFieldIndex("Plans", i),
+			validation.ErrIfDuplicate("Name", v.Name, names).ViaFieldIndex("Plans", i),
+			validation.ErrIfDuplicate("Id", v.ID, ids).ViaFieldIndex("Plans", i),
+		)
+	}
+
 	return errs
 }
 
@@ -177,12 +187,7 @@ func (svc *ServiceDefinition) TileUserDefinedPlansVariable() string {
 // CatalogEntry returns the service broker catalog entry for this service, it
 // has metadata about the service so operators and programmers know which
 // service and plan will work best for their purposes.
-func (svc *ServiceDefinition) CatalogEntry() (*Service, error) {
-	userPlans, err := svc.UserDefinedPlans()
-	if err != nil {
-		return nil, err
-	}
-
+func (svc *ServiceDefinition) CatalogEntry() *Service {
 	sd := &Service{
 		Service: domain.Service{
 			ID:          svc.Id,
@@ -200,7 +205,7 @@ func (svc *ServiceDefinition) CatalogEntry() (*Service, error) {
 			Bindable:      svc.Bindable,
 			PlanUpdatable: svc.PlanUpdateable,
 		},
-		Plans: append(svc.Plans, userPlans...),
+		Plans: svc.Plans,
 	}
 
 	if enableCatalogSchemas.IsActive() {
@@ -209,12 +214,7 @@ func (svc *ServiceDefinition) CatalogEntry() (*Service, error) {
 		}
 	}
 
-	err = sd.Validate()
-	if err != nil {
-		return nil, err
-	}
-
-	return sd, nil
+	return sd
 }
 
 // createSchemas creates JSONSchemas compatible with the OSB spec for provision and bind.
@@ -236,11 +236,7 @@ func (svc *ServiceDefinition) createSchemas() *domain.ServiceSchemas {
 
 // GetPlanById finds a plan in this service by its UUID.
 func (svc *ServiceDefinition) GetPlanById(planId string) (*ServicePlan, error) {
-	catalogEntry, err := svc.CatalogEntry()
-	if err != nil {
-		return nil, err
-	}
-
+	catalogEntry := svc.CatalogEntry()
 	for _, plan := range catalogEntry.Plans {
 		if plan.ID == planId {
 			return &plan, nil

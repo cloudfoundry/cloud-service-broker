@@ -18,17 +18,16 @@ import (
 var _ = Describe("Catalog", func() {
 
 	var (
-		originalDir         string
-		fixturesDir         string
-		workDir             string
-		brokerPort          int
-		brokerUsername      string
-		brokerPassword      string
-		brokerSession       *Session
-		databaseFile        string
-		runBrokerCommand 	*exec.Cmd
+		originalDir      string
+		fixturesDir      string
+		workDir          string
+		brokerPort       int
+		brokerUsername   string
+		brokerPassword   string
+		brokerSession    *Session
+		databaseFile     string
+		runBrokerCommand *exec.Cmd
 	)
-
 
 	JustBeforeEach(func() {
 		var err error
@@ -46,13 +45,13 @@ var _ = Describe("Catalog", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Eventually(session, time.Minute).Should(Exit(0))
 
-		userProvidedPlan:="[{\"name\": \"user-plan\",\"id\":\"8b52a460-b246-11eb-a8f5-d349948e2480\"}]"
-
 		brokerUsername = uuid.New()
 		brokerPassword = uuid.New()
 		brokerPort = freePort()
 		databaseFile = path.Join(workDir, "databaseFile.dat")
 		runBrokerCommand = exec.Command(csb, "serve")
+		os.Unsetenv("GSB_SERVICE_ALPHA_SERVICE_PLANS")
+		os.Unsetenv("GSB_SERVICE_BETA_SERVICE_PLANS")
 		runBrokerCommand.Env = append(
 			os.Environ(),
 			"CSB_LISTENER_HOST=localhost",
@@ -61,7 +60,6 @@ var _ = Describe("Catalog", func() {
 			fmt.Sprintf("PORT=%d", brokerPort),
 			fmt.Sprintf("SECURITY_USER_NAME=%s", brokerUsername),
 			fmt.Sprintf("SECURITY_USER_PASSWORD=%s", brokerPassword),
-			fmt.Sprintf("GSB_SERVICE_FAKE_SERVICE_PLANS=%s", userProvidedPlan),
 		)
 	})
 
@@ -75,13 +73,55 @@ var _ = Describe("Catalog", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
-	FIt("fails to start when duplicate plan IDs are found", func() {
-		var err error
-		brokerSession, err = Start(runBrokerCommand, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
-		brokerSession.Wait(time.Minute)
+	When("a service offering has duplicate plan IDs", func() {
+		JustBeforeEach(func() {
+			userProvidedPlan := "[{\"name\": \"user-plan\",\"id\":\"8b52a460-b246-11eb-a8f5-d349948e2480\"}]"
+			runBrokerCommand.Env = append(
+				os.Environ(),
+				"CSB_LISTENER_HOST=localhost",
+				"DB_TYPE=sqlite3",
+				fmt.Sprintf("DB_PATH=%s", databaseFile),
+				fmt.Sprintf("PORT=%d", brokerPort),
+				fmt.Sprintf("SECURITY_USER_NAME=%s", brokerUsername),
+				fmt.Sprintf("SECURITY_USER_PASSWORD=%s", brokerPassword),
+				fmt.Sprintf("GSB_SERVICE_ALPHA_SERVICE_PLANS=%s", userProvidedPlan),
+			)
+		})
 
-		Expect(brokerSession.ExitCode()).NotTo(BeZero())
-		Expect(brokerSession.Err).To(Say("duplicated value, must be unique: 8b52a460-b246-11eb-a8f5-d349948e2480: Plans\\[1\\].Id\n"))
+		It("fails to start", func() {
+			var err error
+			brokerSession, err = Start(runBrokerCommand, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+			brokerSession.Wait(time.Minute)
+
+			Expect(brokerSession.ExitCode()).NotTo(BeZero())
+			Expect(brokerSession.Err).To(Say("duplicated value, must be unique: 8b52a460-b246-11eb-a8f5-d349948e2480: Plans\\[1\\].Id\n"))
+		})
+	})
+
+	When("two service offerings have duplicate plan IDs", func() {
+		JustBeforeEach(func() {
+			userProvidedPlan := "[{\"name\": \"user-plan\",\"id\":\"8b52a460-b246-11eb-a8f5-d349948e2480\"}]"
+			runBrokerCommand.Env = append(
+				os.Environ(),
+				"CSB_LISTENER_HOST=localhost",
+				"DB_TYPE=sqlite3",
+				fmt.Sprintf("DB_PATH=%s", databaseFile),
+				fmt.Sprintf("PORT=%d", brokerPort),
+				fmt.Sprintf("SECURITY_USER_NAME=%s", brokerUsername),
+				fmt.Sprintf("SECURITY_USER_PASSWORD=%s", brokerPassword),
+				fmt.Sprintf("GSB_SERVICE_BETA_SERVICE_PLANS=%s", userProvidedPlan),
+			)
+		})
+
+		It("fails to start", func() {
+			var err error
+			brokerSession, err = Start(runBrokerCommand, GinkgoWriter, GinkgoWriter)
+			Expect(err).NotTo(HaveOccurred())
+			brokerSession.Wait(time.Minute)
+
+			Expect(brokerSession.ExitCode()).NotTo(BeZero())
+			Expect(brokerSession.Err).To(Say("duplicated value, must be unique: 8b52a460-b246-11eb-a8f5-d349948e2480: services[1].Plans\\[1\\].Id\n"))
+		})
 	})
 })

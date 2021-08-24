@@ -136,10 +136,7 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 		},
 		BindComputedVariables: []varcontext.DefaultVariable{{Name: "originatingIdentity", Default: "${json.marshal(request.x_broker_api_originating_identity)}", Overwrite: true}},
 	}
-	svc, err := defn.CatalogEntry()
-	if err != nil {
-		t.Fatal(err)
-	}
+	svc := defn.CatalogEntry()
 
 	stub := serviceStub{
 		ServiceId:         svc.ID,
