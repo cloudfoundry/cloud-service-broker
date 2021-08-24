@@ -82,6 +82,10 @@ func ExampleServiceDefinition_GetPlanById() {
 
 	_, err = service.GetPlanById("missing-plan")
 	fmt.Printf("missing-plan: %s\n", err)
+
+	// Output: builtin-plan: "Builtin!" <nil>
+	// custom-plan: "Custom!" <nil>
+	// missing-plan: plan ID "missing-plan" could not be found
 }
 
 func TestServiceDefinition_UserDefinedPlans(t *testing.T) {

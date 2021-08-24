@@ -29,7 +29,7 @@ var _ = Describe("Catalog", func() {
 		runBrokerCommand *exec.Cmd
 	)
 
-	JustBeforeEach(func() {
+	BeforeEach(func() {
 		var err error
 		originalDir, err = os.Getwd()
 		Expect(err).NotTo(HaveOccurred())
@@ -50,17 +50,6 @@ var _ = Describe("Catalog", func() {
 		brokerPort = freePort()
 		databaseFile = path.Join(workDir, "databaseFile.dat")
 		runBrokerCommand = exec.Command(csb, "serve")
-		os.Unsetenv("GSB_SERVICE_ALPHA_SERVICE_PLANS")
-		os.Unsetenv("GSB_SERVICE_BETA_SERVICE_PLANS")
-		runBrokerCommand.Env = append(
-			os.Environ(),
-			"CSB_LISTENER_HOST=localhost",
-			"DB_TYPE=sqlite3",
-			fmt.Sprintf("DB_PATH=%s", databaseFile),
-			fmt.Sprintf("PORT=%d", brokerPort),
-			fmt.Sprintf("SECURITY_USER_NAME=%s", brokerUsername),
-			fmt.Sprintf("SECURITY_USER_PASSWORD=%s", brokerPassword),
-		)
 	})
 
 	AfterEach(func() {
