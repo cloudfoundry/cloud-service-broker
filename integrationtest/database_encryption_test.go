@@ -183,7 +183,7 @@ var _ = Describe("Database Encryption", func() {
 		)
 		brokerSession, err = Start(runBrokerCommand, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
-		Eventually(func() bool { return checkAlive(brokerPort) }, 30*time.Second).Should(BeTrue())
+		waitForBrokerToStart(brokerPort)
 
 		brokerClient, err = client.New(brokerUsername, brokerPassword, "localhost", brokerPort)
 		Expect(err).NotTo(HaveOccurred())
