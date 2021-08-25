@@ -170,6 +170,7 @@ var _ = Describe("Database Encryption", func() {
 		brokerPort = freePort()
 		databaseFile = path.Join(workDir, "databaseFile.dat")
 		runBrokerCommand := exec.Command(csb, "serve")
+		os.Unsetenv("CH_CRED_HUB_URL")
 		runBrokerCommand.Env = append(
 			os.Environ(),
 			"CSB_LISTENER_HOST=localhost",

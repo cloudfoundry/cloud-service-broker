@@ -70,12 +70,8 @@ func (broker *ServiceBroker) Services(ctx context.Context) ([]domain.Service, er
 	if err != nil {
 		return nil, err
 	}
-
 	for _, service := range enabledServices {
-		entry, err := service.CatalogEntry()
-		if err != nil {
-			return svcs, err
-		}
+		entry := service.CatalogEntry()
 		svcs = append(svcs, entry.ToPlain())
 	}
 

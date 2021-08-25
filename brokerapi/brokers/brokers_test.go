@@ -125,7 +125,7 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 		Plans: []broker.ServicePlan{
 			{
 				ServicePlan: domain.ServicePlan{
-					ID:   "fake-plan-id",
+					ID:   "3dcc45e8-0020-11ec-8ae1-f7abb5d2e742",
 					Name: "fake-plan-name",
 				},
 			},
@@ -136,10 +136,7 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 		},
 		BindComputedVariables: []varcontext.DefaultVariable{{Name: "originatingIdentity", Default: "${json.marshal(request.x_broker_api_originating_identity)}", Overwrite: true}},
 	}
-	svc, err := defn.CatalogEntry()
-	if err != nil {
-		t.Fatal(err)
-	}
+	svc := defn.CatalogEntry()
 
 	stub := serviceStub{
 		ServiceId:         svc.ID,

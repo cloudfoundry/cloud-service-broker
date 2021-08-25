@@ -24,8 +24,11 @@ import (
 )
 
 var _ = Describe("Config", func() {
-	Context("config parsing", func() {
+	BeforeEach(func() {
+		os.Clearenv()
+	})
 
+	Context("config parsing", func() {
 		It("sets defaults", func() {
 			c, err := Parse()
 			Expect(err).To(BeNil())
