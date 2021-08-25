@@ -18,6 +18,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
+
 	"net/http"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
@@ -38,11 +41,13 @@ import (
 )
 
 const (
-	apiUserProp     = "api.user"
-	apiPasswordProp = "api.password"
-	apiPortProp     = "api.port"
-	apiHostProp     = "api.host"
-	encryptionKey   = "encryption.key"
+	apiUserProp       = "api.user"
+	apiPasswordProp   = "api.password"
+	apiPortProp       = "api.port"
+	apiHostProp       = "api.host"
+	encryptionKey     = "encryption.key"
+	encryptionEnabled = "encryption.enabled"
+	encryptionKeys    = "encryption.keys"
 )
 
 var cfCompatibilityToggle = toggles.Features.Toggle("enable-cf-sharing", false, `Set all services to have the Sharable flag so they can be shared
@@ -72,12 +77,20 @@ func init() {
 	viper.BindEnv(apiPortProp, "PORT")
 	viper.BindEnv(apiHostProp, "CSB_LISTENER_HOST")
 	viper.BindEnv(encryptionKey, "EXPERIMENTAL_ENCRYPTION_KEY")
+	viper.BindEnv(encryptionEnabled, "CSB_ENABLE_ENCRYPTION")
+	viper.BindEnv(encryptionKeys, "CSB_ENCRYPTION_KEYS")
 }
 
 func serve() {
 	logger := utils.NewLogger("cloud-service-broker")
 	db := db_service.New(logger)
-	models.SetEncryptor(models.ConfigureEncryption(viper.GetString(encryptionKey)))
+
+	// store record in db
+	key, err := encryption.GetEncryptionKey()
+	if err != nil {
+		logger.Fatal("Error retrieving encryption key: %s", err)
+	}
+	models.SetEncryptor(models.ConfigureEncryption(key))
 
 	// init broker
 	cfg, err := brokers.NewBrokerConfigFromEnv(logger)

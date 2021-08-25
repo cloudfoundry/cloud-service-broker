@@ -21,7 +21,7 @@ import (
 	"github.com/pborman/uuid"
 )
 
-var _ = Describe("Database Encryption", func() {
+var _ = FDescribe("Database Encryption", func() {
 	const (
 		provisionParams           = `{"foo":"bar"}`
 		bindParams                = `{"baz":"quz"}`
@@ -50,7 +50,7 @@ var _ = Describe("Database Encryption", func() {
 		brokerSession       *Session
 		brokerClient        *client.Client
 		databaseFile        string
-		encryptionKey       string
+		encryptionConfig    []string
 		serviceInstanceGUID string
 		serviceBindingGUID  string
 	)
@@ -171,15 +171,19 @@ var _ = Describe("Database Encryption", func() {
 		databaseFile = path.Join(workDir, "databaseFile.dat")
 		runBrokerCommand := exec.Command(csb, "serve")
 		os.Unsetenv("CH_CRED_HUB_URL")
+
 		runBrokerCommand.Env = append(
 			os.Environ(),
 			"CSB_LISTENER_HOST=localhost",
 			"DB_TYPE=sqlite3",
-			fmt.Sprintf("EXPERIMENTAL_ENCRYPTION_KEY=%s", encryptionKey),
 			fmt.Sprintf("DB_PATH=%s", databaseFile),
 			fmt.Sprintf("PORT=%d", brokerPort),
 			fmt.Sprintf("SECURITY_USER_NAME=%s", brokerUsername),
 			fmt.Sprintf("SECURITY_USER_PASSWORD=%s", brokerPassword),
+		)
+		runBrokerCommand.Env = append(
+			runBrokerCommand.Env,
+			encryptionConfig...
 		)
 		brokerSession, err = Start(runBrokerCommand, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
@@ -208,7 +212,9 @@ var _ = Describe("Database Encryption", func() {
 
 	When("no encryption key is configured", func() {
 		BeforeEach(func() {
-			encryptionKey = ""
+			encryptionConfig = []string {
+				"CSB_ENABLE_ENCRYPTION=false",
+			}
 		})
 
 		It("stores sensitive fields in plaintext", func() {
@@ -260,7 +266,11 @@ var _ = Describe("Database Encryption", func() {
 
 	When("the encryption key is configured", func() {
 		BeforeEach(func() {
-			encryptionKey = "one-key-here-with-32-bytes-in-it"
+			encryptionKeys := "[{\"encryption_key\": {\"secret\":\"one-key-here-with-32-bytes-in-it\"},\"guid\":\"dae1dd13-53ed-4c90-8c11-7383b767d5c3\",\"label\":\"first-key\",\"primary\":true\n}]"
+			encryptionConfig = []string{
+				"CSB_ENABLE_ENCRYPTION=true",
+				fmt.Sprintf("CSB_ENCRYPTION_KEYS=%s", encryptionKeys),
+			}
 		})
 
 		It("encrypts sensitive fields", func() {

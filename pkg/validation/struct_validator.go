@@ -73,6 +73,15 @@ func ErrIfNil(value interface{}, field string) *FieldError {
 	return nil
 }
 
+// ErrIfNil returns an error if the value is is not of allowed length.
+func ErrIfNotLength(value string, min, max int, field string) *FieldError {
+	if value != "" && (len(value) < min || len(value) > max) {
+		return ErrInvalidLength(value, min, max, field)
+	}
+
+	return nil
+}
+
 // ErrIfNotOSBName returns an error if the value is not a valid OSB name.
 func ErrIfNotOSBName(value string, field string) *FieldError {
 	return ErrIfNotMatch(value, osbNameRegex, field)

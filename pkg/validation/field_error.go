@@ -325,6 +325,16 @@ func ErrInvalidValue(value interface{}, fieldPath string) *FieldError {
 	}
 }
 
+
+// ErrInvalidLength constructs a FieldError for a field that has received an
+// invalid string length.
+func ErrInvalidLength(value interface{}, min, max int, fieldPath string) *FieldError {
+	return &FieldError{
+		Message: fmt.Sprintf("field must be %v-%v chars long: %v", min, max, value),
+		Paths:   []string{fieldPath},
+	}
+}
+
 // ErrMissingOneOf is a variadic helper method for constructing a FieldError for
 // not having at least one field in a mutually exclusive field group.
 func ErrMissingOneOf(fieldPaths ...string) *FieldError {
