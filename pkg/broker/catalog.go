@@ -15,16 +15,29 @@
 package broker
 
 import (
-	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 // Service overrides the canonical Service Broker service type using a custom
 // type for Plans, everything else is the same.
 type Service struct {
-	brokerapi.Service
+	domain.Service
 
 	Plans []ServicePlan `json:"plans"`
+}
+
+func (s *Service) Validate() (errs *validation.FieldError) {
+	names := make(map[string]struct{})
+	ids := make(map[string]struct{})
+	for i, v := range s.Plans {
+		errs = errs.Also(
+			v.Validate().ViaFieldIndex("Plans", i),
+			validation.ErrIfDuplicate("Name", v.Name, names).ViaFieldIndex("Plans", i),
+			validation.ErrIfDuplicate("Id", v.ID, ids).ViaFieldIndex("Plans", i),
+		)
+	}
+	return errs
 }
 
 // ToPlain converts this service to a plain PCF Service definition.
@@ -44,11 +57,19 @@ func (s Service) ToPlain() domain.Service {
 // ServicePlan extends the OSB ServicePlan by including a map of key/value
 // pairs that can be used to pass additional information to the back-end.
 type ServicePlan struct {
-	brokerapi.ServicePlan
+	domain.ServicePlan
 
 	ServiceProperties  map[string]interface{} `json:"service_properties"`
 	ProvisionOverrides map[string]interface{} `json:"provision_overrides,omitempty"`
 	BindOverrides      map[string]interface{} `json:"bind_overrides,omitempty"`
+}
+
+// Validate implements validation.Validatable.
+func (sp *ServicePlan) Validate() (errs *validation.FieldError) {
+	return errs.Also(
+		validation.ErrIfBlank(sp.Name, "Name"),
+		validation.ErrIfNotUUID(sp.ID, "Id"),
+	)
 }
 
 // GetServiceProperties gets the plan settings variables as a string->interface map.

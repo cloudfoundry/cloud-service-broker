@@ -16,8 +16,9 @@ package broker
 
 import (
 	"fmt"
-	"log"
 	"sort"
+
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/toggles"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
@@ -44,23 +45,46 @@ type BrokerRegistry map[string]*ServiceDefinition
 
 // Register registers a ServiceDefinition with the service registry that various commands
 // poll to create the catalog, documentation, etc.
-func (brokerRegistry BrokerRegistry) Register(service *ServiceDefinition) {
+func (brokerRegistry BrokerRegistry) Register(service *ServiceDefinition) error {
 	name := service.Name
 
 	if _, ok := brokerRegistry[name]; ok {
-		log.Fatalf("Tried to register multiple instances of: %q", name)
+		return fmt.Errorf("tried to register multiple instances of: %q", name)
 	}
 
-	// Test deserializing the user defined plans and service definition
-	if _, err := service.CatalogEntry(); err != nil {
-		log.Fatalf("Error registering service %q, %s", name, err)
+	userPlans, err := service.UserDefinedPlans()
+	if err != nil {
+		return fmt.Errorf("error getting user defined plans: %q, %s", name, err)
 	}
+	service.Plans = append(service.Plans, userPlans...)
 
 	if err := service.Validate(); err != nil {
-		log.Fatalf("Error validating service %q, %s", name, err)
+		return fmt.Errorf("error validating service %q, %s", name, err)
 	}
 
 	brokerRegistry[name] = service
+	return nil
+}
+
+func (brokerRegistry BrokerRegistry) Validate() (errs *validation.FieldError) {
+	services := brokerRegistry.GetAllServices()
+	serviceIDs := make(map[string]struct{})
+	serviceNames := make(map[string]struct{})
+	planIDs := make(map[string]struct{})
+	for i, s := range services {
+		errs = errs.Also(
+			validation.ErrIfDuplicate("Id", s.Id, serviceIDs).ViaFieldIndex("services", i),
+			validation.ErrIfDuplicate("Name", s.Name, serviceNames).ViaFieldIndex("services", i),
+		)
+
+		for j, p := range s.Plans {
+			errs = errs.Also(
+				validation.ErrIfDuplicate("Id", p.ID, planIDs).ViaFieldIndex("Plans", j).ViaFieldIndex("services", i),
+			)
+		}
+	}
+
+	return errs
 }
 
 // GetEnabledServices returns a list of all registered brokers that the user
@@ -75,15 +99,12 @@ func (brokerRegistry *BrokerRegistry) GetEnabledServices() ([]*ServiceDefinition
 			isEnabled = enableBuiltinServices.IsActive()
 		}
 
-		if entry, err := svc.CatalogEntry(); err != nil {
-			return nil, err
-		} else {
-			tags := utils.NewStringSet(entry.Tags...)
-			for tag, toggle := range lifecycleTagToggles {
-				if !toggle.IsActive() && tags.Contains(tag) {
-					isEnabled = false
-					break
-				}
+		entry := svc.CatalogEntry()
+		tags := utils.NewStringSet(entry.Tags...)
+		for tag, toggle := range lifecycleTagToggles {
+			if !toggle.IsActive() && tags.Contains(tag) {
+				isEnabled = false
+				break
 			}
 		}
 

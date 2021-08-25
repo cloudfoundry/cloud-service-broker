@@ -75,7 +75,15 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 		}
 
 		for _, defn := range defns {
-			registry.Register(defn)
+			err := registry.Register(defn)
+			if err != nil {
+				return err
+			}
+		}
+
+		errs := registry.Validate()
+		if errs != nil {
+			return errs
 		}
 
 		if manifest, err := brokerPak.Manifest(); err == nil {

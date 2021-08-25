@@ -1,77 +1,270 @@
-// Copyright 2018 the Service Broker Project Authors.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-package broker
+package broker_test
 
 import (
 	"encoding/json"
-	"testing"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
-func TestServiceDefinition_CheckProhibitUpdate(t *testing.T) {
-	svcDef := ServiceDefinition{
-		ProvisionInputVariables: []BrokerVariable{
-			{
-				FieldName:      "prohibited",
-				ProhibitUpdate: true,
-			},
-			{
-				FieldName: "allowed",
-			},
-		},
-	}
+var _ = Describe("ServiceDefinition", func() {
+	Describe("Validate", func() {
+		Context("validate ID", func() {
+			It("should fail when Id is missing", func() {
+				definition := broker.ServiceDefinition{Name: "test"}
 
-	cases := map[string]struct {
-		rawParams      string
-		expectedResult bool
-		expectErr      bool
-	}{
-		"allowed": {
-			rawParams:      `{"allowed":"some_val"}`,
-			expectedResult: true,
-			expectErr:      false,
-		},
-		"prohibited": {
-			rawParams:      `{"prohibited":"some_val"}`,
-			expectedResult: false,
-			expectErr:      false,
-		},
-		"bad json": {
-			rawParams:      `{"bogus"}`,
-			expectedResult: false,
-			expectErr:      true,
-		},
-		"empty": {
-			expectedResult: true,
-			expectErr:      false,
-		},
-	}
-
-	for tn, tc := range cases {
-		t.Run(tn, func(t *testing.T) {
-			actual, err := svcDef.AllowedUpdate(domain.UpdateDetails{
-				RawParameters: json.RawMessage(tc.rawParams),
+				err := definition.Validate()
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("field must be a UUID: Id"))
 			})
-			if (err == nil) == tc.expectErr {
-				t.Errorf("Did not get exected error result")
 
-			}
-			if actual != tc.expectedResult {
-				t.Errorf("Expected result from allowed update check on %v to be: %v, got: %v", tc.rawParams, tc.expectedResult, actual)
-			}
+			It("should fail when Id is not valid", func() {
+				definition := broker.ServiceDefinition{Id: "test", Name: "test-name"}
+
+				err := definition.Validate()
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("field must be a UUID: Id"))
+			})
 		})
-	}
-}
+
+		It("should fail when Name is missing", func() {
+			definition := broker.ServiceDefinition{Id: "55ad8194-0431-11ec-948a-63ff62e94b14"}
+
+			err := definition.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("field must match '^[a-zA-Z0-9-\\.]+$': Name"))
+		})
+
+		It("should fail when ImageUrl is not a URL", func() {
+			definition := broker.ServiceDefinition{
+				Id:       "55ad8194-0431-11ec-948a-63ff62e94b14",
+				Name:     "test-offering",
+				ImageUrl: "some-non-url",
+			}
+
+			err := definition.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("field must be a URL: ImageUrl"))
+		})
+
+		It("should fail when DocumentationUrl is not a URL", func() {
+			definition := broker.ServiceDefinition{
+				Id:               "55ad8194-0431-11ec-948a-63ff62e94b14",
+				Name:             "test-offering",
+				DocumentationUrl: "some-non-url",
+			}
+
+			err := definition.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("field must be a URL: DocumentationUrl"))
+		})
+
+		It("should fail when SupportUrl is not a URL", func() {
+			definition := broker.ServiceDefinition{
+				Id:         "55ad8194-0431-11ec-948a-63ff62e94b14",
+				Name:       "test-offering",
+				SupportUrl: "some-non-url",
+			}
+
+			err := definition.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("field must be a URL: SupportUrl"))
+		})
+
+		It("should fail when ProvisionInputVariables is not a valid", func() {
+			definition := broker.ServiceDefinition{
+				Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+				Name: "test-offering",
+				ProvisionInputVariables: []broker.BrokerVariable{
+					{
+						ProhibitUpdate: true,
+					},
+				},
+			}
+
+			err := definition.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("missing field(s): ProvisionInputVariables[0].details, ProvisionInputVariables[0].field_name"))
+		})
+
+		It("should fail when ProvisionComputedVariables is not a valid", func() {
+			definition := broker.ServiceDefinition{
+				Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+				Name: "test-offering",
+				ProvisionComputedVariables: []varcontext.DefaultVariable{
+					{
+						Overwrite: true,
+					},
+				},
+			}
+
+			err := definition.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("missing field(s): ProvisionComputedVariables[0].default, ProvisionComputedVariables[0].name"))
+		})
+
+		It("should fail when BindInputVariables is not a valid", func() {
+			definition := broker.ServiceDefinition{
+				Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+				Name: "test-offering",
+				BindInputVariables: []broker.BrokerVariable{
+					{
+						ProhibitUpdate: true,
+					},
+				},
+			}
+
+			err := definition.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("missing field(s): BindInputVariables[0].details, BindInputVariables[0].field_name"))
+		})
+
+		It("should fail when PlanVariables is not a valid", func() {
+			definition := broker.ServiceDefinition{
+				Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+				Name: "test-offering",
+				PlanVariables: []broker.BrokerVariable{
+					{
+						ProhibitUpdate: true,
+					},
+				},
+			}
+
+			err := definition.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("missing field(s): PlanVariables[0].details, PlanVariables[0].field_name"))
+		})
+
+		Context("validate plans", func() {
+			It("should fail when plan is missing name", func() {
+				definition := broker.ServiceDefinition{
+					Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+					Name: "test-offering",
+					Plans: []broker.ServicePlan{
+						{
+							ServicePlan: domain.ServicePlan{
+								ID: "c4edb10c-0434-11ec-8cbb-a777f76cf2ac",
+							},
+						},
+					},
+				}
+
+				err := definition.Validate()
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("missing field(s): Plans[0].Name"))
+			})
+
+			It("should fail when plan is missing id", func() {
+				definition := broker.ServiceDefinition{
+					Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+					Name: "test-offering",
+					Plans: []broker.ServicePlan{
+						{
+							ServicePlan: domain.ServicePlan{
+								Name: "test-plan",
+							},
+						},
+					},
+				}
+
+				err := definition.Validate()
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(Equal("field must be a UUID: Plans[0].Id"))
+			})
+
+			Context("plan duplication", func() {
+				It("should fail when plan id is duplicated across the offering", func() {
+					definition := broker.ServiceDefinition{
+						Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+						Name: "test-offering",
+						Plans: []broker.ServicePlan{
+							{
+								ServicePlan: domain.ServicePlan{
+									Name: "test-plan-1",
+									ID:   "c4edb10c-0434-11ec-8cbb-a777f76cf2ac",
+								},
+							},
+							{
+								ServicePlan: domain.ServicePlan{
+									Name: "test-plan-2",
+									ID:   "c4edb10c-0434-11ec-8cbb-a777f76cf2ac",
+								},
+							},
+						},
+					}
+
+					err := definition.Validate()
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal("duplicated value, must be unique: c4edb10c-0434-11ec-8cbb-a777f76cf2ac: Plans[1].Id"))
+				})
+
+				It("should fail when plan name is duplicated across the offering", func() {
+					definition := broker.ServiceDefinition{
+						Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+						Name: "test-offering",
+						Plans: []broker.ServicePlan{
+							{
+								ServicePlan: domain.ServicePlan{
+									Name: "test-plan",
+									ID:   "c4edb10c-0434-11ec-8cbb-a777f76cf2ac",
+								},
+							},
+							{
+								ServicePlan: domain.ServicePlan{
+									Name: "test-plan",
+									ID:   "f71ef2c0-0435-11ec-a1e1-17b59e2ff283",
+								},
+							},
+						},
+					}
+
+					err := definition.Validate()
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(Equal("duplicated value, must be unique: test-plan: Plans[1].Name"))
+				})
+			})
+		})
+
+	})
+
+	Describe("AllowedUpdate", func() {
+		serviceDefinition := broker.ServiceDefinition{
+			ProvisionInputVariables: []broker.BrokerVariable{
+				{
+					FieldName:      "prohibited",
+					ProhibitUpdate: true,
+				},
+				{
+					FieldName: "allowed",
+				},
+			},
+		}
+
+		DescribeTable("returns the correct result",
+			func(rawParams string, expected bool) {
+				actual, err := serviceDefinition.AllowedUpdate(
+					domain.UpdateDetails{
+						RawParameters: json.RawMessage(rawParams),
+					})
+				Expect(err).ToNot(HaveOccurred())
+				Expect(actual).To(Equal(expected))
+			},
+			Entry("allowed", `{"allowed":"some_val"}`, true),
+			Entry("prohibited", `{"prohibited":"some_val"}`, false),
+			Entry("empty", "", true),
+		)
+
+		It("should error when it receives bed json", func() {
+			_, err := serviceDefinition.AllowedUpdate(
+				domain.UpdateDetails{
+					RawParameters: json.RawMessage(`{"bogus"}`),
+				})
+			Expect(err).To(MatchError("invalid character '}' after object key"))
+		})
+
+	})
+})

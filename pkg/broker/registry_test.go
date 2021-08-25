@@ -1,61 +1,27 @@
-// Copyright 2018 the Service Broker Project Authors.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-package broker
+package broker_test
 
 import (
-	"testing"
+	"fmt"
 
+	. "github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/spf13/viper"
 )
 
-func TestRegistry_GetEnabledServices(t *testing.T) {
-	cases := map[string]struct {
-		Tag      string
-		Property string
-	}{
-		"preview": {
-			Tag:      "preview",
-			Property: "compatibility.enable-preview-services",
-		},
-		"unmaintained": {
-			Tag:      "unmaintained",
-			Property: "compatibility.enable-unmaintained-services",
-		},
-		"eol": {
-			Tag:      "eol",
-			Property: "compatibility.enable-eol-services",
-		},
-		"beta": {
-			Tag:      "beta",
-			Property: "compatibility.enable-gcp-beta-services",
-		},
-		"deprecated": {
-			Tag:      "deprecated",
-			Property: "compatibility.enable-gcp-deprecated-services",
-		},
-	}
+var _ = Describe("Registry", func() {
+	AfterEach(func() {
+		defer viper.Reset()
+	})
 
-	for tn, tc := range cases {
-		t.Run(tn, func(t *testing.T) {
-			defer viper.Reset()
-
-			sd := ServiceDefinition{
+	Describe("Register", func() {
+		var serviceDef ServiceDefinition
+		BeforeEach(func() {
+			serviceDef = ServiceDefinition{
 				Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
 				Name: "test-service",
-				Tags: []string{"gcp", tc.Tag},
 				Plans: []ServicePlan{
 					{
 						ServicePlan: domain.ServicePlan{
@@ -67,34 +33,238 @@ func TestRegistry_GetEnabledServices(t *testing.T) {
 				},
 				IsBuiltin: true,
 			}
-
-			registry := BrokerRegistry{}
-			registry.Register(&sd)
-
-			// shouldn't show up when property is false even if builtins are enabled
-			viper.Set("compatibility.enable-builtin-services", true)
-			viper.Set(tc.Property, false)
-			if defns, err := registry.GetEnabledServices(); err != nil {
-				t.Fatal(err)
-			} else if len(defns) != 0 {
-				t.Fatalf("Expected 0 definitions with %s disabled, but got %d", tc.Property, len(defns))
-			}
-
-			// should show up when property is true
-			viper.Set(tc.Property, true)
-			if defns, err := registry.GetEnabledServices(); err != nil {
-				t.Fatal(err)
-			} else if len(defns) != 1 {
-				t.Fatalf("Expected 1 definition with %s enabled, but got %d", tc.Property, len(defns))
-			}
-
-			// should not show up if the service is explicitly disabled
-			viper.Set("compatibility.enable-builtin-services", false)
-			if defns, err := registry.GetEnabledServices(); err != nil {
-				t.Fatal(err)
-			} else if len(defns) != 0 {
-				t.Fatalf("Expected no definition with builtins disabled, but got %d", len(defns))
-			}
 		})
-	}
-}
+
+		It("fails when the service offering is already registered", func() {
+			registry := BrokerRegistry{
+				"test-service": &ServiceDefinition{
+					Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
+					Name: "test-service",
+				},
+			}
+
+			err := registry.Register(&serviceDef)
+			Expect(err).To(MatchError("tried to register multiple instances of: \"test-service\""))
+		})
+
+		Context("user defined plans", func() {
+			It("appends user defined plans to brokerpak service plans", func() {
+				userProvidedPlan := "[{\"name\": \"user-plan\",\"id\":\"8b52a460-b246-11eb-a8f5-d349948e2480\"}]"
+				viper.Set("service.test-service.plans", userProvidedPlan)
+
+				registry := BrokerRegistry{}
+
+				err := registry.Register(&serviceDef)
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(len(registry["test-service"].Plans)).To(Equal(2))
+			})
+
+			It("errors when user defined plans have duplicate plan Id", func() {
+				userProvidedPlan := "[{\"name\": \"user-plan\",\"id\":\"e1d11f65-da66-46ad-977c-6d56513baf43\"}]"
+				viper.Set("service.test-service.plans", userProvidedPlan)
+
+				registry := BrokerRegistry{}
+
+				err := registry.Register(&serviceDef)
+				Expect(err).To(MatchError("error validating service \"test-service\", duplicated value, must be unique: e1d11f65-da66-46ad-977c-6d56513baf43: Plans[1].Id"))
+			})
+
+			It("errors when user defined plans have duplicate name Id", func() {
+				userProvidedPlan := "[{\"name\": \"Builtin!\",\"id\":\"8b52a460-b246-11eb-a8f5-d349948e2480\"}]"
+				viper.Set("service.test-service.plans", userProvidedPlan)
+
+				registry := BrokerRegistry{}
+
+				err := registry.Register(&serviceDef)
+				Expect(err).To(MatchError("error validating service \"test-service\", duplicated value, must be unique: Builtin!: Plans[1].Name"))
+			})
+		})
+	})
+
+	Describe("Validate", func() {
+		It("should fail when same service ID is used in two different services", func() {
+			duplicateID := "b9e4332e-b42b-4680-bda5-ea1506797474"
+			registry := BrokerRegistry{
+				"test-service-1": &ServiceDefinition{
+					Id:   duplicateID,
+					Name: "test-service-1",
+				},
+				"test-service-2": &ServiceDefinition{
+					Id:   duplicateID,
+					Name: "test-service-2",
+				},
+			}
+
+			err := registry.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal(fmt.Sprintf("duplicated value, must be unique: %s: services[1].Id", duplicateID)))
+		})
+
+		It("should fail when same service name is used in two different services", func() {
+			duplicateName := "test-service"
+			registry := BrokerRegistry{
+				"test-service-1": &ServiceDefinition{
+					Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
+					Name: duplicateName,
+				},
+				"test-service-2": &ServiceDefinition{
+					Id:   "1324f91e-04cd-11ec-94ab-579a8238e388",
+					Name: duplicateName,
+				},
+			}
+
+			err := registry.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal(fmt.Sprintf("duplicated value, must be unique: %s: services[1].Name", duplicateName)))
+		})
+
+		It("should fail when same plan ID is used in two different services", func() {
+			duplicateID := "e1d11f65-da66-46ad-977c-6d56513baf43"
+			registry := BrokerRegistry{
+				"test-service-1": &ServiceDefinition{
+					Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
+					Name: "test-service-1",
+					Plans: []ServicePlan{
+						{
+							ServicePlan: domain.ServicePlan{
+								ID:          duplicateID,
+								Name:        "test-plan-1",
+								Description: "Standard storage class",
+							},
+						},
+					},
+				},
+				"test-service-2": &ServiceDefinition{
+					Id:   "c19eb6cc-04c5-11ec-ab31-3b165292c41b",
+					Name: "test-service-2",
+					Plans: []ServicePlan{
+						{
+							ServicePlan: domain.ServicePlan{
+								ID:          duplicateID,
+								Name:        "test-plan-2",
+								Description: "Standard storage class",
+							},
+						},
+					},
+				},
+			}
+
+			err := registry.Validate()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal(fmt.Sprintf("duplicated value, must be unique: %s: services[1].Plans[0].Id", duplicateID)))
+		})
+	})
+
+	Describe("GetEnabledServices", func() {
+		DescribeTable("should not show offering",
+			func(tag, property string) {
+				serviceDef := ServiceDefinition{
+					Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
+					Name: "test-service",
+					Tags: []string{"gcp", tag},
+					Plans: []ServicePlan{
+						{
+							ServicePlan: domain.ServicePlan{
+								ID:          "e1d11f65-da66-46ad-977c-6d56513baf43",
+								Name:        "Builtin!",
+								Description: "Standard storage class",
+							},
+						},
+					},
+					IsBuiltin: true,
+				}
+
+				viper.Set(property, false)
+				viper.Set("compatibility.enable-builtin-services", true)
+
+				registry := BrokerRegistry{}
+				err := registry.Register(&serviceDef)
+				Expect(err).ToNot(HaveOccurred())
+
+				result, err := registry.GetEnabledServices()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(result).To(BeEmpty())
+			},
+			Entry("when preview are disabled and build-ins are enabled", "preview", "compatibility.enable-preview-services"),
+			Entry("when unmaintained are disabled and build-ins are enabled", "unmaintained", "compatibility.enable-unmaintained-services"),
+			Entry("when eol are disabled and build-ins are enabled", "eol", "compatibility.enable-eol-services"),
+			Entry("when beta are disabled and build-ins are enabled", "beta", "compatibility.enable-gcp-beta-services"),
+			Entry("when deprecated are disabled and build-ins are enabled", "deprecated", "compatibility.enable-gcp-deprecated-services"),
+		)
+
+		DescribeTable("should show offering",
+			func(tag, property string) {
+				serviceDef := ServiceDefinition{
+					Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
+					Name: "test-service",
+					Tags: []string{"gcp", tag},
+					Plans: []ServicePlan{
+						{
+							ServicePlan: domain.ServicePlan{
+								ID:          "e1d11f65-da66-46ad-977c-6d56513baf43",
+								Name:        "Builtin!",
+								Description: "Standard storage class",
+							},
+						},
+					},
+					IsBuiltin: true,
+				}
+
+				viper.Set(property, true)
+				viper.Set("compatibility.enable-builtin-services", true)
+
+				registry := BrokerRegistry{}
+				err := registry.Register(&serviceDef)
+				Expect(err).ToNot(HaveOccurred())
+
+				result, err := registry.GetEnabledServices()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(result).To(HaveLen(1))
+			},
+			Entry("when preview are enabled and build-ins are enabled", "preview", "compatibility.enable-preview-services"),
+			Entry("when unmaintained are enabled and build-ins are enabled", "unmaintained", "compatibility.enable-unmaintained-services"),
+			Entry("when eol are enabled and build-ins are enabled", "eol", "compatibility.enable-eol-services"),
+			Entry("when beta are enabled and build-ins are enabled", "beta", "compatibility.enable-gcp-beta-services"),
+			Entry("when deprecated are enabled and build-ins are enabled", "deprecated", "compatibility.enable-gcp-deprecated-services"),
+		)
+
+		DescribeTable("should not show offering",
+			func(tag, property string) {
+				serviceDef := ServiceDefinition{
+					Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
+					Name: "test-service",
+					Tags: []string{"gcp", tag},
+					Plans: []ServicePlan{
+						{
+							ServicePlan: domain.ServicePlan{
+								ID:          "e1d11f65-da66-46ad-977c-6d56513baf43",
+								Name:        "Builtin!",
+								Description: "Standard storage class",
+							},
+						},
+					},
+					IsBuiltin: true,
+				}
+
+				viper.Set(property, true)
+				viper.Set("compatibility.enable-builtin-services", false)
+
+				registry := BrokerRegistry{}
+				err := registry.Register(&serviceDef)
+				Expect(err).ToNot(HaveOccurred())
+
+				result, err := registry.GetEnabledServices()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(result).To(BeEmpty())
+			},
+			Entry("when preview are enabled and build-ins are disabled", "preview", "compatibility.enable-preview-services"),
+			Entry("when unmaintained are enabled and build-ins are disabled", "unmaintained", "compatibility.enable-unmaintained-services"),
+			Entry("when eol are enabled and build-ins are disabled", "eol", "compatibility.enable-eol-services"),
+			Entry("when beta are enabled and build-ins are disabled", "beta", "compatibility.enable-gcp-beta-services"),
+			Entry("when deprecated are enabled and build-ins are disabled", "deprecated", "compatibility.enable-gcp-deprecated-services"),
+		)
+
+	})
+
+})
