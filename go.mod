@@ -5,7 +5,6 @@ go 1.16
 require (
 	cloud.google.com/go/storage v1.15.0 // indirect
 	code.cloudfoundry.org/credhub-cli v0.0.0-20200325195429-1faf152db5a4
-	code.cloudfoundry.org/jsonry v1.1.3
 	code.cloudfoundry.org/lager v2.0.0+incompatible
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/aws/aws-sdk-go v1.25.3 // indirect

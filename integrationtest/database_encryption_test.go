@@ -21,7 +21,7 @@ import (
 	"github.com/pborman/uuid"
 )
 
-var _ = FDescribe("Database Encryption", func() {
+var _ = Describe("Database Encryption", func() {
 	const (
 		provisionParams           = `{"foo":"bar"}`
 		bindParams                = `{"baz":"quz"}`
@@ -183,7 +183,7 @@ var _ = FDescribe("Database Encryption", func() {
 		)
 		runBrokerCommand.Env = append(
 			runBrokerCommand.Env,
-			encryptionConfig...
+			encryptionConfig...,
 		)
 		brokerSession, err = Start(runBrokerCommand, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
@@ -212,7 +212,7 @@ var _ = FDescribe("Database Encryption", func() {
 
 	When("no encryption key is configured", func() {
 		BeforeEach(func() {
-			encryptionConfig = []string {
+			encryptionConfig = []string{
 				"CSB_ENABLE_ENCRYPTION=false",
 			}
 		})

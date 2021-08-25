@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -56,4 +57,3 @@ func generateKey(encryptKeys PasswordConfigs) []byte {
 	key := pbkdf2.Key([]byte(currentPass.Password.Secret), []byte(currentPass.Label), 10000, 32, sha256.New)
 	return key
 }
-

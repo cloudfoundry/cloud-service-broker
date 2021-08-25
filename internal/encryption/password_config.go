@@ -2,6 +2,7 @@ package encryption
 
 import (
 	"fmt"
+
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 )
 
@@ -24,7 +25,7 @@ func (passwords PasswordConfigs) Validate() error {
 	}
 
 	var errs *validation.FieldError
-	primaryPasswords:= 0
+	primaryPasswords := 0
 	IDs := make(map[string]struct{})
 	labels := make(map[string]struct{})
 	for i, password := range passwords {

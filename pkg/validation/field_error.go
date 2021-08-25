@@ -325,7 +325,6 @@ func ErrInvalidValue(value interface{}, fieldPath string) *FieldError {
 	}
 }
 
-
 // ErrInvalidLength constructs a FieldError for a field that has received an
 // invalid string length.
 func ErrInvalidLength(value interface{}, min, max int, fieldPath string) *FieldError {

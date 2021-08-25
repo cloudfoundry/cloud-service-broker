@@ -30,17 +30,17 @@ var _ = Describe("Encryption Config", func() {
 			It("should error when same id is used by several password configs", func() {
 				passwordConfigs := encryption.PasswordConfigs{
 					encryption.PasswordConfig{
-						ID:       "40062468-05bc-11ec-822c-73dd987c0dd6",
-						Label:    "some-test-label",
-						Primary:  true,
+						ID:      "40062468-05bc-11ec-822c-73dd987c0dd6",
+						Label:   "some-test-label",
+						Primary: true,
 						Password: encryption.Password{
 							Secret: "some-super-secret-password",
 						},
 					},
 					encryption.PasswordConfig{
-						ID:       "40062468-05bc-11ec-822c-73dd987c0dd6",
-						Label:    "some-other-test-label",
-						Primary:  false,
+						ID:      "40062468-05bc-11ec-822c-73dd987c0dd6",
+						Label:   "some-other-test-label",
+						Primary: false,
 						Password: encryption.Password{
 							Secret: "some-super-secret-password",
 						},
@@ -54,17 +54,17 @@ var _ = Describe("Encryption Config", func() {
 			It("should error when same label is used by several password configs", func() {
 				passwordConfigs := encryption.PasswordConfigs{
 					encryption.PasswordConfig{
-						ID:       "f4a34ccc-05ba-11ec-bcb7-fb8b57c059aa",
-						Label:    "same-test-label",
-						Primary:  true,
+						ID:      "f4a34ccc-05ba-11ec-bcb7-fb8b57c059aa",
+						Label:   "same-test-label",
+						Primary: true,
 						Password: encryption.Password{
 							Secret: "some-super-secret-password",
 						},
 					},
 					encryption.PasswordConfig{
-						ID:       "40062468-05bc-11ec-822c-73dd987c0dd6",
-						Label:    "same-test-label",
-						Primary:  false,
+						ID:      "40062468-05bc-11ec-822c-73dd987c0dd6",
+						Label:   "same-test-label",
+						Primary: false,
 						Password: encryption.Password{
 							Secret: "some-super-secret-password",
 						},
@@ -78,17 +78,17 @@ var _ = Describe("Encryption Config", func() {
 			It("should error when no password is marked as primary", func() {
 				passwordConfigs := encryption.PasswordConfigs{
 					encryption.PasswordConfig{
-						ID:       "f4a34ccc-05ba-11ec-bcb7-fb8b57c059aa",
-						Label:    "some-test-label",
-						Primary:  false,
+						ID:      "f4a34ccc-05ba-11ec-bcb7-fb8b57c059aa",
+						Label:   "some-test-label",
+						Primary: false,
 						Password: encryption.Password{
 							Secret: "some-super-secret-password",
 						},
 					},
 					encryption.PasswordConfig{
-						ID:       "40062468-05bc-11ec-822c-73dd987c0dd6",
-						Label:    "some-other-test-label",
-						Primary:  false,
+						ID:      "40062468-05bc-11ec-822c-73dd987c0dd6",
+						Label:   "some-other-test-label",
+						Primary: false,
 						Password: encryption.Password{
 							Secret: "some-super-secret-password",
 						},
@@ -102,17 +102,17 @@ var _ = Describe("Encryption Config", func() {
 			It("should error when several passwords are marked as primary", func() {
 				passwordConfigs := encryption.PasswordConfigs{
 					encryption.PasswordConfig{
-						ID:       "f4a34ccc-05ba-11ec-bcb7-fb8b57c059aa",
-						Label:    "some-test-label",
-						Primary:  true,
+						ID:      "f4a34ccc-05ba-11ec-bcb7-fb8b57c059aa",
+						Label:   "some-test-label",
+						Primary: true,
 						Password: encryption.Password{
 							Secret: "some-super-secret-password",
 						},
 					},
 					encryption.PasswordConfig{
-						ID:       "40062468-05bc-11ec-822c-73dd987c0dd6",
-						Label:    "some-other-test-label",
-						Primary:  true,
+						ID:      "40062468-05bc-11ec-822c-73dd987c0dd6",
+						Label:   "some-other-test-label",
+						Primary: true,
 						Password: encryption.Password{
 							Secret: "some-super-secret-password",
 						},
