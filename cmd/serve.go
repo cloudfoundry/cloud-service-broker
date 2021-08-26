@@ -45,7 +45,6 @@ const (
 	apiPasswordProp   = "api.password"
 	apiPortProp       = "api.port"
 	apiHostProp       = "api.host"
-	encryptionKey     = "encryption.key"
 	encryptionEnabled = "encryption.enabled"
 	encryptionKeys    = "encryption.keys"
 )
