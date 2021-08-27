@@ -107,6 +107,7 @@ var _ = Describe("Database Encryption", func() {
 		defer db.Close()
 		count := 0
 		err = db.Model(models.EncryptionDetail{}).Count(&count).Error
+		Expect(err).NotTo(HaveOccurred())
 		Expect(count).To(Equal(1))
 	}
 

@@ -9,7 +9,7 @@ import (
 var _ = Describe("Encryption Config", func() {
 	Describe("PasswordConfigs", func() {
 		Describe("Validate", func() {
-			It("should error when no encryption keys are provided", func() {
+			It("should error when no password configs are provided", func() {
 				passwordConfigs := encryption_config.PasswordConfigs{}
 
 				err := passwordConfigs.Validate()

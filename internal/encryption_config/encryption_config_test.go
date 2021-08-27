@@ -27,9 +27,9 @@ var _ = Describe("Encryption Config", func() {
 			})
 
 			It("should return error when a primary password is also provided", func() {
-				encryptionKeys := "[{\"encryption_key\": {\"secret\":\"thisisAveryLongstring\"},\"guid\":\"dae1dd13-53ed-4c90-8c11-7383b767d5c3\",\"label\":\"foo-foo\",\"primary\":true}]"
+				rawPasswords := "[{\"encryption_key\": {\"secret\":\"thisisAveryLongstring\"},\"guid\":\"dae1dd13-53ed-4c90-8c11-7383b767d5c3\",\"label\":\"foo-foo\",\"primary\":true}]"
 
-				_, err := encryption_config.GetEncryptionKey(false, encryptionKeys)
+				_, err := encryption_config.GetEncryptionKey(false, rawPasswords)
 				Expect(err).To(MatchError("encryption is disabled, but a primary encryption key was provided"))
 			})
 		})
@@ -68,7 +68,7 @@ var _ = Describe("Encryption Config", func() {
 				Expect(record.Canary).NotTo(BeEmpty())
 			})
 
-			It("should return same key when key is found in the DB", func() {
+			It("should use stored key when key is found in the DB", func() {
 				encryptionKeys := "[{\"encryption_key\": {\"secret\":\"thisisAveryLongstring\"},\"guid\":\"dae1dd13-53ed-4c90-8c11-7383b767d5c3\",\"label\":\"foo-foo\",\"primary\":true}]"
 				key1, err := encryption_config.GetEncryptionKey(true, encryptionKeys)
 				Expect(err).ToNot(HaveOccurred())
@@ -87,24 +87,24 @@ var _ = Describe("Encryption Config", func() {
 			})
 
 			Describe("invalid encryption keys block", func() {
-				It("should fail when encryption keys cannot be unmarshalled", func() {
-					encryptionKeys := "[{\"encryption_key\": {\"secret\":}]"
+				It("should fail when password cannot be unmarshalled", func() {
+					rawPasswords := "[{\"encryption_key\": {\"secret\":}]"
 
-					_, err := encryption_config.GetEncryptionKey(true, encryptionKeys)
+					_, err := encryption_config.GetEncryptionKey(true, rawPasswords)
 					Expect(err).To(HaveOccurred())
 					Expect(err).To(MatchError("error unmarshalling encryption keys: invalid character '}' looking for beginning of value"))
 				})
 
-				It("should fail when no encryption keys are provided", func() {
+				It("should fail when no passwords are provided", func() {
 					_, err := encryption_config.GetEncryptionKey(true, "")
 					Expect(err).To(HaveOccurred())
 					Expect(err).To(MatchError("encryption is enabled, but there was an error validating encryption keys: no encryption keys were provided"))
 				})
 
-				It("should fail when no encryption keys are invalid", func() {
-					encryptionKeys := "[{\"encryption_key\": {\"secret\":\"thisisAveryLongstring\"},\"guid\":\"dae1dd13-53ed-4c90-8c11-7383b767d5c3\",\"label\":\"foo-foo\",\"primary\":false}]"
+				It("should fail when passwords are invalid", func() {
+					rawPasswords := "[{\"encryption_key\": {\"secret\":\"thisisAveryLongstring\"},\"guid\":\"dae1dd13-53ed-4c90-8c11-7383b767d5c3\",\"label\":\"foo-foo\",\"primary\":false}]"
 
-					_, err := encryption_config.GetEncryptionKey(true, encryptionKeys)
+					_, err := encryption_config.GetEncryptionKey(true, rawPasswords)
 					Expect(err).To(HaveOccurred())
 					Expect(err).To(MatchError("encryption is enabled, but there was an error validating encryption keys: no encryption key is marked as primary"))
 				})
