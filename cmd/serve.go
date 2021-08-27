@@ -83,8 +83,9 @@ func serve() {
 	logger := utils.NewLogger("cloud-service-broker")
 	db := db_service.New(logger)
 
-	// store record in db
-	key, err := encryption_config.GetEncryptionKey()
+	encryptDB := viper.GetBool(encryptionEnabled)
+	rawPasswordBlocks := viper.GetString(encryptionKeys)
+	key, err := encryption_config.GetEncryptionKey(encryptDB, rawPasswordBlocks)
 	if err != nil {
 		logger.Fatal("Error retrieving encryption key: %s", err)
 	}

@@ -15,21 +15,15 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
-	"github.com/spf13/viper"
 	"golang.org/x/crypto/pbkdf2"
 )
 
 const (
-	encryptionEnabled = "encryption.enabled"
-	encryptionKeys    = "encryption.keys"
-	canary            = "some-test-value"
+	canary = "some-test-value"
 )
 
-func GetEncryptionKey() (string, error) {
+func GetEncryptionKey(encryptDB bool, rawPasswordBlocks string) (string, error) {
 	logger := utils.NewLogger("cloud-service-broker")
-
-	encryptDB := viper.GetBool(encryptionEnabled)
-	rawPasswordBlocks := viper.GetString(encryptionKeys)
 
 	var passwords PasswordConfigs
 
@@ -50,7 +44,7 @@ func GetEncryptionKey() (string, error) {
 			return "", fmt.Errorf("error generating the key: %s", err)
 		}
 
-		logger.Info("encryption enabled")
+		logger.Info("db encryption enabled")
 		return string(key), nil
 	} else {
 		for _, key := range passwords {
@@ -58,14 +52,14 @@ func GetEncryptionKey() (string, error) {
 				return "", fmt.Errorf("encryption is disabled, but a primary encryption key was provided")
 			}
 		}
-		logger.Info("encryption disabled")
 	}
 
+	logger.Info("db encryption disabled")
 	return "", nil
 }
 
-func generateKey(encryptKeys PasswordConfigs) ([]byte, error) {
-	primaryPassword := getPrimaryPassword(encryptKeys)
+func generateKey(passwordConfigs PasswordConfigs) ([]byte, error) {
+	primaryPassword := getPrimaryPassword(passwordConfigs)
 	var salt []byte
 	newPassword := false
 
@@ -88,18 +82,20 @@ func generateKey(encryptKeys PasswordConfigs) ([]byte, error) {
 	key := pbkdf2.Key([]byte(primaryPassword.Password.Secret), salt, 10000, 32, sha256.New)
 
 	if newPassword {
-		details := models.EncryptionDetail{
-			Label:   primaryPassword.Label,
-			Salt:    string(salt),
-			Primary: true,
-		}
-
-		models.SetEncryptor(models.ConfigureEncryption(string(key)))
-		if err := details.SetCanary(canary); err != nil {
+		encryptor := models.ConfigureEncryption(string(key))
+		encryptedCanary, err := encryptor.Encrypt([]byte(canary))
+		if err != nil {
 			return nil, fmt.Errorf("error setting canary value: %s", err)
 		}
 
-		err = db_service.CreateEncryptionDetail(context.Background(), &details)
+		err = db_service.CreateEncryptionDetail(
+			context.Background(),
+			&models.EncryptionDetail{
+				Label:   primaryPassword.Label,
+				Salt:    string(salt),
+				Primary: true,
+				Canary:  encryptedCanary,
+			})
 		if err != nil {
 			return nil, fmt.Errorf("error storing encryption details: %s", err)
 		}
@@ -108,15 +104,15 @@ func generateKey(encryptKeys PasswordConfigs) ([]byte, error) {
 	return key, nil
 }
 
-func getPrimaryPassword(encryptKeys PasswordConfigs) PasswordConfig {
-	var currentPass PasswordConfig
-	for _, key := range encryptKeys {
-		if key.Primary {
-			currentPass = key
+func getPrimaryPassword(passwordConfigs PasswordConfigs) PasswordConfig {
+	var primaryPassword PasswordConfig
+	for _, p := range passwordConfigs {
+		if p.Primary {
+			primaryPassword = p
 			break
 		}
 	}
-	return currentPass
+	return primaryPassword
 }
 
 func generateNewSalt() ([]byte, error) {

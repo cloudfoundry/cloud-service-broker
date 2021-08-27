@@ -181,14 +181,3 @@ func (t *TerraformDeployment) GetWorkspace() (string, error) {
 
 // EncryptionDetail holds details used to generate the encryption key.
 type EncryptionDetail EncryptionDetailV1
-
-// TODO testing
-func (ed *EncryptionDetail) SetCanary(value string) error {
-	encryptedValue, err := encryptorInstance.Encrypt([]byte(value))
-	if err != nil {
-		return err
-	}
-
-	ed.Canary = encryptedValue
-	return nil
-}
