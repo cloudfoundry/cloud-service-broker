@@ -293,6 +293,88 @@ func (ds *SqlDatastore) ExistsTerraformDeploymentById(ctx context.Context, id st
 	return recordToExists(ds.GetTerraformDeploymentById(ctx, id))
 }
 
+// CreateEncryptionDetail creates a new record in the database and assigns it a primary key.
+func CreateEncryptionDetail(ctx context.Context, object *models.EncryptionDetail) error {
+	return defaultDatastore().CreateEncryptionDetail(ctx, object)
+}
+func (ds *SqlDatastore) CreateEncryptionDetail(ctx context.Context, object *models.EncryptionDetail) error {
+	return ds.db.Create(object).Error
+}
+
+// SaveEncryptionDetail updates an existing record in the database.
+func SaveEncryptionDetail(ctx context.Context, object *models.EncryptionDetail) error {
+	return defaultDatastore().SaveEncryptionDetail(ctx, object)
+}
+func (ds *SqlDatastore) SaveEncryptionDetail(ctx context.Context, object *models.EncryptionDetail) error {
+	return ds.db.Save(object).Error
+}
+
+// DeleteEncryptionDetailByLabel soft-deletes the record by its key (label).
+func DeleteEncryptionDetailByLabel(ctx context.Context, label string) error {
+	return defaultDatastore().DeleteEncryptionDetailByLabel(ctx, label)
+}
+func (ds *SqlDatastore) DeleteEncryptionDetailByLabel(ctx context.Context, label string) error {
+	return ds.db.Where("label = ?", label).Delete(&models.EncryptionDetail{}).Error
+}
+
+// DeleteEncryptionDetailById soft-deletes the record by its key (id).
+func DeleteEncryptionDetailById(ctx context.Context, id uint) error {
+	return defaultDatastore().DeleteEncryptionDetailById(ctx, id)
+}
+func (ds *SqlDatastore) DeleteEncryptionDetailById(ctx context.Context, id uint) error {
+	return ds.db.Where("id = ?", id).Delete(&models.EncryptionDetail{}).Error
+}
+
+// DeleteEncryptionDetail soft-deletes the record.
+func DeleteEncryptionDetail(ctx context.Context, record *models.EncryptionDetail) error {
+	return defaultDatastore().DeleteEncryptionDetail(ctx, record)
+}
+func (ds *SqlDatastore) DeleteEncryptionDetail(ctx context.Context, record *models.EncryptionDetail) error {
+	return ds.db.Delete(record).Error
+}
+
+// GetEncryptionDetailByLabel gets an instance of EncryptionDetail by its key (label).
+func GetEncryptionDetailByLabel(ctx context.Context, label string) (*models.EncryptionDetail, error) {
+	return defaultDatastore().GetEncryptionDetailByLabel(ctx, label)
+}
+func (ds *SqlDatastore) GetEncryptionDetailByLabel(ctx context.Context, label string) (*models.EncryptionDetail, error) {
+	record := models.EncryptionDetail{}
+	if err := ds.db.Where("label = ?", label).First(&record).Error; err != nil {
+		return nil, err
+	}
+
+	return &record, nil
+}
+
+// ExistsEncryptionDetailByLabel checks to see if an instance of EncryptionDetail exists by its key (label).
+func ExistsEncryptionDetailByLabel(ctx context.Context, label string) (bool, error) {
+	return defaultDatastore().ExistsEncryptionDetailByLabel(ctx, label)
+}
+func (ds *SqlDatastore) ExistsEncryptionDetailByLabel(ctx context.Context, label string) (bool, error) {
+	return recordToExists(ds.GetEncryptionDetailByLabel(ctx, label))
+}
+
+// GetEncryptionDetailById gets an instance of EncryptionDetail by its key (id).
+func GetEncryptionDetailById(ctx context.Context, id uint) (*models.EncryptionDetail, error) {
+	return defaultDatastore().GetEncryptionDetailById(ctx, id)
+}
+func (ds *SqlDatastore) GetEncryptionDetailById(ctx context.Context, id uint) (*models.EncryptionDetail, error) {
+	record := models.EncryptionDetail{}
+	if err := ds.db.Where("id = ?", id).First(&record).Error; err != nil {
+		return nil, err
+	}
+
+	return &record, nil
+}
+
+// ExistsEncryptionDetailById checks to see if an instance of EncryptionDetail exists by its key (id).
+func ExistsEncryptionDetailById(ctx context.Context, id uint) (bool, error) {
+	return defaultDatastore().ExistsEncryptionDetailById(ctx, id)
+}
+func (ds *SqlDatastore) ExistsEncryptionDetailById(ctx context.Context, id uint) (bool, error) {
+	return recordToExists(ds.GetEncryptionDetailById(ctx, id))
+}
+
 func recordToExists(_ interface{}, err error) (bool, error) {
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {

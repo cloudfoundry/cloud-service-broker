@@ -1,4 +1,4 @@
-package encryption
+package encryption_config
 
 import (
 	"fmt"

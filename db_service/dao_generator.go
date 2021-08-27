@@ -89,6 +89,23 @@ func main() {
 				"LastOperationMessage": `Started 2018-01-01`,
 			},
 		},
+		{
+			Type:              "EncryptionDetail",
+			PrimaryKeyType:    "uint",
+			PrimaryKeyExample: `uint(42)`,
+			PrimaryKeyField:   "id",
+			Keys: []fieldList{
+				{
+					{Type: "string", Column: "label"},
+				},
+			},
+			ExampleFields: map[string]interface{}{
+				"Label":   "test-label",
+				"Salt":    "tesst",
+				"Canary":  "encrypted-text",
+				"Primary": true,
+			},
+		},
 	}
 
 	for i, model := range models {

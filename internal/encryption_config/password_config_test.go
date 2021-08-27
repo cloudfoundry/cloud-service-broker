@@ -1,7 +1,7 @@
-package encryption_test
+package encryption_config_test
 
 import (
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption_config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -10,15 +10,15 @@ var _ = Describe("Encryption Config", func() {
 	Describe("PasswordConfigs", func() {
 		Describe("Validate", func() {
 			It("should error when no encryption keys are provided", func() {
-				passwordConfigs := encryption.PasswordConfigs{}
+				passwordConfigs := encryption_config.PasswordConfigs{}
 
 				err := passwordConfigs.Validate()
 				Expect(err).To(MatchError("no encryption keys were provided"))
 			})
 
 			It("should error when one of the password configs is invalid", func() {
-				passwordConfigs := encryption.PasswordConfigs{
-					encryption.PasswordConfig{
+				passwordConfigs := encryption_config.PasswordConfigs{
+					encryption_config.PasswordConfig{
 						ID: "test-id",
 					},
 				}
@@ -28,20 +28,20 @@ var _ = Describe("Encryption Config", func() {
 			})
 
 			It("should error when same id is used by several password configs", func() {
-				passwordConfigs := encryption.PasswordConfigs{
-					encryption.PasswordConfig{
+				passwordConfigs := encryption_config.PasswordConfigs{
+					encryption_config.PasswordConfig{
 						ID:      "40062468-05bc-11ec-822c-73dd987c0dd6",
 						Label:   "some-test-label",
 						Primary: true,
-						Password: encryption.Password{
+						Password: encryption_config.Password{
 							Secret: "some-super-secret-password",
 						},
 					},
-					encryption.PasswordConfig{
+					encryption_config.PasswordConfig{
 						ID:      "40062468-05bc-11ec-822c-73dd987c0dd6",
 						Label:   "some-other-test-label",
 						Primary: false,
-						Password: encryption.Password{
+						Password: encryption_config.Password{
 							Secret: "some-super-secret-password",
 						},
 					},
@@ -52,20 +52,20 @@ var _ = Describe("Encryption Config", func() {
 			})
 
 			It("should error when same label is used by several password configs", func() {
-				passwordConfigs := encryption.PasswordConfigs{
-					encryption.PasswordConfig{
+				passwordConfigs := encryption_config.PasswordConfigs{
+					encryption_config.PasswordConfig{
 						ID:      "f4a34ccc-05ba-11ec-bcb7-fb8b57c059aa",
 						Label:   "same-test-label",
 						Primary: true,
-						Password: encryption.Password{
+						Password: encryption_config.Password{
 							Secret: "some-super-secret-password",
 						},
 					},
-					encryption.PasswordConfig{
+					encryption_config.PasswordConfig{
 						ID:      "40062468-05bc-11ec-822c-73dd987c0dd6",
 						Label:   "same-test-label",
 						Primary: false,
-						Password: encryption.Password{
+						Password: encryption_config.Password{
 							Secret: "some-super-secret-password",
 						},
 					},
@@ -76,20 +76,20 @@ var _ = Describe("Encryption Config", func() {
 			})
 
 			It("should error when no password is marked as primary", func() {
-				passwordConfigs := encryption.PasswordConfigs{
-					encryption.PasswordConfig{
+				passwordConfigs := encryption_config.PasswordConfigs{
+					encryption_config.PasswordConfig{
 						ID:      "f4a34ccc-05ba-11ec-bcb7-fb8b57c059aa",
 						Label:   "some-test-label",
 						Primary: false,
-						Password: encryption.Password{
+						Password: encryption_config.Password{
 							Secret: "some-super-secret-password",
 						},
 					},
-					encryption.PasswordConfig{
+					encryption_config.PasswordConfig{
 						ID:      "40062468-05bc-11ec-822c-73dd987c0dd6",
 						Label:   "some-other-test-label",
 						Primary: false,
-						Password: encryption.Password{
+						Password: encryption_config.Password{
 							Secret: "some-super-secret-password",
 						},
 					},
@@ -100,20 +100,20 @@ var _ = Describe("Encryption Config", func() {
 			})
 
 			It("should error when several passwords are marked as primary", func() {
-				passwordConfigs := encryption.PasswordConfigs{
-					encryption.PasswordConfig{
+				passwordConfigs := encryption_config.PasswordConfigs{
+					encryption_config.PasswordConfig{
 						ID:      "f4a34ccc-05ba-11ec-bcb7-fb8b57c059aa",
 						Label:   "some-test-label",
 						Primary: true,
-						Password: encryption.Password{
+						Password: encryption_config.Password{
 							Secret: "some-super-secret-password",
 						},
 					},
-					encryption.PasswordConfig{
+					encryption_config.PasswordConfig{
 						ID:      "40062468-05bc-11ec-822c-73dd987c0dd6",
 						Label:   "some-other-test-label",
 						Primary: true,
-						Password: encryption.Password{
+						Password: encryption_config.Password{
 							Secret: "some-super-secret-password",
 						},
 					},
@@ -128,11 +128,11 @@ var _ = Describe("Encryption Config", func() {
 	Describe("PasswordConfig", func() {
 		Describe("Validate", func() {
 			It("should error when guid is missing", func() {
-				password := encryption.PasswordConfig{
+				password := encryption_config.PasswordConfig{
 					ID:      "test",
 					Label:   "some-label",
 					Primary: false,
-					Password: encryption.Password{
+					Password: encryption_config.Password{
 						Secret: "something-extremely-secret",
 					},
 				}
@@ -142,10 +142,10 @@ var _ = Describe("Encryption Config", func() {
 			})
 
 			It("should error when label is missing", func() {
-				password := encryption.PasswordConfig{
+				password := encryption_config.PasswordConfig{
 					ID:      "f4a34ccc-05ba-11ec-bcb7-fb8b57c059aa",
 					Primary: false,
-					Password: encryption.Password{
+					Password: encryption_config.Password{
 						Secret: "something-extremely-secret",
 					},
 				}
@@ -155,11 +155,11 @@ var _ = Describe("Encryption Config", func() {
 			})
 
 			It("should error when label is invalid size", func() {
-				password := encryption.PasswordConfig{
+				password := encryption_config.PasswordConfig{
 					ID:      "f4a34ccc-05ba-11ec-bcb7-fb8b57c059aa",
 					Label:   "test",
 					Primary: false,
-					Password: encryption.Password{
+					Password: encryption_config.Password{
 						Secret: "something-extremely-secret",
 					},
 				}
@@ -169,11 +169,11 @@ var _ = Describe("Encryption Config", func() {
 			})
 
 			It("should error when secret is missing", func() {
-				password := encryption.PasswordConfig{
+				password := encryption_config.PasswordConfig{
 					ID:      "f4a34ccc-05ba-11ec-bcb7-fb8b57c059aa",
 					Label:   "test-label",
 					Primary: false,
-					Password: encryption.Password{
+					Password: encryption_config.Password{
 						Secret: "",
 					},
 				}
@@ -183,11 +183,11 @@ var _ = Describe("Encryption Config", func() {
 			})
 
 			It("should error when secret is invalid size", func() {
-				password := encryption.PasswordConfig{
+				password := encryption_config.PasswordConfig{
 					ID:      "f4a34ccc-05ba-11ec-bcb7-fb8b57c059aa",
 					Label:   "test-label",
 					Primary: false,
-					Password: encryption.Password{
+					Password: encryption_config.Password{
 						Secret: "short-secret",
 					},
 				}

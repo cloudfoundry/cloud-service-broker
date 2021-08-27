@@ -35,6 +35,7 @@ func newInMemoryDatastore(t *testing.T) *SqlDatastore {
 	testDb.CreateTable(models.ServiceBindingCredentials{})
 	testDb.CreateTable(models.ProvisionRequestDetails{})
 	testDb.CreateTable(models.TerraformDeployment{})
+	testDb.CreateTable(models.EncryptionDetail{})
 
 	return &SqlDatastore{db: testDb}
 }
@@ -738,6 +739,207 @@ func TestSqlDatastore_ExistsTerraformDeploymentById(t *testing.T) {
 
 	// we should be able to see that it was soft-deleted
 	exists, err = ds.ExistsTerraformDeploymentById(testCtx, instance.ID)
+	ensureExistance(t, false, exists, err)
+}
+
+func createEncryptionDetailInstance() (uint, models.EncryptionDetail) {
+	testPk := uint(42)
+
+	instance := models.EncryptionDetail{}
+	instance.ID = testPk
+	instance.Canary = "encrypted-text"
+	instance.Label = "test-label"
+	instance.Primary = true
+	instance.Salt = "tesst"
+
+	return testPk, instance
+}
+
+func ensureEncryptionDetailFieldsMatch(t *testing.T, expected, actual *models.EncryptionDetail) {
+
+	if expected.Canary != actual.Canary {
+		t.Errorf("Expected field Canary to be %#v, got %#v", expected.Canary, actual.Canary)
+	}
+
+	if expected.Label != actual.Label {
+		t.Errorf("Expected field Label to be %#v, got %#v", expected.Label, actual.Label)
+	}
+
+	if expected.Primary != actual.Primary {
+		t.Errorf("Expected field Primary to be %#v, got %#v", expected.Primary, actual.Primary)
+	}
+
+	if expected.Salt != actual.Salt {
+		t.Errorf("Expected field Salt to be %#v, got %#v", expected.Salt, actual.Salt)
+	}
+
+}
+
+func TestSqlDatastore_EncryptionDetailDAO(t *testing.T) {
+	ds := newInMemoryDatastore(t)
+	testPk, instance := createEncryptionDetailInstance()
+	testCtx := context.Background()
+
+	// on startup, there should be no objects to find or delete
+	exists, err := ds.ExistsEncryptionDetailById(testCtx, testPk)
+	ensureExistance(t, false, exists, err)
+
+	if _, err := ds.GetEncryptionDetailById(testCtx, testPk); err != gorm.ErrRecordNotFound {
+		t.Errorf("Expected an ErrRecordNotFound trying to get non-existing PK got %v", err)
+	}
+
+	// Should be able to create the item
+	beforeCreation := time.Now()
+	if err := ds.CreateEncryptionDetail(testCtx, &instance); err != nil {
+		t.Errorf("Expected to be able to create the item %#v, got error: %s", instance, err)
+	}
+	afterCreation := time.Now()
+
+	// after creation we should be able to get the item
+	ret, err := ds.GetEncryptionDetailById(testCtx, testPk)
+	if err != nil {
+		t.Errorf("Expected no error trying to get saved item, got: %v", err)
+	}
+
+	if ret.CreatedAt.Before(beforeCreation) || ret.CreatedAt.After(afterCreation) {
+		t.Errorf("Expected creation time to be between  %v and %v got %v", beforeCreation, afterCreation, ret.CreatedAt)
+	}
+
+	if !ret.UpdatedAt.Equal(ret.CreatedAt) {
+		t.Errorf("Expected initial update time to equal creation time, but got update: %v, create: %v", ret.UpdatedAt, ret.CreatedAt)
+	}
+
+	// Ensure non-gorm fields were deserialized correctly
+	ensureEncryptionDetailFieldsMatch(t, &instance, ret)
+
+	// we should be able to update the item and it will have a new updated time
+	if err := ds.SaveEncryptionDetail(testCtx, ret); err != nil {
+		t.Errorf("Expected no error trying to get update %#v , got: %v", ret, err)
+	}
+
+	if !ret.UpdatedAt.After(ret.CreatedAt) {
+		t.Errorf("Expected update time to be after create time after update, got update: %#v create: %#v", ret.UpdatedAt, ret.CreatedAt)
+	}
+
+	// after deleting the item we should not be able to get it
+	if err := ds.DeleteEncryptionDetailById(testCtx, testPk); err != nil {
+		t.Errorf("Expected no error when deleting by pk got: %v", err)
+	}
+
+	if _, err := ds.GetEncryptionDetailById(testCtx, testPk); err != gorm.ErrRecordNotFound {
+		t.Errorf("Expected ErrRecordNotFound after delete but got %v", err)
+	}
+}
+func TestSqlDatastore_GetEncryptionDetailByLabel(t *testing.T) {
+	ds := newInMemoryDatastore(t)
+	_, instance := createEncryptionDetailInstance()
+	testCtx := context.Background()
+
+	if _, err := ds.GetEncryptionDetailByLabel(testCtx, instance.Label); err != gorm.ErrRecordNotFound {
+		t.Errorf("Expected an ErrRecordNotFound trying to get non-existing record got %v", err)
+	}
+
+	beforeCreation := time.Now()
+	if err := ds.CreateEncryptionDetail(testCtx, &instance); err != nil {
+		t.Errorf("Expected to be able to create the item %#v, got error: %s", instance, err)
+	}
+	afterCreation := time.Now()
+
+	// after creation we should be able to get the item
+	ret, err := ds.GetEncryptionDetailByLabel(testCtx, instance.Label)
+	if err != nil {
+		t.Errorf("Expected no error trying to get saved item, got: %v", err)
+	}
+
+	if ret.CreatedAt.Before(beforeCreation) || ret.CreatedAt.After(afterCreation) {
+		t.Errorf("Expected creation time to be between  %v and %v got %v", beforeCreation, afterCreation, ret.CreatedAt)
+	}
+
+	if !ret.UpdatedAt.Equal(ret.CreatedAt) {
+		t.Errorf("Expected initial update time to equal creation time, but got update: %v, create: %v", ret.UpdatedAt, ret.CreatedAt)
+	}
+
+	// Ensure non-gorm fields were deserialized correctly
+	ensureEncryptionDetailFieldsMatch(t, &instance, ret)
+}
+
+func TestSqlDatastore_ExistsEncryptionDetailByLabel(t *testing.T) {
+	ds := newInMemoryDatastore(t)
+	_, instance := createEncryptionDetailInstance()
+	testCtx := context.Background()
+
+	exists, err := ds.ExistsEncryptionDetailByLabel(testCtx, instance.Label)
+	ensureExistance(t, false, exists, err)
+
+	if err := ds.CreateEncryptionDetail(testCtx, &instance); err != nil {
+		t.Errorf("Expected to be able to create the item %#v, got error: %s", instance, err)
+	}
+
+	exists, err = ds.ExistsEncryptionDetailByLabel(testCtx, instance.Label)
+	ensureExistance(t, true, exists, err)
+
+	if err := ds.DeleteEncryptionDetail(testCtx, &instance); err != nil {
+		t.Errorf("Expected no error when deleting by pk got: %v", err)
+	}
+
+	// we should be able to see that it was soft-deleted
+	exists, err = ds.ExistsEncryptionDetailByLabel(testCtx, instance.Label)
+	ensureExistance(t, false, exists, err)
+}
+func TestSqlDatastore_GetEncryptionDetailById(t *testing.T) {
+	ds := newInMemoryDatastore(t)
+	_, instance := createEncryptionDetailInstance()
+	testCtx := context.Background()
+
+	if _, err := ds.GetEncryptionDetailById(testCtx, instance.ID); err != gorm.ErrRecordNotFound {
+		t.Errorf("Expected an ErrRecordNotFound trying to get non-existing record got %v", err)
+	}
+
+	beforeCreation := time.Now()
+	if err := ds.CreateEncryptionDetail(testCtx, &instance); err != nil {
+		t.Errorf("Expected to be able to create the item %#v, got error: %s", instance, err)
+	}
+	afterCreation := time.Now()
+
+	// after creation we should be able to get the item
+	ret, err := ds.GetEncryptionDetailById(testCtx, instance.ID)
+	if err != nil {
+		t.Errorf("Expected no error trying to get saved item, got: %v", err)
+	}
+
+	if ret.CreatedAt.Before(beforeCreation) || ret.CreatedAt.After(afterCreation) {
+		t.Errorf("Expected creation time to be between  %v and %v got %v", beforeCreation, afterCreation, ret.CreatedAt)
+	}
+
+	if !ret.UpdatedAt.Equal(ret.CreatedAt) {
+		t.Errorf("Expected initial update time to equal creation time, but got update: %v, create: %v", ret.UpdatedAt, ret.CreatedAt)
+	}
+
+	// Ensure non-gorm fields were deserialized correctly
+	ensureEncryptionDetailFieldsMatch(t, &instance, ret)
+}
+
+func TestSqlDatastore_ExistsEncryptionDetailById(t *testing.T) {
+	ds := newInMemoryDatastore(t)
+	_, instance := createEncryptionDetailInstance()
+	testCtx := context.Background()
+
+	exists, err := ds.ExistsEncryptionDetailById(testCtx, instance.ID)
+	ensureExistance(t, false, exists, err)
+
+	if err := ds.CreateEncryptionDetail(testCtx, &instance); err != nil {
+		t.Errorf("Expected to be able to create the item %#v, got error: %s", instance, err)
+	}
+
+	exists, err = ds.ExistsEncryptionDetailById(testCtx, instance.ID)
+	ensureExistance(t, true, exists, err)
+
+	if err := ds.DeleteEncryptionDetail(testCtx, &instance); err != nil {
+		t.Errorf("Expected no error when deleting by pk got: %v", err)
+	}
+
+	// we should be able to see that it was soft-deleted
+	exists, err = ds.ExistsEncryptionDetailById(testCtx, instance.ID)
 	ensureExistance(t, false, exists, err)
 }
 

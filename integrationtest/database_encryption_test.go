@@ -38,6 +38,7 @@ var _ = Describe("Database Encryption", func() {
 		serviceInstanceFKQuery    = "service_instance_id = ?"
 		serviceInstanceIdQuery    = "id = ?"
 		tfWorkspaceIdQuery        = "id = ?"
+		encryptionLabelQuery      = "label = ?"
 	)
 
 	var (
@@ -53,6 +54,7 @@ var _ = Describe("Database Encryption", func() {
 		encryptionConfig    []string
 		serviceInstanceGUID string
 		serviceBindingGUID  string
+		encryptionLabel     string
 	)
 
 	findRecord := func(dest interface{}, query, guid string) {
@@ -91,6 +93,12 @@ var _ = Describe("Database Encryption", func() {
 		record := models.TerraformDeployment{}
 		findRecord(&record, tfWorkspaceIdQuery, fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, serviceBindingGUID))
 		return record.Workspace
+	}
+
+	persistedEncryptionConfig := func() string {
+		record := models.EncryptionDetail{}
+		findRecord(&record, encryptionLabelQuery, encryptionLabel)
+		return record.Label
 	}
 
 	expectServiceBindingDetailsToNotExist := func() {
@@ -266,7 +274,8 @@ var _ = Describe("Database Encryption", func() {
 
 	When("the encryption key is configured", func() {
 		BeforeEach(func() {
-			encryptionKeys := "[{\"encryption_key\": {\"secret\":\"one-key-here-with-32-bytes-in-it\"},\"guid\":\"dae1dd13-53ed-4c90-8c11-7383b767d5c3\",\"label\":\"first-key\",\"primary\":true\n}]"
+			encryptionLabel = "first-key"
+			encryptionKeys := fmt.Sprintf("[{\"encryption_key\": {\"secret\":\"one-very-long-password-here\"},\"guid\":\"dae1dd13-53ed-4c90-8c11-7383b767d5c3\",\"label\":\"%s\",\"primary\":true\n}]", encryptionLabel)
 			encryptionConfig = []string{
 				"CSB_ENABLE_ENCRYPTION=true",
 				fmt.Sprintf("CSB_ENCRYPTION_KEYS=%s", encryptionKeys),
@@ -274,6 +283,10 @@ var _ = Describe("Database Encryption", func() {
 		})
 
 		It("encrypts sensitive fields", func() {
+			By("checking the encryption key config is stored", func() {
+				Expect(persistedEncryptionConfig()).To(Equal(encryptionLabel))
+			})
+
 			By("checking the provision fields")
 			Expect(persistedRequestDetails()).NotTo(Equal(provisionParams))
 			Expect(persistedServiceInstanceDetails()).NotTo(Equal(provisionOutput))

@@ -261,3 +261,20 @@ type TerraformDeploymentV2 struct {
 func (TerraformDeploymentV2) TableName() string {
 	return "terraform_deployments"
 }
+
+// EncryptionDetailV1 describes the elements used for creating the encryption key.
+type EncryptionDetailV1 struct {
+	gorm.Model
+
+	Label   string `sql:"index"`
+	Salt    string
+	Canary  string
+	Primary bool
+}
+
+// TableName returns a consistent table name (`encryption_details`) for gorm so
+// multiple structs from different versions of the database all operate on the
+// same table.
+func (EncryptionDetailV1) TableName() string {
+	return "encryption_details"
+}

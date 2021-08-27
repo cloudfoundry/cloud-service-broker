@@ -19,7 +19,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption_config"
 
 	"net/http"
 
@@ -84,7 +84,7 @@ func serve() {
 	db := db_service.New(logger)
 
 	// store record in db
-	key, err := encryption.GetEncryptionKey()
+	key, err := encryption_config.GetEncryptionKey()
 	if err != nil {
 		logger.Fatal("Error retrieving encryption key: %s", err)
 	}
