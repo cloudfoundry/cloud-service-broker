@@ -283,8 +283,6 @@ var _ = Describe("Database Encryption", func() {
 	})
 
 	When("the encryption key is configured", func() {
-		var newBrokerSession *Session
-
 		BeforeEach(func() {
 			encryptionLabel = "first-key"
 			encryptionKeys := fmt.Sprintf("[{\"encryption_key\": {\"secret\":\"one-very-long-password-here\"},\"guid\":\"dae1dd13-53ed-4c90-8c11-7383b767d5c3\",\"label\":\"%s\",\"primary\":true\n}]", encryptionLabel)
@@ -292,10 +290,6 @@ var _ = Describe("Database Encryption", func() {
 				"CSB_ENABLE_ENCRYPTION=true",
 				fmt.Sprintf("CSB_ENCRYPTION_KEYS=%s", encryptionKeys),
 			}
-		})
-
-		AfterEach(func() {
-			newBrokerSession.Terminate()
 		})
 
 		It("encrypts sensitive fields", func() {
@@ -348,54 +342,62 @@ var _ = Describe("Database Encryption", func() {
 			})
 		})
 
-		It("uses the same key on restart", func() {
+		Context("persists encryption key", func() {
+			var newBrokerSession *Session
 
-			By("checking the encryption key config is stored", func() {
-				Expect(persistedEncryptionConfig()).To(Equal(encryptionLabel))
+			AfterEach(func() {
+				newBrokerSession.Terminate()
 			})
 
-			By("terminating old broker session")
-			brokerSession.Terminate()
+			It("uses the same key on restart", func() {
 
-			By("starting the broker again", func() {
-				runBrokerCommand := exec.Command(csb, "serve")
-				os.Unsetenv("CH_CRED_HUB_URL")
+				By("checking the encryption key config is stored", func() {
+					Expect(persistedEncryptionConfig()).To(Equal(encryptionLabel))
+				})
 
-				runBrokerCommand.Env = append(
-					os.Environ(),
-					"CSB_LISTENER_HOST=localhost",
-					"DB_TYPE=sqlite3",
-					fmt.Sprintf("DB_PATH=%s", databaseFile),
-					fmt.Sprintf("PORT=%d", brokerPort),
-					fmt.Sprintf("SECURITY_USER_NAME=%s", brokerUsername),
-					fmt.Sprintf("SECURITY_USER_PASSWORD=%s", brokerPassword),
-				)
-				runBrokerCommand.Env = append(
-					runBrokerCommand.Env,
-					encryptionConfig...,
-				)
-				var err error
-				newBrokerSession, err = Start(runBrokerCommand, GinkgoWriter, GinkgoWriter)
-				Expect(err).NotTo(HaveOccurred())
-				waitForBrokerToStart(brokerPort)
+				By("terminating old broker session")
+				brokerSession.Terminate()
 
-				brokerClient, err = client.New(brokerUsername, brokerPassword, "localhost", brokerPort)
-				Expect(err).NotTo(HaveOccurred())
+				By("starting the broker again", func() {
+					runBrokerCommand := exec.Command(csb, "serve")
+					os.Unsetenv("CH_CRED_HUB_URL")
+
+					runBrokerCommand.Env = append(
+						os.Environ(),
+						"CSB_LISTENER_HOST=localhost",
+						"DB_TYPE=sqlite3",
+						fmt.Sprintf("DB_PATH=%s", databaseFile),
+						fmt.Sprintf("PORT=%d", brokerPort),
+						fmt.Sprintf("SECURITY_USER_NAME=%s", brokerUsername),
+						fmt.Sprintf("SECURITY_USER_PASSWORD=%s", brokerPassword),
+					)
+					runBrokerCommand.Env = append(
+						runBrokerCommand.Env,
+						encryptionConfig...,
+					)
+					var err error
+					newBrokerSession, err = Start(runBrokerCommand, GinkgoWriter, GinkgoWriter)
+					Expect(err).NotTo(HaveOccurred())
+					waitForBrokerToStart(brokerPort)
+
+					brokerClient, err = client.New(brokerUsername, brokerPassword, "localhost", brokerPort)
+					Expect(err).NotTo(HaveOccurred())
+				})
+
+				By("checking only one encryption detail record is set", func() {
+					expectOnlyOneEncryptionConfig()
+				})
+
+				By("checking how update persists service instance fields")
+				updateServiceInstance()
+				Expect(persistedRequestDetails()).NotTo(Equal(provisionParams))
+				Expect(persistedServiceInstanceDetails()).NotTo(Equal(updateOutput))
+				Expect(persistedServiceInstanceTerraformWorkspace()).NotTo(SatisfyAny(
+					ContainSubstring(provisionOutputStateValue),
+					ContainSubstring(updateOutputStateValue),
+					ContainSubstring(tfStateKey),
+				))
 			})
-
-			By("checking only one encryption detail record is set", func() {
-				expectOnlyOneEncryptionConfig()
-			})
-
-			By("checking how update persists service instance fields")
-			updateServiceInstance()
-			Expect(persistedRequestDetails()).NotTo(Equal(provisionParams))
-			Expect(persistedServiceInstanceDetails()).NotTo(Equal(updateOutput))
-			Expect(persistedServiceInstanceTerraformWorkspace()).NotTo(SatisfyAny(
-				ContainSubstring(provisionOutputStateValue),
-				ContainSubstring(updateOutputStateValue),
-				ContainSubstring(tfStateKey),
-			))
 		})
 	})
 })
