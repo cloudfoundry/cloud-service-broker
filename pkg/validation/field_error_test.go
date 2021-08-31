@@ -243,6 +243,11 @@ Second: X, Y, Z`,
 		err:      ErrOutOfBoundsValue(1*time.Second, 2*time.Second, 5*time.Second, "timeout"),
 		prefixes: [][]string{{"spec"}},
 		want:     `expected 2s <= 1s <= 5s: spec.timeout`,
+	}, {
+		name:     "outside length",
+		err:      ErrOutsideLength(4, 1, 3, "my-field"),
+		prefixes: [][]string{{"spec"}},
+		want:     `expected value to be 1-3 characters long, but got length 4: spec.my-field`,
 	}}
 
 	for _, test := range tests {

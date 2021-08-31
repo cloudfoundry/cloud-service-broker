@@ -143,6 +143,16 @@ func ErrIfDuplicate(value, field string, cache map[string]struct{}) *FieldError 
 	return nil
 }
 
+// ErrIfOutsideLength returns an error if the length of the specified string is outside
+// of the specified length range
+func ErrIfOutsideLength(value, field string, min, max int) *FieldError {
+	l := len(value)
+	if l > max || l < min {
+		return ErrOutsideLength(l, min, max, field)
+	}
+	return nil
+}
+
 // Validatable indicates that a particular type may have its fields validated.
 type Validatable interface {
 	// Validate checks the validity of this types fields.
@@ -160,7 +170,7 @@ type Testable interface {
 	Errorf(format string, a ...interface{})
 }
 
-// Assert runs the validatae function and fails Testable.
+// Assert runs the validate function and fails Testable.
 func (vt *ValidatableTest) Assert(t Testable) {
 	actual := vt.Object.Validate()
 	expect := vt.Expect
