@@ -63,3 +63,17 @@ func ExampleErrIfNotJSON() {
 	// Output: Good is nil: true
 	// Bad: invalid JSON: my-field
 }
+
+func ExampleErrIfOutsideLength() {
+	fmt.Println("Good is within length:", ErrIfOutsideLength("four", "my-field", 2, 10) == nil)
+	fmt.Println("Good is at minimum:", ErrIfOutsideLength("four", "my-field", 4, 10) == nil)
+	fmt.Println("Good is at maximum:", ErrIfOutsideLength("four", "my-field", 1, 4) == nil)
+	fmt.Println("Bad is too short:", ErrIfOutsideLength("four", "my-field", 5, 10))
+	fmt.Println("Bad is too long:", ErrIfOutsideLength("four", "my-field", 1, 3))
+
+	// Output: Good is within length: true
+	// Good is at minimum: true
+	// Good is at maximum: true
+	// Bad is too short: expected value to be 5-10 characters long, but got length 4: my-field
+	// Bad is too long: expected value to be 1-3 characters long, but got length 4: my-field
+}
