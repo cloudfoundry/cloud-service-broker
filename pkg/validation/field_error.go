@@ -362,6 +362,15 @@ func ErrOutOfBoundsValue(value, lower, upper interface{}, fieldPath string) *Fie
 	}
 }
 
+// ErrOutsideLength constructs a FieldError for a field that has received a
+// value that it outside of a length range
+func ErrOutsideLength(value, lower, upper int, fieldPath string) *FieldError {
+	return &FieldError{
+		Message: fmt.Sprintf("expected value to be %d-%d characters long, but got length %d", lower, upper, value),
+		Paths:   []string{fieldPath},
+	}
+}
+
 // ErrDuplicate constructs a FieldError for a field value that has been duplicated
 // when it should have been unique
 func ErrDuplicate(value string, fieldPaths ...string) *FieldError {
