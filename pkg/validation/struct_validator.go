@@ -31,7 +31,7 @@ var (
 )
 
 // ErrIfNotHCL returns an error if the value is not valid HCL.
-func ErrIfNotHCL(value string, field string) *FieldError {
+func ErrIfNotHCL(value, field string) *FieldError {
 	parser := hclparse.NewParser()
 	if _, err := parser.ParseHCL([]byte(value), ""); err == nil {
 		return nil
@@ -56,7 +56,7 @@ func ErrIfNotJSON(value json.RawMessage, field string) *FieldError {
 }
 
 // ErrIfBlank returns an error if the value is a blank string.
-func ErrIfBlank(value string, field string) *FieldError {
+func ErrIfBlank(value, field string) *FieldError {
 	if value == "" {
 		return ErrMissingField(field)
 	}
@@ -74,24 +74,24 @@ func ErrIfNil(value interface{}, field string) *FieldError {
 }
 
 // ErrIfNotOSBName returns an error if the value is not a valid OSB name.
-func ErrIfNotOSBName(value string, field string) *FieldError {
+func ErrIfNotOSBName(value, field string) *FieldError {
 	return ErrIfNotMatch(value, osbNameRegex, field)
 }
 
 // ErrIfNotJSONSchemaType returns an error if the value is not a valid JSON
 // schema type.
-func ErrIfNotJSONSchemaType(value string, field string) *FieldError {
+func ErrIfNotJSONSchemaType(value, field string) *FieldError {
 	return ErrIfNotMatch(value, jsonSchemaTypeRegex, field)
 }
 
 // ErrIfNotTerraformIdentifier returns an error if the value is not a valid
 // Terraform identifier.
-func ErrIfNotTerraformIdentifier(value string, field string) *FieldError {
+func ErrIfNotTerraformIdentifier(value, field string) *FieldError {
 	return ErrIfNotMatch(value, terraformIdentifierRegex, field)
 }
 
 // ErrIfNotUUID returns an error if the value is not a valid UUID.
-func ErrIfNotUUID(value string, field string) *FieldError {
+func ErrIfNotUUID(value, field string) *FieldError {
 	if uuidRegex.MatchString(value) {
 		return nil
 	}
@@ -103,7 +103,7 @@ func ErrIfNotUUID(value string, field string) *FieldError {
 }
 
 // ErrIfNotURL returns an error if the value is not a valid URL.
-func ErrIfNotURL(value string, field string) *FieldError {
+func ErrIfNotURL(value, field string) *FieldError {
 	// Validaiton inspired by: github.com/go-playground/validator/baked_in.go
 	url, err := url.ParseRequestURI(value)
 	if err != nil || url.Scheme == "" {
@@ -135,7 +135,7 @@ func ErrMustMatch(value string, regex *regexp.Regexp, field string) *FieldError 
 
 // ErrIfDuplicate returns error when a value is duplicated when it should be unique.
 // State is stored in the cache which must be provided for every call in the set.
-func ErrIfDuplicate(field, value string, cache map[string]struct{}) *FieldError {
+func ErrIfDuplicate(value, field string, cache map[string]struct{}) *FieldError {
 	if _, dup := cache[value]; dup {
 		return ErrDuplicate(value, field)
 	}

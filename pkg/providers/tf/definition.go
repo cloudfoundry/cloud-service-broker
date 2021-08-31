@@ -181,8 +181,8 @@ func (tfb *TfServiceDefinitionV1) Validate() (errs *validation.FieldError) {
 	for i, v := range tfb.Plans {
 		errs = errs.Also(
 			v.Validate().ViaFieldIndex("plans", i),
-			validation.ErrIfDuplicate("Name", v.Name, names).ViaFieldIndex("plans", i),
-			validation.ErrIfDuplicate("Id", v.Id, ids).ViaFieldIndex("plans", i),
+			validation.ErrIfDuplicate(v.Name, "Name", names).ViaFieldIndex("plans", i),
+			validation.ErrIfDuplicate(v.Id, "Id", ids).ViaFieldIndex("plans", i),
 		)
 	}
 
@@ -542,12 +542,12 @@ func (tfb TfCatalogDefinitionV1) Validate() (errs *validation.FieldError) {
 	for i, service := range tfb {
 		errs = errs.Also(
 			service.Validate().ViaFieldIndex("services", i),
-			validation.ErrIfDuplicate("Name", service.Name, names).ViaFieldIndex("services", i),
-			validation.ErrIfDuplicate("Id", service.Id, serviceIDs).ViaFieldIndex("services", i),
+			validation.ErrIfDuplicate(service.Name, "Name", names).ViaFieldIndex("services", i),
+			validation.ErrIfDuplicate(service.Id, "Id", serviceIDs).ViaFieldIndex("services", i),
 		)
 
 		for j, plan := range service.Plans {
-			errs = errs.Also(validation.ErrIfDuplicate("Id", plan.Id, planIDs)).ViaFieldIndex("plans", j).ViaFieldIndex("services", i)
+			errs = errs.Also(validation.ErrIfDuplicate(plan.Id, "Id", planIDs)).ViaFieldIndex("plans", j).ViaFieldIndex("services", i)
 		}
 	}
 

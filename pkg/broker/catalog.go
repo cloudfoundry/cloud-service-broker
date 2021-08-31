@@ -33,8 +33,8 @@ func (s *Service) Validate() (errs *validation.FieldError) {
 	for i, v := range s.Plans {
 		errs = errs.Also(
 			v.Validate().ViaFieldIndex("Plans", i),
-			validation.ErrIfDuplicate("Name", v.Name, names).ViaFieldIndex("Plans", i),
-			validation.ErrIfDuplicate("Id", v.ID, ids).ViaFieldIndex("Plans", i),
+			validation.ErrIfDuplicate(v.Name, "Name", names).ViaFieldIndex("Plans", i),
+			validation.ErrIfDuplicate(v.ID, "Id", ids).ViaFieldIndex("Plans", i),
 		)
 	}
 	return errs
