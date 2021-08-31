@@ -73,13 +73,13 @@ func (brokerRegistry BrokerRegistry) Validate() (errs *validation.FieldError) {
 	planIDs := make(map[string]struct{})
 	for i, s := range services {
 		errs = errs.Also(
-			validation.ErrIfDuplicate("Id", s.Id, serviceIDs).ViaFieldIndex("services", i),
-			validation.ErrIfDuplicate("Name", s.Name, serviceNames).ViaFieldIndex("services", i),
+			validation.ErrIfDuplicate(s.Id, "Id", serviceIDs).ViaFieldIndex("services", i),
+			validation.ErrIfDuplicate(s.Name, "Name", serviceNames).ViaFieldIndex("services", i),
 		)
 
 		for j, p := range s.Plans {
 			errs = errs.Also(
-				validation.ErrIfDuplicate("Id", p.ID, planIDs).ViaFieldIndex("Plans", j).ViaFieldIndex("services", i),
+				validation.ErrIfDuplicate(p.ID, "Id", planIDs).ViaFieldIndex("Plans", j).ViaFieldIndex("services", i),
 			)
 		}
 	}

@@ -116,8 +116,8 @@ func (svc *ServiceDefinition) Validate() (errs *validation.FieldError) {
 	for i, v := range svc.Plans {
 		errs = errs.Also(
 			v.Validate().ViaFieldIndex("Plans", i),
-			validation.ErrIfDuplicate("Name", v.Name, names).ViaFieldIndex("Plans", i),
-			validation.ErrIfDuplicate("Id", v.ID, ids).ViaFieldIndex("Plans", i),
+			validation.ErrIfDuplicate(v.Name, "Name", names).ViaFieldIndex("Plans", i),
+			validation.ErrIfDuplicate(v.ID, "Id", ids).ViaFieldIndex("Plans", i),
 		)
 	}
 
