@@ -46,7 +46,7 @@ var _ = Describe("Brokerpaks", func() {
 			command := exec.Command(csb, "pak", "build", path.Join(fixturesDir, "brokerpak-with-duplicate-plan-id"))
 			session, err := Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
-			session.Wait(time.Minute)
+			session.Wait(10 * time.Minute)
 
 			Expect(session.ExitCode()).NotTo(BeZero())
 			Expect(session.Err).To(Say("duplicated value, must be unique: 8b52a460-b246-11eb-a8f5-d349948e2480: services\\[1\\].plans\\[1\\].Id\n"))
@@ -65,7 +65,7 @@ var _ = Describe("Brokerpaks", func() {
 				command := exec.Command(csb, "pak", "build", path.Join(fixturesDir, "brokerpak-file-inclusion"))
 				session, err := Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
-				session.Wait(time.Minute)
+				session.Wait(10 * time.Minute)
 
 				Expect(session.ExitCode()).To(BeZero())
 

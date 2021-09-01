@@ -48,7 +48,7 @@ var _ = Describe("Subsume", func() {
 		buildBrokerpakCommand := exec.Command(csb, "pak", "build", fixturesDir)
 		session, err := Start(buildBrokerpakCommand, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
-		Eventually(session, time.Minute).Should(Exit(0))
+		Eventually(session, 10*time.Minute).Should(Exit(0))
 
 		brokerUsername = uuid.New()
 		brokerPassword = uuid.New()
