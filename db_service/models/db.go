@@ -178,3 +178,7 @@ func (t *TerraformDeployment) GetWorkspace() (string, error) {
 	}
 	return string(decrypted), nil
 }
+
+// PasswordMetadata contains information about the passwords, but never the
+// passwords themselves
+type PasswordMetadata PasswordMetadataV1

@@ -261,3 +261,18 @@ type TerraformDeploymentV2 struct {
 func (TerraformDeploymentV2) TableName() string {
 	return "terraform_deployments"
 }
+
+// PasswordMetadataV1 contains information about the passwords, but never the
+// passwords themselves
+type PasswordMetadataV1 struct {
+	gorm.Model
+
+	Label   string `gorm:"index;unique;not null"`
+	Salt    []byte `gorm:"type:blob;not null"`
+	Canary  string `gorm:"not null"`
+	Primary bool
+}
+
+func (PasswordMetadataV1) TableName() string {
+	return "password_metadata"
+}

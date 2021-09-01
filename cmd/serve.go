@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/brokers"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/passwords"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/brokerpak"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/server"
@@ -38,11 +38,12 @@ import (
 )
 
 const (
-	apiUserProp     = "api.user"
-	apiPasswordProp = "api.password"
-	apiPortProp     = "api.port"
-	apiHostProp     = "api.host"
-	encryptionKey   = "encryption.key"
+	apiUserProp         = "api.user"
+	apiPasswordProp     = "api.password"
+	apiPortProp         = "api.port"
+	apiHostProp         = "api.host"
+	encryptionPasswords = "encryption.passwords"
+	encryptionEnabled   = "encryption.enabled"
 )
 
 var cfCompatibilityToggle = toggles.Features.Toggle("enable-cf-sharing", false, `Set all services to have the Sharable flag so they can be shared
@@ -71,13 +72,18 @@ func init() {
 	viper.BindEnv(apiPasswordProp, "SECURITY_USER_PASSWORD")
 	viper.BindEnv(apiPortProp, "PORT")
 	viper.BindEnv(apiHostProp, "CSB_LISTENER_HOST")
-	viper.BindEnv(encryptionKey, "EXPERIMENTAL_ENCRYPTION_KEY")
+	viper.BindEnv(encryptionPasswords, "EXPERIMENTAL_ENCRYPTION_PASSWORDS")
+	viper.BindEnv(encryptionEnabled, "EXPERIMENTAL_ENCRYPTION_ENABLED")
 }
 
 func serve() {
 	logger := utils.NewLogger("cloud-service-broker")
 	db := db_service.New(logger)
-	models.SetEncryptor(models.ConfigureEncryption(viper.GetString(encryptionKey)))
+	passwds, err := passwords.ProcessPasswords(viper.GetString(encryptionPasswords), viper.GetBool(encryptionEnabled), db)
+	if err != nil {
+		logger.Fatal("Error setting up database encryption: %s", err)
+	}
+	models.SetEncryptor(models.ConfigureEncryption(passwds.Primary.Secret))
 
 	// init broker
 	cfg, err := brokers.NewBrokerConfigFromEnv(logger)
