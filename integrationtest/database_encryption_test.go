@@ -9,8 +9,6 @@ import (
 	"path"
 	"time"
 
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
 	"github.com/jinzhu/gorm"
@@ -19,6 +17,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 	"github.com/pborman/uuid"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 var _ = Describe("Database Encryption", func() {
@@ -50,7 +49,8 @@ var _ = Describe("Database Encryption", func() {
 		brokerSession       *Session
 		brokerClient        *client.Client
 		databaseFile        string
-		encryptionKey       string
+		encryptionPasswords string
+		encryptionEnabled   bool
 		serviceInstanceGUID string
 		serviceBindingGUID  string
 	)
@@ -175,7 +175,8 @@ var _ = Describe("Database Encryption", func() {
 			os.Environ(),
 			"CSB_LISTENER_HOST=localhost",
 			"DB_TYPE=sqlite3",
-			fmt.Sprintf("EXPERIMENTAL_ENCRYPTION_KEY=%s", encryptionKey),
+			fmt.Sprintf("EXPERIMENTAL_ENCRYPTION_ENABLED=%t", encryptionEnabled),
+			fmt.Sprintf("EXPERIMENTAL_ENCRYPTION_PASSWORDS=%s", encryptionPasswords),
 			fmt.Sprintf("DB_PATH=%s", databaseFile),
 			fmt.Sprintf("PORT=%d", brokerPort),
 			fmt.Sprintf("SECURITY_USER_NAME=%s", brokerUsername),
@@ -208,7 +209,8 @@ var _ = Describe("Database Encryption", func() {
 
 	When("no encryption key is configured", func() {
 		BeforeEach(func() {
-			encryptionKey = ""
+			encryptionEnabled = false
+			encryptionPasswords = ""
 		})
 
 		It("stores sensitive fields in plaintext", func() {
@@ -260,7 +262,8 @@ var _ = Describe("Database Encryption", func() {
 
 	When("the encryption key is configured", func() {
 		BeforeEach(func() {
-			encryptionKey = "one-key-here-with-32-bytes-in-it"
+			encryptionEnabled = true
+			encryptionPasswords = `[{"primary":true,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`
 		})
 
 		It("encrypts sensitive fields", func() {
