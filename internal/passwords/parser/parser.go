@@ -72,12 +72,7 @@ func validate(passwordEntries []PasswordEntry) (errs *validation.FieldError) {
 	}
 
 	switch primaries {
-	case 0:
-		return errs.Also(&validation.FieldError{
-			Message: "expected exactly one primary, got none",
-			Paths:   []string{"[].primary"},
-		})
-	case 1:
+	case 0, 1:
 		return errs
 	default:
 		return errs.Also(&validation.FieldError{

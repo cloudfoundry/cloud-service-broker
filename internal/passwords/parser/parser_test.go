@@ -3,7 +3,7 @@ package parser_test
 import (
 	"strings"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/parser"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/passwords/parser"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
@@ -81,6 +81,27 @@ var _ = Describe("Parser", func() {
 				},
 			},
 		),
+		Entry(
+			"no primary",
+			`[{"label":"barfoo","password":{"secret":"veryverysecretpassword"},"primary":false},{"label":"barbaz","password":{"secret":"anotherveryverysecretpassword"}},{"label":"bazquz","password":{"secret":"yetanotherveryverysecretpassword"},"primary":false}]`,
+			[]parser.PasswordEntry{
+				{
+					Label:   "barfoo",
+					Secret:  "veryverysecretpassword",
+					Primary: false,
+				},
+				{
+					Label:   "barbaz",
+					Secret:  "anotherveryverysecretpassword",
+					Primary: false,
+				},
+				{
+					Label:   "bazquz",
+					Secret:  "yetanotherveryverysecretpassword",
+					Primary: false,
+				},
+			},
+		),
 	)
 
 	DescribeTable(
@@ -119,11 +140,6 @@ var _ = Describe("Parser", func() {
 			"label duplication",
 			`[{"label":"barfoo","password":{"secret":"veryverysecretpassword"},"primary":false},{"label":"barbaz","password":{"secret":"anotherveryverysecretpassword"}},{"label":"barfoo","password":{"secret":"yetanotherveryverysecretpassword"},"primary":true}]`,
 			`password configuration error: duplicated value, must be unique: barfoo: [2].label`,
-		),
-		Entry(
-			"no primary",
-			`[{"label":"barfoo","password":{"secret":"veryverysecretpassword"},"primary":false},{"label":"barbaz","password":{"secret":"anotherveryverysecretpassword"}},{"label":"bazquz","password":{"secret":"yetanotherveryverysecretpassword"},"primary":false}]`,
-			`password configuration error: expected exactly one primary, got none: [].primary`,
 		),
 		Entry(
 			"multiple primaries",
