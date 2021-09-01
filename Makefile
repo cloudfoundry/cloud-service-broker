@@ -25,6 +25,8 @@ VERSION := $(or $(VERSION), dev)
 
 LDFLAGS="-X github.com/cloudfoundry-incubator/cloud-service-broker/utils.Version=$(VERSION)"
 
+PKG="github.com/cloudfoundry-incubator/cloud-service-broker"
+
 .PHONY: deps-go-binary
 deps-go-binary:
 ifeq ($(SKIP_GO_VERSION_CHECK),)
@@ -45,11 +47,15 @@ help: ## list Makefile targets
 ###### Test ###################################################################
 
 .PHONY: test
-test: download lint test-units ## run lint and unit tests
+test: download lint test-units test-integration ## run lint and unit tests
 
 .PHONY: test-units
 test-units: deps-go-binary ## run unit tests
-	$(GO) test ./... -tags=service_broker
+	$(GO) test $(PKG)/brokerapi/... $(PKG)/cmd/... $(PKG)/db_service/... $(PKG)/internal/... $(PKG)/pkg/... $(PKG)/utils/... -tags=service_broker
+
+.PHONY: test-integration
+test-integration: deps-go-binary ## run integration tests
+	$(GO) run github.com/onsi/ginkgo/ginkgo -p integrationtest/...
 
 ###### Build ##################################################################
 
@@ -69,7 +75,7 @@ generate: ## generate test fakes
 
 .PHONY: download
 download: ## download go module dependencies
-	${GO} mod download -x
+	${GO} mod download
 
 ###### Package ################################################################
 

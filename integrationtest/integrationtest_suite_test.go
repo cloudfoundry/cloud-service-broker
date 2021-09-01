@@ -20,15 +20,21 @@ func TestIntegration(t *testing.T) {
 
 var csb string
 
-var _ = BeforeSuite(func() {
-	var err error
-	csb, err = Build("github.com/cloudfoundry-incubator/cloud-service-broker")
-	Expect(err).NotTo(HaveOccurred())
-})
+var _ = SynchronizedBeforeSuite(
+	func() []byte {
+		path, err := Build("github.com/cloudfoundry-incubator/cloud-service-broker")
+		Expect(err).NotTo(HaveOccurred())
+		return []byte(path)
+	},
+	func(data []byte) {
+		csb = string(data)
+	},
+)
 
-var _ = AfterSuite(func() {
-	CleanupBuildArtifacts()
-})
+var _ = SynchronizedAfterSuite(
+	func() {},
+	func() { CleanupBuildArtifacts() },
+)
 
 func freePort() int {
 	listener, err := net.Listen("tcp", "localhost:0")
