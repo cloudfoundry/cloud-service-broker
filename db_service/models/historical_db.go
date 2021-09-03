@@ -17,7 +17,7 @@ package models
 import (
 	"time"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 // This file contains versioned models for the database so we
@@ -48,7 +48,7 @@ func (ServiceBindingCredentialsV1) TableName() string {
 
 // ServiceInstanceDetailsV1 holds information about provisioned services.
 type ServiceInstanceDetailsV1 struct {
-	ID        string `gorm:"primary_key;type:varchar(255);not null"`
+	ID        string `gorm:"primary_key;not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time
@@ -194,7 +194,7 @@ type PlanDetailsV1 struct {
 
 	ServiceId string
 	Name      string
-	Features  string `sql:"type:text"`
+	Features  string `gorm:"type:text"`
 }
 
 // TableName returns a consistent table name (`plan_details`) for gorm so
@@ -206,13 +206,13 @@ func (PlanDetailsV1) TableName() string {
 
 // TerraformDeploymentV1 describes the state of a Terraform resource deployment.
 type TerraformDeploymentV1 struct {
-	ID        string `gorm:"primary_key" sql:"type:varchar(1024)"`
+	ID        string `gorm:"primary_key;type:varchar(1024)"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time
 
 	// Workspace contains a JSON serialized version of the Terraform workspace.
-	Workspace string `sql:"type:mediumtext"`
+	Workspace string `gorm:"type:mediumtext"`
 
 	// LastOperationType describes the last operation being performed on the resource.
 	LastOperationType string
@@ -222,7 +222,7 @@ type TerraformDeploymentV1 struct {
 	LastOperationState string
 
 	// LastOperationMessage is a description that can be passed back to the user.
-	LastOperationMessage string `sql:"type:text"`
+	LastOperationMessage string `gorm:"type:text"`
 }
 
 // TableName returns a consistent table name (`tf_deployment`) for gorm so
@@ -236,13 +236,13 @@ func (TerraformDeploymentV1) TableName() string {
 // Terraform workspace is greater than 64K. (mediumtext allows for workspaces up
 // to 16384K.)
 type TerraformDeploymentV2 struct {
-	ID        string `gorm:"primary_key" sql:"type:varchar(1024)"`
+	ID        string `gorm:"primary_key;type:varchar(1024)"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time
 
 	// Workspace contains a JSON serialized version of the Terraform workspace.
-	Workspace string `sql:"type:mediumtext"`
+	Workspace string `gorm:"type:mediumtext"`
 
 	// LastOperationType describes the last operation being performed on the resource.
 	LastOperationType string
@@ -252,7 +252,7 @@ type TerraformDeploymentV2 struct {
 	LastOperationState string
 
 	// LastOperationMessage is a description that can be passed back to the user.
-	LastOperationMessage string `sql:"type:text"`
+	LastOperationMessage string `gorm:"type:text"`
 }
 
 // TableName returns a consistent table name (`provision_request_details`) for

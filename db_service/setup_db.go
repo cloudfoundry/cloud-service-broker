@@ -21,10 +21,13 @@ import (
 	"fmt"
 	"os"
 
+	"gorm.io/driver/sqlite"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
+	gormmysql "gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 const (
@@ -99,8 +102,7 @@ func setupSqlite3Db(logger lager.Logger) (*gorm.DB, error) {
 	}
 
 	logger.Info("WARNING: DO NOT USE SQLITE3 IN PRODUCTION!")
-
-	return gorm.Open(DbTypeSqlite3, dbPath)
+	return gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 }
 
 func setupMysqlDb(logger lager.Logger) (*gorm.DB, error) {
@@ -128,7 +130,10 @@ func setupMysqlDb(logger lager.Logger) (*gorm.DB, error) {
 	})
 
 	connStr := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8&parseTime=True&loc=Local%v", dbUsername, dbPassword, dbHost, dbPort, dbName, tlsStr)
-	return gorm.Open(DbTypeMysql, connStr)
+	return gorm.Open(gormmysql.New(gormmysql.Config{
+		DSN:               connStr,
+		DefaultStringSize: 256,
+	}), &gorm.Config{})
 }
 
 func generateTlsStringFromEnv() (string, error) {

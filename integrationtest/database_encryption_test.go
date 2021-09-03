@@ -11,13 +11,13 @@ import (
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 var _ = Describe("Database Encryption", func() {
@@ -56,9 +56,8 @@ var _ = Describe("Database Encryption", func() {
 	)
 
 	findRecord := func(dest interface{}, query, guid string) {
-		db, err := gorm.Open("sqlite3", databaseFile)
+		db, err := gorm.Open(sqlite.Open(databaseFile), &gorm.Config{})
 		Expect(err).NotTo(HaveOccurred())
-		defer db.Close()
 		err = db.Where(query, guid).First(dest).Error
 		ExpectWithOffset(1, err).NotTo(HaveOccurred())
 	}
@@ -94,21 +93,19 @@ var _ = Describe("Database Encryption", func() {
 	}
 
 	expectServiceBindingDetailsToNotExist := func() {
-		db, err := gorm.Open("sqlite3", databaseFile)
+		db, err := gorm.Open(sqlite.Open(databaseFile), &gorm.Config{})
 		Expect(err).NotTo(HaveOccurred())
-		defer db.Close()
-		record := models.ServiceBindingCredentials{}
-		err = db.Where("service_instance_id = ?", serviceInstanceGUID).First(&record).Error
-		Expect(err).To(Equal(gorm.ErrRecordNotFound))
+		var count int64
+		Expect(db.Model(&models.ServiceBindingCredentials{}).Where(serviceInstanceFKQuery, serviceInstanceGUID).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(count).To(BeZero())
 	}
 
 	expectServiceInstanceDetailsToNotExist := func() {
-		db, err := gorm.Open("sqlite3", databaseFile)
+		db, err := gorm.Open(sqlite.Open(databaseFile), &gorm.Config{})
 		Expect(err).NotTo(HaveOccurred())
-		defer db.Close()
-		record := models.ServiceInstanceDetails{}
-		err = db.Where(serviceInstanceIdQuery, serviceInstanceGUID).First(&record).Error
-		Expect(err).To(Equal(gorm.ErrRecordNotFound))
+		var count int64
+		Expect(db.Model(&models.ServiceInstanceDetails{}).Where(serviceInstanceIdQuery, serviceInstanceGUID).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(count).To(BeZero())
 	}
 
 	createBinding := func() {

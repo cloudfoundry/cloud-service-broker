@@ -18,9 +18,10 @@ package db_service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 // CreateServiceInstanceDetails creates a new record in the database and assigns it a primary key.
@@ -295,7 +296,7 @@ func (ds *SqlDatastore) ExistsTerraformDeploymentById(ctx context.Context, id st
 
 func recordToExists(_ interface{}, err error) (bool, error) {
 	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil
 		}
 

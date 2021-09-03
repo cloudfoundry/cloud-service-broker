@@ -27,8 +27,8 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
-	"github.com/jinzhu/gorm"
 	"github.com/spf13/cobra"
+	"gorm.io/gorm"
 )
 
 func init() {

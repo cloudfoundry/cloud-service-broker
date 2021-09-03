@@ -1,8 +1,10 @@
 package passwords
 
 import (
+	"errors"
+
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type passwordMetadata struct {
@@ -23,12 +25,12 @@ func savePasswordMetadata(db *gorm.DB, p passwordMetadata) error {
 
 func findPasswordMetadata(db *gorm.DB, label string) (passwordMetadata, bool, error) {
 	var receiver models.PasswordMetadata
-	result := db.Where("label = ?", label).First(&receiver)
+	err := db.Where("label = ?", label).First(&receiver).Error
 	switch {
-	case result.RecordNotFound():
+	case errors.Is(err, gorm.ErrRecordNotFound):
 		return passwordMetadata{}, false, nil
-	case result.Error != nil:
-		return passwordMetadata{}, false, result.Error
+	case err != nil:
+		return passwordMetadata{}, false, err
 	}
 
 	var salt [32]byte

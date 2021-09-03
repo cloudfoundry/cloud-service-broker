@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 func TestSqlDatastore_GetsProvisionRequestDetailsByInstanceId(t *testing.T) {

@@ -23,6 +23,8 @@ import (
 	"strings"
 	"testing"
 
+	"gorm.io/driver/sqlite"
+
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
 
 	"code.cloudfoundry.org/lager"
@@ -37,12 +39,12 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin/base"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
-	"github.com/jinzhu/gorm"
 	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v8"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 	"github.com/pivotal-cf/brokerapi/v8/middlewares"
+	"gorm.io/gorm"
 )
 
 // InstanceState holds the lifecycle state of a provisioned service instance.
@@ -172,7 +174,7 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 // It returns the broker and a callback used to clean up the database when done with it.
 func newStubbedBroker(t *testing.T, registry broker.BrokerRegistry, cs credstore.CredStore) (broker *ServiceBroker, closer func()) {
 	// Set up database
-	db, err := gorm.Open("sqlite3", "test.db")
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("couldn't create database: %v", err)
 	}
@@ -180,7 +182,6 @@ func newStubbedBroker(t *testing.T, registry broker.BrokerRegistry, cs credstore
 	db_service.DbConnection = db
 
 	closer = func() {
-		db.Close()
 		os.Remove("test.db")
 	}
 
@@ -194,7 +195,7 @@ func newStubbedBroker(t *testing.T, registry broker.BrokerRegistry, cs credstore
 		t.Fatalf("couldn't create broker: %v", err)
 	}
 
-	return
+	return broker, closer
 }
 
 // failIfErr is a test helper function which stops the test immediately if the

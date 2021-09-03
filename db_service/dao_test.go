@@ -22,19 +22,20 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/jinzhu/gorm"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 func newInMemoryDatastore(t *testing.T) *SqlDatastore {
-	testDb, err := gorm.Open("sqlite3", ":memory:")
+	testDb, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("Error opening test database %s", err)
 	}
 
-	testDb.CreateTable(models.ServiceInstanceDetails{})
-	testDb.CreateTable(models.ServiceBindingCredentials{})
-	testDb.CreateTable(models.ProvisionRequestDetails{})
-	testDb.CreateTable(models.TerraformDeployment{})
+	testDb.Migrator().CreateTable(models.ServiceInstanceDetails{})
+	testDb.Migrator().CreateTable(models.ServiceBindingCredentials{})
+	testDb.Migrator().CreateTable(models.ProvisionRequestDetails{})
+	testDb.Migrator().CreateTable(models.TerraformDeployment{})
 
 	return &SqlDatastore{db: testDb}
 }

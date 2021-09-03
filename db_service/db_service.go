@@ -21,9 +21,9 @@ import (
 	"sync"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	_ "gorm.io/driver/sqlite"
 )
 
 var DbConnection *gorm.DB
