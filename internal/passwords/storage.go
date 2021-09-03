@@ -23,9 +23,17 @@ func savePasswordMetadata(db *gorm.DB, p passwordMetadata) error {
 	}).Error
 }
 
-func findPasswordMetadata(db *gorm.DB, label string) (passwordMetadata, bool, error) {
+func findPasswordMetadataForLabel(db *gorm.DB, label string) (passwordMetadata, bool, error) {
+	return findPasswordMetadata(db, "label = ?", label)
+}
+
+func findPasswordMetadataForPrimary(db *gorm.DB) (passwordMetadata, bool, error) {
+	return findPasswordMetadata(db, `"primary" = true`)
+}
+
+func findPasswordMetadata(db *gorm.DB, query interface{}, args ...interface{}) (passwordMetadata, bool, error) {
 	var receiver models.PasswordMetadata
-	err := db.Where("label = ?", label).First(&receiver).Error
+	err := db.Where(query, args...).First(&receiver).Error
 	switch {
 	case errors.Is(err, gorm.ErrRecordNotFound):
 		return passwordMetadata{}, false, nil

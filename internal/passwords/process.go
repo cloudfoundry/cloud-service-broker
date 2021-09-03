@@ -8,8 +8,9 @@ import (
 )
 
 type Passwords struct {
-	Primary     Password
-	Secondaries []Password
+	Primary        Password
+	Secondaries    []Password
+	ChangedPrimary bool
 }
 
 func ProcessPasswords(input string, encryptionEnabled bool, db *gorm.DB) (Passwords, error) {
@@ -19,6 +20,7 @@ func ProcessPasswords(input string, encryptionEnabled bool, db *gorm.DB) (Passwo
 	}
 
 	var result Passwords
+	labels := make(map[string]struct{})
 	for _, p := range parsedPasswords {
 		entry, err := consolidate(p, db)
 		if err != nil {
@@ -30,13 +32,27 @@ func ProcessPasswords(input string, encryptionEnabled bool, db *gorm.DB) (Passwo
 		} else {
 			result.Secondaries = append(result.Secondaries, entry)
 		}
+
+		labels[p.Label] = struct{}{}
+	}
+
+	previousPrimary, found, err := findPasswordMetadataForPrimary(db)
+	if err != nil {
+		return Passwords{}, err
+	}
+	if found {
+		if _, ok := labels[previousPrimary.Label]; !ok {
+			return Passwords{}, fmt.Errorf("the previous primary password labeled %q was not specified", previousPrimary.Label)
+		}
+
+		result.ChangedPrimary = previousPrimary.Label != result.Primary.Label
 	}
 
 	return result, nil
 }
 
 func consolidate(parsed parser.PasswordEntry, db *gorm.DB) (Password, error) {
-	loaded, ok, err := findPasswordMetadata(db, parsed.Label)
+	loaded, ok, err := findPasswordMetadataForLabel(db, parsed.Label)
 	switch {
 	case err != nil:
 		return Password{}, err
@@ -56,10 +72,6 @@ func checkRecord(loaded passwordMetadata, parsed parser.PasswordEntry) (Password
 
 	if err := decryptCanary(result.Key(), loaded.Canary, parsed.Label); err != nil {
 		return Password{}, err
-	}
-
-	if loaded.Primary != parsed.Primary {
-		return Password{}, fmt.Errorf("password migration not implemented yet")
 	}
 
 	return result, nil
@@ -86,7 +98,7 @@ func newRecord(parsed parser.PasswordEntry, db *gorm.DB) (Password, error) {
 		Label:   parsed.Label,
 		Salt:    salt,
 		Canary:  canary,
-		Primary: parsed.Primary,
+		Primary: false,
 	})
 	if err != nil {
 		return Password{}, err
