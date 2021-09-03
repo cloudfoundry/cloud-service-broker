@@ -23,14 +23,12 @@ import (
 	"testing"
 
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
-
-	// Needed to open the sqlite3 database
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 func TestNewHealthHandler(t *testing.T) {
-	db, err := gorm.Open("sqlite3", "test.db")
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("couldn't create database: %v", err)
 	}
@@ -86,7 +84,11 @@ func TestNewHealthHandler(t *testing.T) {
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
 			router := mux.NewRouter()
-			handler := AddHealthHandler(router, db.DB())
+			sqldb, err := db.DB()
+			if err != nil {
+				t.Fatal(err)
+			}
+			handler := AddHealthHandler(router, sqldb)
 			handler.AddLivenessCheck("test-live", func() error {
 				return tc.LiveErr
 			})

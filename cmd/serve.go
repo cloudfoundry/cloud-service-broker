@@ -114,7 +114,11 @@ func serve() {
 
 	brokerAPI := brokerapi.New(serviceBroker, logger, credentials)
 
-	startServer(cfg.Registry, db.DB(), brokerAPI)
+	sqldb, err := db.DB()
+	if err != nil {
+		logger.Error("failed to get database connection", err)
+	}
+	startServer(cfg.Registry, sqldb, brokerAPI)
 }
 
 func serveDocs() {

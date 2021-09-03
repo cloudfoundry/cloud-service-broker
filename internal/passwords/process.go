@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/passwords/parser"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type Passwords struct {

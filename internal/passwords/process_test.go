@@ -6,10 +6,10 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/passwords"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 var _ = Describe("Password Manager", func() {
@@ -25,13 +25,12 @@ var _ = Describe("Password Manager", func() {
 			databaseFile = fh.Name()
 			fh.Close()
 
-			db, err = gorm.Open("sqlite3", databaseFile)
+			db, err = gorm.Open(sqlite.Open(databaseFile), &gorm.Config{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(db_service.RunMigrations(db)).NotTo(HaveOccurred())
 		})
 
 		AfterEach(func() {
-			db.Close()
 			os.Remove(databaseFile)
 		})
 
