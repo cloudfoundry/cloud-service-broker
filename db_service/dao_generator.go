@@ -283,7 +283,7 @@ import (
 	"context"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 {{- range .Models}}
@@ -384,7 +384,7 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 func newInMemoryDatastore(t *testing.T) *SqlDatastore {

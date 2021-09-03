@@ -19,7 +19,7 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 const numMigrations = 10
@@ -72,11 +72,11 @@ func RunMigrations(db *gorm.DB) error {
 	}
 
 	migrations[6] = func() error { // v4.2.4
-		if db.Dialect().GetName() == "sqlite3" {
+		if db.Config.Dialector.Name() == "sqlite3" {
 			// sqlite does not support changing column data types
 			return nil
 		} else {
-			return db.Model(&models.ProvisionRequestDetailsV2{}).ModifyColumn("request_details", "text").Error
+			return db.Migrator().AlterColumn(&models.ProvisionRequestDetailsV2{}, "request_details")
 		}
 	}
 
@@ -85,13 +85,13 @@ func RunMigrations(db *gorm.DB) error {
 	}
 
 	migrations[8] = func() error { // v0.2.2
-		if db.Dialect().GetName() == "sqlite3" {
+		if db.Config.Dialector.Name() == "sqlite3" {
 			// sqlite does not support changing column data types.
 			// Shouldn't matter because sqlite is only for non-prod deploments,
 			// and can be re-provisioned more easily.
 			return nil
 		} else {
-			return db.Model(&models.TerraformDeploymentV2{}).ModifyColumn("workspace", "mediumtext").Error
+			return db.Migrator().AlterColumn(&models.TerraformDeploymentV2{}, "workspace")
 		}
 	}
 
@@ -102,7 +102,7 @@ func RunMigrations(db *gorm.DB) error {
 	var lastMigrationNumber = -1
 
 	// if we've run any migrations before, we should have a migrations table, so find the last one we ran
-	if db.HasTable("migrations") {
+	if db.Migrator().HasTable("migrations") {
 		var storedMigrations []models.Migration
 		if err := db.Order("migration_id desc").Find(&storedMigrations).Error; err != nil {
 			return fmt.Errorf("error getting last migration id even though migration table exists: %s", err)
@@ -154,9 +154,9 @@ func ValidateLastMigration(lastMigration int) error {
 }
 
 func autoMigrateTables(db *gorm.DB, tables ...interface{}) error {
-	if db.Dialect().GetName() == "mysql" {
-		return db.Set("gorm:table_options", "ENGINE=InnoDB CHARSET=utf8").AutoMigrate(tables...).Error
+	if db.Config.Dialector.Name() == "mysql" {
+		return db.Set("gorm:table_options", "ENGINE=InnoDB CHARSET=utf8").AutoMigrate(tables...)
 	} else {
-		return db.AutoMigrate(tables...).Error
+		return db.AutoMigrate(tables...)
 	}
 }

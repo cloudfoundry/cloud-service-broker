@@ -21,8 +21,10 @@ import (
 	"reflect"
 	"testing"
 
+	"gorm.io/driver/sqlite"
+
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 func TestValidateLastMigration(t *testing.T) {
@@ -96,7 +98,7 @@ func TestRunMigrations_Failures(t *testing.T) {
 
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			db, err := gorm.Open("sqlite3", "test.sqlite3")
+			db, err := gorm.Open(sqlite.Open("test.sqlite3"), &gorm.Config{})
 			defer os.Remove("test.sqlite3")
 			if err != nil {
 				t.Fatal(err)
@@ -125,7 +127,7 @@ func TestRunMigrations(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if !db.HasTable("migrations") {
+			if !db.Migrator().HasTable("migrations") {
 				t.Error("Expected db to have migrations table")
 			}
 		},
@@ -157,7 +159,7 @@ func TestRunMigrations(t *testing.T) {
 
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			db, err := gorm.Open("sqlite3", "test.sqlite3")
+			db, err := gorm.Open(sqlite.Open("test.sqlite3"), &gorm.Config{})
 			defer os.Remove("test.sqlite3")
 			if err != nil {
 				t.Fatal(err)

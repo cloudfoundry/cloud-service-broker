@@ -12,11 +12,11 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 	"github.com/pborman/uuid"
+	_ "gorm.io/driver/sqlite"
 )
 
 var _ = Describe("Subsume", func() {
