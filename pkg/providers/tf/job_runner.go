@@ -74,25 +74,35 @@ func (runner *TfJobRunner) StageJob(ctx context.Context, jobId string, workspace
 		return err
 	}
 
-	if deployment, err := db_service.GetTerraformDeploymentById(ctx, jobId); err == nil {
-		// deployment exists, update
+	exists, err := db_service.ExistsTerraformDeploymentById(ctx, jobId)
+	if err != nil {
+		return err
+	}
+
+	if exists {
+		deployment, err := db_service.GetTerraformDeploymentById(ctx, jobId)
+		if err != nil {
+			return err
+		}
+
 		if err := deployment.SetWorkspace(workspaceString); err != nil {
 			return err
 		}
 
 		deployment.LastOperationType = "validation"
 		return runner.operationFinished(nil, workspace, deployment)
-	}
+	} else {
+		deployment := &models.TerraformDeployment{
+			ID:                jobId,
+			LastOperationType: "validation",
+		}
+		if err := deployment.SetWorkspace(workspaceString); err != nil {
+			return err
+		}
 
-	deployment := &models.TerraformDeployment{
-		ID:                jobId,
-		LastOperationType: "validation",
+		db_service.CreateTerraformDeployment(context.Background(), deployment)
+		return runner.operationFinished(nil, workspace, deployment)
 	}
-	if err := deployment.SetWorkspace(workspaceString); err != nil {
-		return err
-	}
-
-	return runner.operationFinished(nil, workspace, deployment)
 }
 
 func (runner *TfJobRunner) markJobStarted(ctx context.Context, deployment *models.TerraformDeployment, operationType string) error {
