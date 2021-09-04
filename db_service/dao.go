@@ -18,10 +18,8 @@ package db_service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"gorm.io/gorm"
 )
 
 // CreateServiceInstanceDetails creates a new record in the database and assigns it a primary key.
@@ -74,7 +72,12 @@ func ExistsServiceInstanceDetailsById(ctx context.Context, id string) (bool, err
 	return defaultDatastore().ExistsServiceInstanceDetailsById(ctx, id)
 }
 func (ds *SqlDatastore) ExistsServiceInstanceDetailsById(ctx context.Context, id string) (bool, error) {
-	return recordToExists(ds.GetServiceInstanceDetailsById(ctx, id))
+	var count int64
+	if err := ds.db.Model(&models.ServiceInstanceDetails{}).Where("id = ?", id).Count(&count).Error; err != nil {
+		return false, err
+	}
+
+	return count != 0, nil
 }
 
 // CreateServiceBindingCredentials creates a new record in the database and assigns it a primary key.
@@ -143,7 +146,12 @@ func ExistsServiceBindingCredentialsByServiceInstanceIdAndBindingId(ctx context.
 	return defaultDatastore().ExistsServiceBindingCredentialsByServiceInstanceIdAndBindingId(ctx, serviceInstanceId, bindingId)
 }
 func (ds *SqlDatastore) ExistsServiceBindingCredentialsByServiceInstanceIdAndBindingId(ctx context.Context, serviceInstanceId string, bindingId string) (bool, error) {
-	return recordToExists(ds.GetServiceBindingCredentialsByServiceInstanceIdAndBindingId(ctx, serviceInstanceId, bindingId))
+	var count int64
+	if err := ds.db.Model(&models.ServiceBindingCredentials{}).Where("service_instance_id = ? AND binding_id = ?", serviceInstanceId, bindingId).Count(&count).Error; err != nil {
+		return false, err
+	}
+
+	return count != 0, nil
 }
 
 // GetServiceBindingCredentialsByBindingId gets an instance of ServiceBindingCredentials by its key (bindingId).
@@ -164,7 +172,12 @@ func ExistsServiceBindingCredentialsByBindingId(ctx context.Context, bindingId s
 	return defaultDatastore().ExistsServiceBindingCredentialsByBindingId(ctx, bindingId)
 }
 func (ds *SqlDatastore) ExistsServiceBindingCredentialsByBindingId(ctx context.Context, bindingId string) (bool, error) {
-	return recordToExists(ds.GetServiceBindingCredentialsByBindingId(ctx, bindingId))
+	var count int64
+	if err := ds.db.Model(&models.ServiceBindingCredentials{}).Where("binding_id = ?", bindingId).Count(&count).Error; err != nil {
+		return false, err
+	}
+
+	return count != 0, nil
 }
 
 // GetServiceBindingCredentialsById gets an instance of ServiceBindingCredentials by its key (id).
@@ -185,7 +198,12 @@ func ExistsServiceBindingCredentialsById(ctx context.Context, id uint) (bool, er
 	return defaultDatastore().ExistsServiceBindingCredentialsById(ctx, id)
 }
 func (ds *SqlDatastore) ExistsServiceBindingCredentialsById(ctx context.Context, id uint) (bool, error) {
-	return recordToExists(ds.GetServiceBindingCredentialsById(ctx, id))
+	var count int64
+	if err := ds.db.Model(&models.ServiceBindingCredentials{}).Where("id = ?", id).Count(&count).Error; err != nil {
+		return false, err
+	}
+
+	return count != 0, nil
 }
 
 // CreateProvisionRequestDetails creates a new record in the database and assigns it a primary key.
@@ -238,7 +256,12 @@ func ExistsProvisionRequestDetailsById(ctx context.Context, id uint) (bool, erro
 	return defaultDatastore().ExistsProvisionRequestDetailsById(ctx, id)
 }
 func (ds *SqlDatastore) ExistsProvisionRequestDetailsById(ctx context.Context, id uint) (bool, error) {
-	return recordToExists(ds.GetProvisionRequestDetailsById(ctx, id))
+	var count int64
+	if err := ds.db.Model(&models.ProvisionRequestDetails{}).Where("id = ?", id).Count(&count).Error; err != nil {
+		return false, err
+	}
+
+	return count != 0, nil
 }
 
 // CreateTerraformDeployment creates a new record in the database and assigns it a primary key.
@@ -291,17 +314,10 @@ func ExistsTerraformDeploymentById(ctx context.Context, id string) (bool, error)
 	return defaultDatastore().ExistsTerraformDeploymentById(ctx, id)
 }
 func (ds *SqlDatastore) ExistsTerraformDeploymentById(ctx context.Context, id string) (bool, error) {
-	return recordToExists(ds.GetTerraformDeploymentById(ctx, id))
-}
-
-func recordToExists(_ interface{}, err error) (bool, error) {
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, nil
-		}
-
+	var count int64
+	if err := ds.db.Model(&models.TerraformDeployment{}).Where("id = ?", id).Count(&count).Error; err != nil {
 		return false, err
 	}
 
-	return true, nil
+	return count != 0, nil
 }
