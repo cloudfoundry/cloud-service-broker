@@ -9,12 +9,12 @@ import (
 	"io"
 )
 
-type GCMEncryptor struct {
-	Key *[32]byte
+func NewGCMEncryptor(key [32]byte) GCMEncryptor {
+	return GCMEncryptor{Key: key}
 }
 
-func NewGCMEncryptor(key *[32]byte) GCMEncryptor {
-	return GCMEncryptor{Key: key}
+type GCMEncryptor struct {
+	Key [32]byte
 }
 
 func (d GCMEncryptor) Encrypt(plaintext []byte) (string, error) {
@@ -70,19 +70,4 @@ func (d GCMEncryptor) Decrypt(ciphertext string) ([]byte, error) {
 		decoded[gcm.NonceSize():],
 		nil,
 	)
-}
-
-type NoopEncryptor struct {
-}
-
-func (d NoopEncryptor) Encrypt(plaintext []byte) (string, error) {
-	return string(plaintext), nil
-}
-
-func (d NoopEncryptor) Decrypt(ciphertext string) ([]byte, error) {
-	return []byte(ciphertext), nil
-}
-
-func NewNoopEncryptor() NoopEncryptor {
-	return NoopEncryptor{}
 }

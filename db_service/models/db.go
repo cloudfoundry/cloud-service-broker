@@ -44,7 +44,7 @@ func ConfigureEncryption(encryptionKey string) Encryptor {
 		key := []byte(encryptionKey)
 		var keyAs32ByteArray [32]byte
 		copy(keyAs32ByteArray[:], key)
-		encryptor = encryption.NewGCMEncryptor(&keyAs32ByteArray)
+		encryptor = encryption.NewGCMEncryptor(keyAs32ByteArray)
 	}
 	return encryptor
 }

@@ -12,11 +12,11 @@ import (
 const CanaryInput = "canary value"
 
 func encryptCanary(key [32]byte) (string, error) {
-	return encryption.NewGCMEncryptor(&key).Encrypt([]byte(CanaryInput))
+	return encryption.NewGCMEncryptor(key).Encrypt([]byte(CanaryInput))
 }
 
 func decryptCanary(key [32]byte, canary, label string) error {
-	_, err := encryption.NewGCMEncryptor(&key).Decrypt(canary)
+	_, err := encryption.NewGCMEncryptor(key).Decrypt(canary)
 	switch {
 	case err == nil:
 		return nil

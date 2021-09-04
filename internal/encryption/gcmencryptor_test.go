@@ -11,17 +11,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func newKey() [32]byte {
-	dbKey := make([]byte, 32)
-	io.ReadFull(rand.Reader, dbKey)
-	return sha256.Sum256(dbKey)
-}
-
 var _ = Describe("GCMEncryptor", func() {
 	var encryptor GCMEncryptor
 	BeforeEach(func() {
 		key := newKey()
-		encryptor = NewGCMEncryptor(&key)
+		encryptor = NewGCMEncryptor(key)
 	})
 
 	It("can decrypt what it encrypted", func() {
@@ -82,24 +76,8 @@ var _ = Describe("GCMEncryptor", func() {
 	})
 })
 
-var _ = Describe("NoopEncryptor", func() {
-	var encryptor NoopEncryptor
-
-	BeforeEach(func() {
-		encryptor = NewNoopEncryptor()
-	})
-
-	Describe("Encrypt", func() {
-		It("is a noop", func() {
-			const text = "my funny text to encrypt"
-			Expect(encryptor.Encrypt([]byte(text))).To(Equal(text))
-		})
-	})
-
-	Describe("Decrypt", func() {
-		It("is a noop", func() {
-			const text = "my funny text to decrypt"
-			Expect(encryptor.Decrypt(text)).To(Equal([]byte(text)))
-		})
-	})
-})
+func newKey() [32]byte {
+	dbKey := make([]byte, 32)
+	io.ReadFull(rand.Reader, dbKey)
+	return sha256.Sum256(dbKey)
+}

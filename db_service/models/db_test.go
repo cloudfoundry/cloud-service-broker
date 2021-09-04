@@ -34,7 +34,7 @@ var _ = Describe("Db", func() {
 		Context("GCM encryptor", func() {
 			BeforeEach(func() {
 				key := newKey()
-				encryptor = encryption.NewGCMEncryptor(&key)
+				encryptor = encryption.NewGCMEncryptor(key)
 				models.SetEncryptor(encryptor)
 			})
 
@@ -204,7 +204,7 @@ var _ = Describe("Db", func() {
 		Context("GCM encryptor", func() {
 			BeforeEach(func() {
 				key := newKey()
-				encryptor = encryption.NewGCMEncryptor(&key)
+				encryptor = encryption.NewGCMEncryptor(key)
 				models.SetEncryptor(encryptor)
 			})
 
@@ -438,7 +438,7 @@ var _ = Describe("Db", func() {
 		Context("GCM encryptor", func() {
 			BeforeEach(func() {
 				key := newKey()
-				encryptor = encryption.NewGCMEncryptor(&key)
+				encryptor = encryption.NewGCMEncryptor(key)
 				models.SetEncryptor(encryptor)
 			})
 
@@ -604,7 +604,7 @@ var _ = Describe("Db", func() {
 		Context("GCM encryptor", func() {
 			BeforeEach(func() {
 				key := newKey()
-				encryptor = encryption.NewGCMEncryptor(&key)
+				encryptor = encryption.NewGCMEncryptor(key)
 				models.SetEncryptor(encryptor)
 			})
 
