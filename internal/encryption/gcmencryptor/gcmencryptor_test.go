@@ -1,4 +1,4 @@
-package encryption_test
+package gcmencryptor_test
 
 import (
 	"crypto/rand"
@@ -6,16 +6,16 @@ import (
 	b64 "encoding/base64"
 	"io"
 
-	. "github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/gcmencryptor"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("GCMEncryptor", func() {
-	var encryptor GCMEncryptor
+	var encryptor gcmencryptor.GCMEncryptor
 	BeforeEach(func() {
 		key := newKey()
-		encryptor = NewGCMEncryptor(key)
+		encryptor = gcmencryptor.New(key)
 	})
 
 	It("can decrypt what it encrypted", func() {

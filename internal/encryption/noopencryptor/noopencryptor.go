@@ -1,6 +1,6 @@
-package encryption
+package noopencryptor
 
-func NewNoopEncryptor() NoopEncryptor {
+func New() NoopEncryptor {
 	return NoopEncryptor{}
 }
 

@@ -1,16 +1,16 @@
-package encryption_test
+package noopencryptor_test
 
 import (
-	. "github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("NoopEncryptor", func() {
-	var encryptor NoopEncryptor
+	var encryptor noopencryptor.NoopEncryptor
 
 	BeforeEach(func() {
-		encryptor = NewNoopEncryptor()
+		encryptor = noopencryptor.New()
 	})
 
 	Describe("Encrypt", func() {

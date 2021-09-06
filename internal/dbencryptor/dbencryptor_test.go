@@ -6,7 +6,9 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/dbencryptor"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/compoundencryptor"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/gcmencryptor"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pborman/uuid"
@@ -37,7 +39,7 @@ var _ = Describe("EncryptDB", func() {
 		db.Migrator().CreateTable(models.TerraformDeployment{})
 
 		db_service.DbConnection = db
-		models.SetEncryptor(encryption.NewNoopEncryptor())
+		models.SetEncryptor(noopencryptor.New())
 
 		mapSecret = map[string]interface{}{"a": "secret"}
 
@@ -85,9 +87,9 @@ var _ = Describe("EncryptDB", func() {
 	}
 
 	It("encrypts the database", func() {
-		models.SetEncryptor(encryption.NewCompoundEncryptor(
-			encryption.NewGCMEncryptor(key),
-			encryption.NewNoopEncryptor(),
+		models.SetEncryptor(compoundencryptor.New(
+			gcmencryptor.New(key),
+			noopencryptor.New(),
 		))
 
 		Expect(persistedServiceInstanceDetails()).To(Equal(jsonSecret))

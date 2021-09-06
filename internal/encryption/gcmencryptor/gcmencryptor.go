@@ -1,4 +1,4 @@
-package encryption
+package gcmencryptor
 
 import (
 	"crypto/aes"
@@ -9,17 +9,17 @@ import (
 	"io"
 )
 
-func NewGCMEncryptor(key [32]byte) GCMEncryptor {
-	return GCMEncryptor{Key: key}
+func New(key [32]byte) GCMEncryptor {
+	return GCMEncryptor{key: key}
 }
 
 type GCMEncryptor struct {
-	Key [32]byte
+	key [32]byte
 }
 
 func (d GCMEncryptor) Encrypt(plaintext []byte) (string, error) {
 	// Initialize an AES block cipher
-	block, err := aes.NewCipher(d.Key[:])
+	block, err := aes.NewCipher(d.key[:])
 	if err != nil {
 		return "", err
 	}
@@ -49,7 +49,7 @@ func (d GCMEncryptor) Decrypt(ciphertext string) ([]byte, error) {
 	}
 
 	// Initialize an AES block cipher
-	block, err := aes.NewCipher(d.Key[:])
+	block, err := aes.NewCipher(d.key[:])
 	if err != nil {
 		return nil, err
 	}

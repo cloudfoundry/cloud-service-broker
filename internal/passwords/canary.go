@@ -3,7 +3,7 @@ package passwords
 import (
 	"fmt"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/gcmencryptor"
 )
 
 // CanaryInput is the value that is encrypted with the key and stored in the database
@@ -12,11 +12,11 @@ import (
 const CanaryInput = "canary value"
 
 func encryptCanary(key [32]byte) (string, error) {
-	return encryption.NewGCMEncryptor(key).Encrypt([]byte(CanaryInput))
+	return gcmencryptor.New(key).Encrypt([]byte(CanaryInput))
 }
 
 func decryptCanary(key [32]byte, canary, label string) error {
-	_, err := encryption.NewGCMEncryptor(key).Decrypt(canary)
+	_, err := gcmencryptor.New(key).Decrypt(canary)
 	switch {
 	case err == nil:
 		return nil

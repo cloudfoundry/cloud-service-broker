@@ -1,4 +1,4 @@
-package encryption
+package compoundencryptor
 
 type Encryptor interface {
 	Encrypt(plaintext []byte) (string, error)

@@ -1,6 +1,6 @@
-package encryption
+package compoundencryptor
 
-func NewCompoundEncryptor(primary Encryptor, secondaries ...Encryptor) Encryptor {
+func New(primary Encryptor, secondaries ...Encryptor) Encryptor {
 	return CompoundEncryptor{
 		primary:     primary,
 		secondaries: secondaries,

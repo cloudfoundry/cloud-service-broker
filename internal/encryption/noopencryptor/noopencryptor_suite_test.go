@@ -1,4 +1,4 @@
-package encryption
+package noopencryptor
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestEncryption(t *testing.T) {
+func TestNoopEncryptor(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Encryption Suite")
+	RunSpecs(t, "No-op Encryptor Suite")
 }

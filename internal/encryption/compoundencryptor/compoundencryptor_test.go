@@ -1,17 +1,17 @@
-package encryption_test
+package compoundencryptor_test
 
 import (
 	"errors"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models/fakes"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/compoundencryptor"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("CompoundEncryptor", func() {
 	var (
-		compoundEncryptor       encryption.Encryptor
+		compoundEncryptor       compoundencryptor.Encryptor
 		primaryEncryptor        *fakes.FakeEncryptor
 		secondaryEncryptorAlpha *fakes.FakeEncryptor
 		secondaryEncryptorBeta  *fakes.FakeEncryptor
@@ -21,7 +21,7 @@ var _ = Describe("CompoundEncryptor", func() {
 		primaryEncryptor = &fakes.FakeEncryptor{}
 		secondaryEncryptorAlpha = &fakes.FakeEncryptor{}
 		secondaryEncryptorBeta = &fakes.FakeEncryptor{}
-		compoundEncryptor = encryption.NewCompoundEncryptor(primaryEncryptor, secondaryEncryptorAlpha, secondaryEncryptorBeta)
+		compoundEncryptor = compoundencryptor.New(primaryEncryptor, secondaryEncryptorAlpha, secondaryEncryptorBeta)
 	})
 
 	It("encrypts with the primary encryptor", func() {
