@@ -1,4 +1,4 @@
-package parser_test
+package dbrotator_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestParser(t *testing.T) {
+func TestDBRotator(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Encryption Parser Suite")
+	RunSpecs(t, "DB Encryption Rotation Suite")
 }

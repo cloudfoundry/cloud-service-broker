@@ -1,12 +1,12 @@
-package dbencryptor
+package dbrotator
 
 import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"gorm.io/gorm"
 )
 
-// EncryptDB encrypts the database with the primary encryptor (which can be the No-op encryptor)
-func EncryptDB(db *gorm.DB) error {
+// ReencryptDB re-encrypts the database with the primary encryptor (which can be the No-op encryptor)
+func ReencryptDB(db *gorm.DB) error {
 	dbEncryptors := []func(*gorm.DB) error{
 		encryptProvisionRequestDetails,
 		encryptServiceInstanceDetails,

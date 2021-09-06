@@ -3,11 +3,11 @@ package passwords
 import (
 	"fmt"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/passwords/parser"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/passwordparser"
 )
 
-func parse(input string, encryptionEnabled bool) ([]parser.PasswordEntry, error) {
-	parsedPasswords, err := parser.Parse(input)
+func parse(input string, encryptionEnabled bool) ([]passwordparser.PasswordEntry, error) {
+	parsedPasswords, err := passwordparser.Parse(input)
 	count := primaries(parsedPasswords)
 	switch {
 	case err != nil:
@@ -21,7 +21,7 @@ func parse(input string, encryptionEnabled bool) ([]parser.PasswordEntry, error)
 	}
 }
 
-func primaries(passwords []parser.PasswordEntry) (count int) {
+func primaries(passwords []passwordparser.PasswordEntry) (count int) {
 	for _, p := range passwords {
 		if p.Primary {
 			count++

@@ -1,4 +1,4 @@
-package dbencryptor_test
+package passwordparser_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestDbencryptor(t *testing.T) {
+func TestParser(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "DB Encryptor Suite")
+	RunSpecs(t, "Encryption Parser Suite")
 }

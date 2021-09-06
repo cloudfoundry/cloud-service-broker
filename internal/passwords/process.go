@@ -3,7 +3,7 @@ package passwords
 import (
 	"fmt"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/passwords/parser"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/passwordparser"
 	"gorm.io/gorm"
 )
 
@@ -51,7 +51,7 @@ func ProcessPasswords(input string, encryptionEnabled bool, db *gorm.DB) (Passwo
 	return result, nil
 }
 
-func consolidate(parsed parser.PasswordEntry, db *gorm.DB) (Password, error) {
+func consolidate(parsed passwordparser.PasswordEntry, db *gorm.DB) (Password, error) {
 	loaded, ok, err := findPasswordMetadataForLabel(db, parsed.Label)
 	switch {
 	case err != nil:
@@ -63,7 +63,7 @@ func consolidate(parsed parser.PasswordEntry, db *gorm.DB) (Password, error) {
 	}
 }
 
-func checkRecord(loaded passwordMetadata, parsed parser.PasswordEntry) (Password, error) {
+func checkRecord(loaded passwordMetadata, parsed passwordparser.PasswordEntry) (Password, error) {
 	result := Password{
 		Label:  parsed.Label,
 		Secret: parsed.Secret,
@@ -77,7 +77,7 @@ func checkRecord(loaded passwordMetadata, parsed parser.PasswordEntry) (Password
 	return result, nil
 }
 
-func newRecord(parsed parser.PasswordEntry, db *gorm.DB) (Password, error) {
+func newRecord(parsed passwordparser.PasswordEntry, db *gorm.DB) (Password, error) {
 	salt, err := randomSalt()
 	if err != nil {
 		return Password{}, err

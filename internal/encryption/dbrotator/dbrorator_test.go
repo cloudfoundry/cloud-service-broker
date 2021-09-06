@@ -1,12 +1,12 @@
-package dbencryptor_test
+package dbrotator_test
 
 import (
 	"context"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/dbencryptor"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/compoundencryptor"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/dbrotator"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/gcmencryptor"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
 	. "github.com/onsi/ginkgo"
@@ -16,7 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ = Describe("EncryptDB", func() {
+var _ = Describe("ReencryptDB", func() {
 	const jsonSecret = `{"a":"secret"}`
 
 	var (
@@ -98,7 +98,7 @@ var _ = Describe("EncryptDB", func() {
 		Expect(persistedTerraformWorkspace()).To(Equal(jsonSecret))
 
 		By("running the encryption")
-		Expect(dbencryptor.EncryptDB(db)).NotTo(HaveOccurred())
+		Expect(dbrotator.ReencryptDB(db)).NotTo(HaveOccurred())
 
 		Expect(persistedServiceInstanceDetails()).NotTo(Equal(jsonSecret))
 		Expect(persistedRequestDetails()).NotTo(Equal(jsonSecret))
