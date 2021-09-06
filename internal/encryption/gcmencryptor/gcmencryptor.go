@@ -10,16 +10,18 @@ import (
 )
 
 func New(key [32]byte) GCMEncryptor {
-	return GCMEncryptor{key: key}
+	return GCMEncryptor{key: key[:]}
 }
 
 type GCMEncryptor struct {
-	key [32]byte
+	key []byte
 }
 
-func (d GCMEncryptor) Encrypt(plaintext []byte) (string, error) {
+func (e GCMEncryptor) Encrypt(plaintext []byte) (string, error) {
+	e.validate()
+
 	// Initialize an AES block cipher
-	block, err := aes.NewCipher(d.key[:])
+	block, err := aes.NewCipher(e.key)
 	if err != nil {
 		return "", err
 	}
@@ -42,14 +44,16 @@ func (d GCMEncryptor) Encrypt(plaintext []byte) (string, error) {
 	return b64.StdEncoding.EncodeToString(sealed), nil
 }
 
-func (d GCMEncryptor) Decrypt(ciphertext string) ([]byte, error) {
+func (e GCMEncryptor) Decrypt(ciphertext string) ([]byte, error) {
+	e.validate()
+
 	decoded, err := b64.StdEncoding.DecodeString(ciphertext)
 	if err != nil {
 		return nil, err
 	}
 
 	// Initialize an AES block cipher
-	block, err := aes.NewCipher(d.key[:])
+	block, err := aes.NewCipher(e.key)
 	if err != nil {
 		return nil, err
 	}
@@ -70,4 +74,10 @@ func (d GCMEncryptor) Decrypt(ciphertext string) ([]byte, error) {
 		decoded[gcm.NonceSize():],
 		nil,
 	)
+}
+
+func (e GCMEncryptor) validate() {
+	if len(e.key) != 32 {
+		panic("encryption method called on uninitialised encryptor")
+	}
 }

@@ -1,4 +1,4 @@
-package passwords
+package passwordcombiner
 
 import (
 	"fmt"
@@ -11,16 +11,17 @@ import (
 // possible to create a rainbow table for this.
 const CanaryInput = "canary value"
 
-func encryptCanary(key [32]byte) (string, error) {
-	return gcmencryptor.New(key).Encrypt([]byte(CanaryInput))
+func encryptCanary(encryptor gcmencryptor.GCMEncryptor) (string, error) {
+	return encryptor.Encrypt([]byte(CanaryInput))
 }
 
-func decryptCanary(key [32]byte, canary, label string) error {
-	_, err := gcmencryptor.New(key).Decrypt(canary)
+func decryptCanary(encryptor gcmencryptor.GCMEncryptor, canary, label string) error {
+	_, err := encryptor.Decrypt(canary)
 	switch {
 	case err == nil:
 		return nil
-	case err.Error() == "cipher: message authentication failed": // Unfortunately type is errors.errorString so we cannot do a safer type check
+	// Unfortunately type is errors.errorString so we cannot do a safer type check
+	case err.Error() == "cipher: message authentication failed", err.Error() == "malformed ciphertext":
 		return fmt.Errorf("canary mismatch for password labeled %q - check that the password value has not changed", label)
 	default:
 		return err

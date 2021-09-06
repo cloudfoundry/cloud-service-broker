@@ -1,4 +1,4 @@
-package passwords_test
+package encryption_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestPassword(t *testing.T) {
+func TestEncryption(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Password Suite")
+	RunSpecs(t, "Encryption Suite")
 }

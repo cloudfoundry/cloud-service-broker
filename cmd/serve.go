@@ -24,7 +24,8 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/brokers"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/passwords"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/dbrotator"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/brokerpak"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/server"
@@ -79,11 +80,18 @@ func init() {
 func serve() {
 	logger := utils.NewLogger("cloud-service-broker")
 	db := db_service.New(logger)
-	passwds, err := passwords.ProcessPasswords(viper.GetString(encryptionPasswords), viper.GetBool(encryptionEnabled), db)
+
+	config, err := encryption.ParseConfiguration(db, viper.GetBool(encryptionEnabled), viper.GetString(encryptionPasswords))
 	if err != nil {
-		logger.Fatal("Error setting up database encryption: %s", err)
+		logger.Fatal("Error parsing encryption configuration: %s", err)
 	}
-	models.SetEncryptor(models.ConfigureEncryption(passwds.Primary.Secret))
+	if config.Changed {
+		logger.Info("rotating-database-encryption", lager.Data{"previous-primary": config.StoredPrimaryLabel, "new-primary": config.ParsedPrimaryLabel})
+		models.SetEncryptor(config.RotationEncryptor)
+		dbrotator.ReencryptDB(db)
+	}
+	logger.Info("database-encryption", lager.Data{"primary": config.ParsedPrimaryLabel})
+	models.SetEncryptor(config.Encryptor)
 
 	// init broker
 	cfg, err := brokers.NewBrokerConfigFromEnv(logger)

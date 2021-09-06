@@ -51,6 +51,9 @@ var _ = Describe("GCMEncryptor", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
+		It("panics when run on an uninitialised encryptor", func() {
+			Expect(func() { gcmencryptor.GCMEncryptor{}.Encrypt([]byte("foo")) }).To(Panic())
+		})
 	})
 
 	Describe("Decrypt", func() {
@@ -72,6 +75,10 @@ var _ = Describe("GCMEncryptor", func() {
 			result, err := encryptor.Decrypt(encoded)
 			Expect(err).To(MatchError("cipher: message authentication failed"))
 			Expect(result).To(BeNil())
+		})
+
+		It("panics when run on an uninitialised encryptor", func() {
+			Expect(func() { gcmencryptor.GCMEncryptor{}.Decrypt("foo") }).To(Panic())
 		})
 	})
 })
