@@ -13,6 +13,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
@@ -342,6 +343,8 @@ var _ = Describe("Database Encryption", func() {
 		It("it encrypts the database", func() {
 			By("starting the broker without a password")
 			brokerSession := startBroker(false, "")
+			Expect(string(brokerSession.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
+			Expect(brokerSession).To(Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"none"}}`))
 
 			By("creating a service instance and checking fields are stored in plain text")
 			serviceInstanceGUID := uuid.New()
@@ -361,6 +364,10 @@ var _ = Describe("Database Encryption", func() {
 			brokerSession.Terminate()
 			const encryptionPasswords = `[{"primary":true,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`
 			brokerSession = startBroker(true, encryptionPasswords)
+			Expect(brokerSession.Out).To(SatisfyAll(
+				Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-password","previous-primary":"none"}}`),
+				Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-password"}}`),
+			))
 
 			By("checking that the previous data is now encrypted")
 			Expect(persistedRequestDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionParams)
@@ -368,6 +375,12 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(haveAnyPlaintextServiceTerraformState)
 			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
+
+			By("restarting the broker with the same password")
+			brokerSession.Terminate()
+			brokerSession = startBroker(true, encryptionPasswords)
+			Expect(string(brokerSession.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
+			Expect(brokerSession.Out).To(Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-password"}}`))
 
 			By("unbinding")
 			deleteBinding(serviceInstanceGUID, serviceBindingGUID)

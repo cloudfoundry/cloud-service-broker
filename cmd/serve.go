@@ -86,11 +86,16 @@ func serve() {
 		logger.Fatal("Error parsing encryption configuration: %s", err)
 	}
 	if config.Changed {
-		logger.Info("rotating-database-encryption", lager.Data{"previous-primary": config.StoredPrimaryLabel, "new-primary": config.ParsedPrimaryLabel})
+		logger.Info("rotating-database-encryption", lager.Data{"previous-primary": config.StoredPrimaryLabel, "new-primary": config.ConfiguredPrimaryLabel})
 		models.SetEncryptor(config.RotationEncryptor)
-		dbrotator.ReencryptDB(db)
+		if err := dbrotator.ReencryptDB(db); err != nil {
+			logger.Fatal("Error rotating database encryption: %s", err)
+		}
+		if err := encryption.UpdatePasswordMetadata(db, config.ConfiguredPrimaryLabel); err != nil {
+			logger.Fatal("Error updating password metadata: %s", err)
+		}
 	}
-	logger.Info("database-encryption", lager.Data{"primary": config.ParsedPrimaryLabel})
+	logger.Info("database-encryption", lager.Data{"primary": config.ConfiguredPrimaryLabel})
 	models.SetEncryptor(config.Encryptor)
 
 	// init broker

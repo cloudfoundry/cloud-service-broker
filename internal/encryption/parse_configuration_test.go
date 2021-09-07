@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ = Describe("Encryption Configuration", func() {
+var _ = Describe("ParseConfiguration()", func() {
 	var db *gorm.DB
 
 	BeforeEach(func() {
@@ -31,7 +31,7 @@ var _ = Describe("Encryption Configuration", func() {
 			Expect(config.Encryptor).To(Equal(noopencryptor.New()))
 			Expect(config.Changed).To(BeFalse())
 			Expect(config.RotationEncryptor).To(BeNil())
-			Expect(config.ParsedPrimaryLabel).To(Equal("none"))
+			Expect(config.ConfiguredPrimaryLabel).To(Equal("none"))
 			Expect(config.StoredPrimaryLabel).To(Equal("none"))
 		})
 	})
@@ -64,7 +64,7 @@ var _ = Describe("Encryption Configuration", func() {
 			Expect(config.Encryptor).To(Equal(noopencryptor.New()))
 			Expect(config.Changed).To(BeFalse())
 			Expect(config.RotationEncryptor).To(BeNil())
-			Expect(config.ParsedPrimaryLabel).To(Equal("none"))
+			Expect(config.ConfiguredPrimaryLabel).To(Equal("none"))
 			Expect(config.StoredPrimaryLabel).To(Equal("barfoo"))
 		})
 	})
@@ -87,7 +87,7 @@ var _ = Describe("Encryption Configuration", func() {
 			Expect(config.Encryptor).To(BeAssignableToTypeOf(gcmencryptor.GCMEncryptor{}))
 			Expect(config.Changed).To(BeFalse())
 			Expect(config.RotationEncryptor).To(BeNil())
-			Expect(config.ParsedPrimaryLabel).To(Equal("barfoo"))
+			Expect(config.ConfiguredPrimaryLabel).To(Equal("barfoo"))
 			Expect(config.StoredPrimaryLabel).To(Equal("barfoo"))
 
 			Expect(config.Encryptor.Decrypt("cH9f37uCN/nF4wboigSqP0Xh3EkHGyJAZaCdX9kvPg==")).To(Equal([]byte("quz")))
@@ -103,7 +103,7 @@ var _ = Describe("Encryption Configuration", func() {
 			Expect(config.Encryptor).To(BeAssignableToTypeOf(gcmencryptor.GCMEncryptor{}))
 			Expect(config.Changed).To(BeTrue())
 			Expect(config.RotationEncryptor).To(BeAssignableToTypeOf(compoundencryptor.CompoundEncryptor{}))
-			Expect(config.ParsedPrimaryLabel).To(Equal("barfoo"))
+			Expect(config.ConfiguredPrimaryLabel).To(Equal("barfoo"))
 			Expect(config.StoredPrimaryLabel).To(Equal("none"))
 
 			By("being able to encrypt with the encryptor")
@@ -142,7 +142,7 @@ var _ = Describe("Encryption Configuration", func() {
 				Expect(config.Encryptor).To(BeAssignableToTypeOf(gcmencryptor.GCMEncryptor{}))
 				Expect(config.Changed).To(BeTrue())
 				Expect(config.RotationEncryptor).To(BeAssignableToTypeOf(compoundencryptor.CompoundEncryptor{}))
-				Expect(config.ParsedPrimaryLabel).To(Equal("supernew"))
+				Expect(config.ConfiguredPrimaryLabel).To(Equal("supernew"))
 				Expect(config.StoredPrimaryLabel).To(Equal("barfoo"))
 
 				By("being able to encrypt with the encryptor")

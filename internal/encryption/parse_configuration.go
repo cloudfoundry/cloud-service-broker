@@ -12,11 +12,11 @@ import (
 )
 
 type Configuration struct {
-	Encryptor          models.Encryptor
-	RotationEncryptor  models.Encryptor
-	Changed            bool
-	ParsedPrimaryLabel string
-	StoredPrimaryLabel string
+	Encryptor              models.Encryptor
+	RotationEncryptor      models.Encryptor
+	Changed                bool
+	ConfiguredPrimaryLabel string
+	StoredPrimaryLabel     string
 }
 
 func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configuration, error) {
@@ -53,21 +53,21 @@ func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configurat
 	}
 
 	return Configuration{
-		Encryptor:          parsedPrimary.Encryptor,
-		RotationEncryptor:  rotationEncyptor,
-		Changed:            changed,
-		ParsedPrimaryLabel: labelName(parsedPrimary.Label),
-		StoredPrimaryLabel: labelName(storedPrimary.Label),
+		Encryptor:              parsedPrimary.Encryptor,
+		RotationEncryptor:      rotationEncyptor,
+		Changed:                changed,
+		ConfiguredPrimaryLabel: labelName(parsedPrimary.Label),
+		StoredPrimaryLabel:     labelName(storedPrimary.Label),
 	}, nil
 }
 
 func noopEncryption(storedPrimaryLabel string) (Configuration, error) {
 	return Configuration{
-		Encryptor:          noopencryptor.New(),
-		RotationEncryptor:  nil,
-		Changed:            false,
-		ParsedPrimaryLabel: labelName(""),
-		StoredPrimaryLabel: labelName(storedPrimaryLabel),
+		Encryptor:              noopencryptor.New(),
+		RotationEncryptor:      nil,
+		Changed:                false,
+		ConfiguredPrimaryLabel: labelName(""),
+		StoredPrimaryLabel:     labelName(storedPrimaryLabel),
 	}, nil
 }
 
