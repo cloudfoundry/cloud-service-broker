@@ -27,17 +27,17 @@ func CombineWithStoredMetadata(db *gorm.DB, passwords string) (CombinedPasswords
 	var result CombinedPasswords
 	for _, p := range parsed {
 		labels[p.Label] = struct{}{}
-		ternary := func() (CombinedPassword, error) {
+		combinedPassword := func() (CombinedPassword, error) {
 			s, ok := stored[p.Label]
 			switch ok {
 			case true:
-				return consolidateStoredPassword(s, p)
+				return mergeWithStoredMetadata(s, p)
 			default:
-				return saveNewPassword(db, p)
+				return saveNewPasswordMetadata(db, p)
 			}
 		}
 
-		entry, err := ternary()
+		entry, err := combinedPassword()
 		if err != nil {
 			return nil, err
 		}
@@ -51,7 +51,7 @@ func CombineWithStoredMetadata(db *gorm.DB, passwords string) (CombinedPasswords
 	return result, nil
 }
 
-func saveNewPassword(db *gorm.DB, p passwordparser.PasswordEntry) (CombinedPassword, error) {
+func saveNewPasswordMetadata(db *gorm.DB, p passwordparser.PasswordEntry) (CombinedPassword, error) {
 	salt, err := randomSalt()
 	if err != nil {
 		return CombinedPassword{}, err
@@ -75,15 +75,15 @@ func saveNewPassword(db *gorm.DB, p passwordparser.PasswordEntry) (CombinedPassw
 	}
 
 	return CombinedPassword{
-		Label:         p.Label,
-		Secret:        p.Secret,
-		Salt:          salt,
-		Encryptor:     e,
-		parsedPrimary: p.Primary,
+		Label:             p.Label,
+		Secret:            p.Secret,
+		Salt:              salt,
+		Encryptor:         e,
+		configuredPrimary: p.Primary,
 	}, nil
 }
 
-func consolidateStoredPassword(s models.PasswordMetadata, p passwordparser.PasswordEntry) (CombinedPassword, error) {
+func mergeWithStoredMetadata(s models.PasswordMetadata, p passwordparser.PasswordEntry) (CombinedPassword, error) {
 	e := encryptor(p.Secret, s.Salt)
 
 	if err := decryptCanary(e, s.Canary, p.Label); err != nil {
@@ -91,12 +91,12 @@ func consolidateStoredPassword(s models.PasswordMetadata, p passwordparser.Passw
 	}
 
 	return CombinedPassword{
-		Label:         p.Label,
-		Secret:        p.Secret,
-		Salt:          s.Salt,
-		Encryptor:     e,
-		parsedPrimary: p.Primary,
-		storedPrimary: s.Primary,
+		Label:             p.Label,
+		Secret:            p.Secret,
+		Salt:              s.Salt,
+		Encryptor:         e,
+		configuredPrimary: p.Primary,
+		storedPrimary:     s.Primary,
 	}, nil
 }
 

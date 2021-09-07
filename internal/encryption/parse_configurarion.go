@@ -25,7 +25,7 @@ func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configurat
 		return Configuration{}, err
 	}
 
-	parsedPrimary, parsedPrimaryOK := combined.ParsedPrimary()
+	parsedPrimary, parsedPrimaryOK := combined.ConfiguredPrimary()
 	storedPrimary, storedPrimaryOK := combined.StoredPrimary()
 
 	switch {

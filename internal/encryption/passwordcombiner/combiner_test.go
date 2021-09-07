@@ -40,7 +40,7 @@ var _ = Describe("CombineWithStoredMetadata()", func() {
 			Expect(combined[0].Encryptor).To(BeAssignableToTypeOf(gcmencryptor.GCMEncryptor{}))
 
 			By("identifying no primary")
-			primary, ok := combined.ParsedPrimary()
+			primary, ok := combined.ConfiguredPrimary()
 			Expect(ok).To(BeFalse())
 			Expect(primary).To(BeZero())
 
@@ -79,7 +79,7 @@ var _ = Describe("CombineWithStoredMetadata()", func() {
 			Expect(combined[1].Salt).NotTo(Equal(combined[2].Salt))
 
 			By("identifying the primary")
-			primary, ok := combined.ParsedPrimary()
+			primary, ok := combined.ConfiguredPrimary()
 			Expect(ok).To(BeTrue())
 			Expect(primary.Label).To(Equal("bazquz"))
 			Expect(primary.Secret).To(Equal("yetanotherveryverysecretpassword"))
@@ -187,7 +187,7 @@ var _ = Describe("CombineWithStoredMetadata()", func() {
 			Expect(primary.Salt).To(Equal(barbazSalt))
 
 			By("identifying the primary amongst the supplied passwords")
-			primary, ok = combined.ParsedPrimary()
+			primary, ok = combined.ConfiguredPrimary()
 			Expect(ok).To(BeTrue())
 			Expect(primary.Label).To(Equal("barfoo"))
 			Expect(primary.Secret).To(Equal("averyverygoodpassword"))

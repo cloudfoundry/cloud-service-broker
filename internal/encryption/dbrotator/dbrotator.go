@@ -15,7 +15,7 @@ func ReencryptDB(db *gorm.DB) error {
 	}
 	for _, e := range dbEncryptors {
 		if err := e(db); err != nil {
-			return nil
+			return err
 		}
 	}
 

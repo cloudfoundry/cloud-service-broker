@@ -3,19 +3,19 @@ package passwordcombiner
 import "github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/gcmencryptor"
 
 type CombinedPassword struct {
-	Label         string
-	Secret        string
-	Salt          []byte
-	Encryptor     gcmencryptor.GCMEncryptor
-	parsedPrimary bool
-	storedPrimary bool
+	Label             string
+	Secret            string
+	Salt              []byte
+	Encryptor         gcmencryptor.GCMEncryptor
+	configuredPrimary bool
+	storedPrimary     bool
 }
 
 type CombinedPasswords []CombinedPassword
 
-func (c CombinedPasswords) ParsedPrimary() (CombinedPassword, bool) {
+func (c CombinedPasswords) ConfiguredPrimary() (CombinedPassword, bool) {
 	for _, p := range c {
-		if p.parsedPrimary {
+		if p.configuredPrimary {
 			return p, true
 		}
 	}
