@@ -1,4 +1,4 @@
-package parser
+package passwordparser
 
 import (
 	"encoding/json"
