@@ -6,13 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"reflect"
-	"strings"
-
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models/fakes"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/gcmencryptor"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -34,7 +32,7 @@ var _ = Describe("Db", func() {
 		Context("GCM encryptor", func() {
 			BeforeEach(func() {
 				key := newKey()
-				encryptor = encryption.NewGCMEncryptor(&key)
+				encryptor = gcmencryptor.New(key)
 				models.SetEncryptor(encryptor)
 			})
 
@@ -84,7 +82,7 @@ var _ = Describe("Db", func() {
 
 		Context("Noop encryptor", func() {
 			BeforeEach(func() {
-				encryptor = encryption.NewNoopEncryptor()
+				encryptor = noopencryptor.New()
 				models.SetEncryptor(encryptor)
 			})
 
@@ -204,7 +202,7 @@ var _ = Describe("Db", func() {
 		Context("GCM encryptor", func() {
 			BeforeEach(func() {
 				key := newKey()
-				encryptor = encryption.NewGCMEncryptor(&key)
+				encryptor = gcmencryptor.New(key)
 				models.SetEncryptor(encryptor)
 			})
 
@@ -292,7 +290,7 @@ var _ = Describe("Db", func() {
 
 		Context("Noop encryptor", func() {
 			BeforeEach(func() {
-				encryptor = encryption.NewNoopEncryptor()
+				encryptor = noopencryptor.New()
 				models.SetEncryptor(encryptor)
 			})
 
@@ -438,7 +436,7 @@ var _ = Describe("Db", func() {
 		Context("GCM encryptor", func() {
 			BeforeEach(func() {
 				key := newKey()
-				encryptor = encryption.NewGCMEncryptor(&key)
+				encryptor = gcmencryptor.New(key)
 				models.SetEncryptor(encryptor)
 			})
 
@@ -506,7 +504,7 @@ var _ = Describe("Db", func() {
 
 		Context("Noop encryptor", func() {
 			BeforeEach(func() {
-				encryptor = encryption.NewNoopEncryptor()
+				encryptor = noopencryptor.New()
 				models.SetEncryptor(encryptor)
 			})
 
@@ -604,7 +602,7 @@ var _ = Describe("Db", func() {
 		Context("GCM encryptor", func() {
 			BeforeEach(func() {
 				key := newKey()
-				encryptor = encryption.NewGCMEncryptor(&key)
+				encryptor = gcmencryptor.New(key)
 				models.SetEncryptor(encryptor)
 			})
 
@@ -645,7 +643,7 @@ var _ = Describe("Db", func() {
 
 		Context("Noop encryptor", func() {
 			BeforeEach(func() {
-				encryptor = encryption.NewNoopEncryptor()
+				encryptor = noopencryptor.New()
 				models.SetEncryptor(encryptor)
 			})
 
@@ -709,8 +707,7 @@ var _ = Describe("Db", func() {
 			When("Key is empty", func() {
 				It("Skips encryption", func() {
 					encryptor := models.ConfigureEncryption("")
-
-					Expect(encryptor).To(Equal(encryption.NewNoopEncryptor()))
+					Expect(encryptor).To(Equal(noopencryptor.New()))
 				})
 			})
 
@@ -718,7 +715,7 @@ var _ = Describe("Db", func() {
 				It("Skips encryption", func() {
 					encryptor := models.ConfigureEncryption("    \t   \n")
 
-					Expect(encryptor).To(Equal(encryption.NewNoopEncryptor()))
+					Expect(encryptor).To(Equal(noopencryptor.New()))
 				})
 			})
 		})
@@ -728,9 +725,8 @@ var _ = Describe("Db", func() {
 				It("Sets up encryptor with the key", func() {
 					encryptor := models.ConfigureEncryption("one-key-here-with-32-bytes-in-it")
 
-					Expect(reflect.TypeOf(encryptor).Name()).To(Equal("GCMEncryptor"))
-					gcmEncryptor, _ := encryptor.(encryption.GCMEncryptor)
-					Expect(strings.TrimSpace(string(gcmEncryptor.Key[:]))).To(Equal("one-key-here-with-32-bytes-in-it"))
+					Expect(encryptor).To(BeAssignableToTypeOf(gcmencryptor.GCMEncryptor{}))
+					Expect(encryptor.Decrypt("hizPPQTSa4Quf300rWx6gB529tPGuNEbrjgjROZACA==")).To(Equal([]byte("foo")))
 				})
 			})
 
@@ -738,7 +734,7 @@ var _ = Describe("Db", func() {
 				It("skips encryption", func() {
 					encryptor := models.ConfigureEncryption("\t  one-key-here  \n")
 
-					Expect(encryptor).To(Equal(encryption.NewNoopEncryptor()))
+					Expect(encryptor).To(Equal(noopencryptor.New()))
 				})
 			})
 		})
