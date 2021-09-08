@@ -1,4 +1,4 @@
-package passwords_test
+package dbrotator_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestPassword(t *testing.T) {
+func TestDBRotator(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Password Suite")
+	RunSpecs(t, "DB Encryption Rotation Suite")
 }

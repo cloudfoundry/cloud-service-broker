@@ -1,9 +1,9 @@
-package parser_test
+package passwordparser_test
 
 import (
 	"strings"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/passwords/parser"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/passwordparser"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
@@ -13,24 +13,24 @@ var _ = Describe("Parser", func() {
 	DescribeTable(
 		"correct",
 		func(input string, expected interface{}) {
-			output, err := parser.Parse(input)
+			output, err := passwordparser.Parse(input)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output).To(Equal(expected))
 		},
 		Entry(
 			"empty",
 			``,
-			[]parser.PasswordEntry(nil),
+			[]passwordparser.PasswordEntry(nil),
 		),
 		Entry(
 			"empty list",
 			`[]`,
-			[]parser.PasswordEntry(nil),
+			[]passwordparser.PasswordEntry(nil),
 		),
 		Entry(
 			"one with minimum lengths",
 			`[{"label":"five5","password":{"secret":"01234567890123456789"},"primary":true}]`,
-			[]parser.PasswordEntry{
+			[]passwordparser.PasswordEntry{
 				{
 					Label:   "five5",
 					Secret:  "01234567890123456789",
@@ -41,7 +41,7 @@ var _ = Describe("Parser", func() {
 		Entry(
 			"one with maximum lengths",
 			`[{"label":"01234567890123456789","password":{"secret":"`+strings.Repeat("a", 1024)+`"},"primary":true}]`,
-			[]parser.PasswordEntry{
+			[]passwordparser.PasswordEntry{
 				{
 					Label:   "01234567890123456789",
 					Secret:  strings.Repeat("a", 1024),
@@ -52,7 +52,7 @@ var _ = Describe("Parser", func() {
 		Entry(
 			"one with extra fields",
 			`[{"randomz":"extra","label":"barfoo","password":{"secret":"01234567890123456789"},"primary":true}]`,
-			[]parser.PasswordEntry{
+			[]passwordparser.PasswordEntry{
 				{
 					Label:   "barfoo",
 					Secret:  "01234567890123456789",
@@ -63,7 +63,7 @@ var _ = Describe("Parser", func() {
 		Entry(
 			"many",
 			`[{"label":"barfoo","password":{"secret":"veryverysecretpassword"},"primary":false},{"label":"barbaz","password":{"secret":"anotherveryverysecretpassword"}},{"label":"bazquz","password":{"secret":"yetanotherveryverysecretpassword"},"primary":true}]`,
-			[]parser.PasswordEntry{
+			[]passwordparser.PasswordEntry{
 				{
 					Label:   "barfoo",
 					Secret:  "veryverysecretpassword",
@@ -84,7 +84,7 @@ var _ = Describe("Parser", func() {
 		Entry(
 			"no primary",
 			`[{"label":"barfoo","password":{"secret":"veryverysecretpassword"},"primary":false},{"label":"barbaz","password":{"secret":"anotherveryverysecretpassword"}},{"label":"bazquz","password":{"secret":"yetanotherveryverysecretpassword"},"primary":false}]`,
-			[]parser.PasswordEntry{
+			[]passwordparser.PasswordEntry{
 				{
 					Label:   "barfoo",
 					Secret:  "veryverysecretpassword",
@@ -107,7 +107,7 @@ var _ = Describe("Parser", func() {
 	DescribeTable(
 		"errors",
 		func(input string, expected interface{}) {
-			output, err := parser.Parse(input)
+			output, err := passwordparser.Parse(input)
 			Expect(output).To(BeEmpty())
 			Expect(err).To(MatchError(expected), err.Error())
 		},

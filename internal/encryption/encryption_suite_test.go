@@ -1,10 +1,10 @@
-package encryption
+package encryption_test
 
 import (
+	"testing"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"testing"
 )
 
 func TestEncryption(t *testing.T) {

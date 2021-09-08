@@ -1,4 +1,4 @@
-package encryption_test
+package gcmencryptor_test
 
 import (
 	"crypto/rand"
@@ -6,22 +6,16 @@ import (
 	b64 "encoding/base64"
 	"io"
 
-	. "github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/gcmencryptor"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-func newKey() [32]byte {
-	dbKey := make([]byte, 32)
-	io.ReadFull(rand.Reader, dbKey)
-	return sha256.Sum256(dbKey)
-}
-
 var _ = Describe("GCMEncryptor", func() {
-	var encryptor GCMEncryptor
+	var encryptor gcmencryptor.GCMEncryptor
 	BeforeEach(func() {
 		key := newKey()
-		encryptor = NewGCMEncryptor(&key)
+		encryptor = gcmencryptor.New(key)
 	})
 
 	It("can decrypt what it encrypted", func() {
@@ -57,6 +51,9 @@ var _ = Describe("GCMEncryptor", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
+		It("panics when run on an uninitialised encryptor", func() {
+			Expect(func() { gcmencryptor.GCMEncryptor{}.Encrypt([]byte("foo")) }).To(Panic())
+		})
 	})
 
 	Describe("Decrypt", func() {
@@ -79,27 +76,15 @@ var _ = Describe("GCMEncryptor", func() {
 			Expect(err).To(MatchError("cipher: message authentication failed"))
 			Expect(result).To(BeNil())
 		})
-	})
-})
 
-var _ = Describe("NoopEncryptor", func() {
-	var encryptor NoopEncryptor
-
-	BeforeEach(func() {
-		encryptor = NewNoopEncryptor()
-	})
-
-	Describe("Encrypt", func() {
-		It("is a noop", func() {
-			const text = "my funny text to encrypt"
-			Expect(encryptor.Encrypt([]byte(text))).To(Equal(text))
-		})
-	})
-
-	Describe("Decrypt", func() {
-		It("is a noop", func() {
-			const text = "my funny text to decrypt"
-			Expect(encryptor.Decrypt(text)).To(Equal([]byte(text)))
+		It("panics when run on an uninitialised encryptor", func() {
+			Expect(func() { gcmencryptor.GCMEncryptor{}.Decrypt("foo") }).To(Panic())
 		})
 	})
 })
+
+func newKey() [32]byte {
+	dbKey := make([]byte, 32)
+	io.ReadFull(rand.Reader, dbKey)
+	return sha256.Sum256(dbKey)
+}

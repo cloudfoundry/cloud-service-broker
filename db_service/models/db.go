@@ -18,7 +18,8 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/gcmencryptor"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
 )
 
 const (
@@ -39,12 +40,12 @@ func SetEncryptor(encryptor Encryptor) {
 }
 
 func ConfigureEncryption(encryptionKey string) Encryptor {
-	encryptor := Encryptor(encryption.NewNoopEncryptor())
+	encryptor := Encryptor(noopencryptor.New())
 	if (strings.TrimSpace(encryptionKey) == encryptionKey) && len(encryptionKey) > 0 {
 		key := []byte(encryptionKey)
 		var keyAs32ByteArray [32]byte
 		copy(keyAs32ByteArray[:], key)
-		encryptor = encryption.NewGCMEncryptor(&keyAs32ByteArray)
+		encryptor = gcmencryptor.New(keyAs32ByteArray)
 	}
 	return encryptor
 }

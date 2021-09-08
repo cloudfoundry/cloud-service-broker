@@ -23,15 +23,12 @@ import (
 	"strings"
 	"testing"
 
-	"gorm.io/driver/sqlite"
-
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
-
 	"code.cloudfoundry.org/lager"
 	. "github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/brokers"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models/fakes"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/credstore"
@@ -44,6 +41,7 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 	"github.com/pivotal-cf/brokerapi/v8/middlewares"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -250,7 +248,7 @@ type BrokerEndpointTestSuite map[string]BrokerEndpointTestCase
 func (cases BrokerEndpointTestSuite) Run(t *testing.T) {
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			models.SetEncryptor(encryption.NewNoopEncryptor())
+			models.SetEncryptor(noopencryptor.New())
 			stub := fakeService(t, tc.AsyncService)
 
 			t.Log("Creating broker")

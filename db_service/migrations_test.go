@@ -21,9 +21,8 @@ import (
 	"reflect"
 	"testing"
 
-	"gorm.io/driver/sqlite"
-
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 

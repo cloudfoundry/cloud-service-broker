@@ -1,12 +1,12 @@
-package passwords
+package passwordcombiner
 
 import (
 	"crypto/rand"
 	"io"
 )
 
-func randomSalt() ([32]byte, error) {
-	var salt [32]byte
+func randomSalt() ([]byte, error) {
+	salt := make([]byte, 32)
 	_, err := io.ReadFull(rand.Reader, salt[:])
 	if err != nil {
 		return salt, err
