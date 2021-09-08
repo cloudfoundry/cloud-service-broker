@@ -69,29 +69,32 @@ type TfJobRunner struct {
 func (runner *TfJobRunner) StageJob(ctx context.Context, jobId string, workspace *wrapper.TerraformWorkspace) error {
 	workspace.Executor = runner.Executor
 
-	workspaceString, err := workspace.Serialize()
+	exists, err := db_service.ExistsTerraformDeploymentById(ctx, jobId)
 	if err != nil {
 		return err
 	}
 
-	if deployment, err := db_service.GetTerraformDeploymentById(ctx, jobId); err == nil {
-		// deployment exists, update
-		if err := deployment.SetWorkspace(workspaceString); err != nil {
+	deployment := &models.TerraformDeployment{ID: jobId}
+	if exists {
+		deployment, err = db_service.GetTerraformDeploymentById(ctx, jobId)
+		if err != nil {
 			return err
 		}
-
-		deployment.LastOperationType = "validation"
-		return runner.operationFinished(nil, workspace, deployment)
+	} else {
+		if err := db_service.CreateTerraformDeployment(ctx, deployment); err != nil {
+			return err
+		}
 	}
 
-	deployment := &models.TerraformDeployment{
-		ID:                jobId,
-		LastOperationType: "validation",
+	workspaceString, err := workspace.Serialize()
+	if err != nil {
+		return err
 	}
 	if err := deployment.SetWorkspace(workspaceString); err != nil {
 		return err
 	}
 
+	deployment.LastOperationType = "validation"
 	return runner.operationFinished(nil, workspace, deployment)
 }
 

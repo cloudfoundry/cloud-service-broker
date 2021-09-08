@@ -336,24 +336,17 @@ func (ds *SqlDatastore) {{$getFn}}(ctx context.Context, {{ $key.Args }}) (*model
 // {{$existsFn}} checks to see if an instance of {{$type}} exists by its key ({{$key.CallParams}}).
 func {{$existsFn}}(ctx context.Context, {{ $key.Args }}) (bool, error) { return defaultDatastore().{{$existsFn}}(ctx, {{$key.CallParams}}) }
 func (ds *SqlDatastore) {{$existsFn}}(ctx context.Context, {{ $key.Args }}) (bool, error) {
-	return recordToExists(ds.{{$getFn}}(ctx, {{ $key.CallParams }}))
+	var count int64
+	if err := ds.db.Model(&models.{{$type}}{}).{{ $key.WhereClause }}.Count(&count).Error; err != nil {
+		return false, err
+	}
+
+	return count != 0, nil
 }
 
 {{ end }}
 
 {{- end }}
-
-func recordToExists(_ interface{}, err error) (bool, error) {
-	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
-			return false, nil
-		}
-
-		return false, err
-	}
-
-	return true, nil
-}
 `))
 
 var daoTestTemplate = template.Must(template.New("").Funcs(
@@ -384,16 +377,17 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func newInMemoryDatastore(t *testing.T) *SqlDatastore {
-	testDb, err := gorm.Open("sqlite3", ":memory:")
+	testDb, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("Error opening test database %s", err)
 	}
 
-	{{range .Models}}testDb.CreateTable(models.{{.Type}}{})
+	{{range .Models}}testDb.Migrator().CreateTable(models.{{.Type}}{})
 	{{end}}
 	return &SqlDatastore{db: testDb}
 }
