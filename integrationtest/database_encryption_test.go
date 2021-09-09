@@ -438,7 +438,6 @@ var _ = Describe("Database Encryption", func() {
 			Expect(string(brokerSession.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
 			Expect(brokerSession.Out).To(Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"none"}}`))
 
-
 			By("unbinding")
 			deleteBinding(serviceInstanceGUID, serviceBindingGUID)
 
