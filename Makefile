@@ -1,5 +1,5 @@
 SHELL = /bin/bash
-GO-VERSION = 1.16
+GO-VERSION = 1.17
 GO-VER = go$(GO-VERSION)
 
 OSFAMILY=$(shell uname)
