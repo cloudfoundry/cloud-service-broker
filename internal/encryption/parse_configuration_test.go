@@ -58,7 +58,7 @@ var _ = Describe("ParseConfiguration()", func() {
 			}).Error).NotTo(HaveOccurred())
 		})
 
-		It("returns the no-op encryptor and rotation encryptor", func() {
+		It("returns the no-op encryptor with a rotation encryptor", func() {
 			config, err := encryption.ParseConfiguration(db, false, password)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(config.Encryptor).To(Equal(noopencryptor.New()))
