@@ -24,7 +24,7 @@ var _ = Describe("ParseConfiguration()", func() {
 		Expect(db.Migrator().CreateTable(&models.PasswordMetadata{})).NotTo(HaveOccurred())
 	})
 
-	When("encryption is disabled an no passwords are supplied", func() {
+	When("encryption is disabled and no passwords are supplied", func() {
 		It("returns the no-op encryptor", func() {
 			config, err := encryption.ParseConfiguration(db, false, "")
 			Expect(err).NotTo(HaveOccurred())
@@ -58,12 +58,12 @@ var _ = Describe("ParseConfiguration()", func() {
 			}).Error).NotTo(HaveOccurred())
 		})
 
-		It("returns the no-op encryptor", func() {
+		It("returns the no-op encryptor and rotation encryptor", func() {
 			config, err := encryption.ParseConfiguration(db, false, password)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(config.Encryptor).To(Equal(noopencryptor.New()))
-			Expect(config.Changed).To(BeFalse())
-			Expect(config.RotationEncryptor).To(BeNil())
+			Expect(config.Changed).To(BeTrue())
+			Expect(config.RotationEncryptor).To(BeAssignableToTypeOf(compoundencryptor.CompoundEncryptor{}))
 			Expect(config.ConfiguredPrimaryLabel).To(Equal("none"))
 			Expect(config.StoredPrimaryLabel).To(Equal("barfoo"))
 		})

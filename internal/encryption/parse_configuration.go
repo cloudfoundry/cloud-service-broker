@@ -28,28 +28,35 @@ func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configurat
 	parsedPrimary, parsedPrimaryOK := combined.ConfiguredPrimary()
 	storedPrimary, storedPrimaryOK := combined.StoredPrimary()
 
+	changed := false
+	var rotationEncyptor models.Encryptor
+	if parsedPrimary.Label != storedPrimary.Label {
+		changed = true
+		var decryptors []compoundencryptor.Encryptor
+		for _, e := range combined {
+			decryptors = append(decryptors, e.Encryptor)
+		}
+		if !storedPrimaryOK {
+			decryptors = append(decryptors, noopencryptor.New())
+		}
+
+		var encryptor compoundencryptor.Encryptor
+		if !parsedPrimaryOK {
+			encryptor = noopencryptor.New()
+		} else {
+			encryptor = parsedPrimary.Encryptor
+		}
+
+		rotationEncyptor = compoundencryptor.New(encryptor, decryptors...)
+	}
+
 	switch {
 	case enabled && !parsedPrimaryOK:
 		return Configuration{}, errors.New("encryption is enabled but no primary password is set")
 	case !enabled && parsedPrimaryOK:
 		return Configuration{}, errors.New("encryption is disabled but a primary password is set")
 	case !enabled && !parsedPrimaryOK:
-		return noopEncryption(storedPrimary.Label)
-	}
-
-	changed := false
-	var rotationEncyptor models.Encryptor
-	if parsedPrimary.Label != storedPrimary.Label {
-		changed = true
-		var secondaryEncryptors []compoundencryptor.Encryptor
-		for _, e := range combined {
-			secondaryEncryptors = append(secondaryEncryptors, e.Encryptor)
-		}
-		if !storedPrimaryOK {
-			secondaryEncryptors = append(secondaryEncryptors, noopencryptor.New())
-		}
-
-		rotationEncyptor = compoundencryptor.New(parsedPrimary.Encryptor, secondaryEncryptors...)
+		return noopEncryption(storedPrimary.Label, changed, rotationEncyptor)
 	}
 
 	return Configuration{
@@ -61,11 +68,11 @@ func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configurat
 	}, nil
 }
 
-func noopEncryption(storedPrimaryLabel string) (Configuration, error) {
+func noopEncryption(storedPrimaryLabel string, changed bool, rotationEncryptor compoundencryptor.Encryptor) (Configuration, error) {
 	return Configuration{
 		Encryptor:              noopencryptor.New(),
-		RotationEncryptor:      nil,
-		Changed:                false,
+		RotationEncryptor:      rotationEncryptor,
+		Changed:                changed,
 		ConfiguredPrimaryLabel: labelName(""),
 		StoredPrimaryLabel:     labelName(storedPrimaryLabel),
 	}, nil
