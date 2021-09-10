@@ -491,7 +491,7 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
-			By("checking that the previous data is encrypted with different key")
+			By("checking that the previous data is encrypted differently")
 			Expect(persistedRequestDetails(serviceInstanceGUID)).NotTo(Equal(firstEncryptionPersistedRequestDetails))
 			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(Equal(firstEncryptionPersistedServiceInstanceDetails))
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(Equal(firstEncryptionpersistedServiceInstanceTerraformWorkspace))
