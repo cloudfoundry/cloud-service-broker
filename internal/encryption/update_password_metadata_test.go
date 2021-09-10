@@ -95,17 +95,6 @@ var _ = Describe("ParseConfiguration()", func() {
 				Expect(primary.Primary).To(BeFalse())
 			})
 		})
-
-		When("new primary label is `none`", func() {
-			It("sets all existing primaries flags to false", func() {
-				err := encryption.UpdatePasswordMetadata(db, "none")
-				Expect(err).NotTo(HaveOccurred())
-
-				var primary models.PasswordMetadata
-				Expect(db.Where("label = ?", "primary").First(&primary).Error).NotTo(HaveOccurred())
-				Expect(primary.Primary).To(BeFalse())
-			})
-		})
 	})
 
 	When("new primary password cannot be found", func() {

@@ -25,7 +25,7 @@ func UpdatePasswordMetadata(db *gorm.DB, configuredPrimaryLabel string) error {
 			}
 		}
 
-		if !(configuredPrimaryLabel == "" || configuredPrimaryLabel == "none") {
+		if configuredPrimaryLabel != "" {
 			var primaryPasswordMetadata models.PasswordMetadata
 			result := tx.Where("label = ?", configuredPrimaryLabel).First(&primaryPasswordMetadata)
 			switch {

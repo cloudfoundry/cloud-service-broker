@@ -138,7 +138,7 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) {
 	}
 
 	if config.Changed {
-		logger.Info("rotating-database-encryption", lager.Data{"previous-primary": config.StoredPrimaryLabel, "new-primary": config.ConfiguredPrimaryLabel})
+		logger.Info("rotating-database-encryption", lager.Data{"previous-primary": labelName(config.StoredPrimaryLabel), "new-primary": labelName(config.ConfiguredPrimaryLabel)})
 		models.SetEncryptor(config.RotationEncryptor)
 		if err := dbrotator.ReencryptDB(db); err != nil {
 			logger.Fatal("Error rotating database encryption: %s", err)
@@ -148,7 +148,7 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) {
 		}
 	}
 
-	logger.Info("database-encryption", lager.Data{"primary": config.ConfiguredPrimaryLabel})
+	logger.Info("database-encryption", lager.Data{"primary": labelName(config.ConfiguredPrimaryLabel)})
 	models.SetEncryptor(config.Encryptor)
 }
 
@@ -170,4 +170,13 @@ func startServer(registry broker.BrokerRegistry, db *sql.DB, brokerapi http.Hand
 	host := viper.GetString(apiHostProp)
 	logger.Info("Serving", lager.Data{"port": port})
 	http.ListenAndServe(fmt.Sprintf("%s:%s", host, port), router)
+}
+
+func labelName(label string) string {
+	switch label {
+	case "":
+		return "none"
+	default:
+		return label
+	}
 }

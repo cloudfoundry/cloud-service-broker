@@ -57,8 +57,8 @@ func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configurat
 		return Configuration{}, errors.New("encryption is disabled but a primary password is set")
 	}
 	result := Configuration{
-		ConfiguredPrimaryLabel: labelName(parsedPrimary.Label),
-		StoredPrimaryLabel:     labelName(storedPrimary.Label),
+		ConfiguredPrimaryLabel: parsedPrimary.Label,
+		StoredPrimaryLabel:     storedPrimary.Label,
 		Changed:                changed,
 		RotationEncryptor:      rotationEncyptor,
 	}
@@ -70,13 +70,4 @@ func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configurat
 	}
 
 	return result, nil
-}
-
-func labelName(label string) string {
-	switch label {
-	case "":
-		return "none"
-	default:
-		return label
-	}
 }

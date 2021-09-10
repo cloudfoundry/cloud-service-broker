@@ -31,8 +31,8 @@ var _ = Describe("ParseConfiguration()", func() {
 			Expect(config.Encryptor).To(Equal(noopencryptor.New()))
 			Expect(config.Changed).To(BeFalse())
 			Expect(config.RotationEncryptor).To(BeNil())
-			Expect(config.ConfiguredPrimaryLabel).To(Equal("none"))
-			Expect(config.StoredPrimaryLabel).To(Equal("none"))
+			Expect(config.ConfiguredPrimaryLabel).To(BeEmpty())
+			Expect(config.StoredPrimaryLabel).To(BeEmpty())
 		})
 	})
 
@@ -64,7 +64,7 @@ var _ = Describe("ParseConfiguration()", func() {
 			Expect(config.Encryptor).To(Equal(noopencryptor.New()))
 			Expect(config.Changed).To(BeTrue())
 			Expect(config.RotationEncryptor).To(BeAssignableToTypeOf(compoundencryptor.CompoundEncryptor{}))
-			Expect(config.ConfiguredPrimaryLabel).To(Equal("none"))
+			Expect(config.ConfiguredPrimaryLabel).To(BeEmpty())
 			Expect(config.StoredPrimaryLabel).To(Equal("barfoo"))
 		})
 	})
@@ -104,7 +104,7 @@ var _ = Describe("ParseConfiguration()", func() {
 			Expect(config.Changed).To(BeTrue())
 			Expect(config.RotationEncryptor).To(BeAssignableToTypeOf(compoundencryptor.CompoundEncryptor{}))
 			Expect(config.ConfiguredPrimaryLabel).To(Equal("barfoo"))
-			Expect(config.StoredPrimaryLabel).To(Equal("none"))
+			Expect(config.StoredPrimaryLabel).To(BeEmpty())
 
 			By("being able to encrypt with the encryptor")
 			encrypted, err := config.Encryptor.Encrypt([]byte("foo"))
@@ -197,7 +197,7 @@ var _ = Describe("ParseConfiguration()", func() {
 				Expect(config.Changed).To(BeTrue())
 				Expect(config.RotationEncryptor).To(BeAssignableToTypeOf(compoundencryptor.CompoundEncryptor{}))
 				Expect(config.ConfiguredPrimaryLabel).To(Equal("barfoo"))
-				Expect(config.StoredPrimaryLabel).To(Equal("none"))
+				Expect(config.StoredPrimaryLabel).To(BeEmpty())
 
 				By("being able to encrypt with the encryptor")
 				encrypted, err := config.Encryptor.Encrypt([]byte("foo"))
