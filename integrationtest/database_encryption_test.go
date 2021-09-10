@@ -251,7 +251,7 @@ var _ = Describe("Database Encryption", func() {
 			By("checking the binding fields")
 			createBinding(serviceInstanceGUID, serviceBindingGUID)
 			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).To(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(bePlaintextBindingTerraformState)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(haveAnyPlaintextBindingTerraformState)
 
 			By("checking how update persists service instance fields")
 			updateServiceInstance(serviceInstanceGUID)
@@ -266,7 +266,7 @@ var _ = Describe("Database Encryption", func() {
 			By("checking the binding fields after unbind")
 			deleteBinding(serviceInstanceGUID, serviceBindingGUID)
 			expectServiceBindingDetailsToNotExist(serviceInstanceGUID)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(bePlaintextBindingTerraformState)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(haveAnyPlaintextBindingTerraformState)
 
 			By("checking the service instance fields after deprovision")
 			deprovisionServiceInstance(serviceInstanceGUID)
@@ -323,10 +323,7 @@ var _ = Describe("Database Encryption", func() {
 			By("checking the binding fields after unbind")
 			deleteBinding(serviceInstanceGUID, serviceBindingGUID)
 			expectServiceBindingDetailsToNotExist(serviceInstanceGUID)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(SatisfyAny(
-				ContainSubstring(bindOutputStateValue),
-				ContainSubstring(tfStateKey),
-			))
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("ckecking the service instance fields after deprovision")
 			deprovisionServiceInstance(serviceInstanceGUID)
@@ -413,7 +410,7 @@ var _ = Describe("Database Encryption", func() {
 			serviceBindingGUID := uuid.New()
 			createBinding(serviceInstanceGUID, serviceBindingGUID)
 			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(bePlaintextBindingTerraformState)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("restarting the broker with encryption turned off")
 			brokerSession.Terminate()
@@ -427,14 +424,13 @@ var _ = Describe("Database Encryption", func() {
 			By("checking that the previous data is now decrypted")
 			Expect(persistedRequestDetails(serviceInstanceGUID)).To(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).To(bePlaintextProvisionOutput)
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).To(haveAnyPlaintextServiceTerraformState)
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).To(bePlaintextInstanceTerraformState)
 			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).To(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(haveAnyPlaintextBindingTerraformState)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(bePlaintextBindingTerraformState)
 
 			By("restarting the broker with encryption turned off again")
 			brokerSession.Terminate()
-			encryptionPasswords = `[{"primary":false,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`
-			brokerSession = startBroker(false, encryptionPasswords)
+			brokerSession = startBroker(false, "")
 			Expect(string(brokerSession.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
 			Expect(brokerSession.Out).To(Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"none"}}`))
 

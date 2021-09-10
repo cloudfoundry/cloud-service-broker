@@ -55,27 +55,21 @@ func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configurat
 		return Configuration{}, errors.New("encryption is enabled but no primary password is set")
 	case !enabled && parsedPrimaryOK:
 		return Configuration{}, errors.New("encryption is disabled but a primary password is set")
-	case !enabled && !parsedPrimaryOK:
-		return noopEncryption(storedPrimary.Label, changed, rotationEncyptor)
 	}
-
-	return Configuration{
-		Encryptor:              parsedPrimary.Encryptor,
-		RotationEncryptor:      rotationEncyptor,
-		Changed:                changed,
+	result := Configuration{
 		ConfiguredPrimaryLabel: labelName(parsedPrimary.Label),
 		StoredPrimaryLabel:     labelName(storedPrimary.Label),
-	}, nil
-}
-
-func noopEncryption(storedPrimaryLabel string, changed bool, rotationEncryptor compoundencryptor.Encryptor) (Configuration, error) {
-	return Configuration{
-		Encryptor:              noopencryptor.New(),
-		RotationEncryptor:      rotationEncryptor,
 		Changed:                changed,
-		ConfiguredPrimaryLabel: labelName(""),
-		StoredPrimaryLabel:     labelName(storedPrimaryLabel),
-	}, nil
+		RotationEncryptor:      rotationEncyptor,
+	}
+
+	if !enabled && !parsedPrimaryOK {
+		result.Encryptor = noopencryptor.New()
+	} else {
+		result.Encryptor = parsedPrimary.Encryptor
+	}
+
+	return result, nil
 }
 
 func labelName(label string) string {
