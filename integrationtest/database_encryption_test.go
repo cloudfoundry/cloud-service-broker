@@ -150,7 +150,7 @@ var _ = Describe("Database Encryption", func() {
 		waitForAsyncRequest(serviceInstanceGUID)
 	}
 
-	startBroker := func(encryptionEnabled bool, encryptionPasswords string) *Session {
+	startBrokerSession := func(encryptionEnabled bool, encryptionPasswords string) *Session {
 		runBrokerCommand := exec.Command(csb, "serve")
 		os.Unsetenv("CH_CRED_HUB_URL")
 		runBrokerCommand.Env = append(
@@ -166,6 +166,11 @@ var _ = Describe("Database Encryption", func() {
 		)
 		session, err := Start(runBrokerCommand, GinkgoWriter, GinkgoWriter)
 		Expect(err).NotTo(HaveOccurred())
+		return session
+	}
+
+	startBroker := func(encryptionEnabled bool, encryptionPasswords string) *Session {
+		session := startBrokerSession(encryptionEnabled, encryptionPasswords)
 		waitForBrokerToStart(brokerPort)
 		return session
 	}
@@ -441,6 +446,157 @@ var _ = Describe("Database Encryption", func() {
 			deprovisionServiceInstance(serviceInstanceGUID)
 
 			brokerSession.Terminate()
+		})
+	})
+
+	When("encryption is turned on and passwords are rotated", func() {
+		It("it re-encrypts the database using new password", func() {
+			By("starting the broker with a password")
+			firstEncryptionPassword := `{"primary":true,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
+			encryptionPasswords := fmt.Sprintf("[%s]", firstEncryptionPassword)
+			brokerSession := startBroker(true, encryptionPasswords)
+			Expect(brokerSession.Out).To(SatisfyAll(
+				Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-first-password","previous-primary":"none"}}`),
+				Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-first-password"}}`),
+			))
+
+			By("creating a service instance and checking fields are stored encrypted")
+			serviceInstanceGUID := uuid.New()
+			provisionServiceInstance(serviceInstanceGUID)
+			firstEncryptionPersistedRequestDetails := persistedRequestDetails(serviceInstanceGUID)
+			firstEncryptionPersistedServiceInstanceDetails := persistedServiceInstanceDetails(serviceInstanceGUID)
+			firstEncryptionpersistedServiceInstanceTerraformWorkspace := persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)
+
+			By("creating a binding and checking the fields are stored in plain text")
+			serviceBindingGUID := uuid.New()
+			createBinding(serviceInstanceGUID, serviceBindingGUID)
+			firstEncryptionPersistedServiceBindingDetails := persistedServiceBindingDetails(serviceInstanceGUID)
+			firstEncryptionPersistedServiceBindingTerraformWorkspace := persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)
+
+			By("restarting the broker with a different primary password")
+			brokerSession.Terminate()
+			firstEncryptionPassword = `{"primary":false,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
+			const secondEncryptionPassword = `{"primary":true,"label":"my-second-password","password":{"secret":"verysecretcoolpassword"}}`
+			encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
+			brokerSession = startBroker(true, encryptionPasswords)
+			Expect(brokerSession.Out).To(SatisfyAll(
+				Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`),
+				Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`),
+			))
+
+			By("checking that the previous data is still encrypted")
+			Expect(persistedRequestDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionParams)
+			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionOutput)
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(haveAnyPlaintextServiceTerraformState)
+			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(bePlaintextBindingDetails)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
+
+			By("checking that the previous data is encrypted differently")
+			Expect(persistedRequestDetails(serviceInstanceGUID)).NotTo(Equal(firstEncryptionPersistedRequestDetails))
+			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(Equal(firstEncryptionPersistedServiceInstanceDetails))
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(Equal(firstEncryptionpersistedServiceInstanceTerraformWorkspace))
+			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingDetails))
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingTerraformWorkspace))
+
+			By("restarting the broker with the same password")
+			brokerSession.Terminate()
+			brokerSession = startBroker(true, encryptionPasswords)
+			Expect(string(brokerSession.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
+			Expect(brokerSession.Out).To(Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`))
+
+			By("unbinding")
+			deleteBinding(serviceInstanceGUID, serviceBindingGUID)
+
+			By("deprovisioning")
+			deprovisionServiceInstance(serviceInstanceGUID)
+
+			brokerSession.Terminate()
+		})
+
+		When("previous password is not provided", func() {
+			It("fails to start up", func() {
+				By("starting the broker with a password")
+				firstEncryptionPassword := `{"primary":true,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
+				encryptionPasswords := fmt.Sprintf("[%s]", firstEncryptionPassword)
+				brokerSession := startBroker(true, encryptionPasswords)
+				Expect(brokerSession.Out).To(SatisfyAll(
+					Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-first-password","previous-primary":"none"}}`),
+					Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-first-password"}}`),
+				))
+
+				By("restarting the broker with a different primary password and without the initial password")
+				brokerSession.Terminate()
+				const secondEncryptionPassword = `{"primary":true,"label":"my-second-password","password":{"secret":"verysecretcoolpassword"}}`
+				encryptionPasswords = fmt.Sprintf("[%s]", secondEncryptionPassword)
+				brokerSession = startBrokerSession(true, encryptionPasswords)
+				brokerSession.Wait(time.Minute)
+
+				Expect(brokerSession.ExitCode()).NotTo(BeZero())
+				Expect(brokerSession.Err).To(Say(`the password labelled "my-first-password" must be supplied to decrypt the database`))
+
+				By("restarting the broker with a different primary password and with the initial password")
+				brokerSession.Terminate()
+				firstEncryptionPassword = `{"primary":false,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
+				encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
+				brokerSession = startBroker(true, encryptionPasswords)
+				Expect(brokerSession.Out).To(SatisfyAll(
+					Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`),
+					Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`),
+				))
+			})
+		})
+
+		When("database re-encryption fails", func() {
+			It("can restart re-encrypting", func() {
+				By("starting the broker with a password")
+				firstEncryptionPassword := `{"primary":true,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
+				encryptionPasswords := fmt.Sprintf("[%s]", firstEncryptionPassword)
+				brokerSession := startBroker(true, encryptionPasswords)
+				Expect(brokerSession.Out).To(SatisfyAll(
+					Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-first-password","previous-primary":"none"}}`),
+					Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-first-password"}}`),
+				))
+
+				By("creating a service instance and checking fields are stored encrypted")
+				serviceInstanceGUID1 := uuid.New()
+				provisionServiceInstance(serviceInstanceGUID1)
+
+				serviceInstanceGUID2 := uuid.New()
+				provisionServiceInstance(serviceInstanceGUID2)
+
+				By("corrupting the DB")
+				db, err := gorm.Open(sqlite.Open(databaseFile), &gorm.Config{})
+				Expect(err).NotTo(HaveOccurred())
+				record := models.ServiceInstanceDetails{}
+				findRecord(&record, serviceInstanceIdQuery, serviceInstanceGUID2)
+				recordToRecover := record
+				record.OtherDetails = "something-that-cannot-be-decrypted"
+				Expect(db.Save(&record).Error).NotTo(HaveOccurred())
+
+				By("restarting the broker with a different primary password")
+				brokerSession.Terminate()
+				firstEncryptionPassword = `{"primary":false,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
+				const secondEncryptionPassword = `{"primary":true,"label":"my-second-password","password":{"secret":"verysecretcoolpassword"}}`
+				encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
+				brokerSession = startBrokerSession(true, encryptionPasswords)
+				brokerSession.Wait(time.Minute)
+
+				Expect(brokerSession.ExitCode()).NotTo(BeZero())
+				Expect(brokerSession.Out).To(Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`))
+				Expect(brokerSession.Err).To(Say(`Error rotating database encryption`))
+
+				By("fixing the corrupted value")
+				Expect(db.Save(&recordToRecover).Error).NotTo(HaveOccurred())
+
+				By("restarting the broker with same config")
+				brokerSession.Terminate()
+				encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
+				brokerSession = startBroker(true, encryptionPasswords)
+				Expect(brokerSession.Out).To(SatisfyAll(
+					Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`),
+					Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`),
+				))
+			})
 		})
 	})
 })
