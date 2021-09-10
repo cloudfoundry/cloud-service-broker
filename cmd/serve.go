@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"gorm.io/gorm"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/brokers"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
@@ -80,23 +82,7 @@ func init() {
 func serve() {
 	logger := utils.NewLogger("cloud-service-broker")
 	db := db_service.New(logger)
-
-	config, err := encryption.ParseConfiguration(db, viper.GetBool(encryptionEnabled), viper.GetString(encryptionPasswords))
-	if err != nil {
-		logger.Fatal("Error parsing encryption configuration: %s", err)
-	}
-	if config.Changed {
-		logger.Info("rotating-database-encryption", lager.Data{"previous-primary": config.StoredPrimaryLabel, "new-primary": config.ConfiguredPrimaryLabel})
-		models.SetEncryptor(config.RotationEncryptor)
-		if err := dbrotator.ReencryptDB(db); err != nil {
-			logger.Fatal("Error rotating database encryption: %s", err)
-		}
-		if err := encryption.UpdatePasswordMetadata(db, config.ConfiguredPrimaryLabel); err != nil {
-			logger.Fatal("Error updating password metadata: %s", err)
-		}
-	}
-	logger.Info("database-encryption", lager.Data{"primary": config.ConfiguredPrimaryLabel})
-	models.SetEncryptor(config.Encryptor)
+	setupDBEncryption(db, logger)
 
 	// init broker
 	cfg, err := brokers.NewBrokerConfigFromEnv(logger)
@@ -145,6 +131,27 @@ func serveDocs() {
 	startServer(registry, nil, nil)
 }
 
+func setupDBEncryption(db *gorm.DB, logger lager.Logger) {
+	config, err := encryption.ParseConfiguration(db, viper.GetBool(encryptionEnabled), viper.GetString(encryptionPasswords))
+	if err != nil {
+		logger.Fatal("Error parsing encryption configuration: %s", err)
+	}
+
+	if config.Changed {
+		logger.Info("rotating-database-encryption", lager.Data{"previous-primary": labelName(config.StoredPrimaryLabel), "new-primary": labelName(config.ConfiguredPrimaryLabel)})
+		models.SetEncryptor(config.RotationEncryptor)
+		if err := dbrotator.ReencryptDB(db); err != nil {
+			logger.Fatal("Error rotating database encryption: %s", err)
+		}
+		if err := encryption.UpdatePasswordMetadata(db, config.ConfiguredPrimaryLabel); err != nil {
+			logger.Fatal("Error updating password metadata: %s", err)
+		}
+	}
+
+	logger.Info("database-encryption", lager.Data{"primary": labelName(config.ConfiguredPrimaryLabel)})
+	models.SetEncryptor(config.Encryptor)
+}
+
 func startServer(registry broker.BrokerRegistry, db *sql.DB, brokerapi http.Handler) {
 	logger := utils.NewLogger("cloud-service-broker")
 
@@ -163,4 +170,13 @@ func startServer(registry broker.BrokerRegistry, db *sql.DB, brokerapi http.Hand
 	host := viper.GetString(apiHostProp)
 	logger.Info("Serving", lager.Data{"port": port})
 	http.ListenAndServe(fmt.Sprintf("%s:%s", host, port), router)
+}
+
+func labelName(label string) string {
+	switch label {
+	case "":
+		return "none"
+	default:
+		return label
+	}
 }
