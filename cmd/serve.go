@@ -87,12 +87,12 @@ func serve() {
 	// init broker
 	cfg, err := brokers.NewBrokerConfigFromEnv(logger)
 	if err != nil {
-		logger.Fatal("Error initializing service broker config: %s", err)
+		logger.Fatal("Error initializing service broker config", err)
 	}
 	var serviceBroker domain.ServiceBroker
 	serviceBroker, err = brokers.New(cfg, logger)
 	if err != nil {
-		logger.Fatal("Error initializing service broker: %s", err)
+		logger.Fatal("Error initializing service broker", err)
 	}
 
 	credentials := brokerapi.BrokerCredentials{
@@ -134,17 +134,17 @@ func serveDocs() {
 func setupDBEncryption(db *gorm.DB, logger lager.Logger) {
 	config, err := encryption.ParseConfiguration(db, viper.GetBool(encryptionEnabled), viper.GetString(encryptionPasswords))
 	if err != nil {
-		logger.Fatal("Error parsing encryption configuration: %s", err)
+		logger.Fatal("Error parsing encryption configuration", err)
 	}
 
 	if config.Changed {
 		logger.Info("rotating-database-encryption", lager.Data{"previous-primary": labelName(config.StoredPrimaryLabel), "new-primary": labelName(config.ConfiguredPrimaryLabel)})
 		models.SetEncryptor(config.RotationEncryptor)
 		if err := dbrotator.ReencryptDB(db); err != nil {
-			logger.Fatal("Error rotating database encryption: %s", err)
+			logger.Fatal("Error rotating database encryption", err)
 		}
 		if err := encryption.UpdatePasswordMetadata(db, config.ConfiguredPrimaryLabel); err != nil {
-			logger.Fatal("Error updating password metadata: %s", err)
+			logger.Fatal("Error updating password metadata", err)
 		}
 	}
 
