@@ -24,7 +24,7 @@ var _ = Describe("CompoundEncryptor", func() {
 		compoundEncryptor = compoundencryptor.New(primaryEncryptor, secondaryEncryptorAlpha, secondaryEncryptorBeta)
 	})
 
-	It("encrypts with the primary encryptor", func() {
+	It("encrypts with the encryptor", func() {
 		primaryEncryptor.EncryptReturns("mopsy", nil)
 
 		encrypted, err := compoundEncryptor.Encrypt([]byte("flopsy"))
@@ -37,8 +37,8 @@ var _ = Describe("CompoundEncryptor", func() {
 		Expect(secondaryEncryptorBeta.EncryptCallCount()).To(BeZero())
 	})
 
-	When("encryption with the primary fails", func() {
-		It("fails without using any of the secondaries", func() {
+	When("encryption with the encryptor fails", func() {
+		It("fails without using any of the decryptors", func() {
 			primaryEncryptor.EncryptReturns("", errors.New("cottontail"))
 
 			encrypted, err := compoundEncryptor.Encrypt([]byte("flopsy"))
@@ -51,36 +51,8 @@ var _ = Describe("CompoundEncryptor", func() {
 		})
 	})
 
-	It("decrypts with the primary decryptor", func() {
-		primaryEncryptor.DecryptReturns([]byte("peter"), nil)
-
-		decrypted, err := compoundEncryptor.Decrypt("flopsy")
-		Expect(err).NotTo(HaveOccurred())
-		Expect(decrypted).To(Equal([]byte("peter")))
-
-		Expect(primaryEncryptor.DecryptCallCount()).To(Equal(1))
-		Expect(primaryEncryptor.DecryptArgsForCall(0)).To(Equal("flopsy"))
-		Expect(secondaryEncryptorAlpha.DecryptCallCount()).To(BeZero())
-		Expect(secondaryEncryptorBeta.DecryptCallCount()).To(BeZero())
-	})
-
-	When("decryption with the primary fails", func() {
-		It("tries the first secondary", func() {
-			primaryEncryptor.DecryptReturns(nil, errors.New("cottontail"))
-			secondaryEncryptorAlpha.DecryptReturns([]byte("flopsy"), nil)
-
-			decrypted, err := compoundEncryptor.Decrypt("peter")
-			Expect(err).NotTo(HaveOccurred())
-			Expect(decrypted).To(Equal([]byte("flopsy")))
-
-			Expect(primaryEncryptor.DecryptCallCount()).To(Equal(1))
-			Expect(primaryEncryptor.DecryptArgsForCall(0)).To(Equal("peter"))
-			Expect(secondaryEncryptorAlpha.DecryptCallCount()).To(Equal(1))
-			Expect(secondaryEncryptorAlpha.DecryptArgsForCall(0)).To(Equal("peter"))
-			Expect(secondaryEncryptorBeta.DecryptCallCount()).To(BeZero())
-		})
-
-		It("subsequently tries the next secondary", func() {
+	When("decryption with the first decryptor fails", func() {
+		It("subsequently tries the next decryptor", func() {
 			primaryEncryptor.DecryptReturns(nil, errors.New("cottontail"))
 			secondaryEncryptorAlpha.DecryptReturns(nil, errors.New("peter"))
 			secondaryEncryptorBeta.DecryptReturns([]byte("flopsy"), nil)
@@ -89,15 +61,14 @@ var _ = Describe("CompoundEncryptor", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(decrypted).To(Equal([]byte("flopsy")))
 
-			Expect(primaryEncryptor.DecryptCallCount()).To(Equal(1))
-			Expect(primaryEncryptor.DecryptArgsForCall(0)).To(Equal("mopsy"))
+			Expect(primaryEncryptor.DecryptCallCount()).To(Equal(0))
 			Expect(secondaryEncryptorAlpha.DecryptCallCount()).To(Equal(1))
 			Expect(secondaryEncryptorAlpha.DecryptArgsForCall(0)).To(Equal("mopsy"))
 			Expect(secondaryEncryptorBeta.DecryptCallCount()).To(Equal(1))
 			Expect(secondaryEncryptorBeta.DecryptArgsForCall(0)).To(Equal("mopsy"))
 		})
 
-		It("returns an error if all secondaries fail", func() {
+		It("returns an error if all decryptors fail", func() {
 			primaryEncryptor.DecryptReturns(nil, errors.New("cottontail"))
 			secondaryEncryptorAlpha.DecryptReturns(nil, errors.New("peter"))
 			secondaryEncryptorBeta.DecryptReturns(nil, errors.New("flopsy"))

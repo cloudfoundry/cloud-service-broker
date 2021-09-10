@@ -2,23 +2,23 @@ package compoundencryptor
 
 func New(primary Encryptor, secondaries ...Encryptor) Encryptor {
 	return CompoundEncryptor{
-		primary:     primary,
-		secondaries: secondaries,
+		encryptor:  primary,
+		decryptors: secondaries,
 	}
 }
 
 type CompoundEncryptor struct {
-	primary     Encryptor
-	secondaries []Encryptor
+	encryptor  Encryptor
+	decryptors []Encryptor
 }
 
 func (c CompoundEncryptor) Encrypt(plaintext []byte) (string, error) {
-	return c.primary.Encrypt(plaintext)
+	return c.encryptor.Encrypt(plaintext)
 }
 
 func (c CompoundEncryptor) Decrypt(ciphertext string) (data []byte, err error) {
-	for _, decryptor := range append([]Encryptor{c.primary}, c.secondaries...) {
-		data, err = decryptor.Decrypt(ciphertext)
+	for _, d := range c.decryptors {
+		data, err = d.Decrypt(ciphertext)
 		if err == nil {
 			return data, nil
 		}

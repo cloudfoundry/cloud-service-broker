@@ -8,6 +8,7 @@ require (
 	code.cloudfoundry.org/lager v2.0.0+incompatible
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/aws/aws-sdk-go v1.25.3 // indirect
+	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-getter v1.4.2-0.20200106182914-9813cbd4eb02
@@ -35,6 +36,7 @@ require (
 	github.com/zclconf/go-cty v1.2.1 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/oauth2 v0.0.0-20210427180440-81ed05c6b58c
+	golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34 // indirect
 	golang.org/x/tools v0.1.5
 	google.golang.org/api v0.46.0 // indirect
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
