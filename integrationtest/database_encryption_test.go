@@ -547,7 +547,7 @@ var _ = Describe("Database Encryption", func() {
 		})
 
 		When("database re-encryption fails", func() {
-			FIt("can restart re-encrypting", func() {
+			It("can restart re-encrypting", func() {
 				By("starting the broker with a password")
 				firstEncryptionPassword := `{"primary":true,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 				encryptionPasswords := fmt.Sprintf("[%s]", firstEncryptionPassword)
