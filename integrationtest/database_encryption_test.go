@@ -524,7 +524,7 @@ var _ = Describe("Database Encryption", func() {
 					Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-first-password"}}`),
 				))
 
-				By("restarting the broker with a different primary password and without the initial one")
+				By("restarting the broker with a different primary password and without the initial password")
 				brokerSession.Terminate()
 				const secondEncryptionPassword = `{"primary":true,"label":"my-second-password","password":{"secret":"verysecretcoolpassword"}}`
 				encryptionPasswords = fmt.Sprintf("[%s]", secondEncryptionPassword)
@@ -534,7 +534,7 @@ var _ = Describe("Database Encryption", func() {
 				Expect(brokerSession.ExitCode()).NotTo(BeZero())
 				Expect(brokerSession.Err).To(Say(`the password labelled "my-first-password" must be supplied to decrypt the database`))
 
-				By("restarting the broker with a different primary password and with the initial one")
+				By("restarting the broker with a different primary password and with the initial password")
 				brokerSession.Terminate()
 				firstEncryptionPassword = `{"primary":false,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 				encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
