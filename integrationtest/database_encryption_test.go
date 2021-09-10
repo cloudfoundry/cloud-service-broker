@@ -546,8 +546,8 @@ var _ = Describe("Database Encryption", func() {
 			})
 		})
 
-		When("database re-encryption fails midway", func() {
-			It("can restart re-encrypting", func() {
+		When("database re-encryption fails", func() {
+			FIt("can restart re-encrypting", func() {
 				By("starting the broker with a password")
 				firstEncryptionPassword := `{"primary":true,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 				encryptionPasswords := fmt.Sprintf("[%s]", firstEncryptionPassword)
@@ -558,36 +558,35 @@ var _ = Describe("Database Encryption", func() {
 				))
 
 				By("creating a service instance and checking fields are stored encrypted")
-				serviceInstanceGUID := uuid.New()
-				provisionServiceInstance(serviceInstanceGUID)
+				serviceInstanceGUID1 := uuid.New()
+				provisionServiceInstance(serviceInstanceGUID1)
 
-				By("creating a binding and checking the fields are stored in plain text")
-				serviceBindingGUID := uuid.New()
-				createBinding(serviceInstanceGUID, serviceBindingGUID)
+				serviceInstanceGUID2 := uuid.New()
+				provisionServiceInstance(serviceInstanceGUID2)
+
+				By("corrupting the DB")
+				db, err := gorm.Open(sqlite.Open(databaseFile), &gorm.Config{})
+				Expect(err).NotTo(HaveOccurred())
+				record := models.ServiceInstanceDetails{}
+				findRecord(&record, serviceInstanceIdQuery, serviceInstanceGUID2)
+				recordToRecover := record
+				record.OtherDetails = "something-that-cannot-be-decrypted"
+				Expect(db.Save(&record).Error).NotTo(HaveOccurred())
 
 				By("restarting the broker with a different primary password")
 				brokerSession.Terminate()
 				firstEncryptionPassword = `{"primary":false,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 				const secondEncryptionPassword = `{"primary":true,"label":"my-second-password","password":{"secret":"verysecretcoolpassword"}}`
 				encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
-				brokerSession = startBroker(true, encryptionPasswords)
-				Expect(brokerSession.Out).To(SatisfyAll(
-					Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`),
-					Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`),
-				))
+				brokerSession = startBrokerWithoutWaiting(true, encryptionPasswords)
+				brokerSession.Wait(time.Minute)
 
-				By("replicating unsuccessful key rotation")
-				db, err := gorm.Open(sqlite.Open(databaseFile), &gorm.Config{})
-				Expect(err).NotTo(HaveOccurred())
-				var firstPasswordMetadata []models.PasswordMetadata
-				db.Where("label = ?", "my-first-password").Find(&firstPasswordMetadata)
-				firstPasswordMetadata[0].Primary = true
-				Expect(db.Save(&firstPasswordMetadata).Error).NotTo(HaveOccurred())
+				Expect(brokerSession.ExitCode()).NotTo(BeZero())
+				Expect(brokerSession.Out).To(Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`))
+				Expect(brokerSession.Err).To(Say(`Error rotating database encryption:`))
 
-				var secondPasswordMetadata []models.PasswordMetadata
-				db.Where("label = ?", "my-second-password").Find(&secondPasswordMetadata)
-				secondPasswordMetadata[0].Primary = false
-				Expect(db.Save(&secondPasswordMetadata).Error).NotTo(HaveOccurred())
+				By("fixing the corrupted value")
+				Expect(db.Save(&recordToRecover).Error).NotTo(HaveOccurred())
 
 				By("restarting the broker with same config")
 				brokerSession.Terminate()

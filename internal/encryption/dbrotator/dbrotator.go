@@ -1,6 +1,8 @@
 package dbrotator
 
 import (
+	"fmt"
+
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"gorm.io/gorm"
 )
@@ -24,9 +26,10 @@ func ReencryptDB(db *gorm.DB) error {
 
 func encryptProvisionRequestDetails(db *gorm.DB) error {
 	var provisionRequestDetailsBatch []models.ProvisionRequestDetails
-	db.FindInBatches(&provisionRequestDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
+	result := db.FindInBatches(&provisionRequestDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range provisionRequestDetailsBatch {
 			details, err := provisionRequestDetailsBatch[i].GetRequestDetails()
+
 			if err != nil {
 				return err
 			}
@@ -38,13 +41,16 @@ func encryptProvisionRequestDetails(db *gorm.DB) error {
 
 		return tx.Save(&provisionRequestDetailsBatch).Error
 	})
+	if result.Error != nil {
+		return fmt.Errorf("error reencrypting: %v", result.Error)
+	}
 
 	return nil
 }
 
 func encryptServiceInstanceDetails(db *gorm.DB) error {
 	var serviceInstanceDetailsBatch []models.ServiceInstanceDetails
-	db.FindInBatches(&serviceInstanceDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
+	result := db.FindInBatches(&serviceInstanceDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range serviceInstanceDetailsBatch {
 			var details interface{}
 			if err := serviceInstanceDetailsBatch[i].GetOtherDetails(&details); err != nil {
@@ -58,13 +64,16 @@ func encryptServiceInstanceDetails(db *gorm.DB) error {
 
 		return tx.Save(&serviceInstanceDetailsBatch).Error
 	})
+	if result.Error != nil {
+		return fmt.Errorf("error reencrypting: %v", result.Error)
+	}
 
 	return nil
 }
 
 func encryptServiceBindingCredentials(db *gorm.DB) error {
 	var serviceBindingCredentialsBatch []models.ServiceBindingCredentials
-	db.FindInBatches(&serviceBindingCredentialsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
+	result := db.FindInBatches(&serviceBindingCredentialsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range serviceBindingCredentialsBatch {
 			var details interface{}
 			if err := serviceBindingCredentialsBatch[i].GetOtherDetails(&details); err != nil {
@@ -78,13 +87,16 @@ func encryptServiceBindingCredentials(db *gorm.DB) error {
 
 		return tx.Save(&serviceBindingCredentialsBatch).Error
 	})
+	if result.Error != nil {
+		return fmt.Errorf("error reencrypting: %v", result.Error)
+	}
 
 	return nil
 }
 
 func encryptTerraformWorkspaces(db *gorm.DB) error {
 	var terraformWorkspacesBatch []models.TerraformDeployment
-	db.FindInBatches(&terraformWorkspacesBatch, 100, func(tx *gorm.DB, batchNumber int) error {
+	result := db.FindInBatches(&terraformWorkspacesBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range terraformWorkspacesBatch {
 			workspace, err := terraformWorkspacesBatch[i].GetWorkspace()
 			if err != nil {
@@ -98,6 +110,9 @@ func encryptTerraformWorkspaces(db *gorm.DB) error {
 
 		return tx.Save(&terraformWorkspacesBatch).Error
 	})
+	if result.Error != nil {
+		return fmt.Errorf("error reencrypting: %v", result.Error)
+	}
 
 	return nil
 }
