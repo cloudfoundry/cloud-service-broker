@@ -583,7 +583,7 @@ var _ = Describe("Database Encryption", func() {
 
 				Expect(brokerSession.ExitCode()).NotTo(BeZero())
 				Expect(brokerSession.Out).To(Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`))
-				Expect(brokerSession.Err).To(Say(`Error rotating database encryption:`))
+				Expect(brokerSession.Err).To(Say(`Error rotating database encryption`))
 
 				By("fixing the corrupted value")
 				Expect(db.Save(&recordToRecover).Error).NotTo(HaveOccurred())
