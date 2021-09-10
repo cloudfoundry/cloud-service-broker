@@ -150,7 +150,7 @@ var _ = Describe("Database Encryption", func() {
 		waitForAsyncRequest(serviceInstanceGUID)
 	}
 
-	startBrokerWithoutWaiting := func(encryptionEnabled bool, encryptionPasswords string) *Session {
+	startBrokerSession := func(encryptionEnabled bool, encryptionPasswords string) *Session {
 		runBrokerCommand := exec.Command(csb, "serve")
 		os.Unsetenv("CH_CRED_HUB_URL")
 		runBrokerCommand.Env = append(
@@ -170,7 +170,7 @@ var _ = Describe("Database Encryption", func() {
 	}
 
 	startBroker := func(encryptionEnabled bool, encryptionPasswords string) *Session {
-		session := startBrokerWithoutWaiting(encryptionEnabled, encryptionPasswords)
+		session := startBrokerSession(encryptionEnabled, encryptionPasswords)
 		waitForBrokerToStart(brokerPort)
 		return session
 	}
@@ -528,7 +528,7 @@ var _ = Describe("Database Encryption", func() {
 				brokerSession.Terminate()
 				const secondEncryptionPassword = `{"primary":true,"label":"my-second-password","password":{"secret":"verysecretcoolpassword"}}`
 				encryptionPasswords = fmt.Sprintf("[%s]", secondEncryptionPassword)
-				brokerSession = startBrokerWithoutWaiting(true, encryptionPasswords)
+				brokerSession = startBrokerSession(true, encryptionPasswords)
 				brokerSession.Wait(time.Minute)
 
 				Expect(brokerSession.ExitCode()).NotTo(BeZero())
@@ -578,7 +578,7 @@ var _ = Describe("Database Encryption", func() {
 				firstEncryptionPassword = `{"primary":false,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 				const secondEncryptionPassword = `{"primary":true,"label":"my-second-password","password":{"secret":"verysecretcoolpassword"}}`
 				encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
-				brokerSession = startBrokerWithoutWaiting(true, encryptionPasswords)
+				brokerSession = startBrokerSession(true, encryptionPasswords)
 				brokerSession.Wait(time.Minute)
 
 				Expect(brokerSession.ExitCode()).NotTo(BeZero())
