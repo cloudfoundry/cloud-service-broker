@@ -215,8 +215,9 @@ var _ = Describe("ParseConfiguration()", func() {
 				Expect(decrypted).To(Equal([]byte("canary value")))
 
 				By("being able to use the rotation encryptor to `decrypt` plaintext")
-				_, err = config.RotationEncryptor.Decrypt("bar")
-				Expect(err).To(MatchError("bar"))
+				decrypted, err = config.RotationEncryptor.Decrypt("bar")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(decrypted).To(Equal([]byte("bar")))
 			})
 		})
 	})
