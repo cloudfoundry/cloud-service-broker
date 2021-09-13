@@ -59,7 +59,7 @@ require (
 	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4 // indirect
 	github.com/prometheus/common v0.6.0 // indirect
 	github.com/prometheus/procfs v0.0.3 // indirect
-	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d
+	github.com/robertkrimen/otto v0.0.0-20210614181706-373ff5438452
 	github.com/russross/blackfriday v1.6.0
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.4.1
