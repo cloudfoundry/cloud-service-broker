@@ -31,7 +31,7 @@ require (
 	github.com/hashicorp/go-version v1.3.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl2 v0.0.0-20191002203319-fb75b3253c80
-	github.com/hashicorp/hil v0.0.0-20190212132231-97b3a9cdfa93
+	github.com/hashicorp/hil v0.0.0-20210521165536-27a72121fd40
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
