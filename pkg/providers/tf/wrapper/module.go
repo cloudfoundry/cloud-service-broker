@@ -19,8 +19,8 @@ import (
 	"sort"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
-	"github.com/hashicorp/hcl2/hcl"
-	"github.com/hashicorp/hcl2/hclparse"
+	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclparse"
 )
 
 // ModuleDefinition represents a module in a Terraform workspace.
