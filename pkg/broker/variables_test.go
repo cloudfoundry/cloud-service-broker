@@ -186,7 +186,7 @@ func TestBrokerVariable_ValidateVariables(t *testing.T) {
 					},
 				},
 			},
-			Expected: errors.New("1 error(s) occurred: test: test is required"),
+			Expected: errors.New("1 error(s) occurred: (root): test is required"),
 		},
 		"test incorrect schema": {
 			Parameters: map[string]interface{}{},
