@@ -148,6 +148,10 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) {
 		}
 	}
 
+	if err := encryption.DeletePasswordMetadata(db, config.ToDeleteLabels); err != nil {
+		logger.Fatal("Error deleting stale password metadata", err)
+	}
+
 	logger.Info("database-encryption", lager.Data{"primary": labelName(config.ConfiguredPrimaryLabel)})
 	models.SetEncryptor(config.Encryptor)
 }

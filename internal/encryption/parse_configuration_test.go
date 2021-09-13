@@ -24,161 +24,55 @@ var _ = Describe("ParseConfiguration()", func() {
 		Expect(db.Migrator().CreateTable(&models.PasswordMetadata{})).NotTo(HaveOccurred())
 	})
 
-	When("encryption is disabled and no passwords are supplied", func() {
-		It("returns the no-op encryptor", func() {
-			config, err := encryption.ParseConfiguration(db, false, "")
-			Expect(err).NotTo(HaveOccurred())
-			Expect(config.Encryptor).To(Equal(noopencryptor.New()))
-			Expect(config.Changed).To(BeFalse())
-			Expect(config.RotationEncryptor).To(BeNil())
-			Expect(config.ConfiguredPrimaryLabel).To(BeEmpty())
-			Expect(config.StoredPrimaryLabel).To(BeEmpty())
-		})
-	})
-
-	When("encryption is disabled but a primary password is supplied", func() {
-		const password = `[{"primary":true,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
-
-		It("returns an error", func() {
-			config, err := encryption.ParseConfiguration(db, false, password)
-			Expect(err).To(MatchError("encryption is disabled but a primary password is set"))
-			Expect(config).To(BeZero())
-		})
-	})
-
-	When("encryption is disabled but was previously enabled", func() {
-		const password = `[{"primary":false,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
-
-		BeforeEach(func() {
-			Expect(db.Create(&models.PasswordMetadata{
-				Label:   "barfoo",
-				Salt:    []byte("random-salt-containing-32-bytes!"),
-				Canary:  "E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==",
-				Primary: true,
-			}).Error).NotTo(HaveOccurred())
-		})
-
-		It("returns the no-op encryptor with a rotation encryptor", func() {
-			config, err := encryption.ParseConfiguration(db, false, password)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(config.Encryptor).To(Equal(noopencryptor.New()))
-			Expect(config.Changed).To(BeTrue())
-			Expect(config.RotationEncryptor).To(BeAssignableToTypeOf(compoundencryptor.CompoundEncryptor{}))
-			Expect(config.ConfiguredPrimaryLabel).To(BeEmpty())
-			Expect(config.StoredPrimaryLabel).To(Equal("barfoo"))
-		})
-	})
-
-	When("encryption is enabled and the primary has not changed", func() {
-		const password = `[{"primary":true,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
-
-		BeforeEach(func() {
-			Expect(db.Create(&models.PasswordMetadata{
-				Label:   "barfoo",
-				Salt:    []byte("random-salt-containing-32-bytes!"),
-				Canary:  "E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==",
-				Primary: true,
-			}).Error).NotTo(HaveOccurred())
-		})
-
-		It("returns an encryptor", func() {
-			config, err := encryption.ParseConfiguration(db, true, password)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(config.Encryptor).To(BeAssignableToTypeOf(gcmencryptor.GCMEncryptor{}))
-			Expect(config.Changed).To(BeFalse())
-			Expect(config.RotationEncryptor).To(BeNil())
-			Expect(config.ConfiguredPrimaryLabel).To(Equal("barfoo"))
-			Expect(config.StoredPrimaryLabel).To(Equal("barfoo"))
-
-			Expect(config.Encryptor.Decrypt("cH9f37uCN/nF4wboigSqP0Xh3EkHGyJAZaCdX9kvPg==")).To(Equal([]byte("quz")))
-		})
-	})
-
-	When("encryption is enabled and a primary has been supplied for the first time", func() {
-		const password = `[{"primary":true,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
-
-		It("returns an encryptor", func() {
-			config, err := encryption.ParseConfiguration(db, true, password)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(config.Encryptor).To(BeAssignableToTypeOf(gcmencryptor.GCMEncryptor{}))
-			Expect(config.Changed).To(BeTrue())
-			Expect(config.RotationEncryptor).To(BeAssignableToTypeOf(compoundencryptor.CompoundEncryptor{}))
-			Expect(config.ConfiguredPrimaryLabel).To(Equal("barfoo"))
-			Expect(config.StoredPrimaryLabel).To(BeEmpty())
-
-			By("being able to encrypt with the encryptor")
-			encrypted, err := config.Encryptor.Encrypt([]byte("foo"))
-			Expect(err).NotTo(HaveOccurred())
-			Expect(encrypted).NotTo(SatisfyAny(Equal("foo"), BeEmpty()))
-
-			By("being able to decrypt encrypted values with the rotation encryptor")
-			decrypted, err := config.RotationEncryptor.Decrypt(encrypted)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(decrypted).To(Equal([]byte("foo")))
-
-			By("being able to `decrypt` plaintext with the rotation encryptor")
-			decrypted, err = config.RotationEncryptor.Decrypt("bar")
-			Expect(err).NotTo(HaveOccurred())
-			Expect(decrypted).To(Equal([]byte("bar")))
-		})
-	})
-
-	When("encryption is enabled and a different primary has been supplied", func() {
-		BeforeEach(func() {
-			Expect(db.Create(&models.PasswordMetadata{
-				Label:   "barfoo",
-				Salt:    []byte("random-salt-containing-32-bytes!"),
-				Canary:  "E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==",
-				Primary: true,
-			}).Error).NotTo(HaveOccurred())
-		})
-
-		Context("previous primary value supplied too", func() {
-			It("returns an encryptor and a rotation encryptor", func() {
-				const password = `[{"primary":false,"label":"barfoo","password":{"secret":"averyverygoodpassword"}},{"label":"supernew","password":{"secret":"supercoolnewpassword"},"primary":true}]`
-
-				config, err := encryption.ParseConfiguration(db, true, password)
+	When("encryption is disabled", func() {
+		When("no passwords are supplied", func() {
+			It("returns the no-op encryptor", func() {
+				config, err := encryption.ParseConfiguration(db, false, "")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(config.Encryptor).To(BeAssignableToTypeOf(gcmencryptor.GCMEncryptor{}))
-				Expect(config.Changed).To(BeTrue())
-				Expect(config.RotationEncryptor).To(BeAssignableToTypeOf(compoundencryptor.CompoundEncryptor{}))
-				Expect(config.ConfiguredPrimaryLabel).To(Equal("supernew"))
-				Expect(config.StoredPrimaryLabel).To(Equal("barfoo"))
-
-				By("being able to encrypt with the encryptor")
-				encrypted, err := config.Encryptor.Encrypt([]byte("foo"))
-				Expect(err).NotTo(HaveOccurred())
-				Expect(encrypted).NotTo(SatisfyAny(Equal("foo"), BeEmpty()))
-
-				By("being able to decrypt encrypted values with the rotation encryptor")
-				decrypted, err := config.RotationEncryptor.Decrypt(encrypted)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(decrypted).To(Equal([]byte("foo")))
-
-				By("being able use rotation encryptor to decrypt a value encrypted with the stored primary")
-				decrypted, err = config.RotationEncryptor.Decrypt("E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==")
-				Expect(err).NotTo(HaveOccurred())
-				Expect(decrypted).To(Equal([]byte("canary value")))
-
-				By("not being able to use the rotation encryptor to `decrypt` plaintext")
-				_, err = config.RotationEncryptor.Decrypt("bar")
-				Expect(err).To(MatchError(base64.CorruptInputError(0)))
+				Expect(config.Encryptor).To(Equal(noopencryptor.New()))
+				Expect(config.Changed).To(BeFalse())
+				Expect(config.RotationEncryptor).To(BeNil())
+				Expect(config.ConfiguredPrimaryLabel).To(BeEmpty())
+				Expect(config.StoredPrimaryLabel).To(BeEmpty())
+				Expect(config.ToDeleteLabels).To(BeZero())
 			})
 		})
 
-		Context("previous primary value not supplied", func() {
-			It("returns an error", func() {
-				const password = `[{"label":"supernew","password":{"secret":"supercoolnewpassword"},"primary":true}]`
+		When("but a primary password is supplied", func() {
+			const password = `[{"primary":true,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
 
-				config, err := encryption.ParseConfiguration(db, true, password)
-				Expect(err).To(MatchError(`the password labelled "barfoo" must be supplied to decrypt the database`))
+			It("returns an error", func() {
+				config, err := encryption.ParseConfiguration(db, false, password)
+				Expect(err).To(MatchError("encryption is disabled but a primary password is set"))
 				Expect(config).To(BeZero())
 			})
 		})
-	})
 
-	Context("rotation did not complete successfully", func() {
-		When("encryption is enabled and the primary has not been stored as primary", func() {
+		When("but was previously enabled", func() {
+			const password = `[{"primary":false,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
+
+			BeforeEach(func() {
+				Expect(db.Create(&models.PasswordMetadata{
+					Label:   "barfoo",
+					Salt:    []byte("random-salt-containing-32-bytes!"),
+					Canary:  "E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==",
+					Primary: true,
+				}).Error).NotTo(HaveOccurred())
+			})
+
+			It("returns the no-op encryptor with a rotation encryptor", func() {
+				config, err := encryption.ParseConfiguration(db, false, password)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(config.Encryptor).To(Equal(noopencryptor.New()))
+				Expect(config.Changed).To(BeTrue())
+				Expect(config.RotationEncryptor).To(BeAssignableToTypeOf(compoundencryptor.CompoundEncryptor{}))
+				Expect(config.ConfiguredPrimaryLabel).To(BeEmpty())
+				Expect(config.StoredPrimaryLabel).To(Equal("barfoo"))
+				Expect(config.ToDeleteLabels).To(BeZero())
+			})
+		})
+
+		When("a stored non-primary password is not provided", func() {
 			BeforeEach(func() {
 				Expect(db.Create(&models.PasswordMetadata{
 					Label:   "barfoo",
@@ -188,9 +82,45 @@ var _ = Describe("ParseConfiguration()", func() {
 				}).Error).NotTo(HaveOccurred())
 			})
 
-			It("returns an encryptor and a rotation encryptor including the new primary", func() {
-				const password = `[{"primary":true,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
+			It("is marked to delete", func() {
+				config, err := encryption.ParseConfiguration(db, false, "")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(config.ToDeleteLabels).To(ContainElements("barfoo"))
+			})
+		})
+	})
 
+	When("encryption is enabled", func() {
+		When("the primary has not changed", func() {
+			const password = `[{"primary":true,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
+
+			BeforeEach(func() {
+				Expect(db.Create(&models.PasswordMetadata{
+					Label:   "barfoo",
+					Salt:    []byte("random-salt-containing-32-bytes!"),
+					Canary:  "E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==",
+					Primary: true,
+				}).Error).NotTo(HaveOccurred())
+			})
+
+			It("returns an encryptor", func() {
+				config, err := encryption.ParseConfiguration(db, true, password)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(config.Encryptor).To(BeAssignableToTypeOf(gcmencryptor.GCMEncryptor{}))
+				Expect(config.Changed).To(BeFalse())
+				Expect(config.RotationEncryptor).To(BeNil())
+				Expect(config.ConfiguredPrimaryLabel).To(Equal("barfoo"))
+				Expect(config.StoredPrimaryLabel).To(Equal("barfoo"))
+				Expect(config.ToDeleteLabels).To(BeZero())
+
+				Expect(config.Encryptor.Decrypt("cH9f37uCN/nF4wboigSqP0Xh3EkHGyJAZaCdX9kvPg==")).To(Equal([]byte("quz")))
+			})
+		})
+
+		When("a primary has been supplied for the first time", func() {
+			const password = `[{"primary":true,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
+
+			It("returns an encryptor", func() {
 				config, err := encryption.ParseConfiguration(db, true, password)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(config.Encryptor).To(BeAssignableToTypeOf(gcmencryptor.GCMEncryptor{}))
@@ -198,6 +128,7 @@ var _ = Describe("ParseConfiguration()", func() {
 				Expect(config.RotationEncryptor).To(BeAssignableToTypeOf(compoundencryptor.CompoundEncryptor{}))
 				Expect(config.ConfiguredPrimaryLabel).To(Equal("barfoo"))
 				Expect(config.StoredPrimaryLabel).To(BeEmpty())
+				Expect(config.ToDeleteLabels).To(BeZero())
 
 				By("being able to encrypt with the encryptor")
 				encrypted, err := config.Encryptor.Encrypt([]byte("foo"))
@@ -209,25 +140,150 @@ var _ = Describe("ParseConfiguration()", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(decrypted).To(Equal([]byte("foo")))
 
-				By("being able use rotation encryptor to decrypt a value encrypted with the stored primary")
-				decrypted, err = config.RotationEncryptor.Decrypt("E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==")
-				Expect(err).NotTo(HaveOccurred())
-				Expect(decrypted).To(Equal([]byte("canary value")))
-
-				By("being able to use the rotation encryptor to `decrypt` plaintext")
+				By("being able to `decrypt` plaintext with the rotation encryptor")
 				decrypted, err = config.RotationEncryptor.Decrypt("bar")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(decrypted).To(Equal([]byte("bar")))
 			})
 		})
+
+		When("a different primary has been supplied", func() {
+			BeforeEach(func() {
+				Expect(db.Create(&models.PasswordMetadata{
+					Label:   "barfoo",
+					Salt:    []byte("random-salt-containing-32-bytes!"),
+					Canary:  "E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==",
+					Primary: true,
+				}).Error).NotTo(HaveOccurred())
+			})
+
+			Context("previous primary value supplied too", func() {
+				It("returns an encryptor and a rotation encryptor", func() {
+					const password = `[{"primary":false,"label":"barfoo","password":{"secret":"averyverygoodpassword"}},{"label":"supernew","password":{"secret":"supercoolnewpassword"},"primary":true}]`
+
+					config, err := encryption.ParseConfiguration(db, true, password)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(config.Encryptor).To(BeAssignableToTypeOf(gcmencryptor.GCMEncryptor{}))
+					Expect(config.Changed).To(BeTrue())
+					Expect(config.RotationEncryptor).To(BeAssignableToTypeOf(compoundencryptor.CompoundEncryptor{}))
+					Expect(config.ConfiguredPrimaryLabel).To(Equal("supernew"))
+					Expect(config.StoredPrimaryLabel).To(Equal("barfoo"))
+					Expect(len(config.ToDeleteLabels)).To(BeZero())
+
+					By("being able to encrypt with the encryptor")
+					encrypted, err := config.Encryptor.Encrypt([]byte("foo"))
+					Expect(err).NotTo(HaveOccurred())
+					Expect(encrypted).NotTo(SatisfyAny(Equal("foo"), BeEmpty()))
+
+					By("being able to decrypt encrypted values with the rotation encryptor")
+					decrypted, err := config.RotationEncryptor.Decrypt(encrypted)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(decrypted).To(Equal([]byte("foo")))
+
+					By("being able use rotation encryptor to decrypt a value encrypted with the stored primary")
+					decrypted, err = config.RotationEncryptor.Decrypt("E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==")
+					Expect(err).NotTo(HaveOccurred())
+					Expect(decrypted).To(Equal([]byte("canary value")))
+
+					By("not being able to use the rotation encryptor to `decrypt` plaintext")
+					_, err = config.RotationEncryptor.Decrypt("bar")
+					Expect(err).To(MatchError(base64.CorruptInputError(0)))
+				})
+			})
+
+			Context("previous primary value not supplied", func() {
+				It("returns an error", func() {
+					const password = `[{"label":"supernew","password":{"secret":"supercoolnewpassword"},"primary":true}]`
+
+					config, err := encryption.ParseConfiguration(db, true, password)
+					Expect(err).To(MatchError(`the password labelled "barfoo" must be supplied to decrypt the database`))
+					Expect(config).To(BeZero())
+				})
+			})
+		})
+
+		Context("rotation did not complete successfully", func() {
+			When("the primary has not been stored as primary", func() {
+				BeforeEach(func() {
+					Expect(db.Create(&models.PasswordMetadata{
+						Label:   "barfoo",
+						Salt:    []byte("random-salt-containing-32-bytes!"),
+						Canary:  "E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==",
+						Primary: false,
+					}).Error).NotTo(HaveOccurred())
+				})
+
+				It("returns an encryptor and a rotation encryptor including the new primary", func() {
+					const password = `[{"primary":true,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
+
+					config, err := encryption.ParseConfiguration(db, true, password)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(config.Encryptor).To(BeAssignableToTypeOf(gcmencryptor.GCMEncryptor{}))
+					Expect(config.Changed).To(BeTrue())
+					Expect(config.RotationEncryptor).To(BeAssignableToTypeOf(compoundencryptor.CompoundEncryptor{}))
+					Expect(config.ConfiguredPrimaryLabel).To(Equal("barfoo"))
+					Expect(config.StoredPrimaryLabel).To(BeEmpty())
+					Expect(config.ToDeleteLabels).To(BeZero())
+
+					By("being able to encrypt with the encryptor")
+					encrypted, err := config.Encryptor.Encrypt([]byte("foo"))
+					Expect(err).NotTo(HaveOccurred())
+					Expect(encrypted).NotTo(SatisfyAny(Equal("foo"), BeEmpty()))
+
+					By("being able to decrypt encrypted values with the rotation encryptor")
+					decrypted, err := config.RotationEncryptor.Decrypt(encrypted)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(decrypted).To(Equal([]byte("foo")))
+
+					By("being able use rotation encryptor to decrypt a value encrypted with the stored primary")
+					decrypted, err = config.RotationEncryptor.Decrypt("E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==")
+					Expect(err).NotTo(HaveOccurred())
+					Expect(decrypted).To(Equal([]byte("canary value")))
+
+					By("being able to use the rotation encryptor to `decrypt` plaintext")
+					decrypted, err = config.RotationEncryptor.Decrypt("bar")
+					Expect(err).NotTo(HaveOccurred())
+					Expect(decrypted).To(Equal([]byte("bar")))
+				})
+			})
+		})
+
+		When("no primary password is supplied", func() {
+			const password = `[{"primary":false,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
+
+			It("returns an error", func() {
+				config, err := encryption.ParseConfiguration(db, true, password)
+				Expect(err).To(MatchError("encryption is enabled but no primary password is set"))
+				Expect(config).To(BeZero())
+			})
+		})
+
+		When("a stored non-primary password is not provided", func() {
+			BeforeEach(func() {
+				Expect(db.Create(&models.PasswordMetadata{
+					Label:   "to-delete",
+					Salt:    []byte("random-salt-containing-32-bytes!"),
+					Canary:  "E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==",
+					Primary: false,
+				}).Error).NotTo(HaveOccurred())
+			})
+
+			It("is marked to delete", func() {
+				const passwords = `[{"primary":true,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}, {"primary":false,"label":"foobar","password":{"secret":"aotherveryverygoodpassword"}}]`
+
+				config, err := encryption.ParseConfiguration(db, true, passwords)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(len(config.ToDeleteLabels)).To(Equal(1))
+				Expect(config.ToDeleteLabels).To(ContainElements("to-delete"))
+			})
+		})
 	})
 
-	When("encryption is enabled but no primary password is supplied", func() {
-		const password = `[{"primary":false,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
-
-		It("returns an error", func() {
+	When("there is an error parsing the passwords", func() {
+		It("returns the error", func() {
+			const password = `[{"label":"firstone","password":{"secret":"tooshort"}}]`
 			config, err := encryption.ParseConfiguration(db, true, password)
-			Expect(err).To(MatchError("encryption is enabled but no primary password is set"))
+			Expect(err).To(MatchError("password configuration error: expected value to be 20-1024 characters long, but got length 8: [0].secret.password"))
 			Expect(config).To(BeZero())
 		})
 	})
