@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/compoundencryptor"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/passwordparser"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
@@ -17,10 +18,21 @@ type Configuration struct {
 	Changed                bool
 	ConfiguredPrimaryLabel string
 	StoredPrimaryLabel     string
+	ToDeleteLabels         []string
 }
 
 func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configuration, error) {
-	combined, err := passwordcombiner.CombineWithStoredMetadata(db, passwords)
+	configured, err := passwordparser.Parse(passwords)
+	if err != nil {
+		return Configuration{}, err
+	}
+
+	stored, err := loadPasswordMetadata(db)
+	if err != nil {
+		return Configuration{}, err
+	}
+
+	combined, err := passwordcombiner.Combine(db, configured, stored)
 	if err != nil {
 		return Configuration{}, err
 	}
@@ -56,11 +68,13 @@ func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configurat
 	case !enabled && parsedPrimaryOK:
 		return Configuration{}, errors.New("encryption is disabled but a primary password is set")
 	}
+
 	result := Configuration{
 		ConfiguredPrimaryLabel: parsedPrimary.Label,
 		StoredPrimaryLabel:     storedPrimary.Label,
 		Changed:                changed,
 		RotationEncryptor:      rotationEncyptor,
+		ToDeleteLabels:         toDelete(stored, configured),
 	}
 
 	if !enabled && !parsedPrimaryOK {
@@ -70,4 +84,28 @@ func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configurat
 	}
 
 	return result, nil
+}
+
+func toDelete(stored []models.PasswordMetadata, configured []passwordparser.PasswordEntry) []string {
+	configuredMap := map[string]bool{}
+	for _, c := range configured {
+		configuredMap[c.Label] = true
+	}
+
+	var toDeleteList []string
+	for _, s := range stored {
+		if !configuredMap[s.Label] {
+			toDeleteList = append(toDeleteList, s.Label)
+		}
+	}
+
+	return toDeleteList
+}
+
+func loadPasswordMetadata(db *gorm.DB) ([]models.PasswordMetadata, error) {
+	var stored []models.PasswordMetadata
+	if err := db.Find(&stored).Error; err != nil {
+		return nil, err
+	}
+	return stored, nil
 }
