@@ -87,20 +87,19 @@ func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configurat
 }
 
 func toDelete(stored []models.PasswordMetadata, configured []passwordparser.PasswordEntry) []string {
-	var toDelete []string
+	configuredMap := map[string]bool{}
+	for _, c := range configured {
+		configuredMap[c.Label] = true
+	}
+
+	var toDeleteList []string
 	for _, s := range stored {
-		shouldDelete := true
-		for _, c := range configured {
-			if c.Label == s.Label {
-				shouldDelete = false
-				break
-			}
-		}
-		if shouldDelete {
-			toDelete = append(toDelete, s.Label)
+		if !configuredMap[s.Label] {
+			toDeleteList = append(toDeleteList, s.Label)
 		}
 	}
-	return toDelete
+
+	return toDeleteList
 }
 
 func loadPasswordMetadata(db *gorm.DB) ([]models.PasswordMetadata, error) {
