@@ -10,7 +10,7 @@ import (
 func UpdatePasswordMetadata(db *gorm.DB, configuredPrimaryLabel string) error {
 	return db.Transaction(func(tx *gorm.DB) error {
 		var passwordMetadata []models.PasswordMetadata
-		if err := tx.Where(`"primary" = true`).Find(&passwordMetadata).Error; err != nil {
+		if err := tx.Where("`primary` = true").Find(&passwordMetadata).Error; err != nil {
 			return err
 		}
 
@@ -19,8 +19,7 @@ func UpdatePasswordMetadata(db *gorm.DB, configuredPrimaryLabel string) error {
 		}
 
 		for _, p := range passwordMetadata {
-			p.Primary = false
-			if err := tx.Save(&p).Error; err != nil {
+			if err := tx.Model(&p).Update("primary", false).Error; err != nil {
 				return err
 			}
 		}
@@ -35,8 +34,7 @@ func UpdatePasswordMetadata(db *gorm.DB, configuredPrimaryLabel string) error {
 				return result.Error
 			}
 
-			primaryPasswordMetadata.Primary = true
-			if err := tx.Save(&primaryPasswordMetadata).Error; err != nil {
+			if err := tx.Model(&primaryPasswordMetadata).Update("primary", true).Error; err != nil {
 				return err
 			}
 		}
