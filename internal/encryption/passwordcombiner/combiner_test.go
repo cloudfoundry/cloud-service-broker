@@ -4,13 +4,14 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/gcmencryptor"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/passwordcombiner"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/passwordparser"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-var _ = Describe("CombineWithStoredMetadata()", func() {
+var _ = Describe("Combine()", func() {
 	var db *gorm.DB
 
 	BeforeEach(func() {
@@ -22,14 +23,19 @@ var _ = Describe("CombineWithStoredMetadata()", func() {
 
 	Context("no stored metadata", func() {
 		It("succeeds when there were no passwords", func() {
-			combined, err := passwordcombiner.CombineWithStoredMetadata(db, "")
+			combined, err := passwordcombiner.Combine(db, []passwordparser.PasswordEntry{}, []models.PasswordMetadata{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(combined).To(BeEmpty())
 		})
 
 		It("can return a password", func() {
-			const password = `[{"label":"firstone","password":{"secret":"averyverygoodpassword"}}]`
-			combined, err := passwordcombiner.CombineWithStoredMetadata(db, password)
+			password := []passwordparser.PasswordEntry{
+				{
+					Label:  "firstone",
+					Secret: "averyverygoodpassword",
+				},
+			}
+			combined, err := passwordcombiner.Combine(db, password, []models.PasswordMetadata{})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("returning the password")
@@ -54,8 +60,22 @@ var _ = Describe("CombineWithStoredMetadata()", func() {
 		})
 
 		It("can return multiple passwords", func() {
-			const passwords = `[{"label":"barfoo","password":{"secret":"veryverysecretpassword"},"primary":false},{"label":"barbaz","password":{"secret":"anotherveryverysecretpassword"}},{"label":"bazquz","password":{"secret":"yetanotherveryverysecretpassword"},"primary":true}]`
-			combined, err := passwordcombiner.CombineWithStoredMetadata(db, passwords)
+			passwords := []passwordparser.PasswordEntry{
+				{
+					Label:  "barfoo",
+					Secret: "veryverysecretpassword",
+				},
+				{
+					Label:  "barbaz",
+					Secret: "anotherveryverysecretpassword",
+				},
+				{
+					Label:   "bazquz",
+					Secret:  "yetanotherveryverysecretpassword",
+					Primary: true,
+				},
+			}
+			combined, err := passwordcombiner.Combine(db, passwords, []models.PasswordMetadata{})
 			Expect(err).NotTo(HaveOccurred())
 
 			By("returning the passwords")
@@ -102,41 +122,40 @@ var _ = Describe("CombineWithStoredMetadata()", func() {
 			Expect(stored[2].Salt).To(HaveLen(32))
 			Expect(stored[2].Primary).To(BeFalse())
 		})
-
-		When("there is an error parsing the passwords", func() {
-			It("returns the error", func() {
-				const password = `[{"label":"firstone","password":{"secret":"tooshort"}}]`
-				combined, err := passwordcombiner.CombineWithStoredMetadata(db, password)
-				Expect(err).To(MatchError("password configuration error: expected value to be 20-1024 characters long, but got length 8: [0].secret.password"))
-				Expect(combined).To(BeEmpty())
-			})
-		})
 	})
 
 	Context("stored metadata", func() {
 		var barfooSalt, barbazSalt []byte
+		var storedMetadata []models.PasswordMetadata
 
 		BeforeEach(func() {
 			barfooSalt = []byte("random-salt-containing-32-bytes!")
-			Expect(db.Create(&models.PasswordMetadata{
-				Label:   "barfoo",
-				Salt:    barfooSalt,
-				Canary:  "E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==",
-				Primary: false,
-			}).Error).NotTo(HaveOccurred())
-
 			barbazSalt = []byte("another-random-salt-with-32bytes")
+			storedMetadata = []models.PasswordMetadata{
+				{
+					Label:   "barfoo",
+					Salt:    barfooSalt,
+					Canary:  "E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==",
+					Primary: false,
+				},
+			}
 		})
 
 		It("succeeds when there were no passwords", func() {
-			combined, err := passwordcombiner.CombineWithStoredMetadata(db, "")
+			combined, err := passwordcombiner.Combine(db, []passwordparser.PasswordEntry{}, storedMetadata)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(combined).To(BeEmpty())
 		})
 
 		It("can return a password with stored salt value", func() {
-			const password = `[{"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
-			combined, err := passwordcombiner.CombineWithStoredMetadata(db, password)
+			password := []passwordparser.PasswordEntry{
+				{
+					Label:  "barfoo",
+					Secret: "averyverygoodpassword",
+				},
+			}
+
+			combined, err := passwordcombiner.Combine(db, password, storedMetadata)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("returning the password")
@@ -153,15 +172,29 @@ var _ = Describe("CombineWithStoredMetadata()", func() {
 		})
 
 		It("can return multiple passwords with stored salt values", func() {
-			Expect(db.Create(&models.PasswordMetadata{
+			storedMetadata = append(storedMetadata, models.PasswordMetadata{
 				Label:   "barbaz",
 				Salt:    barbazSalt,
 				Canary:  "XVVB0psiTW1J9R/r8Sh32aY2oddKujDnNHMAzcMowrdnO+ngixJn8g==",
 				Primary: true,
-			}).Error).NotTo(HaveOccurred())
+			})
+			passwords := []passwordparser.PasswordEntry{
+				{
+					Label:   "barfoo",
+					Secret:  "averyverygoodpassword",
+					Primary: true,
+				},
+				{
+					Label:  "barbaz",
+					Secret: "anotherveryverysecretpassword",
+				},
+				{
+					Label:  "bazquz",
+					Secret: "yetanotherveryverysecretpassword",
+				},
+			}
 
-			const passwords = `[{"label":"barfoo","password":{"secret":"averyverygoodpassword"},"primary":true},{"label":"barbaz","password":{"secret":"anotherveryverysecretpassword"}},{"label":"bazquz","password":{"secret":"yetanotherveryverysecretpassword"}}]`
-			combined, err := passwordcombiner.CombineWithStoredMetadata(db, passwords)
+			combined, err := passwordcombiner.Combine(db, passwords, storedMetadata)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("returning the passwords")
@@ -203,51 +236,65 @@ var _ = Describe("CombineWithStoredMetadata()", func() {
 
 		When("password changed value", func() {
 			It("returns an error", func() {
-				const password = `[{"label":"barfoo","password":{"secret":"notthesameaslasttime"}}]`
-				combined, err := passwordcombiner.CombineWithStoredMetadata(db, password)
+				password := []passwordparser.PasswordEntry{
+					{
+						Label:  "barfoo",
+						Secret: "notthesameaslasttime",
+					},
+				}
+				combined, err := passwordcombiner.Combine(db, password, storedMetadata)
 				Expect(err).To(MatchError(`canary mismatch for password labeled "barfoo" - check that the password value has not changed`))
 				Expect(combined).To(BeEmpty())
 			})
 		})
 
 		When("more than one primary is stored", func() {
-			BeforeEach(func() {
-				Expect(db.Create(&models.PasswordMetadata{
-					Label:   "barbaz",
-					Salt:    barbazSalt,
-					Canary:  "XVVB0psiTW1J9R/r8Sh32aY2oddKujDnNHMAzcMowrdnO+ngixJn8g==",
-					Primary: true,
-				}).Error).NotTo(HaveOccurred())
-
-				Expect(db.Create(&models.PasswordMetadata{
-					Label:   "anotherone",
-					Salt:    barfooSalt,
-					Canary:  "E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==",
-					Primary: true,
-				}).Error).NotTo(HaveOccurred())
-			})
-
 			It("returns an error", func() {
-				const password = `[{"label":"barfoo","password":{"secret":"notthesameaslasttime"}}]`
-				combined, err := passwordcombiner.CombineWithStoredMetadata(db, password)
+				storedMetadata := []models.PasswordMetadata{
+					{
+						Label:   "barbaz",
+						Salt:    barbazSalt,
+						Canary:  "XVVB0psiTW1J9R/r8Sh32aY2oddKujDnNHMAzcMowrdnO+ngixJn8g==",
+						Primary: true,
+					},
+					{
+						Label:   "anotherone",
+						Salt:    barfooSalt,
+						Canary:  "E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==",
+						Primary: true,
+					},
+				}
+
+				password := []passwordparser.PasswordEntry{
+					{
+						Label:  "barfoo",
+						Secret: "notthesameaslasttime",
+					},
+				}
+				combined, err := passwordcombiner.Combine(db, password, storedMetadata)
 				Expect(err).To(MatchError(`corrupt database - more than one primary found in table password_metadata`))
 				Expect(combined).To(BeEmpty())
 			})
 		})
 
 		When("a primary is stored but password not supplied", func() {
-			BeforeEach(func() {
-				Expect(db.Create(&models.PasswordMetadata{
-					Label:   "barbaz",
-					Salt:    barbazSalt,
-					Canary:  "XVVB0psiTW1J9R/r8Sh32aY2oddKujDnNHMAzcMowrdnO+ngixJn8g==",
-					Primary: true,
-				}).Error).NotTo(HaveOccurred())
-			})
-
 			It("returns an error", func() {
-				const password = `[{"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
-				combined, err := passwordcombiner.CombineWithStoredMetadata(db, password)
+				storedMetadata = []models.PasswordMetadata{
+					{
+						Label:   "barbaz",
+						Salt:    barbazSalt,
+						Canary:  "XVVB0psiTW1J9R/r8Sh32aY2oddKujDnNHMAzcMowrdnO+ngixJn8g==",
+						Primary: true,
+					},
+				}
+				password := []passwordparser.PasswordEntry{
+					{
+						Label:  "barfoo",
+						Secret: "averyverygoodpassword",
+					},
+				}
+
+				combined, err := passwordcombiner.Combine(db, password, storedMetadata)
 				Expect(err).To(MatchError(`the password labelled "barbaz" must be supplied to decrypt the database`))
 				Expect(combined).To(BeEmpty())
 			})

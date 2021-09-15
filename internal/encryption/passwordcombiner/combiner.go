@@ -12,13 +12,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func CombineWithStoredMetadata(db *gorm.DB, passwords string) (CombinedPasswords, error) {
-	parsed, err := passwordparser.Parse(passwords)
-	if err != nil {
-		return nil, err
-	}
-
-	stored, storedPrimary, err := loadPasswordMetadata(db)
+func Combine(db *gorm.DB, parsed []passwordparser.PasswordEntry, storedPassMetadata []models.PasswordMetadata) (CombinedPasswords, error) {
+	stored, storedPrimary, err := storedWithPrimary(storedPassMetadata)
 	if err != nil {
 		return nil, err
 	}
@@ -100,12 +95,7 @@ func mergeWithStoredMetadata(s models.PasswordMetadata, p passwordparser.Passwor
 	}, nil
 }
 
-func loadPasswordMetadata(db *gorm.DB) (map[string]models.PasswordMetadata, string, error) {
-	var stored []models.PasswordMetadata
-	if err := db.Find(&stored).Error; err != nil {
-		return nil, "", err
-	}
-
+func storedWithPrimary(stored []models.PasswordMetadata) (map[string]models.PasswordMetadata, string, error) {
 	var primary string
 	result := make(map[string]models.PasswordMetadata)
 	for _, p := range stored {

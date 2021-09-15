@@ -265,7 +265,9 @@ func (TerraformDeploymentV2) TableName() string {
 // PasswordMetadataV1 contains information about the passwords, but never the
 // passwords themselves
 type PasswordMetadataV1 struct {
-	gorm.Model
+	ID        uint `gorm:"primarykey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 
 	Label   string `gorm:"index;unique;not null"`
 	Salt    []byte `gorm:"type:blob;not null"`
