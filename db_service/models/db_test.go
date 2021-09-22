@@ -701,42 +701,4 @@ var _ = Describe("Db", func() {
 			})
 		})
 	})
-
-	Describe("ConfigureEncryption", func() {
-		Context("No key provided", func() {
-			When("Key is empty", func() {
-				It("Skips encryption", func() {
-					encryptor := models.ConfigureEncryption("")
-					Expect(encryptor).To(Equal(noopencryptor.New()))
-				})
-			})
-
-			When("Key is blank", func() {
-				It("Skips encryption", func() {
-					encryptor := models.ConfigureEncryption("    \t   \n")
-
-					Expect(encryptor).To(Equal(noopencryptor.New()))
-				})
-			})
-		})
-
-		Context("Key provided", func() {
-			When("Key is valid", func() {
-				It("Sets up encryptor with the key", func() {
-					encryptor := models.ConfigureEncryption("one-key-here-with-32-bytes-in-it")
-
-					Expect(encryptor).To(BeAssignableToTypeOf(gcmencryptor.GCMEncryptor{}))
-					Expect(encryptor.Decrypt("hizPPQTSa4Quf300rWx6gB529tPGuNEbrjgjROZACA==")).To(Equal([]byte("foo")))
-				})
-			})
-
-			When("Key has surrounding spaces", func() {
-				It("skips encryption", func() {
-					encryptor := models.ConfigureEncryption("\t  one-key-here  \n")
-
-					Expect(encryptor).To(Equal(noopencryptor.New()))
-				})
-			})
-		})
-	})
 })

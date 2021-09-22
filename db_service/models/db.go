@@ -16,10 +16,6 @@ package models
 
 import (
 	"encoding/json"
-	"strings"
-
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/gcmencryptor"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
 )
 
 const (
@@ -37,17 +33,6 @@ var encryptorInstance Encryptor = nil
 
 func SetEncryptor(encryptor Encryptor) {
 	encryptorInstance = encryptor
-}
-
-func ConfigureEncryption(encryptionKey string) Encryptor {
-	encryptor := Encryptor(noopencryptor.New())
-	if (strings.TrimSpace(encryptionKey) == encryptionKey) && len(encryptionKey) > 0 {
-		key := []byte(encryptionKey)
-		var keyAs32ByteArray [32]byte
-		copy(keyAs32ByteArray[:], key)
-		encryptor = gcmencryptor.New(keyAs32ByteArray)
-	}
-	return encryptor
 }
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o fakes/fake_encryption.go . Encryptor
