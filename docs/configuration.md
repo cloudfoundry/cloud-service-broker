@@ -66,12 +66,12 @@ Example Encryption Passwords JSON object:
 1. Add a new password to the collection of passwords and mark it as primary. The previous primary password should still be provided and 
 no longer marked as primary.
 1. Restart the CSB app.
-1. Once the app has successfully started, the old password can be removed from the configuration.
+1. Once the app has successfully started, the old password(s) can be removed from the configuration.
 
-### Dissableing encryption (after it was enabled)
+### Disabling encryption (after it was enabled)
 1. Set `encryption.enabled` to `false`. The previous primary password should still be provided and no longer marked as primary.
 1. Restart the CSB app.
-1. Once the app has successfully started, the old password can be removed from the configuration.
+1. Once the app has successfully started, the old password(s) can be removed from the configuration.
 
 ## Broker Service Configuration
 
