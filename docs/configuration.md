@@ -32,25 +32,19 @@ You can configure the following values:
 | <tt>CA_CERT</tt> | db.ca.cert | text | <p>Server CA cert </p>|
 | <tt>CLIENT_CERT</tt> | db.client.cert | text | <p>Client cert </p>|
 | <tt>CLIENT_KEY</tt> | db.client.key | text | <p>Client key </p>|
-
-### Database Encryption Configuration
-
-Sensitive data in the database can be encrypted by enabling encryption.
-
-| Environment Variable | Config File Value | Type | Description |
-|----------------------|------|-------------|------------------|
-| <tt>ENCRYPTION_ENABLED</tt> | encryption.enabled | Boolean | <p>Enable encryption of sensitive data in the database </p>|
-| <tt>ENCRYPTION_PASSWORDS</tt> | encryption.passwords | text | <p>JSON collection of passwords </p>|
+| <tt>ENCRYPTION_ENABLED</tt> | db.encryption.enabled | Boolean | <p>Enable encryption of sensitive data in the database </p>|
+| <tt>ENCRYPTION_PASSWORDS</tt> | db.encryption.passwords | text | <p>JSON collection of passwords </p>|
 
 Example:
 ```
-encryption:
-  enabled: true
-  passwords: "[{\"label\":\"first-password\",{\"password\":{\"secret\": \"veryStrongSecurePassword\"}},\"primary\": true}]"
+db:
+  host: hostname
+  encryption:
+    enabled: true
+    passwords: "[{\"label\":\"first-password\",{\"password\":{\"secret\": \"veryStrongSecurePassword\"}},\"primary\": true}]"
 ```
 
-
-Example Encryprion Passwords JSON object: 
+Example Encryption Passwords JSON object: 
 ```
 [
   {
@@ -63,11 +57,11 @@ Example Encryprion Passwords JSON object:
 ]
 ```
 
-#### Enabling first time encryption
+### Enabling first time encryption
 1. Set `encryption.enabled` to `true` and add a password to the collection of passwords and mark it as primary.
 1. Restart the CSB app.
 
-#### Rotating encryption keys
+### Rotating encryption keys
 
 1. Add a new password to the collection of passwords and mark it as primary. The previous primary password should still be provided and 
 no longer marked as primary.
@@ -75,8 +69,8 @@ no longer marked as primary.
 1. Once the app has successfully started, the old password can be removed from the configuration.
 
 
-#### Dissabeling encryption (after it was enabled)
-1. Set `encryption.enabled` to `false`. The previous primary password should still be provided and no longer marked as primary
+### Dissableing encryption (after it was enabled)
+1. Set `encryption.enabled` to `false`. The previous primary password should still be provided and no longer marked as primary.
 1. Restart the CSB app.
 1. Once the app has successfully started, the old password can be removed from the configuration.
 
