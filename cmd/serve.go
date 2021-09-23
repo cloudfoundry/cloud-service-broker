@@ -45,8 +45,8 @@ const (
 	apiPasswordProp     = "api.password"
 	apiPortProp         = "api.port"
 	apiHostProp         = "api.host"
-	encryptionPasswords = "encryption.passwords"
-	encryptionEnabled   = "encryption.enabled"
+	encryptionPasswords = "db.encryption.passwords"
+	encryptionEnabled   = "db.encryption.enabled"
 )
 
 var cfCompatibilityToggle = toggles.Features.Toggle("enable-cf-sharing", false, `Set all services to have the Sharable flag so they can be shared
