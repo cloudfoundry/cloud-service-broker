@@ -32,19 +32,19 @@ var _ = Describe("DeletePasswordMetadata()", func() {
 				Expect(db.Create(&models.PasswordMetadata{
 					Label:   "to-delete",
 					Salt:    []byte("random-salt"),
-					Canary:  "test-value",
+					Canary:  []byte("test-value"),
 					Primary: false,
 				}).Error).NotTo(HaveOccurred())
 				Expect(db.Create(&models.PasswordMetadata{
 					Label:   "not-to-delete",
 					Salt:    []byte("random-salt"),
-					Canary:  "test-value",
+					Canary:  []byte("test-value"),
 					Primary: false,
 				}).Error).NotTo(HaveOccurred())
 				Expect(db.Create(&models.PasswordMetadata{
 					Label:   "other-to-delete",
 					Salt:    []byte("random-salt"),
-					Canary:  "test-value",
+					Canary:  []byte("test-value"),
 					Primary: false,
 				}).Error).NotTo(HaveOccurred())
 			})
@@ -64,13 +64,13 @@ var _ = Describe("DeletePasswordMetadata()", func() {
 				Expect(db.Create(&models.PasswordMetadata{
 					Label:   "to-delete",
 					Salt:    []byte("random-salt"),
-					Canary:  "test-value",
+					Canary:  []byte("test-value"),
 					Primary: false,
 				}).Error).NotTo(HaveOccurred())
 				Expect(db.Create(&models.PasswordMetadata{
 					Label:   "not-to-delete",
 					Salt:    []byte("random-salt"),
-					Canary:  "test-value",
+					Canary:  []byte("test-value"),
 					Primary: false,
 				}).Error).NotTo(HaveOccurred())
 			})

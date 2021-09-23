@@ -46,6 +46,25 @@ func (ServiceBindingCredentialsV1) TableName() string {
 	return "service_binding_credentials"
 }
 
+// ServiceBindingCredentialsV2 holds credentials returned to the users after
+// binding to a service.
+type ServiceBindingCredentialsV2 struct {
+	gorm.Model
+
+	OtherDetails []byte `gorm:"type:blob"`
+
+	ServiceId         string
+	ServiceInstanceId string
+	BindingId         string
+}
+
+// TableName returns a consistent table name (`service_binding_credentials`) for
+// gorm so multiple structs from different versions of the database all operate
+// on the same table.
+func (ServiceBindingCredentialsV2) TableName() string {
+	return "service_binding_credentials"
+}
+
 // ServiceInstanceDetailsV1 holds information about provisioned services.
 type ServiceInstanceDetailsV1 struct {
 	ID        string `gorm:"primary_key;not null"`
@@ -107,6 +126,42 @@ func (ServiceInstanceDetailsV2) TableName() string {
 	return "service_instance_details"
 }
 
+// ServiceInstanceDetailsV3 holds information about provisioned services.
+type ServiceInstanceDetailsV3 struct {
+	ID        string `gorm:"primary_key;type:varchar(255);not null"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
+
+	Name         string
+	Location     string
+	Url          string
+	OtherDetails []byte `gorm:"type:blob"`
+
+	ServiceId        string
+	PlanId           string
+	SpaceGuid        string
+	OrganizationGuid string
+
+	// OperationType holds a string corresponding to what kind of operation
+	// OperationId is referencing. The object is "locked" for editing if
+	// an operation is pending.
+	OperationType string
+
+	// OperationId holds a string referencing an operation specific to a broker.
+	// Operations in GCP all have a unique ID.
+	// The OperationId will be cleared after a successful operation.
+	// This string MAY be sent to users and MUST NOT leak confidential information.
+	OperationId string `gorm:"type:varchar(1024)"`
+}
+
+// TableName returns a consistent table name (`service_instance_details`) for
+// gorm so multiple structs from different versions of the database all operate
+// on the same table.
+func (ServiceInstanceDetailsV3) TableName() string {
+	return "service_instance_details"
+}
+
 // ProvisionRequestDetailsV1 holds user-defined properties passed to a call
 // to provision a service.
 type ProvisionRequestDetailsV1 struct {
@@ -139,6 +194,24 @@ type ProvisionRequestDetailsV2 struct {
 // gorm so multiple structs from different versions of the database all operate
 // on the same table.
 func (ProvisionRequestDetailsV2) TableName() string {
+	return "provision_request_details"
+}
+
+// ProvisionRequestDetailsV3 holds user-defined properties passed to a call
+// to provision a service.
+type ProvisionRequestDetailsV3 struct {
+	gorm.Model
+
+	ServiceInstanceId string
+
+	// is a json.Marshal of models.ProvisionDetails
+	RequestDetails []byte `gorm:"type:blob"`
+}
+
+// TableName returns a consistent table name (`provision_request_details`) for
+// gorm so multiple structs from different versions of the database all operate
+// on the same table.
+func (ProvisionRequestDetailsV3) TableName() string {
 	return "provision_request_details"
 }
 
@@ -255,10 +328,40 @@ type TerraformDeploymentV2 struct {
 	LastOperationMessage string `gorm:"type:text"`
 }
 
-// TableName returns a consistent table name (`provision_request_details`) for
+// TableName returns a consistent table name (`terraform_deployments`) for
 // gorm so multiple structs from different versions of the database all operate
 // on the same table.
 func (TerraformDeploymentV2) TableName() string {
+	return "terraform_deployments"
+}
+
+// TerraformDeploymentV3 expands the size of the Workspace column to handle deployments where the
+// Terraform workspace is greater than 64K. (mediumtext allows for workspaces up
+// to 16384K.)
+type TerraformDeploymentV3 struct {
+	ID        string `gorm:"primary_key;type:varchar(1024)"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
+
+	// Workspace contains a JSON serialized version of the Terraform workspace.
+	Workspace []byte `gorm:"type:blob"`
+
+	// LastOperationType describes the last operation being performed on the resource.
+	LastOperationType string
+
+	// LastOperationState holds one of the following strings "in progress", "succeeded", "failed".
+	// These mirror the OSB API.
+	LastOperationState string
+
+	// LastOperationMessage is a description that can be passed back to the user.
+	LastOperationMessage string `gorm:"type:text"`
+}
+
+// TableName returns a consistent table name (`terraform_deployments`) for
+// gorm so multiple structs from different versions of the database all operate
+// on the same table.
+func (TerraformDeploymentV3) TableName() string {
 	return "terraform_deployments"
 }
 
@@ -271,7 +374,7 @@ type PasswordMetadataV1 struct {
 
 	Label   string `gorm:"index;unique;not null"`
 	Salt    []byte `gorm:"type:blob;not null"`
-	Canary  string `gorm:"not null"`
+	Canary  []byte `gorm:"type:blob;not null"`
 	Primary bool
 }
 

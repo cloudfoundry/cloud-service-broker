@@ -29,25 +29,25 @@ var _ = Describe("ReencryptDB", func() {
 		mapSecret                 map[string]interface{}
 	)
 
-	persistedServiceInstanceDetails := func() string {
+	persistedServiceInstanceDetails := func() []byte {
 		record := models.ServiceInstanceDetails{}
 		Expect(db.First(&record).Error).NotTo(HaveOccurred())
 		return record.OtherDetails
 	}
 
-	persistedRequestDetails := func() string {
+	persistedRequestDetails := func() []byte {
 		record := models.ProvisionRequestDetails{}
 		Expect(db.First(&record).Error).NotTo(HaveOccurred())
 		return record.RequestDetails
 	}
 
-	persistedServiceBindingDetails := func() string {
+	persistedServiceBindingDetails := func() []byte {
 		record := models.ServiceBindingCredentials{}
 		Expect(db.First(&record).Error).NotTo(HaveOccurred())
 		return record.OtherDetails
 	}
 
-	persistedTerraformWorkspace := func() string {
+	persistedTerraformWorkspace := func() []byte {
 		record := models.TerraformDeployment{}
 		Expect(db.First(&record).Error).NotTo(HaveOccurred())
 		return record.Workspace
@@ -93,18 +93,18 @@ var _ = Describe("ReencryptDB", func() {
 				noopencryptor.New(),
 			))
 
-			Expect(persistedServiceInstanceDetails()).To(Equal(jsonSecret))
-			Expect(persistedRequestDetails()).To(Equal(jsonSecret))
-			Expect(persistedServiceBindingDetails()).To(Equal(jsonSecret))
-			Expect(persistedTerraformWorkspace()).To(Equal(jsonSecret))
+			Expect(persistedServiceInstanceDetails()).To(Equal([]byte(jsonSecret)))
+			Expect(persistedRequestDetails()).To(Equal([]byte(jsonSecret)))
+			Expect(persistedServiceBindingDetails()).To(Equal([]byte(jsonSecret)))
+			Expect(persistedTerraformWorkspace()).To(Equal([]byte(jsonSecret)))
 
 			By("running the encryption")
 			Expect(dbrotator.ReencryptDB(db)).NotTo(HaveOccurred())
 
-			Expect(persistedServiceInstanceDetails()).NotTo(Equal(jsonSecret))
-			Expect(persistedRequestDetails()).NotTo(Equal(jsonSecret))
-			Expect(persistedServiceBindingDetails()).NotTo(Equal(jsonSecret))
-			Expect(persistedTerraformWorkspace()).NotTo(Equal(jsonSecret))
+			Expect(persistedServiceInstanceDetails()).NotTo(Equal([]byte(jsonSecret)))
+			Expect(persistedRequestDetails()).NotTo(Equal([]byte(jsonSecret)))
+			Expect(persistedServiceBindingDetails()).NotTo(Equal([]byte(jsonSecret)))
+			Expect(persistedTerraformWorkspace()).NotTo(Equal([]byte(jsonSecret)))
 		})
 	})
 
@@ -155,10 +155,10 @@ var _ = Describe("ReencryptDB", func() {
 			By("running the encryption")
 			Expect(dbrotator.ReencryptDB(db)).NotTo(HaveOccurred())
 
-			Expect(persistedServiceInstanceDetails()).To(Equal(jsonSecret))
-			Expect(persistedRequestDetails()).To(Equal(jsonSecret))
-			Expect(persistedServiceBindingDetails()).To(Equal(jsonSecret))
-			Expect(persistedTerraformWorkspace()).To(Equal(jsonSecret))
+			Expect(persistedServiceInstanceDetails()).To(Equal([]byte(jsonSecret)))
+			Expect(persistedRequestDetails()).To(Equal([]byte(jsonSecret)))
+			Expect(persistedServiceBindingDetails()).To(Equal([]byte(jsonSecret)))
+			Expect(persistedTerraformWorkspace()).To(Equal([]byte(jsonSecret)))
 		})
 	})
 
@@ -244,11 +244,11 @@ var _ = Describe("ReencryptDB", func() {
 
 				record := models.ServiceInstanceDetails{}
 				Expect(db.First(&record).Error).NotTo(HaveOccurred())
-				record.OtherDetails = "something-that-cannot-be-decrypted-with-provided-decryptors"
+				record.OtherDetails = []byte("something-that-cannot-be-decrypted-with-provided-decryptors")
 				Expect(db.Save(&record).Error).NotTo(HaveOccurred())
 
 				By("running the encryption")
-				Expect(dbrotator.ReencryptDB(db)).To(MatchError("error reencrypting: illegal base64 data at input byte 9"))
+				Expect(dbrotator.ReencryptDB(db)).To(MatchError("error reencrypting: cipher: message authentication failed"))
 			})
 		})
 
@@ -266,11 +266,11 @@ var _ = Describe("ReencryptDB", func() {
 
 				record := models.ProvisionRequestDetails{}
 				Expect(db.First(&record).Error).NotTo(HaveOccurred())
-				record.RequestDetails = "something-that-cannot-be-decrypted-with-provided-decryptors"
+				record.RequestDetails = []byte("something-that-cannot-be-decrypted-with-provided-decryptors")
 				Expect(db.Save(&record).Error).NotTo(HaveOccurred())
 
 				By("running the encryption")
-				Expect(dbrotator.ReencryptDB(db)).To(MatchError("error reencrypting: illegal base64 data at input byte 9"))
+				Expect(dbrotator.ReencryptDB(db)).To(MatchError("error reencrypting: cipher: message authentication failed"))
 			})
 		})
 
@@ -288,11 +288,11 @@ var _ = Describe("ReencryptDB", func() {
 
 				record := models.ServiceBindingCredentials{}
 				Expect(db.First(&record).Error).NotTo(HaveOccurred())
-				record.OtherDetails = "something-that-cannot-be-decrypted-with-provided-decryptors"
+				record.OtherDetails = []byte("something-that-cannot-be-decrypted-with-provided-decryptors")
 				Expect(db.Save(&record).Error).NotTo(HaveOccurred())
 
 				By("running the encryption")
-				Expect(dbrotator.ReencryptDB(db)).To(MatchError("error reencrypting: illegal base64 data at input byte 9"))
+				Expect(dbrotator.ReencryptDB(db)).To(MatchError("error reencrypting: cipher: message authentication failed"))
 			})
 		})
 
@@ -310,11 +310,11 @@ var _ = Describe("ReencryptDB", func() {
 
 				record := models.TerraformDeployment{}
 				Expect(db.First(&record).Error).NotTo(HaveOccurred())
-				record.Workspace = "something-that-cannot-be-decrypted-with-provided-decryptors"
+				record.Workspace = []byte("something-that-cannot-be-decrypted-with-provided-decryptors")
 				Expect(db.Save(&record).Error).NotTo(HaveOccurred())
 
 				By("running the encryption")
-				Expect(dbrotator.ReencryptDB(db)).To(MatchError("error reencrypting: illegal base64 data at input byte 9"))
+				Expect(dbrotator.ReencryptDB(db)).To(MatchError("error reencrypting: cipher: message authentication failed"))
 			})
 		})
 	})

@@ -37,13 +37,13 @@ func SetEncryptor(encryptor Encryptor) {
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o fakes/fake_encryption.go . Encryptor
 type Encryptor interface {
-	Encrypt(plaintext []byte) (string, error)
-	Decrypt(ciphertext string) ([]byte, error)
+	Encrypt(plaintext []byte) ([]byte, error)
+	Decrypt(ciphertext []byte) ([]byte, error)
 }
 
 // ServiceBindingCredentials holds credentials returned to the users after
 // binding to a service.
-type ServiceBindingCredentials ServiceBindingCredentialsV1
+type ServiceBindingCredentials ServiceBindingCredentialsV2
 
 // SetOtherDetails marshals the value passed in into a JSON string and sets
 // OtherDetails to it if marshalling was successful.
@@ -58,14 +58,14 @@ func (sbc *ServiceBindingCredentials) SetOtherDetails(toSet interface{}) error {
 		return err
 	}
 
-	sbc.OtherDetails = string(encryptedDetails)
+	sbc.OtherDetails = encryptedDetails
 	return nil
 }
 
 // GetOtherDetails returns and unmarshalls the OtherDetails field into the given
 // struct. An empty OtherDetails field does not get unmarshalled and does not error.
 func (sbc ServiceBindingCredentials) GetOtherDetails(v interface{}) error {
-	if sbc.OtherDetails == "" {
+	if sbc.OtherDetails == nil {
 		return nil
 	}
 
@@ -78,7 +78,7 @@ func (sbc ServiceBindingCredentials) GetOtherDetails(v interface{}) error {
 }
 
 // ServiceInstanceDetails holds information about provisioned services.
-type ServiceInstanceDetails ServiceInstanceDetailsV2
+type ServiceInstanceDetails ServiceInstanceDetailsV3
 
 // SetOtherDetails marshals the value passed in into a JSON string and sets
 // OtherDetails to it if marshalling was successful.
@@ -93,14 +93,14 @@ func (si *ServiceInstanceDetails) SetOtherDetails(toSet interface{}) error {
 		return err
 	}
 
-	si.OtherDetails = string(encryptedDetails)
+	si.OtherDetails = encryptedDetails
 	return nil
 }
 
 // GetOtherDetails returns and unmarshalls the OtherDetails field into the given
 // struct. An empty OtherDetails field does not get unmarshalled and does not error.
 func (si ServiceInstanceDetails) GetOtherDetails(v interface{}) error {
-	if si.OtherDetails == "" {
+	if si.OtherDetails == nil {
 		return nil
 	}
 
@@ -114,7 +114,7 @@ func (si ServiceInstanceDetails) GetOtherDetails(v interface{}) error {
 
 // ProvisionRequestDetails holds user-defined properties passed to a call
 // to provision a service.
-type ProvisionRequestDetails ProvisionRequestDetailsV1
+type ProvisionRequestDetails ProvisionRequestDetailsV3
 
 func (pr *ProvisionRequestDetails) SetRequestDetails(rawMessage json.RawMessage) error {
 	encryptedDetails, err := encryptorInstance.Encrypt(rawMessage)
@@ -122,7 +122,7 @@ func (pr *ProvisionRequestDetails) SetRequestDetails(rawMessage json.RawMessage)
 		return err
 	}
 
-	pr.RequestDetails = string(encryptedDetails)
+	pr.RequestDetails = encryptedDetails
 	return nil
 }
 
@@ -145,7 +145,7 @@ type CloudOperation CloudOperationV1
 
 // TerraformDeployment holds Terraform state and plan information for resources
 // that use that execution system.
-type TerraformDeployment TerraformDeploymentV2
+type TerraformDeployment TerraformDeploymentV3
 
 func (t *TerraformDeployment) SetWorkspace(value string) error {
 	encrypted, err := encryptorInstance.Encrypt([]byte(value))
