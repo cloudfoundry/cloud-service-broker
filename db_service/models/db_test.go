@@ -96,7 +96,7 @@ var _ = Describe("Db", func() {
 					err := credentials.SetOtherDetails(otherDetails)
 					Expect(err).ToNot(HaveOccurred())
 
-					Expect(credentials.OtherDetails).To(Equal(`{"some":["json","blob","here"]}`))
+					Expect(credentials.OtherDetails).To(Equal([]byte(`{"some":["json","blob","here"]}`)))
 				})
 
 				It("marshalls nil into json null", func() {
@@ -104,7 +104,7 @@ var _ = Describe("Db", func() {
 					err := credentials.SetOtherDetails(nil)
 					Expect(err).ToNot(HaveOccurred())
 
-					Expect(credentials.OtherDetails).To(Equal("null"))
+					Expect(credentials.OtherDetails).To(Equal([]byte("null")))
 				})
 
 				It("returns an error if it cannot marshall", func() {
@@ -121,7 +121,7 @@ var _ = Describe("Db", func() {
 			Describe("GetOtherDetails", func() {
 				It("unmarshalls json content", func() {
 					serviceBindingCredentials := models.ServiceBindingCredentials{
-						OtherDetails: `{"some":["json","blob","here"]}`,
+						OtherDetails: []byte(`{"some":["json","blob","here"]}`),
 					}
 
 					var actualOtherDetails map[string]interface{}
@@ -145,7 +145,7 @@ var _ = Describe("Db", func() {
 
 				It("returns an error if unmarshalling fails", func() {
 					serviceBindingCredentials := models.ServiceBindingCredentials{
-						OtherDetails: `{"some":"badjson","here"]}`,
+						OtherDetails: []byte(`{"some":"badjson","here"]}`),
 					}
 
 					var actualOtherDetails map[string]interface{}
@@ -162,7 +162,7 @@ var _ = Describe("Db", func() {
 			Describe("SetOtherDetails", func() {
 				BeforeEach(func() {
 					fakeEncryptor := &fakes.FakeEncryptor{}
-					fakeEncryptor.EncryptReturns("", errors.New("fake encrypt error"))
+					fakeEncryptor.EncryptReturns(nil, errors.New("fake encrypt error"))
 
 					encryptor = fakeEncryptor
 					models.SetEncryptor(encryptor)
@@ -186,7 +186,7 @@ var _ = Describe("Db", func() {
 
 				It("return the error", func() {
 					serviceBindingCredentials := models.ServiceBindingCredentials{
-						OtherDetails: "fake stuff",
+						OtherDetails: []byte("fake stuff"),
 					}
 
 					var receiver interface{}
@@ -229,7 +229,7 @@ var _ = Describe("Db", func() {
 					Expect(err).ToNot(HaveOccurred())
 					decryptedDetails, err := encryptor.Decrypt(details.OtherDetails)
 					Expect(err).ToNot(HaveOccurred())
-					Expect(string(decryptedDetails)).To(Equal("null"))
+					Expect(decryptedDetails).To(Equal([]byte("null")))
 				})
 			})
 
@@ -237,7 +237,7 @@ var _ = Describe("Db", func() {
 				It("decrypts and unmarshalls json content", func() {
 					encryptedDetails, _ := encryptor.Encrypt([]byte(`{"some":["json","blob","here"]}`))
 					serviceInstanceDetails := models.ServiceInstanceDetails{
-						OtherDetails: string(encryptedDetails),
+						OtherDetails: encryptedDetails,
 					}
 
 					var actualOtherDetails map[string]interface{}
@@ -304,7 +304,7 @@ var _ = Describe("Db", func() {
 					err := details.SetOtherDetails(otherDetails)
 
 					Expect(err).ToNot(HaveOccurred())
-					Expect(details.OtherDetails).To(Equal(`{"some":["json","blob","here"]}`))
+					Expect(details.OtherDetails).To(Equal([]byte(`{"some":["json","blob","here"]}`)))
 				})
 
 				It("marshalls nil into json null", func() {
@@ -313,14 +313,14 @@ var _ = Describe("Db", func() {
 					err := details.SetOtherDetails(nil)
 
 					Expect(err).ToNot(HaveOccurred())
-					Expect(details.OtherDetails).To(Equal("null"))
+					Expect(details.OtherDetails).To(Equal([]byte("null")))
 				})
 			})
 
 			Describe("GetOtherDetails", func() {
 				It("unmarshalls json content", func() {
 					serviceInstanceDetails := models.ServiceInstanceDetails{
-						OtherDetails: `{"some":["json","blob","here"]}`,
+						OtherDetails: []byte(`{"some":["json","blob","here"]}`),
 					}
 
 					var actualOtherDetails map[string]interface{}
@@ -367,7 +367,7 @@ var _ = Describe("Db", func() {
 				Context("When there are errors while encrypting", func() {
 					BeforeEach(func() {
 						fakeEncryptor := &fakes.FakeEncryptor{}
-						fakeEncryptor.EncryptReturns("", errors.New("some error"))
+						fakeEncryptor.EncryptReturns([]byte{}, errors.New("some error"))
 
 						encryptor = fakeEncryptor
 						models.SetEncryptor(encryptor)
@@ -396,7 +396,7 @@ var _ = Describe("Db", func() {
 
 					It("returns an error", func() {
 						serviceInstanceDetails := models.ServiceInstanceDetails{
-							OtherDetails: "something not nil",
+							OtherDetails: []byte("something not nil"),
 						}
 
 						var actualOtherDetails map[string]interface{}
@@ -419,7 +419,7 @@ var _ = Describe("Db", func() {
 
 					It("returns an error", func() {
 						details := models.ServiceInstanceDetails{
-							OtherDetails: "something not nil",
+							OtherDetails: []byte("something not nil"),
 						}
 
 						var actualOtherDetails map[string]interface{}
@@ -477,7 +477,7 @@ var _ = Describe("Db", func() {
 				It("gets as RawMessage", func() {
 					encryptedDetails, _ := encryptor.Encrypt([]byte(`{"some":["json","blob","here"]}`))
 					requestDetails := models.ProvisionRequestDetails{
-						RequestDetails: string(encryptedDetails),
+						RequestDetails: encryptedDetails,
 					}
 
 					details, err := requestDetails.GetRequestDetails()
@@ -515,7 +515,7 @@ var _ = Describe("Db", func() {
 					rawMessage := []byte(`{"key":"value"}`)
 					details.SetRequestDetails(rawMessage)
 
-					Expect(details.RequestDetails).To(Equal("{\"key\":\"value\"}"))
+					Expect(details.RequestDetails).To(Equal(rawMessage))
 				})
 
 				It("converts nil to the empty string", func() {
@@ -523,7 +523,7 @@ var _ = Describe("Db", func() {
 
 					details.SetRequestDetails(nil)
 
-					Expect(details.RequestDetails).To(BeEmpty())
+					Expect(details.RequestDetails).To(BeNil())
 				})
 
 				It("converts empty array to the empty string", func() {
@@ -538,7 +538,7 @@ var _ = Describe("Db", func() {
 			Describe("GetRequestDetails", func() {
 				It("gets as RawMessage", func() {
 					requestDetails := models.ProvisionRequestDetails{
-						RequestDetails: `{"some":["json","blob","here"]}`,
+						RequestDetails: []byte(`{"some":["json","blob","here"]}`),
 					}
 
 					details, err := requestDetails.GetRequestDetails()
@@ -555,7 +555,7 @@ var _ = Describe("Db", func() {
 			Context("SetRequestDetails", func() {
 				BeforeEach(func() {
 					fakeEncryptor := &fakes.FakeEncryptor{}
-					fakeEncryptor.EncryptReturns("", errors.New("some error"))
+					fakeEncryptor.EncryptReturns([]byte{}, errors.New("some error"))
 
 					encryptor = fakeEncryptor
 					models.SetEncryptor(encryptor)
@@ -582,7 +582,7 @@ var _ = Describe("Db", func() {
 
 				It("returns an error when there are errors while decrypting", func() {
 					requestDetails := models.ProvisionRequestDetails{
-						RequestDetails: "some string",
+						RequestDetails: []byte("some string"),
 					}
 
 					details, err := requestDetails.GetRequestDetails()
@@ -652,13 +652,13 @@ var _ = Describe("Db", func() {
 					var t models.TerraformDeployment
 					err := t.SetWorkspace(plaintext)
 					Expect(err).NotTo(HaveOccurred())
-					Expect(t.Workspace).To(Equal(plaintext))
+					Expect(t.Workspace).To(Equal([]byte(plaintext)))
 				})
 			})
 
 			Describe("GetWorkspace", func() {
 				It("reads the plaintext workspace", func() {
-					t := models.TerraformDeployment{Workspace: plaintext}
+					t := models.TerraformDeployment{Workspace: []byte(plaintext)}
 					v, err := t.GetWorkspace()
 					Expect(err).NotTo(HaveOccurred())
 					Expect(v).To(Equal(plaintext))
@@ -670,7 +670,7 @@ var _ = Describe("Db", func() {
 			Describe("SetWorkspace", func() {
 				BeforeEach(func() {
 					fakeEncryptor := &fakes.FakeEncryptor{}
-					fakeEncryptor.EncryptReturns("", errors.New("fake encryption error"))
+					fakeEncryptor.EncryptReturns([]byte{}, errors.New("fake encryption error"))
 
 					encryptor = fakeEncryptor
 					models.SetEncryptor(encryptor)
@@ -693,7 +693,7 @@ var _ = Describe("Db", func() {
 				})
 
 				It("returns decryption errors", func() {
-					t := models.TerraformDeployment{Workspace: plaintext}
+					t := models.TerraformDeployment{Workspace: []byte(plaintext)}
 					v, err := t.GetWorkspace()
 					Expect(err).To(MatchError("fake decryption error"))
 					Expect(v).To(BeEmpty())

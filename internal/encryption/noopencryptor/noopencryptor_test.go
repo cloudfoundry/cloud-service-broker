@@ -16,14 +16,14 @@ var _ = Describe("NoopEncryptor", func() {
 	Describe("Encrypt", func() {
 		It("is a noop", func() {
 			const text = "my funny text to encrypt"
-			Expect(encryptor.Encrypt([]byte(text))).To(Equal(text))
+			Expect(encryptor.Encrypt([]byte(text))).To(Equal([]byte(text)))
 		})
 	})
 
 	Describe("Decrypt", func() {
 		It("is a noop", func() {
 			const text = "my funny text to decrypt"
-			Expect(encryptor.Decrypt(text)).To(Equal([]byte(text)))
+			Expect(encryptor.Decrypt([]byte(text))).To(Equal([]byte(text)))
 		})
 	})
 })

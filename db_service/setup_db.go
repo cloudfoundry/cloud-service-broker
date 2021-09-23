@@ -129,7 +129,7 @@ func setupMysqlDb(logger lager.Logger) (*gorm.DB, error) {
 		"name": dbName,
 	})
 
-	connStr := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8&parseTime=True&loc=Local%v", dbUsername, dbPassword, dbHost, dbPort, dbName, tlsStr)
+	connStr := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local%v", dbUsername, dbPassword, dbHost, dbPort, dbName, tlsStr)
 	return gorm.Open(gormmysql.New(gormmysql.Config{
 		DSN:               connStr,
 		DefaultStringSize: 256,

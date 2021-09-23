@@ -6,10 +6,10 @@ func New() NoopEncryptor {
 
 type NoopEncryptor struct{}
 
-func (d NoopEncryptor) Encrypt(plaintext []byte) (string, error) {
-	return string(plaintext), nil
+func (d NoopEncryptor) Encrypt(plaintext []byte) ([]byte, error) {
+	return plaintext, nil
 }
 
-func (d NoopEncryptor) Decrypt(ciphertext string) ([]byte, error) {
-	return []byte(ciphertext), nil
+func (d NoopEncryptor) Decrypt(ciphertext []byte) ([]byte, error) {
+	return ciphertext, nil
 }

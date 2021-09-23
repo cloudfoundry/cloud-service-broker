@@ -25,13 +25,13 @@ var _ = Describe("ParseConfiguration()", func() {
 			Expect(db.Create(&models.PasswordMetadata{
 				Label:   "previous-primary",
 				Salt:    []byte("random-salt"),
-				Canary:  "test-value",
+				Canary:  []byte("test-value"),
 				Primary: true,
 			}).Error).NotTo(HaveOccurred())
 			Expect(db.Create(&models.PasswordMetadata{
 				Label:   "new-primary",
 				Salt:    []byte("other-random-salt"),
-				Canary:  "other-test-value",
+				Canary:  []byte("other-test-value"),
 				Primary: false,
 			}).Error).NotTo(HaveOccurred())
 		})
@@ -55,7 +55,7 @@ var _ = Describe("ParseConfiguration()", func() {
 			Expect(db.Create(&models.PasswordMetadata{
 				Label:   "primary",
 				Salt:    []byte("random-salt"),
-				Canary:  "test-value",
+				Canary:  []byte("test-value"),
 				Primary: true,
 			}).Error).NotTo(HaveOccurred())
 		})
@@ -80,7 +80,7 @@ var _ = Describe("ParseConfiguration()", func() {
 			Expect(db.Create(&models.PasswordMetadata{
 				Label:   "primary",
 				Salt:    []byte("random-salt"),
-				Canary:  "test-value",
+				Canary:  []byte("test-value"),
 				Primary: true,
 			}).Error).NotTo(HaveOccurred())
 		})

@@ -3,7 +3,6 @@ package gcmencryptor_test
 import (
 	"crypto/rand"
 	"crypto/sha256"
-	b64 "encoding/base64"
 	"io"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/gcmencryptor"
@@ -44,12 +43,12 @@ var _ = Describe("GCMEncryptor", func() {
 			Expect(result3).ToNot(Equal(result2))
 		})
 
-		It("encodes in b64", func() {
-			encoded, err := encryptor.Encrypt([]byte("Text to Encrypt"))
-			Expect(err).ToNot(HaveOccurred())
-			_, err = b64.StdEncoding.DecodeString(encoded)
-			Expect(err).ToNot(HaveOccurred())
-		})
+		//It("encodes in b64", func() {
+		//	encoded, err := encryptor.Encrypt([]byte("Text to Encrypt"))
+		//	Expect(err).ToNot(HaveOccurred())
+		//	//_, err = b64.StdEncoding.DecodeString(encoded)
+		//	Expect(err).ToNot(HaveOccurred())
+		//})
 
 		It("panics when run on an uninitialised encryptor", func() {
 			Expect(func() { gcmencryptor.GCMEncryptor{}.Encrypt([]byte("foo")) }).To(Panic())
@@ -57,28 +56,21 @@ var _ = Describe("GCMEncryptor", func() {
 	})
 
 	Describe("Decrypt", func() {
-		It("returns an error if input not in b64", func() {
-			result, err := encryptor.Decrypt("some string not in b64")
-			Expect(err).To(MatchError(b64.CorruptInputError(4)))
-			Expect(result).To(BeNil())
-		})
 
 		It("fails if text is malformed", func() {
-			encoded := b64.StdEncoding.EncodeToString([]byte("shorter"))
-			result, err := encryptor.Decrypt(encoded)
+			result, err := encryptor.Decrypt([]byte("shorter"))
 			Expect(err).To(MatchError("malformed ciphertext"))
 			Expect(result).To(BeNil())
 		})
 
 		It("fails if text is corrupted", func() {
-			encoded := b64.StdEncoding.EncodeToString([]byte("longtextthatdoesnotcontainthetag"))
-			result, err := encryptor.Decrypt(encoded)
+			result, err := encryptor.Decrypt([]byte("longtextthatdoesnotcontainthetag"))
 			Expect(err).To(MatchError("cipher: message authentication failed"))
 			Expect(result).To(BeNil())
 		})
 
 		It("panics when run on an uninitialised encryptor", func() {
-			Expect(func() { gcmencryptor.GCMEncryptor{}.Decrypt("foo") }).To(Panic())
+			Expect(func() { gcmencryptor.GCMEncryptor{}.Decrypt([]byte("foo")) }).To(Panic())
 		})
 	})
 })

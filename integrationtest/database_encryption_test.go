@@ -60,31 +60,31 @@ var _ = Describe("Database Encryption", func() {
 		ExpectWithOffset(1, result.RowsAffected).To(Equal(int64(1)))
 	}
 
-	persistedRequestDetails := func(serviceInstanceGUID string) string {
+	persistedRequestDetails := func(serviceInstanceGUID string) []byte {
 		record := models.ProvisionRequestDetails{}
 		findRecord(&record, serviceInstanceFKQuery, serviceInstanceGUID)
 		return record.RequestDetails
 	}
 
-	persistedServiceInstanceDetails := func(serviceInstanceGUID string) string {
+	persistedServiceInstanceDetails := func(serviceInstanceGUID string) []byte {
 		record := models.ServiceInstanceDetails{}
 		findRecord(&record, serviceInstanceIdQuery, serviceInstanceGUID)
 		return record.OtherDetails
 	}
 
-	persistedServiceInstanceTerraformWorkspace := func(serviceInstanceGUID string) string {
+	persistedServiceInstanceTerraformWorkspace := func(serviceInstanceGUID string) []byte {
 		record := models.TerraformDeployment{}
 		findRecord(&record, tfWorkspaceIdQuery, fmt.Sprintf("tf:%s:", serviceInstanceGUID))
 		return record.Workspace
 	}
 
-	persistedServiceBindingDetails := func(serviceInstanceGUID string) string {
+	persistedServiceBindingDetails := func(serviceInstanceGUID string) []byte {
 		record := models.ServiceBindingCredentials{}
 		findRecord(&record, serviceInstanceFKQuery, serviceInstanceGUID)
 		return record.OtherDetails
 	}
 
-	persistedServiceBindingTerraformWorkspace := func(serviceInstanceGUID, serviceBindingGUID string) string {
+	persistedServiceBindingTerraformWorkspace := func(serviceInstanceGUID, serviceBindingGUID string) []byte {
 		record := models.TerraformDeployment{}
 		findRecord(&record, tfWorkspaceIdQuery, fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, serviceBindingGUID))
 		return record.Workspace
@@ -198,8 +198,8 @@ var _ = Describe("Database Encryption", func() {
 		return session
 	}
 
-	bePlaintextProvisionParams := Equal(provisionParams)
-	bePlaintextProvisionOutput := Equal(provisionOutput)
+	bePlaintextProvisionParams := Equal([]byte(provisionParams))
+	bePlaintextProvisionOutput := Equal([]byte(provisionOutput))
 	bePlaintextInstanceTerraformState := SatisfyAll(
 		ContainSubstring(provisionOutputStateValue),
 		ContainSubstring(tfStateKey),
@@ -208,7 +208,7 @@ var _ = Describe("Database Encryption", func() {
 		ContainSubstring(provisionOutputStateValue),
 		ContainSubstring(tfStateKey),
 	)
-	bePlaintextBindingDetails := Equal(bindOutput)
+	bePlaintextBindingDetails := Equal([]byte(bindOutput))
 	bePlaintextBindingTerraformState := SatisfyAll(
 		ContainSubstring(bindOutputStateValue),
 		ContainSubstring(tfStateKey),
@@ -284,7 +284,7 @@ var _ = Describe("Database Encryption", func() {
 			By("checking how update persists service instance fields")
 			updateServiceInstance(serviceInstanceGUID)
 			Expect(persistedRequestDetails(serviceInstanceGUID)).To(bePlaintextProvisionParams)
-			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).To(Equal(updateOutput))
+			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).To(Equal([]byte(updateOutput)))
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).To(SatisfyAll(
 				ContainSubstring(provisionOutputStateValue),
 				ContainSubstring(updateOutputStateValue),
@@ -365,7 +365,7 @@ var _ = Describe("Database Encryption", func() {
 	})
 
 	When("encryption is turned on after it was previously off", func() {
-		It("it encrypts the database", func() {
+		FIt("it encrypts the database", func() {
 			By("starting the broker without a password")
 			brokerSession := startBroker(false, "")
 			Expect(string(brokerSession.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
@@ -616,7 +616,7 @@ var _ = Describe("Database Encryption", func() {
 				record := models.ServiceInstanceDetails{}
 				findRecord(&record, serviceInstanceIdQuery, serviceInstanceGUID2)
 				recordToRecover := record
-				record.OtherDetails = "something-that-cannot-be-decrypted"
+				record.OtherDetails = []byte("something-that-cannot-be-decrypted")
 				Expect(db.Save(&record).Error).NotTo(HaveOccurred())
 
 				By("restarting the broker with a different primary password")
