@@ -135,13 +135,14 @@ var _ = Describe("Combine()", func() {
 				{
 					Label:   "barfoo",
 					Salt:    barfooSalt,
-					Canary:  "E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==",
+					Canary:  []byte{250, 65, 162, 134, 203, 81, 170, 159, 176, 113, 29, 249, 223, 77, 187, 139, 97, 254, 110, 99, 177, 102, 234, 51, 47, 85, 126, 205, 110, 173, 159, 209, 234, 138, 66, 113, 117, 191, 211, 184},
 					Primary: false,
 				},
 			}
 		})
 
 		It("succeeds when there were no passwords", func() {
+
 			combined, err := passwordcombiner.Combine(db, []passwordparser.PasswordEntry{}, storedMetadata)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(combined).To(BeEmpty())
@@ -175,7 +176,7 @@ var _ = Describe("Combine()", func() {
 			storedMetadata = append(storedMetadata, models.PasswordMetadata{
 				Label:   "barbaz",
 				Salt:    barbazSalt,
-				Canary:  "XVVB0psiTW1J9R/r8Sh32aY2oddKujDnNHMAzcMowrdnO+ngixJn8g==",
+				Canary:  []byte{74, 35, 85, 82, 16, 202, 239, 216, 209, 30, 158, 65, 28, 0, 77, 203, 96, 155, 20, 61, 16, 204, 81, 147, 22, 42, 144, 193, 95, 50, 47, 207, 156, 106, 219, 159, 90, 8, 13, 59},
 				Primary: true,
 			})
 			passwords := []passwordparser.PasswordEntry{
@@ -254,13 +255,13 @@ var _ = Describe("Combine()", func() {
 					{
 						Label:   "barbaz",
 						Salt:    barbazSalt,
-						Canary:  "XVVB0psiTW1J9R/r8Sh32aY2oddKujDnNHMAzcMowrdnO+ngixJn8g==",
+						Canary:  []byte("XVVB0psiTW1J9R/r8Sh32aY2oddKujDnNHMAzcMowrdnO+ngixJn8g=="),
 						Primary: true,
 					},
 					{
 						Label:   "anotherone",
 						Salt:    barfooSalt,
-						Canary:  "E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg==",
+						Canary:  []byte("E2wsRffeAvbMceRmEE5UItxnXrakgztiTtWOJXrzk54Bpm1IwVQgxg=="),
 						Primary: true,
 					},
 				}
@@ -283,7 +284,7 @@ var _ = Describe("Combine()", func() {
 					{
 						Label:   "barbaz",
 						Salt:    barbazSalt,
-						Canary:  "XVVB0psiTW1J9R/r8Sh32aY2oddKujDnNHMAzcMowrdnO+ngixJn8g==",
+						Canary:  []byte("XVVB0psiTW1J9R/r8Sh32aY2oddKujDnNHMAzcMowrdnO+ngixJn8g=="),
 						Primary: true,
 					},
 				}

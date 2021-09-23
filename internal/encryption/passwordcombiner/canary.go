@@ -11,11 +11,11 @@ import (
 // possible to create a rainbow table for this.
 const CanaryInput = "canary value"
 
-func encryptCanary(encryptor gcmencryptor.GCMEncryptor) (string, error) {
+func encryptCanary(encryptor gcmencryptor.GCMEncryptor) ([]byte, error) {
 	return encryptor.Encrypt([]byte(CanaryInput))
 }
 
-func decryptCanary(encryptor gcmencryptor.GCMEncryptor, canary, label string) error {
+func decryptCanary(encryptor gcmencryptor.GCMEncryptor, canary []byte, label string) error {
 	_, err := encryptor.Decrypt(canary)
 	switch {
 	case err == nil:

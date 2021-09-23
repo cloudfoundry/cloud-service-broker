@@ -12,11 +12,11 @@ type CompoundEncryptor struct {
 	decryptors []Encryptor
 }
 
-func (c CompoundEncryptor) Encrypt(plaintext []byte) (string, error) {
+func (c CompoundEncryptor) Encrypt(plaintext []byte) ([]byte, error) {
 	return c.encryptor.Encrypt(plaintext)
 }
 
-func (c CompoundEncryptor) Decrypt(ciphertext string) (data []byte, err error) {
+func (c CompoundEncryptor) Decrypt(ciphertext []byte) (data []byte, err error) {
 	for _, d := range c.decryptors {
 		data, err = d.Decrypt(ciphertext)
 		if err == nil {
