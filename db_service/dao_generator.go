@@ -39,7 +39,7 @@ func main() {
 				"Name":             "Hello",
 				"Location":         "loc",
 				"Url":              "https://google.com",
-				"OtherDetails":     `{"some":["json","blob","here"]}`,
+				"OtherDetails":     []byte(`{"some":["json","blob","here"]}`),
 				"ServiceId":        "123-456-7890",
 				"PlanId":           "planid",
 				"SpaceGuid":        "0000-0000-0000",
@@ -64,7 +64,7 @@ func main() {
 				"ServiceId":         "1111-1111-1111",
 				"ServiceInstanceId": "2222-2222-2222",
 				"BindingId":         "0000-0000-0000",
-				"OtherDetails":      `{"some":["json","blob","here"]}`,
+				"OtherDetails":      []byte(`{"some":["json","blob","here"]}`),
 			},
 		},
 		{
@@ -74,7 +74,7 @@ func main() {
 			PrimaryKeyField:   "id",
 			ExampleFields: map[string]interface{}{
 				"ServiceInstanceId": "2222-2222-2222",
-				"RequestDetails":    `{"some":["json","blob","here"]}`,
+				"RequestDetails":    []byte(`{"some":["json","blob","here"]}`),
 			},
 		},
 		{
@@ -84,7 +84,7 @@ func main() {
 			PrimaryKeyField:   "id",
 			Keys:              []fieldList{},
 			ExampleFields: map[string]interface{}{
-				"Workspace":            "{}",
+				"Workspace":            []byte("{}"),
 				"LastOperationType":    "create",
 				"LastOperationState":   `in progress`,
 				"LastOperationMessage": `Started 2018-01-01`,
@@ -375,6 +375,7 @@ package db_service
 import (
 	"context"
 	"testing"
+	"github.com/onsi/gomega"
 	"time"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
@@ -408,10 +409,9 @@ func create{{.Type}}Instance() ({{.PrimaryKeyType}}, models.{{.Type}}) {
 }
 
 func ensure{{.Type}}FieldsMatch(t *testing.T, expected, actual *models.{{.Type}}) {
+	g := gomega.NewGomegaWithT(t)
 {{range $k, $v := .ExampleFields}}
-	if expected.{{$k}} != actual.{{$k}} {
-		t.Errorf("Expected field {{$k}} to be %#v, got %#v", expected.{{$k}}, actual.{{$k}})
-	}
+	g.Expect(actual.{{$k}}).To(gomega.Equal(expected.{{$k}}), "Unexpected value for field {{$k}}")
 {{end}}
 }
 
