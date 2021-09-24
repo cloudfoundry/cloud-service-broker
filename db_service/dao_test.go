@@ -21,6 +21,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/onsi/gomega"
+
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -48,7 +50,7 @@ func createServiceInstanceDetailsInstance() (string, models.ServiceInstanceDetai
 	instance.Location = "loc"
 	instance.Name = "Hello"
 	instance.OrganizationGuid = "1111-1111-1111"
-	instance.OtherDetails = "{\"some\":[\"json\",\"blob\",\"here\"]}"
+	instance.OtherDetails = []byte{0x7b, 0x22, 0x73, 0x6f, 0x6d, 0x65, 0x22, 0x3a, 0x5b, 0x22, 0x6a, 0x73, 0x6f, 0x6e, 0x22, 0x2c, 0x22, 0x62, 0x6c, 0x6f, 0x62, 0x22, 0x2c, 0x22, 0x68, 0x65, 0x72, 0x65, 0x22, 0x5d, 0x7d}
 	instance.PlanId = "planid"
 	instance.ServiceId = "123-456-7890"
 	instance.SpaceGuid = "0000-0000-0000"
@@ -58,38 +60,23 @@ func createServiceInstanceDetailsInstance() (string, models.ServiceInstanceDetai
 }
 
 func ensureServiceInstanceDetailsFieldsMatch(t *testing.T, expected, actual *models.ServiceInstanceDetails) {
+	g := gomega.NewGomegaWithT(t)
 
-	if expected.Location != actual.Location {
-		t.Errorf("Expected field Location to be %#v, got %#v", expected.Location, actual.Location)
-	}
+	g.Expect(actual.Location).To(gomega.Equal(expected.Location), "Unexpected value for field Location")
 
-	if expected.Name != actual.Name {
-		t.Errorf("Expected field Name to be %#v, got %#v", expected.Name, actual.Name)
-	}
+	g.Expect(actual.Name).To(gomega.Equal(expected.Name), "Unexpected value for field Name")
 
-	if expected.OrganizationGuid != actual.OrganizationGuid {
-		t.Errorf("Expected field OrganizationGuid to be %#v, got %#v", expected.OrganizationGuid, actual.OrganizationGuid)
-	}
+	g.Expect(actual.OrganizationGuid).To(gomega.Equal(expected.OrganizationGuid), "Unexpected value for field OrganizationGuid")
 
-	if expected.OtherDetails != actual.OtherDetails {
-		t.Errorf("Expected field OtherDetails to be %#v, got %#v", expected.OtherDetails, actual.OtherDetails)
-	}
+	g.Expect(actual.OtherDetails).To(gomega.Equal(expected.OtherDetails), "Unexpected value for field OtherDetails")
 
-	if expected.PlanId != actual.PlanId {
-		t.Errorf("Expected field PlanId to be %#v, got %#v", expected.PlanId, actual.PlanId)
-	}
+	g.Expect(actual.PlanId).To(gomega.Equal(expected.PlanId), "Unexpected value for field PlanId")
 
-	if expected.ServiceId != actual.ServiceId {
-		t.Errorf("Expected field ServiceId to be %#v, got %#v", expected.ServiceId, actual.ServiceId)
-	}
+	g.Expect(actual.ServiceId).To(gomega.Equal(expected.ServiceId), "Unexpected value for field ServiceId")
 
-	if expected.SpaceGuid != actual.SpaceGuid {
-		t.Errorf("Expected field SpaceGuid to be %#v, got %#v", expected.SpaceGuid, actual.SpaceGuid)
-	}
+	g.Expect(actual.SpaceGuid).To(gomega.Equal(expected.SpaceGuid), "Unexpected value for field SpaceGuid")
 
-	if expected.Url != actual.Url {
-		t.Errorf("Expected field Url to be %#v, got %#v", expected.Url, actual.Url)
-	}
+	g.Expect(actual.Url).To(gomega.Equal(expected.Url), "Unexpected value for field Url")
 
 }
 
@@ -211,7 +198,7 @@ func createServiceBindingCredentialsInstance() (uint, models.ServiceBindingCrede
 	instance := models.ServiceBindingCredentials{}
 	instance.ID = testPk
 	instance.BindingId = "0000-0000-0000"
-	instance.OtherDetails = "{\"some\":[\"json\",\"blob\",\"here\"]}"
+	instance.OtherDetails = []byte{0x7b, 0x22, 0x73, 0x6f, 0x6d, 0x65, 0x22, 0x3a, 0x5b, 0x22, 0x6a, 0x73, 0x6f, 0x6e, 0x22, 0x2c, 0x22, 0x62, 0x6c, 0x6f, 0x62, 0x22, 0x2c, 0x22, 0x68, 0x65, 0x72, 0x65, 0x22, 0x5d, 0x7d}
 	instance.ServiceId = "1111-1111-1111"
 	instance.ServiceInstanceId = "2222-2222-2222"
 
@@ -219,22 +206,15 @@ func createServiceBindingCredentialsInstance() (uint, models.ServiceBindingCrede
 }
 
 func ensureServiceBindingCredentialsFieldsMatch(t *testing.T, expected, actual *models.ServiceBindingCredentials) {
+	g := gomega.NewGomegaWithT(t)
 
-	if expected.BindingId != actual.BindingId {
-		t.Errorf("Expected field BindingId to be %#v, got %#v", expected.BindingId, actual.BindingId)
-	}
+	g.Expect(actual.BindingId).To(gomega.Equal(expected.BindingId), "Unexpected value for field BindingId")
 
-	if expected.OtherDetails != actual.OtherDetails {
-		t.Errorf("Expected field OtherDetails to be %#v, got %#v", expected.OtherDetails, actual.OtherDetails)
-	}
+	g.Expect(actual.OtherDetails).To(gomega.Equal(expected.OtherDetails), "Unexpected value for field OtherDetails")
 
-	if expected.ServiceId != actual.ServiceId {
-		t.Errorf("Expected field ServiceId to be %#v, got %#v", expected.ServiceId, actual.ServiceId)
-	}
+	g.Expect(actual.ServiceId).To(gomega.Equal(expected.ServiceId), "Unexpected value for field ServiceId")
 
-	if expected.ServiceInstanceId != actual.ServiceInstanceId {
-		t.Errorf("Expected field ServiceInstanceId to be %#v, got %#v", expected.ServiceInstanceId, actual.ServiceInstanceId)
-	}
+	g.Expect(actual.ServiceInstanceId).To(gomega.Equal(expected.ServiceInstanceId), "Unexpected value for field ServiceInstanceId")
 
 }
 
@@ -467,21 +447,18 @@ func createProvisionRequestDetailsInstance() (uint, models.ProvisionRequestDetai
 
 	instance := models.ProvisionRequestDetails{}
 	instance.ID = testPk
-	instance.RequestDetails = "{\"some\":[\"json\",\"blob\",\"here\"]}"
+	instance.RequestDetails = []byte{0x7b, 0x22, 0x73, 0x6f, 0x6d, 0x65, 0x22, 0x3a, 0x5b, 0x22, 0x6a, 0x73, 0x6f, 0x6e, 0x22, 0x2c, 0x22, 0x62, 0x6c, 0x6f, 0x62, 0x22, 0x2c, 0x22, 0x68, 0x65, 0x72, 0x65, 0x22, 0x5d, 0x7d}
 	instance.ServiceInstanceId = "2222-2222-2222"
 
 	return testPk, instance
 }
 
 func ensureProvisionRequestDetailsFieldsMatch(t *testing.T, expected, actual *models.ProvisionRequestDetails) {
+	g := gomega.NewGomegaWithT(t)
 
-	if expected.RequestDetails != actual.RequestDetails {
-		t.Errorf("Expected field RequestDetails to be %#v, got %#v", expected.RequestDetails, actual.RequestDetails)
-	}
+	g.Expect(actual.RequestDetails).To(gomega.Equal(expected.RequestDetails), "Unexpected value for field RequestDetails")
 
-	if expected.ServiceInstanceId != actual.ServiceInstanceId {
-		t.Errorf("Expected field ServiceInstanceId to be %#v, got %#v", expected.ServiceInstanceId, actual.ServiceInstanceId)
-	}
+	g.Expect(actual.ServiceInstanceId).To(gomega.Equal(expected.ServiceInstanceId), "Unexpected value for field ServiceInstanceId")
 
 }
 
@@ -605,28 +582,21 @@ func createTerraformDeploymentInstance() (string, models.TerraformDeployment) {
 	instance.LastOperationMessage = "Started 2018-01-01"
 	instance.LastOperationState = "in progress"
 	instance.LastOperationType = "create"
-	instance.Workspace = "{}"
+	instance.Workspace = []byte{0x7b, 0x7d}
 
 	return testPk, instance
 }
 
 func ensureTerraformDeploymentFieldsMatch(t *testing.T, expected, actual *models.TerraformDeployment) {
+	g := gomega.NewGomegaWithT(t)
 
-	if expected.LastOperationMessage != actual.LastOperationMessage {
-		t.Errorf("Expected field LastOperationMessage to be %#v, got %#v", expected.LastOperationMessage, actual.LastOperationMessage)
-	}
+	g.Expect(actual.LastOperationMessage).To(gomega.Equal(expected.LastOperationMessage), "Unexpected value for field LastOperationMessage")
 
-	if expected.LastOperationState != actual.LastOperationState {
-		t.Errorf("Expected field LastOperationState to be %#v, got %#v", expected.LastOperationState, actual.LastOperationState)
-	}
+	g.Expect(actual.LastOperationState).To(gomega.Equal(expected.LastOperationState), "Unexpected value for field LastOperationState")
 
-	if expected.LastOperationType != actual.LastOperationType {
-		t.Errorf("Expected field LastOperationType to be %#v, got %#v", expected.LastOperationType, actual.LastOperationType)
-	}
+	g.Expect(actual.LastOperationType).To(gomega.Equal(expected.LastOperationType), "Unexpected value for field LastOperationType")
 
-	if expected.Workspace != actual.Workspace {
-		t.Errorf("Expected field Workspace to be %#v, got %#v", expected.Workspace, actual.Workspace)
-	}
+	g.Expect(actual.Workspace).To(gomega.Equal(expected.Workspace), "Unexpected value for field Workspace")
 
 }
 
