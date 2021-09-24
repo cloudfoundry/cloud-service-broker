@@ -365,7 +365,7 @@ var _ = Describe("Database Encryption", func() {
 	})
 
 	When("encryption is turned on after it was previously off", func() {
-		FIt("it encrypts the database", func() {
+		It("it encrypts the database", func() {
 			By("starting the broker without a password")
 			brokerSession := startBroker(false, "")
 			Expect(string(brokerSession.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
