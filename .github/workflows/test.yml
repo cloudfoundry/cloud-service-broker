@@ -26,7 +26,7 @@ jobs:
     if: ${{ success() && github.event_name == 'pull_request_target' && github.actor == 'dependabot[bot]' }}
     steps:
       - name: Merge
-        uses: actions/github-script@v4
+        uses: actions/github-script@v5
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
