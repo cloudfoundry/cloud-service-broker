@@ -54,7 +54,7 @@ require (
 	github.com/onsi/gomega v1.16.0
 	github.com/pborman/uuid v1.2.1
 	github.com/pelletier/go-toml v1.9.3 // indirect
-	github.com/pivotal-cf/brokerapi/v8 v8.1.0
+	github.com/pivotal-cf/brokerapi/v8 v8.2.0
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.1.1-0.20190813114604-4efc3ccc7a66 // indirect
 	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4 // indirect
