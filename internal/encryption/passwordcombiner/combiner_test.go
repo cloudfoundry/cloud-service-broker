@@ -131,11 +131,12 @@ var _ = Describe("Combine()", func() {
 		BeforeEach(func() {
 			barfooSalt = []byte("random-salt-containing-32-bytes!")
 			barbazSalt = []byte("another-random-salt-with-32bytes")
+			encryptedCanary := []byte{250, 65, 162, 134, 203, 81, 170, 159, 176, 113, 29, 249, 223, 77, 187, 139, 97, 254, 110, 99, 177, 102, 234, 51, 47, 85, 126, 205, 110, 173, 159, 209, 234, 138, 66, 113, 117, 191, 211, 184}
 			storedMetadata = []models.PasswordMetadata{
 				{
 					Label:   "barfoo",
 					Salt:    barfooSalt,
-					Canary:  []byte{250, 65, 162, 134, 203, 81, 170, 159, 176, 113, 29, 249, 223, 77, 187, 139, 97, 254, 110, 99, 177, 102, 234, 51, 47, 85, 126, 205, 110, 173, 159, 209, 234, 138, 66, 113, 117, 191, 211, 184},
+					Canary:  encryptedCanary,
 					Primary: false,
 				},
 			}
@@ -173,10 +174,11 @@ var _ = Describe("Combine()", func() {
 		})
 
 		It("can return multiple passwords with stored salt values", func() {
+			encryptedCanary := []byte{74, 35, 85, 82, 16, 202, 239, 216, 209, 30, 158, 65, 28, 0, 77, 203, 96, 155, 20, 61, 16, 204, 81, 147, 22, 42, 144, 193, 95, 50, 47, 207, 156, 106, 219, 159, 90, 8, 13, 59}
 			storedMetadata = append(storedMetadata, models.PasswordMetadata{
 				Label:   "barbaz",
 				Salt:    barbazSalt,
-				Canary:  []byte{74, 35, 85, 82, 16, 202, 239, 216, 209, 30, 158, 65, 28, 0, 77, 203, 96, 155, 20, 61, 16, 204, 81, 147, 22, 42, 144, 193, 95, 50, 47, 207, 156, 106, 219, 159, 90, 8, 13, 59},
+				Canary:  encryptedCanary,
 				Primary: true,
 			})
 			passwords := []passwordparser.PasswordEntry{

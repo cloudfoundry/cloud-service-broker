@@ -39,7 +39,7 @@ type ServiceBindingCredentialsV1 struct {
 	BindingId         string
 }
 
-// TableName returns a consistent table name (`service_binding_credentials`) for
+// TableName returns a consistent table name for
 // gorm so multiple structs from different versions of the database all operate
 // on the same table.
 func (ServiceBindingCredentialsV1) TableName() string {
@@ -58,7 +58,7 @@ type ServiceBindingCredentialsV2 struct {
 	BindingId         string
 }
 
-// TableName returns a consistent table name (`service_binding_credentials`) for
+// TableName returns a consistent table name for
 // gorm so multiple structs from different versions of the database all operate
 // on the same table.
 func (ServiceBindingCredentialsV2) TableName() string {
@@ -83,7 +83,7 @@ type ServiceInstanceDetailsV1 struct {
 	OrganizationGuid string
 }
 
-// TableName returns a consistent table name (`service_instance_details`) for
+// TableName returns a consistent table name for
 // gorm so multiple structs from different versions of the database all operate
 // on the same table.
 func (ServiceInstanceDetailsV1) TableName() string {
@@ -119,7 +119,7 @@ type ServiceInstanceDetailsV2 struct {
 	OperationId string `gorm:"type:varchar(1024)"`
 }
 
-// TableName returns a consistent table name (`service_instance_details`) for
+// TableName returns a consistent table name for
 // gorm so multiple structs from different versions of the database all operate
 // on the same table.
 func (ServiceInstanceDetailsV2) TableName() string {
@@ -155,7 +155,7 @@ type ServiceInstanceDetailsV3 struct {
 	OperationId string `gorm:"type:varchar(1024)"`
 }
 
-// TableName returns a consistent table name (`service_instance_details`) for
+// TableName returns a consistent table name for
 // gorm so multiple structs from different versions of the database all operate
 // on the same table.
 func (ServiceInstanceDetailsV3) TableName() string {
@@ -172,7 +172,7 @@ type ProvisionRequestDetailsV1 struct {
 	RequestDetails string
 }
 
-// TableName returns a consistent table name (`provision_request_details`) for
+// TableName returns a consistent table name for
 // gorm so multiple structs from different versions of the database all operate
 // on the same table.
 func (ProvisionRequestDetailsV1) TableName() string {
@@ -190,7 +190,7 @@ type ProvisionRequestDetailsV2 struct {
 	RequestDetails string `gorm:"type:text"`
 }
 
-// TableName returns a consistent table name (`provision_request_details`) for
+// TableName returns a consistent table name for
 // gorm so multiple structs from different versions of the database all operate
 // on the same table.
 func (ProvisionRequestDetailsV2) TableName() string {
@@ -208,7 +208,7 @@ type ProvisionRequestDetailsV3 struct {
 	RequestDetails []byte `gorm:"type:blob"`
 }
 
-// TableName returns a consistent table name (`provision_request_details`) for
+// TableName returns a consistent table name for
 // gorm so multiple structs from different versions of the database all operate
 // on the same table.
 func (ProvisionRequestDetailsV3) TableName() string {
@@ -223,7 +223,7 @@ type MigrationV1 struct {
 	MigrationId int `gorm:"type:int(10)"`
 }
 
-// TableName returns a consistent table name (`migrations`) for gorm so
+// TableName returns a consistent table name for gorm so
 // multiple structs from different versions of the database all operate on the
 // same table.
 func (MigrationV1) TableName() string {
@@ -249,7 +249,7 @@ type CloudOperationV1 struct {
 	ServiceInstanceId string
 }
 
-// TableName returns a consistent table name (`cloud_operations`) for gorm so
+// TableName returns a consistent table name for gorm so
 // multiple structs from different versions of the database all operate on the
 // same table.
 func (CloudOperationV1) TableName() string {
@@ -270,7 +270,7 @@ type PlanDetailsV1 struct {
 	Features  string `gorm:"type:text"`
 }
 
-// TableName returns a consistent table name (`plan_details`) for gorm so
+// TableName returns a consistent table name for gorm so
 // multiple structs from different versions of the database all operate on the
 // same table.
 func (PlanDetailsV1) TableName() string {
@@ -298,7 +298,7 @@ type TerraformDeploymentV1 struct {
 	LastOperationMessage string `gorm:"type:text"`
 }
 
-// TableName returns a consistent table name (`tf_deployment`) for gorm so
+// TableName returns a consistent table name for gorm so
 // multiple structs from different versions of the database all operate on the
 // same table.
 func (TerraformDeploymentV1) TableName() string {
@@ -328,7 +328,7 @@ type TerraformDeploymentV2 struct {
 	LastOperationMessage string `gorm:"type:text"`
 }
 
-// TableName returns a consistent table name (`terraform_deployments`) for
+// TableName returns a consistent table name for
 // gorm so multiple structs from different versions of the database all operate
 // on the same table.
 func (TerraformDeploymentV2) TableName() string {
@@ -358,7 +358,7 @@ type TerraformDeploymentV3 struct {
 	LastOperationMessage string `gorm:"type:text"`
 }
 
-// TableName returns a consistent table name (`terraform_deployments`) for
+// TableName returns a consistent table name for
 // gorm so multiple structs from different versions of the database all operate
 // on the same table.
 func (TerraformDeploymentV3) TableName() string {

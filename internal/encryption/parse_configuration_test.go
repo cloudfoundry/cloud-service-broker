@@ -50,10 +50,11 @@ var _ = Describe("ParseConfiguration()", func() {
 			const password = `[{"primary":false,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
 
 			BeforeEach(func() {
+				encryptedCanary := []byte{73, 191, 136, 182, 178, 54, 18, 6, 195, 170, 245, 114, 29, 34, 193, 95, 213, 107, 30, 23, 38, 202, 37, 226, 118, 10, 247, 73, 117, 96, 27, 238, 210, 27, 46, 196, 161, 100, 254, 5}
 				Expect(db.Create(&models.PasswordMetadata{
 					Label:   "barfoo",
 					Salt:    []byte("random-salt-containing-32-bytes!"),
-					Canary:  []byte{73, 191, 136, 182, 178, 54, 18, 6, 195, 170, 245, 114, 29, 34, 193, 95, 213, 107, 30, 23, 38, 202, 37, 226, 118, 10, 247, 73, 117, 96, 27, 238, 210, 27, 46, 196, 161, 100, 254, 5},
+					Canary:  encryptedCanary,
 					Primary: true,
 				}).Error).NotTo(HaveOccurred())
 			})
@@ -93,15 +94,17 @@ var _ = Describe("ParseConfiguration()", func() {
 			const password = `[{"primary":true,"label":"barfoo","password":{"secret":"averyverygoodpassword"}}]`
 
 			BeforeEach(func() {
+				encryptedCanary := []byte{130, 100, 227, 172, 226, 139, 19, 69, 68, 165, 60, 67, 132, 158, 234, 45, 52, 5, 57, 243, 5, 41, 33, 170, 30, 52, 47, 204, 3, 137, 96, 132, 16, 24, 184, 33, 241, 24, 149, 35}
 				Expect(db.Create(&models.PasswordMetadata{
 					Label:   "barfoo",
 					Salt:    []byte("random-salt-containing-32-bytes!"),
-					Canary:  []byte{130, 100, 227, 172, 226, 139, 19, 69, 68, 165, 60, 67, 132, 158, 234, 45, 52, 5, 57, 243, 5, 41, 33, 170, 30, 52, 47, 204, 3, 137, 96, 132, 16, 24, 184, 33, 241, 24, 149, 35},
+					Canary:  encryptedCanary,
 					Primary: true,
 				}).Error).NotTo(HaveOccurred())
 			})
 
 			It("returns an encryptor", func() {
+				quzAsEncryptedBlob := []byte{59, 21, 133, 191, 122, 237, 117, 45, 137, 121, 21, 128, 28, 100, 131, 163, 91, 252, 73, 20, 74, 104, 237, 20, 103, 53, 207, 52, 154, 189, 66}
 				config, err := encryption.ParseConfiguration(db, true, password)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(config.Encryptor).To(BeAssignableToTypeOf(gcmencryptor.GCMEncryptor{}))
@@ -110,8 +113,7 @@ var _ = Describe("ParseConfiguration()", func() {
 				Expect(config.ConfiguredPrimaryLabel).To(Equal("barfoo"))
 				Expect(config.StoredPrimaryLabel).To(Equal("barfoo"))
 				Expect(config.ToDeleteLabels).To(BeZero())
-
-				Expect(config.Encryptor.Decrypt([]byte{59, 21, 133, 191, 122, 237, 117, 45, 137, 121, 21, 128, 28, 100, 131, 163, 91, 252, 73, 20, 74, 104, 237, 20, 103, 53, 207, 52, 154, 189, 66})).To(Equal([]byte("quz")))
+				Expect(config.Encryptor.Decrypt(quzAsEncryptedBlob)).To(Equal([]byte("quz")))
 			})
 		})
 
