@@ -43,13 +43,6 @@ var _ = Describe("GCMEncryptor", func() {
 			Expect(result3).ToNot(Equal(result2))
 		})
 
-		//It("encodes in b64", func() {
-		//	encoded, err := encryptor.Encrypt([]byte("Text to Encrypt"))
-		//	Expect(err).ToNot(HaveOccurred())
-		//	//_, err = b64.StdEncoding.DecodeString(encoded)
-		//	Expect(err).ToNot(HaveOccurred())
-		//})
-
 		It("panics when run on an uninitialised encryptor", func() {
 			Expect(func() { gcmencryptor.GCMEncryptor{}.Encrypt([]byte("foo")) }).To(Panic())
 		})
