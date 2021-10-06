@@ -82,9 +82,6 @@ func saveNewPasswordMetadata(db *gorm.DB, p passwordparser.PasswordEntry) (Combi
 func mergeWithStoredMetadata(s models.PasswordMetadata, p passwordparser.PasswordEntry) (CombinedPassword, error) {
 	e := encryptor(p.Secret, s.Salt)
 
-	canary, _ := encryptCanary(e)
-	log.Println("*canary", p.Label, canary)
-
 	if err := decryptCanary(e, s.Canary, p.Label); err != nil {
 		return CombinedPassword{}, err
 	}
