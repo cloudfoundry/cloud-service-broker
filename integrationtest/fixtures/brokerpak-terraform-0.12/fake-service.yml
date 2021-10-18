@@ -1,0 +1,16 @@
+version: 1
+name: fake-service
+id: df2c1512-3013-11ec-8704-2fbfa9c8a802
+description: description
+display_name: Fake
+image_url: https://example.com/icon.jpg
+documentation_url: https://example.com
+support_url: https://example.com/support.html
+plans:
+- name: first
+  id: e59773ce-3013-11ec-9bbb-9376b4f72d14
+  description: First plan
+  display_name: First
+provision:
+  template_refs:
+    main: fake-provision.tf
