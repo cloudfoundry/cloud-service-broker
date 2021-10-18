@@ -19,7 +19,7 @@ import (
 	_ "gorm.io/driver/sqlite"
 )
 
-var _ = FDescribe("Terraform 0.12", func() {
+var _ = FDescribe("Terraform 0.13", func() {
 	var (
 		originalDir         string
 		fixturesDir         string
@@ -37,7 +37,7 @@ var _ = FDescribe("Terraform 0.12", func() {
 		var err error
 		originalDir, err = os.Getwd()
 		Expect(err).NotTo(HaveOccurred())
-		fixturesDir = path.Join(originalDir, "fixtures", "brokerpak-terraform-0.12")
+		fixturesDir = path.Join(originalDir, "fixtures", "brokerpak-terraform-0.13")
 
 		workDir, err = os.MkdirTemp("", "*-csb-test")
 		Expect(err).NotTo(HaveOccurred())
@@ -82,8 +82,8 @@ var _ = FDescribe("Terraform 0.12", func() {
 	})
 
 	It("can provision using this Terraform version", func() {
-		const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
-		const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
+		const serviceOfferingGUID = "29d4119f-2e88-4e85-8c40-7360f3d9c695"
+		const servicePlanGUID = "056c052c-e7b0-4c8e-8d6b-18616e06a7ac"
 		serviceInstanceGUID = uuid.New()
 		provisionResponse := brokerClient.Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), nil)
 		Expect(provisionResponse.Error).NotTo(HaveOccurred())

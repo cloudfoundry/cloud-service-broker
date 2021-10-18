@@ -15,10 +15,13 @@
 package brokerpak
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/hashicorp/go-version"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/zippy"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
@@ -106,6 +109,55 @@ func (pak *BrokerPakReader) Close() error {
 // ExtractPlatformBins extracts the binaries for the current platform to the
 // given destination.
 func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
+	mf, err := pak.Manifest()
+	if err != nil {
+		return err
+	}
+
+	terraformVersion, err := getTerraformVersion(mf)
+	if err != nil {
+		return err
+	}
+
+	switch {
+	case terraformVersion.LessThan(version.Must(version.NewVersion("0.12.0"))):
+		return errors.New("terraform version too low")
+	case terraformVersion.LessThan(version.Must(version.NewVersion("0.13.0"))):
+		return pak.extractPlatformBins12(destination)
+	case terraformVersion.LessThan(version.Must(version.NewVersion("0.14.0"))):
+		return pak.extractPlatformBins13(destination)
+	default:
+		return errors.New("terraform version too high")
+	}
+}
+
+func getTerraformVersion(mf *Manifest) (*version.Version, error) {
+	for _, tResource := range mf.TerraformResources {
+		if tResource.Name == "terraform" {
+			return version.NewVersion(tResource.Version)
+		}
+	}
+	return nil, errors.New("terraform not found in manifest")
+}
+
+func (pak *BrokerPakReader) extractPlatformBins12(destination string) error {
+	mf, err := pak.Manifest()
+	if err != nil {
+		return err
+	}
+
+	curr := CurrentPlatform()
+	if !mf.AppliesToCurrentPlatform() {
+		return fmt.Errorf("the package %q doesn't contain binaries compatible with the current platform %q", mf.Name, curr.String())
+	}
+
+	bindir := path.Join("bin", curr.Os, curr.Arch)
+	return pak.contents.Extract(bindir, destination)
+}
+
+func (pak *BrokerPakReader) extractPlatformBins13(destination string) error {
+	panic("extract 13 not implemented")
+
 	mf, err := pak.Manifest()
 	if err != nil {
 		return err
