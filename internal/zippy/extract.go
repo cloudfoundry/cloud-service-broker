@@ -1,6 +1,7 @@
 package zippy
 
 import (
+	"archive/zip"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -8,29 +9,67 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
 )
 
-func (z ZipReader) Extract(zipDirectory, targetDirectory string) error {
-	for _, fd := range z.reader.File {
-		if fd.UncompressedSize64 == 0 { // skip directories
-			continue
-		}
+// ExtractDirectory extracts a path within the zip file to a target directory
+func (z ZipReader) ExtractDirectory(zipDirectory, targetDirectory string) error {
+	files, err := z.listExtractableFiles()
+	if err != nil {
+		return err
+	}
 
+	for _, fd := range files {
 		if !strings.HasPrefix(fd.Name, zipDirectory) {
 			continue
 		}
 
+		destPath := filepath.Join(targetDirectory, strings.TrimPrefix(fd.Name, zipDirectory))
+		if err := z.extractFile(fd, destPath); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (z ZipReader) ExtractFile(filePath, targetDirectory string) error {
+	files, err := z.listExtractableFiles()
+	if err != nil {
+		return err
+	}
+
+	for _, fd := range files {
+		if fd.Name != filePath {
+			continue
+		}
+
+		destPath := filepath.Join(targetDirectory, filepath.Base(filePath))
+		return z.extractFile(fd, destPath)
+	}
+
+	return fmt.Errorf("file %q does not exist in the zip", filePath)
+}
+
+func (z ZipReader) listExtractableFiles() (result []*zip.File, err error) {
+	for _, fd := range z.List() {
+		if fd.UncompressedSize64 == 0 { // skip directories
+			continue
+		}
+
 		if containsDotDot(fd.Name) {
-			return fmt.Errorf("potential zip slip extracting %q", fd.Name)
+			return nil, fmt.Errorf("potential zip slip extracting %q", fd.Name)
 		}
 
-		src := stream.FromReadCloserError(fd.Open())
+		result = append(result, fd)
+	}
 
-		newName := strings.TrimPrefix(fd.Name, zipDirectory)
-		destPath := filepath.Join(targetDirectory, filepath.FromSlash(newName))
-		dest := stream.ToModeFile(fd.Mode(), destPath)
+	return result, nil
+}
 
-		if err := stream.Copy(src, dest); err != nil {
-			return fmt.Errorf("couldn't extract file %q: %v", fd.Name, err)
-		}
+func (z ZipReader) extractFile(fd *zip.File, destPath string) error {
+	src := stream.FromReadCloserError(fd.Open())
+	dest := stream.ToModeFile(fd.Mode(), destPath)
+
+	if err := stream.Copy(src, dest); err != nil {
+		return fmt.Errorf("couldn't extract file %q: %v", fd.Name, err)
 	}
 
 	return nil

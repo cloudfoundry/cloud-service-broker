@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	. "github.com/cloudfoundry-incubator/cloud-service-broker/internal/testmatchers"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/zippy"
@@ -11,88 +12,159 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Extract", func() {
-	var tmpdir string
-
-	BeforeEach(func() {
-		var err error
-		tmpdir, err = os.MkdirTemp("", "test")
-		Expect(err).NotTo(HaveOccurred())
-	})
-
-	AfterEach(func() {
-		err := os.RemoveAll(tmpdir)
-		Expect(err).NotTo(HaveOccurred())
-	})
-
-	It("can extract the whole zip", func() {
-		zr, err := zippy.Open("./fixtures/brokerpak.zip")
-		Expect(err).NotTo(HaveOccurred())
-
-		zr.Extract("", tmpdir)
-
-		Expect(tmpdir).To(MatchDirectoryContents("./fixtures/brokerpak"))
-	})
-
-	It("can extract a directory within the zip", func() {
-		zr, err := zippy.Open("./fixtures/brokerpak.zip")
-		Expect(err).NotTo(HaveOccurred())
-
-		zr.Extract("src", tmpdir)
-
-		Expect(tmpdir).To(MatchDirectoryContents("./fixtures/brokerpak/src"))
-	})
-
-	When("the source does not exist", func() {
-		It("extracts nothing", func() {
-			zr, err := zippy.Open("./fixtures/brokerpak.zip")
-			Expect(err).NotTo(HaveOccurred())
-
-			zr.Extract("not/there", tmpdir)
-
-			dr, err := os.ReadDir(tmpdir)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(dr).To(BeEmpty())
-		})
-	})
-
-	When("the target cannot be written", func() {
-		It("returns an appropriate error", func() {
-			zr, err := zippy.Open("./fixtures/brokerpak.zip")
-			Expect(err).NotTo(HaveOccurred())
-
-			err = zr.Extract("", "/dev/zero/cannot/write/here")
-			Expect(err).To(MatchError(ContainSubstring("copy couldn't open destination")))
-		})
-	})
-
-	When("a zip path contains `..`", func() {
-		var zipfile string
+var _ = Describe("extraction", func() {
+	Describe("ExtractDirectory()", func() {
+		var tmpdir string
 
 		BeforeEach(func() {
-			fd, err := os.CreateTemp("", "")
+			var err error
+			tmpdir, err = os.MkdirTemp("", "test")
 			Expect(err).NotTo(HaveOccurred())
-			zipfile = fd.Name()
-			defer fd.Close()
-
-			w := zip.NewWriter(fd)
-			defer w.Close()
-
-			zd, err := w.CreateHeader(&zip.FileHeader{Name: "foo/../../baz"})
-			Expect(err).NotTo(HaveOccurred())
-			fmt.Fprintf(zd, "hello")
 		})
 
 		AfterEach(func() {
-			os.Remove(zipfile)
+			err := os.RemoveAll(tmpdir)
+			Expect(err).NotTo(HaveOccurred())
 		})
 
-		It("returns an appropriate error", func() {
-			zr, err := zippy.Open(zipfile)
+		It("can extract the whole zip", func() {
+			zr, err := zippy.Open("./fixtures/brokerpak.zip")
 			Expect(err).NotTo(HaveOccurred())
 
-			err = zr.Extract("", tmpdir)
-			Expect(err).To(MatchError(`potential zip slip extracting "foo/../../baz"`))
+			err = zr.ExtractDirectory("", tmpdir)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(tmpdir).To(MatchDirectoryContents("./fixtures/brokerpak"))
+		})
+
+		It("can extract a directory within the zip", func() {
+			zr, err := zippy.Open("./fixtures/brokerpak.zip")
+			Expect(err).NotTo(HaveOccurred())
+
+			err = zr.ExtractDirectory("src", tmpdir)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(tmpdir).To(MatchDirectoryContents("./fixtures/brokerpak/src"))
+		})
+
+		When("the source does not exist", func() {
+			It("extracts nothing", func() {
+				zr, err := zippy.Open("./fixtures/brokerpak.zip")
+				Expect(err).NotTo(HaveOccurred())
+
+				err = zr.ExtractDirectory("not/there", tmpdir)
+				Expect(err).NotTo(HaveOccurred())
+
+				dr, err := os.ReadDir(tmpdir)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(dr).To(BeEmpty())
+			})
+		})
+
+		When("the target cannot be written", func() {
+			It("returns an appropriate error", func() {
+				zr, err := zippy.Open("./fixtures/brokerpak.zip")
+				Expect(err).NotTo(HaveOccurred())
+
+				err = zr.ExtractDirectory("", "/dev/zero/cannot/write/here")
+				Expect(err).To(MatchError(ContainSubstring("copy couldn't open destination")))
+			})
+		})
+
+		When("a zip path contains `..`", func() {
+			It("returns an appropriate error", func() {
+				zipfile := createZipWithDotDot()
+				defer os.Remove(zipfile)
+
+				zr, err := zippy.Open(zipfile)
+				Expect(err).NotTo(HaveOccurred())
+
+				err = zr.ExtractDirectory("", tmpdir)
+				Expect(err).To(MatchError(`potential zip slip extracting "foo/../../baz"`))
+			})
+		})
+	})
+
+	Describe("ExtractFile()", func() {
+		var tmpdir string
+
+		BeforeEach(func() {
+			var err error
+			tmpdir, err = os.MkdirTemp("", "test")
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		AfterEach(func() {
+			err := os.RemoveAll(tmpdir)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("can extract a file from the zip", func() {
+			zr, err := zippy.Open("./fixtures/brokerpak.zip")
+			Expect(err).NotTo(HaveOccurred())
+
+			err = zr.ExtractFile("foo/bar/quz.txt", tmpdir)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(filepath.Join(tmpdir, "quz.txt")).To(BeAnExistingFile())
+			entries, err := os.ReadDir(tmpdir)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(entries).To(HaveLen(1))
+		})
+
+		It("fails when the file does not exist", func() {
+			zr, err := zippy.Open("./fixtures/brokerpak.zip")
+			Expect(err).NotTo(HaveOccurred())
+
+			err = zr.ExtractFile("foo/quz.txt", tmpdir)
+			Expect(err).To(MatchError(`file "foo/quz.txt" does not exist in the zip`))
+		})
+
+		It("fails when the file is a directory", func() {
+			zr, err := zippy.Open("./fixtures/brokerpak.zip")
+			Expect(err).NotTo(HaveOccurred())
+
+			err = zr.ExtractFile("foo/bar", tmpdir)
+			Expect(err).To(MatchError(`file "foo/bar" does not exist in the zip`))
+		})
+
+		When("the target cannot be written", func() {
+			It("returns an appropriate error", func() {
+				zr, err := zippy.Open("./fixtures/brokerpak.zip")
+				Expect(err).NotTo(HaveOccurred())
+
+				err = zr.ExtractFile("foo/bar/quz.txt", "/dev/zero/cannot/write/here")
+				Expect(err).To(MatchError(ContainSubstring("copy couldn't open destination")))
+			})
+		})
+
+		When("a zip path contains `..`", func() {
+			It("returns an appropriate error", func() {
+				zipfile := createZipWithDotDot()
+				defer os.Remove(zipfile)
+
+				zr, err := zippy.Open(zipfile)
+				Expect(err).NotTo(HaveOccurred())
+
+				err = zr.ExtractFile("foo/../../baz", tmpdir)
+				Expect(err).To(MatchError(`potential zip slip extracting "foo/../../baz"`))
+			})
 		})
 	})
 })
+
+func createZipWithDotDot() string {
+	fd, err := os.CreateTemp("", "")
+	Expect(err).NotTo(HaveOccurred())
+	zipfile := fd.Name()
+	defer fd.Close()
+
+	w := zip.NewWriter(fd)
+	defer w.Close()
+
+	zd, err := w.CreateHeader(&zip.FileHeader{Name: "foo/../../baz"})
+	Expect(err).NotTo(HaveOccurred())
+	fmt.Fprintf(zd, "hello")
+
+	return zipfile
+}

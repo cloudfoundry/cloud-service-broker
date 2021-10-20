@@ -15,6 +15,6 @@ var _ = Describe("List", func() {
 		for _, fd := range zr.List() {
 			names = append(names, fd.Name)
 		}
-		Expect(names).To(ConsistOf("bin/", "bin/hello", "foo/", "foo/bar/", "foo/bar/baz.txt", "manifest.yml", "src/", "src/bye.sh"))
+		Expect(names).To(ConsistOf("bin/", "bin/hello", "foo/", "foo/bar/", "foo/bar/baz.txt", "foo/bar/quz.txt", "manifest.yml", "src/", "src/bye.sh"))
 	})
 })

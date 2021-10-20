@@ -38,7 +38,7 @@ var _ = Describe("Archive", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		extracted := path.Join(tmpdir, "extracted")
-		err = zr.Extract("", extracted)
+		err = zr.ExtractDirectory("", extracted)
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(extracted).To(MatchDirectoryContents("./fixtures/brokerpak"))
