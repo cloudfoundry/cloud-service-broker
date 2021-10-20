@@ -20,6 +20,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/hashicorp/go-version"
 
@@ -114,6 +115,10 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 		return err
 	}
 
+	if !mf.AppliesToCurrentPlatform() {
+		return fmt.Errorf("the package %q doesn't contain binaries compatible with the current platform %q", mf.Name, CurrentPlatform().String())
+	}
+
 	terraformVersion, err := getTerraformVersion(mf)
 	if err != nil {
 		return err
@@ -123,9 +128,9 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 	case terraformVersion.LessThan(version.Must(version.NewVersion("0.12.0"))):
 		return errors.New("terraform version too low")
 	case terraformVersion.LessThan(version.Must(version.NewVersion("0.13.0"))):
-		return pak.extractPlatformBins12(destination)
+		return pak.extractPlatformBins12(destination, mf)
 	case terraformVersion.LessThan(version.Must(version.NewVersion("0.14.0"))):
-		return pak.extractPlatformBins13(destination)
+		return pak.extractPlatformBins13(destination, mf)
 	default:
 		return errors.New("terraform version too high")
 	}
@@ -140,36 +145,39 @@ func getTerraformVersion(mf *Manifest) (*version.Version, error) {
 	return nil, errors.New("terraform not found in manifest")
 }
 
-func (pak *BrokerPakReader) extractPlatformBins12(destination string) error {
-	mf, err := pak.Manifest()
-	if err != nil {
-		return err
-	}
-
-	curr := CurrentPlatform()
-	if !mf.AppliesToCurrentPlatform() {
-		return fmt.Errorf("the package %q doesn't contain binaries compatible with the current platform %q", mf.Name, curr.String())
-	}
-
-	bindir := path.Join("bin", curr.Os, curr.Arch)
-	return pak.contents.Extract(bindir, destination)
+func (pak *BrokerPakReader) extractPlatformBins12(destination string, mf *Manifest) error {
+	plat := CurrentPlatform()
+	bindir := path.Join("bin", plat.Os, plat.Arch)
+	return pak.contents.ExtractDirectory(bindir, destination)
 }
 
-func (pak *BrokerPakReader) extractPlatformBins13(destination string) error {
-	panic("extract 13 not implemented")
-
-	mf, err := pak.Manifest()
-	if err != nil {
-		return err
+func (pak *BrokerPakReader) extractPlatformBins13(destination string, mf *Manifest) error {
+	plat := CurrentPlatform()
+	base := path.Join("bin", plat.Os, plat.Arch)
+	for _, r := range mf.TerraformResources {
+		if err := pak.contents.ExtractMatching(zipPath(base), installPath(r.Name, r.Version)); err != nil {
+			return fmt.Errorf("some problem: %w", err)
+		}
 	}
 
-	curr := CurrentPlatform()
-	if !mf.AppliesToCurrentPlatform() {
-		return fmt.Errorf("the package %q doesn't contain binaries compatible with the current platform %q", mf.Name, curr.String())
-	}
+	return nil
+}
 
-	bindir := path.Join("bin", curr.Os, curr.Arch)
-	return pak.contents.ExtractDirectory(bindir, destination)
+func zipPath(base, name, version string) string {
+	if strings.HasPrefix(name, "terraform-provider-") {
+		return path.Join(base, fmt.Sprintf("%s_v%s", name, version))
+	}
+	return base
+}
+
+func installPath(name, version string) string {
+	if strings.HasPrefix(name, "terraform-provider-") {
+		suffix := name[19:]
+		plat := CurrentPlatform()
+		target := fmt.Sprintf("%s_%s", plat.Os, plat.Arch)
+		return filepath.Join("registry.terraform.io", "hashicorp", suffix, version, target)
+	}
+	return ""
 }
 
 // OpenBrokerPak opens the file at the given path as a BrokerPakReader.
