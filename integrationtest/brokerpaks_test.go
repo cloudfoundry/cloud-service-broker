@@ -77,7 +77,7 @@ var _ = Describe("Brokerpaks", func() {
 				zr, err := zippy.Open(brokerpakPath)
 				Expect(err).NotTo(HaveOccurred())
 
-				err = zr.Extract("", extractedPath)
+				err = zr.ExtractDirectory("", extractedPath)
 				Expect(err).NotTo(HaveOccurred())
 			})
 
