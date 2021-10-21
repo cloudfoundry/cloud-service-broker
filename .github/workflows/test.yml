@@ -30,7 +30,7 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            github.pulls.merge({
+            github.rest.pulls.merge({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.issue.number,
