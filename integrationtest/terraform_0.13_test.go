@@ -19,7 +19,7 @@ import (
 	_ "gorm.io/driver/sqlite"
 )
 
-var _ = FDescribe("Terraform 0.13", func() {
+var _ = Describe("Terraform 0.13", func() {
 	var (
 		originalDir         string
 		fixturesDir         string
