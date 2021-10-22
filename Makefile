@@ -77,20 +77,6 @@ generate: ## generate test fakes
 download: ## download go module dependencies
 	${GO} mod download
 
-###### Package ################################################################
-
-.PHONY: package
-package: ./build/cloud-service-broker.$(OSFAMILY) ./tile.yml ./manifest.yml docs/customization.md ## package binary
-
-./tile.yml:
-	./build/cloud-service-broker.$(OSFAMILY) generate tile > ./tile.yml
-
-./manifest.yml:
-	./build/cloud-service-broker.$(OSFAMILY) generate manifest > ./manifest.yml
-
-docs/customization.md:
-	./build/cloud-service-broker.$(OSFAMILY) generate customization > docs/customization.md
-
 ###### Clean ##################################################################
 
 .PHONY: clean

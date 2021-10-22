@@ -19,8 +19,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
-	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -41,89 +39,6 @@ func CatalogDocumentation(registry broker.BrokerRegistry) string {
 	}
 
 	return cleanMdOutput(out)
-}
-
-// CatalogDocumentationToDir generates markdown documentation for the service catalog
-// of the given registry. Generated documentation is saved under given `dstDir` with such layout:
-//
-// ./{dstDir}
-// ├── classes
-// │   ├── {class_name}.md # contains all information about given service class
-// │   └── ...
-// └── use.md # contains table of contents (ToC) about all generated service class documentation
-//
-func CatalogDocumentationToDir(registry broker.BrokerRegistry, dstDir string) {
-	const (
-		mdExt    = ".md"
-		classDir = "classes"
-		perms    = 0644
-	)
-
-	classesDir := filepath.Join(dstDir, classDir)
-	if err := ensureDir(classesDir); err != nil {
-		log.Fatalf("Cannot create directory for storing broker classes documentation: %v", err)
-	}
-
-	var tocServiceClasses []ToCServiceClass
-	for _, svc := range registry.GetAllServices() {
-		out := generateServiceDocumentation(svc)
-		out = cleanMdOutput(out)
-
-		saveClassPath := filepath.Join(classesDir, svc.Name+mdExt)
-		err := os.WriteFile(saveClassPath, []byte(out), perms)
-		if err != nil {
-			log.Fatalf("Cannot save %s documentation class into %s: %v", svc.Name, saveClassPath, err)
-		}
-
-		tocClassPath, err := filepath.Rel(dstDir, saveClassPath)
-		if err != nil {
-			log.Fatalf("Cannot resolve relative path to %s file: %v", saveClassPath, err)
-		}
-
-		tocServiceClasses = append(tocServiceClasses, ToCServiceClass{
-			DisplayName: svc.DisplayName,
-			FilePath:    tocClassPath,
-		})
-	}
-
-	toc := generateServiceClassesToC(tocServiceClasses)
-	tocFileName := filepath.Join(dstDir, "use.md")
-	if err := os.WriteFile(tocFileName, []byte(toc), perms); err != nil {
-		log.Fatalf("Cannot save documentation from %s class into %s", "", "")
-	}
-}
-
-type ToCServiceClass struct {
-	DisplayName string
-	FilePath    string
-}
-
-func generateServiceClassesToC(tocServiceClasses []ToCServiceClass) string {
-	tocTemplateText := `# Cloud Service Broker usage
-
-# Overview
-
-The Cloud Service Broker is a tool that developers use to provision access to cloud resources. The service broker currently supports a list of built-in services.
- 
-Read about creating and binding specific services:
-{{range .serviceClasses}}
--   [{{ .DisplayName }}]({{ .FilePath }})
-{{ end -}}
-`
-
-	vars := map[string]interface{}{
-		"serviceClasses": tocServiceClasses,
-	}
-
-	return render(tocTemplateText, vars, nil)
-}
-
-func ensureDir(dirPath string) error {
-	err := os.Mkdir(dirPath, os.ModePerm)
-	if err != nil && !os.IsExist(err) {
-		return err
-	}
-	return nil
 }
 
 // generateServiceDocumentation creates documentation for a single catalog entry
