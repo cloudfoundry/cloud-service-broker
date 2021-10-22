@@ -124,15 +124,10 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 		return err
 	}
 
-	switch {
-	case terraformVersion.LessThan(version.Must(version.NewVersion("0.12.0"))):
-		return errors.New("terraform version too low")
-	case terraformVersion.LessThan(version.Must(version.NewVersion("0.13.0"))):
+	if terraformVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
 		return pak.extractPlatformBins12(destination, mf)
-	case terraformVersion.LessThan(version.Must(version.NewVersion("0.14.0"))):
+	} else {
 		return pak.extractPlatformBins13(destination, mf)
-	default:
-		return errors.New("terraform version too high")
 	}
 }
 
