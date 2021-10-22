@@ -56,7 +56,7 @@ var _ = FDescribe("reader", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			err = pakReader.ExtractPlatformBins(binOutput)
-			Expect(err).To(MatchError("multiple files found with prefix"))
+			Expect(err).To(MatchError("multiple files found with prefix \"bin/darwin/amd64/terraform-provider-google-beta_v1.19.0\": bin/darwin/amd64/terraform-provider-google-beta_v1.19.0_x4, bin/darwin/amd64/terraform-provider-google-beta_v1.19.0_x5"))
 		})
 	})
 })
@@ -109,11 +109,8 @@ func fakeBrokerPakWithNoTerraform() (string, error) {
 			return "", err
 		}
 	}
-	tmpDir, err := os.MkdirTemp("/tmp", "brokerpak-test")
-	if err != nil {
-		return "", err
-	}
-	packName := fmt.Sprintf(tmpDir+"%s-%s.brokerpak", exampleManifest.Name, "1.0.0")
+
+	packName := fmt.Sprintf("/tmp/%v-%s-%s.brokerpak", uuid.New(), exampleManifest.Name, "1.0.0")
 	return packName, exampleManifest.Pack(dir, packName)
 }
 func fakeBrokerPakWithDuplicateProviders() (string, error) {
@@ -128,13 +125,13 @@ func fakeBrokerPakWithDuplicateProviders() (string, error) {
 		return "", err
 	}
 
-	providerOneSrc := filepath.Join(dir, "providerOne")
-	if err := stream.Copy(stream.FromString("dummy-file"), stream.ToFile(providerOneSrc)); err != nil {
+	providerOneSrc := filepath.Join(dir, "terraform-provider-google-beta_v1.19.0_x5")
+	if err := stream.Copy(stream.FromString("dummy-file-1"), stream.ToFile(providerOneSrc)); err != nil {
 		return "", err
 	}
 
-	providerTwoSrc := filepath.Join(dir, "providerTwo")
-	if err := stream.Copy(stream.FromString("dummy-file"), stream.ToFile(providerTwoSrc)); err != nil {
+	providerTwoSrc := filepath.Join(dir, "terraform-provider-google-beta_v1.19.0_x4")
+	if err := stream.Copy(stream.FromString("dummy-file-2"), stream.ToFile(providerTwoSrc)); err != nil {
 		return "", err
 	}
 
@@ -159,13 +156,13 @@ func fakeBrokerPakWithDuplicateProviders() (string, error) {
 			},
 			{
 				Name:        "terraform-provider-google-beta",
-				Version:     "1.19.0_x4",
+				Version:     "1.19.0",
 				Source:      providerOneSrc,
 				UrlTemplate: providerOneSrc,
 			},
 			{
-				Name:        "terraform-provider-google-beta-2",
-				Version:     "1.19.0_x5",
+				Name:        "terraform-provider-google-beta",
+				Version:     "1.19.0",
 				Source:      providerTwoSrc,
 				UrlTemplate: providerTwoSrc,
 			},
