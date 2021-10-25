@@ -16,12 +16,13 @@ package wrapper
 
 import (
 	"context"
-	"github.com/hashicorp/go-version"
 	"os"
 	"os/exec"
 	"path"
 	"reflect"
 	"testing"
+
+	"github.com/hashicorp/go-version"
 )
 
 func TestTerraformWorkspace_Invariants(t *testing.T) {
@@ -202,7 +203,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 	}
 }
 
-func TestCustomTerraformExecutor(t *testing.T) {
+func TestCustomTerraformExecutor012(t *testing.T) {
 	customBinary := "/path/to/terraform"
 	customPlugins := "/path/to/terraform-plugins"
 	pluginsFlag := "-plugin-dir=" + customPlugins
@@ -248,6 +249,50 @@ func TestCustomTerraformExecutor(t *testing.T) {
 			actual := exec.Command("!actual-never-got-called!")
 
 			tfVersion, _ := version.NewVersion("0.12.0")
+			executor := CustomTerraformExecutor(customBinary, customPlugins, tfVersion, func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
+				actual = c
+				return ExecutionOutput{}, nil
+			})
+
+			executor(context.TODO(), tc.Input)
+
+			if actual.Path != tc.Expected.Path {
+				t.Errorf("path wasn't updated, expected: %q, actual: %q", tc.Expected.Path, actual.Path)
+			}
+
+			if !reflect.DeepEqual(actual.Env, tc.Expected.Env) {
+				t.Errorf("env wasn't updated, expected: %q, actual: %q", tc.Expected.Env, actual.Env)
+			}
+
+			if !reflect.DeepEqual(actual.Args, tc.Expected.Args) {
+				t.Errorf("args weren't updated correctly, expected: %#v, actual: %#v", tc.Expected.Args, actual.Args)
+			}
+		})
+	}
+}
+
+func TestCustomTerraformExecutor013(t *testing.T) {
+	customBinary := "/path/to/terraform"
+	customPlugins := "/path/to/terraform-plugins"
+	pluginsFlag := "-plugin-dir=" + customPlugins
+
+	cases := map[string]struct {
+		Input    *exec.Cmd
+		Expected *exec.Cmd
+	}{
+		"init": {
+			Input:    exec.Command("terraform", "init", "-no-color"),
+			Expected: exec.Command(customBinary, "init", pluginsFlag, "-no-color"),
+		},
+	}
+
+	for tn, tc := range cases {
+		tc.Input.Env = []string{"PATH=/foo", "ENV1=bar"}
+		tc.Expected.Env = []string{"PATH=/foo", "ENV1=bar", "PATH=/path/to/terraform-plugins:/foo"}
+		t.Run(tn, func(t *testing.T) {
+			actual := exec.Command("!actual-never-got-called!")
+
+			tfVersion, _ := version.NewVersion("0.13.0")
 			executor := CustomTerraformExecutor(customBinary, customPlugins, tfVersion, func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
 				actual = c
 				return ExecutionOutput{}, nil
