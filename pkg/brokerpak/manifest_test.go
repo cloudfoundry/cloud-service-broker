@@ -12,32 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package brokerpak
+package brokerpak_test
 
 import (
-	"errors"
-	"reflect"
-	"testing"
-
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/brokerpak"
+	"github.com/hashicorp/go-version"
+	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v3"
+
+	. "github.com/onsi/ginkgo"
 )
 
-func TestNewExampleManifest(t *testing.T) {
-	exampleManifest := NewExampleManifest()
+var _ = Describe("manifest", func() {
+	Describe("validate", func() {
+		It("should not error when manifest is valid", func() {
+			exampleManifest := brokerpak.NewExampleManifest()
 
-	if err := exampleManifest.Validate(); err != nil {
-		t.Fatalf("example manifest should be valid, but got error: %v", err)
-	}
-}
+			err := exampleManifest.Validate()
 
-func TestUnmarshalManifest(t *testing.T) {
-	cases := map[string]struct {
-		yaml     string
-		expected Manifest
-	}{
-		"normal": {
-			yaml: `packversion: 1
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
+	Describe("unmarshalling", func() {
+		ymlManifest := `packversion: 1
 name: my-services-pack
 version: 0.1.0
 metadata:
@@ -54,62 +52,91 @@ required_env_variables:
 service_definitions:
 - example-service-definition.yml
 env_config_mapping:
-  ARM_SUBSCRIPTION_ID: azure.subscription_id`,
-			expected: Manifest{
-				PackVersion: 1,
-				Name:        "my-services-pack",
-				Version:     "0.1.0",
-				Metadata: map[string]string{
-					"author": "VMware",
+  ARM_SUBSCRIPTION_ID: azure.subscription_id`
+
+		expectedManifest := brokerpak.Manifest{
+			PackVersion: 1,
+			Name:        "my-services-pack",
+			Version:     "0.1.0",
+			Metadata: map[string]string{
+				"author": "VMware",
+			},
+			Platforms: []brokerpak.Platform{
+				{Os: "linux", Arch: "amd64"},
+			},
+			TerraformResources: []brokerpak.TerraformResource{
+				{
+					Name:    "terraform",
+					Version: "0.12.23",
+					Source:  "https://github.com/hashicorp/terraform/archive/v0.12.23.zip",
 				},
-				Platforms: []Platform{
-					{Os: "linux", Arch: "amd64"},
-				},
-				TerraformResources: []TerraformResource{
+			},
+			ServiceDefinitions: []string{"example-service-definition.yml"},
+			RequiredEnvVars:    []string{"ARM_SUBSCRIPTION_ID"},
+			EnvConfigMapping:   map[string]string{"ARM_SUBSCRIPTION_ID": "azure.subscription_id"},
+		}
+
+		var actual brokerpak.Manifest
+		err := yaml.Unmarshal([]byte(ymlManifest), &actual)
+
+		Expect(err).NotTo(HaveOccurred())
+		Expect(actual).To(Equal(expectedManifest))
+	})
+
+	Describe("GetTerraformVersion", func() {
+		It("returns terraform version", func() {
+			exampleManifest := brokerpak.NewExampleManifest()
+
+			actualVersion, err := exampleManifest.GetTerraformVersion()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(actualVersion).To(Equal(version.Must(version.NewVersion("0.13.0"))))
+		})
+
+		It("it returns error when it cant parse the terraform version", func() {
+			exampleManifest := brokerpak.Manifest{
+				TerraformResources: []brokerpak.TerraformResource{
 					{
 						Name:    "terraform",
-						Version: "0.12.23",
-						Source:  "https://github.com/hashicorp/terraform/archive/v0.12.23.zip",
+						Version: "non-semver",
+						Source:  "https://github.com/hashicorp/terraform/archive/v0.13.0.zip",
 					},
 				},
-				ServiceDefinitions: []string{"example-service-definition.yml"},
-				RequiredEnvVars:    []string{"ARM_SUBSCRIPTION_ID"},
-				EnvConfigMapping:   map[string]string{"ARM_SUBSCRIPTION_ID": "azure.subscription_id"},
-			},
-		},
-	}
-
-	for tn, tc := range cases {
-		t.Run(tn, func(t *testing.T) {
-			var actual Manifest
-			err := yaml.Unmarshal([]byte(tc.yaml), &actual)
-			if err != nil {
-				t.Fatalf("failed to unmarshal yaml manifest: %v", err)
 			}
-			if !reflect.DeepEqual(actual, tc.expected) {
-				t.Fatalf("Expected: %v Actual: %v", tc.expected, actual)
+
+			_, err := exampleManifest.GetTerraformVersion()
+			Expect(err).To(MatchError("Malformed version: non-semver"))
+		})
+
+		It("it returns error when it cant find terraform version", func() {
+			exampleManifest := brokerpak.Manifest{
+				TerraformResources: []brokerpak.TerraformResource{},
 			}
-		})
-	}
-}
 
-func TestManifestParameter_Validate(t *testing.T) {
-	cases := map[string]validation.ValidatableTest{
-		"blank obj": {
-			Object: &ManifestParameter{},
-			Expect: errors.New("missing field(s): description, name"),
-		},
-		"good obj": {
-			Object: &ManifestParameter{
-				Name:        "TEST",
-				Description: "Usage goes here",
-			},
-		},
-	}
-
-	for tn, tc := range cases {
-		t.Run(tn, func(t *testing.T) {
-			tc.Assert(t)
+			_, err := exampleManifest.GetTerraformVersion()
+			Expect(err).To(MatchError("terraform provider not found"))
 		})
-	}
-}
+	})
+
+	Describe("ManifestParameter", func() {
+		Describe("validate", func() {
+			It("should not error when manifest parameters is valid", func() {
+				manifestParam := brokerpak.ManifestParameter{
+					Name:        "test-name",
+					Description: "best manifest",
+				}
+
+				err := manifestParam.Validate()
+
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			It("should error when manifest parameters is missing required fields", func() {
+				manifestParam := brokerpak.ManifestParameter{}
+
+				err := manifestParam.Validate()
+
+				Expect(err.Error()).To(Equal("missing field(s): description, name"))
+			})
+		})
+	})
+})

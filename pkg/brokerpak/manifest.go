@@ -21,6 +21,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/hashicorp/go-version"
+
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/zippy"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
@@ -132,6 +134,15 @@ func (m *Manifest) Pack(base, dest string) error {
 
 	log.Println("Creating archive:", dest)
 	return zippy.Archive(dir, dest)
+}
+
+func (m *Manifest) GetTerraformVersion() (*version.Version, error) {
+	for _, r := range m.TerraformResources {
+		if r.Name == "terraform" {
+			return version.NewVersion(r.Version)
+		}
+	}
+	return &version.Version{}, fmt.Errorf("terraform provider not found")
 }
 
 func (m *Manifest) packSources(tmp string) error {
@@ -254,8 +265,8 @@ func NewExampleManifest() Manifest {
 		TerraformResources: []TerraformResource{
 			{
 				Name:    "terraform",
-				Version: "0.11.9",
-				Source:  "https://github.com/hashicorp/terraform/archive/v0.11.9.zip",
+				Version: "0.13.0",
+				Source:  "https://github.com/hashicorp/terraform/archive/v0.13.0.zip",
 			},
 			{
 				Name:    "terraform-provider-google-beta",

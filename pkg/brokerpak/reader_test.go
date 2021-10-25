@@ -37,18 +37,6 @@ var _ = Describe("reader", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		Context("terraform is not in the manifest", func() {
-			It("should return an error", func() {
-				pk, err = fakeBrokerPakWithNoTerraform()
-				Expect(err).NotTo(HaveOccurred())
-				pakReader, err := brokerpak.OpenBrokerPak(pk)
-				Expect(err).NotTo(HaveOccurred())
-
-				err = pakReader.ExtractPlatformBins(binOutput)
-				Expect(err).To(MatchError("terraform not found in manifest"))
-			})
-		})
-
 		When("Using Terraform v0.13", func() {
 			Context("multiple providers share same name and version", func() {
 				It("should return an error", func() {
@@ -95,58 +83,6 @@ var _ = Describe("reader", func() {
 	})
 })
 
-func fakeBrokerPakWithNoTerraform() (string, error) {
-	dir, err := os.MkdirTemp("", "fakepak")
-	if err != nil {
-		return "", err
-	}
-	defer os.RemoveAll(dir)
-
-	tfSrc := filepath.Join(dir, "terraform")
-	if err := stream.Copy(stream.FromString("dummy-file"), stream.ToFile(tfSrc)); err != nil {
-		return "", err
-	}
-
-	exampleManifest := &brokerpak.Manifest{
-		PackVersion: 1,
-		Name:        "my-services-pack",
-		Version:     "1.0.0",
-		Metadata: map[string]string{
-			"author": "me@example.com",
-		},
-		Platforms: []brokerpak.Platform{
-			{Os: "linux", Arch: "amd64"},
-			{Os: "darwin", Arch: "amd64"},
-		},
-		// These resources are stubbed with a local dummy file
-		TerraformResources: []brokerpak.TerraformResource{
-			{
-				Name:        "terraform-provider-google-beta",
-				Version:     "1.19.0",
-				Source:      tfSrc,
-				UrlTemplate: tfSrc,
-			},
-		},
-		ServiceDefinitions: []string{"example-service-definition.yml"},
-		Parameters: []brokerpak.ManifestParameter{
-			{Name: "TEST_PARAM", Description: "An example paramater that will be injected into Terraform's environment variables."},
-		},
-		EnvConfigMapping: map[string]string{"ENV_VAR": "env.var"},
-	}
-
-	if err := stream.Copy(stream.FromYaml(exampleManifest), stream.ToFile(dir, "manifest.yml")); err != nil {
-		return "", err
-	}
-
-	for _, path := range exampleManifest.ServiceDefinitions {
-		if err := stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition()), stream.ToFile(dir, path)); err != nil {
-			return "", err
-		}
-	}
-
-	packName := fmt.Sprintf("/tmp/%v-%s-%s.brokerpak", uuid.New(), exampleManifest.Name, "1.0.0")
-	return packName, exampleManifest.Pack(dir, packName)
-}
 func fakeBrokerPakWithDuplicateProviders(terraformVersion string) (string, error) {
 	dir, err := os.MkdirTemp("", "fakepak")
 	if err != nil {
