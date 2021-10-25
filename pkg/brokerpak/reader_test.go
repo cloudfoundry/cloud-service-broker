@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/pborman/uuid"
 
@@ -57,7 +58,9 @@ var _ = Describe("reader", func() {
 					Expect(err).NotTo(HaveOccurred())
 
 					err = pakReader.ExtractPlatformBins(binOutput)
-					Expect(err).To(MatchError("multiple files found with prefix \"bin/darwin/amd64/terraform-provider-google-beta_v1.19.0\": bin/darwin/amd64/terraform-provider-google-beta_v1.19.0_x4, bin/darwin/amd64/terraform-provider-google-beta_v1.19.0_x5"))
+
+					filePrefix := fmt.Sprintf("bin/%s/%s", runtime.GOOS, runtime.GOARCH)
+					Expect(err).To(MatchError(fmt.Sprintf("multiple files found with prefix \"%[1]s/terraform-provider-google-beta_v1.19.0\": %[1]s/terraform-provider-google-beta_v1.19.0_x4, %[1]s/terraform-provider-google-beta_v1.19.0_x5", filePrefix)))
 				})
 			})
 			Context("terraform-provider in manifest not found in zip", func() {
@@ -68,7 +71,7 @@ var _ = Describe("reader", func() {
 					Expect(err).NotTo(HaveOccurred())
 
 					err = pakReader.ExtractPlatformBins(binOutput)
-					Expect(err).To(MatchError("file with prefix \"bin/darwin/amd64/terraform-provider-google-beta_v1.19.0\" not found in zip"))
+					Expect(err).To(MatchError(fmt.Sprintf("file with prefix \"bin/%s/%s/terraform-provider-google-beta_v1.19.0\" not found in zip", runtime.GOOS, runtime.GOARCH)))
 				})
 			})
 			Context("provider in manifest not found in zip", func() {
@@ -79,11 +82,13 @@ var _ = Describe("reader", func() {
 					Expect(err).NotTo(HaveOccurred())
 
 					err = pakReader.ExtractPlatformBins(binOutput)
+
+					filePrefix := fmt.Sprintf("bin/%s/%s", runtime.GOOS, runtime.GOARCH)
 					Expect(err).To(MatchError(fmt.Errorf(
 						"error extracting %q to %q: %w",
-						"bin/darwin/amd64/some-provider",
+						fmt.Sprintf("%s/some-provider", filePrefix),
 						binOutput,
-						fmt.Errorf("file \"bin/darwin/amd64/some-provider\" does not exist in the zip"))))
+						fmt.Errorf("file \"%s/some-provider\" does not exist in the zip", filePrefix))))
 				})
 			})
 		})
