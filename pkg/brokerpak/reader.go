@@ -15,7 +15,6 @@
 package brokerpak
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -119,7 +118,7 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 		return fmt.Errorf("the package %q doesn't contain binaries compatible with the current platform %q", mf.Name, CurrentPlatform().String())
 	}
 
-	terraformVersion, err := getTerraformVersion(mf)
+	terraformVersion, err := mf.GetTerraformVersion()
 	if err != nil {
 		return err
 	}
@@ -129,15 +128,6 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 	} else {
 		return pak.extractPlatformBins13(destination, mf)
 	}
-}
-
-func getTerraformVersion(mf *Manifest) (*version.Version, error) {
-	for _, r := range mf.TerraformResources {
-		if r.Name == "terraform" {
-			return version.NewVersion(r.Version)
-		}
-	}
-	return nil, errors.New("terraform not found in manifest")
 }
 
 func (pak *BrokerPakReader) extractPlatformBins12(destination string, mf *Manifest) error {
