@@ -190,7 +190,7 @@ func (pak *BrokerPakReader) findFileInZip(name, version string) (string, error) 
 }
 
 func providerInstallPath(destination, name, version string) string {
-	suffix := name[19:] // chop off 'terraform-provider-'
+	suffix := strings.SplitAfterN(name, "terraform-provider-", 2)[1]
 	plat := CurrentPlatform()
 	target := fmt.Sprintf("%s_%s", plat.Os, plat.Arch)
 	return filepath.Join(destination, "registry.terraform.io", "hashicorp", suffix, version, target)
