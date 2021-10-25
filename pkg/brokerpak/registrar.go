@@ -129,13 +129,17 @@ func (r *Registrar) createExecutor(brokerPak *BrokerPakReader, vc *varcontext.Va
 		return nil, err
 	}
 
-	binPath := filepath.Join(dir, "terraform")
-	executor := wrapper.CustomTerraformExecutor(binPath, dir, wrapper.DefaultExecutor)
-
 	manifest, err := brokerPak.Manifest()
 	if err != nil {
 		return nil, err
 	}
+	tfVersion, err := manifest.GetTerraformVersion()
+	if err != nil {
+		return nil, err
+	}
+
+	binPath := filepath.Join(dir, "terraform")
+	executor := wrapper.CustomTerraformExecutor(binPath, dir, tfVersion, wrapper.DefaultExecutor)
 
 	params := r.resolveParameters(manifest.Parameters, vc)
 	executor = wrapper.CustomEnvironmentExecutor(params, executor)

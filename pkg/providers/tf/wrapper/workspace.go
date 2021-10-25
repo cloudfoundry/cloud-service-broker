@@ -26,6 +26,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/hashicorp/go-version"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
@@ -461,16 +463,16 @@ func updatePath(vars []string, path string) string {
 // CustomTerraformExecutor executes a custom Terraform binary that uses plugins
 // from a given plugin directory rather than the Terraform that's on the PATH
 // which will download provider binaries from the web.
-func CustomTerraformExecutor(tfBinaryPath, tfPluginDir string, wrapped TerraformExecutor) TerraformExecutor {
+func CustomTerraformExecutor(tfBinaryPath, tfPluginDir string, tfVersion *version.Version, wrapped TerraformExecutor) TerraformExecutor {
 	return func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
-
-		// Add the -get-plugins=false and -plugin-dir={tfPluginDir} after the
-		// sub-command to force Terraform to use a particular plugin.
 		subCommand := c.Args[1]
 		subCommandArgs := c.Args[2:]
 
 		if subCommand == "init" {
-			subCommandArgs = append([]string{"-get-plugins=false", fmt.Sprintf("-plugin-dir=%s", tfPluginDir)}, subCommandArgs...)
+			if tfVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
+				subCommandArgs = append([]string{"-get-plugins=false"}, subCommandArgs...)
+			}
+			subCommandArgs = append([]string{fmt.Sprintf("-plugin-dir=%s", tfPluginDir)}, subCommandArgs...)
 		}
 
 		allArgs := append([]string{subCommand}, subCommandArgs...)
