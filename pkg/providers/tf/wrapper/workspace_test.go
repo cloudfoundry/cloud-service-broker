@@ -16,6 +16,7 @@ package wrapper
 
 import (
 	"context"
+	"github.com/hashicorp/go-version"
 	"os"
 	"os/exec"
 	"path"
@@ -224,7 +225,7 @@ func TestCustomTerraformExecutor(t *testing.T) {
 		},
 		"init": {
 			Input:    exec.Command("terraform", "init", "-no-color"),
-			Expected: exec.Command(customBinary, "init", "-get-plugins=false", pluginsFlag, "-no-color"),
+			Expected: exec.Command(customBinary, "init", pluginsFlag, "-get-plugins=false", "-no-color"),
 		},
 		"import": {
 			Input:    exec.Command("terraform", "import", "-no-color", "tf.resource", "iaas-resource"),
@@ -246,7 +247,8 @@ func TestCustomTerraformExecutor(t *testing.T) {
 		t.Run(tn, func(t *testing.T) {
 			actual := exec.Command("!actual-never-got-called!")
 
-			executor := CustomTerraformExecutor(customBinary, customPlugins, func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
+			tfVersion, _ := version.NewVersion("0.12.0")
+			executor := CustomTerraformExecutor(customBinary, customPlugins, tfVersion, func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
 				actual = c
 				return ExecutionOutput{}, nil
 			})
