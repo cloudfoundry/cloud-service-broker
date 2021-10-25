@@ -15,10 +15,14 @@
 package brokerpak
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
+
+	"github.com/hashicorp/go-version"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/zippy"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
@@ -111,13 +115,85 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 		return err
 	}
 
-	curr := CurrentPlatform()
 	if !mf.AppliesToCurrentPlatform() {
-		return fmt.Errorf("the package %q doesn't contain binaries compatible with the current platform %q", mf.Name, curr.String())
+		return fmt.Errorf("the package %q doesn't contain binaries compatible with the current platform %q", mf.Name, CurrentPlatform().String())
 	}
 
-	bindir := path.Join("bin", curr.Os, curr.Arch)
+	terraformVersion, err := getTerraformVersion(mf)
+	if err != nil {
+		return err
+	}
+
+	if terraformVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
+		return pak.extractPlatformBins12(destination, mf)
+	} else {
+		return pak.extractPlatformBins13(destination, mf)
+	}
+}
+
+func getTerraformVersion(mf *Manifest) (*version.Version, error) {
+	for _, r := range mf.TerraformResources {
+		if r.Name == "terraform" {
+			return version.NewVersion(r.Version)
+		}
+	}
+	return nil, errors.New("terraform not found in manifest")
+}
+
+func (pak *BrokerPakReader) extractPlatformBins12(destination string, mf *Manifest) error {
+	plat := CurrentPlatform()
+	bindir := path.Join("bin", plat.Os, plat.Arch)
 	return pak.contents.ExtractDirectory(bindir, destination)
+}
+
+func (pak *BrokerPakReader) extractPlatformBins13(destination string, mf *Manifest) error {
+	plat := CurrentPlatform()
+	for _, r := range mf.TerraformResources {
+		if strings.HasPrefix(r.Name, "terraform-provider-") {
+			filePath, err := pak.findFileInZip(r.Name, r.Version)
+			if err != nil {
+				return err
+			}
+			if err := pak.contents.ExtractFile(filePath, providerInstallPath(destination, r.Name, r.Version)); err != nil {
+				return fmt.Errorf("error extracting terraform-provider file: %w", err)
+			}
+		} else {
+			file := filepath.Join("bin", plat.Os, plat.Arch, r.Name)
+			if err := pak.contents.ExtractFile(file, destination); err != nil {
+				return fmt.Errorf("error extracting %q to %q: %w", file, destination, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (pak *BrokerPakReader) findFileInZip(name, version string) (string, error) {
+	plat := CurrentPlatform()
+	prefix := path.Join("bin", plat.Os, plat.Arch, fmt.Sprintf("%s_v%s", name, version))
+	var found []string
+
+	for _, f := range pak.contents.List() {
+		if strings.HasPrefix(f.Name, prefix) {
+			found = append(found, f.Name)
+		}
+	}
+
+	switch len(found) {
+	case 1:
+		return found[0], nil
+	case 0:
+		return "", fmt.Errorf("file with prefix %q not found in zip", prefix)
+	default:
+		return "", fmt.Errorf("multiple files found with prefix %q: %s", prefix, strings.Join(found, ", "))
+	}
+}
+
+func providerInstallPath(destination, name, version string) string {
+	suffix := strings.SplitAfterN(name, "terraform-provider-", 2)[1]
+	plat := CurrentPlatform()
+	target := fmt.Sprintf("%s_%s", plat.Os, plat.Arch)
+	return filepath.Join(destination, "registry.terraform.io", "hashicorp", suffix, version, target)
 }
 
 // OpenBrokerPak opens the file at the given path as a BrokerPakReader.
