@@ -53,7 +53,7 @@ func fakeBrokerpak() (string, error) {
 		TerraformResources: []TerraformResource{
 			{
 				Name:        "terraform",
-				Version:     "0.11.9",
+				Version:     "0.12.0",
 				Source:      tfSrc,
 				UrlTemplate: tfSrc,
 			},
