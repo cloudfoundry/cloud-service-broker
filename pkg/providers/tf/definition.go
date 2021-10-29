@@ -373,6 +373,8 @@ func loadTemplate(templatePath string) (string, error) {
 	if templatePath == "" {
 		return "", nil
 	}
+	logger := lager.NewLogger("definition")
+	logger.Info("loading template from:", lager.Data{"templatePath": templatePath})
 	buff, err := os.ReadFile(templatePath)
 
 	if err != nil {

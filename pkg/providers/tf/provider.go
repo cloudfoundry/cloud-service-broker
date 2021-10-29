@@ -18,6 +18,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/spf13/viper"
+
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
@@ -27,6 +31,15 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
+
+const (
+	dynamicHCLEnabled = "brokerpak.updates.enabled"
+)
+
+func init() {
+	viper.BindEnv(dynamicHCLEnabled, "BROKERPAK_UPDATES_ENABLED")
+	viper.SetDefault(dynamicHCLEnabled, false)
+}
 
 // NewTerraformProvider creates a new ServiceProvider backed by Terraform module definitions for provision and bind.
 func NewTerraformProvider(jobRunner *TfJobRunner, logger lager.Logger, serviceDefinition TfServiceDefinitionV1) broker.ServiceProvider {
@@ -44,6 +57,8 @@ type terraformProvider struct {
 	jobRunner         *TfJobRunner
 	serviceDefinition TfServiceDefinitionV1
 }
+
+type BrokerpakUpgrader struct{}
 
 // Provision creates the necessary resources that an instance of this service
 // needs to operate.
@@ -88,12 +103,52 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	err := provider.jobRunner.Update(ctx, tfId, provisionContext.ToMap())
-
-	return models.ServiceInstanceDetails{
+	serviceInstanceDetails := models.ServiceInstanceDetails{
 		OperationId:   tfId,
 		OperationType: models.UpdateOperationType,
-	}, err
+	}
+	err := provider.updateWorkspaceHCL(ctx, provider.serviceDefinition.ProvisionSettings, provisionContext, tfId)
+	if err != nil {
+		return serviceInstanceDetails, err
+	}
+
+	// if err = workspace.Validate(); err != nil {
+	// 	return tfId, err
+	// }
+
+	err = provider.jobRunner.Update(ctx, tfId, provisionContext.ToMap())
+
+	return serviceInstanceDetails, err
+}
+
+func (provider *terraformProvider) updateWorkspaceHCL(ctx context.Context, action TfServiceDefinitionV1Action, provisionContext *varcontext.VarContext, tfId string) error {
+	if viper.GetBool(dynamicHCLEnabled) {
+		workspace, err := wrapper.NewWorkspace(provisionContext.ToMap(), action.Template, action.Templates, []wrapper.ParameterMapping{}, []string{}, []wrapper.ParameterMapping{})
+
+		if err != nil {
+			return fmt.Errorf("error creating workspace: %w", err)
+		}
+
+		deployment, err := db_service.GetTerraformDeploymentById(ctx, tfId)
+		if err != nil {
+			return fmt.Errorf("error creating workspace: %w", err)
+		}
+
+		// get the old terraform state and replace it in the new workspace
+		oldWorkspaceString, err := deployment.GetWorkspace()
+		oldWorkspace, err := wrapper.DeserializeWorkspace(oldWorkspaceString)
+		if err != nil {
+			provider.logger.Error("terraform provider create failed", err)
+			return fmt.Errorf("terraform provider create failed: %w", err)
+		}
+		workspace.State = oldWorkspace.State
+
+		if err := provider.jobRunner.StageJob(ctx, tfId, workspace); err != nil {
+			provider.logger.Error("terraform provider create failed", err)
+			return fmt.Errorf("terraform provider create failed: %w", err)
+		}
+	}
+	return nil
 }
 
 // Bind creates a new backing Terraform job and executes it, waiting on the result.
@@ -200,6 +255,10 @@ func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord mo
 		"tfId":     tfId,
 	})
 
+	if err := provider.updateWorkspaceHCL(ctx, provider.serviceDefinition.BindSettings, vc, tfId); err != nil {
+		return err
+	}
+
 	if err := provider.jobRunner.Destroy(ctx, tfId, vc.ToMap()); err != nil {
 		return err
 	}
@@ -214,6 +273,12 @@ func (provider *terraformProvider) Deprovision(ctx context.Context, instance mod
 	})
 
 	tfId := generateTfId(instance.ID, "")
+
+	err = provider.updateWorkspaceHCL(ctx, provider.serviceDefinition.ProvisionSettings, vc, tfId)
+	if err != nil {
+		return &tfId, err
+	}
+
 	if err := provider.jobRunner.Destroy(ctx, tfId, vc.ToMap()); err != nil {
 		return nil, err
 	}
