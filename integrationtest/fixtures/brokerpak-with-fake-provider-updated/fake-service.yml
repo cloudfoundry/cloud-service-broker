@@ -22,7 +22,7 @@ provision:
     - field_name: provision_output
       type: string
       details: provision output
-    - field_name: update_output_output
+    - field_name: update_output_output_updated
       type: string
       details: update output
 bind:
@@ -33,6 +33,6 @@ bind:
       type: string
       default: ${instance.details["provision_output"]}
   outputs:
-    - field_name: bind_output
+    - field_name: bind_output_updated
       type: string
       details: bind output
