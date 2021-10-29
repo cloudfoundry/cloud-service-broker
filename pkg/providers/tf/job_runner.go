@@ -231,6 +231,7 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 		return err
 	}
 
+	// we may be doing this twice in the case of dynamic HCL, that is fine.
 	inputList, err := workspace.Modules[0].Inputs()
 	if err != nil {
 		return err
@@ -295,8 +296,11 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 // operationFinished closes out the state of the background job so clients that
 // are polling can get the results.
 func (runner *TfJobRunner) operationFinished(err error, workspace *wrapper.TerraformWorkspace, deployment *models.TerraformDeployment) error {
+	// we shouldn't update the status on update when updating the HCL, as the status comes either from the provision call or a previous update
 	if err == nil {
 		lastOperationMessage := ""
+		// maybe do if deployment.LastOperationType != "validation" so we don't do the status update on staging a job.
+		// previously we would only stage a job on provision so state would be empty and the outputs would be null.
 		outputs, err := workspace.Outputs(workspace.Instances[0].InstanceName)
 		if err == nil {
 			if status, ok := outputs["status"]; ok {
