@@ -29,7 +29,7 @@ require (
 	golang.org/x/tools v0.1.7
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gorm.io/driver/mysql v1.1.2
-	gorm.io/driver/sqlite v1.1.6
+	gorm.io/driver/sqlite v1.2.3
 	gorm.io/gorm v1.22.2
 	honnef.co/go/tools v0.3.0-0.dev
 )
@@ -62,7 +62,7 @@ require (
 	github.com/klauspost/compress v1.11.2 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
-	github.com/mattn/go-sqlite3 v1.14.8 // indirect
+	github.com/mattn/go-sqlite3 v1.14.9 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.0.0 // indirect
