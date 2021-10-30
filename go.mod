@@ -28,7 +28,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
 	golang.org/x/tools v0.1.7
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	gorm.io/driver/mysql v1.1.2
+	gorm.io/driver/mysql v1.1.3
 	gorm.io/driver/sqlite v1.2.3
 	gorm.io/gorm v1.22.2
 	honnef.co/go/tools v0.3.0-0.dev
