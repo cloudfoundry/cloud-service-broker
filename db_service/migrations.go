@@ -112,11 +112,15 @@ func RunMigrations(db *gorm.DB) error {
 	}
 
 	migrations[13] = func() error {
-		return db.Migrator().AlterColumn(&models.TerraformDeploymentV3{}, "workspace")
+		// This used to be a migration step that altered TerraformDeployment workspace field type from mediumtext to blob.
+		// That resulted in decreased field capacity (16384K to 64K).
+		// In order to keep the right number of migrations and fix the issue we should keep this migration id and add
+		// one more to update to larger field size.
+		return nil
 	}
 
 	migrations[14] = func() error {
-		return db.Migrator().AlterColumn(&models.TerraformDeploymentV4{}, "workspace")
+		return db.Migrator().AlterColumn(&models.TerraformDeploymentV3{}, "workspace")
 	}
 
 	var lastMigrationNumber = -1
