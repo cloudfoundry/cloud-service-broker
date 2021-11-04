@@ -335,40 +335,8 @@ func (TerraformDeploymentV2) TableName() string {
 	return "terraform_deployments"
 }
 
-// TerraformDeploymentV3 expands the size of the Workspace column to handle deployments where the
-// Terraform workspace is greater than 64K. (mediumtext allows for workspaces up
-// to 16384K.)
+// TerraformDeploymentV3 converts workspace type from mediumtext to mediumblob
 type TerraformDeploymentV3 struct {
-	ID        string `gorm:"primary_key;type:varchar(1024)"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt *time.Time
-
-	// Workspace contains a JSON serialized version of the Terraform workspace.
-	Workspace []byte `gorm:"type:blob"`
-
-	// LastOperationType describes the last operation being performed on the resource.
-	LastOperationType string
-
-	// LastOperationState holds one of the following strings "in progress", "succeeded", "failed".
-	// These mirror the OSB API.
-	LastOperationState string
-
-	// LastOperationMessage is a description that can be passed back to the user.
-	LastOperationMessage string `gorm:"type:text"`
-}
-
-// TableName returns a consistent table name for
-// gorm so multiple structs from different versions of the database all operate
-// on the same table.
-func (TerraformDeploymentV3) TableName() string {
-	return "terraform_deployments"
-}
-
-// TerraformDeploymentV4 expands the size of the Workspace column to handle deployments where the
-// Terraform workspace is greater than 64K. (mediumblob allows for workspaces up
-// to 16384K.)
-type TerraformDeploymentV4 struct {
 	ID        string `gorm:"primary_key;type:varchar(1024)"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -391,7 +359,7 @@ type TerraformDeploymentV4 struct {
 // TableName returns a consistent table name for
 // gorm so multiple structs from different versions of the database all operate
 // on the same table.
-func (TerraformDeploymentV4) TableName() string {
+func (TerraformDeploymentV3) TableName() string {
 	return "terraform_deployments"
 }
 
