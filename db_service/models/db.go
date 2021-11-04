@@ -145,7 +145,7 @@ type CloudOperation CloudOperationV1
 
 // TerraformDeployment holds Terraform state and plan information for resources
 // that use that execution system.
-type TerraformDeployment TerraformDeploymentV4
+type TerraformDeployment TerraformDeploymentV3
 
 func (t *TerraformDeployment) SetWorkspace(value string) error {
 	encrypted, err := encryptorInstance.Encrypt([]byte(value))
