@@ -22,7 +22,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ = Describe("Brokerpak Update", func() {
+var _ = FDescribe("Brokerpak Update", func() {
 	const (
 		provisionParams             = `{"foo":"bar"}`
 		bindParams                  = `{"baz":"quz"}`

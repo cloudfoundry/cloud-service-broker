@@ -107,7 +107,7 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 		OperationId:   tfId,
 		OperationType: models.UpdateOperationType,
 	}
-	err := provider.updateWorkspaceHCL(ctx, provider.serviceDefinition.ProvisionSettings, provisionContext, tfId)
+	err := UpdateWorkspaceHCL(ctx, provider.serviceDefinition.ProvisionSettings, provisionContext, tfId)
 	if err != nil {
 		return serviceInstanceDetails, err
 	}
@@ -121,33 +121,44 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 	return serviceInstanceDetails, err
 }
 
-func (provider *terraformProvider) updateWorkspaceHCL(ctx context.Context, action TfServiceDefinitionV1Action, provisionContext *varcontext.VarContext, tfId string) error {
-	if viper.GetBool(dynamicHCLEnabled) {
-		workspace, err := wrapper.NewWorkspace(provisionContext.ToMap(), action.Template, action.Templates, []wrapper.ParameterMapping{}, []string{}, []wrapper.ParameterMapping{})
-
-		if err != nil {
-			return fmt.Errorf("error creating workspace: %w", err)
-		}
-
-		deployment, err := db_service.GetTerraformDeploymentById(ctx, tfId)
-		if err != nil {
-			return fmt.Errorf("error creating workspace: %w", err)
-		}
-
-		// get the old terraform state and replace it in the new workspace
-		oldWorkspaceString, err := deployment.GetWorkspace()
-		oldWorkspace, err := wrapper.DeserializeWorkspace(oldWorkspaceString)
-		if err != nil {
-			provider.logger.Error("terraform provider create failed", err)
-			return fmt.Errorf("terraform provider create failed: %w", err)
-		}
-		workspace.State = oldWorkspace.State
-
-		if err := provider.jobRunner.StageJob(ctx, tfId, workspace); err != nil {
-			provider.logger.Error("terraform provider create failed", err)
-			return fmt.Errorf("terraform provider create failed: %w", err)
-		}
+func UpdateWorkspaceHCL(ctx context.Context, action TfServiceDefinitionV1Action, provisionContext *varcontext.VarContext, tfId string) error {
+	deployment, err := db_service.GetTerraformDeploymentById(ctx, tfId)
+	if err != nil {
+		return fmt.Errorf("error creating workspace: %w", err)
 	}
+
+	currentWorkspaceString, err := deployment.GetWorkspace()
+	currentWorkspace, err := wrapper.DeserializeWorkspace(currentWorkspaceString)
+	if err != nil {
+		//provider.logger.Error("terraform provider create failed", err)
+		return fmt.Errorf("terraform provider create failed: %w", err)
+	}
+	if !viper.GetBool(dynamicHCLEnabled) {
+		return nil
+	}
+
+	workspace, err := wrapper.NewWorkspace(provisionContext.ToMap(), action.Template, action.Templates, []wrapper.ParameterMapping{}, []string{}, []wrapper.ParameterMapping{})
+	if err != nil {
+		//provider.logger.Error("terraform provider create failed", err)
+		return fmt.Errorf("error creating workspace: %w", err)
+	}
+
+	workspace.State = currentWorkspace.State
+
+	workspaceString, err := workspace.Serialize()
+	if err != nil {
+		//deployment.LastOperationMessage = fmt.Sprintf("couldn't serialize workspace, contact your operator for cleanup: %s", err.Error())
+	}
+
+	if err := deployment.SetWorkspace(workspaceString); err != nil {
+		//deployment.LastOperationMessage = fmt.Sprintf("couldn't save workspace, contact your operator for cleanup: %s", err.Error())
+	}
+
+	if err := db_service.SaveTerraformDeployment(context.Background(), deployment); err != nil {
+		//provider.logger.Error("terraform provider create failed", err)
+		return fmt.Errorf("terraform provider create failed: %w", err)
+	}
+
 	return nil
 }
 
@@ -255,7 +266,8 @@ func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord mo
 		"tfId":     tfId,
 	})
 
-	if err := provider.updateWorkspaceHCL(ctx, provider.serviceDefinition.BindSettings, vc, tfId); err != nil {
+	err := UpdateWorkspaceHCL(ctx, provider.serviceDefinition.BindSettings, vc, tfId)
+	if err != nil {
 		return err
 	}
 
@@ -274,7 +286,7 @@ func (provider *terraformProvider) Deprovision(ctx context.Context, instance mod
 
 	tfId := generateTfId(instance.ID, "")
 
-	err = provider.updateWorkspaceHCL(ctx, provider.serviceDefinition.ProvisionSettings, vc, tfId)
+	err = UpdateWorkspaceHCL(ctx, provider.serviceDefinition.ProvisionSettings, vc, tfId)
 	if err != nil {
 		return &tfId, err
 	}
