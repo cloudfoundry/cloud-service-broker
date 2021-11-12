@@ -22,15 +22,15 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ = FDescribe("Brokerpak Update", func() {
+var _ = Describe("Brokerpak Update", func() {
 	const (
 		provisionParams             = `{"foo":"bar"}`
 		bindParams                  = `{"baz":"quz"}`
-		updateParams                = `{"update_output": "update output value"}`
-		updateOutputStateKey        = `"update_output_output"`
-		updatedUpdateOutputStateKey = `"update_output_output_updated"`
-		updatedOutputHCL            = `output update_output_output_updated { value = "${var.update_output}" }`
-		initialOutputHCL            = `output update_output_output { value = "${var.update_output}" }`
+		updateParams                = `{"update_input": "update output value"}`
+		updateOutputStateKey        = `"update_output"`
+		updatedUpdateOutputStateKey = `"update_output_updated"`
+		updatedOutputHCL            = `output update_output_updated { value = "${var.update_input}" }`
+		initialOutputHCL            = `output update_output { value = "${var.update_input}" }`
 		initialBindingOutputHCL     = `bind_output { value = "${var.provision_output} and bind output value" }`
 		updatedBindingOutputHCL     = `bind_output_updated { value = "${var.provision_output} and bind output value" }`
 		bindingOutputStateKey       = `"bind_output"`
@@ -232,7 +232,7 @@ var _ = FDescribe("Brokerpak Update", func() {
 		workDir = ""
 	})
 
-	When("dynamic HCL is turned off", func() {
+	When("brokerpak updates are disabled", func() {
 		var (
 			serviceInstanceGUID string
 			serviceBindingGUID  string
@@ -250,7 +250,7 @@ var _ = FDescribe("Brokerpak Update", func() {
 			brokerSession.Terminate()
 		})
 
-		It("uses the initial HCL for service instances operations", func() {
+		It("uses the old HCL for service instances operations", func() {
 			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(false)
@@ -282,7 +282,7 @@ var _ = FDescribe("Brokerpak Update", func() {
 
 	})
 
-	When("dynamic HCL is turned on", func() {
+	When("brokerpak updates are enabled", func() {
 		var (
 			serviceInstanceGUID string
 			serviceBindingGUID  string

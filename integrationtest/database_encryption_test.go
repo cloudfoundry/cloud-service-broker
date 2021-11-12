@@ -25,11 +25,11 @@ var _ = Describe("Database Encryption", func() {
 	const (
 		provisionParams           = `{"foo":"bar"}`
 		bindParams                = `{"baz":"quz"}`
-		updateParams              = `{"update_output": "update output value"}`
+		updateParams              = `{"update_input": "update output value"}`
 		provisionOutput           = `{"provision_output":"provision output value"}`
 		provisionOutputStateValue = `value = \"provision output value\"`
-		updateOutput              = `{"provision_output":"provision output value","update_output_output":"update output value"}`
-		updateOutputStateValue    = `value = \"${var.update_output}\"`
+		updateOutput              = `{"provision_output":"provision output value","update_output":"update output value"}`
+		updateOutputStateValue    = `value = \"${var.update_input}\"`
 		bindOutput                = `{"bind_output":"provision output value and bind output value"}`
 		bindOutputStateValue      = `value = \"${var.provision_output} and bind output value\"`
 		tfStateKey                = `"tfstate":`

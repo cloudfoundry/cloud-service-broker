@@ -14,6 +14,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models/fakes"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
@@ -28,55 +29,37 @@ import (
 	"gorm.io/gorm"
 )
 
-type jammingEncryptor struct {
-	Error        bool
-	EncryptError bool
-}
+var _ = Describe("WorkspaceUpdator", func() {
+	var (
+		workspaceUpdator tf.WorkspaceUpdator
+		vc               *varcontext.VarContext
+	)
 
-func (d jammingEncryptor) Encrypt(plaintext []byte) ([]byte, error) {
-	if d.EncryptError {
-		return nil, fmt.Errorf("error encrypting")
-	}
-	return []byte("{"), nil
-}
-
-func (d jammingEncryptor) Decrypt(ciphertext []byte) ([]byte, error) {
-	var err error
-	var result = ciphertext
-	if d.Error {
-		err = fmt.Errorf("can't decrypt")
-	} else {
-		result = []byte("{")
-	}
-	return result, err
-}
-
-var _ = FDescribe("WorkspaceUpdator", func() {
 	const terraformStateAfterProvision = `
-{
-  "version": 4,
-  "terraform_version": "0.13.7",
-  "serial": 17,
-  "lineage": "f9da4641-98dd-829a-1406-197a3432356c",
-  "outputs": {
-    },
-  "resources": [
-    {
-      "mode": "managed",
-      "type": "azurerm_sql_database",
-      "name": "azure_sql_db",
-      "provider": "provider[\"registry.terraform.io/hashicorp/azurerm\"]",
-      "instances": [
-        {
-          "schema_version": 1,
-          "attributes": {
-            "name": "dbname"
-        }
-      ]
-    }],
-`
+			{
+			  "version": 4,
+			  "terraform_version": "0.13.7",
+			  "serial": 17,
+			  "lineage": "f9da4641-98dd-829a-1406-197a3432356c",
+			  "outputs": {
+				},
+			  "resources": [
+				{
+				  "mode": "managed",
+				  "type": "azurerm_sql_database",
+				  "name": "azure_sql_db",
+				  "provider": "provider[\"registry.terraform.io/hashicorp/azurerm\"]",
+				  "instances": [
+					{
+					  "schema_version": 1,
+					  "attributes": {
+						"name": "dbname"
+					}
+				  ]
+				}],
+			`
 
-	var updatedProvisionSettings = tf.TfServiceDefinitionV1Action{
+	updatedProvisionSettings := tf.TfServiceDefinitionV1Action{
 		PlanInputs: []broker.BrokerVariable{
 			{
 				FieldName: "resourceGroup",
@@ -117,15 +100,43 @@ var _ = FDescribe("WorkspaceUpdator", func() {
 
 		return wrapper.ExecutionOutput{StdOut: "", StdErr: ""}, nil
 	}
-	workspaceUpdator := tf.WorkspaceUpdator{}
+
+	setUpProvider := func(serviceDefinition tf.TfServiceDefinitionV1) broker.ServiceProvider {
+		testLogger := utils.NewLogger("test")
+		jobRunner := tf.NewTfJobRunnerForProject(map[string]string{})
+		jobRunner.Executor = dummyExecutor
+		return tf.NewTerraformProvider(jobRunner, testLogger, serviceDefinition)
+	}
+
+	pollOperationSucceeded := func(operationId string) func() string {
+		return func() string {
+			deployment, _ := db_service.GetTerraformDeploymentById(context.TODO(), operationId)
+			return deployment.LastOperationState
+		}
+	}
+
+	expectModuleToBeInitialHCL := func(ws *wrapper.TerraformWorkspace) {
+		Expect(ws.Modules[0].Definition).To(ContainSubstring(`administrator_login = var.username`))
+		inputs, _ := ws.Modules[0].Inputs()
+		Expect(inputs).To(ConsistOf("resourceGroup", "username"))
+		outputs, _ := ws.Modules[0].Outputs()
+		Expect(outputs).To(HaveLen(0))
+	}
+
+	getTerraformWorkspace := func(operationId string) *wrapper.TerraformWorkspace {
+		deployment, _ := db_service.GetTerraformDeploymentById(context.TODO(), operationId)
+		ws, err := wrapper.DeserializeWorkspace(string(deployment.Workspace))
+		Expect(err).ToNot(HaveOccurred())
+		return ws
+	}
 
 	BeforeEach(func() {
 		var err error
 		var provider broker.ServiceProvider
 
 		db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+		Expect(err).NotTo(HaveOccurred())
 		db_service.DbConnection = db // awful
-		defer os.Remove("test.sqlite3")
 		models.SetEncryptor(noopencryptor.NoopEncryptor{})
 		Expect(err).NotTo(HaveOccurred())
 		db.Migrator().CreateTable(models.ServiceInstanceDetails{})
@@ -133,12 +144,7 @@ var _ = FDescribe("WorkspaceUpdator", func() {
 		db.Migrator().CreateTable(models.ProvisionRequestDetails{})
 		db.Migrator().CreateTable(models.TerraformDeployment{})
 
-		testLogger := utils.NewLogger("test")
-		provisionContext, _ := varcontext.Builder().
-			MergeMap(map[string]interface{}{
-				"tf_id": "an-instance-id",
-			}).
-			Build()
+		vc, _ = varcontext.Builder().Build()
 
 		provisionSettings := tf.TfServiceDefinitionV1Action{
 			PlanInputs: []broker.BrokerVariable{
@@ -168,45 +174,35 @@ var _ = FDescribe("WorkspaceUpdator", func() {
 				}
 				`,
 		}
-		serviceDefinition := tf.TfServiceDefinitionV1{
+
+		provider = setUpProvider(tf.TfServiceDefinitionV1{
 			ProvisionSettings: provisionSettings,
-		}
-		jobRunner := tf.NewTfJobRunnerForProject(map[string]string{})
-		jobRunner.Executor = dummyExecutor
-		provider = tf.NewTerraformProvider(jobRunner, testLogger, serviceDefinition)
+		})
+
+		provisionContext, _ := varcontext.Builder().
+			MergeMap(map[string]interface{}{
+				"tf_id": "an-instance-id",
+			}).
+			Build()
 		instanceDetails, _ := provider.Provision(context.TODO(), provisionContext)
 
-		terraformDeploymentFunc := func() string {
-			deployment, _ := db_service.GetTerraformDeploymentById(context.TODO(), instanceDetails.OperationId)
-			return deployment.LastOperationState
-		}
-		Eventually(terraformDeploymentFunc).Should(Equal("succeeded"))
-		deployment, _ := db_service.GetTerraformDeploymentById(context.TODO(), instanceDetails.OperationId)
-		ws, _ := wrapper.DeserializeWorkspace(string(deployment.Workspace))
-		Expect(ws.Modules[0].Definition).To(ContainSubstring(`administrator_login = var.username`))
-		inputs, _ := ws.Modules[0].Inputs()
-		Expect(inputs).To(ConsistOf("resourceGroup", "username"))
-		outputs, _ := ws.Modules[0].Outputs()
-		Expect(outputs).To(HaveLen(0))
+		Eventually(pollOperationSucceeded(instanceDetails.OperationId)).Should(Equal("succeeded"))
+		ws := getTerraformWorkspace(instanceDetails.OperationId)
+		expectModuleToBeInitialHCL(ws)
 		Expect(string(ws.State)).To(Equal(terraformStateAfterProvision))
 
 	})
 
-	When("dynamic HCL enabled", func() {
+	When("brokerpak updates enabled", func() {
 		BeforeEach(func() {
 			viper.Set("brokerpak.updates.enabled", true)
+
 		})
 		When("there's a record in the database", func() {
 			It("updates the module definition and variables", func() {
-				vc, _ := varcontext.Builder().
-					MergeMap(map[string]interface{}{
-						"domain": "the domain value",
-					}).
-					Build()
+				workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id")
 
-				workspaceUpdator.UpdateWorkspaceHCL(nil, updatedProvisionSettings, vc, "an-instance-id")
-				terraformDeployment, _ := db_service.GetTerraformDeploymentById(context.TODO(), "an-instance-id")
-				ws, _ := wrapper.DeserializeWorkspace(string(terraformDeployment.Workspace))
+				ws := getTerraformWorkspace("an-instance-id")
 				Expect(ws.Modules[0].Definition).To(ContainSubstring(`administrator_login = random_string.username.result`))
 				inputs, _ := ws.Modules[0].Inputs()
 				Expect(inputs).To(ConsistOf("resourceGroup"))
@@ -219,34 +215,37 @@ var _ = FDescribe("WorkspaceUpdator", func() {
 		Context("error scenarios", func() {
 			When("there is no record in the database", func() {
 				It("returns the error", func() {
-					vc, _ := varcontext.Builder().Build()
-					err := workspaceUpdator.UpdateWorkspaceHCL(nil, updatedProvisionSettings, vc, "an-instance-id-with-no-workspace")
+					err := workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id-with-no-workspace")
 					Expect(err).To(HaveOccurred())
 					Expect(err).To(MatchError("record not found"))
 				})
 			})
 			When("cannot get the existing workspace", func() {
 				It("returns the error", func() {
-					vc, _ := varcontext.Builder().Build()
+					encryptor := fakes.FakeEncryptor{}
+					encryptor.DecryptReturns(nil, fmt.Errorf("can't decrypt"))
+					models.SetEncryptor(&encryptor)
 
-					models.SetEncryptor(jammingEncryptor{Error: true})
-					err := workspaceUpdator.UpdateWorkspaceHCL(nil, updatedProvisionSettings, vc, "an-instance-id")
+					err := workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id")
+
 					Expect(err).To(HaveOccurred())
 					Expect(err).To(MatchError("can't decrypt"))
 				})
 			})
 			When("cannot deserialize the workspace", func() {
 				It("returns the error", func() {
-					vc, _ := varcontext.Builder().Build()
-					models.SetEncryptor(jammingEncryptor{Error: false})
-					err := workspaceUpdator.UpdateWorkspaceHCL(nil, updatedProvisionSettings, vc, "an-instance-id")
+					encryptor := fakes.FakeEncryptor{}
+					encryptor.DecryptReturns([]byte("{"), nil)
+					models.SetEncryptor(&encryptor)
+
+					err := workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id")
+
 					Expect(err).To(HaveOccurred())
 					Expect(err).To(MatchError("unexpected end of JSON input"))
 				})
 			})
 			When("cannot create a workspace", func() {
 				It("returns the error", func() {
-					vc, _ := varcontext.Builder().Build()
 					jammedOperationSettings := tf.TfServiceDefinitionV1Action{
 						Template: `
 				resource "azurerm_mssql_database" "azure_sql_db" {
@@ -254,23 +253,7 @@ var _ = FDescribe("WorkspaceUpdator", func() {
 				}
 				`,
 					}
-					err := workspaceUpdator.UpdateWorkspaceHCL(nil, jammedOperationSettings, vc, "an-instance-id")
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("Invalid expression"))
-				})
-			})
-
-			When("cannot serialize a workspace", func() {
-				It("returns the error", func() {
-					vc, _ := varcontext.Builder().Build()
-					jammedOperationSettings := tf.TfServiceDefinitionV1Action{
-						Template: `
-				resource "azurerm_mssql_database" "azure_sql_db" {
-				  name                = 
-				}
-				`,
-					}
-					err := workspaceUpdator.UpdateWorkspaceHCL(nil, jammedOperationSettings, vc, "an-instance-id")
+					err := workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), jammedOperationSettings, vc, "an-instance-id")
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(ContainSubstring("Invalid expression"))
 				})
@@ -278,30 +261,34 @@ var _ = FDescribe("WorkspaceUpdator", func() {
 
 			When("cannot set a workspace", func() {
 				It("returns the error", func() {
-					vc, _ := varcontext.Builder().Build()
-					models.SetEncryptor(jammingEncryptor{EncryptError: true})
-					err := workspaceUpdator.UpdateWorkspaceHCL(nil, updatedProvisionSettings, vc, "an-instance-id")
+					encryptor := fakes.FakeEncryptor{}
+					encryptor.DecryptReturns([]byte("{}"), nil)
+					encryptor.EncryptReturns(nil, fmt.Errorf("error encrypting"))
+					models.SetEncryptor(&encryptor)
+					err := workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id")
 					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError("unexpected end of JSON input"))
+					Expect(err).To(MatchError("error encrypting"))
 				})
 			})
 
 			When("cannot save the workspace", func() {
 				It("returns the error", func() {
-					vc, _ := varcontext.Builder().Build()
-					db, mock, err := sqlmock.New() // mock sql.DB
+					db, mock, err := sqlmock.New()
+					Expect(err).ShouldNot(HaveOccurred())
+					mock.ExpectQuery("select sqlite_version()").WillReturnRows(sqlmock.NewRows([]string{"version"}).AddRow("4.5.6"))
 					mock.ExpectQuery("SELECT*").WillReturnRows(sqlmock.NewRows([]string{"id", "workspace"}).
 						AddRow("id", "{}"))
 					mock.ExpectBegin()
 					mock.ExpectQuery("UPDATE*").WillReturnError(fmt.Errorf("error saving to db"))
-					Expect(err).ShouldNot(HaveOccurred())
-
 					dialector := sqlite.Dialector{
 						Conn: db,
 					}
-					dab, err := gorm.Open(dialector, &gorm.Config{})
-					db_service.DbConnection = dab
-					err = workspaceUpdator.UpdateWorkspaceHCL(nil, updatedProvisionSettings, vc, "an-instance-id")
+					mockDbConnection, err := gorm.Open(dialector, &gorm.Config{})
+					Expect(err).ShouldNot(HaveOccurred())
+					db_service.DbConnection = mockDbConnection
+
+					err = workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id")
+
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(ContainSubstring("error saving to db"))
 				})
@@ -309,26 +296,16 @@ var _ = FDescribe("WorkspaceUpdator", func() {
 		})
 	})
 
-	When("dynamic HCL is not enabled", func() {
+	When("brokerpak updates are not enabled", func() {
 		BeforeEach(func() {
 			viper.Set("brokerpak.updates.enabled", false)
 		})
 		When("there's a record in the database", func() {
 			It("does not update the module definition and variables", func() {
-				vc, _ := varcontext.Builder().
-					MergeMap(map[string]interface{}{
-						"domain": "the domain value",
-					}).
-					Build()
+				workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id")
 
-				workspaceUpdator.UpdateWorkspaceHCL(nil, updatedProvisionSettings, vc, "an-instance-id")
-				terraformDeployment, _ := db_service.GetTerraformDeploymentById(context.TODO(), "an-instance-id")
-				ws, _ := wrapper.DeserializeWorkspace(string(terraformDeployment.Workspace))
-				Expect(ws.Modules[0].Definition).To(ContainSubstring(`administrator_login = var.username`))
-				inputs, _ := ws.Modules[0].Inputs()
-				Expect(inputs).To(ConsistOf("resourceGroup", "username"))
-				outputs, _ := ws.Modules[0].Outputs()
-				Expect(outputs).To(HaveLen(0))
+				ws := getTerraformWorkspace("an-instance-id")
+				expectModuleToBeInitialHCL(ws)
 				Expect(string(ws.State)).To(Equal(terraformStateAfterProvision))
 
 			})
