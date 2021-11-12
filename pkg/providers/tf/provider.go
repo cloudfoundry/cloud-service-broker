@@ -58,6 +58,49 @@ type terraformProvider struct {
 	serviceDefinition TfServiceDefinitionV1
 }
 
+type WorkspaceUpdator struct{}
+
+func (wu WorkspaceUpdator) UpdateWorkspaceHCL(ctx context.Context, action TfServiceDefinitionV1Action, operationContext *varcontext.VarContext, tfId string) error {
+	if !viper.GetBool(dynamicHCLEnabled) {
+		return nil
+	}
+	deployment, err := db_service.GetTerraformDeploymentById(ctx, tfId)
+	if err != nil {
+		return err
+	}
+	currentWorkspaceString, err := deployment.GetWorkspace()
+	if err != nil {
+		return err
+	}
+
+	currentWorkspace, err := wrapper.DeserializeWorkspace(currentWorkspaceString)
+	if err != nil {
+		return err
+	}
+
+	workspace, err := wrapper.NewWorkspace(operationContext.ToMap(), action.Template, action.Templates, []wrapper.ParameterMapping{}, []string{}, []wrapper.ParameterMapping{})
+	if err != nil {
+		return err
+	}
+
+	workspace.State = currentWorkspace.State
+
+	workspaceString, err := workspace.Serialize()
+	if err != nil {
+		return err
+	}
+
+	if err := deployment.SetWorkspace(workspaceString); err != nil {
+		return err
+	}
+
+	if err := db_service.SaveTerraformDeployment(context.Background(), deployment); err != nil {
+		return fmt.Errorf("terraform provider create failed: %w", err)
+	}
+
+	return nil
+}
+
 var workspaceUpdator = WorkspaceUpdator{}
 
 // Provision creates the necessary resources that an instance of this service
@@ -103,13 +146,9 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	serviceInstanceDetails := models.ServiceInstanceDetails{
-		OperationId:   tfId,
-		OperationType: models.UpdateOperationType,
-	}
 	err := workspaceUpdator.UpdateWorkspaceHCL(ctx, provider.serviceDefinition.ProvisionSettings, provisionContext, tfId)
 	if err != nil {
-		return serviceInstanceDetails, err
+		return models.ServiceInstanceDetails{}, err
 	}
 
 	// if err = workspace.Validate(); err != nil {
@@ -118,50 +157,11 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 
 	err = provider.jobRunner.Update(ctx, tfId, provisionContext.ToMap())
 
+	serviceInstanceDetails := models.ServiceInstanceDetails{
+		OperationId:   tfId,
+		OperationType: models.UpdateOperationType,
+	}
 	return serviceInstanceDetails, err
-}
-
-type WorkspaceUpdator struct{}
-
-func (wu WorkspaceUpdator) UpdateWorkspaceHCL(ctx context.Context, action TfServiceDefinitionV1Action, operationContext *varcontext.VarContext, tfId string) error {
-	if !viper.GetBool(dynamicHCLEnabled) {
-		return nil
-	}
-	deployment, err := db_service.GetTerraformDeploymentById(ctx, tfId)
-	if err != nil {
-		return err
-	}
-	currentWorkspaceString, err := deployment.GetWorkspace()
-	if err != nil {
-		return err
-	}
-
-	currentWorkspace, err := wrapper.DeserializeWorkspace(currentWorkspaceString)
-	if err != nil {
-		return err
-	}
-
-	workspace, err := wrapper.NewWorkspace(operationContext.ToMap(), action.Template, action.Templates, []wrapper.ParameterMapping{}, []string{}, []wrapper.ParameterMapping{})
-	if err != nil {
-		return err
-	}
-
-	workspace.State = currentWorkspace.State
-
-	workspaceString, err := workspace.Serialize() //cant test error
-	if err != nil {
-		return err
-	}
-
-	if err := deployment.SetWorkspace(workspaceString); err != nil {
-		return err
-	}
-
-	if err := db_service.SaveTerraformDeployment(context.Background(), deployment); err != nil {
-		return fmt.Errorf("terraform provider create failed: %w", err)
-	}
-
-	return nil
 }
 
 // Bind creates a new backing Terraform job and executes it, waiting on the result.
@@ -290,7 +290,7 @@ func (provider *terraformProvider) Deprovision(ctx context.Context, instance mod
 
 	err = workspaceUpdator.UpdateWorkspaceHCL(ctx, provider.serviceDefinition.ProvisionSettings, vc, tfId)
 	if err != nil {
-		return &tfId, err
+		return nil, err
 	}
 
 	if err := provider.jobRunner.Destroy(ctx, tfId, vc.ToMap()); err != nil {
