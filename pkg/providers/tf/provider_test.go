@@ -29,9 +29,9 @@ import (
 	"gorm.io/gorm"
 )
 
-var _ = Describe("WorkspaceUpdator", func() {
+var _ = Describe("WorkspaceUpdater", func() {
 	var (
-		workspaceUpdator tf.WorkspaceUpdator
+		workspaceUpdator tf.WorkspaceUpdater
 		vc               *varcontext.VarContext
 	)
 

@@ -58,9 +58,9 @@ type terraformProvider struct {
 	serviceDefinition TfServiceDefinitionV1
 }
 
-type WorkspaceUpdator struct{}
+type WorkspaceUpdater struct{}
 
-func (wu WorkspaceUpdator) UpdateWorkspaceHCL(ctx context.Context, action TfServiceDefinitionV1Action, operationContext *varcontext.VarContext, tfId string) error {
+func (wu WorkspaceUpdater) UpdateWorkspaceHCL(ctx context.Context, action TfServiceDefinitionV1Action, operationContext *varcontext.VarContext, tfId string) error {
 	if !viper.GetBool(dynamicHCLEnabled) {
 		return nil
 	}
@@ -101,7 +101,7 @@ func (wu WorkspaceUpdator) UpdateWorkspaceHCL(ctx context.Context, action TfServ
 	return nil
 }
 
-var workspaceUpdator = WorkspaceUpdator{}
+var workspaceUpdator = WorkspaceUpdater{}
 
 // Provision creates the necessary resources that an instance of this service
 // needs to operate.
@@ -146,16 +146,11 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	err := workspaceUpdator.UpdateWorkspaceHCL(ctx, provider.serviceDefinition.ProvisionSettings, provisionContext, tfId)
-	if err != nil {
+	if err := workspaceUpdator.UpdateWorkspaceHCL(ctx, provider.serviceDefinition.ProvisionSettings, provisionContext, tfId); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	// if err = workspace.Validate(); err != nil {
-	// 	return tfId, err
-	// }
-
-	err = provider.jobRunner.Update(ctx, tfId, provisionContext.ToMap())
+	err := provider.jobRunner.Update(ctx, tfId, provisionContext.ToMap())
 
 	serviceInstanceDetails := models.ServiceInstanceDetails{
 		OperationId:   tfId,
@@ -268,8 +263,7 @@ func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord mo
 		"tfId":     tfId,
 	})
 
-	err := workspaceUpdator.UpdateWorkspaceHCL(ctx, provider.serviceDefinition.BindSettings, vc, tfId)
-	if err != nil {
+	if err := workspaceUpdator.UpdateWorkspaceHCL(ctx, provider.serviceDefinition.BindSettings, vc, tfId); err != nil {
 		return err
 	}
 
@@ -288,8 +282,7 @@ func (provider *terraformProvider) Deprovision(ctx context.Context, instance mod
 
 	tfId := generateTfId(instance.ID, "")
 
-	err = workspaceUpdator.UpdateWorkspaceHCL(ctx, provider.serviceDefinition.ProvisionSettings, vc, tfId)
-	if err != nil {
+	if err := workspaceUpdator.UpdateWorkspaceHCL(ctx, provider.serviceDefinition.ProvisionSettings, vc, tfId); err != nil {
 		return nil, err
 	}
 
