@@ -94,6 +94,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 			},
 		},
 	}
+
 	dummyExecutor := func(ctx context.Context, cmd *exec.Cmd) (wrapper.ExecutionOutput, error) {
 		d1 := []byte(terraformStateAfterProvision)
 		os.WriteFile(path.Join(cmd.Dir, "terraform.tfstate"), d1, 0644)
@@ -110,21 +111,25 @@ var _ = Describe("WorkspaceUpdater", func() {
 
 	pollOperationSucceeded := func(operationId string) func() string {
 		return func() string {
-			deployment, _ := db_service.GetTerraformDeploymentById(context.TODO(), operationId)
+			deployment, err := db_service.GetTerraformDeploymentById(context.TODO(), operationId)
+			Expect(err).NotTo(HaveOccurred())
 			return deployment.LastOperationState
 		}
 	}
 
 	expectModuleToBeInitialHCL := func(ws *wrapper.TerraformWorkspace) {
 		Expect(ws.Modules[0].Definition).To(ContainSubstring(`administrator_login = var.username`))
-		inputs, _ := ws.Modules[0].Inputs()
+		inputs, err := ws.Modules[0].Inputs()
+		Expect(err).NotTo(HaveOccurred())
 		Expect(inputs).To(ConsistOf("resourceGroup", "username"))
-		outputs, _ := ws.Modules[0].Outputs()
+		outputs, err := ws.Modules[0].Outputs()
+		Expect(err).NotTo(HaveOccurred())
 		Expect(outputs).To(HaveLen(0))
 	}
 
 	getTerraformWorkspace := func(operationId string) *wrapper.TerraformWorkspace {
-		deployment, _ := db_service.GetTerraformDeploymentById(context.TODO(), operationId)
+		deployment, err := db_service.GetTerraformDeploymentById(context.TODO(), operationId)
+		Expect(err).NotTo(HaveOccurred())
 		ws, err := wrapper.DeserializeWorkspace(string(deployment.Workspace))
 		Expect(err).ToNot(HaveOccurred())
 		return ws
@@ -144,7 +149,8 @@ var _ = Describe("WorkspaceUpdater", func() {
 		db.Migrator().CreateTable(models.ProvisionRequestDetails{})
 		db.Migrator().CreateTable(models.TerraformDeployment{})
 
-		vc, _ = varcontext.Builder().Build()
+		vc, err = varcontext.Builder().Build()
+		Expect(err).NotTo(HaveOccurred())
 
 		provisionSettings := tf.TfServiceDefinitionV1Action{
 			PlanInputs: []broker.BrokerVariable{
@@ -179,12 +185,14 @@ var _ = Describe("WorkspaceUpdater", func() {
 			ProvisionSettings: provisionSettings,
 		})
 
-		provisionContext, _ := varcontext.Builder().
+		provisionContext, err := varcontext.Builder().
 			MergeMap(map[string]interface{}{
 				"tf_id": "an-instance-id",
 			}).
 			Build()
-		instanceDetails, _ := provider.Provision(context.TODO(), provisionContext)
+		Expect(err).NotTo(HaveOccurred())
+		instanceDetails, err := provider.Provision(context.TODO(), provisionContext)
+		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(pollOperationSucceeded(instanceDetails.OperationId)).Should(Equal("succeeded"))
 		ws := getTerraformWorkspace(instanceDetails.OperationId)
@@ -198,20 +206,23 @@ var _ = Describe("WorkspaceUpdater", func() {
 			viper.Set("brokerpak.updates.enabled", true)
 
 		})
+
 		When("there's a record in the database", func() {
 			It("updates the module definition and variables", func() {
 				workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id")
 
 				ws := getTerraformWorkspace("an-instance-id")
 				Expect(ws.Modules[0].Definition).To(ContainSubstring(`administrator_login = random_string.username.result`))
-				inputs, _ := ws.Modules[0].Inputs()
+				inputs, err := ws.Modules[0].Inputs()
+				Expect(err).NotTo(HaveOccurred())
 				Expect(inputs).To(ConsistOf("resourceGroup"))
-				outputs, _ := ws.Modules[0].Outputs()
+				outputs, err := ws.Modules[0].Outputs()
+				Expect(err).NotTo(HaveOccurred())
 				Expect(outputs).To(ConsistOf("username"))
 				Expect(string(ws.State)).To(Equal(terraformStateAfterProvision))
-
 			})
 		})
+
 		Context("error scenarios", func() {
 			When("there is no record in the database", func() {
 				It("returns the error", func() {
@@ -220,6 +231,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 					Expect(err).To(MatchError("record not found"))
 				})
 			})
+
 			When("cannot get the existing workspace", func() {
 				It("returns the error", func() {
 					encryptor := fakes.FakeEncryptor{}
@@ -232,6 +244,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 					Expect(err).To(MatchError("can't decrypt"))
 				})
 			})
+
 			When("cannot deserialize the workspace", func() {
 				It("returns the error", func() {
 					encryptor := fakes.FakeEncryptor{}
@@ -244,6 +257,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 					Expect(err).To(MatchError("unexpected end of JSON input"))
 				})
 			})
+
 			When("cannot create a workspace", func() {
 				It("returns the error", func() {
 					jammedOperationSettings := tf.TfServiceDefinitionV1Action{
@@ -300,6 +314,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 		BeforeEach(func() {
 			viper.Set("brokerpak.updates.enabled", false)
 		})
+
 		When("there's a record in the database", func() {
 			It("does not update the module definition and variables", func() {
 				workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id")
@@ -307,7 +322,6 @@ var _ = Describe("WorkspaceUpdater", func() {
 				ws := getTerraformWorkspace("an-instance-id")
 				expectModuleToBeInitialHCL(ws)
 				Expect(string(ws.State)).To(Equal(terraformStateAfterProvision))
-
 			})
 		})
 	})
