@@ -29,7 +29,7 @@ require (
 	golang.org/x/tools v0.1.8
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	gorm.io/driver/mysql v1.2.0
+	gorm.io/driver/mysql v1.2.1
 	gorm.io/driver/sqlite v1.2.6
 	gorm.io/gorm v1.22.4
 	honnef.co/go/tools v0.3.0-0.dev
