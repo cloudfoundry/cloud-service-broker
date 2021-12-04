@@ -26,7 +26,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
-	golang.org/x/tools v0.1.7
+	golang.org/x/tools v0.1.8
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gorm.io/driver/mysql v1.2.0
@@ -86,10 +86,10 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/zclconf/go-cty v1.8.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
-	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
-	golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34 // indirect
-	golang.org/x/text v0.3.6 // indirect
+	golang.org/x/mod v0.5.1 // indirect
+	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
+	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 // indirect
+	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/api v0.56.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
