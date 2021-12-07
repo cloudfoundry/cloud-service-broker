@@ -585,17 +585,15 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 		RawContext          string
 		OriginatingIdentity map[string]interface{}
 		// precedence order - lowest number should win
-		UserParams         string                 // 4
-		ProvisionOverrides map[string]interface{} // 3
-		ServiceProperties  map[string]interface{} // 2
-		DefaultOverride    string                 // 5
-		GlobalDefaults     string                 // 6
-		ProvisionDetails   string                 // 5
-		ExpectedError      error
-		ExpectedContext    map[string]interface{}
+		MergedUserProvidedParams string                 // 4
+		ProvisionOverrides       map[string]interface{} // 3
+		ServiceProperties        map[string]interface{} // 2
+		DefaultOverride          string                 // 5
+		GlobalDefaults           string                 // 6
+		ExpectedError            error
+		ExpectedContext          map[string]interface{}
 	}{
 		"empty": {
-			UserParams:        "",
 			ServiceProperties: map[string]interface{}{},
 			ExpectedContext: map[string]interface{}{
 				"location":            "us",
@@ -606,7 +604,6 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			},
 		},
 		"includes request context information": {
-			UserParams: "",
 			RawContext: `{"platform": "cloudfoundry", "organization_name": "acceptance"}`,
 			OriginatingIdentity: map[string]interface{}{
 				"platform": "cloudfoundry",
@@ -630,7 +627,6 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 		},
 		"service has missing param": {
 			ServiceProperties: map[string]interface{}{"maybe-missing": "custom"}, // 2
-			UserParams:        "",                                                // 4
 			ExpectedContext: map[string]interface{}{
 				"location":            "us",
 				"name":                "name-us",
@@ -640,8 +636,8 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			},
 		},
 		"location gets truncated": {
-			ServiceProperties: map[string]interface{}{},            // 2
-			UserParams:        `{"location": "averylonglocation"}`, // 4
+			ServiceProperties:        map[string]interface{}{},            // 2
+			MergedUserProvidedParams: `{"location": "averylonglocation"}`, // 4
 			ExpectedContext: map[string]interface{}{
 				"location":            "averylongl",
 				"name":                "name-averylonglocation",
@@ -651,8 +647,8 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			},
 		},
 		"user location and name": {
-			ServiceProperties: map[string]interface{}{},           // 2
-			UserParams:        `{"location": "eu", "name":"foo"}`, // 4
+			ServiceProperties:        map[string]interface{}{},           // 2
+			MergedUserProvidedParams: `{"location": "eu", "name":"foo"}`, // 4
 			ExpectedContext: map[string]interface{}{
 				"location":            "eu",
 				"name":                "foo",
@@ -662,8 +658,8 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			},
 		},
 		"user tries to overwrite service var": {
-			ServiceProperties: map[string]interface{}{"service-provided": "custom"},          // 2
-			UserParams:        `{"location": "eu", "name":"foo", "service-provided":"test"}`, // 4
+			ServiceProperties:        map[string]interface{}{"service-provided": "custom"},          // 2
+			MergedUserProvidedParams: `{"location": "eu", "name":"foo", "service-provided":"test"}`, // 4
 			ExpectedContext: map[string]interface{}{
 				"location":            "eu",
 				"name":                "foo",
@@ -675,7 +671,6 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 		},
 		"operator defaults override computed defaults": {
 			ServiceProperties: map[string]interface{}{}, // 2
-			UserParams:        "",                       // 4
 			DefaultOverride:   `{"location":"eu"}`,      // 5
 			GlobalDefaults:    `{"location":"az"}`,      // 6
 			ExpectedContext: map[string]interface{}{
@@ -687,10 +682,10 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			},
 		},
 		"user values override operator defaults": {
-			ServiceProperties: map[string]interface{}{}, // 2
-			UserParams:        `{"location":"nz"}`,      // 4
-			DefaultOverride:   `{"location":"eu"}`,      // 5
-			GlobalDefaults:    "{}",
+			ServiceProperties:        map[string]interface{}{}, // 2
+			MergedUserProvidedParams: `{"location":"nz"}`,      // 4
+			DefaultOverride:          `{"location":"eu"}`,      // 5
+			GlobalDefaults:           "{}",
 			ExpectedContext: map[string]interface{}{
 				"location":            "nz",
 				"name":                "name-nz",
@@ -700,10 +695,10 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			},
 		},
 		"operator defaults are not evaluated": {
-			ServiceProperties: map[string]interface{}{},     // 2
-			UserParams:        `{"location":"us"}`,          // 4
-			DefaultOverride:   `{"name":"foo-${location}"}`, // 5
-			GlobalDefaults:    "{}",
+			ServiceProperties:        map[string]interface{}{},     // 2
+			MergedUserProvidedParams: `{"location":"us"}`,          // 4
+			DefaultOverride:          `{"name":"foo-${location}"}`, // 5
+			GlobalDefaults:           "{}",
 			ExpectedContext: map[string]interface{}{
 				"location":            "us",
 				"name":                "foo-${location}",
@@ -713,15 +708,15 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			},
 		},
 		"invalid-request": {
-			UserParams:    `{"name":"some-name-that-is-longer-than-thirty-characters"}`,
-			ExpectedError: errors.New("1 error(s) occurred: name: String length must be less than or equal to 30"),
+			MergedUserProvidedParams: `{"name":"some-name-that-is-longer-than-thirty-characters"}`,
+			ExpectedError:            errors.New("1 error(s) occurred: name: String length must be less than or equal to 30"),
 		},
 		"provision_overrides override user params and global_defaults but not computed defaults": {
-			ServiceProperties:  map[string]interface{}{},                 // 2
-			ProvisionOverrides: map[string]interface{}{"location": "eu"}, // 3
-			UserParams:         `{"location":"us"}`,                      // 4
-			DefaultOverride:    "{}",                                     // 5
-			GlobalDefaults:     `{"location":"az"}`,                      // 6
+			ServiceProperties:        map[string]interface{}{},                 // 2
+			ProvisionOverrides:       map[string]interface{}{"location": "eu"}, // 3
+			MergedUserProvidedParams: `{"location":"us"}`,                      // 4
+			DefaultOverride:          "{}",                                     // 5
+			GlobalDefaults:           `{"location":"az"}`,                      // 6
 			ExpectedContext: map[string]interface{}{
 				"location":            "eu",
 				"name":                "name-eu",
@@ -731,11 +726,11 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			},
 		},
 		"global_default override defaults but not computed defaults": {
-			ServiceProperties:  map[string]interface{}{}, // 2
-			ProvisionOverrides: map[string]interface{}{}, // 3
-			UserParams:         "{}",                     // 4
-			DefaultOverride:    "{}",                     // 5
-			GlobalDefaults:     `{"location":"az"}`,      // 6
+			ServiceProperties:        map[string]interface{}{}, // 2
+			ProvisionOverrides:       map[string]interface{}{}, // 3
+			MergedUserProvidedParams: "{}",                     // 4
+			DefaultOverride:          "{}",                     // 5
+			GlobalDefaults:           `{"location":"az"}`,      // 6
 			ExpectedContext: map[string]interface{}{
 				"location":            "az",
 				"name":                "name-az",
@@ -745,11 +740,11 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			},
 		},
 		"bogus global default json": {
-			ServiceProperties:  map[string]interface{}{}, // 2
-			ProvisionOverrides: map[string]interface{}{}, // 3
-			UserParams:         "{}",                     // 4
-			DefaultOverride:    "{}",                     // 5
-			GlobalDefaults:     `{"location","az"}`,      // 6
+			ServiceProperties:        map[string]interface{}{}, // 2
+			ProvisionOverrides:       map[string]interface{}{}, // 3
+			MergedUserProvidedParams: "{}",                     // 4
+			DefaultOverride:          "{}",                     // 5
+			GlobalDefaults:           `{"location","az"}`,      // 6
 			ExpectedContext: map[string]interface{}{
 				"location":            "az",
 				"name":                "name-az",
@@ -760,8 +755,8 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			ExpectedError: fmt.Errorf("failed unmarshaling config value provision.defaults"),
 		},
 		"provision location and name": {
-			ServiceProperties: map[string]interface{}{},           // 2
-			ProvisionDetails:  `{"location": "eu", "name":"foo"}`, // 5
+			ServiceProperties:        map[string]interface{}{},           // 2
+			MergedUserProvidedParams: `{"location": "eu", "name":"foo"}`, // 5
 			ExpectedContext: map[string]interface{}{
 				"location":            "eu",
 				"name":                "foo",
@@ -771,9 +766,8 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			},
 		},
 		"update location and name": {
-			ServiceProperties: map[string]interface{}{},           // 2
-			UserParams:        `{"name":"update"}`,                // 4
-			ProvisionDetails:  `{"location": "eu", "name":"foo"}`, // 5
+			ServiceProperties:        map[string]interface{}{},              // 2
+			MergedUserProvidedParams: `{"name":"update", "location": "eu"}`, // 5
 			ExpectedContext: map[string]interface{}{
 				"location":            "eu",
 				"name":                "update",
@@ -794,10 +788,10 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			}
 			defer viper.Reset()
 
-			details := domain.UpdateDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
-			provisionDetails := json.RawMessage(tc.ProvisionDetails)
+			details := domain.UpdateDetails{RawContext: json.RawMessage(tc.RawContext)}
+			mergedUserProvidedParams := json.RawMessage(tc.MergedUserProvidedParams)
 			plan := ServicePlan{ServiceProperties: tc.ServiceProperties, ProvisionOverrides: tc.ProvisionOverrides}
-			vars, err := service.UpdateVariables("instance-id-here", details, provisionDetails, plan, tc.OriginatingIdentity)
+			vars, err := service.UpdateVariables("instance-id-here", details, mergedUserProvidedParams, plan, tc.OriginatingIdentity)
 
 			expectError(t, tc.ExpectedError, err)
 
@@ -807,6 +801,7 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 		})
 	}
 }
+
 func TestServiceDefinition_BindVariables(t *testing.T) {
 	service := ServiceDefinition{
 		Id:   "00000000-0000-0000-0000-000000000000",

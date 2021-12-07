@@ -810,7 +810,6 @@ func TestServiceBroker_Update(t *testing.T) {
 				failIfErr(t, "update", err)
 			},
 		},
-
 		"error-getting-request-details": {
 			ServiceState: StateProvisioned,
 			AsyncService: true,
@@ -824,6 +823,43 @@ func TestServiceBroker_Update(t *testing.T) {
 
 				assertTrue(t, "Should have returned error", err != nil)
 				assertTrue(t, "errors should match", strings.Contains(err.Error(), "error while decrypting"))
+			},
+		},
+		"update and provision params merged": {
+			ServiceState: StateNone,
+			AsyncService: true,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				p := stub.ProvisionDetails()
+				p.RawParameters = json.RawMessage(`{"foo":"bar","baz":"quz"}`)
+				_, err := broker.Provision(context.TODO(), fakeInstanceId, p, true)
+				failIfErr(t, "provisioning", err)
+
+				u := stub.UpdateDetails()
+				u.RawParameters = json.RawMessage(`{"foo":"quz","guz":"muz"}`)
+				_, err = broker.Update(context.TODO(), fakeInstanceId, u, true)
+				failIfErr(t, "updating", err)
+
+				d, err := db_service.GetProvisionRequestDetailsByInstanceId(context.TODO(), fakeInstanceId)
+				failIfErr(t, "reading details", err)
+				var r map[string]interface{}
+				failIfErr(t, "parsing", json.Unmarshal(d.RequestDetails, &r))
+				assertEqual(t, "merged", map[string]interface{}{"foo": "quz", "guz": "muz", "baz": "quz"}, r)
+			},
+		},
+		"update params not persisted if operation fails": {
+			ServiceState: StateProvisioned,
+			AsyncService: true,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+				stub.Provider.UpdateReturns(models.ServiceInstanceDetails{}, errors.New("fake error"))
+
+				u := stub.UpdateDetails()
+				u.RawParameters = json.RawMessage(`{"foo":"bar"}`)
+				_, err := broker.Update(context.TODO(), fakeInstanceId, u, true)
+				assertEqual(t, "error", errors.New("fake error"), err)
+
+				d, err := db_service.GetProvisionRequestDetailsByInstanceId(context.TODO(), fakeInstanceId)
+				failIfErr(t, "reading details", err)
+				assertEqual(t, "empty", []byte(nil), d.RequestDetails)
 			},
 		},
 	}

@@ -26,6 +26,7 @@ var _ = Describe("Database Encryption", func() {
 		provisionParams           = `{"foo":"bar"}`
 		bindParams                = `{"baz":"quz"}`
 		updateParams              = `{"update_input": "update output value"}`
+		mergedParams              = `{"foo":"bar","update_input":"update output value"}`
 		provisionOutput           = `{"provision_output":"provision output value"}`
 		provisionOutputStateValue = `value = \"provision output value\"`
 		updateOutput              = `{"provision_output":"provision output value","update_output":"update output value"}`
@@ -199,6 +200,7 @@ var _ = Describe("Database Encryption", func() {
 	}
 
 	bePlaintextProvisionParams := Equal([]byte(provisionParams))
+	bePlaintextMergedParams := Equal([]byte(mergedParams))
 	bePlaintextProvisionOutput := Equal([]byte(provisionOutput))
 	bePlaintextInstanceTerraformState := SatisfyAll(
 		ContainSubstring(provisionOutputStateValue),
@@ -283,7 +285,7 @@ var _ = Describe("Database Encryption", func() {
 
 			By("checking how update persists service instance fields")
 			updateServiceInstance(serviceInstanceGUID)
-			Expect(persistedRequestDetails(serviceInstanceGUID)).To(bePlaintextProvisionParams)
+			Expect(persistedRequestDetails(serviceInstanceGUID)).To(bePlaintextMergedParams)
 			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).To(Equal([]byte(updateOutput)))
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).To(SatisfyAll(
 				ContainSubstring(provisionOutputStateValue),
@@ -340,7 +342,7 @@ var _ = Describe("Database Encryption", func() {
 
 			By("checking how update persists service instance fields")
 			updateServiceInstance(serviceInstanceGUID)
-			Expect(persistedRequestDetails(serviceInstanceGUID)).NotTo(Equal(provisionParams))
+			Expect(persistedRequestDetails(serviceInstanceGUID)).NotTo(Equal(mergedParams))
 			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(Equal(updateOutput))
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(SatisfyAny(
 				ContainSubstring(provisionOutputStateValue),
