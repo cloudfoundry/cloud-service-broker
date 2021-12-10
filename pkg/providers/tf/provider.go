@@ -255,11 +255,11 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 }
 
 // Unbind performs a terraform destroy on the binding.
-func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord models.ServiceInstanceDetails, bindRecord models.ServiceBindingCredentials, vc *varcontext.VarContext) error {
-	tfId := generateTfId(instanceRecord.ID, bindRecord.BindingId)
+func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord models.ServiceInstanceDetails, bindingID string, vc *varcontext.VarContext) error {
+	tfId := generateTfId(instanceRecord.ID, bindingID)
 	provider.logger.Debug("terraform-unbind", correlation.ID(ctx), lager.Data{
 		"instance": instanceRecord.ID,
-		"binding":  bindRecord.ID,
+		"binding":  bindingID,
 		"tfId":     tfId,
 	})
 

@@ -35,7 +35,8 @@ func SetEncryptor(encryptor Encryptor) {
 	encryptorInstance = encryptor
 }
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o fakes/fake_encryption.go . Encryptor
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate . Encryptor
 type Encryptor interface {
 	Encrypt(plaintext []byte) ([]byte, error)
 	Decrypt(ciphertext []byte) ([]byte, error)
@@ -44,38 +45,6 @@ type Encryptor interface {
 // ServiceBindingCredentials holds credentials returned to the users after
 // binding to a service.
 type ServiceBindingCredentials ServiceBindingCredentialsV2
-
-// SetOtherDetails marshals the value passed in into a JSON string and sets
-// OtherDetails to it if marshalling was successful.
-func (sbc *ServiceBindingCredentials) SetOtherDetails(toSet interface{}) error {
-	out, err := json.Marshal(toSet)
-	if err != nil {
-		return err
-	}
-
-	encryptedDetails, err := encryptorInstance.Encrypt(out)
-	if err != nil {
-		return err
-	}
-
-	sbc.OtherDetails = encryptedDetails
-	return nil
-}
-
-// GetOtherDetails returns and unmarshalls the OtherDetails field into the given
-// struct. An empty OtherDetails field does not get unmarshalled and does not error.
-func (sbc ServiceBindingCredentials) GetOtherDetails(v interface{}) error {
-	if sbc.OtherDetails == nil {
-		return nil
-	}
-
-	decryptedDetails, err := encryptorInstance.Decrypt(sbc.OtherDetails)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(decryptedDetails, v)
-}
 
 // ServiceInstanceDetails holds information about provisioned services.
 type ServiceInstanceDetails ServiceInstanceDetailsV3

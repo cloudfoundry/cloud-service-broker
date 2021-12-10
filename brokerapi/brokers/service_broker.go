@@ -24,6 +24,7 @@ import (
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/credstore"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
@@ -50,15 +51,17 @@ type ServiceBroker struct {
 	Credstore credstore.CredStore
 
 	Logger lager.Logger
+	store  Storage
 }
 
 // New creates a ServiceBroker.
 // Exactly one of ServiceBroker or error will be nil when returned.
-func New(cfg *BrokerConfig, logger lager.Logger) (*ServiceBroker, error) {
+func New(cfg *BrokerConfig, logger lager.Logger, store Storage) (*ServiceBroker, error) {
 	return &ServiceBroker{
 		registry:  cfg.Registry,
 		Credstore: cfg.Credstore,
 		Logger:    logger,
+		store:     store,
 	}, nil
 }
 
@@ -261,7 +264,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	})
 
 	// check for existing binding
-	exists, err := db_service.ExistsServiceBindingCredentialsByServiceInstanceIdAndBindingId(ctx, instanceID, bindingID)
+	exists, err := broker.store.ExistsServiceBindingCredentials(bindingID, instanceID)
 	if err != nil {
 		return domain.Binding{}, fmt.Errorf("error checking for existing binding: %w", err)
 	}
@@ -305,22 +308,19 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	}
 
 	// save binding to database
-	newCreds := models.ServiceBindingCredentials{
-		ServiceInstanceId: instanceID,
-		BindingId:         bindingID,
-		ServiceId:         details.ServiceID,
+	newCreds := storage.ServiceBindingCredentials{
+		ServiceInstanceID: instanceID,
+		BindingID:         bindingID,
+		ServiceID:         details.ServiceID,
+		Credentials:       credsDetails,
 	}
 
-	if err := newCreds.SetOtherDetails(credsDetails); err != nil {
-		return domain.Binding{}, fmt.Errorf("error serializing credentials: %w. WARNING: these credentials cannot be unbound through cf. Please contact your operator for cleanup", err)
-	}
-
-	if err := db_service.CreateServiceBindingCredentials(ctx, &newCreds); err != nil {
+	if err := broker.store.CreateServiceBindingCredentials(newCreds); err != nil {
 		return domain.Binding{}, fmt.Errorf("error saving credentials to database: %w. WARNING: these credentials cannot be unbound through cf. Please contact your operator for cleanup",
 			err)
 	}
 
-	binding, err := serviceProvider.BuildInstanceCredentials(ctx, newCreds, *instanceRecord)
+	binding, err := serviceProvider.BuildInstanceCredentials(ctx, newCreds.Credentials, *instanceRecord)
 	if err != nil {
 		return domain.Binding{}, fmt.Errorf("error building credentials: %w", err)
 	}
@@ -410,8 +410,11 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	}
 
 	// validate existence of binding
-	existingBinding, err := db_service.GetServiceBindingCredentialsByServiceInstanceIdAndBindingId(ctx, instanceID, bindingID)
+	exists, err := broker.store.ExistsServiceBindingCredentials(bindingID, instanceID)
 	if err != nil {
+		return domain.UnbindSpec{}, fmt.Errorf("error locating service binding: %w", err)
+	}
+	if !exists {
 		return domain.UnbindSpec{}, apiresponses.ErrBindingDoesNotExist
 	}
 
@@ -451,7 +454,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	}
 
 	// remove binding from service provider
-	if err := serviceProvider.Unbind(ctx, *instance, *existingBinding, vars); err != nil {
+	if err := serviceProvider.Unbind(ctx, *instance, bindingID, vars); err != nil {
 		return domain.UnbindSpec{}, err
 	}
 
@@ -470,7 +473,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	}
 
 	// remove binding from database
-	if err := db_service.DeleteServiceBindingCredentials(ctx, existingBinding); err != nil {
+	if err := broker.store.DeleteServiceBindingCredentials(bindingID, instanceID); err != nil {
 		return domain.UnbindSpec{}, fmt.Errorf("error soft-deleting credentials from database: %s. WARNING: these credentials will remain visible in cf. Contact your operator for cleanup", err)
 	}
 

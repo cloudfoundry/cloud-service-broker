@@ -12,7 +12,6 @@ func ReencryptDB(db *gorm.DB) error {
 	dbEncryptors := []func(*gorm.DB) error{
 		encryptProvisionRequestDetails,
 		encryptServiceInstanceDetails,
-		encryptServiceBindingCredentials,
 		encryptTerraformWorkspaces,
 	}
 	for _, e := range dbEncryptors {
@@ -63,29 +62,6 @@ func encryptServiceInstanceDetails(db *gorm.DB) error {
 		}
 
 		return tx.Save(&serviceInstanceDetailsBatch).Error
-	})
-	if result.Error != nil {
-		return fmt.Errorf("error reencrypting: %v", result.Error)
-	}
-
-	return nil
-}
-
-func encryptServiceBindingCredentials(db *gorm.DB) error {
-	var serviceBindingCredentialsBatch []models.ServiceBindingCredentials
-	result := db.FindInBatches(&serviceBindingCredentialsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
-		for i := range serviceBindingCredentialsBatch {
-			var details interface{}
-			if err := serviceBindingCredentialsBatch[i].GetOtherDetails(&details); err != nil {
-				return err
-			}
-
-			if err := serviceBindingCredentialsBatch[i].SetOtherDetails(details); err != nil {
-				return err
-			}
-		}
-
-		return tx.Save(&serviceBindingCredentialsBatch).Error
 	})
 	if result.Error != nil {
 		return fmt.Errorf("error reencrypting: %v", result.Error)

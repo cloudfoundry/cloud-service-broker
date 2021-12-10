@@ -47,27 +47,6 @@ func main() {
 			},
 		},
 		{
-			Type:              "ServiceBindingCredentials",
-			PrimaryKeyType:    "uint",
-			PrimaryKeyExample: `uint(42)`,
-			PrimaryKeyField:   "id",
-			Keys: []fieldList{
-				{
-					{Type: "string", Column: "service_instance_id"},
-					{Type: "string", Column: "binding_id"},
-				},
-				{
-					{Type: "string", Column: "binding_id"},
-				},
-			},
-			ExampleFields: map[string]interface{}{
-				"ServiceId":         "1111-1111-1111",
-				"ServiceInstanceId": "2222-2222-2222",
-				"BindingId":         "0000-0000-0000",
-				"OtherDetails":      []byte(`{"some":["json","blob","here"]}`),
-			},
-		},
-		{
 			Type:              "ProvisionRequestDetails",
 			PrimaryKeyType:    "uint",
 			PrimaryKeyExample: `uint(42)`,

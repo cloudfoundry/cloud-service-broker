@@ -28,15 +28,9 @@ type MergedInstanceCredsMixin struct{}
 
 // BuildInstanceCredentials combines the bind credentials with the connection
 // information in the instance details to get a full set of connection details.
-func (b *MergedInstanceCredsMixin) BuildInstanceCredentials(ctx context.Context, bindRecord models.ServiceBindingCredentials, instanceRecord models.ServiceInstanceDetails) (*domain.Binding, error) {
+func (b *MergedInstanceCredsMixin) BuildInstanceCredentials(ctx context.Context, credentials map[string]interface{}, instanceRecord models.ServiceInstanceDetails) (*domain.Binding, error) {
 	var instanceOtherDetails map[string]interface{}
 	err := instanceRecord.GetOtherDetails(&instanceOtherDetails)
-	if err != nil {
-		return nil, err
-	}
-
-	var bindOtherDetails map[string]interface{}
-	err = bindRecord.GetOtherDetails(&bindOtherDetails)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +38,7 @@ func (b *MergedInstanceCredsMixin) BuildInstanceCredentials(ctx context.Context,
 	var vc *varcontext.VarContext
 	vc, err = varcontext.Builder().
 		MergeMap(instanceOtherDetails).
-		MergeMap(bindOtherDetails).
+		MergeMap(credentials).
 		Build()
 	if err != nil {
 		return nil, err

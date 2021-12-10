@@ -29,6 +29,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models/fakes"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/credstore"
@@ -154,9 +155,9 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 			BindStub: func(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error) {
 				return map[string]interface{}{"foo": "bar"}, nil
 			},
-			BuildInstanceCredentialsStub: func(ctx context.Context, bc models.ServiceBindingCredentials, id models.ServiceInstanceDetails) (*domain.Binding, error) {
+			BuildInstanceCredentialsStub: func(ctx context.Context, creds map[string]interface{}, id models.ServiceInstanceDetails) (*domain.Binding, error) {
 				mixin := base.MergedInstanceCredsMixin{}
-				return mixin.BuildInstanceCredentials(ctx, bc, id)
+				return mixin.BuildInstanceCredentials(ctx, creds, id)
 			},
 		},
 	}
@@ -188,7 +189,7 @@ func newStubbedBroker(t *testing.T, registry broker.BrokerRegistry, cs credstore
 		Credstore: cs,
 	}
 
-	broker, err = New(config, utils.NewLogger("brokers-test"))
+	broker, err = New(config, utils.NewLogger("brokers-test"), storage.New(db, noopencryptor.New()))
 	if err != nil {
 		t.Fatalf("couldn't create broker: %v", err)
 	}
@@ -605,9 +606,9 @@ func TestServiceBroker_Unbind(t *testing.T) {
 			AsyncService: true,
 			ServiceState: StateBound,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
-				encryptor := fakes.FakeEncryptor{}
+				encryptor := &fakes.FakeEncryptor{}
 				encryptor.DecryptReturnsOnCall(0, nil, errors.New("error while decrypting"))
-				models.SetEncryptor(&encryptor)
+				models.SetEncryptor(encryptor)
 
 				_, err := broker.Unbind(context.Background(), fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
 				assertTrue(t, "Should have returned error", err != nil)

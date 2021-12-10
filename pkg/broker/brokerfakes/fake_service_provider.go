@@ -26,11 +26,11 @@ type FakeServiceProvider struct {
 		result1 map[string]interface{}
 		result2 error
 	}
-	BuildInstanceCredentialsStub        func(context.Context, models.ServiceBindingCredentials, models.ServiceInstanceDetails) (*domain.Binding, error)
+	BuildInstanceCredentialsStub        func(context.Context, map[string]interface{}, models.ServiceInstanceDetails) (*domain.Binding, error)
 	buildInstanceCredentialsMutex       sync.RWMutex
 	buildInstanceCredentialsArgsForCall []struct {
 		arg1 context.Context
-		arg2 models.ServiceBindingCredentials
+		arg2 map[string]interface{}
 		arg3 models.ServiceInstanceDetails
 	}
 	buildInstanceCredentialsReturns struct {
@@ -107,12 +107,12 @@ type FakeServiceProvider struct {
 	provisionsAsyncReturnsOnCall map[int]struct {
 		result1 bool
 	}
-	UnbindStub        func(context.Context, models.ServiceInstanceDetails, models.ServiceBindingCredentials, *varcontext.VarContext) error
+	UnbindStub        func(context.Context, models.ServiceInstanceDetails, string, *varcontext.VarContext) error
 	unbindMutex       sync.RWMutex
 	unbindArgsForCall []struct {
 		arg1 context.Context
 		arg2 models.ServiceInstanceDetails
-		arg3 models.ServiceBindingCredentials
+		arg3 string
 		arg4 *varcontext.VarContext
 	}
 	unbindReturns struct {
@@ -216,12 +216,12 @@ func (fake *FakeServiceProvider) BindReturnsOnCall(i int, result1 map[string]int
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) BuildInstanceCredentials(arg1 context.Context, arg2 models.ServiceBindingCredentials, arg3 models.ServiceInstanceDetails) (*domain.Binding, error) {
+func (fake *FakeServiceProvider) BuildInstanceCredentials(arg1 context.Context, arg2 map[string]interface{}, arg3 models.ServiceInstanceDetails) (*domain.Binding, error) {
 	fake.buildInstanceCredentialsMutex.Lock()
 	ret, specificReturn := fake.buildInstanceCredentialsReturnsOnCall[len(fake.buildInstanceCredentialsArgsForCall)]
 	fake.buildInstanceCredentialsArgsForCall = append(fake.buildInstanceCredentialsArgsForCall, struct {
 		arg1 context.Context
-		arg2 models.ServiceBindingCredentials
+		arg2 map[string]interface{}
 		arg3 models.ServiceInstanceDetails
 	}{arg1, arg2, arg3})
 	stub := fake.BuildInstanceCredentialsStub
@@ -243,13 +243,13 @@ func (fake *FakeServiceProvider) BuildInstanceCredentialsCallCount() int {
 	return len(fake.buildInstanceCredentialsArgsForCall)
 }
 
-func (fake *FakeServiceProvider) BuildInstanceCredentialsCalls(stub func(context.Context, models.ServiceBindingCredentials, models.ServiceInstanceDetails) (*domain.Binding, error)) {
+func (fake *FakeServiceProvider) BuildInstanceCredentialsCalls(stub func(context.Context, map[string]interface{}, models.ServiceInstanceDetails) (*domain.Binding, error)) {
 	fake.buildInstanceCredentialsMutex.Lock()
 	defer fake.buildInstanceCredentialsMutex.Unlock()
 	fake.BuildInstanceCredentialsStub = stub
 }
 
-func (fake *FakeServiceProvider) BuildInstanceCredentialsArgsForCall(i int) (context.Context, models.ServiceBindingCredentials, models.ServiceInstanceDetails) {
+func (fake *FakeServiceProvider) BuildInstanceCredentialsArgsForCall(i int) (context.Context, map[string]interface{}, models.ServiceInstanceDetails) {
 	fake.buildInstanceCredentialsMutex.RLock()
 	defer fake.buildInstanceCredentialsMutex.RUnlock()
 	argsForCall := fake.buildInstanceCredentialsArgsForCall[i]
@@ -588,13 +588,13 @@ func (fake *FakeServiceProvider) ProvisionsAsyncReturnsOnCall(i int, result1 boo
 	}{result1}
 }
 
-func (fake *FakeServiceProvider) Unbind(arg1 context.Context, arg2 models.ServiceInstanceDetails, arg3 models.ServiceBindingCredentials, arg4 *varcontext.VarContext) error {
+func (fake *FakeServiceProvider) Unbind(arg1 context.Context, arg2 models.ServiceInstanceDetails, arg3 string, arg4 *varcontext.VarContext) error {
 	fake.unbindMutex.Lock()
 	ret, specificReturn := fake.unbindReturnsOnCall[len(fake.unbindArgsForCall)]
 	fake.unbindArgsForCall = append(fake.unbindArgsForCall, struct {
 		arg1 context.Context
 		arg2 models.ServiceInstanceDetails
-		arg3 models.ServiceBindingCredentials
+		arg3 string
 		arg4 *varcontext.VarContext
 	}{arg1, arg2, arg3, arg4})
 	stub := fake.UnbindStub
@@ -616,13 +616,13 @@ func (fake *FakeServiceProvider) UnbindCallCount() int {
 	return len(fake.unbindArgsForCall)
 }
 
-func (fake *FakeServiceProvider) UnbindCalls(stub func(context.Context, models.ServiceInstanceDetails, models.ServiceBindingCredentials, *varcontext.VarContext) error) {
+func (fake *FakeServiceProvider) UnbindCalls(stub func(context.Context, models.ServiceInstanceDetails, string, *varcontext.VarContext) error) {
 	fake.unbindMutex.Lock()
 	defer fake.unbindMutex.Unlock()
 	fake.UnbindStub = stub
 }
 
-func (fake *FakeServiceProvider) UnbindArgsForCall(i int) (context.Context, models.ServiceInstanceDetails, models.ServiceBindingCredentials, *varcontext.VarContext) {
+func (fake *FakeServiceProvider) UnbindArgsForCall(i int) (context.Context, models.ServiceInstanceDetails, string, *varcontext.VarContext) {
 	fake.unbindMutex.RLock()
 	defer fake.unbindMutex.RUnlock()
 	argsForCall := fake.unbindArgsForCall[i]
