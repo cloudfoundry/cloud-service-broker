@@ -370,16 +370,8 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 // Therefore, they get executed conditionally if a user-provided variable does not exist.
 // Computed variables get executed either unconditionally or conditionally for greater flexibility.
 func (svc *ServiceDefinition) variables(constants map[string]interface{},
-	rawProvisionParameters json.RawMessage,
-	rawUpdateParameters json.RawMessage,
+	rawUserProvidedParameters json.RawMessage,
 	plan ServicePlan) (*varcontext.VarContext, error) {
-	// The namespaces of these values roughly align with the OSB spec.
-	// constants := map[string]interface{}{
-	// 	"request.plan_id":        details.PlanID,
-	// 	"request.service_id":     details.ServiceID,
-	// 	"request.instance_id":    instanceId,
-	// 	"request.default_labels": utils.ExtractDefaultProvisionLabels(instanceId, details),
-	// }
 
 	globalDefaults, err := ProvisionGlobalDefaults()
 	if err != nil {
@@ -391,14 +383,13 @@ func (svc *ServiceDefinition) variables(constants map[string]interface{},
 	}
 	builder := varcontext.Builder().
 		SetEvalConstants(constants).
-		MergeMap(globalDefaults).                     // 7
-		MergeMap(provisionDefaultOverrides).          // 6
-		MergeJsonObject(rawProvisionParameters).      // 5 user vars provided during provision call
-		MergeJsonObject(rawUpdateParameters).         // 4 user vars provided during update call
-		MergeMap(plan.ProvisionOverrides).            // 3
-		MergeDefaults(svc.provisionDefaults()).       // ?
-		MergeMap(plan.GetServiceProperties()).        // 2
-		MergeDefaults(svc.ProvisionComputedVariables) // 1
+		MergeMap(globalDefaults).
+		MergeMap(provisionDefaultOverrides).
+		MergeJsonObject(rawUserProvidedParameters).
+		MergeMap(plan.ProvisionOverrides).
+		MergeDefaults(svc.provisionDefaults()).
+		MergeMap(plan.GetServiceProperties()).
+		MergeDefaults(svc.ProvisionComputedVariables)
 
 	return buildAndValidate(builder, svc.ProvisionInputVariables)
 }
@@ -414,10 +405,10 @@ func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details doma
 		"request.x_broker_api_originating_identity": originatingIdentity,
 	}
 
-	return svc.variables(constants, details.GetRawParameters(), json.RawMessage("{}"), plan)
+	return svc.variables(constants, details.GetRawParameters(), plan)
 }
 
-func (svc *ServiceDefinition) UpdateVariables(instanceId string, details domain.UpdateDetails, provisionDetails json.RawMessage, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) UpdateVariables(instanceId string, details domain.UpdateDetails, mergedUserProvidedParameters json.RawMessage, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
 	constants := map[string]interface{}{
 		"request.plan_id":                           details.PlanID,
 		"request.service_id":                        details.ServiceID,
@@ -426,7 +417,7 @@ func (svc *ServiceDefinition) UpdateVariables(instanceId string, details domain.
 		"request.context":                           unmarshalJsonToMap(details.GetRawContext()),
 		"request.x_broker_api_originating_identity": originatingIdentity,
 	}
-	return svc.variables(constants, provisionDetails, details.GetRawParameters(), plan)
+	return svc.variables(constants, mergedUserProvidedParameters, plan)
 }
 
 func unmarshalJsonToMap(rawContext json.RawMessage) map[string]interface{} {

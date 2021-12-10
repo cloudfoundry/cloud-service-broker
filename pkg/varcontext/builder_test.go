@@ -134,6 +134,30 @@ func TestContextBuilder(t *testing.T) {
 			Builder:     Builder().MergeJsonObject(json.RawMessage(`{{{}}}`)),
 			ErrContains: "invalid character '{'",
 		},
+		"MergeJsonObject merge multiple": {
+			Builder:  Builder().MergeJsonObject(json.RawMessage(`{"foo":"bar"}`)).MergeJsonObject(json.RawMessage(`{"baz":"quz"}`)),
+			Expected: map[string]interface{}{"foo": "bar", "baz": "quz"},
+		},
+		"MergeJsonObject duplicate keys at top level": {
+			Builder:  Builder().MergeJsonObject(json.RawMessage(`{"foo":"bar","baz":"bar"}`)).MergeJsonObject(json.RawMessage(`{"baz":"quz"}`)),
+			Expected: map[string]interface{}{"foo": "bar", "baz": "quz"},
+		},
+		"MergeJsonObject only merges top level key/values": {
+			Builder:  Builder().MergeJsonObject(json.RawMessage(`{"foo":{"bar":"baz","quz":"buz"}}`)).MergeJsonObject(json.RawMessage(`{"foo":{"bar":"quz"}}`)),
+			Expected: map[string]interface{}{"foo": map[string]interface{}{"bar": "quz"}},
+		},
+		"MergeJsonObject merge first empty object": {
+			Builder:  Builder().MergeJsonObject(json.RawMessage(`{}`)).MergeJsonObject(json.RawMessage(`{"baz":"quz"}`)),
+			Expected: map[string]interface{}{"baz": "quz"},
+		},
+		"MergeJsonObject merge second empty object": {
+			Builder:  Builder().MergeJsonObject(json.RawMessage(`{"baz":"quz"}`)).MergeJsonObject(json.RawMessage(`{}`)),
+			Expected: map[string]interface{}{"baz": "quz"},
+		},
+		"MergeJsonObject merge JSON non-object": {
+			Builder:     Builder().MergeJsonObject(json.RawMessage(`{"baz":"quz"}`)).MergeJsonObject(json.RawMessage(`true`)),
+			ErrContains: "json: cannot unmarshal bool into Go value of type map[string]interface {}",
+		},
 
 		// MergeStruct
 		"MergeStruct without JSON Tags": {
