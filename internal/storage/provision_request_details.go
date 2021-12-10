@@ -8,8 +8,8 @@ import (
 )
 
 type ProvisionRequestDetails struct {
-	ServiceInstanceId string
-	RequestDetails    []byte
+	ServiceInstanceGUID string
+	RequestDetails      []byte
 }
 
 func (s *Storage) StoreProvisionRequestDetails(serviceInstanceID string, details json.RawMessage) error {

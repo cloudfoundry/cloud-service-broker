@@ -18,18 +18,17 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/spf13/viper"
-
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
-
 	"code.cloudfoundry.org/lager"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/builtin/base"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -105,7 +104,7 @@ var workspaceUpdator = WorkspaceUpdater{}
 
 // Provision creates the necessary resources that an instance of this service
 // needs to operate.
-func (provider *terraformProvider) Provision(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+func (provider *terraformProvider) Provision(ctx context.Context, provisionContext *varcontext.VarContext) (storage.ServiceInstanceDetails, error) {
 	provider.logger.Debug("terraform-provision", correlation.ID(ctx), lager.Data{
 		"context": provisionContext.ToMap(),
 	})
@@ -116,17 +115,17 @@ func (provider *terraformProvider) Provision(ctx context.Context, provisionConte
 	if provider.serviceDefinition.ProvisionSettings.IsTfImport(provisionContext) {
 		tfID, err = provider.importCreate(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
 		if err != nil {
-			return models.ServiceInstanceDetails{}, err
+			return storage.ServiceInstanceDetails{}, err
 		}
 	} else {
 		tfID, err = provider.create(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
 		if err != nil {
-			return models.ServiceInstanceDetails{}, err
+			return storage.ServiceInstanceDetails{}, err
 		}
 	}
 
-	return models.ServiceInstanceDetails{
-		OperationId:   tfID,
+	return storage.ServiceInstanceDetails{
+		OperationGUID: tfID,
 		OperationType: models.ProvisionOperationType,
 	}, nil
 }
@@ -255,10 +254,10 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 }
 
 // Unbind performs a terraform destroy on the binding.
-func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord models.ServiceInstanceDetails, bindingID string, vc *varcontext.VarContext) error {
-	tfId := generateTfId(instanceRecord.ID, bindingID)
+func (provider *terraformProvider) Unbind(ctx context.Context, instanceGUID string, bindingID string, vc *varcontext.VarContext) error {
+	tfId := generateTfId(instanceGUID, bindingID)
 	provider.logger.Debug("terraform-unbind", correlation.ID(ctx), lager.Data{
-		"instance": instanceRecord.ID,
+		"instance": instanceGUID,
 		"binding":  bindingID,
 		"tfId":     tfId,
 	})
@@ -275,12 +274,12 @@ func (provider *terraformProvider) Unbind(ctx context.Context, instanceRecord mo
 }
 
 // Deprovision performs a terraform destroy on the instance.
-func (provider *terraformProvider) Deprovision(ctx context.Context, instance models.ServiceInstanceDetails, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error) {
+func (provider *terraformProvider) Deprovision(ctx context.Context, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error) {
 	provider.logger.Debug("terraform-deprovision", correlation.ID(ctx), lager.Data{
-		"instance": instance.ID,
+		"instance": instanceGUID,
 	})
 
-	tfId := generateTfId(instance.ID, "")
+	tfId := generateTfId(instanceGUID, "")
 
 	if err := workspaceUpdator.UpdateWorkspaceHCL(ctx, provider.serviceDefinition.ProvisionSettings, vc, tfId); err != nil {
 		return nil, err
@@ -294,8 +293,8 @@ func (provider *terraformProvider) Deprovision(ctx context.Context, instance mod
 }
 
 // PollInstance returns the instance status of the backing job.
-func (provider *terraformProvider) PollInstance(ctx context.Context, instance models.ServiceInstanceDetails) (bool, string, error) {
-	return provider.jobRunner.Status(ctx, generateTfId(instance.ID, ""))
+func (provider *terraformProvider) PollInstance(ctx context.Context, instanceGUID string) (bool, string, error) {
+	return provider.jobRunner.Status(ctx, generateTfId(instanceGUID, ""))
 }
 
 // ProvisionsAsync is always true for Terraformprovider.
@@ -312,13 +311,13 @@ func (provider *terraformProvider) DeprovisionsAsync() bool {
 // This function is optional, but will be called after async provisions, updates, and possibly
 // on broker version changes.
 // Return a nil error if you choose not to implement this function.
-func (provider *terraformProvider) UpdateInstanceDetails(ctx context.Context, instance *models.ServiceInstanceDetails) error {
-	tfId := generateTfId(instance.ID, "")
+func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, guid string) (storage.TerraformOutputs, error) {
+	tfId := generateTfId(guid, "")
 
 	outs, err := provider.jobRunner.Outputs(ctx, tfId, wrapper.DefaultInstanceName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return instance.SetOtherDetails(outs)
+	return outs, nil
 }

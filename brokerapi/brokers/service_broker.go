@@ -22,7 +22,6 @@ import (
 	"net/http"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
@@ -102,7 +101,7 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	})
 
 	// make sure that instance hasn't already been provisioned
-	exists, err := db_service.ExistsServiceInstanceDetailsById(ctx, instanceID)
+	exists, err := broker.store.ExistsServiceInstanceDetails(instanceID)
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, fmt.Errorf("database error checking for existing instance: %s", err)
 	}
@@ -146,23 +145,22 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	}
 
 	// save instance details
-	instanceDetails.ServiceId = details.ServiceID
-	instanceDetails.ID = instanceID
-	instanceDetails.PlanId = details.PlanID
-	instanceDetails.SpaceGuid = details.SpaceGUID
-	instanceDetails.OrganizationGuid = details.OrganizationGUID
+	instanceDetails.ServiceGUID = details.ServiceID
+	instanceDetails.GUID = instanceID
+	instanceDetails.PlanGUID = details.PlanID
+	instanceDetails.SpaceGUID = details.SpaceGUID
+	instanceDetails.OrganizationGUID = details.OrganizationGUID
 
-	err = db_service.CreateServiceInstanceDetails(ctx, &instanceDetails)
-	if err != nil {
+	if err := broker.store.StoreServiceInstanceDetails(instanceDetails); err != nil {
 		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance cannot be deprovisioned through cf. Contact your operator for cleanup", err)
 	}
 
 	// save provision request details
-	if err = broker.store.StoreProvisionRequestDetails(instanceID, details.RawParameters); err != nil {
+	if err := broker.store.StoreProvisionRequestDetails(instanceID, details.RawParameters); err != nil {
 		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
 	}
 
-	return domain.ProvisionedServiceSpec{IsAsync: shouldProvisionAsync, DashboardURL: "", OperationData: instanceDetails.OperationId}, nil
+	return domain.ProvisionedServiceSpec{IsAsync: shouldProvisionAsync, DashboardURL: "", OperationData: instanceDetails.OperationGUID}, nil
 }
 
 // Deprovision destroys an existing instance of a service.
@@ -176,12 +174,20 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 	})
 
 	// make sure that instance actually exists
-	instance, err := db_service.GetServiceInstanceDetailsById(ctx, instanceID)
-	if err != nil {
-		return response, brokerapi.ErrInstanceDoesNotExist
+	exists, err := broker.store.ExistsServiceInstanceDetails(instanceID)
+	switch {
+	case err != nil:
+		return response, err
+	case !exists:
+		return response, apiresponses.ErrInstanceDoesNotExist
 	}
 
-	brokerService, serviceProvider, err := broker.getDefinitionAndProvider(instance.ServiceId)
+	instance, err := broker.store.GetServiceInstanceDetails(instanceID)
+	if err != nil {
+		return response, err
+	}
+
+	brokerService, serviceProvider, err := broker.getDefinitionAndProvider(instance.ServiceGUID)
 	if err != nil {
 		return response, err
 	}
@@ -215,7 +221,7 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return response, err
 	}
 
-	operationId, err := serviceProvider.Deprovision(ctx, *instance, details, vars)
+	operationId, err := serviceProvider.Deprovision(ctx, instance.GUID, details, vars)
 	if err != nil {
 		return response, err
 	}
@@ -224,7 +230,7 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		// soft-delete instance details from the db if this is a synchronous operation
 		// if it's an async operation we can't delete from the db until we're sure delete succeeded, so this is
 		// handled internally to LastOperation
-		if err := db_service.DeleteServiceInstanceDetailsById(ctx, instanceID); err != nil {
+		if err := broker.store.DeleteServiceInstanceDetails(instanceID); err != nil {
 			return response, fmt.Errorf("error deleting instance details from database: %s. WARNING: this instance will remain visible in cf. Contact your operator for cleanup", err)
 		}
 		if err := broker.store.DeleteProvisionRequestDetails(instanceID); err != nil {
@@ -236,8 +242,8 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		response.OperationData = *operationId
 
 		instance.OperationType = models.DeprovisionOperationType
-		instance.OperationId = *operationId
-		if err := db_service.SaveServiceInstanceDetails(ctx, instance); err != nil {
+		instance.OperationGUID = *operationId
+		if err := broker.store.StoreServiceInstanceDetails(instance); err != nil {
 			return response, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance will remain visible in cf. Contact your operator for cleanup", err)
 		}
 		return response, nil
@@ -263,12 +269,12 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	}
 
 	// get existing service instance details
-	instanceRecord, err := db_service.GetServiceInstanceDetailsById(ctx, instanceID)
+	instanceRecord, err := broker.store.GetServiceInstanceDetails(instanceID)
 	if err != nil {
 		return domain.Binding{}, fmt.Errorf("error retrieving service instance details: %w", err)
 	}
 
-	serviceDefinition, serviceProvider, err := broker.getDefinitionAndProvider(instanceRecord.ServiceId)
+	serviceDefinition, serviceProvider, err := broker.getDefinitionAndProvider(instanceRecord.ServiceGUID)
 	if err != nil {
 		return domain.Binding{}, fmt.Errorf("error retrieving service definition: %w", err)
 	}
@@ -286,7 +292,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 
 	// validate parameters meet the service's schema and merge the plan's vars with
 	// the user's
-	vars, err := serviceDefinition.BindVariables(*instanceRecord, bindingID, details, plan, request.DecodeOriginatingIdentityHeader(ctx))
+	vars, err := serviceDefinition.BindVariables(instanceRecord, bindingID, details, plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return domain.Binding{}, fmt.Errorf("error generating bind variables: %w", err)
 	}
@@ -299,10 +305,10 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 
 	// save binding to database
 	newCreds := storage.ServiceBindingCredentials{
-		ServiceInstanceID: instanceID,
-		BindingID:         bindingID,
-		ServiceID:         details.ServiceID,
-		Credentials:       credsDetails,
+		ServiceInstanceGUID: instanceID,
+		BindingGUID:         bindingID,
+		ServiceGUID:         details.ServiceID,
+		Credentials:         credsDetails,
 	}
 
 	if err := broker.store.CreateServiceBindingCredentials(newCreds); err != nil {
@@ -310,7 +316,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 			err)
 	}
 
-	binding, err := serviceProvider.BuildInstanceCredentials(ctx, newCreds.Credentials, *instanceRecord)
+	binding, err := serviceProvider.BuildInstanceCredentials(ctx, newCreds.Credentials, instanceRecord.Outputs)
 	if err != nil {
 		return domain.Binding{}, fmt.Errorf("error building credentials: %w", err)
 	}
@@ -409,7 +415,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	}
 
 	// get existing service instance details
-	instance, err := db_service.GetServiceInstanceDetailsById(ctx, instanceID)
+	instance, err := broker.store.GetServiceInstanceDetails(instanceID)
 	if err != nil {
 		return domain.UnbindSpec{}, fmt.Errorf("error retrieving service instance details: %s", err)
 	}
@@ -431,13 +437,13 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		RawParameters: rawParameters,
 	}
 
-	vars, err := serviceDefinition.BindVariables(*instance, bindingID, bindDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
+	vars, err := serviceDefinition.BindVariables(instance, bindingID, bindDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return domain.UnbindSpec{}, err
 	}
 
 	// remove binding from service provider
-	if err := serviceProvider.Unbind(ctx, *instance, bindingID, vars); err != nil {
+	if err := serviceProvider.Unbind(ctx, instanceID, bindingID, vars); err != nil {
 		return domain.UnbindSpec{}, err
 	}
 
@@ -474,12 +480,12 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 		"operation_data": details.OperationData,
 	})
 
-	instance, err := db_service.GetServiceInstanceDetailsById(ctx, instanceID)
+	instance, err := broker.store.GetServiceInstanceDetails(instanceID)
 	if err != nil {
 		return domain.LastOperation{}, apiresponses.ErrInstanceDoesNotExist
 	}
 
-	_, serviceProvider, err := broker.getDefinitionAndProvider(instance.ServiceId)
+	_, serviceProvider, err := broker.getDefinitionAndProvider(instance.ServiceGUID)
 	if err != nil {
 		return domain.LastOperation{}, err
 	}
@@ -491,7 +497,7 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 
 	lastOperationType := instance.OperationType
 
-	done, message, err := serviceProvider.PollInstance(ctx, *instance)
+	done, message, err := serviceProvider.PollInstance(ctx, instance.GUID)
 
 	if err != nil {
 		return domain.LastOperation{State: domain.Failed, Description: err.Error()}, nil
@@ -511,7 +517,7 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 // once lastOperation finishes successfully.
 func (broker *ServiceBroker) updateStateOnOperationCompletion(ctx context.Context, service broker.ServiceProvider, lastOperationType, instanceID string) error {
 	if lastOperationType == models.DeprovisionOperationType {
-		if err := db_service.DeleteServiceInstanceDetailsById(ctx, instanceID); err != nil {
+		if err := broker.store.DeleteServiceInstanceDetails(instanceID); err != nil {
 			return fmt.Errorf("error deleting instance details from database: %s. WARNING: this instance will remain visible in cf. Contact your operator for cleanup", err)
 		}
 		if err := broker.store.DeleteProvisionRequestDetails(instanceID); err != nil {
@@ -523,18 +529,20 @@ func (broker *ServiceBroker) updateStateOnOperationCompletion(ctx context.Contex
 
 	// If the operation was not a delete, clear out the ID and type and update
 	// any changed (or finalized) state like IP addresses, selflinks, etc.
-	details, err := db_service.GetServiceInstanceDetailsById(ctx, instanceID)
+	details, err := broker.store.GetServiceInstanceDetails(instanceID)
 	if err != nil {
 		return fmt.Errorf("error getting instance details from database %v", err)
 	}
 
-	if err := service.UpdateInstanceDetails(ctx, details); err != nil {
+	outs, err := service.GetTerraformOutputs(ctx, details.GUID)
+	if err != nil {
 		return fmt.Errorf("error getting new instance details from GCP: %v", err)
 	}
 
-	details.OperationId = ""
+	details.Outputs = outs
+	details.OperationGUID = ""
 	details.OperationType = models.ClearOperationType
-	if err := db_service.SaveServiceInstanceDetails(ctx, details); err != nil {
+	if err := broker.store.StoreServiceInstanceDetails(details); err != nil {
 		return fmt.Errorf("error saving instance details to database %v", err)
 	}
 
@@ -551,12 +559,20 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	})
 
 	// make sure that instance actually exists
-	instance, err := db_service.GetServiceInstanceDetailsById(ctx, instanceID)
-	if err != nil {
+	exists, err := broker.store.ExistsServiceInstanceDetails(instanceID)
+	switch {
+	case err != nil:
+		return response, err
+	case !exists:
 		return response, apiresponses.ErrInstanceDoesNotExist
 	}
 
-	brokerService, serviceHelper, err := broker.getDefinitionAndProvider(instance.ServiceId)
+	instance, err := broker.store.GetServiceInstanceDetails(instanceID)
+	if err != nil {
+		return response, err
+	}
+
+	brokerService, serviceHelper, err := broker.getDefinitionAndProvider(instance.ServiceGUID)
 	if err != nil {
 		return response, err
 	}
@@ -612,8 +628,8 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	// save instance details
-	instance.PlanId = newInstanceDetails.PlanId
-	if err := db_service.SaveServiceInstanceDetails(ctx, instance); err != nil {
+	instance.PlanGUID = newInstanceDetails.PlanId
+	if err := broker.store.StoreServiceInstanceDetails(instance); err != nil {
 		return domain.UpdateServiceSpec{}, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance cannot be deprovisioned through cf. Contact your operator for cleanup", err)
 	}
 

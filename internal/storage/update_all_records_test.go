@@ -11,6 +11,7 @@ var _ = Describe("UpdateAllRecords", func() {
 	BeforeEach(func() {
 		addFakeServiceCredentialBindings()
 		addFakeProvisionRequestDetails()
+		addFakeServiceInstanceDetails()
 	})
 
 	It("updates all the records with the latest encoding", func() {
@@ -30,6 +31,14 @@ var _ = Describe("UpdateAllRecords", func() {
 			Expect(receiver[0].RequestDetails).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"bar"}}}`)))
 			Expect(receiver[1].RequestDetails).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"baz","bar":"quz"}}}`)))
 			Expect(receiver[2].RequestDetails).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"boz"}}}`)))
+		})
+
+		By("checking service instance details", func() {
+			var receiver []models.ServiceInstanceDetails
+			Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
+			Expect(receiver[0].OtherDetails).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"bar-1"}}}`)))
+			Expect(receiver[1].OtherDetails).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"bar-2"}}}`)))
+			Expect(receiver[2].OtherDetails).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"bar-3"}}}`)))
 		})
 	})
 })

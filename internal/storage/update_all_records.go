@@ -11,6 +11,7 @@ func (s *Storage) UpdateAllRecords() error {
 	updaters := []func() error{
 		s.updateAllSericeBindingCredentials,
 		s.updateAllProvisionRequestDetails,
+		s.updateAllServiceInstanceDetails,
 	}
 	for _, e := range updaters {
 		if err := e(); err != nil {
@@ -64,6 +65,30 @@ func (s *Storage) updateAllProvisionRequestDetails() error {
 	})
 	if result.Error != nil {
 		return fmt.Errorf("error re-encoding provision request details: %v", result.Error)
+	}
+
+	return nil
+}
+
+func (s *Storage) updateAllServiceInstanceDetails() error {
+	var serviceInstanceDetailsBatch []models.ServiceInstanceDetails
+	result := s.db.FindInBatches(&serviceInstanceDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
+		for i := range serviceInstanceDetailsBatch {
+			outputs, err := s.decodeJSONObject(serviceInstanceDetailsBatch[i].OtherDetails)
+			if err != nil {
+				return err
+			}
+
+			serviceInstanceDetailsBatch[i].OtherDetails, err = s.encodeJSON(outputs)
+			if err != nil {
+				return err
+			}
+		}
+
+		return tx.Save(&serviceInstanceDetailsBatch).Error
+	})
+	if result.Error != nil {
+		return fmt.Errorf("error reencrypting: %v", result.Error)
 	}
 
 	return nil

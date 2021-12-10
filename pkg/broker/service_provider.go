@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
@@ -32,7 +33,7 @@ import (
 type ServiceProvider interface {
 	// Provision creates the necessary resources that an instance of this service
 	// needs to operate.
-	Provision(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
+	Provision(ctx context.Context, provisionContext *varcontext.VarContext) (storage.ServiceInstanceDetails, error)
 
 	// Update makes necessary updates to resources so they match new desired configuration
 	Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
@@ -43,14 +44,14 @@ type ServiceProvider interface {
 	Bind(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error)
 	// BuildInstanceCredentials combines the bindRecord with any additional
 	// info from the instance to create credentials for the binding.
-	BuildInstanceCredentials(ctx context.Context, credentials map[string]interface{}, instance models.ServiceInstanceDetails) (*domain.Binding, error)
+	BuildInstanceCredentials(ctx context.Context, credentials map[string]interface{}, outputs storage.TerraformOutputs) (*domain.Binding, error)
 	// Unbind deprovisions the resources created with Bind.
-	Unbind(ctx context.Context, instance models.ServiceInstanceDetails, bindingID string, vc *varcontext.VarContext) error
+	Unbind(ctx context.Context, instanceGUID, bindingID string, vc *varcontext.VarContext) error
 	// Deprovision deprovisions the service.
 	// If the deprovision is asynchronous (results in a long-running job), then operationId is returned.
 	// If no error and no operationId are returned, then the deprovision is expected to have been completed successfully.
-	Deprovision(ctx context.Context, instance models.ServiceInstanceDetails, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error)
-	PollInstance(ctx context.Context, instance models.ServiceInstanceDetails) (bool, string, error)
+	Deprovision(ctx context.Context, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error)
+	PollInstance(ctx context.Context, instanceGUID string) (bool, string, error)
 	ProvisionsAsync() bool
 	DeprovisionsAsync() bool
 
@@ -58,5 +59,5 @@ type ServiceProvider interface {
 	// This function is optional, but will be called after async provisions, updates, and possibly
 	// on broker version changes.
 	// Return a nil error if you choose not to implement this function.
-	UpdateInstanceDetails(ctx context.Context, instance *models.ServiceInstanceDetails) error
+	GetTerraformOutputs(ctx context.Context, guid string) (storage.TerraformOutputs, error)
 }

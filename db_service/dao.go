@@ -22,64 +22,6 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 )
 
-// CreateServiceInstanceDetails creates a new record in the database and assigns it a primary key.
-func CreateServiceInstanceDetails(ctx context.Context, object *models.ServiceInstanceDetails) error {
-	return defaultDatastore().CreateServiceInstanceDetails(ctx, object)
-}
-func (ds *SqlDatastore) CreateServiceInstanceDetails(ctx context.Context, object *models.ServiceInstanceDetails) error {
-	return ds.db.Create(object).Error
-}
-
-// SaveServiceInstanceDetails updates an existing record in the database.
-func SaveServiceInstanceDetails(ctx context.Context, object *models.ServiceInstanceDetails) error {
-	return defaultDatastore().SaveServiceInstanceDetails(ctx, object)
-}
-func (ds *SqlDatastore) SaveServiceInstanceDetails(ctx context.Context, object *models.ServiceInstanceDetails) error {
-	return ds.db.Save(object).Error
-}
-
-// DeleteServiceInstanceDetailsById soft-deletes the record by its key (id).
-func DeleteServiceInstanceDetailsById(ctx context.Context, id string) error {
-	return defaultDatastore().DeleteServiceInstanceDetailsById(ctx, id)
-}
-func (ds *SqlDatastore) DeleteServiceInstanceDetailsById(ctx context.Context, id string) error {
-	return ds.db.Where("id = ?", id).Delete(&models.ServiceInstanceDetails{}).Error
-}
-
-// DeleteServiceInstanceDetails soft-deletes the record.
-func DeleteServiceInstanceDetails(ctx context.Context, record *models.ServiceInstanceDetails) error {
-	return defaultDatastore().DeleteServiceInstanceDetails(ctx, record)
-}
-func (ds *SqlDatastore) DeleteServiceInstanceDetails(ctx context.Context, record *models.ServiceInstanceDetails) error {
-	return ds.db.Delete(record).Error
-}
-
-// GetServiceInstanceDetailsById gets an instance of ServiceInstanceDetails by its key (id).
-func GetServiceInstanceDetailsById(ctx context.Context, id string) (*models.ServiceInstanceDetails, error) {
-	return defaultDatastore().GetServiceInstanceDetailsById(ctx, id)
-}
-func (ds *SqlDatastore) GetServiceInstanceDetailsById(ctx context.Context, id string) (*models.ServiceInstanceDetails, error) {
-	record := models.ServiceInstanceDetails{}
-	if err := ds.db.Where("id = ?", id).First(&record).Error; err != nil {
-		return nil, err
-	}
-
-	return &record, nil
-}
-
-// ExistsServiceInstanceDetailsById checks to see if an instance of ServiceInstanceDetails exists by its key (id).
-func ExistsServiceInstanceDetailsById(ctx context.Context, id string) (bool, error) {
-	return defaultDatastore().ExistsServiceInstanceDetailsById(ctx, id)
-}
-func (ds *SqlDatastore) ExistsServiceInstanceDetailsById(ctx context.Context, id string) (bool, error) {
-	var count int64
-	if err := ds.db.Model(&models.ServiceInstanceDetails{}).Where("id = ?", id).Count(&count).Error; err != nil {
-		return false, err
-	}
-
-	return count != 0, nil
-}
-
 // CreateTerraformDeployment creates a new record in the database and assigns it a primary key.
 func CreateTerraformDeployment(ctx context.Context, object *models.TerraformDeployment) error {
 	return defaultDatastore().CreateTerraformDeployment(ctx, object)

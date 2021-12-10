@@ -14,10 +14,6 @@
 
 package models
 
-import (
-	"encoding/json"
-)
-
 const (
 	// The following operation types are used as part of the OSB process.
 	// The types correspond to asynchronous provision/deprovision/update calls
@@ -48,38 +44,6 @@ type ServiceBindingCredentials ServiceBindingCredentialsV2
 
 // ServiceInstanceDetails holds information about provisioned services.
 type ServiceInstanceDetails ServiceInstanceDetailsV3
-
-// SetOtherDetails marshals the value passed in into a JSON string and sets
-// OtherDetails to it if marshalling was successful.
-func (si *ServiceInstanceDetails) SetOtherDetails(toSet interface{}) error {
-	out, err := json.Marshal(toSet)
-	if err != nil {
-		return err
-	}
-
-	encryptedDetails, err := encryptorInstance.Encrypt(out)
-	if err != nil {
-		return err
-	}
-
-	si.OtherDetails = encryptedDetails
-	return nil
-}
-
-// GetOtherDetails returns and unmarshalls the OtherDetails field into the given
-// struct. An empty OtherDetails field does not get unmarshalled and does not error.
-func (si ServiceInstanceDetails) GetOtherDetails(v interface{}) error {
-	if si.OtherDetails == nil {
-		return nil
-	}
-
-	decryptedDetails, err := encryptorInstance.Decrypt(si.OtherDetails)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(decryptedDetails, v)
-}
 
 // ProvisionRequestDetails holds user-defined properties passed to a call
 // to provision a service.

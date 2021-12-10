@@ -146,17 +146,17 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 		Provider: &brokerfakes.FakeServiceProvider{
 			ProvisionsAsyncStub:   func() bool { return isAsync },
 			DeprovisionsAsyncStub: func() bool { return isAsync },
-			ProvisionStub: func(ctx context.Context, vc *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
-				instance := models.ServiceInstanceDetails{}
-				instance.SetOtherDetails(map[string]interface{}{"mynameis": "instancename", "foo": "baz"})
-				return instance, nil
+			ProvisionStub: func(ctx context.Context, vc *varcontext.VarContext) (storage.ServiceInstanceDetails, error) {
+				return storage.ServiceInstanceDetails{
+					Outputs: map[string]interface{}{"mynameis": "instancename", "foo": "baz"},
+				}, nil
 			},
 			BindStub: func(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error) {
 				return map[string]interface{}{"foo": "bar"}, nil
 			},
-			BuildInstanceCredentialsStub: func(ctx context.Context, creds map[string]interface{}, id models.ServiceInstanceDetails) (*domain.Binding, error) {
+			BuildInstanceCredentialsStub: func(ctx context.Context, creds map[string]interface{}, outs storage.TerraformOutputs) (*domain.Binding, error) {
 				mixin := base.MergedInstanceCredsMixin{}
-				return mixin.BuildInstanceCredentials(ctx, creds, id)
+				return mixin.BuildInstanceCredentials(ctx, creds, outs)
 			},
 		},
 	}
@@ -446,11 +446,12 @@ func TestServiceBroker_Deprovision(t *testing.T) {
 				_, err := broker.Deprovision(context.Background(), fakeInstanceId, stub.DeprovisionDetails(), true)
 				failIfErr(t, "deprovisioning", err)
 
-				details, err := db_service.GetServiceInstanceDetailsById(context.Background(), fakeInstanceId)
+				var m models.ServiceInstanceDetails
+				err = db_service.DbConnection.Where(`id=?`, fakeInstanceId).First(&m).Error
 				failIfErr(t, "looking up details", err)
 
-				assertEqual(t, "OperationId should be set as the data", operationId, details.OperationId)
-				assertEqual(t, "OperationType should be set as Deprovision", models.DeprovisionOperationType, details.OperationType)
+				assertEqual(t, "OperationId should be set as the data", operationId, m.OperationId)
+				assertEqual(t, "OperationType should be set as Deprovision", models.DeprovisionOperationType, m.OperationType)
 			},
 		},
 		"error-getting-request-details": {
@@ -819,7 +820,7 @@ func TestServiceBroker_Update(t *testing.T) {
 				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
 
 				assertTrue(t, "Should have returned error", err != nil)
-				assertTrue(t, "errors should match"+err.Error(), strings.Contains(err.Error(), "error while decrypting"))
+				assertTrue(t, "errors should match", strings.Contains(err.Error(), "error while decrypting"))
 			},
 		},
 		"update and provision params merged": {

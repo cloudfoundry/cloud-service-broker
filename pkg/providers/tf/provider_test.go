@@ -194,8 +194,8 @@ var _ = Describe("WorkspaceUpdater", func() {
 		instanceDetails, err := provider.Provision(context.TODO(), provisionContext)
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(pollOperationSucceeded(instanceDetails.OperationId)).Should(Equal("succeeded"))
-		ws := getTerraformWorkspace(instanceDetails.OperationId)
+		Eventually(pollOperationSucceeded(instanceDetails.OperationGUID)).Should(Equal("succeeded"))
+		ws := getTerraformWorkspace(instanceDetails.OperationGUID)
 		expectModuleToBeInitialHCL(ws)
 		Expect(string(ws.State)).To(Equal(terraformStateAfterProvision))
 

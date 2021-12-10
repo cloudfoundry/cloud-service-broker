@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/toggles"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
@@ -436,12 +436,7 @@ func unmarshalJsonToMap(rawContext json.RawMessage) map[string]interface{} {
 // 4. Operator default variables loaded from the environment.
 // 5. Default variables (in `bind_input_variables`).
 //
-func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetails, bindingID string, details domain.BindDetails, plan *ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
-	otherDetails := make(map[string]interface{})
-	if err := instance.GetOtherDetails(&otherDetails); err != nil {
-		return nil, err
-	}
-
+func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDetails, bindingID string, details domain.BindDetails, plan *ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
 	appGuid := ""
 	if details.BindResource != nil {
 		appGuid = details.BindResource.AppGuid
@@ -453,21 +448,21 @@ func (svc *ServiceDefinition) BindVariables(instance models.ServiceInstanceDetai
 
 		// specified in the URL
 		"request.binding_id":  bindingID,
-		"request.instance_id": instance.ID,
+		"request.instance_id": instance.GUID,
 		"request.context":     unmarshalJsonToMap(details.GetRawContext()),
 
 		// specified in the request body
 		// Note: the value in instance is considered the official record so values
 		// are pulled from there rather than the request. In a future version of OSB
 		// the duplicate sending of fields is likely to be removed.
-		"request.plan_id":         instance.PlanId,
-		"request.service_id":      instance.ServiceId,
+		"request.plan_id":         instance.PlanGUID,
+		"request.service_id":      instance.ServiceGUID,
 		"request.app_guid":        appGuid,
 		"request.plan_properties": plan.GetServiceProperties(),
 
 		// specified by the existing instance
 		"instance.name":    instance.Name,
-		"instance.details": otherDetails,
+		"instance.details": instance.Outputs,
 	}
 
 	builder := varcontext.Builder().

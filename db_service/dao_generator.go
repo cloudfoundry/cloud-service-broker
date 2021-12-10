@@ -31,22 +31,6 @@ import (
 func main() {
 	models := []crudModel{
 		{
-			Type:              "ServiceInstanceDetails",
-			PrimaryKeyType:    "string",
-			PrimaryKeyExample: `"42"`,
-			PrimaryKeyField:   "id",
-			ExampleFields: map[string]interface{}{
-				"Name":             "Hello",
-				"Location":         "loc",
-				"Url":              "https://google.com",
-				"OtherDetails":     []byte(`{"some":["json","blob","here"]}`),
-				"ServiceId":        "123-456-7890",
-				"PlanId":           "planid",
-				"SpaceGuid":        "0000-0000-0000",
-				"OrganizationGuid": "1111-1111-1111",
-			},
-		},
-		{
 			Type:              "TerraformDeployment",
 			PrimaryKeyType:    "string",
 			PrimaryKeyExample: `"42"`,

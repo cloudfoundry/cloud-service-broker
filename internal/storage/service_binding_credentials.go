@@ -9,10 +9,10 @@ import (
 type Credentials map[string]interface{}
 
 type ServiceBindingCredentials struct {
-	ServiceID         string
-	ServiceInstanceID string
-	BindingID         string
-	Credentials       Credentials
+	ServiceGUID         string
+	ServiceInstanceGUID string
+	BindingGUID         string
+	Credentials         Credentials
 }
 
 func (s *Storage) CreateServiceBindingCredentials(binding ServiceBindingCredentials) error {
@@ -23,9 +23,9 @@ func (s *Storage) CreateServiceBindingCredentials(binding ServiceBindingCredenti
 
 	m := models.ServiceBindingCredentials{
 		OtherDetails:      encodedCreds,
-		ServiceId:         binding.ServiceID,
-		ServiceInstanceId: binding.ServiceInstanceID,
-		BindingId:         binding.BindingID,
+		ServiceId:         binding.ServiceGUID,
+		ServiceInstanceId: binding.ServiceInstanceGUID,
+		BindingId:         binding.BindingGUID,
 	}
 
 	if err := s.db.Create(&m).Error; err != nil {
@@ -47,10 +47,10 @@ func (s *Storage) GetServiceBindingCredentials(bindingID, serviceInstanceID stri
 	}
 
 	return ServiceBindingCredentials{
-		ServiceID:         receiver.ServiceId,
-		ServiceInstanceID: receiver.ServiceInstanceId,
-		BindingID:         receiver.BindingId,
-		Credentials:       decoded,
+		ServiceGUID:         receiver.ServiceId,
+		ServiceInstanceGUID: receiver.ServiceInstanceId,
+		BindingGUID:         receiver.BindingId,
+		Credentials:         decoded,
 	}, nil
 }
 

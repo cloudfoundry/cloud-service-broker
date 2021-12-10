@@ -14,4 +14,8 @@ type Storage interface {
 	StoreProvisionRequestDetails(serviceInstanceID string, details json.RawMessage) error
 	GetProvisionRequestDetails(serviceInstanceID string) (json.RawMessage, error)
 	DeleteProvisionRequestDetails(serviceInstanceID string) error
+	StoreServiceInstanceDetails(d storage.ServiceInstanceDetails) error
+	GetServiceInstanceDetails(guid string) (storage.ServiceInstanceDetails, error)
+	ExistsServiceInstanceDetails(guid string) (bool, error)
+	DeleteServiceInstanceDetails(guid string) error
 }

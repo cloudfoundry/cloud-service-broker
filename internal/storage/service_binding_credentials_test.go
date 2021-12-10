@@ -13,9 +13,9 @@ var _ = Describe("ServiceBindingCredentials", func() {
 	Describe("CreateServiceBindingCredentials", func() {
 		It("creates the right object in the database", func() {
 			err := store.CreateServiceBindingCredentials(storage.ServiceBindingCredentials{
-				ServiceID:         "fake-service-id",
-				ServiceInstanceID: "fake-instance-id",
-				BindingID:         "fake-binding-id",
+				ServiceGUID:         "fake-service-id",
+				ServiceInstanceGUID: "fake-instance-id",
+				BindingGUID:         "fake-binding-id",
 				Credentials: storage.Credentials{
 					"fake-cred-1": "fake-val-1",
 					"fake-cred-2": "fake-val-2",
@@ -54,9 +54,9 @@ var _ = Describe("ServiceBindingCredentials", func() {
 		It("reads the right object from the database", func() {
 			r, err := store.GetServiceBindingCredentials("fake-binding-id", "fake-instance-id")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(r.ServiceID).To(Equal("fake-service-id"))
-			Expect(r.ServiceInstanceID).To(Equal("fake-instance-id"))
-			Expect(r.BindingID).To(Equal("fake-binding-id"))
+			Expect(r.ServiceGUID).To(Equal("fake-service-id"))
+			Expect(r.ServiceInstanceGUID).To(Equal("fake-instance-id"))
+			Expect(r.BindingGUID).To(Equal("fake-binding-id"))
 			Expect(r.Credentials).To(Equal(storage.Credentials{
 				"decrypted": map[string]interface{}{
 					"foo": "baz",
