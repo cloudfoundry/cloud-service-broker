@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"gorm.io/gorm"
 )
 
 type Credentials map[string]interface{}
@@ -17,7 +16,7 @@ type ServiceBindingCredentials struct {
 }
 
 func (s *Storage) CreateServiceBindingCredentials(binding ServiceBindingCredentials) error {
-	encodedCreds, err := s.marshalAndEncrypt(binding.Credentials)
+	encodedCreds, err := s.encodeJSON(binding.Credentials)
 	if err != nil {
 		return fmt.Errorf("error encoding credentials: %w", err)
 	}
@@ -42,7 +41,7 @@ func (s *Storage) GetServiceBindingCredentials(bindingID, serviceInstanceID stri
 		return ServiceBindingCredentials{}, fmt.Errorf("error finding service credential binding: %w", err)
 	}
 
-	decoded, err := s.decryptAndUnmarshalObject(receiver.OtherDetails)
+	decoded, err := s.decodeJSONObject(receiver.OtherDetails)
 	if err != nil {
 		return ServiceBindingCredentials{}, fmt.Errorf("error decoding credentials: %w", err)
 	}
@@ -68,29 +67,5 @@ func (s *Storage) DeleteServiceBindingCredentials(bindingID, serviceInstanceID s
 	if err != nil {
 		return fmt.Errorf("error deleting service binding credentials: %w", err)
 	}
-	return nil
-}
-
-func (s *Storage) UpdateAllServiceBindingCredentials() error {
-	var serviceBindingCredentialsBatch []models.ServiceBindingCredentials
-	result := s.db.FindInBatches(&serviceBindingCredentialsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
-		for i := range serviceBindingCredentialsBatch {
-			creds, err := s.decryptAndUnmarshalObject(serviceBindingCredentialsBatch[i].OtherDetails)
-			if err != nil {
-				return err
-			}
-
-			serviceBindingCredentialsBatch[i].OtherDetails, err = s.marshalAndEncrypt(creds)
-			if err != nil {
-				return err
-			}
-		}
-
-		return tx.Save(&serviceBindingCredentialsBatch).Error
-	})
-	if result.Error != nil {
-		return fmt.Errorf("error re-enoding service binding credentials: %v", result.Error)
-	}
-
 	return nil
 }

@@ -85,25 +85,6 @@ func (si ServiceInstanceDetails) GetOtherDetails(v interface{}) error {
 // to provision a service.
 type ProvisionRequestDetails ProvisionRequestDetailsV3
 
-func (pr *ProvisionRequestDetails) SetRequestDetails(rawMessage json.RawMessage) error {
-	encryptedDetails, err := encryptorInstance.Encrypt(rawMessage)
-	if err != nil {
-		return err
-	}
-
-	pr.RequestDetails = encryptedDetails
-	return nil
-}
-
-func (pr ProvisionRequestDetails) GetRequestDetails() (json.RawMessage, error) {
-	decryptedDetails, err := encryptorInstance.Decrypt(pr.RequestDetails)
-	if err != nil {
-		return nil, err
-	}
-
-	return decryptedDetails, nil
-}
-
 // Migration represents the mgirations table. It holds a monotonically
 // increasing number that gets incremented with every database schema revision.
 type Migration MigrationV1

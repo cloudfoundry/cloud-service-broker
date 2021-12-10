@@ -28,7 +28,6 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models/fakes"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker/brokerfakes"
@@ -171,7 +170,7 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 
 // newStubbedBroker creates a new ServiceBroker with a dummy database for the given registry.
 // It returns the broker and a callback used to clean up the database when done with it.
-func newStubbedBroker(t *testing.T, registry broker.BrokerRegistry, cs credstore.CredStore) (broker *ServiceBroker, closer func()) {
+func newStubbedBroker(t *testing.T, registry broker.BrokerRegistry, cs credstore.CredStore, encryptor *fakes.FakeEncryptor) (broker *ServiceBroker, closer func()) {
 	// Set up database
 	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
@@ -189,7 +188,7 @@ func newStubbedBroker(t *testing.T, registry broker.BrokerRegistry, cs credstore
 		Credstore: cs,
 	}
 
-	broker, err = New(config, utils.NewLogger("brokers-test"), storage.New(db, noopencryptor.New()))
+	broker, err = New(config, utils.NewLogger("brokers-test"), storage.New(db, encryptor))
 	if err != nil {
 		t.Fatalf("couldn't create broker: %v", err)
 	}
@@ -237,7 +236,7 @@ type BrokerEndpointTestCase struct {
 
 	// Check is used to validate the state of the world and is where you should
 	// put your test cases.
-	Check     func(t *testing.T, broker *ServiceBroker, stub *serviceStub)
+	Check     func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor)
 	Credstore credstore.CredStore
 }
 
@@ -249,20 +248,24 @@ type BrokerEndpointTestSuite map[string]BrokerEndpointTestCase
 func (cases BrokerEndpointTestSuite) Run(t *testing.T) {
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			models.SetEncryptor(noopencryptor.New())
+			encryptor := &fakes.FakeEncryptor{
+				DecryptStub: func(bytes []byte) ([]byte, error) { return bytes, nil },
+				EncryptStub: func(bytes []byte) ([]byte, error) { return bytes, nil },
+			}
+			models.SetEncryptor(encryptor)
 			stub := fakeService(t, tc.AsyncService)
 
 			t.Log("Creating broker")
 			registry := broker.BrokerRegistry{}
 			registry.Register(stub.ServiceDefinition)
 
-			broker, closer := newStubbedBroker(t, registry, tc.Credstore)
+			broker, closer := newStubbedBroker(t, registry, tc.Credstore, encryptor)
 			defer closer()
 
 			initService(t, tc.ServiceState, broker, stub)
 
 			t.Log("Running check")
-			tc.Check(t, broker, stub)
+			tc.Check(t, broker, stub, encryptor)
 		})
 	}
 }
@@ -295,7 +298,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"good-request": {
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 
 				assertEqual(t, "provision calls should match", 1, stub.Provider.ProvisionCallCount())
 			},
@@ -303,7 +306,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 		"originating-header": {
 			AsyncService: true,
 			ServiceState: StateNone,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
 				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
 				broker.Provision(newContext, fakeInstanceId, stub.ProvisionDetails(), true)
@@ -316,7 +319,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 		},
 		"duplicate-request": {
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.Provision(context.Background(), fakeInstanceId, stub.ProvisionDetails(), true)
 				assertEqual(t, "errors should match", apiresponses.ErrInstanceAlreadyExists, err)
 			},
@@ -324,7 +327,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 		"requires-async": {
 			AsyncService: true,
 			ServiceState: StateNone,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				// false for async support
 				_, err := broker.Provision(context.Background(), fakeInstanceId, stub.ProvisionDetails(), false)
 				assertEqual(t, "errors should match", apiresponses.ErrAsyncRequired, err)
@@ -332,7 +335,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 		},
 		"unknown-service-id": {
 			ServiceState: StateNone,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				req := stub.ProvisionDetails()
 				req.ServiceID = "bad-service-id"
 				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
@@ -341,7 +344,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 		},
 		"unknown-plan-id": {
 			ServiceState: StateNone,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				req := stub.ProvisionDetails()
 				req.PlanID = "bad-plan-id"
 				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
@@ -350,7 +353,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 		},
 		"bad-request-json": {
 			ServiceState: StateNone,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				req := stub.ProvisionDetails()
 				req.RawParameters = json.RawMessage("{invalid json")
 				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
@@ -359,11 +362,10 @@ func TestServiceBroker_Provision(t *testing.T) {
 		},
 		"error-setting-request-details": {
 			ServiceState: StateNone,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				req := stub.ProvisionDetails()
-				encryptor := fakes.FakeEncryptor{}
 				encryptor.EncryptReturns(nil, errors.New("error while encrypting"))
-				models.SetEncryptor(&encryptor)
+
 				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
 				assertTrue(t, "errors should match", strings.Contains(err.Error(), "error while encrypting"))
 			},
@@ -377,7 +379,7 @@ func TestServiceBroker_Deprovision(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"good-request": {
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.Deprovision(context.Background(), fakeInstanceId, stub.DeprovisionDetails(), true)
 				failIfErr(t, "deprovisioning", err)
 
@@ -387,7 +389,7 @@ func TestServiceBroker_Deprovision(t *testing.T) {
 		"originating-header": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
 				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
 				_, err := broker.Deprovision(newContext, fakeInstanceId, stub.DeprovisionDetails(), true)
@@ -402,13 +404,13 @@ func TestServiceBroker_Deprovision(t *testing.T) {
 		},
 		"duplicate-deprovision": {
 			ServiceState: StateDeprovisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.Deprovision(context.Background(), fakeInstanceId, stub.DeprovisionDetails(), true)
 				assertEqual(t, "duplicate deprovision should lead to DNE", brokerapi.ErrInstanceDoesNotExist, err)
 			},
 		},
 		"instance-does-not-exist": {
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.Deprovision(context.Background(), fakeInstanceId, stub.DeprovisionDetails(), true)
 				assertEqual(t, "instance does not exist should be set", brokerapi.ErrInstanceDoesNotExist, err)
 			},
@@ -416,7 +418,7 @@ func TestServiceBroker_Deprovision(t *testing.T) {
 		"async-required": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.Deprovision(context.Background(), fakeInstanceId, stub.DeprovisionDetails(), false)
 				assertEqual(t, "async required should be returned if not supported", brokerapi.ErrAsyncRequired, err)
 			},
@@ -424,7 +426,7 @@ func TestServiceBroker_Deprovision(t *testing.T) {
 		"async-deprovision-returns-operation": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				operationId := "my-operation-id"
 				stub.Provider.DeprovisionReturns(&operationId, nil)
 				resp, err := broker.Deprovision(context.Background(), fakeInstanceId, stub.DeprovisionDetails(), true)
@@ -438,7 +440,7 @@ func TestServiceBroker_Deprovision(t *testing.T) {
 		"async-deprovision-updates-db": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				operationId := "my-operation-id"
 				stub.Provider.DeprovisionReturns(&operationId, nil)
 				_, err := broker.Deprovision(context.Background(), fakeInstanceId, stub.DeprovisionDetails(), true)
@@ -454,12 +456,10 @@ func TestServiceBroker_Deprovision(t *testing.T) {
 		"error-getting-request-details": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				operationId := "my-operation-id"
 				stub.Provider.DeprovisionReturns(&operationId, nil)
-				encryptor := fakes.FakeEncryptor{}
 				encryptor.DecryptReturns(nil, errors.New("error while decrypting"))
-				models.SetEncryptor(&encryptor)
 
 				_, err := broker.Deprovision(context.Background(), fakeInstanceId, stub.DeprovisionDetails(), true)
 				assertTrue(t, "Should have returned error", err != nil)
@@ -475,14 +475,14 @@ func TestServiceBroker_Bind(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"good-request": {
 			ServiceState: StateBound,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				assertEqual(t, "BindCallCount should match", 1, stub.Provider.BindCallCount())
 				assertEqual(t, "BuildInstanceCredentialsCallCount should match", 1, stub.Provider.BuildInstanceCredentialsCallCount())
 			},
 		},
 		"good-request-with-credstore": {
 			ServiceState: StateBound,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				assertEqual(t, "BindCallCount should match", 1, stub.Provider.BindCallCount())
 				assertEqual(t, "BuildInstanceCredentialsCallCount should match", 1, stub.Provider.BuildInstanceCredentialsCallCount())
 				fcs := broker.Credstore.(*credstorefakes.FakeCredStore)
@@ -493,7 +493,7 @@ func TestServiceBroker_Bind(t *testing.T) {
 		},
 		"originating-header": {
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
 				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
 				broker.Bind(newContext, fakeInstanceId, fakeBindingId, stub.BindDetails(), true)
@@ -506,14 +506,14 @@ func TestServiceBroker_Bind(t *testing.T) {
 		},
 		"duplicate-request": {
 			ServiceState: StateBound,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.Bind(context.Background(), fakeInstanceId, fakeBindingId, stub.BindDetails(), true)
 				assertEqual(t, "errors should match", brokerapi.ErrBindingAlreadyExists, err)
 			},
 		},
 		"bad-bind-call": {
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				req := stub.BindDetails()
 				stub.Provider.BindStub = func(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error) {
 					return nil, errors.New("fake error")
@@ -525,7 +525,7 @@ func TestServiceBroker_Bind(t *testing.T) {
 		},
 		"bad-request-json": {
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				req := stub.BindDetails()
 				req.RawParameters = json.RawMessage("{invalid json")
 				_, err := broker.Bind(context.Background(), fakeInstanceId, fakeBindingId, req, true)
@@ -534,7 +534,7 @@ func TestServiceBroker_Bind(t *testing.T) {
 		},
 		"bind-variables-override-instance-variables": {
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				req := stub.BindDetails()
 				bindResult, err := broker.Bind(context.Background(), fakeInstanceId, "override-params", req, true)
 				failIfErr(t, "binding", err)
@@ -545,7 +545,7 @@ func TestServiceBroker_Bind(t *testing.T) {
 		},
 		"bind-returns-credhub-ref": {
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				req := stub.BindDetails()
 				bindResult, err := broker.Bind(context.Background(), fakeInstanceId, "override-params", req, true)
 				failIfErr(t, "binding", err)
@@ -566,14 +566,14 @@ func TestServiceBroker_Unbind(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"good-request": {
 			ServiceState: StateBound,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.Unbind(context.Background(), fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
 				failIfErr(t, "unbinding", err)
 			},
 		},
 		"good-request-with-credhub": {
 			ServiceState: StateBound,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.Unbind(context.Background(), fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
 				failIfErr(t, "unbinding", err)
 				fcs := broker.Credstore.(*credstorefakes.FakeCredStore)
@@ -584,7 +584,7 @@ func TestServiceBroker_Unbind(t *testing.T) {
 		},
 		"originating-header": {
 			ServiceState: StateBound,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
 				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
 				broker.Unbind(newContext, fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
@@ -597,7 +597,7 @@ func TestServiceBroker_Unbind(t *testing.T) {
 		},
 		"multiple-unbinds": {
 			ServiceState: StateUnbound,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.Unbind(context.Background(), fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
 				assertEqual(t, "errors should match", brokerapi.ErrBindingDoesNotExist, err)
 			},
@@ -605,10 +605,8 @@ func TestServiceBroker_Unbind(t *testing.T) {
 		"error-getting-request-details": {
 			AsyncService: true,
 			ServiceState: StateBound,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
-				encryptor := &fakes.FakeEncryptor{}
-				encryptor.DecryptReturnsOnCall(0, nil, errors.New("error while decrypting"))
-				models.SetEncryptor(encryptor)
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
+				encryptor.DecryptReturns(nil, errors.New("error while decrypting"))
 
 				_, err := broker.Unbind(context.Background(), fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
 				assertTrue(t, "Should have returned error", err != nil)
@@ -624,14 +622,14 @@ func TestServiceBroker_LastOperation(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"missing-instance": {
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.LastOperation(context.Background(), "invalid-instance-id", domain.PollDetails{OperationData: "operationtoken"})
 				assertEqual(t, "errors should match", apiresponses.ErrInstanceDoesNotExist, err)
 			},
 		},
 		"called-on-synchronous-service": {
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
 				assertEqual(t, "errors should match", apiresponses.ErrAsyncRequired, err)
 			},
@@ -639,7 +637,7 @@ func TestServiceBroker_LastOperation(t *testing.T) {
 		"called-on-async-service": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
 				failIfErr(t, "shouldn't be called on async service", err)
 
@@ -649,7 +647,7 @@ func TestServiceBroker_LastOperation(t *testing.T) {
 		"poll-returns-failure": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				stub.Provider.PollInstanceReturns(false, "", errors.New("not-retryable"))
 				status, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
 				failIfErr(t, "checking last operation", err)
@@ -660,7 +658,7 @@ func TestServiceBroker_LastOperation(t *testing.T) {
 		"poll-returns-not-done": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				stub.Provider.PollInstanceReturns(false, "", nil)
 				status, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
 				failIfErr(t, "checking last operation", err)
@@ -670,7 +668,7 @@ func TestServiceBroker_LastOperation(t *testing.T) {
 		"poll-returns-success": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				stub.Provider.PollInstanceReturns(true, "message", nil)
 				status, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
 				failIfErr(t, "checking last operation", err)
@@ -687,7 +685,7 @@ func TestServiceBroker_GetBinding(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"called-on-bound": {
 			ServiceState: StateBound,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.GetBinding(context.Background(), fakeInstanceId, fakeBindingId, domain.FetchBindingDetails{})
 
 				assertEqual(t, "expect get binding not supported err", ErrGetBindingsUnsupported, err)
@@ -702,7 +700,7 @@ func TestServiceBroker_GetInstance(t *testing.T) {
 	cases := BrokerEndpointTestSuite{
 		"called-while-provisioned": {
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.GetInstance(context.Background(), fakeInstanceId, domain.FetchInstanceDetails{})
 
 				assertEqual(t, "expect get instances not supported err", ErrGetInstancesUnsupported, err)
@@ -718,7 +716,7 @@ func TestServiceBroker_LastBindingOperation(t *testing.T) {
 		"called-while-bound": {
 			ServiceState: StateProvisioned,
 			AsyncService: true,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.LastBindingOperation(context.Background(), fakeInstanceId, fakeBindingId, domain.PollDetails{})
 
 				assertEqual(t, "expect last binding to return async required", apiresponses.ErrAsyncRequired, err)
@@ -734,7 +732,7 @@ func TestServiceBroker_Update(t *testing.T) {
 		"good-request": {
 			ServiceState: StateProvisioned,
 			AsyncService: true,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.Update(context.Background(), fakeInstanceId, stub.UpdateDetails(), true)
 
 				failIfErr(t, "update", err)
@@ -742,7 +740,7 @@ func TestServiceBroker_Update(t *testing.T) {
 		},
 		"originating-header": {
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
 				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
 				broker.Update(newContext, fakeInstanceId, stub.UpdateDetails(), true)
@@ -756,7 +754,7 @@ func TestServiceBroker_Update(t *testing.T) {
 		"missing-instance": {
 			ServiceState: StateProvisioned,
 			AsyncService: true,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.Update(context.Background(), "bogus-id", stub.UpdateDetails(), true)
 
 				assertEqual(t, "expect update error to be instance does not exist", brokerapi.ErrInstanceDoesNotExist, err)
@@ -765,14 +763,14 @@ func TestServiceBroker_Update(t *testing.T) {
 		"requires-async": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				// false for async support
 				_, err := broker.Update(context.Background(), fakeInstanceId, stub.UpdateDetails(), false)
 				assertEqual(t, "errors should match", brokerapi.ErrAsyncRequired, err)
 			},
 		},
 		"instance-does-not-exist": {
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				_, err := broker.Update(context.Background(), fakeInstanceId, stub.UpdateDetails(), true)
 				assertEqual(t, "instance does not exist should be set", brokerapi.ErrInstanceDoesNotExist, err)
 			},
@@ -780,7 +778,7 @@ func TestServiceBroker_Update(t *testing.T) {
 		"bad-request-json": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				req := stub.UpdateDetails()
 				req.RawParameters = json.RawMessage("{invalid json")
 				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
@@ -790,7 +788,7 @@ func TestServiceBroker_Update(t *testing.T) {
 		"attempt-to-update-non-updatable-parameter": {
 			AsyncService: true,
 			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				req := stub.UpdateDetails()
 				stub.Provider.UpdateStub = func(ctx context.Context, varContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
 					return models.ServiceInstanceDetails{}, ErrNonUpdatableParameter
@@ -803,7 +801,7 @@ func TestServiceBroker_Update(t *testing.T) {
 		"good-request-valid-parameter": {
 			ServiceState: StateProvisioned,
 			AsyncService: true,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				req := stub.UpdateDetails()
 				req.RawParameters = json.RawMessage(`{"force_delete":"false"}`)
 				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
@@ -814,22 +812,20 @@ func TestServiceBroker_Update(t *testing.T) {
 		"error-getting-request-details": {
 			ServiceState: StateProvisioned,
 			AsyncService: true,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
-				req := stub.UpdateDetails()
-				encryptor := fakes.FakeEncryptor{}
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				encryptor.DecryptReturns(nil, errors.New("error while decrypting"))
-				models.SetEncryptor(&encryptor)
 
+				req := stub.UpdateDetails()
 				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
 
 				assertTrue(t, "Should have returned error", err != nil)
-				assertTrue(t, "errors should match", strings.Contains(err.Error(), "error while decrypting"))
+				assertTrue(t, "errors should match"+err.Error(), strings.Contains(err.Error(), "error while decrypting"))
 			},
 		},
 		"update and provision params merged": {
 			ServiceState: StateNone,
 			AsyncService: true,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				p := stub.ProvisionDetails()
 				p.RawParameters = json.RawMessage(`{"foo":"bar","baz":"quz"}`)
 				_, err := broker.Provision(context.TODO(), fakeInstanceId, p, true)
@@ -840,17 +836,18 @@ func TestServiceBroker_Update(t *testing.T) {
 				_, err = broker.Update(context.TODO(), fakeInstanceId, u, true)
 				failIfErr(t, "updating", err)
 
-				d, err := db_service.GetProvisionRequestDetailsByInstanceId(context.TODO(), fakeInstanceId)
+				var m models.ProvisionRequestDetails
+				err = db_service.DbConnection.Where(`service_instance_id=?`, fakeInstanceId).First(&m).Error
 				failIfErr(t, "reading details", err)
 				var r map[string]interface{}
-				failIfErr(t, "parsing", json.Unmarshal(d.RequestDetails, &r))
+				failIfErr(t, "parsing", json.Unmarshal(m.RequestDetails, &r))
 				assertEqual(t, "merged", map[string]interface{}{"foo": "quz", "guz": "muz", "baz": "quz"}, r)
 			},
 		},
 		"update params not persisted if operation fails": {
 			ServiceState: StateProvisioned,
 			AsyncService: true,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub) {
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *fakes.FakeEncryptor) {
 				stub.Provider.UpdateReturns(models.ServiceInstanceDetails{}, errors.New("fake error"))
 
 				u := stub.UpdateDetails()
@@ -858,9 +855,10 @@ func TestServiceBroker_Update(t *testing.T) {
 				_, err := broker.Update(context.TODO(), fakeInstanceId, u, true)
 				assertEqual(t, "error", errors.New("fake error"), err)
 
-				d, err := db_service.GetProvisionRequestDetailsByInstanceId(context.TODO(), fakeInstanceId)
+				var m models.ProvisionRequestDetails
+				err = db_service.DbConnection.Where(`service_instance_id=?`, fakeInstanceId).First(&m).Error
 				failIfErr(t, "reading details", err)
-				assertEqual(t, "empty", []byte(nil), d.RequestDetails)
+				assertEqual(t, "empty", []byte(nil), m.RequestDetails)
 			},
 		},
 	}

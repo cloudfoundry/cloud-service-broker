@@ -65,7 +65,7 @@ var _ = Describe("ServiceBindingCredentials", func() {
 			}))
 		})
 
-		When("encoding fails", func() {
+		When("decoding fails", func() {
 			It("returns an error", func() {
 				encryptor.DecryptReturns(nil, errors.New("bang"))
 
@@ -111,22 +111,6 @@ var _ = Describe("ServiceBindingCredentials", func() {
 
 		It("is idempotent", func() {
 			Expect(store.DeleteServiceBindingCredentials("not-there", "also-not-there")).NotTo(HaveOccurred())
-		})
-	})
-
-	Describe("UpdateAllServiceBindingCredentials", func() {
-		BeforeEach(func() {
-			addFakeServiceCredentialBindings()
-		})
-
-		It("updates all the records with the latest encoding", func() {
-			Expect(store.UpdateAllServiceBindingCredentials()).NotTo(HaveOccurred())
-
-			var receiver []models.ServiceBindingCredentials
-			Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
-			Expect(receiver[0].OtherDetails).To(MatchJSON(`{"encrypted":{"decrypted":{"foo":"bar"}}}`))
-			Expect(receiver[1].OtherDetails).To(MatchJSON(`{"encrypted":{"decrypted":{"foo":"baz","bar":"quz"}}}`))
-			Expect(receiver[2].OtherDetails).To(MatchJSON(`{"encrypted":{"decrypted":{"foo":"boz"}}}`))
 		})
 	})
 })

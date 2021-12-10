@@ -158,15 +158,7 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	}
 
 	// save provision request details
-	pr := models.ProvisionRequestDetails{
-		ServiceInstanceId: instanceID,
-	}
-
-	if err := pr.SetRequestDetails(details.RawParameters); err != nil {
-		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving request details to database: %s. WARNING: this instance cannot be deprovisioned through cf. Contact your operator for cleanup", err)
-	}
-
-	if err = db_service.CreateProvisionRequestDetails(ctx, &pr); err != nil {
+	if err = broker.store.StoreProvisionRequestDetails(instanceID, details.RawParameters); err != nil {
 		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
 	}
 
@@ -205,14 +197,9 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return response, brokerapi.ErrAsyncRequired
 	}
 
-	pr, err := db_service.GetProvisionRequestDetailsByInstanceId(ctx, instanceID)
+	rawParameters, err := broker.store.GetProvisionRequestDetails(instanceID)
 	if err != nil {
-		return response, fmt.Errorf("deprovisioning non-existent instanceid: %v", instanceID)
-	}
-
-	rawParameters, err := pr.GetRequestDetails()
-	if err != nil {
-		return response, fmt.Errorf("retrieving request details: %s", err)
+		return response, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
 	}
 
 	provisionDetails := domain.ProvisionDetails{
@@ -239,6 +226,9 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		// handled internally to LastOperation
 		if err := db_service.DeleteServiceInstanceDetailsById(ctx, instanceID); err != nil {
 			return response, fmt.Errorf("error deleting instance details from database: %s. WARNING: this instance will remain visible in cf. Contact your operator for cleanup", err)
+		}
+		if err := broker.store.DeleteProvisionRequestDetails(instanceID); err != nil {
+			return response, fmt.Errorf("error deleting provision request details from the database: %w", err)
 		}
 		return response, nil
 	} else {
@@ -430,16 +420,9 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return domain.UnbindSpec{}, err
 	}
 
-	pr, err := db_service.GetProvisionRequestDetailsByInstanceId(ctx, instanceID)
+	rawParameters, err := broker.store.GetProvisionRequestDetails(instanceID)
 	if err != nil {
-		return domain.UnbindSpec{}, fmt.Errorf("unbinding from non-existent instanceid: %v", instanceID)
-	}
-
-	// validate parameters meet the service's schema and merge the plan's vars with
-	// the user's
-	rawParameters, err := pr.GetRequestDetails()
-	if err != nil {
-		return domain.UnbindSpec{}, fmt.Errorf("error reading stored request details: %w", err)
+		return domain.UnbindSpec{}, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
 	}
 
 	bindDetails := domain.BindDetails{
@@ -531,6 +514,9 @@ func (broker *ServiceBroker) updateStateOnOperationCompletion(ctx context.Contex
 		if err := db_service.DeleteServiceInstanceDetailsById(ctx, instanceID); err != nil {
 			return fmt.Errorf("error deleting instance details from database: %s. WARNING: this instance will remain visible in cf. Contact your operator for cleanup", err)
 		}
+		if err := broker.store.DeleteProvisionRequestDetails(instanceID); err != nil {
+			return fmt.Errorf("error deleting provision request details from the database: %w", err)
+		}
 
 		return nil
 	}
@@ -602,18 +588,13 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return response, ErrNonUpdatableParameter
 	}
 
-	pr, err := db_service.GetProvisionRequestDetailsByInstanceId(ctx, instanceID)
+	provisionDetails, err := broker.store.GetProvisionRequestDetails(instanceID)
 	if err != nil {
-		return response, fmt.Errorf("updating non-existent instanceid: %v", instanceID)
+		return response, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
 	}
 
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
-	provisionDetails, err := pr.GetRequestDetails()
-	if err != nil {
-		return response, fmt.Errorf("retrieving request details: %s", err)
-	}
-
 	mergedDetails, err := mergeJSON(provisionDetails, details.GetRawParameters())
 	if err != nil {
 		return response, fmt.Errorf("error merging update and provision details: %w", err)
@@ -637,8 +618,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	// save provision request details
-	pr.SetRequestDetails(mergedDetails)
-	if err = db_service.SaveProvisionRequestDetails(ctx, pr); err != nil {
+	if err = broker.store.StoreProvisionRequestDetails(instanceID, mergedDetails); err != nil {
 		return domain.UpdateServiceSpec{}, fmt.Errorf("error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
 	}
 

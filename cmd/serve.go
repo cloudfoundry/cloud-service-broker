@@ -139,7 +139,7 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
 
 	if config.Changed {
 		logger.Info("rotating-database-encryption", lager.Data{"previous-primary": labelName(config.StoredPrimaryLabel), "new-primary": labelName(config.ConfiguredPrimaryLabel)})
-		if err := storage.New(db, config.RotationEncryptor).UpdateAllServiceBindingCredentials(); err != nil {
+		if err := storage.New(db, config.RotationEncryptor).UpdateAllRecords(); err != nil {
 			logger.Fatal("Error rotating database encryption", err)
 		}
 		models.SetEncryptor(config.RotationEncryptor)

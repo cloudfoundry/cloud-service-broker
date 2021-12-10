@@ -80,64 +80,6 @@ func (ds *SqlDatastore) ExistsServiceInstanceDetailsById(ctx context.Context, id
 	return count != 0, nil
 }
 
-// CreateProvisionRequestDetails creates a new record in the database and assigns it a primary key.
-func CreateProvisionRequestDetails(ctx context.Context, object *models.ProvisionRequestDetails) error {
-	return defaultDatastore().CreateProvisionRequestDetails(ctx, object)
-}
-func (ds *SqlDatastore) CreateProvisionRequestDetails(ctx context.Context, object *models.ProvisionRequestDetails) error {
-	return ds.db.Create(object).Error
-}
-
-// SaveProvisionRequestDetails updates an existing record in the database.
-func SaveProvisionRequestDetails(ctx context.Context, object *models.ProvisionRequestDetails) error {
-	return defaultDatastore().SaveProvisionRequestDetails(ctx, object)
-}
-func (ds *SqlDatastore) SaveProvisionRequestDetails(ctx context.Context, object *models.ProvisionRequestDetails) error {
-	return ds.db.Save(object).Error
-}
-
-// DeleteProvisionRequestDetailsById soft-deletes the record by its key (id).
-func DeleteProvisionRequestDetailsById(ctx context.Context, id uint) error {
-	return defaultDatastore().DeleteProvisionRequestDetailsById(ctx, id)
-}
-func (ds *SqlDatastore) DeleteProvisionRequestDetailsById(ctx context.Context, id uint) error {
-	return ds.db.Where("id = ?", id).Delete(&models.ProvisionRequestDetails{}).Error
-}
-
-// DeleteProvisionRequestDetails soft-deletes the record.
-func DeleteProvisionRequestDetails(ctx context.Context, record *models.ProvisionRequestDetails) error {
-	return defaultDatastore().DeleteProvisionRequestDetails(ctx, record)
-}
-func (ds *SqlDatastore) DeleteProvisionRequestDetails(ctx context.Context, record *models.ProvisionRequestDetails) error {
-	return ds.db.Delete(record).Error
-}
-
-// GetProvisionRequestDetailsById gets an instance of ProvisionRequestDetails by its key (id).
-func GetProvisionRequestDetailsById(ctx context.Context, id uint) (*models.ProvisionRequestDetails, error) {
-	return defaultDatastore().GetProvisionRequestDetailsById(ctx, id)
-}
-func (ds *SqlDatastore) GetProvisionRequestDetailsById(ctx context.Context, id uint) (*models.ProvisionRequestDetails, error) {
-	record := models.ProvisionRequestDetails{}
-	if err := ds.db.Where("id = ?", id).First(&record).Error; err != nil {
-		return nil, err
-	}
-
-	return &record, nil
-}
-
-// ExistsProvisionRequestDetailsById checks to see if an instance of ProvisionRequestDetails exists by its key (id).
-func ExistsProvisionRequestDetailsById(ctx context.Context, id uint) (bool, error) {
-	return defaultDatastore().ExistsProvisionRequestDetailsById(ctx, id)
-}
-func (ds *SqlDatastore) ExistsProvisionRequestDetailsById(ctx context.Context, id uint) (bool, error) {
-	var count int64
-	if err := ds.db.Model(&models.ProvisionRequestDetails{}).Where("id = ?", id).Count(&count).Error; err != nil {
-		return false, err
-	}
-
-	return count != 0, nil
-}
-
 // CreateTerraformDeployment creates a new record in the database and assigns it a primary key.
 func CreateTerraformDeployment(ctx context.Context, object *models.TerraformDeployment) error {
 	return defaultDatastore().CreateTerraformDeployment(ctx, object)

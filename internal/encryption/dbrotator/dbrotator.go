@@ -10,7 +10,6 @@ import (
 // ReencryptDB re-encrypts the database with the primary encryptor (which can be the No-op encryptor)
 func ReencryptDB(db *gorm.DB) error {
 	dbEncryptors := []func(*gorm.DB) error{
-		encryptProvisionRequestDetails,
 		encryptServiceInstanceDetails,
 		encryptTerraformWorkspaces,
 	}
@@ -18,30 +17,6 @@ func ReencryptDB(db *gorm.DB) error {
 		if err := e(db); err != nil {
 			return err
 		}
-	}
-
-	return nil
-}
-
-func encryptProvisionRequestDetails(db *gorm.DB) error {
-	var provisionRequestDetailsBatch []models.ProvisionRequestDetails
-	result := db.FindInBatches(&provisionRequestDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
-		for i := range provisionRequestDetailsBatch {
-			details, err := provisionRequestDetailsBatch[i].GetRequestDetails()
-
-			if err != nil {
-				return err
-			}
-
-			if err := provisionRequestDetailsBatch[i].SetRequestDetails(details); err != nil {
-				return err
-			}
-		}
-
-		return tx.Save(&provisionRequestDetailsBatch).Error
-	})
-	if result.Error != nil {
-		return fmt.Errorf("error reencrypting: %v", result.Error)
 	}
 
 	return nil

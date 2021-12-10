@@ -2,12 +2,7 @@ package storage
 
 import "encoding/json"
 
-func (s *Storage) marshalAndEncrypt(a interface{}) ([]byte, error) {
-	b, err := json.Marshal(a)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Storage) encodeBytes(b []byte) ([]byte, error) {
 	c, err := s.encryptor.Encrypt(b)
 	if err != nil {
 		return nil, err
@@ -16,8 +11,21 @@ func (s *Storage) marshalAndEncrypt(a interface{}) ([]byte, error) {
 	return c, nil
 }
 
-func (s *Storage) decryptAndUnmarshalObject(a []byte) (map[string]interface{}, error) {
-	b, err := s.encryptor.Decrypt(a)
+func (s *Storage) encodeJSON(a interface{}) ([]byte, error) {
+	b, err := json.Marshal(a)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.encodeBytes(b)
+}
+
+func (s *Storage) decodeBytes(a []byte) ([]byte, error) {
+	return s.encryptor.Decrypt(a)
+}
+
+func (s *Storage) decodeJSONObject(a []byte) (map[string]interface{}, error) {
+	b, err := s.decodeBytes(a)
 	if err != nil {
 		return nil, err
 	}

@@ -32,6 +32,7 @@ var _ = BeforeEach(func() {
 	db, err = gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(db.Migrator().CreateTable(&models.ServiceBindingCredentials{})).NotTo(HaveOccurred())
+	Expect(db.Migrator().CreateTable(&models.ProvisionRequestDetails{})).NotTo(HaveOccurred())
 
 	encryptor = &storagefakes.FakeEncryptor{
 		DecryptStub: func(bytes []byte) ([]byte, error) {

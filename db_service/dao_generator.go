@@ -47,16 +47,6 @@ func main() {
 			},
 		},
 		{
-			Type:              "ProvisionRequestDetails",
-			PrimaryKeyType:    "uint",
-			PrimaryKeyExample: `uint(42)`,
-			PrimaryKeyField:   "id",
-			ExampleFields: map[string]interface{}{
-				"ServiceInstanceId": "2222-2222-2222",
-				"RequestDetails":    []byte(`{"some":["json","blob","here"]}`),
-			},
-		},
-		{
 			Type:              "TerraformDeployment",
 			PrimaryKeyType:    "string",
 			PrimaryKeyExample: `"42"`,
