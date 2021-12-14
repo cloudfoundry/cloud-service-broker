@@ -3,10 +3,14 @@ package brokers
 import (
 	"encoding/json"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 )
 
 type Storage interface {
+	broker.ServiceProviderStorage
+
 	CreateServiceBindingCredentials(binding storage.ServiceBindingCredentials) error
 	GetServiceBindingCredentials(bindingID, serviceInstanceID string) (storage.ServiceBindingCredentials, error)
 	ExistsServiceBindingCredentials(bindingID, serviceInstanceID string) (bool, error)
@@ -18,9 +22,4 @@ type Storage interface {
 	GetServiceInstanceDetails(guid string) (storage.ServiceInstanceDetails, error)
 	ExistsServiceInstanceDetails(guid string) (bool, error)
 	DeleteServiceInstanceDetails(guid string) error
-
-	StoreTerraformDeployment(t storage.TerraformDeployment) error
-	GetTerraformDeployment(id string) (storage.TerraformDeployment, error)
-	ExistsTerraformDeployment(id string) (bool, error)
-	DeleteTerraformDeployment(id string) error
 }
