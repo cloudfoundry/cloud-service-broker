@@ -36,6 +36,14 @@ func (s *Storage) CreateServiceBindingCredentials(binding ServiceBindingCredenti
 }
 
 func (s *Storage) GetServiceBindingCredentials(bindingID, serviceInstanceID string) (ServiceBindingCredentials, error) {
+	exists, err := s.ExistsServiceBindingCredentials(bindingID, serviceInstanceID)
+	switch {
+	case err != nil:
+		return ServiceBindingCredentials{}, err
+	case !exists:
+		return ServiceBindingCredentials{}, fmt.Errorf("could not find binding credentials for binding %q and service instance %q", bindingID, serviceInstanceID)
+	}
+
 	var receiver models.ServiceBindingCredentials
 	if err := s.db.Where("service_instance_id = ? AND binding_id = ?", serviceInstanceID, bindingID).First(&receiver).Error; err != nil {
 		return ServiceBindingCredentials{}, fmt.Errorf("error finding service credential binding: %w", err)

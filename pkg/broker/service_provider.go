@@ -33,25 +33,25 @@ import (
 type ServiceProvider interface {
 	// Provision creates the necessary resources that an instance of this service
 	// needs to operate.
-	Provision(ctx context.Context, provisionContext *varcontext.VarContext) (storage.ServiceInstanceDetails, error)
+	Provision(ctx context.Context, store ServiceProviderStorage, provisionContext *varcontext.VarContext) (storage.ServiceInstanceDetails, error)
 
 	// Update makes necessary updates to resources so they match new desired configuration
-	Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
+	Update(ctx context.Context, store ServiceProviderStorage, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
 
 	// Bind provisions the necessary resources for a user to be able to connect to the provisioned service.
 	// This may include creating service accounts, granting permissions, and adding users to services e.g. a SQL database user.
 	// It stores information necessary to access the service _and_ delete the binding in the returned map.
-	Bind(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error)
+	Bind(ctx context.Context, store ServiceProviderStorage, vc *varcontext.VarContext) (map[string]interface{}, error)
 	// BuildInstanceCredentials combines the bindRecord with any additional
 	// info from the instance to create credentials for the binding.
 	BuildInstanceCredentials(ctx context.Context, credentials map[string]interface{}, outputs storage.TerraformOutputs) (*domain.Binding, error)
 	// Unbind deprovisions the resources created with Bind.
-	Unbind(ctx context.Context, instanceGUID, bindingID string, vc *varcontext.VarContext) error
+	Unbind(ctx context.Context, store ServiceProviderStorage, instanceGUID, bindingID string, vc *varcontext.VarContext) error
 	// Deprovision deprovisions the service.
 	// If the deprovision is asynchronous (results in a long-running job), then operationId is returned.
 	// If no error and no operationId are returned, then the deprovision is expected to have been completed successfully.
-	Deprovision(ctx context.Context, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error)
-	PollInstance(ctx context.Context, instanceGUID string) (bool, string, error)
+	Deprovision(ctx context.Context, store ServiceProviderStorage, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error)
+	PollInstance(ctx context.Context, store ServiceProviderStorage, instanceGUID string) (bool, string, error)
 	ProvisionsAsync() bool
 	DeprovisionsAsync() bool
 
@@ -59,5 +59,12 @@ type ServiceProvider interface {
 	// This function is optional, but will be called after async provisions, updates, and possibly
 	// on broker version changes.
 	// Return a nil error if you choose not to implement this function.
-	GetTerraformOutputs(ctx context.Context, guid string) (storage.TerraformOutputs, error)
+	GetTerraformOutputs(ctx context.Context, store ServiceProviderStorage, guid string) (storage.TerraformOutputs, error)
+}
+
+//counterfeiter:generate . ServiceProviderStorage
+type ServiceProviderStorage interface {
+	StoreTerraformDeployment(t storage.TerraformDeployment) error
+	GetTerraformDeployment(id string) (storage.TerraformDeployment, error)
+	ExistsTerraformDeployment(id string) (bool, error)
 }

@@ -23,9 +23,7 @@ import (
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/brokers"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/dbrotator"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/brokerpak"
@@ -142,10 +140,6 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
 		if err := storage.New(db, config.RotationEncryptor).UpdateAllRecords(); err != nil {
 			logger.Fatal("Error rotating database encryption", err)
 		}
-		models.SetEncryptor(config.RotationEncryptor)
-		if err := dbrotator.ReencryptDB(db); err != nil {
-			logger.Fatal("Error rotating database encryption", err)
-		}
 		if err := encryption.UpdatePasswordMetadata(db, config.ConfiguredPrimaryLabel); err != nil {
 			logger.Fatal("Error updating password metadata", err)
 		}
@@ -156,7 +150,6 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
 	}
 
 	logger.Info("database-encryption", lager.Data{"primary": labelName(config.ConfiguredPrimaryLabel)})
-	models.SetEncryptor(config.Encryptor)
 	return config.Encryptor
 }
 

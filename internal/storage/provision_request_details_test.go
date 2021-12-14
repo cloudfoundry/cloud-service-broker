@@ -74,7 +74,7 @@ var _ = Describe("ProvisionRequestDetails", func() {
 		When("nothing is found", func() {
 			It("returns an error", func() {
 				_, err := store.GetProvisionRequestDetails("not-there")
-				Expect(err).To(MatchError("error finding provision request details record: record not found"))
+				Expect(err).To(MatchError("could not find provision request details for service instance: not-there"))
 			})
 		})
 	})

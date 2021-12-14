@@ -42,6 +42,14 @@ func (s *Storage) StoreProvisionRequestDetails(serviceInstanceID string, details
 }
 
 func (s *Storage) GetProvisionRequestDetails(serviceInstanceID string) (json.RawMessage, error) {
+	exists, err := s.existsProvisionRequestDetails(serviceInstanceID)
+	switch {
+	case err != nil:
+		return nil, err
+	case !exists:
+		return nil, fmt.Errorf("could not find provision request details for service instance: %s", serviceInstanceID)
+	}
+
 	var receiver models.ProvisionRequestDetails
 	if err := s.db.Where("service_instance_id = ?", serviceInstanceID).First(&receiver).Error; err != nil {
 		return nil, fmt.Errorf("error finding provision request details record: %w", err)
@@ -61,4 +69,12 @@ func (s *Storage) DeleteProvisionRequestDetails(serviceInstanceID string) error 
 		return fmt.Errorf("error deleting provision request details: %w", err)
 	}
 	return nil
+}
+
+func (s *Storage) existsProvisionRequestDetails(serviceInstanceID string) (bool, error) {
+	var count int64
+	if err := s.db.Model(&models.ProvisionRequestDetails{}).Where("service_instance_id = ?", serviceInstanceID).Count(&count).Error; err != nil {
+		return false, fmt.Errorf("error counting provision request details: %w", err)
+	}
+	return count != 0, nil
 }

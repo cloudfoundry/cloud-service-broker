@@ -3,18 +3,18 @@ package encryption
 import (
 	"errors"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/compoundencryptor"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/passwordparser"
-
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/compoundencryptor"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/passwordcombiner"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/passwordparser"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"gorm.io/gorm"
 )
 
 type Configuration struct {
-	Encryptor              models.Encryptor
-	RotationEncryptor      models.Encryptor
+	Encryptor              storage.Encryptor
+	RotationEncryptor      storage.Encryptor
 	Changed                bool
 	ConfiguredPrimaryLabel string
 	StoredPrimaryLabel     string
@@ -41,10 +41,10 @@ func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configurat
 	storedPrimary, storedPrimaryOK := combined.StoredPrimary()
 
 	changed := false
-	var rotationEncyptor models.Encryptor
+	var rotationEncyptor storage.Encryptor
 	if parsedPrimary.Label != storedPrimary.Label {
 		changed = true
-		var decryptors []compoundencryptor.Encryptor
+		var decryptors []storage.Encryptor
 		for _, e := range combined {
 			decryptors = append(decryptors, e.Encryptor)
 		}
@@ -52,7 +52,7 @@ func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configurat
 			decryptors = append(decryptors, noopencryptor.New())
 		}
 
-		var encryptor compoundencryptor.Encryptor
+		var encryptor storage.Encryptor
 		if !parsedPrimaryOK {
 			encryptor = noopencryptor.New()
 		} else {

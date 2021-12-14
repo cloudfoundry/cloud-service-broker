@@ -286,7 +286,7 @@ func (tfb *TfServiceDefinitionV1) ToService(executor wrapper.TerraformExecutor) 
 		PlanVariables:         append(tfb.ProvisionSettings.PlanInputs, tfb.BindSettings.PlanInputs...),
 		Examples:              tfb.Examples,
 		ProviderBuilder: func(logger lager.Logger) broker.ServiceProvider {
-			jobRunner := NewTfJobRunnerForProject(envVars)
+			jobRunner := NewTfJobRunner(envVars)
 			jobRunner.Executor = executor
 			return NewTerraformProvider(jobRunner, logger, constDefn)
 		},

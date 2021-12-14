@@ -74,7 +74,7 @@ var _ = Describe("ServiceInstanceDetails", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				var receiver models.ServiceInstanceDetails
-				Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
+				Expect(db.Where(`id = "fake-id-1"`).Find(&receiver).Error).NotTo(HaveOccurred())
 				Expect(receiver.ID).To(Equal("fake-id-1"))
 				Expect(receiver.Name).To(Equal("fake-name"))
 				Expect(receiver.Location).To(Equal("fake-location"))
@@ -123,7 +123,7 @@ var _ = Describe("ServiceInstanceDetails", func() {
 		When("nothing is found", func() {
 			It("returns an error", func() {
 				_, err := store.GetServiceInstanceDetails("not-there")
-				Expect(err).To(MatchError("error finding service instance details: record not found"))
+				Expect(err).To(MatchError("could not find serivce instance details for: not-there"))
 			})
 		})
 	})

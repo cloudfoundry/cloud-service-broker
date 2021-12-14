@@ -12,6 +12,7 @@ func (s *Storage) UpdateAllRecords() error {
 		s.updateAllSericeBindingCredentials,
 		s.updateAllProvisionRequestDetails,
 		s.updateAllServiceInstanceDetails,
+		s.updateAllTerraformDeployments,
 	}
 	for _, e := range updaters {
 		if err := e(); err != nil {
@@ -86,6 +87,30 @@ func (s *Storage) updateAllServiceInstanceDetails() error {
 		}
 
 		return tx.Save(&serviceInstanceDetailsBatch).Error
+	})
+	if result.Error != nil {
+		return fmt.Errorf("error reencrypting: %v", result.Error)
+	}
+
+	return nil
+}
+
+func (s *Storage) updateAllTerraformDeployments() error {
+	var terraformDeploymentBatch []models.TerraformDeployment
+	result := s.db.FindInBatches(&terraformDeploymentBatch, 100, func(tx *gorm.DB, batchNumber int) error {
+		for i := range terraformDeploymentBatch {
+			workspace, err := s.decodeBytes(terraformDeploymentBatch[i].Workspace)
+			if err != nil {
+				return err
+			}
+
+			terraformDeploymentBatch[i].Workspace, err = s.encodeBytes(workspace)
+			if err != nil {
+				return err
+			}
+		}
+
+		return tx.Save(&terraformDeploymentBatch).Error
 	})
 	if result.Error != nil {
 		return fmt.Errorf("error reencrypting: %v", result.Error)

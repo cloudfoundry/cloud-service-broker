@@ -77,7 +77,7 @@ var _ = Describe("ServiceBindingCredentials", func() {
 		When("nothing is found", func() {
 			It("returns an error", func() {
 				_, err := store.GetServiceBindingCredentials("not-there", "also-not-there")
-				Expect(err).To(MatchError("error finding service credential binding: record not found"))
+				Expect(err).To(MatchError(`could not find binding credentials for binding "not-there" and service instance "also-not-there"`))
 			})
 		})
 	})

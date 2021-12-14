@@ -3,24 +3,25 @@ package compoundencryptor_test
 import (
 	"errors"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models/fakes"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/compoundencryptor"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage/storagefakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("CompoundEncryptor", func() {
 	var (
-		compoundEncryptor       compoundencryptor.Encryptor
-		primaryEncryptor        *fakes.FakeEncryptor
-		secondaryEncryptorAlpha *fakes.FakeEncryptor
-		secondaryEncryptorBeta  *fakes.FakeEncryptor
+		compoundEncryptor       storage.Encryptor
+		primaryEncryptor        *storagefakes.FakeEncryptor
+		secondaryEncryptorAlpha *storagefakes.FakeEncryptor
+		secondaryEncryptorBeta  *storagefakes.FakeEncryptor
 	)
 
 	BeforeEach(func() {
-		primaryEncryptor = &fakes.FakeEncryptor{}
-		secondaryEncryptorAlpha = &fakes.FakeEncryptor{}
-		secondaryEncryptorBeta = &fakes.FakeEncryptor{}
+		primaryEncryptor = &storagefakes.FakeEncryptor{}
+		secondaryEncryptorAlpha = &storagefakes.FakeEncryptor{}
+		secondaryEncryptorBeta = &storagefakes.FakeEncryptor{}
 		compoundEncryptor = compoundencryptor.New(primaryEncryptor, secondaryEncryptorAlpha, secondaryEncryptorBeta)
 	})
 

@@ -22,6 +22,8 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
+
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
@@ -43,8 +45,8 @@ func init() {
 			logger := utils.NewLogger("tf")
 			db = db_service.New(logger)
 
-			jobRunner, err = tf.NewTfJobRunerFromEnv()
-			return err
+			jobRunner = tf.NewTfJobRunner(nil)
+			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
@@ -57,15 +59,14 @@ func init() {
 		Use:   "dump",
 		Short: "dump a Terraform workspace",
 		Run: func(cmd *cobra.Command, args []string) {
-			deployment, err := db_service.GetTerraformDeploymentById(context.Background(), args[0])
+			logger := utils.NewLogger("cloud-service-broker")
+			encryptor := setupDBEncryption(db, logger)
+			store := storage.New(db, encryptor)
+			deployment, err := store.GetTerraformDeployment(args[0])
 			if err != nil {
 				log.Fatal(err)
 			}
-			w, err := deployment.GetWorkspace()
-			if err != nil {
-				log.Fatal(err)
-			}
-			ws, err := wrapper.DeserializeWorkspace(w)
+			ws, err := wrapper.DeserializeWorkspace(string(deployment.Workspace))
 			if err != nil {
 				fmt.Printf("Error: %s\n", err.Error())
 				log.Fatal(err)
@@ -79,7 +80,10 @@ func init() {
 		Use:   "wait",
 		Short: "wait for a Terraform job",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := jobRunner.Wait(context.Background(), args[0])
+			logger := utils.NewLogger("cloud-service-broker")
+			encryptor := setupDBEncryption(db, logger)
+			store := storage.New(db, encryptor)
+			err := jobRunner.Wait(context.Background(), store, args[0])
 			if err != nil {
 				log.Fatal(err)
 			}

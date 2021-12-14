@@ -22,8 +22,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
@@ -520,7 +518,6 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			}
 			defer viper.Reset()
 
-			models.SetEncryptor(noopencryptor.New())
 			details := domain.ProvisionDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
 			plan := ServicePlan{ServiceProperties: tc.ServiceProperties, ProvisionOverrides: tc.ProvisionOverrides}
 			vars, err := service.ProvisionVariables("instance-id-here", details, plan, tc.OriginatingIdentity)
@@ -1010,7 +1007,6 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 			viper.Set(service.BindDefaultOverrideProperty(), tc.DefaultOverride)
 			defer viper.Reset()
 
-			models.SetEncryptor(noopencryptor.New())
 			details := domain.BindDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
 			instance := storage.ServiceInstanceDetails{Outputs: tc.InstanceVars}
 

@@ -33,7 +33,6 @@ func (s *Storage) StoreServiceInstanceDetails(d ServiceInstanceDetails) error {
 		return err
 	}
 
-	m.ID = d.GUID
 	m.Name = d.Name
 	m.Location = d.Location
 	m.Url = d.URL
@@ -47,6 +46,7 @@ func (s *Storage) StoreServiceInstanceDetails(d ServiceInstanceDetails) error {
 
 	switch m.ID {
 	case "":
+		m.ID = d.GUID
 		if err := s.db.Create(&m).Error; err != nil {
 			return fmt.Errorf("error creating service instance details: %w", err)
 		}
@@ -59,22 +59,6 @@ func (s *Storage) StoreServiceInstanceDetails(d ServiceInstanceDetails) error {
 	return nil
 }
 
-func (s *Storage) loadServiceInstanceDetailsIfExists(guid string, receiver interface{}) error {
-	if guid == "" {
-		return nil
-	}
-
-	exists, err := s.ExistsServiceInstanceDetails(guid)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return nil
-	}
-
-	return s.db.Where("id = ?", guid).First(receiver).Error
-}
-
 func (s *Storage) ExistsServiceInstanceDetails(guid string) (bool, error) {
 	var count int64
 	if err := s.db.Model(&models.ServiceInstanceDetails{}).Where("id = ?", guid).Count(&count).Error; err != nil {
@@ -84,6 +68,14 @@ func (s *Storage) ExistsServiceInstanceDetails(guid string) (bool, error) {
 }
 
 func (s *Storage) GetServiceInstanceDetails(guid string) (ServiceInstanceDetails, error) {
+	exists, err := s.ExistsServiceInstanceDetails(guid)
+	switch {
+	case err != nil:
+		return ServiceInstanceDetails{}, err
+	case !exists:
+		return ServiceInstanceDetails{}, fmt.Errorf("could not find serivce instance details for: %s", guid)
+	}
+
 	var receiver models.ServiceInstanceDetails
 	if err := s.db.Where("id = ?", guid).First(&receiver).Error; err != nil {
 		return ServiceInstanceDetails{}, fmt.Errorf("error finding service instance details: %w", err)
@@ -115,4 +107,20 @@ func (s *Storage) DeleteServiceInstanceDetails(guid string) error {
 		return fmt.Errorf("error deleting service instance details: %w", err)
 	}
 	return nil
+}
+
+func (s *Storage) loadServiceInstanceDetailsIfExists(guid string, receiver interface{}) error {
+	if guid == "" {
+		return nil
+	}
+
+	exists, err := s.ExistsServiceInstanceDetails(guid)
+	switch {
+	case err != nil:
+		return err
+	case !exists:
+		return nil
+	}
+
+	return s.db.Where("id = ?", guid).First(receiver).Error
 }

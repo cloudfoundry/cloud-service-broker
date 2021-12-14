@@ -18,4 +18,9 @@ type Storage interface {
 	GetServiceInstanceDetails(guid string) (storage.ServiceInstanceDetails, error)
 	ExistsServiceInstanceDetails(guid string) (bool, error)
 	DeleteServiceInstanceDetails(guid string) error
+
+	StoreTerraformDeployment(t storage.TerraformDeployment) error
+	GetTerraformDeployment(id string) (storage.TerraformDeployment, error)
+	ExistsTerraformDeployment(id string) (bool, error)
+	DeleteTerraformDeployment(id string) error
 }
