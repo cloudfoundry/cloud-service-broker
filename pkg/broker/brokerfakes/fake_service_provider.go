@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
@@ -26,12 +27,12 @@ type FakeServiceProvider struct {
 		result1 map[string]interface{}
 		result2 error
 	}
-	BuildInstanceCredentialsStub        func(context.Context, models.ServiceBindingCredentials, models.ServiceInstanceDetails) (*domain.Binding, error)
+	BuildInstanceCredentialsStub        func(context.Context, map[string]interface{}, storage.TerraformOutputs) (*domain.Binding, error)
 	buildInstanceCredentialsMutex       sync.RWMutex
 	buildInstanceCredentialsArgsForCall []struct {
 		arg1 context.Context
-		arg2 models.ServiceBindingCredentials
-		arg3 models.ServiceInstanceDetails
+		arg2 map[string]interface{}
+		arg3 storage.TerraformOutputs
 	}
 	buildInstanceCredentialsReturns struct {
 		result1 *domain.Binding
@@ -41,11 +42,11 @@ type FakeServiceProvider struct {
 		result1 *domain.Binding
 		result2 error
 	}
-	DeprovisionStub        func(context.Context, models.ServiceInstanceDetails, domain.DeprovisionDetails, *varcontext.VarContext) (*string, error)
+	DeprovisionStub        func(context.Context, string, domain.DeprovisionDetails, *varcontext.VarContext) (*string, error)
 	deprovisionMutex       sync.RWMutex
 	deprovisionArgsForCall []struct {
 		arg1 context.Context
-		arg2 models.ServiceInstanceDetails
+		arg2 string
 		arg3 domain.DeprovisionDetails
 		arg4 *varcontext.VarContext
 	}
@@ -67,11 +68,25 @@ type FakeServiceProvider struct {
 	deprovisionsAsyncReturnsOnCall map[int]struct {
 		result1 bool
 	}
-	PollInstanceStub        func(context.Context, models.ServiceInstanceDetails) (bool, string, error)
+	GetTerraformOutputsStub        func(context.Context, string) (storage.TerraformOutputs, error)
+	getTerraformOutputsMutex       sync.RWMutex
+	getTerraformOutputsArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+	}
+	getTerraformOutputsReturns struct {
+		result1 storage.TerraformOutputs
+		result2 error
+	}
+	getTerraformOutputsReturnsOnCall map[int]struct {
+		result1 storage.TerraformOutputs
+		result2 error
+	}
+	PollInstanceStub        func(context.Context, string) (bool, string, error)
 	pollInstanceMutex       sync.RWMutex
 	pollInstanceArgsForCall []struct {
 		arg1 context.Context
-		arg2 models.ServiceInstanceDetails
+		arg2 string
 	}
 	pollInstanceReturns struct {
 		result1 bool
@@ -83,18 +98,18 @@ type FakeServiceProvider struct {
 		result2 string
 		result3 error
 	}
-	ProvisionStub        func(context.Context, *varcontext.VarContext) (models.ServiceInstanceDetails, error)
+	ProvisionStub        func(context.Context, *varcontext.VarContext) (storage.ServiceInstanceDetails, error)
 	provisionMutex       sync.RWMutex
 	provisionArgsForCall []struct {
 		arg1 context.Context
 		arg2 *varcontext.VarContext
 	}
 	provisionReturns struct {
-		result1 models.ServiceInstanceDetails
+		result1 storage.ServiceInstanceDetails
 		result2 error
 	}
 	provisionReturnsOnCall map[int]struct {
-		result1 models.ServiceInstanceDetails
+		result1 storage.ServiceInstanceDetails
 		result2 error
 	}
 	ProvisionsAsyncStub        func() bool
@@ -107,12 +122,12 @@ type FakeServiceProvider struct {
 	provisionsAsyncReturnsOnCall map[int]struct {
 		result1 bool
 	}
-	UnbindStub        func(context.Context, models.ServiceInstanceDetails, models.ServiceBindingCredentials, *varcontext.VarContext) error
+	UnbindStub        func(context.Context, string, string, *varcontext.VarContext) error
 	unbindMutex       sync.RWMutex
 	unbindArgsForCall []struct {
 		arg1 context.Context
-		arg2 models.ServiceInstanceDetails
-		arg3 models.ServiceBindingCredentials
+		arg2 string
+		arg3 string
 		arg4 *varcontext.VarContext
 	}
 	unbindReturns struct {
@@ -134,18 +149,6 @@ type FakeServiceProvider struct {
 	updateReturnsOnCall map[int]struct {
 		result1 models.ServiceInstanceDetails
 		result2 error
-	}
-	UpdateInstanceDetailsStub        func(context.Context, *models.ServiceInstanceDetails) error
-	updateInstanceDetailsMutex       sync.RWMutex
-	updateInstanceDetailsArgsForCall []struct {
-		arg1 context.Context
-		arg2 *models.ServiceInstanceDetails
-	}
-	updateInstanceDetailsReturns struct {
-		result1 error
-	}
-	updateInstanceDetailsReturnsOnCall map[int]struct {
-		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -216,13 +219,13 @@ func (fake *FakeServiceProvider) BindReturnsOnCall(i int, result1 map[string]int
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) BuildInstanceCredentials(arg1 context.Context, arg2 models.ServiceBindingCredentials, arg3 models.ServiceInstanceDetails) (*domain.Binding, error) {
+func (fake *FakeServiceProvider) BuildInstanceCredentials(arg1 context.Context, arg2 map[string]interface{}, arg3 storage.TerraformOutputs) (*domain.Binding, error) {
 	fake.buildInstanceCredentialsMutex.Lock()
 	ret, specificReturn := fake.buildInstanceCredentialsReturnsOnCall[len(fake.buildInstanceCredentialsArgsForCall)]
 	fake.buildInstanceCredentialsArgsForCall = append(fake.buildInstanceCredentialsArgsForCall, struct {
 		arg1 context.Context
-		arg2 models.ServiceBindingCredentials
-		arg3 models.ServiceInstanceDetails
+		arg2 map[string]interface{}
+		arg3 storage.TerraformOutputs
 	}{arg1, arg2, arg3})
 	stub := fake.BuildInstanceCredentialsStub
 	fakeReturns := fake.buildInstanceCredentialsReturns
@@ -243,13 +246,13 @@ func (fake *FakeServiceProvider) BuildInstanceCredentialsCallCount() int {
 	return len(fake.buildInstanceCredentialsArgsForCall)
 }
 
-func (fake *FakeServiceProvider) BuildInstanceCredentialsCalls(stub func(context.Context, models.ServiceBindingCredentials, models.ServiceInstanceDetails) (*domain.Binding, error)) {
+func (fake *FakeServiceProvider) BuildInstanceCredentialsCalls(stub func(context.Context, map[string]interface{}, storage.TerraformOutputs) (*domain.Binding, error)) {
 	fake.buildInstanceCredentialsMutex.Lock()
 	defer fake.buildInstanceCredentialsMutex.Unlock()
 	fake.BuildInstanceCredentialsStub = stub
 }
 
-func (fake *FakeServiceProvider) BuildInstanceCredentialsArgsForCall(i int) (context.Context, models.ServiceBindingCredentials, models.ServiceInstanceDetails) {
+func (fake *FakeServiceProvider) BuildInstanceCredentialsArgsForCall(i int) (context.Context, map[string]interface{}, storage.TerraformOutputs) {
 	fake.buildInstanceCredentialsMutex.RLock()
 	defer fake.buildInstanceCredentialsMutex.RUnlock()
 	argsForCall := fake.buildInstanceCredentialsArgsForCall[i]
@@ -282,12 +285,12 @@ func (fake *FakeServiceProvider) BuildInstanceCredentialsReturnsOnCall(i int, re
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 models.ServiceInstanceDetails, arg3 domain.DeprovisionDetails, arg4 *varcontext.VarContext) (*string, error) {
+func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 string, arg3 domain.DeprovisionDetails, arg4 *varcontext.VarContext) (*string, error) {
 	fake.deprovisionMutex.Lock()
 	ret, specificReturn := fake.deprovisionReturnsOnCall[len(fake.deprovisionArgsForCall)]
 	fake.deprovisionArgsForCall = append(fake.deprovisionArgsForCall, struct {
 		arg1 context.Context
-		arg2 models.ServiceInstanceDetails
+		arg2 string
 		arg3 domain.DeprovisionDetails
 		arg4 *varcontext.VarContext
 	}{arg1, arg2, arg3, arg4})
@@ -310,13 +313,13 @@ func (fake *FakeServiceProvider) DeprovisionCallCount() int {
 	return len(fake.deprovisionArgsForCall)
 }
 
-func (fake *FakeServiceProvider) DeprovisionCalls(stub func(context.Context, models.ServiceInstanceDetails, domain.DeprovisionDetails, *varcontext.VarContext) (*string, error)) {
+func (fake *FakeServiceProvider) DeprovisionCalls(stub func(context.Context, string, domain.DeprovisionDetails, *varcontext.VarContext) (*string, error)) {
 	fake.deprovisionMutex.Lock()
 	defer fake.deprovisionMutex.Unlock()
 	fake.DeprovisionStub = stub
 }
 
-func (fake *FakeServiceProvider) DeprovisionArgsForCall(i int) (context.Context, models.ServiceInstanceDetails, domain.DeprovisionDetails, *varcontext.VarContext) {
+func (fake *FakeServiceProvider) DeprovisionArgsForCall(i int) (context.Context, string, domain.DeprovisionDetails, *varcontext.VarContext) {
 	fake.deprovisionMutex.RLock()
 	defer fake.deprovisionMutex.RUnlock()
 	argsForCall := fake.deprovisionArgsForCall[i]
@@ -402,12 +405,77 @@ func (fake *FakeServiceProvider) DeprovisionsAsyncReturnsOnCall(i int, result1 b
 	}{result1}
 }
 
-func (fake *FakeServiceProvider) PollInstance(arg1 context.Context, arg2 models.ServiceInstanceDetails) (bool, string, error) {
+func (fake *FakeServiceProvider) GetTerraformOutputs(arg1 context.Context, arg2 string) (storage.TerraformOutputs, error) {
+	fake.getTerraformOutputsMutex.Lock()
+	ret, specificReturn := fake.getTerraformOutputsReturnsOnCall[len(fake.getTerraformOutputsArgsForCall)]
+	fake.getTerraformOutputsArgsForCall = append(fake.getTerraformOutputsArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	stub := fake.GetTerraformOutputsStub
+	fakeReturns := fake.getTerraformOutputsReturns
+	fake.recordInvocation("GetTerraformOutputs", []interface{}{arg1, arg2})
+	fake.getTerraformOutputsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeServiceProvider) GetTerraformOutputsCallCount() int {
+	fake.getTerraformOutputsMutex.RLock()
+	defer fake.getTerraformOutputsMutex.RUnlock()
+	return len(fake.getTerraformOutputsArgsForCall)
+}
+
+func (fake *FakeServiceProvider) GetTerraformOutputsCalls(stub func(context.Context, string) (storage.TerraformOutputs, error)) {
+	fake.getTerraformOutputsMutex.Lock()
+	defer fake.getTerraformOutputsMutex.Unlock()
+	fake.GetTerraformOutputsStub = stub
+}
+
+func (fake *FakeServiceProvider) GetTerraformOutputsArgsForCall(i int) (context.Context, string) {
+	fake.getTerraformOutputsMutex.RLock()
+	defer fake.getTerraformOutputsMutex.RUnlock()
+	argsForCall := fake.getTerraformOutputsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeServiceProvider) GetTerraformOutputsReturns(result1 storage.TerraformOutputs, result2 error) {
+	fake.getTerraformOutputsMutex.Lock()
+	defer fake.getTerraformOutputsMutex.Unlock()
+	fake.GetTerraformOutputsStub = nil
+	fake.getTerraformOutputsReturns = struct {
+		result1 storage.TerraformOutputs
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeServiceProvider) GetTerraformOutputsReturnsOnCall(i int, result1 storage.TerraformOutputs, result2 error) {
+	fake.getTerraformOutputsMutex.Lock()
+	defer fake.getTerraformOutputsMutex.Unlock()
+	fake.GetTerraformOutputsStub = nil
+	if fake.getTerraformOutputsReturnsOnCall == nil {
+		fake.getTerraformOutputsReturnsOnCall = make(map[int]struct {
+			result1 storage.TerraformOutputs
+			result2 error
+		})
+	}
+	fake.getTerraformOutputsReturnsOnCall[i] = struct {
+		result1 storage.TerraformOutputs
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeServiceProvider) PollInstance(arg1 context.Context, arg2 string) (bool, string, error) {
 	fake.pollInstanceMutex.Lock()
 	ret, specificReturn := fake.pollInstanceReturnsOnCall[len(fake.pollInstanceArgsForCall)]
 	fake.pollInstanceArgsForCall = append(fake.pollInstanceArgsForCall, struct {
 		arg1 context.Context
-		arg2 models.ServiceInstanceDetails
+		arg2 string
 	}{arg1, arg2})
 	stub := fake.PollInstanceStub
 	fakeReturns := fake.pollInstanceReturns
@@ -428,13 +496,13 @@ func (fake *FakeServiceProvider) PollInstanceCallCount() int {
 	return len(fake.pollInstanceArgsForCall)
 }
 
-func (fake *FakeServiceProvider) PollInstanceCalls(stub func(context.Context, models.ServiceInstanceDetails) (bool, string, error)) {
+func (fake *FakeServiceProvider) PollInstanceCalls(stub func(context.Context, string) (bool, string, error)) {
 	fake.pollInstanceMutex.Lock()
 	defer fake.pollInstanceMutex.Unlock()
 	fake.PollInstanceStub = stub
 }
 
-func (fake *FakeServiceProvider) PollInstanceArgsForCall(i int) (context.Context, models.ServiceInstanceDetails) {
+func (fake *FakeServiceProvider) PollInstanceArgsForCall(i int) (context.Context, string) {
 	fake.pollInstanceMutex.RLock()
 	defer fake.pollInstanceMutex.RUnlock()
 	argsForCall := fake.pollInstanceArgsForCall[i]
@@ -470,7 +538,7 @@ func (fake *FakeServiceProvider) PollInstanceReturnsOnCall(i int, result1 bool, 
 	}{result1, result2, result3}
 }
 
-func (fake *FakeServiceProvider) Provision(arg1 context.Context, arg2 *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+func (fake *FakeServiceProvider) Provision(arg1 context.Context, arg2 *varcontext.VarContext) (storage.ServiceInstanceDetails, error) {
 	fake.provisionMutex.Lock()
 	ret, specificReturn := fake.provisionReturnsOnCall[len(fake.provisionArgsForCall)]
 	fake.provisionArgsForCall = append(fake.provisionArgsForCall, struct {
@@ -496,7 +564,7 @@ func (fake *FakeServiceProvider) ProvisionCallCount() int {
 	return len(fake.provisionArgsForCall)
 }
 
-func (fake *FakeServiceProvider) ProvisionCalls(stub func(context.Context, *varcontext.VarContext) (models.ServiceInstanceDetails, error)) {
+func (fake *FakeServiceProvider) ProvisionCalls(stub func(context.Context, *varcontext.VarContext) (storage.ServiceInstanceDetails, error)) {
 	fake.provisionMutex.Lock()
 	defer fake.provisionMutex.Unlock()
 	fake.ProvisionStub = stub
@@ -509,28 +577,28 @@ func (fake *FakeServiceProvider) ProvisionArgsForCall(i int) (context.Context, *
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeServiceProvider) ProvisionReturns(result1 models.ServiceInstanceDetails, result2 error) {
+func (fake *FakeServiceProvider) ProvisionReturns(result1 storage.ServiceInstanceDetails, result2 error) {
 	fake.provisionMutex.Lock()
 	defer fake.provisionMutex.Unlock()
 	fake.ProvisionStub = nil
 	fake.provisionReturns = struct {
-		result1 models.ServiceInstanceDetails
+		result1 storage.ServiceInstanceDetails
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) ProvisionReturnsOnCall(i int, result1 models.ServiceInstanceDetails, result2 error) {
+func (fake *FakeServiceProvider) ProvisionReturnsOnCall(i int, result1 storage.ServiceInstanceDetails, result2 error) {
 	fake.provisionMutex.Lock()
 	defer fake.provisionMutex.Unlock()
 	fake.ProvisionStub = nil
 	if fake.provisionReturnsOnCall == nil {
 		fake.provisionReturnsOnCall = make(map[int]struct {
-			result1 models.ServiceInstanceDetails
+			result1 storage.ServiceInstanceDetails
 			result2 error
 		})
 	}
 	fake.provisionReturnsOnCall[i] = struct {
-		result1 models.ServiceInstanceDetails
+		result1 storage.ServiceInstanceDetails
 		result2 error
 	}{result1, result2}
 }
@@ -588,13 +656,13 @@ func (fake *FakeServiceProvider) ProvisionsAsyncReturnsOnCall(i int, result1 boo
 	}{result1}
 }
 
-func (fake *FakeServiceProvider) Unbind(arg1 context.Context, arg2 models.ServiceInstanceDetails, arg3 models.ServiceBindingCredentials, arg4 *varcontext.VarContext) error {
+func (fake *FakeServiceProvider) Unbind(arg1 context.Context, arg2 string, arg3 string, arg4 *varcontext.VarContext) error {
 	fake.unbindMutex.Lock()
 	ret, specificReturn := fake.unbindReturnsOnCall[len(fake.unbindArgsForCall)]
 	fake.unbindArgsForCall = append(fake.unbindArgsForCall, struct {
 		arg1 context.Context
-		arg2 models.ServiceInstanceDetails
-		arg3 models.ServiceBindingCredentials
+		arg2 string
+		arg3 string
 		arg4 *varcontext.VarContext
 	}{arg1, arg2, arg3, arg4})
 	stub := fake.UnbindStub
@@ -616,13 +684,13 @@ func (fake *FakeServiceProvider) UnbindCallCount() int {
 	return len(fake.unbindArgsForCall)
 }
 
-func (fake *FakeServiceProvider) UnbindCalls(stub func(context.Context, models.ServiceInstanceDetails, models.ServiceBindingCredentials, *varcontext.VarContext) error) {
+func (fake *FakeServiceProvider) UnbindCalls(stub func(context.Context, string, string, *varcontext.VarContext) error) {
 	fake.unbindMutex.Lock()
 	defer fake.unbindMutex.Unlock()
 	fake.UnbindStub = stub
 }
 
-func (fake *FakeServiceProvider) UnbindArgsForCall(i int) (context.Context, models.ServiceInstanceDetails, models.ServiceBindingCredentials, *varcontext.VarContext) {
+func (fake *FakeServiceProvider) UnbindArgsForCall(i int) (context.Context, string, string, *varcontext.VarContext) {
 	fake.unbindMutex.RLock()
 	defer fake.unbindMutex.RUnlock()
 	argsForCall := fake.unbindArgsForCall[i]
@@ -717,68 +785,6 @@ func (fake *FakeServiceProvider) UpdateReturnsOnCall(i int, result1 models.Servi
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) UpdateInstanceDetails(arg1 context.Context, arg2 *models.ServiceInstanceDetails) error {
-	fake.updateInstanceDetailsMutex.Lock()
-	ret, specificReturn := fake.updateInstanceDetailsReturnsOnCall[len(fake.updateInstanceDetailsArgsForCall)]
-	fake.updateInstanceDetailsArgsForCall = append(fake.updateInstanceDetailsArgsForCall, struct {
-		arg1 context.Context
-		arg2 *models.ServiceInstanceDetails
-	}{arg1, arg2})
-	stub := fake.UpdateInstanceDetailsStub
-	fakeReturns := fake.updateInstanceDetailsReturns
-	fake.recordInvocation("UpdateInstanceDetails", []interface{}{arg1, arg2})
-	fake.updateInstanceDetailsMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeServiceProvider) UpdateInstanceDetailsCallCount() int {
-	fake.updateInstanceDetailsMutex.RLock()
-	defer fake.updateInstanceDetailsMutex.RUnlock()
-	return len(fake.updateInstanceDetailsArgsForCall)
-}
-
-func (fake *FakeServiceProvider) UpdateInstanceDetailsCalls(stub func(context.Context, *models.ServiceInstanceDetails) error) {
-	fake.updateInstanceDetailsMutex.Lock()
-	defer fake.updateInstanceDetailsMutex.Unlock()
-	fake.UpdateInstanceDetailsStub = stub
-}
-
-func (fake *FakeServiceProvider) UpdateInstanceDetailsArgsForCall(i int) (context.Context, *models.ServiceInstanceDetails) {
-	fake.updateInstanceDetailsMutex.RLock()
-	defer fake.updateInstanceDetailsMutex.RUnlock()
-	argsForCall := fake.updateInstanceDetailsArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeServiceProvider) UpdateInstanceDetailsReturns(result1 error) {
-	fake.updateInstanceDetailsMutex.Lock()
-	defer fake.updateInstanceDetailsMutex.Unlock()
-	fake.UpdateInstanceDetailsStub = nil
-	fake.updateInstanceDetailsReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeServiceProvider) UpdateInstanceDetailsReturnsOnCall(i int, result1 error) {
-	fake.updateInstanceDetailsMutex.Lock()
-	defer fake.updateInstanceDetailsMutex.Unlock()
-	fake.UpdateInstanceDetailsStub = nil
-	if fake.updateInstanceDetailsReturnsOnCall == nil {
-		fake.updateInstanceDetailsReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.updateInstanceDetailsReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -790,6 +796,8 @@ func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	defer fake.deprovisionMutex.RUnlock()
 	fake.deprovisionsAsyncMutex.RLock()
 	defer fake.deprovisionsAsyncMutex.RUnlock()
+	fake.getTerraformOutputsMutex.RLock()
+	defer fake.getTerraformOutputsMutex.RUnlock()
 	fake.pollInstanceMutex.RLock()
 	defer fake.pollInstanceMutex.RUnlock()
 	fake.provisionMutex.RLock()
@@ -800,8 +808,6 @@ func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	defer fake.unbindMutex.RUnlock()
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
-	fake.updateInstanceDetailsMutex.RLock()
-	defer fake.updateInstanceDetailsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
