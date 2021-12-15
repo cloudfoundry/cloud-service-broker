@@ -44,8 +44,9 @@ func init() {
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
 			logger := utils.NewLogger("tf")
 			db = db_service.New(logger)
-
-			jobRunner = tf.NewTfJobRunner(nil)
+			encryptor := setupDBEncryption(db, logger)
+			store := storage.New(db, encryptor)
+			jobRunner = tf.NewTfJobRunner(nil, store)
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
@@ -80,10 +81,7 @@ func init() {
 		Use:   "wait",
 		Short: "wait for a Terraform job",
 		Run: func(cmd *cobra.Command, args []string) {
-			logger := utils.NewLogger("cloud-service-broker")
-			encryptor := setupDBEncryption(db, logger)
-			store := storage.New(db, encryptor)
-			err := jobRunner.Wait(context.Background(), store, args[0])
+			err := jobRunner.Wait(context.Background(), args[0])
 			if err != nil {
 				log.Fatal(err)
 			}

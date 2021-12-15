@@ -99,9 +99,9 @@ var _ = Describe("WorkspaceUpdater", func() {
 
 	setUpProvider := func(serviceDefinition tf.TfServiceDefinitionV1) broker.ServiceProvider {
 		testLogger := utils.NewLogger("test")
-		jobRunner := tf.NewTfJobRunner(nil)
+		jobRunner := tf.NewTfJobRunner(nil, store)
 		jobRunner.Executor = dummyExecutor
-		return tf.NewTerraformProvider(jobRunner, testLogger, serviceDefinition)
+		return tf.NewTerraformProvider(jobRunner, testLogger, serviceDefinition, store)
 	}
 
 	pollOperationSucceeded := func(operationId string) func() string {
@@ -192,7 +192,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 			}).
 			Build()
 		Expect(err).NotTo(HaveOccurred())
-		instanceDetails, err := provider.Provision(context.TODO(), store, provisionContext)
+		instanceDetails, err := provider.Provision(context.TODO(), provisionContext)
 		Expect(err).NotTo(HaveOccurred())
 
 		Eventually(pollOperationSucceeded(instanceDetails.OperationGUID)).Should(Equal("succeeded"))

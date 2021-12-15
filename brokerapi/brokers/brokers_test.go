@@ -146,12 +146,12 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 		Provider: &brokerfakes.FakeServiceProvider{
 			ProvisionsAsyncStub:   func() bool { return isAsync },
 			DeprovisionsAsyncStub: func() bool { return isAsync },
-			ProvisionStub: func(ctx context.Context, store broker.ServiceProviderStorage, vc *varcontext.VarContext) (storage.ServiceInstanceDetails, error) {
+			ProvisionStub: func(ctx context.Context, vc *varcontext.VarContext) (storage.ServiceInstanceDetails, error) {
 				return storage.ServiceInstanceDetails{
 					Outputs: map[string]interface{}{"mynameis": "instancename", "foo": "baz"},
 				}, nil
 			},
-			BindStub: func(ctx context.Context, providerStorage broker.ServiceProviderStorage, vc *varcontext.VarContext) (map[string]interface{}, error) {
+			BindStub: func(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error) {
 				return map[string]interface{}{"foo": "bar"}, nil
 			},
 			BuildInstanceCredentialsStub: func(ctx context.Context, creds map[string]interface{}, outs storage.TerraformOutputs) (*domain.Binding, error) {
@@ -161,7 +161,7 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 		},
 	}
 
-	stub.ServiceDefinition.ProviderBuilder = func(logger lager.Logger) broker.ServiceProvider {
+	stub.ServiceDefinition.ProviderBuilder = func(logger lager.Logger, store broker.ServiceProviderStorage) broker.ServiceProvider {
 		return stub.Provider
 	}
 
@@ -309,7 +309,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
 				broker.Provision(newContext, fakeInstanceId, stub.ProvisionDetails(), true)
 				assertEqual(t, "provision calls should match", 1, stub.Provider.ProvisionCallCount())
-				_, _, actualVarContext := stub.Provider.ProvisionArgsForCall(0)
+				_, actualVarContext := stub.Provider.ProvisionArgsForCall(0)
 				expectedOriginatingIdentityMap := `{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`
 
 				assertEqual(t, "originatingIdentity should match", expectedOriginatingIdentityMap, actualVarContext.GetString("originatingIdentity"))
@@ -394,7 +394,7 @@ func TestServiceBroker_Deprovision(t *testing.T) {
 				failIfErr(t, "deprovisioning", err)
 
 				assertEqual(t, "deprovision calls should match", 1, stub.Provider.DeprovisionCallCount())
-				_, _, _, _, actualVarContext := stub.Provider.DeprovisionArgsForCall(0)
+				_, _, _, actualVarContext := stub.Provider.DeprovisionArgsForCall(0)
 				expectedOriginatingIdentityMap := `{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`
 
 				assertEqual(t, "originatingIdentity should match", expectedOriginatingIdentityMap, actualVarContext.GetString("originatingIdentity"))
@@ -501,7 +501,7 @@ func TestServiceBroker_Bind(t *testing.T) {
 				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
 				broker.Bind(newContext, fakeInstanceId, fakeBindingId, stub.BindDetails(), true)
 				assertEqual(t, "bind calls should match", 1, stub.Provider.BindCallCount())
-				_, _, actualVarContext := stub.Provider.BindArgsForCall(0)
+				_, actualVarContext := stub.Provider.BindArgsForCall(0)
 				expectedOriginatingIdentityMap := `{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`
 
 				assertEqual(t, "originatingIdentity should match", expectedOriginatingIdentityMap, actualVarContext.GetString("originatingIdentity"))
@@ -518,7 +518,7 @@ func TestServiceBroker_Bind(t *testing.T) {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, bkr *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
 				req := stub.BindDetails()
-				stub.Provider.BindStub = func(ctx context.Context, store broker.ServiceProviderStorage, vc *varcontext.VarContext) (map[string]interface{}, error) {
+				stub.Provider.BindStub = func(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error) {
 					return nil, errors.New("fake error")
 				}
 
@@ -592,7 +592,7 @@ func TestServiceBroker_Unbind(t *testing.T) {
 				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
 				broker.Unbind(newContext, fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
 				assertEqual(t, "unbind calls should match", 1, stub.Provider.UnbindCallCount())
-				_, _, _, _, actualVarContext := stub.Provider.UnbindArgsForCall(0)
+				_, _, _, actualVarContext := stub.Provider.UnbindArgsForCall(0)
 				expectedOriginatingIdentityMap := `{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`
 
 				assertEqual(t, "originatingIdentity should match", expectedOriginatingIdentityMap, actualVarContext.GetString("originatingIdentity"))
@@ -748,7 +748,7 @@ func TestServiceBroker_Update(t *testing.T) {
 				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
 				broker.Update(newContext, fakeInstanceId, stub.UpdateDetails(), true)
 				assertEqual(t, "update calls should match", 1, stub.Provider.UpdateCallCount())
-				_, _, actualVarContext := stub.Provider.UpdateArgsForCall(0)
+				_, actualVarContext := stub.Provider.UpdateArgsForCall(0)
 				expectedOriginatingIdentityMap := `{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`
 
 				assertEqual(t, "originatingIdentity should match", expectedOriginatingIdentityMap, actualVarContext.GetString("originatingIdentity"))
@@ -793,7 +793,7 @@ func TestServiceBroker_Update(t *testing.T) {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, bkr *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
 				req := stub.UpdateDetails()
-				stub.Provider.UpdateStub = func(ctx context.Context, store broker.ServiceProviderStorage, varContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+				stub.Provider.UpdateStub = func(ctx context.Context, varContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
 					return models.ServiceInstanceDetails{}, ErrNonUpdatableParameter
 				}
 

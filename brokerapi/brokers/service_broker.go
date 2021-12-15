@@ -87,7 +87,7 @@ func (broker *ServiceBroker) getDefinitionAndProvider(serviceId string) (*broker
 		return nil, nil, err
 	}
 
-	providerBuilder := defn.ProviderBuilder(broker.Logger)
+	providerBuilder := defn.ProviderBuilder(broker.Logger, broker.store)
 	return defn, providerBuilder, nil
 }
 
@@ -139,7 +139,7 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	}
 
 	// get instance details
-	instanceDetails, err := serviceHelper.Provision(ctx, broker.store, vars)
+	instanceDetails, err := serviceHelper.Provision(ctx, vars)
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
@@ -221,7 +221,7 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return response, err
 	}
 
-	operationId, err := serviceProvider.Deprovision(ctx, broker.store, instance.GUID, details, vars)
+	operationId, err := serviceProvider.Deprovision(ctx, instance.GUID, details, vars)
 	if err != nil {
 		return response, err
 	}
@@ -298,7 +298,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	}
 
 	// create binding
-	credsDetails, err := serviceProvider.Bind(ctx, broker.store, vars)
+	credsDetails, err := serviceProvider.Bind(ctx, vars)
 	if err != nil {
 		return domain.Binding{}, fmt.Errorf("error performing bind: %w", err)
 	}
@@ -443,7 +443,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	}
 
 	// remove binding from service provider
-	if err := serviceProvider.Unbind(ctx, broker.store, instanceID, bindingID, vars); err != nil {
+	if err := serviceProvider.Unbind(ctx, instanceID, bindingID, vars); err != nil {
 		return domain.UnbindSpec{}, err
 	}
 
@@ -497,7 +497,7 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 
 	lastOperationType := instance.OperationType
 
-	done, message, err := serviceProvider.PollInstance(ctx, broker.store, instance.GUID)
+	done, message, err := serviceProvider.PollInstance(ctx, instance.GUID)
 
 	if err != nil {
 		return domain.LastOperation{State: domain.Failed, Description: err.Error()}, nil
@@ -534,7 +534,7 @@ func (broker *ServiceBroker) updateStateOnOperationCompletion(ctx context.Contex
 		return fmt.Errorf("error getting instance details from database %v", err)
 	}
 
-	outs, err := service.GetTerraformOutputs(ctx, broker.store, details.GUID)
+	outs, err := service.GetTerraformOutputs(ctx, details.GUID)
 	if err != nil {
 		return fmt.Errorf("error getting new instance details from GCP: %v", err)
 	}
@@ -622,7 +622,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	// get instance details
-	newInstanceDetails, err := serviceHelper.Update(ctx, broker.store, vars)
+	newInstanceDetails, err := serviceHelper.Update(ctx, vars)
 	if err != nil {
 		return domain.UpdateServiceSpec{}, err
 	}

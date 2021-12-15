@@ -40,11 +40,12 @@ func init() {
 }
 
 // NewTerraformProvider creates a new ServiceProvider backed by Terraform module definitions for provision and bind.
-func NewTerraformProvider(jobRunner *TfJobRunner, logger lager.Logger, serviceDefinition TfServiceDefinitionV1) broker.ServiceProvider {
+func NewTerraformProvider(jobRunner *TfJobRunner, logger lager.Logger, serviceDefinition TfServiceDefinitionV1, store broker.ServiceProviderStorage) broker.ServiceProvider {
 	return &terraformProvider{
 		serviceDefinition: serviceDefinition,
 		jobRunner:         jobRunner,
 		logger:            logger.Session("terraform-" + serviceDefinition.Name),
+		store:             store,
 	}
 }
 
@@ -54,6 +55,7 @@ type terraformProvider struct {
 	logger            lager.Logger
 	jobRunner         *TfJobRunner
 	serviceDefinition TfServiceDefinitionV1
+	store             broker.ServiceProviderStorage
 }
 
 type WorkspaceUpdater struct{}
@@ -96,7 +98,7 @@ var workspaceUpdator = WorkspaceUpdater{}
 
 // Provision creates the necessary resources that an instance of this service
 // needs to operate.
-func (provider *terraformProvider) Provision(ctx context.Context, store broker.ServiceProviderStorage, provisionContext *varcontext.VarContext) (storage.ServiceInstanceDetails, error) {
+func (provider *terraformProvider) Provision(ctx context.Context, provisionContext *varcontext.VarContext) (storage.ServiceInstanceDetails, error) {
 	provider.logger.Debug("terraform-provision", correlation.ID(ctx), lager.Data{
 		"context": provisionContext.ToMap(),
 	})
@@ -105,12 +107,12 @@ func (provider *terraformProvider) Provision(ctx context.Context, store broker.S
 	var err error
 
 	if provider.serviceDefinition.ProvisionSettings.IsTfImport(provisionContext) {
-		tfID, err = provider.importCreate(ctx, store, provisionContext, provider.serviceDefinition.ProvisionSettings)
+		tfID, err = provider.importCreate(ctx, provider.store, provisionContext, provider.serviceDefinition.ProvisionSettings)
 		if err != nil {
 			return storage.ServiceInstanceDetails{}, err
 		}
 	} else {
-		tfID, err = provider.create(ctx, store, provisionContext, provider.serviceDefinition.ProvisionSettings)
+		tfID, err = provider.create(ctx, provider.store, provisionContext, provider.serviceDefinition.ProvisionSettings)
 		if err != nil {
 			return storage.ServiceInstanceDetails{}, err
 		}
@@ -123,7 +125,7 @@ func (provider *terraformProvider) Provision(ctx context.Context, store broker.S
 }
 
 // Update makes necessary updates to resources so they match new desired configuration
-func (provider *terraformProvider) Update(ctx context.Context, store broker.ServiceProviderStorage, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+func (provider *terraformProvider) Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
 	provider.logger.Debug("update", correlation.ID(ctx), lager.Data{
 		"context": provisionContext.ToMap(),
 	})
@@ -137,11 +139,11 @@ func (provider *terraformProvider) Update(ctx context.Context, store broker.Serv
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	if err := workspaceUpdator.UpdateWorkspaceHCL(store, provider.serviceDefinition.ProvisionSettings, provisionContext, tfId); err != nil {
+	if err := workspaceUpdator.UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, provisionContext, tfId); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	err := provider.jobRunner.Update(ctx, store, tfId, provisionContext.ToMap())
+	err := provider.jobRunner.Update(ctx, tfId, provisionContext.ToMap())
 
 	serviceInstanceDetails := models.ServiceInstanceDetails{
 		OperationId:   tfId,
@@ -151,21 +153,21 @@ func (provider *terraformProvider) Update(ctx context.Context, store broker.Serv
 }
 
 // Bind creates a new backing Terraform job and executes it, waiting on the result.
-func (provider *terraformProvider) Bind(ctx context.Context, store broker.ServiceProviderStorage, bindContext *varcontext.VarContext) (map[string]interface{}, error) {
+func (provider *terraformProvider) Bind(ctx context.Context, bindContext *varcontext.VarContext) (map[string]interface{}, error) {
 	provider.logger.Debug("terraform-bind", correlation.ID(ctx), lager.Data{
 		"context": bindContext.ToMap(),
 	})
 
-	tfId, err := provider.create(ctx, store, bindContext, provider.serviceDefinition.BindSettings)
+	tfId, err := provider.create(ctx, provider.store, bindContext, provider.serviceDefinition.BindSettings)
 	if err != nil {
 		return nil, fmt.Errorf("error from provider bind: %w", err)
 	}
 
-	if err := provider.jobRunner.Wait(ctx, store, tfId); err != nil {
+	if err := provider.jobRunner.Wait(ctx, tfId); err != nil {
 		return nil, fmt.Errorf("error from job runner: %w", err)
 	}
 
-	return provider.jobRunner.Outputs(ctx, store, tfId, wrapper.DefaultInstanceName)
+	return provider.jobRunner.Outputs(ctx, tfId, wrapper.DefaultInstanceName)
 }
 
 func (provider *terraformProvider) importCreate(ctx context.Context, store broker.ServiceProviderStorage, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
@@ -214,12 +216,12 @@ func (provider *terraformProvider) importCreate(ctx context.Context, store broke
 		return tfId, err
 	}
 
-	if err := provider.jobRunner.StageJob(ctx, store, tfId, workspace); err != nil {
+	if err := provider.jobRunner.StageJob(tfId, workspace); err != nil {
 		provider.logger.Error("terraform provider create failed", err)
 		return tfId, err
 	}
 
-	return tfId, provider.jobRunner.Import(ctx, store, tfId, importParams)
+	return tfId, provider.jobRunner.Import(ctx, tfId, importParams)
 }
 
 func (provider *terraformProvider) create(ctx context.Context, store broker.ServiceProviderStorage, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
@@ -237,16 +239,16 @@ func (provider *terraformProvider) create(ctx context.Context, store broker.Serv
 	// 	return tfId, err
 	// }
 
-	if err := provider.jobRunner.StageJob(ctx, store, tfId, workspace); err != nil {
+	if err := provider.jobRunner.StageJob(tfId, workspace); err != nil {
 		provider.logger.Error("terraform provider create failed", err)
 		return tfId, fmt.Errorf("terraform provider create failed: %w", err)
 	}
 
-	return tfId, provider.jobRunner.Create(ctx, store, tfId)
+	return tfId, provider.jobRunner.Create(ctx, tfId)
 }
 
 // Unbind performs a terraform destroy on the binding.
-func (provider *terraformProvider) Unbind(ctx context.Context, store broker.ServiceProviderStorage, instanceGUID string, bindingID string, vc *varcontext.VarContext) error {
+func (provider *terraformProvider) Unbind(ctx context.Context, instanceGUID, bindingID string, vc *varcontext.VarContext) error {
 	tfId := generateTfId(instanceGUID, bindingID)
 	provider.logger.Debug("terraform-unbind", correlation.ID(ctx), lager.Data{
 		"instance": instanceGUID,
@@ -254,30 +256,30 @@ func (provider *terraformProvider) Unbind(ctx context.Context, store broker.Serv
 		"tfId":     tfId,
 	})
 
-	if err := workspaceUpdator.UpdateWorkspaceHCL(store, provider.serviceDefinition.BindSettings, vc, tfId); err != nil {
+	if err := workspaceUpdator.UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.BindSettings, vc, tfId); err != nil {
 		return err
 	}
 
-	if err := provider.jobRunner.Destroy(ctx, store, tfId, vc.ToMap()); err != nil {
+	if err := provider.jobRunner.Destroy(ctx, tfId, vc.ToMap()); err != nil {
 		return err
 	}
 
-	return provider.jobRunner.Wait(ctx, store, tfId)
+	return provider.jobRunner.Wait(ctx, tfId)
 }
 
 // Deprovision performs a terraform destroy on the instance.
-func (provider *terraformProvider) Deprovision(ctx context.Context, store broker.ServiceProviderStorage, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error) {
+func (provider *terraformProvider) Deprovision(ctx context.Context, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error) {
 	provider.logger.Debug("terraform-deprovision", correlation.ID(ctx), lager.Data{
 		"instance": instanceGUID,
 	})
 
 	tfId := generateTfId(instanceGUID, "")
 
-	if err := workspaceUpdator.UpdateWorkspaceHCL(store, provider.serviceDefinition.ProvisionSettings, vc, tfId); err != nil {
+	if err := workspaceUpdator.UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, vc, tfId); err != nil {
 		return nil, err
 	}
 
-	if err := provider.jobRunner.Destroy(ctx, store, tfId, vc.ToMap()); err != nil {
+	if err := provider.jobRunner.Destroy(ctx, tfId, vc.ToMap()); err != nil {
 		return nil, err
 	}
 
@@ -285,8 +287,8 @@ func (provider *terraformProvider) Deprovision(ctx context.Context, store broker
 }
 
 // PollInstance returns the instance status of the backing job.
-func (provider *terraformProvider) PollInstance(ctx context.Context, store broker.ServiceProviderStorage, instanceGUID string) (bool, string, error) {
-	return provider.jobRunner.NewStatus(ctx, store, generateTfId(instanceGUID, ""))
+func (provider *terraformProvider) PollInstance(ctx context.Context, instanceGUID string) (bool, string, error) {
+	return provider.jobRunner.Status(ctx, generateTfId(instanceGUID, ""))
 }
 
 // ProvisionsAsync is always true for Terraformprovider.
@@ -303,10 +305,10 @@ func (provider *terraformProvider) DeprovisionsAsync() bool {
 // This function is optional, but will be called after async provisions, updates, and possibly
 // on broker version changes.
 // Return a nil error if you choose not to implement this function.
-func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, store broker.ServiceProviderStorage, guid string) (storage.TerraformOutputs, error) {
+func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, guid string) (storage.TerraformOutputs, error) {
 	tfId := generateTfId(guid, "")
 
-	outs, err := provider.jobRunner.Outputs(ctx, store, tfId, wrapper.DefaultInstanceName)
+	outs, err := provider.jobRunner.Outputs(ctx, tfId, wrapper.DefaultInstanceName)
 	if err != nil {
 		return nil, err
 	}

@@ -60,7 +60,7 @@ type ServiceDefinition struct {
 	DefaultRoleWhitelist       []string
 
 	// ProviderBuilder creates a new provider given the project, auth, and logger.
-	ProviderBuilder func(plogger lager.Logger) ServiceProvider
+	ProviderBuilder func(plogger lager.Logger, store ServiceProviderStorage) ServiceProvider
 
 	// IsBuiltin is true if the service is built-in to the platform.
 	IsBuiltin bool
