@@ -102,10 +102,10 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 
 	// make sure that instance hasn't already been provisioned
 	exists, err := broker.store.ExistsServiceInstanceDetails(instanceID)
-	if err != nil {
+	switch {
+	case err != nil:
 		return domain.ProvisionedServiceSpec{}, fmt.Errorf("database error checking for existing instance: %s", err)
-	}
-	if exists {
+	case exists:
 		return domain.ProvisionedServiceSpec{}, apiresponses.ErrInstanceAlreadyExists
 	}
 
@@ -237,17 +237,18 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 			return response, fmt.Errorf("error deleting provision request details from the database: %w", err)
 		}
 		return response, nil
-	} else {
-		response.IsAsync = true
-		response.OperationData = *operationId
-
-		instance.OperationType = models.DeprovisionOperationType
-		instance.OperationGUID = *operationId
-		if err := broker.store.StoreServiceInstanceDetails(instance); err != nil {
-			return response, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance will remain visible in cf. Contact your operator for cleanup", err)
-		}
-		return response, nil
 	}
+
+	response.IsAsync = true
+	response.OperationData = *operationId
+
+	instance.OperationType = models.DeprovisionOperationType
+	instance.OperationGUID = *operationId
+	if err := broker.store.StoreServiceInstanceDetails(instance); err != nil {
+		return response, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance will remain visible in cf. Contact your operator for cleanup", err)
+	}
+	return response, nil
+
 }
 
 // Bind creates an account with credentials to access an instance of a service.
@@ -261,10 +262,10 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 
 	// check for existing binding
 	exists, err := broker.store.ExistsServiceBindingCredentials(bindingID, instanceID)
-	if err != nil {
+	switch {
+	case err != nil:
 		return domain.Binding{}, fmt.Errorf("error checking for existing binding: %w", err)
-	}
-	if exists {
+	case exists:
 		return domain.Binding{}, apiresponses.ErrBindingAlreadyExists
 	}
 
@@ -407,10 +408,10 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 
 	// validate existence of binding
 	exists, err := broker.store.ExistsServiceBindingCredentials(bindingID, instanceID)
-	if err != nil {
+	switch {
+	case err != nil:
 		return domain.UnbindSpec{}, fmt.Errorf("error locating service binding: %w", err)
-	}
-	if !exists {
+	case !exists:
 		return domain.UnbindSpec{}, apiresponses.ErrBindingDoesNotExist
 	}
 

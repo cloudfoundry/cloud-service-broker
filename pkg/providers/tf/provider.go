@@ -103,19 +103,19 @@ func (provider *terraformProvider) Provision(ctx context.Context, provisionConte
 		"context": provisionContext.ToMap(),
 	})
 
-	var tfID string
-	var err error
+	var (
+		tfID string
+		err  error
+	)
 
-	if provider.serviceDefinition.ProvisionSettings.IsTfImport(provisionContext) {
-		tfID, err = provider.importCreate(ctx, provider.store, provisionContext, provider.serviceDefinition.ProvisionSettings)
-		if err != nil {
-			return storage.ServiceInstanceDetails{}, err
-		}
-	} else {
-		tfID, err = provider.create(ctx, provider.store, provisionContext, provider.serviceDefinition.ProvisionSettings)
-		if err != nil {
-			return storage.ServiceInstanceDetails{}, err
-		}
+	switch provider.serviceDefinition.ProvisionSettings.IsTfImport(provisionContext) {
+	case true:
+		tfID, err = provider.importCreate(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
+	default:
+		tfID, err = provider.create(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
+	}
+	if err != nil {
+		return storage.ServiceInstanceDetails{}, err
 	}
 
 	return storage.ServiceInstanceDetails{
@@ -145,11 +145,10 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 
 	err := provider.jobRunner.Update(ctx, tfId, provisionContext.ToMap())
 
-	serviceInstanceDetails := models.ServiceInstanceDetails{
+	return models.ServiceInstanceDetails{
 		OperationId:   tfId,
 		OperationType: models.UpdateOperationType,
-	}
-	return serviceInstanceDetails, err
+	}, err
 }
 
 // Bind creates a new backing Terraform job and executes it, waiting on the result.
@@ -158,7 +157,7 @@ func (provider *terraformProvider) Bind(ctx context.Context, bindContext *varcon
 		"context": bindContext.ToMap(),
 	})
 
-	tfId, err := provider.create(ctx, provider.store, bindContext, provider.serviceDefinition.BindSettings)
+	tfId, err := provider.create(ctx, bindContext, provider.serviceDefinition.BindSettings)
 	if err != nil {
 		return nil, fmt.Errorf("error from provider bind: %w", err)
 	}
@@ -170,7 +169,7 @@ func (provider *terraformProvider) Bind(ctx context.Context, bindContext *varcon
 	return provider.jobRunner.Outputs(ctx, tfId, wrapper.DefaultInstanceName)
 }
 
-func (provider *terraformProvider) importCreate(ctx context.Context, store broker.ServiceProviderStorage, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
+func (provider *terraformProvider) importCreate(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
 	varsMap := vars.ToMap()
 
 	var parameterMappings, addParams []wrapper.ParameterMapping
@@ -224,7 +223,7 @@ func (provider *terraformProvider) importCreate(ctx context.Context, store broke
 	return tfId, provider.jobRunner.Import(ctx, tfId, importParams)
 }
 
-func (provider *terraformProvider) create(ctx context.Context, store broker.ServiceProviderStorage, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
+func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
 	tfId := vars.GetString("tf_id")
 	if err := vars.Error(); err != nil {
 		return "", err
