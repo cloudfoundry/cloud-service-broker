@@ -1,6 +1,8 @@
 package compoundencryptor
 
-func New(encryptor Encryptor, decryptors ...Encryptor) Encryptor {
+import "github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
+
+func New(encryptor storage.Encryptor, decryptors ...storage.Encryptor) storage.Encryptor {
 	return CompoundEncryptor{
 		encryptor:  encryptor,
 		decryptors: decryptors,
@@ -8,8 +10,8 @@ func New(encryptor Encryptor, decryptors ...Encryptor) Encryptor {
 }
 
 type CompoundEncryptor struct {
-	encryptor  Encryptor
-	decryptors []Encryptor
+	encryptor  storage.Encryptor
+	decryptors []storage.Encryptor
 }
 
 func (c CompoundEncryptor) Encrypt(plaintext []byte) ([]byte, error) {

@@ -21,8 +21,9 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
@@ -34,15 +35,11 @@ const (
 	Failed     = "failed"
 )
 
-// NewTfJobRunerFromEnv creates a new TfJobRunner with default configuration values.
-func NewTfJobRunerFromEnv() (*TfJobRunner, error) {
-	return NewTfJobRunnerForProject(map[string]string{}), nil
-}
-
-// NewTfJobRunnerForProject constructs a new JobRunner for the given project.
-func NewTfJobRunnerForProject(envVars map[string]string) *TfJobRunner {
+// NewTfJobRunner constructs a new JobRunner for the given project.
+func NewTfJobRunner(envVars map[string]string, store broker.ServiceProviderStorage) *TfJobRunner {
 	return &TfJobRunner{
 		EnvVars: envVars,
+		store:   store,
 	}
 }
 
@@ -62,26 +59,26 @@ type TfJobRunner struct {
 	EnvVars map[string]string
 	// Executor holds a custom executor that will be called when commands are run.
 	Executor wrapper.TerraformExecutor
+	store    broker.ServiceProviderStorage
 }
 
 // StageJob stages a job to be executed. Before the workspace is saved to the
 // database, the modules and inputs are validated by Terraform.
-func (runner *TfJobRunner) StageJob(ctx context.Context, jobId string, workspace *wrapper.TerraformWorkspace) error {
+func (runner *TfJobRunner) StageJob(jobId string, workspace *wrapper.TerraformWorkspace) error {
 	workspace.Executor = runner.Executor
 
-	exists, err := db_service.ExistsTerraformDeploymentById(ctx, jobId)
-	if err != nil {
+	deployment := storage.TerraformDeployment{ID: jobId}
+	exists, err := runner.store.ExistsTerraformDeployment(jobId)
+	switch {
+	case err != nil:
 		return err
-	}
-
-	deployment := &models.TerraformDeployment{ID: jobId}
-	if exists {
-		deployment, err = db_service.GetTerraformDeploymentById(ctx, jobId)
+	case exists:
+		deployment, err = runner.store.GetTerraformDeployment(jobId)
 		if err != nil {
 			return err
 		}
-	} else {
-		if err := db_service.CreateTerraformDeployment(ctx, deployment); err != nil {
+	default:
+		if err := runner.store.StoreTerraformDeployment(deployment); err != nil {
 			return err
 		}
 	}
@@ -90,33 +87,27 @@ func (runner *TfJobRunner) StageJob(ctx context.Context, jobId string, workspace
 	if err != nil {
 		return err
 	}
-	if err := deployment.SetWorkspace(workspaceString); err != nil {
-		return err
-	}
 
+	deployment.Workspace = []byte(workspaceString)
 	deployment.LastOperationType = "validation"
 	return runner.operationFinished(nil, workspace, deployment)
 }
 
-func (runner *TfJobRunner) markJobStarted(ctx context.Context, deployment *models.TerraformDeployment, operationType string) error {
+func (runner *TfJobRunner) markJobStarted(deployment storage.TerraformDeployment, operationType string) error {
 	// update the deployment info
 	deployment.LastOperationType = operationType
 	deployment.LastOperationState = InProgress
 	deployment.LastOperationMessage = ""
 
-	if err := db_service.SaveTerraformDeployment(ctx, deployment); err != nil {
+	if err := runner.store.StoreTerraformDeployment(deployment); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (runner *TfJobRunner) hydrateWorkspace(ctx context.Context, deployment *models.TerraformDeployment) (*wrapper.TerraformWorkspace, error) {
-	w, err := deployment.GetWorkspace()
-	if err != nil {
-		return nil, err
-	}
-	ws, err := wrapper.DeserializeWorkspace(w)
+func (runner *TfJobRunner) hydrateWorkspace(ctx context.Context, deployment storage.TerraformDeployment) (*wrapper.TerraformWorkspace, error) {
+	ws, err := wrapper.DeserializeWorkspace(string(deployment.Workspace))
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +131,7 @@ type ImportResource struct {
 // Import runs `terraform import` and `terraform apply` on the given workspace in the background.
 // The status of the job can be found by polling the Status function.
 func (runner *TfJobRunner) Import(ctx context.Context, id string, importResources []ImportResource) error {
-	deployment, err := db_service.GetTerraformDeploymentById(ctx, id)
+	deployment, err := runner.store.GetTerraformDeployment(id)
 	if err != nil {
 		return err
 	}
@@ -150,7 +141,7 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 		return err
 	}
 
-	if err := runner.markJobStarted(ctx, deployment, models.ProvisionOperationType); err != nil {
+	if err := runner.markJobStarted(deployment, models.ProvisionOperationType); err != nil {
 		return err
 	}
 
@@ -198,7 +189,7 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 // Create runs `terraform apply` on the given workspace in the background.
 // The status of the job can be found by polling the Status function.
 func (runner *TfJobRunner) Create(ctx context.Context, id string) error {
-	deployment, err := db_service.GetTerraformDeploymentById(ctx, id)
+	deployment, err := runner.store.GetTerraformDeployment(id)
 	if err != nil {
 		return fmt.Errorf("error getting TF deployment: %w", err)
 	}
@@ -208,7 +199,7 @@ func (runner *TfJobRunner) Create(ctx context.Context, id string) error {
 		return fmt.Errorf("error hydrating workspace: %w", err)
 	}
 
-	if err := runner.markJobStarted(ctx, deployment, models.ProvisionOperationType); err != nil {
+	if err := runner.markJobStarted(deployment, models.ProvisionOperationType); err != nil {
 		return fmt.Errorf("error marking job started: %w", err)
 	}
 
@@ -221,7 +212,7 @@ func (runner *TfJobRunner) Create(ctx context.Context, id string) error {
 }
 
 func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars map[string]interface{}) error {
-	deployment, err := db_service.GetTerraformDeploymentById(ctx, id)
+	deployment, err := runner.store.GetTerraformDeployment(id)
 	if err != nil {
 		return err
 	}
@@ -244,7 +235,7 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 
 	workspace.Instances[0].Configuration = limitedConfig
 
-	if err := runner.markJobStarted(ctx, deployment, models.UpdateOperationType); err != nil {
+	if err := runner.markJobStarted(deployment, models.UpdateOperationType); err != nil {
 		return err
 	}
 
@@ -259,7 +250,7 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 // Destroy runs `terraform destroy` on the given workspace in the background.
 // The status of the job can be found by polling the Status function.
 func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars map[string]interface{}) error {
-	deployment, err := db_service.GetTerraformDeploymentById(ctx, id)
+	deployment, err := runner.store.GetTerraformDeployment(id)
 	if err != nil {
 		return err
 	}
@@ -281,7 +272,7 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 
 	workspace.Instances[0].Configuration = limitedConfig
 
-	if err := runner.markJobStarted(ctx, deployment, models.DeprovisionOperationType); err != nil {
+	if err := runner.markJobStarted(deployment, models.DeprovisionOperationType); err != nil {
 		return err
 	}
 
@@ -295,7 +286,7 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 
 // operationFinished closes out the state of the background job so clients that
 // are polling can get the results.
-func (runner *TfJobRunner) operationFinished(err error, workspace *wrapper.TerraformWorkspace, deployment *models.TerraformDeployment) error {
+func (runner *TfJobRunner) operationFinished(err error, workspace *wrapper.TerraformWorkspace, deployment storage.TerraformDeployment) error {
 	// we shouldn't update the status on update when updating the HCL, as the status comes either from the provision call or a previous update
 	if err == nil {
 		lastOperationMessage := ""
@@ -320,19 +311,16 @@ func (runner *TfJobRunner) operationFinished(err error, workspace *wrapper.Terra
 		deployment.LastOperationMessage = fmt.Sprintf("couldn't serialize workspace, contact your operator for cleanup: %s", err.Error())
 	}
 
-	if err := deployment.SetWorkspace(workspaceString); err != nil {
-		deployment.LastOperationState = Failed
-		deployment.LastOperationMessage = fmt.Sprintf("couldn't save workspace, contact your operator for cleanup: %s", err.Error())
-	}
+	deployment.Workspace = []byte(workspaceString)
 
-	return db_service.SaveTerraformDeployment(context.Background(), deployment)
+	return runner.store.StoreTerraformDeployment(deployment)
 }
 
 // Status gets the status of the most recent job on the workspace.
 // If isDone is true, then the status of the operation will not change again.
 // if isDone is false, then the operation is ongoing.
 func (runner *TfJobRunner) Status(ctx context.Context, id string) (bool, string, error) {
-	deployment, err := db_service.GetTerraformDeploymentById(ctx, id)
+	deployment, err := runner.store.GetTerraformDeployment(id)
 	if err != nil {
 		return true, "", err
 	}
@@ -349,16 +337,12 @@ func (runner *TfJobRunner) Status(ctx context.Context, id string) (bool, string,
 
 // Outputs gets the output variables for the given module instance in the workspace.
 func (runner *TfJobRunner) Outputs(ctx context.Context, id, instanceName string) (map[string]interface{}, error) {
-	deployment, err := db_service.GetTerraformDeploymentById(ctx, id)
+	deployment, err := runner.store.GetTerraformDeployment(id)
 	if err != nil {
 		return nil, fmt.Errorf("error getting TF deployment: %w", err)
 	}
 
-	w, err := deployment.GetWorkspace()
-	if err != nil {
-		return nil, fmt.Errorf("error reading workspace: %w", err)
-	}
-	ws, err := wrapper.DeserializeWorkspace(w)
+	ws, err := wrapper.DeserializeWorkspace(string(deployment.Workspace))
 	if err != nil {
 		return nil, fmt.Errorf("error deserializing workspace: %w", err)
 	}

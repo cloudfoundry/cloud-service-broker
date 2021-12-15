@@ -20,14 +20,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"gorm.io/gorm"
-
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/brokers"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/dbrotator"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/brokerpak"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/server"
@@ -38,6 +35,7 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"gorm.io/gorm"
 )
 
 const (
@@ -82,7 +80,7 @@ func init() {
 func serve() {
 	logger := utils.NewLogger("cloud-service-broker")
 	db := db_service.New(logger)
-	setupDBEncryption(db, logger)
+	encryptor := setupDBEncryption(db, logger)
 
 	// init broker
 	cfg, err := brokers.NewBrokerConfigFromEnv(logger)
@@ -90,7 +88,7 @@ func serve() {
 		logger.Fatal("Error initializing service broker config", err)
 	}
 	var serviceBroker domain.ServiceBroker
-	serviceBroker, err = brokers.New(cfg, logger)
+	serviceBroker, err = brokers.New(cfg, logger, storage.New(db, encryptor))
 	if err != nil {
 		logger.Fatal("Error initializing service broker", err)
 	}
@@ -131,7 +129,7 @@ func serveDocs() {
 	startServer(registry, nil, nil)
 }
 
-func setupDBEncryption(db *gorm.DB, logger lager.Logger) {
+func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
 	config, err := encryption.ParseConfiguration(db, viper.GetBool(encryptionEnabled), viper.GetString(encryptionPasswords))
 	if err != nil {
 		logger.Fatal("Error parsing encryption configuration", err)
@@ -139,8 +137,7 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) {
 
 	if config.Changed {
 		logger.Info("rotating-database-encryption", lager.Data{"previous-primary": labelName(config.StoredPrimaryLabel), "new-primary": labelName(config.ConfiguredPrimaryLabel)})
-		models.SetEncryptor(config.RotationEncryptor)
-		if err := dbrotator.ReencryptDB(db); err != nil {
+		if err := storage.New(db, config.RotationEncryptor).UpdateAllRecords(); err != nil {
 			logger.Fatal("Error rotating database encryption", err)
 		}
 		if err := encryption.UpdatePasswordMetadata(db, config.ConfiguredPrimaryLabel); err != nil {
@@ -153,7 +150,7 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) {
 	}
 
 	logger.Info("database-encryption", lager.Data{"primary": labelName(config.ConfiguredPrimaryLabel)})
-	models.SetEncryptor(config.Encryptor)
+	return config.Encryptor
 }
 
 func startServer(registry broker.BrokerRegistry, db *sql.DB, brokerapi http.Handler) {

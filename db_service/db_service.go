@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:generate go run dao_generator.go
-
 package db_service
 
 import (
@@ -26,27 +24,16 @@ import (
 	_ "gorm.io/driver/sqlite"
 )
 
-var DbConnection *gorm.DB
 var once sync.Once
 
 // New instantiates the db connection and runs migrations
 func New(logger lager.Logger) *gorm.DB {
+	var db *gorm.DB
 	once.Do(func() {
-		DbConnection = SetupDb(logger)
-		if err := RunMigrations(DbConnection); err != nil {
+		db = SetupDb(logger)
+		if err := RunMigrations(db); err != nil {
 			panic(fmt.Sprintf("Error migrating database: %s", err.Error()))
 		}
 	})
-	return DbConnection
-}
-
-// defaultDatastore gets the default datastore for the given default database
-// instantiated in New(). In the future, all accesses of DbConnection will be
-// done through SqlDatastore and it will become the globally shared instance.
-func defaultDatastore() *SqlDatastore {
-	return &SqlDatastore{db: DbConnection}
-}
-
-type SqlDatastore struct {
-	db *gorm.DB
+	return db
 }

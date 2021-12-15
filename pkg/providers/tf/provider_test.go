@@ -2,29 +2,23 @@ package tf_test
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"os"
 	"os/exec"
 	"path"
 
-	"gopkg.in/DATA-DOG/go-sqlmock.v1"
-
-	"github.com/spf13/viper"
-
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
-
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models/fakes"
-
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
-
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/spf13/viper"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -33,6 +27,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 	var (
 		workspaceUpdator tf.WorkspaceUpdater
 		vc               *varcontext.VarContext
+		store            *brokerfakes.FakeServiceProviderStorage
 	)
 
 	const terraformStateAfterProvision = `
@@ -104,14 +99,14 @@ var _ = Describe("WorkspaceUpdater", func() {
 
 	setUpProvider := func(serviceDefinition tf.TfServiceDefinitionV1) broker.ServiceProvider {
 		testLogger := utils.NewLogger("test")
-		jobRunner := tf.NewTfJobRunnerForProject(map[string]string{})
+		jobRunner := tf.NewTfJobRunner(nil, store)
 		jobRunner.Executor = dummyExecutor
-		return tf.NewTerraformProvider(jobRunner, testLogger, serviceDefinition)
+		return tf.NewTerraformProvider(jobRunner, testLogger, serviceDefinition, store)
 	}
 
 	pollOperationSucceeded := func(operationId string) func() string {
 		return func() string {
-			deployment, err := db_service.GetTerraformDeploymentById(context.TODO(), operationId)
+			deployment, err := store.GetTerraformDeployment(operationId)
 			Expect(err).NotTo(HaveOccurred())
 			return deployment.LastOperationState
 		}
@@ -128,7 +123,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 	}
 
 	getTerraformWorkspace := func(operationId string) *wrapper.TerraformWorkspace {
-		deployment, err := db_service.GetTerraformDeploymentById(context.TODO(), operationId)
+		deployment, err := store.GetTerraformDeployment(operationId)
 		Expect(err).NotTo(HaveOccurred())
 		ws, err := wrapper.DeserializeWorkspace(string(deployment.Workspace))
 		Expect(err).ToNot(HaveOccurred())
@@ -141,13 +136,19 @@ var _ = Describe("WorkspaceUpdater", func() {
 
 		db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		Expect(err).NotTo(HaveOccurred())
-		db_service.DbConnection = db // awful
-		models.SetEncryptor(noopencryptor.NoopEncryptor{})
-		Expect(err).NotTo(HaveOccurred())
-		db.Migrator().CreateTable(models.ServiceInstanceDetails{})
-		db.Migrator().CreateTable(models.ServiceBindingCredentials{})
-		db.Migrator().CreateTable(models.ProvisionRequestDetails{})
-		db.Migrator().CreateTable(models.TerraformDeployment{})
+		Expect(db.Migrator().CreateTable(&models.ServiceInstanceDetails{})).NotTo(HaveOccurred())
+		Expect(db.Migrator().CreateTable(&models.ServiceBindingCredentials{})).NotTo(HaveOccurred())
+		Expect(db.Migrator().CreateTable(&models.ProvisionRequestDetails{})).NotTo(HaveOccurred())
+		Expect(db.Migrator().CreateTable(&models.TerraformDeployment{})).NotTo(HaveOccurred())
+
+		// Some tests rely on an actual database, while some are simpler
+		// when a fake is used
+		realStore := storage.New(db, noopencryptor.NoopEncryptor{})
+		store = &brokerfakes.FakeServiceProviderStorage{
+			ExistsTerraformDeploymentStub: realStore.ExistsTerraformDeployment,
+			GetTerraformDeploymentStub:    realStore.GetTerraformDeployment,
+			StoreTerraformDeploymentStub:  realStore.StoreTerraformDeployment,
+		}
 
 		vc, err = varcontext.Builder().Build()
 		Expect(err).NotTo(HaveOccurred())
@@ -194,11 +195,10 @@ var _ = Describe("WorkspaceUpdater", func() {
 		instanceDetails, err := provider.Provision(context.TODO(), provisionContext)
 		Expect(err).NotTo(HaveOccurred())
 
-		Eventually(pollOperationSucceeded(instanceDetails.OperationId)).Should(Equal("succeeded"))
-		ws := getTerraformWorkspace(instanceDetails.OperationId)
+		Eventually(pollOperationSucceeded(instanceDetails.OperationGUID)).Should(Equal("succeeded"))
+		ws := getTerraformWorkspace(instanceDetails.OperationGUID)
 		expectModuleToBeInitialHCL(ws)
 		Expect(string(ws.State)).To(Equal(terraformStateAfterProvision))
-
 	})
 
 	When("brokerpak updates enabled", func() {
@@ -209,7 +209,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 
 		When("there's a record in the database", func() {
 			It("updates the module definition and variables", func() {
-				workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id")
+				workspaceUpdator.UpdateWorkspaceHCL(store, updatedProvisionSettings, vc, "an-instance-id")
 
 				ws := getTerraformWorkspace("an-instance-id")
 				Expect(ws.Modules[0].Definition).To(ContainSubstring(`administrator_login = random_string.username.result`))
@@ -224,37 +224,13 @@ var _ = Describe("WorkspaceUpdater", func() {
 		})
 
 		Context("error scenarios", func() {
-			When("there is no record in the database", func() {
-				It("returns the error", func() {
-					err := workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id-with-no-workspace")
-					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError("record not found"))
-				})
-			})
-
 			When("cannot get the existing workspace", func() {
 				It("returns the error", func() {
-					encryptor := fakes.FakeEncryptor{}
-					encryptor.DecryptReturns(nil, fmt.Errorf("can't decrypt"))
-					models.SetEncryptor(&encryptor)
+					store.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New("fake error"))
 
-					err := workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id")
+					err := workspaceUpdator.UpdateWorkspaceHCL(store, updatedProvisionSettings, vc, "an-instance-id")
 
-					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError("can't decrypt"))
-				})
-			})
-
-			When("cannot deserialize the workspace", func() {
-				It("returns the error", func() {
-					encryptor := fakes.FakeEncryptor{}
-					encryptor.DecryptReturns([]byte("{"), nil)
-					models.SetEncryptor(&encryptor)
-
-					err := workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id")
-
-					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError("unexpected end of JSON input"))
+					Expect(err).To(MatchError("fake error"))
 				})
 			})
 
@@ -267,7 +243,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 				}
 				`,
 					}
-					err := workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), jammedOperationSettings, vc, "an-instance-id")
+					err := workspaceUpdator.UpdateWorkspaceHCL(store, jammedOperationSettings, vc, "an-instance-id")
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(ContainSubstring("Invalid expression"))
 				})
@@ -275,36 +251,11 @@ var _ = Describe("WorkspaceUpdater", func() {
 
 			When("cannot set a workspace", func() {
 				It("returns the error", func() {
-					encryptor := fakes.FakeEncryptor{}
-					encryptor.DecryptReturns([]byte("{}"), nil)
-					encryptor.EncryptReturns(nil, fmt.Errorf("error encrypting"))
-					models.SetEncryptor(&encryptor)
-					err := workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id")
-					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError("error encrypting"))
-				})
-			})
+					store.StoreTerraformDeploymentReturns(errors.New("fake error"))
 
-			When("cannot save the workspace", func() {
-				It("returns the error", func() {
-					db, mock, err := sqlmock.New()
-					Expect(err).ShouldNot(HaveOccurred())
-					mock.ExpectQuery("select sqlite_version()").WillReturnRows(sqlmock.NewRows([]string{"version"}).AddRow("4.5.6"))
-					mock.ExpectQuery("SELECT*").WillReturnRows(sqlmock.NewRows([]string{"id", "workspace"}).
-						AddRow("id", "{}"))
-					mock.ExpectBegin()
-					mock.ExpectQuery("UPDATE*").WillReturnError(fmt.Errorf("error saving to db"))
-					dialector := sqlite.Dialector{
-						Conn: db,
-					}
-					mockDbConnection, err := gorm.Open(dialector, &gorm.Config{})
-					Expect(err).ShouldNot(HaveOccurred())
-					db_service.DbConnection = mockDbConnection
+					err := workspaceUpdator.UpdateWorkspaceHCL(store, updatedProvisionSettings, vc, "an-instance-id")
 
-					err = workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id")
-
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("error saving to db"))
+					Expect(err).To(MatchError("terraform provider create failed: fake error"))
 				})
 			})
 		})
@@ -317,7 +268,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 
 		When("there's a record in the database", func() {
 			It("does not update the module definition and variables", func() {
-				workspaceUpdator.UpdateWorkspaceHCL(context.TODO(), updatedProvisionSettings, vc, "an-instance-id")
+				workspaceUpdator.UpdateWorkspaceHCL(store, updatedProvisionSettings, vc, "an-instance-id")
 
 				ws := getTerraformWorkspace("an-instance-id")
 				expectModuleToBeInitialHCL(ws)

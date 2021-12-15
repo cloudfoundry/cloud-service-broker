@@ -14,10 +14,6 @@
 
 package models
 
-import (
-	"encoding/json"
-)
-
 const (
 	// The following operation types are used as part of the OSB process.
 	// The types correspond to asynchronous provision/deprovision/update calls
@@ -29,111 +25,16 @@ const (
 	ClearOperationType       = ""
 )
 
-var encryptorInstance Encryptor = nil
-
-func SetEncryptor(encryptor Encryptor) {
-	encryptorInstance = encryptor
-}
-
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o fakes/fake_encryption.go . Encryptor
-type Encryptor interface {
-	Encrypt(plaintext []byte) ([]byte, error)
-	Decrypt(ciphertext []byte) ([]byte, error)
-}
-
 // ServiceBindingCredentials holds credentials returned to the users after
 // binding to a service.
 type ServiceBindingCredentials ServiceBindingCredentialsV2
 
-// SetOtherDetails marshals the value passed in into a JSON string and sets
-// OtherDetails to it if marshalling was successful.
-func (sbc *ServiceBindingCredentials) SetOtherDetails(toSet interface{}) error {
-	out, err := json.Marshal(toSet)
-	if err != nil {
-		return err
-	}
-
-	encryptedDetails, err := encryptorInstance.Encrypt(out)
-	if err != nil {
-		return err
-	}
-
-	sbc.OtherDetails = encryptedDetails
-	return nil
-}
-
-// GetOtherDetails returns and unmarshalls the OtherDetails field into the given
-// struct. An empty OtherDetails field does not get unmarshalled and does not error.
-func (sbc ServiceBindingCredentials) GetOtherDetails(v interface{}) error {
-	if sbc.OtherDetails == nil {
-		return nil
-	}
-
-	decryptedDetails, err := encryptorInstance.Decrypt(sbc.OtherDetails)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(decryptedDetails, v)
-}
-
 // ServiceInstanceDetails holds information about provisioned services.
 type ServiceInstanceDetails ServiceInstanceDetailsV3
-
-// SetOtherDetails marshals the value passed in into a JSON string and sets
-// OtherDetails to it if marshalling was successful.
-func (si *ServiceInstanceDetails) SetOtherDetails(toSet interface{}) error {
-	out, err := json.Marshal(toSet)
-	if err != nil {
-		return err
-	}
-
-	encryptedDetails, err := encryptorInstance.Encrypt(out)
-	if err != nil {
-		return err
-	}
-
-	si.OtherDetails = encryptedDetails
-	return nil
-}
-
-// GetOtherDetails returns and unmarshalls the OtherDetails field into the given
-// struct. An empty OtherDetails field does not get unmarshalled and does not error.
-func (si ServiceInstanceDetails) GetOtherDetails(v interface{}) error {
-	if si.OtherDetails == nil {
-		return nil
-	}
-
-	decryptedDetails, err := encryptorInstance.Decrypt(si.OtherDetails)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(decryptedDetails, v)
-}
 
 // ProvisionRequestDetails holds user-defined properties passed to a call
 // to provision a service.
 type ProvisionRequestDetails ProvisionRequestDetailsV3
-
-func (pr *ProvisionRequestDetails) SetRequestDetails(rawMessage json.RawMessage) error {
-	encryptedDetails, err := encryptorInstance.Encrypt(rawMessage)
-	if err != nil {
-		return err
-	}
-
-	pr.RequestDetails = encryptedDetails
-	return nil
-}
-
-func (pr ProvisionRequestDetails) GetRequestDetails() (json.RawMessage, error) {
-	decryptedDetails, err := encryptorInstance.Decrypt(pr.RequestDetails)
-	if err != nil {
-		return nil, err
-	}
-
-	return decryptedDetails, nil
-}
 
 // Migration represents the mgirations table. It holds a monotonically
 // increasing number that gets incremented with every database schema revision.
@@ -146,24 +47,6 @@ type CloudOperation CloudOperationV1
 // TerraformDeployment holds Terraform state and plan information for resources
 // that use that execution system.
 type TerraformDeployment TerraformDeploymentV3
-
-func (t *TerraformDeployment) SetWorkspace(value string) error {
-	encrypted, err := encryptorInstance.Encrypt([]byte(value))
-	if err != nil {
-		return err
-	}
-
-	t.Workspace = encrypted
-	return nil
-}
-
-func (t *TerraformDeployment) GetWorkspace() (string, error) {
-	decrypted, err := encryptorInstance.Decrypt(t.Workspace)
-	if err != nil {
-		return "", err
-	}
-	return string(decrypted), nil
-}
 
 // PasswordMetadata contains information about the passwords, but never the
 // passwords themselves

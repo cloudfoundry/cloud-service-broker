@@ -17,7 +17,7 @@ package base
 import (
 	"context"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
@@ -28,23 +28,10 @@ type MergedInstanceCredsMixin struct{}
 
 // BuildInstanceCredentials combines the bind credentials with the connection
 // information in the instance details to get a full set of connection details.
-func (b *MergedInstanceCredsMixin) BuildInstanceCredentials(ctx context.Context, bindRecord models.ServiceBindingCredentials, instanceRecord models.ServiceInstanceDetails) (*domain.Binding, error) {
-	var instanceOtherDetails map[string]interface{}
-	err := instanceRecord.GetOtherDetails(&instanceOtherDetails)
-	if err != nil {
-		return nil, err
-	}
-
-	var bindOtherDetails map[string]interface{}
-	err = bindRecord.GetOtherDetails(&bindOtherDetails)
-	if err != nil {
-		return nil, err
-	}
-
-	var vc *varcontext.VarContext
-	vc, err = varcontext.Builder().
-		MergeMap(instanceOtherDetails).
-		MergeMap(bindOtherDetails).
+func (b *MergedInstanceCredsMixin) BuildInstanceCredentials(ctx context.Context, credentials map[string]interface{}, outputs storage.TerraformOutputs) (*domain.Binding, error) {
+	vc, err := varcontext.Builder().
+		MergeMap(outputs).
+		MergeMap(credentials).
 		Build()
 	if err != nil {
 		return nil, err
