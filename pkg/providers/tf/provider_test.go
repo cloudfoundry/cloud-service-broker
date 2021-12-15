@@ -136,10 +136,10 @@ var _ = Describe("WorkspaceUpdater", func() {
 
 		db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		Expect(err).NotTo(HaveOccurred())
-		db.Migrator().CreateTable(models.ServiceInstanceDetails{})
-		db.Migrator().CreateTable(models.ServiceBindingCredentials{})
-		db.Migrator().CreateTable(models.ProvisionRequestDetails{})
-		db.Migrator().CreateTable(models.TerraformDeployment{})
+		Expect(db.Migrator().CreateTable(&models.ServiceInstanceDetails{})).NotTo(HaveOccurred())
+		Expect(db.Migrator().CreateTable(&models.ServiceBindingCredentials{})).NotTo(HaveOccurred())
+		Expect(db.Migrator().CreateTable(&models.ProvisionRequestDetails{})).NotTo(HaveOccurred())
+		Expect(db.Migrator().CreateTable(&models.TerraformDeployment{})).NotTo(HaveOccurred())
 
 		// Some tests rely on an actual database, while some are simpler
 		// when a fake is used
