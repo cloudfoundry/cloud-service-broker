@@ -6,7 +6,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/compoundencryptor"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage/storagefakes"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

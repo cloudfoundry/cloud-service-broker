@@ -4,8 +4,7 @@ import (
 	"strings"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/passwordparser"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

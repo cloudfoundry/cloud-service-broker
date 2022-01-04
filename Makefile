@@ -55,7 +55,7 @@ test-units: deps-go-binary ## run unit tests
 
 .PHONY: test-integration
 test-integration: deps-go-binary ## run integration tests
-	$(GO) run github.com/onsi/ginkgo/ginkgo -p integrationtest/...
+	$(GO) run github.com/onsi/ginkgo/v2/ginkgo -p integrationtest/...
 
 ###### Build ##################################################################
 
