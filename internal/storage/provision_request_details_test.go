@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

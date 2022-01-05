@@ -4,8 +4,7 @@ import (
 	"fmt"
 
 	. "github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/spf13/viper"
