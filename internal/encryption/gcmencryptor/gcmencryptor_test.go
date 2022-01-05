@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/gcmencryptor"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

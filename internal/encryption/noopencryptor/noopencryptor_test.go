@@ -2,7 +2,7 @@ package noopencryptor_test
 
 import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
