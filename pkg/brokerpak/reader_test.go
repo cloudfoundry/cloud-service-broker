@@ -14,7 +14,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/brokerpak"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 )
 
 var _ = Describe("reader", func() {

@@ -5,8 +5,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )

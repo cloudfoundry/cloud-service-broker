@@ -11,7 +11,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
@@ -583,7 +583,6 @@ var _ = Describe("Database Encryption", func() {
 				Expect(brokerSession.Err).To(Say(`the password labelled "my-first-password" must be supplied to decrypt the database`))
 
 				By("restarting the broker with a different primary password and with the initial password")
-				brokerSession.Terminate()
 				firstEncryptionPassword = `{"primary":false,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 				encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
 				brokerSession = startBroker(true, encryptionPasswords)
@@ -591,6 +590,8 @@ var _ = Describe("Database Encryption", func() {
 					Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`),
 					Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`),
 				))
+
+				brokerSession.Terminate()
 			})
 		})
 
@@ -641,7 +642,6 @@ var _ = Describe("Database Encryption", func() {
 				Expect(db.Save(&recordToRecover).Error).NotTo(HaveOccurred())
 
 				By("restarting the broker with same config")
-				brokerSession.Terminate()
 				encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
 				brokerSession = startBroker(true, encryptionPasswords)
 				Expect(brokerSession.Out).To(SatisfyAll(
@@ -652,6 +652,8 @@ var _ = Describe("Database Encryption", func() {
 				By("checking password metadata are updated")
 				Expect(persistedPasswordMetadata("my-first-password").Primary).To(BeFalse())
 				Expect(persistedPasswordMetadata("my-second-password").Primary).To(BeTrue())
+
+				brokerSession.Terminate()
 			})
 		})
 	})

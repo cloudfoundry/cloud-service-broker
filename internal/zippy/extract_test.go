@@ -8,7 +8,7 @@ import (
 
 	. "github.com/cloudfoundry-incubator/cloud-service-broker/internal/testmatchers"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/zippy"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

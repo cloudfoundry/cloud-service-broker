@@ -16,7 +16,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/viper"
 	"gorm.io/driver/sqlite"
