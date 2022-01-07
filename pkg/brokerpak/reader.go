@@ -123,6 +123,23 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 		return err
 	}
 
+	return pak.extractTerraformBin(destination, terraformVersion, mf)
+}
+
+func (pak *BrokerPakReader) ExtractSpecificTerraformBin(destination, specificVersion string) error {
+	mf, err := pak.Manifest()
+	if err != nil {
+		return err
+	}
+	versionObj, err := mf.GetTerraformWithVersion(specificVersion)
+	if err != nil {
+		return err
+	}
+
+	return pak.extractTerraformBin(destination, versionObj, mf)
+}
+
+func (pak *BrokerPakReader) extractTerraformBin(destination string, terraformVersion *version.Version, mf *Manifest) error {
 	if terraformVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
 		return pak.extractPlatformBins12(destination, mf)
 	} else {

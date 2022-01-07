@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/migrator"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/brokers"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
@@ -93,6 +95,17 @@ func serve() {
 		logger.Fatal("Error initializing service broker", err)
 	}
 
+	pakConfig, err := brokerpak.NewServerConfigFromEnv()
+	if err != nil {
+		logger.Fatal("Error initializing broker pack config", err)
+	}
+
+	registrar := brokerpak.NewRegistrar(pakConfig)
+	migrationRunner, err := migrator.New(cfg, logger, storage.New(db, encryptor), registrar)
+	if err != nil {
+		logger.Fatal("Error initializing service broker", err)
+	}
+
 	credentials := brokerapi.BrokerCredentials{
 		Username: viper.GetString(apiUserProp),
 		Password: viper.GetString(apiPasswordProp),
@@ -115,7 +128,7 @@ func serve() {
 	if err != nil {
 		logger.Error("failed to get database connection", err)
 	}
-	startServer(cfg.Registry, sqldb, brokerAPI)
+	startServer(cfg.Registry, sqldb, brokerAPI, migrationRunner)
 }
 
 func serveDocs() {
@@ -126,7 +139,7 @@ func serveDocs() {
 		logger.Error("loading brokerpaks", err)
 	}
 
-	startServer(registry, nil, nil)
+	startServer(registry, nil, nil, nil)
 }
 
 func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
@@ -153,7 +166,7 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
 	return config.Encryptor
 }
 
-func startServer(registry broker.BrokerRegistry, db *sql.DB, brokerapi http.Handler) {
+func startServer(registry broker.BrokerRegistry, db *sql.DB, brokerapi http.Handler, runner *migrator.MigrationRunner) {
 	logger := utils.NewLogger("cloud-service-broker")
 
 	router := mux.NewRouter()
@@ -166,6 +179,14 @@ func startServer(registry broker.BrokerRegistry, db *sql.DB, brokerapi http.Hand
 	server.AddDocsHandler(router, registry)
 	router.HandleFunc("/examples", server.NewExampleHandler(registry))
 	server.AddHealthHandler(router, db)
+	router.HandleFunc("/migrate", func(resp http.ResponseWriter, _ *http.Request) {
+		err := runner.StartMigration()
+		if err != nil {
+			resp.Write([]byte(fmt.Sprintf("%v", err.Error())))
+			logger.Info(err.Error())
+		}
+		resp.WriteHeader(http.StatusOK)
+	})
 
 	port := viper.GetString(apiPortProp)
 	host := viper.GetString(apiHostProp)

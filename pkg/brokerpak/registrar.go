@@ -147,6 +147,45 @@ func (r *Registrar) createExecutor(brokerPak *BrokerPakReader, vc *varcontext.Va
 	return executor, nil
 }
 
+func (r *Registrar) CreateTerraformExecutor(version string) (wrapper.TerraformExecutor, error) {
+	brokerPak, err := DownloadAndOpenBrokerpak("/home/vcap/app/azure-services-0.1.0.brokerpak")
+	if err != nil {
+		return nil, err
+	}
+
+	vc, err := varcontext.Builder().Build()
+	if err != nil {
+		return nil, err
+	}
+
+	dir, err := os.MkdirTemp("", "brokerpak")
+	if err != nil {
+		return nil, fmt.Errorf("couldn't create brokerpak tmpDir")
+	}
+
+	// extract the Terraform directory
+	if err := brokerPak.ExtractSpecificTerraformBin(dir, version); err != nil {
+		return nil, err
+	}
+
+	manifest, err := brokerPak.Manifest()
+	if err != nil {
+		return nil, err
+	}
+	tfVersion, err := manifest.GetTerraformVersion()
+	if err != nil {
+		return nil, err
+	}
+
+	binPath := filepath.Join(dir, "terraform")
+	executor := wrapper.CustomTerraformExecutor(binPath, dir, tfVersion, wrapper.DefaultExecutor)
+
+	params := r.resolveParameters(manifest.Parameters, vc)
+	executor = wrapper.CustomEnvironmentExecutor(params, executor)
+
+	return executor, nil
+}
+
 // resolveParameters resolves environment variables from the given global and
 // brokerpak specific.
 func (Registrar) resolveParameters(params []ManifestParameter, vc *varcontext.VarContext) map[string]string {

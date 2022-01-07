@@ -418,6 +418,25 @@ func (workspace *TerraformWorkspace) Show(ctx context.Context) (string, error) {
 	return output.StdOut, nil
 }
 
+func (workspace *TerraformWorkspace) MigrateTo013(ctx context.Context) error {
+	logger := utils.NewLogger("terraform-migrate-to-0.13").WithData(correlation.ID(ctx))
+
+	err := workspace.initializeFs(ctx)
+	defer workspace.teardownFs()
+	if err != nil {
+		return err
+	}
+
+	output, err := workspace.runTf(ctx, "0.13upgrade", "-no-color")
+	if err != nil {
+		return err
+	}
+
+	logger.Info(output.StdOut)
+
+	return nil
+}
+
 func (workspace *TerraformWorkspace) tfStatePath() string {
 	return path.Join(workspace.dir, "terraform.tfstate")
 }

@@ -365,3 +365,38 @@ func (runner *TfJobRunner) Wait(ctx context.Context, id string) error {
 		}
 	}
 }
+
+func (runner *TfJobRunner) MigrateTo013(ctx context.Context, id string) error {
+	deployment, err := runner.store.GetTerraformDeployment(id)
+	if err != nil {
+		return err
+	}
+
+	workspace, err := runner.hydrateWorkspace(ctx, deployment)
+	if err != nil {
+		return err
+	}
+
+	err = workspace.MigrateTo013(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = workspace.Plan(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = workspace.Apply(ctx)
+	if err != nil {
+		return err
+	}
+
+	workspaceString, err := workspace.Serialize()
+	if err != nil {
+		return err
+	}
+	deployment.Workspace = []byte(workspaceString)
+
+	return runner.store.StoreTerraformDeployment(deployment)
+}

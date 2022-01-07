@@ -145,6 +145,15 @@ func (m *Manifest) GetTerraformVersion() (*version.Version, error) {
 	return &version.Version{}, fmt.Errorf("terraform provider not found")
 }
 
+func (m *Manifest) GetTerraformWithVersion(specifiedVersion string) (*version.Version, error) {
+	for _, r := range m.TerraformResources {
+		if r.Name == "terraform" && r.Version == specifiedVersion {
+			return version.NewVersion(r.Version)
+		}
+	}
+	return &version.Version{}, fmt.Errorf("terraform provider not found")
+}
+
 func (m *Manifest) packSources(tmp string) error {
 	for _, resource := range m.TerraformResources {
 		if resource.Source == "" {

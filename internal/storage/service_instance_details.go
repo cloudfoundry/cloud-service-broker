@@ -66,6 +66,24 @@ func (s *Storage) ExistsServiceInstanceDetails(guid string) (bool, error) {
 	}
 	return count != 0, nil
 }
+func (s *Storage) GetServiceInstances() ([]ServiceInstanceDetails, error) {
+	var receiver []models.ServiceInstanceDetails
+
+	if err := s.db.Find(&receiver).Error; err != nil {
+		return nil, fmt.Errorf("error finding services: %w", err)
+	}
+	output := []ServiceInstanceDetails{}
+
+	for _, details := range receiver {
+		instanceDetails, err := s.buildServiceInstanceDetails(details)
+		if err != nil {
+			return nil, err
+		}
+		output = append(output, instanceDetails)
+	}
+	return output, nil
+
+}
 
 func (s *Storage) GetServiceInstanceDetails(guid string) (ServiceInstanceDetails, error) {
 	exists, err := s.ExistsServiceInstanceDetails(guid)
@@ -81,23 +99,27 @@ func (s *Storage) GetServiceInstanceDetails(guid string) (ServiceInstanceDetails
 		return ServiceInstanceDetails{}, fmt.Errorf("error finding service instance details: %w", err)
 	}
 
-	decoded, err := s.decodeJSONObject(receiver.OtherDetails)
+	return s.buildServiceInstanceDetails(receiver)
+}
+
+func (s *Storage) buildServiceInstanceDetails(dbObj models.ServiceInstanceDetails) (ServiceInstanceDetails, error) {
+	decoded, err := s.decodeJSONObject(dbObj.OtherDetails)
 	if err != nil {
 		return ServiceInstanceDetails{}, fmt.Errorf("error decoding outputs: %w", err)
 	}
 
 	return ServiceInstanceDetails{
-		GUID:             guid,
-		Name:             receiver.Name,
-		Location:         receiver.Location,
-		URL:              receiver.Url,
+		GUID:             dbObj.ID,
+		Name:             dbObj.Name,
+		Location:         dbObj.Location,
+		URL:              dbObj.Url,
 		Outputs:          decoded,
-		ServiceGUID:      receiver.ServiceId,
-		PlanGUID:         receiver.PlanId,
-		SpaceGUID:        receiver.SpaceGuid,
-		OrganizationGUID: receiver.OrganizationGuid,
-		OperationType:    receiver.OperationType,
-		OperationGUID:    receiver.OperationId,
+		ServiceGUID:      dbObj.ServiceId,
+		PlanGUID:         dbObj.PlanId,
+		SpaceGUID:        dbObj.SpaceGuid,
+		OrganizationGUID: dbObj.OrganizationGuid,
+		OperationType:    dbObj.OperationType,
+		OperationGUID:    dbObj.OperationId,
 	}, nil
 }
 
