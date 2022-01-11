@@ -281,6 +281,45 @@ func (workspace *TerraformWorkspace) initializeFs(ctx context.Context) error {
 	return nil
 }
 
+func (workspace *TerraformWorkspace) initializeFsNoInit(ctx context.Context) error {
+	workspace.dirLock.Lock()
+	// create a temp directory
+	if dir, err := os.MkdirTemp("", "gsb"); err == nil {
+		workspace.dir = dir
+	} else {
+		return err
+	}
+
+	var err error
+
+	terraformLen := 0
+	for _, module := range workspace.Modules {
+		terraformLen += len(module.Definition)
+		for _, def := range module.Definitions {
+			terraformLen += len(def)
+		}
+	}
+
+	if len(workspace.Modules) == 1 && len(workspace.Modules[0].Definition) == 0 && terraformLen > 0 {
+		err = workspace.initializedFsFlat()
+	} else {
+		err = workspace.initializeFsModules()
+	}
+
+	if err != nil {
+		return err
+	}
+
+	// write the state if it exists
+	if len(workspace.State) > 0 {
+		if err := os.WriteFile(workspace.tfStatePath(), workspace.State, 0755); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // TeardownFs removes the directory we executed Terraform in and updates the
 // state from it.
 func (workspace *TerraformWorkspace) teardownFs() error {
@@ -421,17 +460,133 @@ func (workspace *TerraformWorkspace) Show(ctx context.Context) (string, error) {
 func (workspace *TerraformWorkspace) MigrateTo013(ctx context.Context) error {
 	logger := utils.NewLogger("terraform-migrate-to-0.13").WithData(correlation.ID(ctx))
 
+	err := workspace.initializeFsNoInit(ctx)
+	defer workspace.teardownFs()
+	if err != nil {
+		return err
+	}
+
+	output, err := workspace.runTf(ctx, "0.13upgrade", "-yes", "-no-color", "brokertemplate")
+	if err != nil {
+		return err
+	}
+	logger.Info(output.StdOut)
+
+	// state provider replace
+	providerMap := map[string]string{
+		"registry.terraform.io/-/azurerm":    "registry.terraform.io/hashicorp/azurerm",
+		"registry.terraform.io/-/random":     "registry.terraform.io/hashicorp/random",
+		"registry.terraform.io/-/mysql":      "registry.terraform.io/hashicorp/mysql",
+		"registry.terraform.io/-/null":       "registry.terraform.io/hashicorp/null",
+		"registry.terraform.io/-/postgresql": "registry.terraform.io/hashicorp/postgresql",
+	}
+
+	for oldProvider, newProvider := range providerMap {
+		output, err = workspace.runTf(ctx, "state", "replace-provider", "-no-color", "-auto-approve", oldProvider, newProvider)
+		if err != nil {
+			return err
+		}
+		logger.Info(output.StdOut)
+	}
+
+	output, err = workspace.runTf(ctx, "init", "-no-color")
+	if err != nil {
+		return err
+	}
+	logger.Info(output.StdOut)
+
+	output, err = workspace.runTf(ctx, "plan", "-no-color")
+	if err != nil {
+		return err
+	}
+	logger.Info(output.StdOut)
+
+	output, err = workspace.runTf(ctx, "apply", "-auto-approve", "-no-color")
+	if err != nil {
+		return err
+	}
+	logger.Info(output.StdOut)
+
+	return nil
+}
+
+func (workspace *TerraformWorkspace) MigrateTo014(ctx context.Context) error {
+	logger := utils.NewLogger("terraform-migrate-to-0.14").WithData(correlation.ID(ctx))
+
 	err := workspace.initializeFs(ctx)
 	defer workspace.teardownFs()
 	if err != nil {
 		return err
 	}
 
-	output, err := workspace.runTf(ctx, "0.13upgrade", "-no-color")
+	err = workspace.addSensitiveFlag()
 	if err != nil {
 		return err
 	}
 
+	output, err := workspace.runTf(ctx, "plan", "-no-color")
+	if err != nil {
+		return err
+	}
+	logger.Info(output.StdOut)
+
+	output, err = workspace.runTf(ctx, "apply", "-auto-approve", "-no-color")
+	if err != nil {
+		return err
+	}
+	logger.Info(output.StdOut)
+
+	return nil
+}
+
+func (workspace *TerraformWorkspace) addSensitiveFlag() error {
+	workspace.
+	return nil
+}
+
+func (workspace *TerraformWorkspace) MigrateTo10(ctx context.Context) error {
+	logger := utils.NewLogger("terraform-migrate-to-1.0").WithData(correlation.ID(ctx))
+
+	err := workspace.initializeFs(ctx)
+	defer workspace.teardownFs()
+	if err != nil {
+		return err
+	}
+
+	output, err := workspace.runTf(ctx, "plan", "-no-color")
+	if err != nil {
+		return err
+	}
+	logger.Info(output.StdOut)
+
+	output, err = workspace.runTf(ctx, "apply", "-auto-approve", "-no-color")
+	if err != nil {
+		return err
+	}
+	logger.Info(output.StdOut)
+
+	return nil
+}
+
+func (workspace *TerraformWorkspace) MigrateTo11(ctx context.Context) error {
+	logger := utils.NewLogger("terraform-migrate-to-1.1").WithData(correlation.ID(ctx))
+
+	err := workspace.initializeFs(ctx)
+	defer workspace.teardownFs()
+	if err != nil {
+		return err
+	}
+
+	output, err := workspace.runTf(ctx, "plan", "-no-color")
+	if err != nil {
+		return err
+	}
+	logger.Info(output.StdOut)
+
+	output, err = workspace.runTf(ctx, "apply", "-auto-approve", "-no-color")
+	if err != nil {
+		return err
+	}
 	logger.Info(output.StdOut)
 
 	return nil

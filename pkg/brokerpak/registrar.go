@@ -20,6 +20,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/hashicorp/go-version"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
@@ -147,8 +149,8 @@ func (r *Registrar) createExecutor(brokerPak *BrokerPakReader, vc *varcontext.Va
 	return executor, nil
 }
 
-func (r *Registrar) CreateTerraformExecutor(version string) (wrapper.TerraformExecutor, error) {
-	brokerPak, err := DownloadAndOpenBrokerpak("/home/vcap/app/azure-services-0.1.0.brokerpak")
+func (r *Registrar) CreateTerraformExecutor(tfVersion string) (wrapper.TerraformExecutor, error) {
+	brokerPak, err := DownloadAndOpenBrokerpak("/Users/normanja/workspace/csb/csb-brokerpak-azure/azure-services-0.1.0.brokerpak")
 	if err != nil {
 		return nil, err
 	}
@@ -163,22 +165,24 @@ func (r *Registrar) CreateTerraformExecutor(version string) (wrapper.TerraformEx
 		return nil, fmt.Errorf("couldn't create brokerpak tmpDir")
 	}
 
-	// extract the Terraform directory
-	if err := brokerPak.ExtractSpecificTerraformBin(dir, version); err != nil {
+	//extract the Terraform directory and providers
+	if err := brokerPak.ExtractSpecificTerraformBin(dir, tfVersion); err != nil {
 		return nil, err
+	}
+
+	// Overwrite TF Binary with ours
+	err = ExtractTFBinary(dir, tfVersion)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't extract TF binary")
 	}
 
 	manifest, err := brokerPak.Manifest()
 	if err != nil {
 		return nil, err
 	}
-	tfVersion, err := manifest.GetTerraformVersion()
-	if err != nil {
-		return nil, err
-	}
 
 	binPath := filepath.Join(dir, "terraform")
-	executor := wrapper.CustomTerraformExecutor(binPath, dir, tfVersion, wrapper.DefaultExecutor)
+	executor := wrapper.CustomTerraformExecutor(binPath, dir, version.Must(version.NewVersion(tfVersion)), wrapper.DefaultExecutor)
 
 	params := r.resolveParameters(manifest.Parameters, vc)
 	executor = wrapper.CustomEnvironmentExecutor(params, executor)

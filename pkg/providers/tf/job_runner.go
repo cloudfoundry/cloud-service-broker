@@ -382,12 +382,77 @@ func (runner *TfJobRunner) MigrateTo013(ctx context.Context, id string) error {
 		return err
 	}
 
-	err = workspace.Plan(ctx)
+	workspaceString, err := workspace.Serialize()
+	if err != nil {
+		return err
+	}
+	deployment.Workspace = []byte(workspaceString)
+
+	return runner.store.StoreTerraformDeployment(deployment)
+}
+
+func (runner *TfJobRunner) MigrateTo014(ctx context.Context, id string) error {
+	deployment, err := runner.store.GetTerraformDeployment(id)
 	if err != nil {
 		return err
 	}
 
-	err = workspace.Apply(ctx)
+	workspace, err := runner.hydrateWorkspace(ctx, deployment)
+	if err != nil {
+		return err
+	}
+
+	err = workspace.MigrateTo014(ctx)
+	if err != nil {
+		return err
+	}
+
+	workspaceString, err := workspace.Serialize()
+	if err != nil {
+		return err
+	}
+	deployment.Workspace = []byte(workspaceString)
+
+	return runner.store.StoreTerraformDeployment(deployment)
+}
+
+func (runner *TfJobRunner) MigrateTo10(ctx context.Context, id string) error {
+	deployment, err := runner.store.GetTerraformDeployment(id)
+	if err != nil {
+		return err
+	}
+
+	workspace, err := runner.hydrateWorkspace(ctx, deployment)
+	if err != nil {
+		return err
+	}
+
+	err = workspace.MigrateTo10(ctx)
+	if err != nil {
+		return err
+	}
+
+	workspaceString, err := workspace.Serialize()
+	if err != nil {
+		return err
+	}
+	deployment.Workspace = []byte(workspaceString)
+
+	return runner.store.StoreTerraformDeployment(deployment)
+}
+
+func (runner *TfJobRunner) MigrateTo11(ctx context.Context, id string) error {
+	deployment, err := runner.store.GetTerraformDeployment(id)
+	if err != nil {
+		return err
+	}
+
+	workspace, err := runner.hydrateWorkspace(ctx, deployment)
+	if err != nil {
+		return err
+	}
+
+	err = workspace.MigrateTo11(ctx)
 	if err != nil {
 		return err
 	}

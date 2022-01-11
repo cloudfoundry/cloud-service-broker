@@ -20,16 +20,6 @@ type MigrationRunner struct {
 }
 
 func (r *MigrationRunner) StartMigration() error {
-	// Get Terraform binaries
-	// Unpack Terraform binaries
-	// Unpack Terraform Providers
-	// Create FS from terraform_deployments DB entry
-	// For each terraform version Run terraform init/update/apply
-	// Save FS back to DB
-
-	// get default runner(used by broker)
-	//
-
 	r.logger.Info("Starting Migration")
 
 	instances, err := r.storage.GetServiceInstances()
@@ -40,31 +30,54 @@ func (r *MigrationRunner) StartMigration() error {
 	for _, instance := range instances {
 		jobRunner := tf.NewTfJobRunner(nil, r.storage)
 
-		jobRunner.Executor = r.ExecutorFor012()
+		jobRunner.Executor = r.ExecutorFor013()
 		err := jobRunner.MigrateTo013(context.TODO(), "tf:"+instance.GUID+":")
 		if err != nil {
 			return err
 		}
 
-		//jobRunner.Executor = ExecutorFor013()
-		//jobRunner.MigrateTo014(context.TODO(), "tf:"+instance.GUID)
-		//jobRunner.Executor = ExecutorFor014()
-		//jobRunner.MigrateTo10(context.TODO(), "tf:"+instance.GUID)
-		//jobRunner.Executor = ExecutorFor11()
-		//jobRunner.Migrateto11(context.TODO(), "tf:"+instance.GUID)
+		jobRunner.Executor = r.ExecutorFor014()
+		jobRunner.MigrateTo014(context.TODO(), "tf:"+instance.GUID+":")
 
-		//
+		jobRunner.Executor = r.ExecutorFor10()
+		jobRunner.MigrateTo10(context.TODO(), "tf:"+instance.GUID+":")
+
+		jobRunner.Executor = r.ExecutorFor11()
+		jobRunner.MigrateTo11(context.TODO(), "tf:"+instance.GUID+":")
+
 	}
 	return nil
-	// path for 0.12
-	// path for 0.13
-	// path for 0.14
-	// path for 1.0
-	// path for 1.1
 }
 
-func (r *MigrationRunner) ExecutorFor012() wrapper.TerraformExecutor {
-	executor, _ := r.registrar.CreateTerraformExecutor("0.12.30")
+func (r *MigrationRunner) ExecutorFor013() wrapper.TerraformExecutor {
+	executor, err := r.registrar.CreateTerraformExecutor("0.13.7")
+	if err != nil {
+		panic(err)
+	}
+	return executor
+}
+
+func (r *MigrationRunner) ExecutorFor014() wrapper.TerraformExecutor {
+	executor, err := r.registrar.CreateTerraformExecutor("0.14.9")
+	if err != nil {
+		panic(err)
+	}
+	return executor
+}
+
+func (r *MigrationRunner) ExecutorFor10() wrapper.TerraformExecutor {
+	executor, err := r.registrar.CreateTerraformExecutor("1.0.9")
+	if err != nil {
+		panic(err)
+	}
+	return executor
+}
+
+func (r *MigrationRunner) ExecutorFor11() wrapper.TerraformExecutor {
+	executor, err := r.registrar.CreateTerraformExecutor("1.1.3")
+	if err != nil {
+		panic(err)
+	}
 	return executor
 }
 

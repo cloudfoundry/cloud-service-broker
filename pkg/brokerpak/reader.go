@@ -131,12 +131,8 @@ func (pak *BrokerPakReader) ExtractSpecificTerraformBin(destination, specificVer
 	if err != nil {
 		return err
 	}
-	versionObj, err := mf.GetTerraformWithVersion(specificVersion)
-	if err != nil {
-		return err
-	}
 
-	return pak.extractTerraformBin(destination, versionObj, mf)
+	return pak.extractTerraformBin(destination, version.Must(version.NewVersion(specificVersion)), mf)
 }
 
 func (pak *BrokerPakReader) extractTerraformBin(destination string, terraformVersion *version.Version, mf *Manifest) error {
@@ -228,4 +224,17 @@ func DownloadAndOpenBrokerpak(pakUri string) (*BrokerPakReader, error) {
 	}
 
 	return OpenBrokerPak(localLocation)
+}
+
+func ExtractTFBinary(destination, tfVersion string) error {
+	tfZip, err := zippy.Open("/Users/normanja/workspace/csb/csb-brokerpak-azure/terraformbin/" + tfVersion + "/terraform_" + tfVersion + "_darwin_amd64.zip")
+	if err != nil {
+		return fmt.Errorf("Unable to open terraform zip")
+	}
+	tfZip.ExtractFile("terraform", destination)
+	if err != nil {
+		return fmt.Errorf("Unable to extract terraform binary from zip")
+	}
+
+	return nil
 }
