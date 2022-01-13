@@ -2,6 +2,8 @@ package migrator
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/brokerpak"
 
@@ -26,8 +28,9 @@ func (r *MigrationRunner) StartMigration() error {
 	if err != nil {
 		return err
 	}
-
+	start := time.Now()
 	for _, instance := range instances {
+
 		jobRunner := tf.NewTfJobRunner(nil, r.storage)
 
 		jobRunner.Executor = r.ExecutorFor013()
@@ -37,15 +40,27 @@ func (r *MigrationRunner) StartMigration() error {
 		}
 
 		jobRunner.Executor = r.ExecutorFor014()
-		jobRunner.MigrateTo014(context.TODO(), "tf:"+instance.GUID+":")
+		err = jobRunner.MigrateTo014(context.TODO(), "tf:"+instance.GUID+":")
+		if err != nil {
+			return err
+		}
 
 		jobRunner.Executor = r.ExecutorFor10()
-		jobRunner.MigrateTo10(context.TODO(), "tf:"+instance.GUID+":")
+		err = jobRunner.MigrateTo10(context.TODO(), "tf:"+instance.GUID+":")
+		if err != nil {
+			return err
+		}
 
 		jobRunner.Executor = r.ExecutorFor11()
-		jobRunner.MigrateTo11(context.TODO(), "tf:"+instance.GUID+":")
+		err = jobRunner.MigrateTo11(context.TODO(), "tf:"+instance.GUID+":")
+		if err != nil {
+			return err
+		}
 
 	}
+	fmt.Printf("Number of instances: %v\n", len(instances))
+	fmt.Printf("Total Runtime: %v\n", time.Since(start))
+	fmt.Printf("Avg runtime per instance: %v\n", time.Since(start).Seconds()/float64(len(instances)))
 	return nil
 }
 

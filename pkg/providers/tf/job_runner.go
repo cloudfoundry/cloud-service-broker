@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/go-version"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
@@ -376,6 +378,13 @@ func (runner *TfJobRunner) MigrateTo013(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
+	stateVersion, err := workspace.StateVersion()
+	if err != nil {
+		return err
+	}
+	if stateVersion.GreaterThan(version.Must(version.NewVersion("0.13.7"))) {
+		return nil
+	}
 
 	err = workspace.MigrateTo013(ctx)
 	if err != nil {
@@ -400,6 +409,13 @@ func (runner *TfJobRunner) MigrateTo014(ctx context.Context, id string) error {
 	workspace, err := runner.hydrateWorkspace(ctx, deployment)
 	if err != nil {
 		return err
+	}
+	stateVersion, err := workspace.StateVersion()
+	if err != nil {
+		return err
+	}
+	if stateVersion.GreaterThan(version.Must(version.NewVersion("0.14.9"))) {
+		return nil
 	}
 
 	err = workspace.MigrateTo014(ctx)
@@ -427,6 +443,14 @@ func (runner *TfJobRunner) MigrateTo10(ctx context.Context, id string) error {
 		return err
 	}
 
+	stateVersion, err := workspace.StateVersion()
+	if err != nil {
+		return err
+	}
+	if stateVersion.GreaterThan(version.Must(version.NewVersion("1.0.9"))) {
+		return nil
+	}
+
 	err = workspace.MigrateTo10(ctx)
 	if err != nil {
 		return err
@@ -450,6 +474,14 @@ func (runner *TfJobRunner) MigrateTo11(ctx context.Context, id string) error {
 	workspace, err := runner.hydrateWorkspace(ctx, deployment)
 	if err != nil {
 		return err
+	}
+
+	stateVersion, err := workspace.StateVersion()
+	if err != nil {
+		return err
+	}
+	if stateVersion.GreaterThan(version.Must(version.NewVersion("1.1.3"))) {
+		return nil
 	}
 
 	err = workspace.MigrateTo11(ctx)

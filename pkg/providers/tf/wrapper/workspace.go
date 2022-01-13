@@ -26,6 +26,12 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/zclconf/go-cty/cty"
+
+	"github.com/hashicorp/hcl/v2"
+
+	"github.com/hashicorp/hcl/v2/hclwrite"
+
 	"github.com/hashicorp/go-version"
 
 	"code.cloudfoundry.org/lager"
@@ -281,6 +287,47 @@ func (workspace *TerraformWorkspace) initializeFs(ctx context.Context) error {
 	return nil
 }
 
+func (workspace *TerraformWorkspace) AddSensitiveToOutputs() error {
+	tfFile, diags := hclwrite.ParseConfig([]byte(workspace.Modules[0].Definition), workspace.Modules[0].Name, hcl.Pos{Line: 1, Column: 1})
+	if diags.HasErrors() {
+		return fmt.Errorf("errors: %s", diags)
+	}
+
+	//var outputBlocks []hclwrite.Block
+	//
+	for _, block := range tfFile.Body().Blocks() {
+		if block.Type() == "output" {
+			attr := block.Body().Attributes()
+			for _, at := range attr {
+				fmt.Printf("%v", at)
+			}
+
+			block.Body().SetAttributeValue("sensitive", cty.True)
+			//		newOutputBlock := hclwrite.NewBlock("output", nil)
+			//
+			//
+			//		for _, attr := range block.Body().Attributes() {
+			//			attr.
+			//			newOutputBlock.Body().SetAttributeValue()
+			//		}
+
+			//newBlock := tfFile.Body().AppendNewBlock("output", nil)
+			//newBlock.Body().SetAttributeValue()
+			//newBlock.Body().SetAttributeValue("sensitive", cty.True)
+			//tokens := hclwrite.Tokens{
+			//	{hclsyntax.TokenIdent, []byte(`true`), 1},
+			//	{hclsyntax.TokenTemplateSeqEnd, []byte(`}`), 1},
+			//}
+			//block.Body().SetAttributeRaw("sensitive", tokens)
+
+			//outputBlocks = append(outputBlocks, *newOutputBlock)
+			//tfFile.Body().RemoveBlock(block)
+		}
+	}
+
+	return os.WriteFile(path.Join(workspace.dir, workspace.Modules[0].Name, "definition.tf"), tfFile.Bytes(), 0755)
+}
+
 func (workspace *TerraformWorkspace) initializeFsNoInit(ctx context.Context) error {
 	workspace.dirLock.Lock()
 	// create a temp directory
@@ -519,12 +566,17 @@ func (workspace *TerraformWorkspace) MigrateTo014(ctx context.Context) error {
 		return err
 	}
 
-	err = workspace.addSensitiveFlag()
+	err = workspace.AddSensitiveToOutputs()
 	if err != nil {
 		return err
 	}
+	output, err := workspace.runTf(ctx, "fmt", "-recursive")
+	if err != nil {
+		return err
+	}
+	logger.Info(output.StdOut)
 
-	output, err := workspace.runTf(ctx, "plan", "-no-color")
+	output, err = workspace.runTf(ctx, "plan", "-no-color")
 	if err != nil {
 		return err
 	}
@@ -539,10 +591,10 @@ func (workspace *TerraformWorkspace) MigrateTo014(ctx context.Context) error {
 	return nil
 }
 
-func (workspace *TerraformWorkspace) addSensitiveFlag() error {
-	workspace.
-	return nil
-}
+//func (workspace *TerraformWorkspace) addSensitiveFlag() error {
+//	workspace.
+//	return nil
+//}
 
 func (workspace *TerraformWorkspace) MigrateTo10(ctx context.Context) error {
 	logger := utils.NewLogger("terraform-migrate-to-1.0").WithData(correlation.ID(ctx))
@@ -610,6 +662,20 @@ func (workspace *TerraformWorkspace) runTf(ctx context.Context, subCommand strin
 	}
 
 	return executor(ctx, c)
+}
+
+type tfState struct {
+	Version string `json:"terraform_version"`
+}
+
+func (workspace *TerraformWorkspace) StateVersion() (*version.Version, error) {
+	tf := tfState{}
+	err := json.Unmarshal(workspace.State, &tf)
+	if err != nil {
+		return nil, err
+	}
+	return version.NewVersion(tf.Version)
+
 }
 
 // CustomEnvironmentExecutor sets custom environment variables on the Terraform

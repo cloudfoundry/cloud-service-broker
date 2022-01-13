@@ -5,6 +5,7 @@ go 1.17
 require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20210802130126-03ba1c405d5e
 	code.cloudfoundry.org/lager v2.0.0+incompatible
+	github.com/davecgh/go-spew v1.1.1
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-getter v1.5.10
@@ -50,6 +51,7 @@ require (
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.1.1 // indirect
