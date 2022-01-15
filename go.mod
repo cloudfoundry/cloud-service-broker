@@ -7,7 +7,7 @@ require (
 	code.cloudfoundry.org/lager v2.0.0+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gorilla/mux v1.8.0
-	github.com/hashicorp/go-getter v1.5.10
+	github.com/hashicorp/go-getter v1.5.11
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.4.0
 	github.com/hashicorp/hcl/v2 v2.11.1
