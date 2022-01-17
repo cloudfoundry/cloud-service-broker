@@ -22,7 +22,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/generator"
 	"github.com/gorilla/mux"
-	"github.com/russross/blackfriday"
+	"github.com/russross/blackfriday/v2"
 )
 
 var pageTemplate = template.Must(template.New("docs-page").Parse(`
@@ -71,13 +71,17 @@ func AddDocsHandler(router *mux.Router, registry broker.BrokerRegistry) {
 }
 
 func renderAsPage(title, markdownContents string) http.HandlerFunc {
-	renderer := blackfriday.HtmlRenderer(
-		blackfriday.EXTENSION_FENCED_CODE|
-			blackfriday.EXTENSION_AUTOLINK,
-		title,
-		"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css",
+	renderer := blackfriday.NewHTMLRenderer(
+		blackfriday.HTMLRendererParameters{
+			Title: title,
+			CSS:   "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css",
+		})
+
+	page := blackfriday.Run(
+		[]byte(markdownContents),
+		blackfriday.WithRenderer(renderer),
+		blackfriday.WithExtensions(blackfriday.FencedCode|blackfriday.Autolink),
 	)
-	page := blackfriday.Markdown([]byte(markdownContents), renderer, 0)
 
 	buf := &bytes.Buffer{}
 	err := pageTemplate.Execute(buf, map[string]interface{}{
