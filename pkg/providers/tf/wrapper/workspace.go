@@ -169,8 +169,8 @@ func (workspace *TerraformWorkspace) Serialize() (string, error) {
 	return string(ws), nil
 }
 
-// initializedFsFlat initializes simple terraform directory structure
-func (workspace *TerraformWorkspace) initializedFsFlat() error {
+// initializeFsFlat initializes simple terraform directory structure
+func (workspace *TerraformWorkspace) initializeFsFlat() error {
 	if len(workspace.Modules) != 1 {
 		return fmt.Errorf("cannot build flat terraform workspace with multiple modules")
 	}
@@ -257,7 +257,7 @@ func (workspace *TerraformWorkspace) initializeFs(ctx context.Context) error {
 	}
 
 	if len(workspace.Modules) == 1 && len(workspace.Modules[0].Definition) == 0 && terraformLen > 0 {
-		err = workspace.initializedFsFlat()
+		err = workspace.initializeFsFlat()
 	} else {
 		err = workspace.initializeFsModules()
 	}
