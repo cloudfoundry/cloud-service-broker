@@ -70,7 +70,6 @@ var _ = Describe("Subsume", func() {
 
 		brokerClient, err = client.New(brokerUsername, brokerPassword, "localhost", brokerPort)
 		Expect(err).NotTo(HaveOccurred())
-
 	})
 
 	AfterEach(func() {
@@ -89,7 +88,7 @@ var _ = Describe("Subsume", func() {
 		serviceInstanceGUID = uuid.New()
 		provisionResponse := brokerClient.Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(`{"value":"a97fd57a-fa94-11eb-8256-930255607a99"}`))
 		Expect(provisionResponse.Error).NotTo(HaveOccurred())
-		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
+		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted), string(provisionResponse.ResponseBody))
 
 		Eventually(func() bool {
 			lastOperationResponse := brokerClient.LastOperation(serviceInstanceGUID, requestID())
@@ -110,7 +109,7 @@ var _ = Describe("Subsume", func() {
 		serviceInstanceGUID = uuid.New()
 		provisionResponse := brokerClient.Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(`{"value":"thisisnotrandomatall"}`))
 		Expect(provisionResponse.Error).NotTo(HaveOccurred())
-		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
+		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted), string(provisionResponse.ResponseBody))
 
 		var receiver domain.LastOperation
 		Eventually(func() bool {

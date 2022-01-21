@@ -23,10 +23,10 @@ import (
 
 var _ = Describe("Database Encryption", func() {
 	const (
-		provisionParams           = `{"foo":"bar"}`
+		provisionParams           = `{"provision_input":"bar"}`
 		bindParams                = `{"baz":"quz"}`
 		updateParams              = `{"update_input": "update output value"}`
-		mergedParams              = `{"foo":"bar","update_input":"update output value"}`
+		mergedParams              = `{"provision_input":"bar","update_input":"update output value"}`
 		provisionOutput           = `{"provision_output":"provision output value"}`
 		provisionOutputStateValue = `value = \"provision output value\"`
 		updateOutput              = `{"provision_output":"provision output value","update_output":"update output value"}`
@@ -51,6 +51,7 @@ var _ = Describe("Database Encryption", func() {
 		brokerPassword string
 		brokerClient   *client.Client
 		databaseFile   string
+		brokerSession  *Session
 	)
 
 	findRecord := func(dest interface{}, query, guid string) {
@@ -161,8 +162,8 @@ var _ = Describe("Database Encryption", func() {
 
 	provisionServiceInstance := func(serviceInstanceGUID string) {
 		provisionResponse := brokerClient.Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(provisionParams))
-		Expect(provisionResponse.Error).NotTo(HaveOccurred())
-		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
+		ExpectWithOffset(1, provisionResponse.Error).NotTo(HaveOccurred())
+		ExpectWithOffset(1, provisionResponse.StatusCode).To(Equal(http.StatusAccepted), string(provisionResponse.ResponseBody))
 
 		waitForAsyncRequest(serviceInstanceGUID)
 	}
@@ -246,6 +247,8 @@ var _ = Describe("Database Encryption", func() {
 	})
 
 	AfterEach(func() {
+		brokerSession.Terminate()
+
 		err := os.Chdir(originalDir)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -257,7 +260,6 @@ var _ = Describe("Database Encryption", func() {
 		var (
 			serviceInstanceGUID string
 			serviceBindingGUID  string
-			brokerSession       *Session
 		)
 
 		BeforeEach(func() {
@@ -266,10 +268,6 @@ var _ = Describe("Database Encryption", func() {
 
 			brokerSession = startBroker(false, "")
 			provisionServiceInstance(serviceInstanceGUID)
-		})
-
-		AfterEach(func() {
-			brokerSession.Terminate()
 		})
 
 		It("stores sensitive fields in plaintext", func() {
@@ -313,7 +311,6 @@ var _ = Describe("Database Encryption", func() {
 		var (
 			serviceInstanceGUID string
 			serviceBindingGUID  string
-			brokerSession       *Session
 		)
 
 		BeforeEach(func() {
@@ -323,10 +320,6 @@ var _ = Describe("Database Encryption", func() {
 			const encryptionPasswords = `[{"primary":true,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`
 			brokerSession = startBroker(true, encryptionPasswords)
 			provisionServiceInstance(serviceInstanceGUID)
-		})
-
-		AfterEach(func() {
-			brokerSession.Terminate()
 		})
 
 		It("encrypts sensitive fields", func() {
@@ -369,7 +362,7 @@ var _ = Describe("Database Encryption", func() {
 	When("encryption is turned on after it was previously off", func() {
 		It("it encrypts the database", func() {
 			By("starting the broker without a password")
-			brokerSession := startBroker(false, "")
+			brokerSession = startBroker(false, "")
 			Expect(string(brokerSession.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
 			Expect(brokerSession).To(Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"none"}}`))
 
@@ -420,8 +413,6 @@ var _ = Describe("Database Encryption", func() {
 
 			By("deprovisioning")
 			deprovisionServiceInstance(serviceInstanceGUID)
-
-			brokerSession.Terminate()
 		})
 	})
 
@@ -429,7 +420,7 @@ var _ = Describe("Database Encryption", func() {
 		It("decrypts the database", func() {
 			By("starting the broker with a password")
 			encryptionPasswords := `[{"primary":true,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`
-			brokerSession := startBroker(true, encryptionPasswords)
+			brokerSession = startBroker(true, encryptionPasswords)
 			Expect(brokerSession.Out).To(SatisfyAll(
 				Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-password","previous-primary":"none"}}`),
 				Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-password"}}`),
@@ -481,8 +472,6 @@ var _ = Describe("Database Encryption", func() {
 
 			By("deprovisioning")
 			deprovisionServiceInstance(serviceInstanceGUID)
-
-			brokerSession.Terminate()
 		})
 	})
 
@@ -491,7 +480,7 @@ var _ = Describe("Database Encryption", func() {
 			By("starting the broker with a password")
 			firstEncryptionPassword := `{"primary":true,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 			encryptionPasswords := fmt.Sprintf("[%s]", firstEncryptionPassword)
-			brokerSession := startBroker(true, encryptionPasswords)
+			brokerSession = startBroker(true, encryptionPasswords)
 			Expect(brokerSession.Out).To(SatisfyAll(
 				Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-first-password","previous-primary":"none"}}`),
 				Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-first-password"}}`),
@@ -557,8 +546,6 @@ var _ = Describe("Database Encryption", func() {
 
 			By("deprovisioning")
 			deprovisionServiceInstance(serviceInstanceGUID)
-
-			brokerSession.Terminate()
 		})
 
 		When("previous password is not provided", func() {
@@ -566,7 +553,7 @@ var _ = Describe("Database Encryption", func() {
 				By("starting the broker with a password")
 				firstEncryptionPassword := `{"primary":true,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 				encryptionPasswords := fmt.Sprintf("[%s]", firstEncryptionPassword)
-				brokerSession := startBroker(true, encryptionPasswords)
+				brokerSession = startBroker(true, encryptionPasswords)
 				Expect(brokerSession.Out).To(SatisfyAll(
 					Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-first-password","previous-primary":"none"}}`),
 					Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-first-password"}}`),
@@ -590,8 +577,6 @@ var _ = Describe("Database Encryption", func() {
 					Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`),
 					Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`),
 				))
-
-				brokerSession.Terminate()
 			})
 		})
 
@@ -600,7 +585,7 @@ var _ = Describe("Database Encryption", func() {
 				By("starting the broker with a password")
 				firstEncryptionPassword := `{"primary":true,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 				encryptionPasswords := fmt.Sprintf("[%s]", firstEncryptionPassword)
-				brokerSession := startBroker(true, encryptionPasswords)
+				brokerSession = startBroker(true, encryptionPasswords)
 				Expect(brokerSession.Out).To(SatisfyAll(
 					Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-first-password","previous-primary":"none"}}`),
 					Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-first-password"}}`),
@@ -652,8 +637,6 @@ var _ = Describe("Database Encryption", func() {
 				By("checking password metadata are updated")
 				Expect(persistedPasswordMetadata("my-first-password").Primary).To(BeFalse())
 				Expect(persistedPasswordMetadata("my-second-password").Primary).To(BeTrue())
-
-				brokerSession.Terminate()
 			})
 		})
 	})

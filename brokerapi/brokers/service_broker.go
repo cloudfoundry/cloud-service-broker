@@ -20,6 +20,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sort"
+	"strings"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
@@ -127,8 +129,8 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	}
 
 	// Give the user a better error message if they give us a bad request
-	if !isValidOrEmptyJSON(details.GetRawParameters()) {
-		return domain.ProvisionedServiceSpec{}, ErrInvalidUserInput
+	if err := validateParameters(details.GetRawParameters(), brokerService.ProvisionInputVariables); err != nil {
+		return domain.ProvisionedServiceSpec{}, err
 	}
 
 	// validate parameters meet the service's schema and merge the user vars with
@@ -648,6 +650,36 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 
 func isValidOrEmptyJSON(msg json.RawMessage) bool {
 	return msg == nil || len(msg) == 0 || json.Valid(msg)
+}
+
+func validateParameters(rawParams json.RawMessage, validFields []broker.BrokerVariable) error {
+	if len(rawParams) == 0 {
+		return nil
+	}
+
+	var params map[string]interface{}
+	if err := json.Unmarshal(rawParams, &params); err != nil {
+		return ErrInvalidUserInput
+	}
+
+	validParams := make(map[string]struct{})
+	for _, field := range validFields {
+		validParams[field.FieldName] = struct{}{}
+	}
+
+	var invalidParams []string
+	for k := range params {
+		if _, ok := validParams[k]; !ok {
+			invalidParams = append(invalidParams, k)
+		}
+	}
+
+	if len(invalidParams) == 0 {
+		return nil
+	}
+
+	sort.Strings(invalidParams)
+	return fmt.Errorf("additional properties are not allowed: %s", strings.Join(invalidParams, ", "))
 }
 
 func mergeJSON(previousParams, newParams json.RawMessage) (json.RawMessage, error) {

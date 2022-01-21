@@ -135,6 +135,18 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 			{Name: "originatingIdentity", Default: "${json.marshal(request.x_broker_api_originating_identity)}", Overwrite: true},
 		},
 		BindComputedVariables: []varcontext.DefaultVariable{{Name: "originatingIdentity", Default: "${json.marshal(request.x_broker_api_originating_identity)}", Overwrite: true}},
+		ProvisionInputVariables: []broker.BrokerVariable{
+			{
+				FieldName: "foo",
+				Type:      "string",
+				Details:   "fake field name",
+			},
+			{
+				FieldName: "baz",
+				Type:      "string",
+				Details:   "other fake field name",
+			},
+		},
 	}
 	svc := defn.CatalogEntry()
 
@@ -301,6 +313,16 @@ func TestServiceBroker_Provision(t *testing.T) {
 				assertEqual(t, "provision calls should match", 1, stub.Provider.ProvisionCallCount())
 			},
 		},
+		"good-request-valid-parameter": {
+			ServiceState: StateNone,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.ProvisionDetails()
+				req.RawParameters = json.RawMessage(`{"foo":"false"}`)
+				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
+
+				failIfErr(t, "provision with parameter", err)
+			},
+		},
 		"originating-header": {
 			AsyncService: true,
 			ServiceState: StateNone,
@@ -349,13 +371,22 @@ func TestServiceBroker_Provision(t *testing.T) {
 				assertEqual(t, "errors should match", errors.New(`plan ID "bad-plan-id" could not be found`), err)
 			},
 		},
-		"bad-request-json": {
+		"bad-request-invalid-json": {
 			ServiceState: StateNone,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
 				req := stub.ProvisionDetails()
 				req.RawParameters = json.RawMessage("{invalid json")
 				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
 				assertEqual(t, "errors should match", ErrInvalidUserInput, err)
+			},
+		},
+		"bad-request-invalid-parameter": {
+			ServiceState: StateNone,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.ProvisionDetails()
+				req.RawParameters = json.RawMessage(`{"invalid_parameter":42,"foo":"bar","other_invalid":false}`)
+				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
+				assertEqual(t, "errors should match", errors.New("additional properties are not allowed: invalid_parameter, other_invalid"), err)
 			},
 		},
 		"error-setting-request-details": {

@@ -29,3 +29,7 @@ provision:
     - field_name: subsume
       type: boolean
       details: Subsume existing
+  user_inputs:
+    - field_name: value
+      type: string
+      details: Subsume input
