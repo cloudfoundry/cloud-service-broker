@@ -24,7 +24,7 @@ import (
 
 var _ = Describe("Brokerpak Update", func() {
 	const (
-		provisionParams             = `{"foo":"bar"}`
+		provisionParams             = `{"provision_input":"bar"}`
 		bindParams                  = `{"baz":"quz"}`
 		updateParams                = `{"update_input": "update output value"}`
 		updateOutputStateKey        = `"update_output"`
@@ -67,7 +67,6 @@ var _ = Describe("Brokerpak Update", func() {
 		findRecord(&record, tfWorkspaceIdQuery, fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, serviceBindingGUID))
 		ws, _ := wrapper.DeserializeWorkspace(string(record.Workspace))
 		return ws
-
 	}
 
 	createBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
@@ -102,8 +101,8 @@ var _ = Describe("Brokerpak Update", func() {
 
 	provisionServiceInstance := func(serviceInstanceGUID string) {
 		provisionResponse := brokerClient.Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(provisionParams))
-		Expect(provisionResponse.Error).NotTo(HaveOccurred())
-		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
+		ExpectWithOffset(1, provisionResponse.Error).NotTo(HaveOccurred())
+		ExpectWithOffset(1, provisionResponse.StatusCode).To(Equal(http.StatusAccepted), string(provisionResponse.ResponseBody))
 
 		waitForAsyncRequest(serviceInstanceGUID)
 	}
@@ -263,7 +262,6 @@ var _ = Describe("Brokerpak Update", func() {
 			deprovisionServiceInstance(serviceInstanceGUID)
 			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beInitialTerraformHCL)
 			Expect(persistedTerraformState(serviceInstanceGUID, "")).To(haveEmtpyState)
-
 		})
 
 		It("uses the initial HCL for binding operations", func() {
@@ -277,9 +275,7 @@ var _ = Describe("Brokerpak Update", func() {
 
 			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, serviceBindingGUID)).To(beInitialBindingTerraformHCL)
 			Expect(persistedTerraformState(serviceInstanceGUID, serviceBindingGUID)).To(haveEmtpyState)
-
 		})
-
 	})
 
 	When("brokerpak updates are enabled", func() {
@@ -333,8 +329,6 @@ var _ = Describe("Brokerpak Update", func() {
 
 			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, serviceBindingGUID)).To(beUpdatedBindingTerraformHCL)
 			Expect(persistedTerraformState(serviceInstanceGUID, serviceBindingGUID)).To(haveEmtpyState)
-
 		})
-
 	})
 })

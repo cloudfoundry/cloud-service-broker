@@ -15,6 +15,9 @@ provision:
   template_refs:
     main: fake-provision.tf
   user_inputs:
+    - field_name: provision_input
+      type: string
+      details: allowed param during provision
     - field_name: update_input
       type: string
       details: input to be returned during update
