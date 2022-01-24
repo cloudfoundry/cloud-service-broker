@@ -129,7 +129,7 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	}
 
 	// Give the user a better error message if they give us a bad request
-	if err := validateParameters(details.GetRawParameters(), brokerService.ProvisionInputVariables); err != nil {
+	if err := validateParameters(details.GetRawParameters(), brokerService.ProvisionInputVariables, brokerService.ImportInputVariables); err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
 
@@ -652,7 +652,7 @@ func isValidOrEmptyJSON(msg json.RawMessage) bool {
 	return msg == nil || len(msg) == 0 || json.Valid(msg)
 }
 
-func validateParameters(rawParams json.RawMessage, validFields []broker.BrokerVariable) error {
+func validateParameters(rawParams json.RawMessage, validUserInputFields []broker.BrokerVariable, validImportFields []broker.ImportVariable) error {
 	if len(rawParams) == 0 {
 		return nil
 	}
@@ -663,10 +663,12 @@ func validateParameters(rawParams json.RawMessage, validFields []broker.BrokerVa
 	}
 
 	validParams := make(map[string]struct{})
-	for _, field := range validFields {
+	for _, field := range validUserInputFields {
 		validParams[field.FieldName] = struct{}{}
 	}
-
+	for _, field := range validImportFields {
+		validParams[field.Name] = struct{}{}
+	}
 	var invalidParams []string
 	for k := range params {
 		if _, ok := validParams[k]; !ok {

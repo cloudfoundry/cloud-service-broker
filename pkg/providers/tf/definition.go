@@ -275,6 +275,7 @@ func (tfb *TfServiceDefinitionV1) ToService(executor wrapper.TerraformExecutor) 
 		Plans:            rawPlans,
 
 		ProvisionInputVariables: tfb.ProvisionSettings.UserInputs,
+		ImportInputVariables:    tfb.ProvisionSettings.ImportVariables,
 		ProvisionComputedVariables: append(tfb.ProvisionSettings.Computed, varcontext.DefaultVariable{
 			Name:      "tf_id",
 			Default:   "tf:${request.instance_id}:",
@@ -351,7 +352,7 @@ type TfServiceDefinitionV1Action struct {
 	Outputs                  []broker.BrokerVariable      `yaml:"outputs"`
 	Templates                map[string]string            `yaml:"templates"`
 	TemplateRefs             map[string]string            `yaml:"template_refs"`
-	ImportVariables          []ImportVariable             `yaml:"import_inputs"`
+	ImportVariables          []broker.ImportVariable      `yaml:"import_inputs"`
 	ImportParameterMappings  []ImportParameterMapping     `yaml:"import_parameter_mappings"`
 	ImportParametersToDelete []string                     `yaml:"import_parameters_to_delete"`
 	ImportParametersToAdd    []ImportParameterMapping     `yaml:"import_parameters_to_add"`
@@ -515,14 +516,6 @@ func (action *TfServiceDefinitionV1Action) validateTemplateOutputs() (errs *vali
 // as well as to uniquely identify the workspace.
 func generateTfId(instanceId, bindingId string) string {
 	return fmt.Sprintf("tf:%s:%s", instanceId, bindingId)
-}
-
-// ImportVariable Variable definition for TF import support
-type ImportVariable struct {
-	Name       string `yaml:"field_name"`
-	Type       string `yaml:"type"`
-	Details    string `yaml:"details"`
-	TfResource string `yaml:"tf_resource"`
 }
 
 // ImportParameterMapping mapping for tf variable to service parameter

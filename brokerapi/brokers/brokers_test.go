@@ -147,6 +147,14 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 				Details:   "other fake field name",
 			},
 		},
+		ImportInputVariables: []broker.ImportVariable{
+			{
+				Name:       "import_field_1",
+				Type:       "string",
+				Details:    "fake import field",
+				TfResource: "fake.tf.resource",
+			},
+		},
 	}
 	svc := defn.CatalogEntry()
 
@@ -313,11 +321,21 @@ func TestServiceBroker_Provision(t *testing.T) {
 				assertEqual(t, "provision calls should match", 1, stub.Provider.ProvisionCallCount())
 			},
 		},
-		"good-request-valid-parameter": {
+		"good-request-valid-provision-parameter": {
 			ServiceState: StateNone,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
 				req := stub.ProvisionDetails()
 				req.RawParameters = json.RawMessage(`{"foo":"false"}`)
+				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
+
+				failIfErr(t, "provision with parameter", err)
+			},
+		},
+		"good-request-valid-import-parameter": {
+			ServiceState: StateNone,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.ProvisionDetails()
+				req.RawParameters = json.RawMessage(`{"import_field_1":"hello"}`)
 				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
 
 				failIfErr(t, "provision with parameter", err)
