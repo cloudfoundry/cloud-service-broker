@@ -16,7 +16,6 @@ package brokerpak
 
 import (
 	"fmt"
-	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -210,13 +209,7 @@ func OpenBrokerPak(pakPath string) (*BrokerPakReader, error) {
 
 // DownloadAndOpenBrokerpak downloads a (potentially remote) brokerpak to
 // the local filesystem and opens it.
-func DownloadAndOpenBrokerpak(pakUri string) (*BrokerPakReader, error) {
-	// create a temp directory to hold the pak
-	pakDir, err := os.MkdirTemp("", "brokerpak-staging")
-	if err != nil {
-		return nil, fmt.Errorf("couldn't create brokerpak staging area for %q: %v", pakUri, err)
-	}
-
+func DownloadAndOpenBrokerpak(pakUri string, pakDir string) (*BrokerPakReader, error) {
 	// Download the brokerpak
 	localLocation := filepath.Join(pakDir, "pack.brokerpak")
 	if err := fetchBrokerpak(pakUri, localLocation); err != nil {
@@ -227,7 +220,7 @@ func DownloadAndOpenBrokerpak(pakUri string) (*BrokerPakReader, error) {
 }
 
 func ExtractTFBinary(destination, tfVersion string) error {
-	tfZip, err := zippy.Open("/Users/normanja/workspace/csb/csb-brokerpak-azure/terraformbin/" + tfVersion + "/terraform_" + tfVersion + "_darwin_amd64.zip")
+	tfZip, err := zippy.Open("/home/vcap/app/terraformbin/" + tfVersion + "/terraform_" + tfVersion + "_linux_amd64.zip")
 	if err != nil {
 		return fmt.Errorf("Unable to open terraform zip")
 	}

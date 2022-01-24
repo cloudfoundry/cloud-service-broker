@@ -15,8 +15,10 @@
 package wrapper
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -288,44 +290,54 @@ func (workspace *TerraformWorkspace) initializeFs(ctx context.Context) error {
 }
 
 func (workspace *TerraformWorkspace) AddSensitiveToOutputs() error {
-	tfFile, diags := hclwrite.ParseConfig([]byte(workspace.Modules[0].Definition), workspace.Modules[0].Name, hcl.Pos{Line: 1, Column: 1})
+
+	// For Azure
+	//tfFilePoint, err := os.Open(path.Join(workspace.dir, workspace.Modules[0].Name, "definition.tf"))
+
+	// For AWS
+	tfFilePoint, err := os.Open(path.Join(workspace.dir, "outputs.tf"))
+	if err != nil {
+		return fmt.Errorf("unable to open tf file: %s", err)
+	}
+	defer tfFilePoint.Close()
+
+	scanner := bufio.NewScanner(tfFilePoint)
+
+	var tfString string
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.Contains(line, "# output") {
+			continue
+		}
+		if strings.Contains(line, ")}") {
+			line = strings.ReplaceAll(line, ")}", ")\n}")
+		}
+		if strings.Contains(line, "output") {
+			line = strings.ReplaceAll(line, "{", "{\n ")
+			line = strings.ReplaceAll(line, "}", "\n}")
+		}
+		tfString = tfString + "\n" + line
+	}
+
+	//For Azure
+	//tfFile, diags := hclwrite.ParseConfig([]byte(tfString), workspace.Modules[0].Name, hcl.Pos{Line: 1, Column: 1})
+	//For Aws
+	tfFile, diags := hclwrite.ParseConfig([]byte(tfString), "outputs.tf", hcl.Pos{Line: 1, Column: 1})
+
 	if diags.HasErrors() {
 		return fmt.Errorf("errors: %s", diags)
 	}
 
-	//var outputBlocks []hclwrite.Block
-	//
 	for _, block := range tfFile.Body().Blocks() {
 		if block.Type() == "output" {
-			attr := block.Body().Attributes()
-			for _, at := range attr {
-				fmt.Printf("%v", at)
-			}
-
 			block.Body().SetAttributeValue("sensitive", cty.True)
-			//		newOutputBlock := hclwrite.NewBlock("output", nil)
-			//
-			//
-			//		for _, attr := range block.Body().Attributes() {
-			//			attr.
-			//			newOutputBlock.Body().SetAttributeValue()
-			//		}
-
-			//newBlock := tfFile.Body().AppendNewBlock("output", nil)
-			//newBlock.Body().SetAttributeValue()
-			//newBlock.Body().SetAttributeValue("sensitive", cty.True)
-			//tokens := hclwrite.Tokens{
-			//	{hclsyntax.TokenIdent, []byte(`true`), 1},
-			//	{hclsyntax.TokenTemplateSeqEnd, []byte(`}`), 1},
-			//}
-			//block.Body().SetAttributeRaw("sensitive", tokens)
-
-			//outputBlocks = append(outputBlocks, *newOutputBlock)
-			//tfFile.Body().RemoveBlock(block)
 		}
 	}
 
-	return os.WriteFile(path.Join(workspace.dir, workspace.Modules[0].Name, "definition.tf"), tfFile.Bytes(), 0755)
+	// For Azure
+	//return os.WriteFile(path.Join(workspace.dir, workspace.Modules[0].Name, "definition.tf"), tfFile.Bytes(), 0755)
+	//For AWS
+	return os.WriteFile(path.Join(workspace.dir, "/outputs.tf"), tfFile.Bytes(), 0755)
 }
 
 func (workspace *TerraformWorkspace) initializeFsNoInit(ctx context.Context) error {
@@ -513,15 +525,34 @@ func (workspace *TerraformWorkspace) MigrateTo013(ctx context.Context) error {
 		return err
 	}
 
-	output, err := workspace.runTf(ctx, "0.13upgrade", "-yes", "-no-color", "brokertemplate")
-	if err != nil {
-		return err
+	// need to check if flat file system or modules
+	if _, err = os.Stat(workspace.dir + "/instance.tf.json"); errors.Is(err, os.ErrNotExist) {
+		output, err := workspace.runTf(ctx, "0.13upgrade", "-yes", "-no-color")
+		if err != nil {
+			return err
+		}
+		logger.Info(output.StdOut)
+	} else {
+		output, err := workspace.runTf(ctx, "0.13upgrade", "-yes", "-no-color", "brokertemplate")
+		if err != nil {
+			return err
+		}
+		logger.Info(output.StdOut)
 	}
-	logger.Info(output.StdOut)
 
 	// state provider replace
+	//Azure
+	//providerMap := map[string]string{
+	//	"registry.terraform.io/-/azurerm":    "registry.terraform.io/hashicorp/azurerm",
+	//	"registry.terraform.io/-/random":     "registry.terraform.io/hashicorp/random",
+	//	"registry.terraform.io/-/mysql":      "registry.terraform.io/hashicorp/mysql",
+	//	"registry.terraform.io/-/null":       "registry.terraform.io/hashicorp/null",
+	//	"registry.terraform.io/-/postgresql": "registry.terraform.io/hashicorp/postgresql",
+	//}
+
+	//AWS
 	providerMap := map[string]string{
-		"registry.terraform.io/-/azurerm":    "registry.terraform.io/hashicorp/azurerm",
+		"registry.terraform.io/-/aws":        "registry.terraform.io/hashicorp/aws",
 		"registry.terraform.io/-/random":     "registry.terraform.io/hashicorp/random",
 		"registry.terraform.io/-/mysql":      "registry.terraform.io/hashicorp/mysql",
 		"registry.terraform.io/-/null":       "registry.terraform.io/hashicorp/null",
@@ -529,14 +560,14 @@ func (workspace *TerraformWorkspace) MigrateTo013(ctx context.Context) error {
 	}
 
 	for oldProvider, newProvider := range providerMap {
-		output, err = workspace.runTf(ctx, "state", "replace-provider", "-no-color", "-auto-approve", oldProvider, newProvider)
+		output, err := workspace.runTf(ctx, "state", "replace-provider", "-no-color", "-auto-approve", oldProvider, newProvider)
 		if err != nil {
 			return err
 		}
 		logger.Info(output.StdOut)
 	}
 
-	output, err = workspace.runTf(ctx, "init", "-no-color")
+	output, err := workspace.runTf(ctx, "init", "-no-color")
 	if err != nil {
 		return err
 	}
@@ -566,17 +597,7 @@ func (workspace *TerraformWorkspace) MigrateTo014(ctx context.Context) error {
 		return err
 	}
 
-	err = workspace.AddSensitiveToOutputs()
-	if err != nil {
-		return err
-	}
-	output, err := workspace.runTf(ctx, "fmt", "-recursive")
-	if err != nil {
-		return err
-	}
-	logger.Info(output.StdOut)
-
-	output, err = workspace.runTf(ctx, "plan", "-no-color")
+	output, err := workspace.runTf(ctx, "plan", "-no-color")
 	if err != nil {
 		return err
 	}
@@ -591,11 +612,6 @@ func (workspace *TerraformWorkspace) MigrateTo014(ctx context.Context) error {
 	return nil
 }
 
-//func (workspace *TerraformWorkspace) addSensitiveFlag() error {
-//	workspace.
-//	return nil
-//}
-
 func (workspace *TerraformWorkspace) MigrateTo10(ctx context.Context) error {
 	logger := utils.NewLogger("terraform-migrate-to-1.0").WithData(correlation.ID(ctx))
 
@@ -605,7 +621,21 @@ func (workspace *TerraformWorkspace) MigrateTo10(ctx context.Context) error {
 		return err
 	}
 
-	output, err := workspace.runTf(ctx, "plan", "-no-color")
+	// need to check if flat file system or modules
+	if _, err = os.Stat(workspace.dir + "/instance.tf.json"); err == nil {
+		err = workspace.AddSensitiveToOutputs()
+		if err != nil {
+			return err
+		}
+	}
+
+	output, err := workspace.runTf(ctx, "fmt", "-recursive")
+	if err != nil {
+		return err
+	}
+	logger.Info(output.StdOut)
+
+	output, err = workspace.runTf(ctx, "plan", "-no-color")
 	if err != nil {
 		return err
 	}

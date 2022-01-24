@@ -54,7 +54,13 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 			"prefix":            pak.ServicePrefix,
 		})
 
-		brokerPak, err := DownloadAndOpenBrokerpak(pak.BrokerpakUri)
+		pakDir, err := os.MkdirTemp("", "brokerpak-staging")
+		if err != nil {
+			return fmt.Errorf("couldn't create brokerpak staging area for %q: %v", pakDir, err)
+		}
+		defer os.RemoveAll(pakDir)
+
+		brokerPak, err := DownloadAndOpenBrokerpak(pak.BrokerpakUri, pakDir)
 		if err != nil {
 			return fmt.Errorf("couldn't open brokerpak: %q: %v", pak.BrokerpakUri, err)
 		}
@@ -149,8 +155,15 @@ func (r *Registrar) createExecutor(brokerPak *BrokerPakReader, vc *varcontext.Va
 	return executor, nil
 }
 
-func (r *Registrar) CreateTerraformExecutor(tfVersion string) (wrapper.TerraformExecutor, error) {
-	brokerPak, err := DownloadAndOpenBrokerpak("/Users/normanja/workspace/csb/csb-brokerpak-azure/azure-services-0.1.0.brokerpak")
+func (r *Registrar) CreateTerraformExecutor(dir, tfVersion string) (wrapper.TerraformExecutor, error) {
+	// create a temp directory to hold the pak
+	pakDir, err := os.MkdirTemp("", "brokerpak-staging")
+	if err != nil {
+		return nil, fmt.Errorf("couldn't create brokerpak staging area for %q: %v", pakDir, err)
+	}
+	defer os.RemoveAll(pakDir)
+
+	brokerPak, err := DownloadAndOpenBrokerpak("/home/vcap/app/aws-services-0.1.0.brokerpak", pakDir)
 	if err != nil {
 		return nil, err
 	}
@@ -158,11 +171,6 @@ func (r *Registrar) CreateTerraformExecutor(tfVersion string) (wrapper.Terraform
 	vc, err := varcontext.Builder().Build()
 	if err != nil {
 		return nil, err
-	}
-
-	dir, err := os.MkdirTemp("", "brokerpak")
-	if err != nil {
-		return nil, fmt.Errorf("couldn't create brokerpak tmpDir")
 	}
 
 	//extract the Terraform directory and providers

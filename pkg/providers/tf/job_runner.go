@@ -480,7 +480,8 @@ func (runner *TfJobRunner) MigrateTo11(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	if stateVersion.GreaterThan(version.Must(version.NewVersion("1.1.3"))) {
+
+	if stateVersion.GreaterThan(version.Must(version.NewVersion("1.1.0"))) {
 		return nil
 	}
 

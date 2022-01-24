@@ -38,7 +38,7 @@ func (instance *ModuleInstance) MarshalDefinition(outputs []string) (json.RawMes
 
 	outputMap := make(map[string]interface{})
 	for _, variable := range outputs {
-		outputMap[variable] = map[string]string{"value": fmt.Sprintf("${module.%s.%s}", instance.InstanceName, variable)}
+		outputMap[variable] = map[string]string{"value": fmt.Sprintf("${module.%s.%s}", instance.InstanceName, variable), "sensitive": "true"}
 	}
 
 	defn := map[string]interface{}{
