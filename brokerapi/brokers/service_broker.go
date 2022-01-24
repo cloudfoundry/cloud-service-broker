@@ -34,6 +34,12 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
+	"github.com/spf13/viper"
+)
+
+const (
+	credhubClientIdentifier          = "csb"
+	DisableRequestPropertyValidation = "request.property.validation.disabled"
 )
 
 var (
@@ -44,7 +50,9 @@ var (
 	ErrNonUpdatableParameter   = apiresponses.NewFailureResponse(errors.New("attempt to update parameter that may result in service instance re-creation and data loss"), http.StatusBadRequest, "prohibited")
 )
 
-const credhubClientIdentifier = "csb"
+func init() {
+	viper.BindEnv(DisableRequestPropertyValidation, "CSB_DISABLE_REQUEST_PROPERTY_VALIDATION")
+}
 
 // ServiceBroker is a brokerapi.ServiceBroker that can be used to generate an OSB compatible service broker.
 type ServiceBroker struct {
@@ -660,6 +668,12 @@ func validateParameters(rawParams json.RawMessage, validUserInputFields []broker
 	var params map[string]interface{}
 	if err := json.Unmarshal(rawParams, &params); err != nil {
 		return ErrInvalidUserInput
+	}
+
+	// As this is a new check we have feature-flagged it so that it can easily be disabled
+	// if it causes problems.
+	if viper.GetBool(DisableRequestPropertyValidation) {
+		return nil
 	}
 
 	validParams := make(map[string]struct{})
