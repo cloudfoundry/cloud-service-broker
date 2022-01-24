@@ -51,6 +51,7 @@ type ServiceDefinition struct {
 	Plans            []ServicePlan
 
 	ProvisionInputVariables    []BrokerVariable
+	ImportInputVariables       []ImportVariable
 	ProvisionComputedVariables []varcontext.DefaultVariable
 	BindInputVariables         []BrokerVariable
 	BindOutputVariables        []BrokerVariable
