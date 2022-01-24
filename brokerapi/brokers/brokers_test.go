@@ -146,6 +146,11 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 				Type:      "string",
 				Details:   "other fake field name",
 			},
+			{
+				FieldName: "guz",
+				Type:      "string",
+				Details:   "yet another fake field name",
+			},
 		},
 		ImportInputVariables: []broker.ImportVariable{
 			{
@@ -855,7 +860,7 @@ func TestServiceBroker_Update(t *testing.T) {
 			AsyncService: true,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
 				req := stub.UpdateDetails()
-				req.RawParameters = json.RawMessage(`{"force_delete":"false"}`)
+				req.RawParameters = json.RawMessage(`{"foo":"false"}`)
 				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
 
 				failIfErr(t, "update", err)
@@ -919,6 +924,17 @@ func TestServiceBroker_Update(t *testing.T) {
 				err = db.Where(`service_instance_id=?`, fakeInstanceId).First(&m).Error
 				failIfErr(t, "reading details", err)
 				assertEqual(t, "empty", []byte(nil), m.RequestDetails)
+			},
+		},
+		"bad-request-invalid-parameter": {
+			ServiceState: StateProvisioned,
+			AsyncService: true,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.UpdateDetails()
+				req.RawParameters = json.RawMessage(`{"invalid_parameter":42,"foo":"bar","other_invalid":false}`)
+				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
+
+				assertEqual(t, "errors should match", errors.New("additional properties are not allowed: invalid_parameter, other_invalid"), err)
 			},
 		},
 	}

@@ -593,8 +593,8 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	// Give the user a better error message if they give us a bad request
-	if !isValidOrEmptyJSON(details.GetRawParameters()) {
-		return response, ErrInvalidUserInput
+	if err := validateParameters(details.GetRawParameters(), brokerService.ProvisionInputVariables, nil); err != nil {
+		return domain.UpdateServiceSpec{}, err
 	}
 
 	allowUpdate, err := brokerService.AllowedUpdate(details)
