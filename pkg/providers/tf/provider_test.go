@@ -25,7 +25,7 @@ import (
 
 var _ = Describe("WorkspaceUpdater", func() {
 	var (
-		workspaceUpdator tf.WorkspaceUpdater
+		workspaceUpdater tf.WorkspaceUpdater
 		vc               *varcontext.VarContext
 		store            *brokerfakes.FakeServiceProviderStorage
 	)
@@ -134,6 +134,8 @@ var _ = Describe("WorkspaceUpdater", func() {
 		var err error
 		var provider broker.ServiceProvider
 
+		viper.Reset()
+
 		db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		Expect(err).NotTo(HaveOccurred())
 		Expect(db.Migrator().CreateTable(&models.ServiceInstanceDetails{})).NotTo(HaveOccurred())
@@ -209,7 +211,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 
 		When("there's a record in the database", func() {
 			It("updates the module definition and variables", func() {
-				workspaceUpdator.UpdateWorkspaceHCL(store, updatedProvisionSettings, vc, "an-instance-id")
+				workspaceUpdater.UpdateWorkspaceHCL(store, updatedProvisionSettings, vc, "an-instance-id")
 
 				ws := getTerraformWorkspace("an-instance-id")
 				Expect(ws.Modules[0].Definition).To(ContainSubstring(`administrator_login = random_string.username.result`))
@@ -228,7 +230,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 				It("returns the error", func() {
 					store.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New("fake error"))
 
-					err := workspaceUpdator.UpdateWorkspaceHCL(store, updatedProvisionSettings, vc, "an-instance-id")
+					err := workspaceUpdater.UpdateWorkspaceHCL(store, updatedProvisionSettings, vc, "an-instance-id")
 
 					Expect(err).To(MatchError("fake error"))
 				})
@@ -243,7 +245,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 				}
 				`,
 					}
-					err := workspaceUpdator.UpdateWorkspaceHCL(store, jammedOperationSettings, vc, "an-instance-id")
+					err := workspaceUpdater.UpdateWorkspaceHCL(store, jammedOperationSettings, vc, "an-instance-id")
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(ContainSubstring("Invalid expression"))
 				})
@@ -253,7 +255,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 				It("returns the error", func() {
 					store.StoreTerraformDeploymentReturns(errors.New("fake error"))
 
-					err := workspaceUpdator.UpdateWorkspaceHCL(store, updatedProvisionSettings, vc, "an-instance-id")
+					err := workspaceUpdater.UpdateWorkspaceHCL(store, updatedProvisionSettings, vc, "an-instance-id")
 
 					Expect(err).To(MatchError("terraform provider create failed: fake error"))
 				})
@@ -268,7 +270,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 
 		When("there's a record in the database", func() {
 			It("does not update the module definition and variables", func() {
-				workspaceUpdator.UpdateWorkspaceHCL(store, updatedProvisionSettings, vc, "an-instance-id")
+				workspaceUpdater.UpdateWorkspaceHCL(store, updatedProvisionSettings, vc, "an-instance-id")
 
 				ws := getTerraformWorkspace("an-instance-id")
 				expectModuleToBeInitialHCL(ws)

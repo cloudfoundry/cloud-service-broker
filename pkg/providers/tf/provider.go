@@ -94,7 +94,7 @@ func (wu WorkspaceUpdater) UpdateWorkspaceHCL(store broker.ServiceProviderStorag
 	return nil
 }
 
-var workspaceUpdator = WorkspaceUpdater{}
+var workspaceUpdater = WorkspaceUpdater{}
 
 // Provision creates the necessary resources that an instance of this service
 // needs to operate.
@@ -139,7 +139,7 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	if err := workspaceUpdator.UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, provisionContext, tfId); err != nil {
+	if err := workspaceUpdater.UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, provisionContext, tfId); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
@@ -255,7 +255,7 @@ func (provider *terraformProvider) Unbind(ctx context.Context, instanceGUID, bin
 		"tfId":     tfId,
 	})
 
-	if err := workspaceUpdator.UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.BindSettings, vc, tfId); err != nil {
+	if err := workspaceUpdater.UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.BindSettings, vc, tfId); err != nil {
 		return err
 	}
 
@@ -274,7 +274,7 @@ func (provider *terraformProvider) Deprovision(ctx context.Context, instanceGUID
 
 	tfId := generateTfId(instanceGUID, "")
 
-	if err := workspaceUpdator.UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, vc, tfId); err != nil {
+	if err := workspaceUpdater.UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, vc, tfId); err != nil {
 		return nil, err
 	}
 
