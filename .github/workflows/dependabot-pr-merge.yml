@@ -1,15 +1,24 @@
 name: dependabot-pr-merge
+
 on:
   workflow_run:
-  workflows: ["dependabot-pr-check"]
-  types:
-    - completed
+    workflows: ["dependabot-pr-check"]
+    types:
+      - completed
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-go@v2
+      with:
+        go-version: '1.17'
+    - uses: actions/checkout@v2
+    - run: make test
   automerge:
     name: Merge Dependabot Pull Pequest
     runs-on: ubuntu-latest
-    if: ${{ success() && github.event_name == 'pull_request_target' && github.actor == 'dependabot[bot]' }}
+    if: ${{ success() && github.actor == 'dependabot[bot]' }}
     steps:
       - name: Merge
         uses: actions/github-script@v5
