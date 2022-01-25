@@ -1,0 +1,25 @@
+name: dependabot-pr-merge
+on:
+  workflow_run:
+  workflows: ["dependabot-pr-check"]
+  types:
+    - completed
+
+jobs:
+  automerge:
+    name: Merge Dependabot Pull Pequest
+    runs-on: ubuntu-latest
+    if: ${{ success() && github.event_name == 'pull_request_target' && github.actor == 'dependabot[bot]' }}
+    steps:
+      - name: Merge
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              merge_method: 'squash'
+            })
+
