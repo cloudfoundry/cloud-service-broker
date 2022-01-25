@@ -1,15 +1,12 @@
-name: dependabot-pr-merge
+name: dependabot-pr-check
 
-on:
-  workflow_run:
-    workflows: ["dependabot-pr-check"]
-    types:
-      - completed
+on: 
+  pull_request_target: 
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.actor == 'dependabot[bot]' }}
     steps:
       - uses: actions/setup-go@v2
         with:
@@ -19,7 +16,7 @@ jobs:
   automerge:
     name: Merge Dependabot Pull Pequest
     runs-on: ubuntu-latest
-    if: ${{ success() && github.actor == 'dependabot[bot]' }}
+    if: ${{ success() }}
     steps:
       - name: Merge
         uses: actions/github-script@v5
@@ -32,4 +29,3 @@ jobs:
               pull_number: context.issue.number,
               merge_method: 'squash'
             })
-
