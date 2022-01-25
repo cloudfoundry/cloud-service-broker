@@ -15,6 +15,9 @@ type Storage interface {
 	GetServiceBindingCredentials(bindingID, serviceInstanceID string) (storage.ServiceBindingCredentials, error)
 	ExistsServiceBindingCredentials(bindingID, serviceInstanceID string) (bool, error)
 	DeleteServiceBindingCredentials(bindingID, serviceInstanceID string) error
+	StoreBindRequestDetails(serviceBindingID string, details json.RawMessage) error
+	GetBindRequestDetails(bindingID string) (json.RawMessage, error)
+	DeleteBindRequestDetails(bindingID string) error
 	StoreProvisionRequestDetails(serviceInstanceID string, details json.RawMessage) error
 	GetProvisionRequestDetails(serviceInstanceID string) (json.RawMessage, error)
 	DeleteProvisionRequestDetails(serviceInstanceID string) error

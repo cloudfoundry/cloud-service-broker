@@ -9,7 +9,8 @@ import (
 
 func (s *Storage) UpdateAllRecords() error {
 	updaters := []func() error{
-		s.updateAllSericeBindingCredentials,
+		s.updateAllServiceBindingCredentials,
+		s.updateAllBindRequestDetails,
 		s.updateAllProvisionRequestDetails,
 		s.updateAllServiceInstanceDetails,
 		s.updateAllTerraformDeployments,
@@ -23,7 +24,7 @@ func (s *Storage) UpdateAllRecords() error {
 	return nil
 }
 
-func (s *Storage) updateAllSericeBindingCredentials() error {
+func (s *Storage) updateAllServiceBindingCredentials() error {
 	var serviceBindingCredentialsBatch []models.ServiceBindingCredentials
 	result := s.db.FindInBatches(&serviceBindingCredentialsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range serviceBindingCredentialsBatch {
@@ -42,6 +43,30 @@ func (s *Storage) updateAllSericeBindingCredentials() error {
 	})
 	if result.Error != nil {
 		return fmt.Errorf("error re-enoding service binding credentials: %v", result.Error)
+	}
+
+	return nil
+}
+
+func (s *Storage) updateAllBindRequestDetails() error {
+	var bindRequestDetailsBatch []models.BindRequestDetails
+	result := s.db.FindInBatches(&bindRequestDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
+		for i := range bindRequestDetailsBatch {
+			details, err := s.decodeBytes(bindRequestDetailsBatch[i].RequestDetails)
+			if err != nil {
+				return err
+			}
+
+			bindRequestDetailsBatch[i].RequestDetails, err = s.encodeBytes(details)
+			if err != nil {
+				return err
+			}
+		}
+
+		return tx.Save(&bindRequestDetailsBatch).Error
+	})
+	if result.Error != nil {
+		return fmt.Errorf("error re-encoding bindr request details: %v", result.Error)
 	}
 
 	return nil

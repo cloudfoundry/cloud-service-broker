@@ -33,6 +33,7 @@ var _ = BeforeEach(func() {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(db.Migrator().CreateTable(&models.ServiceBindingCredentials{})).NotTo(HaveOccurred())
 	Expect(db.Migrator().CreateTable(&models.ProvisionRequestDetails{})).NotTo(HaveOccurred())
+	Expect(db.Migrator().CreateTable(&models.BindRequestDetails{})).NotTo(HaveOccurred())
 	Expect(db.Migrator().CreateTable(&models.ServiceInstanceDetails{})).NotTo(HaveOccurred())
 	Expect(db.Migrator().CreateTable(&models.TerraformDeployment{})).NotTo(HaveOccurred())
 

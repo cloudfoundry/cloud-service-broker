@@ -22,7 +22,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const numMigrations = 15
+const numMigrations = 16
 
 // RunMigrations runs schema migrations on the provided service broker database to get it up to date
 func RunMigrations(db *gorm.DB) error {
@@ -121,6 +121,10 @@ func RunMigrations(db *gorm.DB) error {
 
 	migrations[14] = func() error {
 		return db.Migrator().AlterColumn(&models.TerraformDeploymentV3{}, "workspace")
+	}
+
+	migrations[15] = func() error {
+		return autoMigrateTables(db, &models.BindRequestDetailsV1{})
 	}
 
 	var lastMigrationNumber = -1
