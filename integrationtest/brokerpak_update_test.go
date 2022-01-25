@@ -25,7 +25,7 @@ import (
 var _ = Describe("Brokerpak Update", func() {
 	const (
 		provisionParams             = `{"provision_input":"bar"}`
-		bindParams                  = `{"baz":"quz"}`
+		bindParams                  = `{"bind_input":"quz"}`
 		updateParams                = `{"update_input": "update output value"}`
 		updateOutputStateKey        = `"update_output"`
 		updatedUpdateOutputStateKey = `"update_output_updated"`
@@ -72,11 +72,13 @@ var _ = Describe("Brokerpak Update", func() {
 	createBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
 		bindResponse := brokerClient.Bind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(bindParams))
 		Expect(bindResponse.Error).NotTo(HaveOccurred())
+		Expect(bindResponse.StatusCode).To(Equal(http.StatusCreated))
 	}
 
 	deleteBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
 		unbindResponse := brokerClient.Unbind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID())
 		Expect(unbindResponse.Error).NotTo(HaveOccurred())
+		Expect(unbindResponse.StatusCode).To(Equal(http.StatusOK))
 	}
 
 	waitForAsyncRequest := func(serviceInstanceGUID string) {

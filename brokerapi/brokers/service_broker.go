@@ -297,8 +297,8 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	}
 
 	// Give the user a better error message if they give us a bad request
-	if !isValidOrEmptyJSON(details.GetRawParameters()) {
-		return domain.Binding{}, ErrInvalidUserInput
+	if err := validateParameters(details.GetRawParameters(), serviceDefinition.BindInputVariables, nil); err != nil {
+		return domain.Binding{}, err
 	}
 
 	// validate parameters meet the service's schema and merge the plan's vars with
@@ -666,10 +666,6 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	response.OperationData = newInstanceDetails.OperationId
 
 	return response, nil
-}
-
-func isValidOrEmptyJSON(msg json.RawMessage) bool {
-	return msg == nil || len(msg) == 0 || json.Valid(msg)
 }
 
 func validateParameters(rawParams json.RawMessage, validUserInputFields []broker.BrokerVariable, validImportFields []broker.ImportVariable) error {
