@@ -34,6 +34,12 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
+	"github.com/spf13/viper"
+)
+
+const (
+	credhubClientIdentifier          = "csb"
+	DisableRequestPropertyValidation = "request.property.validation.disabled"
 )
 
 var (
@@ -44,7 +50,9 @@ var (
 	ErrNonUpdatableParameter   = apiresponses.NewFailureResponse(errors.New("attempt to update parameter that may result in service instance re-creation and data loss"), http.StatusBadRequest, "prohibited")
 )
 
-const credhubClientIdentifier = "csb"
+func init() {
+	viper.BindEnv(DisableRequestPropertyValidation, "CSB_DISABLE_REQUEST_PROPERTY_VALIDATION")
+}
 
 // ServiceBroker is a brokerapi.ServiceBroker that can be used to generate an OSB compatible service broker.
 type ServiceBroker struct {
@@ -129,7 +137,7 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	}
 
 	// Give the user a better error message if they give us a bad request
-	if err := validateParameters(details.GetRawParameters(), brokerService.ProvisionInputVariables); err != nil {
+	if err := validateParameters(details.GetRawParameters(), brokerService.ProvisionInputVariables, brokerService.ImportInputVariables); err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
 
@@ -599,8 +607,8 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	// Give the user a better error message if they give us a bad request
-	if !isValidOrEmptyJSON(details.GetRawParameters()) {
-		return response, ErrInvalidUserInput
+	if err := validateParameters(details.GetRawParameters(), brokerService.ProvisionInputVariables, nil); err != nil {
+		return domain.UpdateServiceSpec{}, err
 	}
 
 	allowUpdate, err := brokerService.AllowedUpdate(details)
@@ -658,7 +666,7 @@ func isValidOrEmptyJSON(msg json.RawMessage) bool {
 	return msg == nil || len(msg) == 0 || json.Valid(msg)
 }
 
-func validateParameters(rawParams json.RawMessage, validFields []broker.BrokerVariable) error {
+func validateParameters(rawParams json.RawMessage, validUserInputFields []broker.BrokerVariable, validImportFields []broker.ImportVariable) error {
 	if len(rawParams) == 0 {
 		return nil
 	}
@@ -668,11 +676,19 @@ func validateParameters(rawParams json.RawMessage, validFields []broker.BrokerVa
 		return ErrInvalidUserInput
 	}
 
-	validParams := make(map[string]struct{})
-	for _, field := range validFields {
-		validParams[field.FieldName] = struct{}{}
+	// As this is a new check we have feature-flagged it so that it can easily be disabled
+	// if it causes problems.
+	if viper.GetBool(DisableRequestPropertyValidation) {
+		return nil
 	}
 
+	validParams := make(map[string]struct{})
+	for _, field := range validUserInputFields {
+		validParams[field.FieldName] = struct{}{}
+	}
+	for _, field := range validImportFields {
+		validParams[field.Name] = struct{}{}
+	}
 	var invalidParams []string
 	for k := range params {
 		if _, ok := validParams[k]; !ok {

@@ -41,6 +41,7 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 	"github.com/pivotal-cf/brokerapi/v8/middlewares"
+	"github.com/spf13/viper"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -145,6 +146,19 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 				FieldName: "baz",
 				Type:      "string",
 				Details:   "other fake field name",
+			},
+			{
+				FieldName: "guz",
+				Type:      "string",
+				Details:   "yet another fake field name",
+			},
+		},
+		ImportInputVariables: []broker.ImportVariable{
+			{
+				Name:       "import_field_1",
+				Type:       "string",
+				Details:    "fake import field",
+				TfResource: "fake.tf.resource",
 			},
 		},
 	}
@@ -259,6 +273,7 @@ type BrokerEndpointTestSuite map[string]BrokerEndpointTestCase
 func (cases BrokerEndpointTestSuite) Run(t *testing.T) {
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
+			viper.Reset()
 			stub := fakeService(t, tc.AsyncService)
 
 			t.Log("Creating broker")
@@ -313,11 +328,21 @@ func TestServiceBroker_Provision(t *testing.T) {
 				assertEqual(t, "provision calls should match", 1, stub.Provider.ProvisionCallCount())
 			},
 		},
-		"good-request-valid-parameter": {
+		"good-request-valid-provision-parameter": {
 			ServiceState: StateNone,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
 				req := stub.ProvisionDetails()
 				req.RawParameters = json.RawMessage(`{"foo":"false"}`)
+				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
+
+				failIfErr(t, "provision with parameter", err)
+			},
+		},
+		"good-request-valid-import-parameter": {
+			ServiceState: StateNone,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.ProvisionDetails()
+				req.RawParameters = json.RawMessage(`{"import_field_1":"hello"}`)
 				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
 
 				failIfErr(t, "provision with parameter", err)
@@ -387,6 +412,16 @@ func TestServiceBroker_Provision(t *testing.T) {
 				req.RawParameters = json.RawMessage(`{"invalid_parameter":42,"foo":"bar","other_invalid":false}`)
 				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
 				assertEqual(t, "errors should match", errors.New("additional properties are not allowed: invalid_parameter, other_invalid"), err)
+			},
+		},
+		"bad-request-invalid-parameter-disabled": {
+			ServiceState: StateNone,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.ProvisionDetails()
+				req.RawParameters = json.RawMessage(`{"invalid_parameter":42,"foo":"bar","other_invalid":false}`)
+				viper.Set(DisableRequestPropertyValidation, true)
+				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
+				failIfErr(t, "failed even though check was disabled", err)
 			},
 		},
 		"error-setting-request-details": {
@@ -837,7 +872,7 @@ func TestServiceBroker_Update(t *testing.T) {
 			AsyncService: true,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
 				req := stub.UpdateDetails()
-				req.RawParameters = json.RawMessage(`{"force_delete":"false"}`)
+				req.RawParameters = json.RawMessage(`{"foo":"false"}`)
 				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
 
 				failIfErr(t, "update", err)
@@ -901,6 +936,17 @@ func TestServiceBroker_Update(t *testing.T) {
 				err = db.Where(`service_instance_id=?`, fakeInstanceId).First(&m).Error
 				failIfErr(t, "reading details", err)
 				assertEqual(t, "empty", []byte(nil), m.RequestDetails)
+			},
+		},
+		"bad-request-invalid-parameter": {
+			ServiceState: StateProvisioned,
+			AsyncService: true,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.UpdateDetails()
+				req.RawParameters = json.RawMessage(`{"invalid_parameter":42,"foo":"bar","other_invalid":false}`)
+				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
+
+				assertEqual(t, "errors should match", errors.New("additional properties are not allowed: invalid_parameter, other_invalid"), err)
 			},
 		},
 	}

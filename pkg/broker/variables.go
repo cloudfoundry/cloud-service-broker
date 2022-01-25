@@ -60,6 +60,14 @@ type BrokerVariable struct {
 	ProhibitUpdate bool                   `yaml:"prohibit_update,omitempty"`
 }
 
+// ImportVariable Variable definition for TF import support
+type ImportVariable struct {
+	Name       string `yaml:"field_name"`
+	Type       string `yaml:"type"`
+	Details    string `yaml:"details"`
+	TfResource string `yaml:"tf_resource"`
+}
+
 var _ validation.Validatable = (*ServiceDefinition)(nil)
 
 // Validate implements validation.Validatable.
