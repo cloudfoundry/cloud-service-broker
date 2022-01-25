@@ -41,6 +41,7 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 	"github.com/pivotal-cf/brokerapi/v8/middlewares"
+	"github.com/spf13/viper"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -272,6 +273,7 @@ type BrokerEndpointTestSuite map[string]BrokerEndpointTestCase
 func (cases BrokerEndpointTestSuite) Run(t *testing.T) {
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
+			viper.Reset()
 			stub := fakeService(t, tc.AsyncService)
 
 			t.Log("Creating broker")
@@ -410,6 +412,16 @@ func TestServiceBroker_Provision(t *testing.T) {
 				req.RawParameters = json.RawMessage(`{"invalid_parameter":42,"foo":"bar","other_invalid":false}`)
 				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
 				assertEqual(t, "errors should match", errors.New("additional properties are not allowed: invalid_parameter, other_invalid"), err)
+			},
+		},
+		"bad-request-invalid-parameter-disabled": {
+			ServiceState: StateNone,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.ProvisionDetails()
+				req.RawParameters = json.RawMessage(`{"invalid_parameter":42,"foo":"bar","other_invalid":false}`)
+				viper.Set(DisableRequestPropertyValidation, true)
+				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
+				failIfErr(t, "failed even though check was disabled", err)
 			},
 		},
 		"error-setting-request-details": {
