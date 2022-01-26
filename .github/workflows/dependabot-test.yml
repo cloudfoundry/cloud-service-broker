@@ -1,19 +1,23 @@
-name: dependabot-pr-check
+name: dependabot-test
 
 on: 
-  pull_request_target: 
+  pull_request_target:
 
 jobs:
   test:
+    name: Dependabot test
     runs-on: ubuntu-latest
     if: ${{ github.actor == 'dependabot[bot]' }}
     steps:
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '1.17'
-      - uses: actions/checkout@v2
-      - run: make test
+    - uses: actions/setup-go@v2
+      with:
+        go-version: '1.17'
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ format('refs/pull/{0}/merge', github.event.number) }}
+    - run: make test
   automerge:
+    needs: test
     name: Merge Dependabot Pull Pequest
     runs-on: ubuntu-latest
     if: ${{ success() }}
