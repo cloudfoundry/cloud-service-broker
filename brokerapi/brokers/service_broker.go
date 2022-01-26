@@ -321,10 +321,19 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 		ServiceGUID:         details.ServiceID,
 		Credentials:         credsDetails,
 	}
-
 	if err := broker.store.CreateServiceBindingCredentials(newCreds); err != nil {
 		return domain.Binding{}, fmt.Errorf("error saving credentials to database: %w. WARNING: these credentials cannot be unbound through cf. Please contact your operator for cleanup",
 			err)
+	}
+
+	bindRequest := storage.BindRequestDetails{
+		ServiceInstanceGUID: instanceID,
+		ServiceBindingGUID:  bindingID,
+		RequestDetails:      details.RawParameters,
+	}
+
+	if err := broker.store.StoreBindRequestDetails(bindRequest); err != nil {
+		return domain.Binding{}, fmt.Errorf("error saving bind request details to database: %s. Unbind operations will not be able to complete", err)
 	}
 
 	binding, err := serviceProvider.BuildInstanceCredentials(ctx, newCreds.Credentials, instanceRecord.Outputs)
@@ -437,9 +446,9 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return domain.UnbindSpec{}, err
 	}
 
-	rawParameters, err := broker.store.GetProvisionRequestDetails(instanceID)
+	rawParameters, err := broker.store.GetBindRequestDetails(bindingID, instanceID)
 	if err != nil {
-		return domain.UnbindSpec{}, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
+		return domain.UnbindSpec{}, fmt.Errorf("error retrieving bind request details for %q: %w", instanceID, err)
 	}
 
 	bindDetails := domain.BindDetails{
@@ -475,6 +484,9 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	// remove binding from database
 	if err := broker.store.DeleteServiceBindingCredentials(bindingID, instanceID); err != nil {
 		return domain.UnbindSpec{}, fmt.Errorf("error soft-deleting credentials from database: %s. WARNING: these credentials will remain visible in cf. Contact your operator for cleanup", err)
+	}
+	if err := broker.store.DeleteBindRequestDetails(bindingID, instanceID); err != nil {
+		return domain.UnbindSpec{}, fmt.Errorf("error soft-deleting bind request details from database: %s", err)
 	}
 
 	return domain.UnbindSpec{}, nil
