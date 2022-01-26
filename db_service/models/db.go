@@ -36,6 +36,10 @@ type ServiceInstanceDetails ServiceInstanceDetailsV3
 // to provision a service.
 type ProvisionRequestDetails ProvisionRequestDetailsV3
 
+// BindRequestDetails holds user-defined properties passed to a call
+// to provision a service.
+type BindRequestDetails BindRequestDetailsV1
+
 // Migration represents the mgirations table. It holds a monotonically
 // increasing number that gets incremented with every database schema revision.
 type Migration MigrationV1

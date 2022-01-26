@@ -24,7 +24,7 @@ import (
 var _ = Describe("Database Encryption", func() {
 	const (
 		provisionParams           = `{"provision_input":"bar"}`
-		bindParams                = `{"baz":"quz"}`
+		bindParams                = `{"bind_input":"quz"}`
 		updateParams              = `{"update_input": "update output value"}`
 		mergedParams              = `{"provision_input":"bar","update_input":"update output value"}`
 		provisionOutput           = `{"provision_output":"provision output value"}`
@@ -37,6 +37,7 @@ var _ = Describe("Database Encryption", func() {
 		serviceOfferingGUID       = "76c5725c-b246-11eb-871f-ffc97563fbd0"
 		servicePlanGUID           = "8b52a460-b246-11eb-a8f5-d349948e2480"
 		serviceInstanceFKQuery    = "service_instance_id = ?"
+		serviceBindingIdQuery     = "service_binding_id = ?"
 		serviceInstanceIdQuery    = "id = ?"
 		tfWorkspaceIdQuery        = "id = ?"
 		passwordMetadataQuery     = "label = ?"
@@ -62,7 +63,7 @@ var _ = Describe("Database Encryption", func() {
 		ExpectWithOffset(1, result.RowsAffected).To(Equal(int64(1)))
 	}
 
-	persistedRequestDetails := func(serviceInstanceGUID string) []byte {
+	persistedProvisionRequestDetails := func(serviceInstanceGUID string) []byte {
 		record := models.ProvisionRequestDetails{}
 		findRecord(&record, serviceInstanceFKQuery, serviceInstanceGUID)
 		return record.RequestDetails
@@ -78,6 +79,12 @@ var _ = Describe("Database Encryption", func() {
 		record := models.TerraformDeployment{}
 		findRecord(&record, tfWorkspaceIdQuery, fmt.Sprintf("tf:%s:", serviceInstanceGUID))
 		return record.Workspace
+	}
+
+	persistedBindRequestDetails := func(serviceBindingGUID string) []byte {
+		record := models.BindRequestDetails{}
+		findRecord(&record, serviceBindingIdQuery, serviceBindingGUID)
+		return record.RequestDetails
 	}
 
 	persistedServiceBindingDetails := func(serviceInstanceGUID string) []byte {
@@ -119,6 +126,14 @@ var _ = Describe("Database Encryption", func() {
 		Expect(err).NotTo(HaveOccurred())
 		var count int64
 		Expect(db.Model(&models.ServiceBindingCredentials{}).Where(serviceInstanceFKQuery, serviceInstanceGUID).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(count).To(BeZero())
+	}
+
+	expectBindRequestDetailsToNotExist := func(serviceBindingGUID string) {
+		db, err := gorm.Open(sqlite.Open(databaseFile), &gorm.Config{})
+		Expect(err).NotTo(HaveOccurred())
+		var count int64
+		Expect(db.Model(&models.BindRequestDetails{}).Where(serviceBindingIdQuery, serviceBindingGUID).Count(&count).Error).NotTo(HaveOccurred())
 		Expect(count).To(BeZero())
 	}
 
@@ -211,6 +226,7 @@ var _ = Describe("Database Encryption", func() {
 		ContainSubstring(provisionOutputStateValue),
 		ContainSubstring(tfStateKey),
 	)
+	bePlaintextBindParams := Equal([]byte(bindParams))
 	bePlaintextBindingDetails := Equal([]byte(bindOutput))
 	bePlaintextBindingTerraformState := SatisfyAll(
 		ContainSubstring(bindOutputStateValue),
@@ -272,18 +288,19 @@ var _ = Describe("Database Encryption", func() {
 
 		It("stores sensitive fields in plaintext", func() {
 			By("checking the provision fields")
-			Expect(persistedRequestDetails(serviceInstanceGUID)).To(bePlaintextProvisionParams)
+			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).To(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).To(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).To(bePlaintextInstanceTerraformState)
 
 			By("checking the binding fields")
 			createBinding(serviceInstanceGUID, serviceBindingGUID)
+			Expect(persistedBindRequestDetails(serviceBindingGUID)).To(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).To(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(haveAnyPlaintextBindingTerraformState)
 
 			By("checking how update persists service instance fields")
 			updateServiceInstance(serviceInstanceGUID)
-			Expect(persistedRequestDetails(serviceInstanceGUID)).To(bePlaintextMergedParams)
+			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).To(bePlaintextMergedParams)
 			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).To(Equal([]byte(updateOutput)))
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).To(SatisfyAll(
 				ContainSubstring(provisionOutputStateValue),
@@ -294,6 +311,7 @@ var _ = Describe("Database Encryption", func() {
 			By("checking the binding fields after unbind")
 			deleteBinding(serviceInstanceGUID, serviceBindingGUID)
 			expectServiceBindingDetailsToNotExist(serviceInstanceGUID)
+			expectBindRequestDetailsToNotExist(serviceBindingGUID)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(haveAnyPlaintextBindingTerraformState)
 
 			By("checking the service instance fields after deprovision")
@@ -324,18 +342,19 @@ var _ = Describe("Database Encryption", func() {
 
 		It("encrypts sensitive fields", func() {
 			By("checking the provision fields")
-			Expect(persistedRequestDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionParams)
+			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(haveAnyPlaintextServiceTerraformState)
 
 			By("checking the binding fields")
 			createBinding(serviceInstanceGUID, serviceBindingGUID)
+			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("checking how update persists service instance fields")
 			updateServiceInstance(serviceInstanceGUID)
-			Expect(persistedRequestDetails(serviceInstanceGUID)).NotTo(Equal(mergedParams))
+			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).NotTo(Equal(mergedParams))
 			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(Equal(updateOutput))
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(SatisfyAny(
 				ContainSubstring(provisionOutputStateValue),
@@ -346,6 +365,7 @@ var _ = Describe("Database Encryption", func() {
 			By("checking the binding fields after unbind")
 			deleteBinding(serviceInstanceGUID, serviceBindingGUID)
 			expectServiceBindingDetailsToNotExist(serviceInstanceGUID)
+			expectBindRequestDetailsToNotExist(serviceBindingGUID)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("ckecking the service instance fields after deprovision")
@@ -369,14 +389,14 @@ var _ = Describe("Database Encryption", func() {
 			By("creating a service instance and checking fields are stored in plain text")
 			serviceInstanceGUID := uuid.New()
 			provisionServiceInstance(serviceInstanceGUID)
-			Expect(persistedRequestDetails(serviceInstanceGUID)).To(bePlaintextProvisionParams)
+			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).To(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).To(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).To(bePlaintextInstanceTerraformState)
 
 			By("creating a binding and checking the fields are stored in plain text")
 			serviceBindingGUID := uuid.New()
 			createBinding(serviceInstanceGUID, serviceBindingGUID)
-			createBinding(serviceInstanceGUID, serviceBindingGUID)
+			Expect(persistedBindRequestDetails(serviceBindingGUID)).To(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).To(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(bePlaintextBindingTerraformState)
 
@@ -393,9 +413,10 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedPasswordMetadata("my-password").Primary).To(BeTrue())
 
 			By("checking that the previous data is now encrypted")
-			Expect(persistedRequestDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionParams)
+			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(haveAnyPlaintextServiceTerraformState)
+			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
@@ -429,13 +450,14 @@ var _ = Describe("Database Encryption", func() {
 			By("creating a service instance and checking fields are stored encrypted")
 			serviceInstanceGUID := uuid.New()
 			provisionServiceInstance(serviceInstanceGUID)
-			Expect(persistedRequestDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionParams)
+			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(haveAnyPlaintextServiceTerraformState)
 
 			By("creating a binding and checking the fields are stored encrypted")
 			serviceBindingGUID := uuid.New()
 			createBinding(serviceInstanceGUID, serviceBindingGUID)
+			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
@@ -452,9 +474,10 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedPasswordMetadata("my-password").Primary).To(BeFalse())
 
 			By("checking that the previous data is now decrypted")
-			Expect(persistedRequestDetails(serviceInstanceGUID)).To(bePlaintextProvisionParams)
+			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).To(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).To(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).To(bePlaintextInstanceTerraformState)
+			Expect(persistedBindRequestDetails(serviceBindingGUID)).To(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).To(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(bePlaintextBindingTerraformState)
 
@@ -492,13 +515,14 @@ var _ = Describe("Database Encryption", func() {
 			By("creating a service instance and checking fields are stored encrypted")
 			serviceInstanceGUID := uuid.New()
 			provisionServiceInstance(serviceInstanceGUID)
-			firstEncryptionPersistedRequestDetails := persistedRequestDetails(serviceInstanceGUID)
+			firstEncryptionPersistedRequestDetails := persistedProvisionRequestDetails(serviceInstanceGUID)
 			firstEncryptionPersistedServiceInstanceDetails := persistedServiceInstanceDetails(serviceInstanceGUID)
 			firstEncryptionpersistedServiceInstanceTerraformWorkspace := persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)
 
 			By("creating a binding and checking the fields are stored in plain text")
 			serviceBindingGUID := uuid.New()
 			createBinding(serviceInstanceGUID, serviceBindingGUID)
+			firstEncryptionPersistedServiceBindingParams := persistedBindRequestDetails(serviceBindingGUID)
 			firstEncryptionPersistedServiceBindingDetails := persistedServiceBindingDetails(serviceInstanceGUID)
 			firstEncryptionPersistedServiceBindingTerraformWorkspace := persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)
 
@@ -518,16 +542,18 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedPasswordMetadata("my-second-password").Primary).To(BeTrue())
 
 			By("checking that the previous data is still encrypted")
-			Expect(persistedRequestDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionParams)
+			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(haveAnyPlaintextServiceTerraformState)
+			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("checking that the previous data is encrypted differently")
-			Expect(persistedRequestDetails(serviceInstanceGUID)).NotTo(Equal(firstEncryptionPersistedRequestDetails))
+			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).NotTo(Equal(firstEncryptionPersistedRequestDetails))
 			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(Equal(firstEncryptionPersistedServiceInstanceDetails))
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(Equal(firstEncryptionpersistedServiceInstanceTerraformWorkspace))
+			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingParams))
 			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingDetails))
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingTerraformWorkspace))
 

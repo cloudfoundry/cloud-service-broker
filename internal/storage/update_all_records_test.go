@@ -11,6 +11,7 @@ var _ = Describe("UpdateAllRecords", func() {
 	BeforeEach(func() {
 		addFakeServiceCredentialBindings()
 		addFakeProvisionRequestDetails()
+		addFakeBindRequestDetails()
 		addFakeServiceInstanceDetails()
 		addFakeTerraformDeployments()
 	})
@@ -25,6 +26,15 @@ var _ = Describe("UpdateAllRecords", func() {
 			Expect(receiver[0].OtherDetails).To(MatchJSON(`{"encrypted":{"decrypted":{"foo":"bar"}}}`))
 			Expect(receiver[1].OtherDetails).To(MatchJSON(`{"encrypted":{"decrypted":{"foo":"baz","bar":"quz"}}}`))
 			Expect(receiver[2].OtherDetails).To(MatchJSON(`{"encrypted":{"decrypted":{"foo":"boz"}}}`))
+		})
+
+		By("checking bind request details", func() {
+			var receiver []models.BindRequestDetails
+			Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
+			Expect(receiver).To(HaveLen(3))
+			Expect(receiver[0].RequestDetails).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"bar"}}}`)))
+			Expect(receiver[1].RequestDetails).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"baz","bar":"quz"}}}`)))
+			Expect(receiver[2].RequestDetails).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"boz"}}}`)))
 		})
 
 		By("checking provision request details", func() {
