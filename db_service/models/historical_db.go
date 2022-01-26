@@ -220,7 +220,8 @@ func (ProvisionRequestDetailsV3) TableName() string {
 type BindRequestDetailsV1 struct {
 	gorm.Model
 
-	ServiceBindingId string
+	ServiceBindingId  string `gorm:"unique"`
+	ServiceInstanceId string
 
 	// is a json.Marshal of models.BindDetails
 	RequestDetails []byte `gorm:"type:blob"`
