@@ -1,0 +1,30 @@
+name: run-tests
+
+on: 
+  workflow_call:
+    outputs:
+      pr_number:
+        description: "The PR number"
+        value: ${{ jobs.test.outputs.pr_number }}
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Go test
+    outputs:
+      pr_number: ${{ github.event.number }}
+    steps:
+    - uses: actions/setup-go@v2
+      with:
+        go-version: '1.17'
+    - uses: actions/checkout@v2
+    - run: make test
+  call-dependabot-pr-workflow:
+    needs: test
+    if: ${{ success() && github.actor == 'dependabot[bot]' }}
+    uses: cloudfoundry-incubator/cloud-service-broker/.github/workflows/dependabot-test.yml@main
+    with:
+      pr_number: ${{ github.event.number }}

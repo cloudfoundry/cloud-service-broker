@@ -1,35 +1,29 @@
-name: dependabot-test
-
-on: 
-  pull_request_target:
+name: dependabot-pr-merge
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        description: "The PR number"
+        required: true
+        type: string
 
 jobs:
-  test:
-    name: Dependabot test
-    runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' }}
-    steps:
-    - uses: actions/setup-go@v2
-      with:
-        go-version: '1.17'
-    - uses: actions/checkout@v2
-      with:
-        ref: ${{ format('refs/pull/{0}/merge', github.event.number) }}
-    - run: make test
   automerge:
-    needs: test
     name: Merge Dependabot Pull Pequest
     runs-on: ubuntu-latest
-    if: ${{ success() }}
+    permissions:
+      contents: write
+    if: ${{ github.actor == 'dependabot[bot]' }}
     steps:
       - name: Merge
         uses: actions/github-script@v5
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
+            var pr_number = ${{ inputs.pr_number }}
             github.rest.pulls.merge({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.issue.number,
+              pull_number: pr_number,
               merge_method: 'squash'
             })
