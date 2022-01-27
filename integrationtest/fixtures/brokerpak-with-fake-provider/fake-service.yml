@@ -31,6 +31,10 @@ provision:
 bind:
   template_refs:
     main: fake-bind.tf
+  user_inputs:
+    - field_name: bind_input
+      type: string
+      details: allowed param during bind
   computed_inputs:
     - name: provision_output
       type: string

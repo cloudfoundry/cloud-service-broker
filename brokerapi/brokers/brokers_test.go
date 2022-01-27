@@ -161,6 +161,13 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 				TfResource: "fake.tf.resource",
 			},
 		},
+		BindInputVariables: []broker.BrokerVariable{
+			{
+				FieldName: "valid_bind_parameter",
+				Type:      "string",
+				Details:   "fake valid field",
+			},
+		},
 	}
 	svc := defn.CatalogEntry()
 
@@ -560,6 +567,15 @@ func TestServiceBroker_Bind(t *testing.T) {
 			},
 			Credstore: &credstorefakes.FakeCredStore{},
 		},
+		"good-request-with-parameter": {
+			ServiceState: StateProvisioned,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.BindDetails()
+				req.RawParameters = json.RawMessage(`{"valid_bind_parameter":"yes"}`)
+				_, err := broker.Bind(context.Background(), fakeInstanceId, fakeBindingId, req, true)
+				failIfErr(t, "bind with parameter", err)
+			},
+		},
 		"originating-header": {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
@@ -592,13 +608,22 @@ func TestServiceBroker_Bind(t *testing.T) {
 				assertEqual(t, "errors should match", "error performing bind: fake error", err.Error())
 			},
 		},
-		"bad-request-json": {
+		"bad-request-invalid-json": {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
 				req := stub.BindDetails()
 				req.RawParameters = json.RawMessage("{invalid json")
 				_, err := broker.Bind(context.Background(), fakeInstanceId, fakeBindingId, req, true)
 				assertEqual(t, "errors should match", ErrInvalidUserInput, err)
+			},
+		},
+		"bad-request-invalid-parameter": {
+			ServiceState: StateProvisioned,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.BindDetails()
+				req.RawParameters = json.RawMessage(`{"invalid_bind_parameter":"no","other_invalid_parameter":"also no"}`)
+				_, err := broker.Bind(context.Background(), fakeInstanceId, fakeBindingId, req, true)
+				assertEqual(t, "errors should match", errors.New("additional properties are not allowed: invalid_bind_parameter, other_invalid_parameter"), err)
 			},
 		},
 		"bind-variables-override-instance-variables": {
