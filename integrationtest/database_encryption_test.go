@@ -148,11 +148,13 @@ var _ = Describe("Database Encryption", func() {
 	createBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
 		bindResponse := brokerClient.Bind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(bindParams))
 		Expect(bindResponse.Error).NotTo(HaveOccurred())
+		Expect(bindResponse.StatusCode).To(Equal(http.StatusCreated))
 	}
 
 	deleteBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
 		unbindResponse := brokerClient.Unbind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID())
 		Expect(unbindResponse.Error).NotTo(HaveOccurred())
+		Expect(unbindResponse.StatusCode).To(Equal(http.StatusOK))
 	}
 
 	waitForAsyncRequest := func(serviceInstanceGUID string) {
