@@ -640,7 +640,7 @@ func TestServiceBroker_Bind(t *testing.T) {
 			},
 		},
 		"bad-request-invalid-parameter-disabled": {
-			ServiceState: StateNone,
+			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
 				req := stub.BindDetails()
 				req.RawParameters = json.RawMessage(`{"invalid_bind_parameter":"no","other_invalid_parameter":"also no"}`)
