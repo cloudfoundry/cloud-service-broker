@@ -699,7 +699,7 @@ func validateProvisionParameters(rawParams json.RawMessage, validUserInputFields
 		return ErrInvalidUserInput
 	}
 
-	err := validatePlanDefinedOverrides(params, plan)
+	err := validateNoPlanParametersOverrides(params, plan)
 	if err != nil {
 		return err
 	}
@@ -735,7 +735,7 @@ func validateDefinedParams(params map[string]interface{}, validUserInputFields [
 	return fmt.Errorf("additional properties are not allowed: %s", strings.Join(invalidParams, ", "))
 }
 
-func validatePlanDefinedOverrides(params map[string]interface{}, plan *broker.ServicePlan) error {
+func validateNoPlanParametersOverrides(params map[string]interface{}, plan *broker.ServicePlan) error {
 	var invalidPlanParams []string
 	for k := range params {
 		if _, ok := plan.ServiceProperties[k]; ok {
