@@ -56,7 +56,7 @@ func init() {
 
 	rootCmd.AddCommand(tfCmd)
 
-	tfCmd.AddCommand(&cobra.Command{
+	dumpCmd := &cobra.Command{
 		Use:   "dump",
 		Short: "dump a Terraform workspace",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -72,10 +72,21 @@ func init() {
 				fmt.Printf("Error: %s\n", err.Error())
 				log.Fatal(err)
 			}
+			onlyState, err := cmd.Flags().GetBool("only-state")
+			if err != nil {
+				fmt.Printf("Error: %s\n", err.Error())
+				log.Fatal(err)
+			}
 
-			fmt.Println(ws)
+			if onlyState {
+				fmt.Printf("%s", string(ws.State))
+			} else {
+				fmt.Println(ws)
+			}
 		},
-	})
+	}
+	dumpCmd.Flags().BoolP("only-state", "s", false, "dump the tf state file")
+	tfCmd.AddCommand(dumpCmd)
 
 	tfCmd.AddCommand(&cobra.Command{
 		Use:   "wait",
