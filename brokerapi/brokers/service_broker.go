@@ -137,7 +137,10 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	}
 
 	// Give the user a better error message if they give us a bad request
-	if err := validateParameters(details.GetRawParameters(), brokerService.ProvisionInputVariables, brokerService.ImportInputVariables); err != nil {
+	if err := validateProvisionParameters(details.GetRawParameters(),
+		brokerService.ProvisionInputVariables,
+		brokerService.ImportInputVariables,
+		plan); err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
 
@@ -297,7 +300,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	}
 
 	// Give the user a better error message if they give us a bad request
-	if err := validateParameters(details.GetRawParameters(), serviceDefinition.BindInputVariables, nil); err != nil {
+	if err := validateBindParameters(details.GetRawParameters(), serviceDefinition.BindInputVariables); err != nil {
 		return domain.Binding{}, err
 	}
 
@@ -613,7 +616,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	// Give the user a better error message if they give us a bad request
-	if err := validateParameters(details.GetRawParameters(), brokerService.ProvisionInputVariables, nil); err != nil {
+	if err := validateProvisionParameters(details.GetRawParameters(), brokerService.ProvisionInputVariables, nil, plan); err != nil {
 		return domain.UpdateServiceSpec{}, err
 	}
 
@@ -668,7 +671,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	return response, nil
 }
 
-func validateParameters(rawParams json.RawMessage, validUserInputFields []broker.BrokerVariable, validImportFields []broker.ImportVariable) error {
+func validateBindParameters(rawParams json.RawMessage, validUserInputFields []broker.BrokerVariable) error {
 	if len(rawParams) == 0 {
 		return nil
 	}
@@ -680,10 +683,36 @@ func validateParameters(rawParams json.RawMessage, validUserInputFields []broker
 
 	// As this is a new check we have feature-flagged it so that it can easily be disabled
 	// if it causes problems.
-	if viper.GetBool(DisableRequestPropertyValidation) {
+	if !viper.GetBool(DisableRequestPropertyValidation) {
+		return validateDefinedParams(params, validUserInputFields, nil)
+	}
+	return nil
+}
+
+func validateProvisionParameters(rawParams json.RawMessage, validUserInputFields []broker.BrokerVariable, validImportFields []broker.ImportVariable, plan *broker.ServicePlan) error {
+	if len(rawParams) == 0 {
 		return nil
 	}
 
+	var params map[string]interface{}
+	if err := json.Unmarshal(rawParams, &params); err != nil {
+		return ErrInvalidUserInput
+	}
+
+	err := validateNoPlanParametersOverrides(params, plan)
+	if err != nil {
+		return err
+	}
+
+	// As this is a new check we have feature-flagged it so that it can easily be disabled
+	// if it causes problems.
+	if !viper.GetBool(DisableRequestPropertyValidation) {
+		return validateDefinedParams(params, validUserInputFields, validImportFields)
+	}
+	return nil
+}
+
+func validateDefinedParams(params map[string]interface{}, validUserInputFields []broker.BrokerVariable, validImportFields []broker.ImportVariable) error {
 	validParams := make(map[string]struct{})
 	for _, field := range validUserInputFields {
 		validParams[field.FieldName] = struct{}{}
@@ -704,6 +733,21 @@ func validateParameters(rawParams json.RawMessage, validUserInputFields []broker
 
 	sort.Strings(invalidParams)
 	return fmt.Errorf("additional properties are not allowed: %s", strings.Join(invalidParams, ", "))
+}
+
+func validateNoPlanParametersOverrides(params map[string]interface{}, plan *broker.ServicePlan) error {
+	var invalidPlanParams []string
+	for k := range params {
+		if _, ok := plan.ServiceProperties[k]; ok {
+			invalidPlanParams = append(invalidPlanParams, k)
+		}
+	}
+
+	if len(invalidPlanParams) != 0 {
+		sort.Strings(invalidPlanParams)
+		return fmt.Errorf("plan defined properties cannot be changed: %s", strings.Join(invalidPlanParams, ", "))
+	}
+	return nil
 }
 
 func mergeJSON(previousParams, newParams json.RawMessage) (json.RawMessage, error) {
