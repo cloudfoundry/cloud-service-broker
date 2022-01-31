@@ -129,6 +129,10 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 					ID:   "3dcc45e8-0020-11ec-8ae1-f7abb5d2e742",
 					Name: "fake-plan-name",
 				},
+				ServiceProperties: map[string]interface{}{
+					"plan-defined-key":       "plan-defined-value",
+					"other-plan-defined-key": "other-plan-defined-value",
+				},
 			},
 		},
 		ProvisionComputedVariables: []varcontext.DefaultVariable{
@@ -421,6 +425,15 @@ func TestServiceBroker_Provision(t *testing.T) {
 				assertEqual(t, "errors should match", errors.New("additional properties are not allowed: invalid_parameter, other_invalid"), err)
 			},
 		},
+		"bad-request-invalid-plan-defined-parameter": {
+			ServiceState: StateNone,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.ProvisionDetails()
+				req.RawParameters = json.RawMessage(`{"foo":"bar","plan-defined-key":42,"other-plan-defined-key":"test","other_invalid":false}`)
+				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
+				assertEqual(t, "errors should match", errors.New("plan defined properties cannot be changed: other-plan-defined-key, plan-defined-key"), err)
+			},
+		},
 		"bad-request-invalid-parameter-disabled": {
 			ServiceState: StateNone,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
@@ -624,6 +637,16 @@ func TestServiceBroker_Bind(t *testing.T) {
 				req.RawParameters = json.RawMessage(`{"invalid_bind_parameter":"no","other_invalid_parameter":"also no"}`)
 				_, err := broker.Bind(context.Background(), fakeInstanceId, fakeBindingId, req, true)
 				assertEqual(t, "errors should match", errors.New("additional properties are not allowed: invalid_bind_parameter, other_invalid_parameter"), err)
+			},
+		},
+		"bad-request-invalid-parameter-disabled": {
+			ServiceState: StateProvisioned,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.BindDetails()
+				req.RawParameters = json.RawMessage(`{"invalid_bind_parameter":"no","other_invalid_parameter":"also no"}`)
+				viper.Set(DisableRequestPropertyValidation, true)
+				_, err := broker.Bind(context.Background(), fakeInstanceId, fakeBindingId, req, true)
+				failIfErr(t, "failed even though check was disabled", err)
 			},
 		},
 		"bind-variables-override-instance-variables": {
@@ -972,6 +995,17 @@ func TestServiceBroker_Update(t *testing.T) {
 				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
 
 				assertEqual(t, "errors should match", errors.New("additional properties are not allowed: invalid_parameter, other_invalid"), err)
+			},
+		},
+		"bad-request-invalid-plan-defined-parameter": {
+			ServiceState: StateProvisioned,
+			AsyncService: true,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.UpdateDetails()
+				req.RawParameters = json.RawMessage(`{"foo":"bar","plan-defined-key":42,"other-plan-defined-key":"test","other_invalid":false}`)
+				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
+
+				assertEqual(t, "errors should match", errors.New("plan defined properties cannot be changed: other-plan-defined-key, plan-defined-key"), err)
 			},
 		},
 	}
