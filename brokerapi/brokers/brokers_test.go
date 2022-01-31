@@ -639,6 +639,16 @@ func TestServiceBroker_Bind(t *testing.T) {
 				assertEqual(t, "errors should match", errors.New("additional properties are not allowed: invalid_bind_parameter, other_invalid_parameter"), err)
 			},
 		},
+		"bad-request-invalid-parameter-disabled": {
+			ServiceState: StateNone,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.BindDetails()
+				req.RawParameters = json.RawMessage(`{"invalid_bind_parameter":"no","other_invalid_parameter":"also no"}`)
+				viper.Set(DisableRequestPropertyValidation, true)
+				_, err := broker.Bind(context.Background(), fakeInstanceId, fakeBindingId, req, true)
+				failIfErr(t, "failed even though check was disabled", err)
+			},
+		},
 		"bind-variables-override-instance-variables": {
 			ServiceState: StateProvisioned,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
