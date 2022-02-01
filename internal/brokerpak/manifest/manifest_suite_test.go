@@ -1,4 +1,4 @@
-package brokerpak_test
+package manifest_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestBrokerpak(t *testing.T) {
+func TestManifest(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Brokerpak Suite")
+	RunSpecs(t, "Manifest Suite")
 }

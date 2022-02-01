@@ -22,6 +22,10 @@ import (
 	"path/filepath"
 	"text/tabwriter"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/reader"
+
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/packer"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/generator"
@@ -50,19 +54,23 @@ func Init(directory string) error {
 // manifest.yml file. If the pack was successful, the returned string will be
 // the path to the created brokerpak.
 func Pack(directory string) (string, error) {
-	manifestPath := filepath.Join(directory, manifestName)
-	manifest := &Manifest{}
-	if err := stream.Copy(stream.FromFile(manifestPath), stream.ToYaml(manifest)); err != nil {
+	data, err := os.ReadFile(filepath.Join(directory, manifestName))
+	if err != nil {
 		return "", err
 	}
 
-	version, ok := os.LookupEnv(manifest.Version)
+	m, err := manifest.Parse(data)
+	if err != nil {
+		return "", err
+	}
+
+	version, ok := os.LookupEnv(m.Version)
 
 	if !ok {
-		version = manifest.Version
+		version = m.Version
 	}
-	packname := fmt.Sprintf("%s-%s.brokerpak", manifest.Name, version)
-	return packname, manifest.Pack(directory, packname)
+	packname := fmt.Sprintf("%s-%s.brokerpak", m.Name, version)
+	return packname, packer.Pack(m, directory, packname)
 }
 
 // Info writes out human-readable information about the brokerpak.
@@ -71,7 +79,7 @@ func Info(pack string) error {
 }
 
 func finfo(pack string, out io.Writer) error {
-	brokerPak, err := OpenBrokerPak(pack)
+	brokerPak, err := reader.OpenBrokerPak(pack)
 	if err != nil {
 		return err
 	}
@@ -141,7 +149,7 @@ func finfo(pack string, out io.Writer) error {
 	fmt.Fprintln(out, "Contents")
 	sw := tabwriter.NewWriter(out, 0, 0, 2, ' ', tabwriter.StripEscape)
 	fmt.Fprintln(sw, "MODE\tSIZE\tNAME")
-	for _, fd := range brokerPak.contents.List() {
+	for _, fd := range brokerPak.Contents() {
 		fmt.Fprintf(sw, "%s\t%d\t%s\n", fd.Mode().String(), fd.UncompressedSize64, fd.Name)
 	}
 	sw.Flush()
@@ -157,7 +165,7 @@ func cmdTabWriter(out io.Writer) *tabwriter.Writer {
 
 // Validate checks the brokerpak for syntactic and limited semantic errors.
 func Validate(pack string) error {
-	brokerPak, err := OpenBrokerPak(pack)
+	brokerPak, err := reader.OpenBrokerPak(pack)
 	if err != nil {
 		return err
 	}

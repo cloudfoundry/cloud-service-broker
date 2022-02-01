@@ -1,0 +1,162 @@
+package manifest_test
+
+import (
+	_ "embed"
+	"fmt"
+
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/platform"
+
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"gopkg.in/yaml.v3"
+)
+
+//go:embed test_manifest.yaml
+var testManifest string
+
+var _ = Describe("Parser", func() {
+	It("can parse a manifest", func() {
+		m, err := test(testManifest)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(m).To(Equal(&manifest.Manifest{
+			PackVersion: 1,
+			Name:        "gcp-services",
+			Version:     "0.1.0",
+			Metadata:    map[string]string{"author": "VMware"},
+			Platforms: []platform.Platform{
+				{
+					Os:   "linux",
+					Arch: "amd64",
+				},
+				{
+					Os:   "darwin",
+					Arch: "amd64",
+				},
+			},
+			TerraformResources: []manifest.TerraformResource{
+				{
+					Name:    "terraform",
+					Version: "1.1.4",
+					Source:  "https://github.com/hashicorp/terraform/archive/v1.1.4.zip",
+				},
+				{
+					Name:    "terraform-provider-random",
+					Version: "3.1.0",
+					Source:  "https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip",
+				},
+			},
+			ServiceDefinitions: []string{
+				"google-storage.yml",
+				"google-redis.yml",
+				"google-mysql.yml",
+			},
+			Parameters: []manifest.Parameter{
+				{
+					Name:        "param1",
+					Description: "something about the parameter",
+				},
+			},
+			RequiredEnvVars: []string{"FOO", "BAR"},
+			EnvConfigMapping: map[string]string{
+				"GOOGLE_CREDENTIALS": "gcp.credentials",
+				"GOOGLE_PROJECT":     "gcp.project",
+			},
+		}))
+	})
+
+	DescribeTable(
+		"missing fields",
+		func(field string) {
+			m, err := test(testManifest, without(field))
+			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("missing field(s): %s", field))))
+			Expect(m).To(BeNil())
+		},
+		Entry("pack version", "packversion"),
+		Entry("name", "name"),
+		Entry("version", "version"),
+		Entry("platforms", "platforms"),
+		Entry("service definitions", "service_definitions"),
+	)
+
+	DescribeTable("missing platform data",
+		func(insert string, value map[string]interface{}) {
+			m, err := test(testManifest, withAdditionalEntry("platforms", value))
+			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("missing field(s): %s", insert))))
+			Expect(m).To(BeNil())
+		},
+		Entry("os", "platforms[2].os", map[string]interface{}{"arch": "amd64"}),
+		Entry("arch", "platforms[2].arch", map[string]interface{}{"os": "linux"}),
+	)
+
+	DescribeTable("missing terraform binary data",
+		func(insert string, value map[string]interface{}) {
+			m, err := test(testManifest, withAdditionalEntry("terraform_binaries", value))
+			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("missing field(s): %s", insert))))
+			Expect(m).To(BeNil())
+		},
+		Entry("name", "terraform_binaries[2].name", map[string]interface{}{"version": "1.2.3", "source": "https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip"}),
+		Entry("version", "terraform_binaries[2].version", map[string]interface{}{"name": "hello"}),
+	)
+
+	DescribeTable("missing parameter data",
+		func(insert string, value map[string]interface{}) {
+			m, err := test(testManifest, withAdditionalEntry("parameters", value))
+			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("missing field(s): %s", insert))))
+			Expect(m).To(BeNil())
+		},
+		Entry("name", "parameters[1].name", map[string]interface{}{"description": "something"}),
+		Entry("description", "parameters[1].description", map[string]interface{}{"name": "hello"}),
+	)
+
+	When("the packversion is invalid", func() {
+		It("fails", func() {
+			m, err := test(testManifest, with("packversion", 2))
+			Expect(err).To(MatchError(ContainSubstring("invalid value: 2: packversion")))
+			Expect(m).To(BeNil())
+		})
+	})
+
+	When("there are unknown fields", func() {
+		It("fails", func() {
+			m, err := test(testManifest, with("foo", "bar"))
+			Expect(err).To(MatchError(ContainSubstring("field foo not found in type manifest.Manifest")))
+			Expect(m).To(BeNil())
+		})
+	})
+})
+
+type option func(map[string]interface{})
+
+func test(input string, opts ...option) (*manifest.Manifest, error) {
+	var receiver map[string]interface{}
+	err := yaml.Unmarshal([]byte(input), &receiver)
+	Expect(err).NotTo(HaveOccurred())
+
+	for _, o := range opts {
+		o(receiver)
+	}
+
+	marshalled, err := yaml.Marshal(receiver)
+	Expect(err).NotTo(HaveOccurred())
+	return manifest.Parse(marshalled)
+}
+
+func without(field string) option {
+	return func(m map[string]interface{}) {
+		delete(m, field)
+	}
+}
+
+func with(key string, value interface{}) option {
+	return func(m map[string]interface{}) {
+		m[key] = value
+	}
+}
+
+func withAdditionalEntry(key string, value map[string]interface{}) option {
+	return func(m map[string]interface{}) {
+		entries := m[key].([]interface{})
+		m[key] = append(entries, value)
+	}
+}
