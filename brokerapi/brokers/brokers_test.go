@@ -438,7 +438,7 @@ func TestServiceBroker_Provision(t *testing.T) {
 			ServiceState: StateNone,
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
 				req := stub.ProvisionDetails()
-				req.RawParameters = json.RawMessage(`{"invalid_parameter":42,"foo":"bar","other_invalid":false}`)
+				req.RawParameters = json.RawMessage(`{"invalid_parameter":42,"foo":"bar","other_invalid":false,"plan-defined-key":42}`)
 				viper.Set(DisableRequestPropertyValidation, true)
 				_, err := broker.Provision(context.Background(), fakeInstanceId, req, true)
 				failIfErr(t, "failed even though check was disabled", err)
@@ -1006,6 +1006,16 @@ func TestServiceBroker_Update(t *testing.T) {
 				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
 
 				assertEqual(t, "errors should match", errors.New("plan defined properties cannot be changed: other-plan-defined-key, plan-defined-key"), err)
+			},
+		},
+		"bad-request-invalid-parameter-disabled": {
+			ServiceState: StateProvisioned,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				req := stub.UpdateDetails()
+				req.RawParameters = json.RawMessage(`{"invalid_parameter":42,"foo":"bar","other_invalid":false,"plan-defined-key":42}`)
+				viper.Set(DisableRequestPropertyValidation, true)
+				_, err := broker.Update(context.Background(), fakeInstanceId, req, true)
+				failIfErr(t, "failed even though check was disabled", err)
 			},
 		},
 	}

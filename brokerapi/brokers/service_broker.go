@@ -699,16 +699,17 @@ func validateProvisionParameters(rawParams json.RawMessage, validUserInputFields
 		return ErrInvalidUserInput
 	}
 
-	err := validateNoPlanParametersOverrides(params, plan)
-	if err != nil {
-		return err
-	}
-
 	// As this is a new check we have feature-flagged it so that it can easily be disabled
 	// if it causes problems.
 	if !viper.GetBool(DisableRequestPropertyValidation) {
+		err := validateNoPlanParametersOverrides(params, plan)
+		if err != nil {
+			return err
+		}
+
 		return validateDefinedParams(params, validUserInputFields, validImportFields)
 	}
+
 	return nil
 }
 
