@@ -27,17 +27,13 @@ var _ = Describe("Brokerpaks", func() {
 		Expect(err).NotTo(HaveOccurred())
 		fixturesDir = path.Join(originalDir, "fixtures")
 
-		workDir, err = os.MkdirTemp("", "*-csb-test")
-		Expect(err).NotTo(HaveOccurred())
+		workDir = GinkgoT().TempDir()
 		err = os.Chdir(workDir)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
 	AfterEach(func() {
 		err := os.Chdir(originalDir)
-		Expect(err).NotTo(HaveOccurred())
-
-		err = os.RemoveAll(workDir)
 		Expect(err).NotTo(HaveOccurred())
 	})
 

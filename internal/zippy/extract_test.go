@@ -17,14 +17,7 @@ var _ = Describe("extraction", func() {
 		var tmpdir string
 
 		BeforeEach(func() {
-			var err error
-			tmpdir, err = os.MkdirTemp("", "test")
-			Expect(err).NotTo(HaveOccurred())
-		})
-
-		AfterEach(func() {
-			err := os.RemoveAll(tmpdir)
-			Expect(err).NotTo(HaveOccurred())
+			tmpdir = GinkgoT().TempDir()
 		})
 
 		It("can extract the whole zip", func() {
@@ -89,14 +82,7 @@ var _ = Describe("extraction", func() {
 		var tmpdir string
 
 		BeforeEach(func() {
-			var err error
-			tmpdir, err = os.MkdirTemp("", "test")
-			Expect(err).NotTo(HaveOccurred())
-		})
-
-		AfterEach(func() {
-			err := os.RemoveAll(tmpdir)
-			Expect(err).NotTo(HaveOccurred())
+			tmpdir = GinkgoT().TempDir()
 		})
 
 		It("can extract a file from the zip", func() {
