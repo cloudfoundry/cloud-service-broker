@@ -83,7 +83,8 @@ var _ = Describe("Brokerpaks", func() {
 
 			By("checking that the expected files are there", func() {
 				paths := []string{
-					"bin/linux/amd64/terraform",
+					"bin/linux/amd64/0.12.21/terraform",
+					"bin/linux/amd64/0.13.4/terraform",
 					"bin/linux/amd64/cloud-service-broker.linux",
 					"bin/linux/amd64/extrafile.sh",
 					"src/terraform.zip",

@@ -63,6 +63,86 @@ var _ = Describe("Parser", func() {
 		}))
 	})
 
+	When("there are multiple Terraform versions", func() {
+		It("can parse the manifest", func() {
+			m, err := manifest.Parse(fakeManifest(
+				withAdditionalEntry("terraform_binaries", map[string]interface{}{
+					"name":    "terraform",
+					"version": "1.1.5",
+					"default": false,
+				}),
+				withAdditionalEntry("terraform_binaries", map[string]interface{}{
+					"name":    "terraform",
+					"version": "1.1.6",
+					"default": true,
+				}),
+			))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(m.TerraformResources).To(ContainElements(
+				manifest.TerraformResource{
+					Name:    "terraform",
+					Version: "1.1.4",
+					Source:  "https://github.com/hashicorp/terraform/archive/v1.1.4.zip",
+					Default: false,
+				},
+				manifest.TerraformResource{
+					Name:    "terraform",
+					Version: "1.1.5",
+					Default: false,
+				},
+				manifest.TerraformResource{
+					Name:    "terraform",
+					Version: "1.1.6",
+					Default: true,
+				},
+			))
+		})
+
+		When("none are marked as default", func() {
+			It("fails", func() {
+				m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]interface{}{
+					"name":    "terraform",
+					"version": "1.1.5",
+					"default": false,
+				})))
+				Expect(err).To(MatchError("error validating manifest: multiple Terraform versions, but none marked as default: terraform_binaries"))
+				Expect(m).To(BeNil())
+			})
+		})
+
+		When("more than one is marked as default", func() {
+			It("fails", func() {
+				m, err := manifest.Parse(fakeManifest(
+					withAdditionalEntry("terraform_binaries", map[string]interface{}{
+						"name":    "terraform",
+						"version": "1.1.5",
+						"default": true,
+					}),
+					withAdditionalEntry("terraform_binaries", map[string]interface{}{
+						"name":    "terraform",
+						"version": "1.1.6",
+						"default": true,
+					}),
+				))
+				Expect(err).To(MatchError("error validating manifest: multiple Terraform versions, and multiple marked as default: terraform_binaries"))
+				Expect(m).To(BeNil())
+			})
+
+		})
+
+		When("there are duplicate versions", func() {
+			It("fails", func() {
+				m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]interface{}{
+					"name":    "terraform",
+					"version": "1.1.4",
+					"default": true,
+				})))
+				Expect(m).To(BeNil())
+				Expect(err).To(MatchError("error validating manifest: duplicated value, must be unique: 1.1.4: version"))
+			})
+		})
+	})
+
 	DescribeTable(
 		"missing fields",
 		func(field string) {
@@ -125,6 +205,19 @@ var _ = Describe("Parser", func() {
 			m, err := manifest.Parse(fakeManifest(with("foo", "bar")))
 
 			Expect(err).To(MatchError(ContainSubstring("field foo not found in type manifest.Manifest")))
+			Expect(m).To(BeNil())
+		})
+	})
+
+	When("the default flag is applied to something that isn't Terraform", func() {
+		It("fails", func() {
+			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]interface{}{
+				"name":    "terraform-provider-random",
+				"version": "3.1.0",
+				"source":  "https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip",
+				"default": true,
+			})))
+			Expect(err).To(MatchError(ContainSubstring("This field is only valid for `terraform`: terraform_binaries[2].default")))
 			Expect(m).To(BeNil())
 		})
 	})

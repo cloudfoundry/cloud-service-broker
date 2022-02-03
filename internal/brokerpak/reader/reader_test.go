@@ -3,6 +3,7 @@ package reader_test
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 
@@ -16,105 +17,150 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/pborman/uuid"
 )
 
 var _ = Describe("reader", func() {
 	Describe("ExtractPlatformBins", func() {
-		const terraformV13 = "0.13.0"
-
-		var (
-			err       error
-			binOutput string
-			pk        string
+		const (
+			terraformV12 = "0.12.0"
+			terraformV13 = "0.13.0"
 		)
 
-		BeforeEach(func() {
-			binOutput, err = os.MkdirTemp("/tmp", "brokerPakBinOutput")
-			Expect(err).NotTo(HaveOccurred())
+		Context("providers in terraform 0.12 and lower", func() {
+			It("extracts providers to same directory", func() {
+				pk := fakeBrokerpak(
+					withTerraform(terraformV12),
+					withProvider("terraform-provider-google-beta", "1.19.0", "x4"),
+					withProvider("terraform-provider-google", "1.19.0", "x5"),
+				)
+
+				pakReader, err := reader.OpenBrokerPak(pk)
+				Expect(err).NotTo(HaveOccurred())
+
+				binOutput := GinkgoT().TempDir()
+				Expect(pakReader.ExtractPlatformBins(binOutput)).NotTo(HaveOccurred())
+
+				Expect(filepath.Join(binOutput, "terraform-provider-google-beta_v1.19.0_x4")).To(BeAnExistingFile())
+				Expect(filepath.Join(binOutput, "terraform-provider-google_v1.19.0_x5")).To(BeAnExistingFile())
+			})
 		})
 
-		AfterEach(func() {
-			err := os.RemoveAll(pk)
-			Expect(err).NotTo(HaveOccurred())
+		Context("providers in terraform 0.13 and higher", func() {
+			It("extracts providers to a directory hierarchy", func() {
+				pk := fakeBrokerpak(
+					withTerraform(terraformV13),
+					withProvider("terraform-provider-google-beta", "1.19.0", "x4"),
+					withProvider("terraform-provider-google", "1.19.0", "x5"),
+				)
 
-			err = os.RemoveAll(binOutput)
-			Expect(err).NotTo(HaveOccurred())
+				pakReader, err := reader.OpenBrokerPak(pk)
+				Expect(err).NotTo(HaveOccurred())
+
+				binOutput := GinkgoT().TempDir()
+				Expect(pakReader.ExtractPlatformBins(binOutput)).NotTo(HaveOccurred())
+
+				plat := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
+				binOutput = filepath.Join(binOutput, "registry.terraform.io", "hashicorp")
+				Expect(filepath.Join(binOutput, "google-beta", "1.19.0", plat, "terraform-provider-google-beta_v1.19.0_x4")).To(BeAnExistingFile())
+				Expect(filepath.Join(binOutput, "google", "1.19.0", plat, "terraform-provider-google_v1.19.0_x5")).To(BeAnExistingFile())
+			})
 		})
 
-		When("Using Terraform v0.13", func() {
-			Context("multiple providers share same name and version", func() {
-				It("should return an error", func() {
-					pk, err = fakeBrokerPakWithDuplicateProviders(terraformV13)
-					Expect(err).NotTo(HaveOccurred())
-					pakReader, err := reader.OpenBrokerPak(pk)
-					Expect(err).NotTo(HaveOccurred())
+		Context("single version of terraform", func() {
+			It("extracts correctly", func() {
+				pk := fakeBrokerpak(
+					withTerraform(terraformV13),
+					withProvider("terraform-provider-google-beta", "1.19.0", "x4"),
+				)
 
-					err = pakReader.ExtractPlatformBins(binOutput)
+				pakReader, err := reader.OpenBrokerPak(pk)
+				Expect(err).NotTo(HaveOccurred())
 
-					filePrefix := fmt.Sprintf("bin/%s/%s", runtime.GOOS, runtime.GOARCH)
-					Expect(err).To(MatchError(fmt.Sprintf("multiple files found with prefix \"%[1]s/terraform-provider-google-beta_v1.19.0\": %[1]s/terraform-provider-google-beta_v1.19.0_x4, %[1]s/terraform-provider-google-beta_v1.19.0_x5", filePrefix)))
-				})
+				binOutput := GinkgoT().TempDir()
+				Expect(pakReader.ExtractPlatformBins(binOutput)).NotTo(HaveOccurred())
+
+				By("checking for the default version link")
+				details, err := os.Readlink(filepath.Join(binOutput, "terraform"))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(details).To(Equal("versions/0.13.0/terraform"))
+
+				By("checking that the link points to something")
+				Expect(filepath.Join(binOutput, "versions", terraformV13, "terraform")).To(BeAnExistingFile())
 			})
+		})
 
-			Context("terraform-provider in manifest not found in zip", func() {
-				It("should return an error", func() {
-					pk, err = fakeBrokerPakWithMissingTerraformProvider(terraformV13)
-					Expect(err).NotTo(HaveOccurred())
-					pakReader, err := reader.OpenBrokerPak(pk)
-					Expect(err).NotTo(HaveOccurred())
+		Context("multiple terraform versions", func() {
+			It("extracts terraform versions into different directories", func() {
+				pk := fakeBrokerpak(
+					withTerraform(terraformV12),
+					withTerraform(terraformV13),
+					withDefaultTerraform("1.1.1"),
+					withProvider("terraform-provider-google-beta", "1.19.0", "x4"),
+				)
 
-					err = pakReader.ExtractPlatformBins(binOutput)
-					Expect(err).To(MatchError(fmt.Sprintf("file with prefix \"bin/%s/%s/terraform-provider-google-beta_v1.19.0\" not found in zip", runtime.GOOS, runtime.GOARCH)))
-				})
+				pakReader, err := reader.OpenBrokerPak(pk)
+				Expect(err).NotTo(HaveOccurred())
+
+				binOutput := GinkgoT().TempDir()
+				Expect(pakReader.ExtractPlatformBins(binOutput)).NotTo(HaveOccurred())
+
+				By("checking for the default version")
+				details, err := os.Readlink(filepath.Join(binOutput, "terraform"))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(details).To(Equal("versions/1.1.1/terraform"))
+
+				By("checking for all the versions")
+				Expect(filepath.Join(binOutput, "versions", terraformV12, "terraform")).To(BeAnExistingFile())
+				Expect(filepath.Join(binOutput, "versions", terraformV13, "terraform")).To(BeAnExistingFile())
+				Expect(filepath.Join(binOutput, "versions", "1.1.1", "terraform")).To(BeAnExistingFile())
 			})
+		})
 
-			Context("provider in manifest not found in zip", func() {
-				It("should return an error", func() {
-					pk, err = fakeBrokerPakWithMissingProvider(terraformV13)
-					Expect(err).NotTo(HaveOccurred())
-					pakReader, err := reader.OpenBrokerPak(pk)
-					Expect(err).NotTo(HaveOccurred())
+		Context("multiple providers share same name and version", func() {
+			It("should return an error", func() {
+				pk := fakeBrokerpak(
+					withTerraform(terraformV13),
+					withProvider("terraform-provider-google-beta", "1.19.0", "x4"),
+					withProvider("terraform-provider-google-beta", "1.19.0", "x5"),
+				)
 
-					err = pakReader.ExtractPlatformBins(binOutput)
+				pakReader, err := reader.OpenBrokerPak(pk)
+				Expect(err).NotTo(HaveOccurred())
 
-					filePrefix := fmt.Sprintf("bin/%s/%s", runtime.GOOS, runtime.GOARCH)
-					Expect(err).To(MatchError(fmt.Errorf(
-						"error extracting %q to %q: %w",
-						fmt.Sprintf("%s/some-provider", filePrefix),
-						binOutput,
-						fmt.Errorf("file \"%s/some-provider\" does not exist in the zip", filePrefix))))
-				})
+				filePrefix := fmt.Sprintf("bin/%s/%s", runtime.GOOS, runtime.GOARCH)
+				binOutput := GinkgoT().TempDir()
+
+				err = pakReader.ExtractPlatformBins(binOutput)
+				Expect(err).To(MatchError(fmt.Sprintf("multiple files found with prefix \"%[1]s/terraform-provider-google-beta_v1.19.0\": %[1]s/terraform-provider-google-beta_v1.19.0_x4, %[1]s/terraform-provider-google-beta_v1.19.0_x5", filePrefix)))
+			})
+		})
+
+		Context("terraform provider in manifest not found in zip", func() {
+			It("should return an error", func() {
+				pk := fakeBrokerpak(
+					withTerraform(terraformV13),
+					withMissingProvider("terraform-provider-google-beta", "1.19.0"),
+				)
+
+				pakReader, err := reader.OpenBrokerPak(pk)
+				Expect(err).NotTo(HaveOccurred())
+
+				binOutput := GinkgoT().TempDir()
+				err = pakReader.ExtractPlatformBins(binOutput)
+				Expect(err).To(MatchError(fmt.Sprintf(`file with prefix "bin/%s/%s/terraform-provider-google-beta_v1.19.0" not found in zip`, runtime.GOOS, runtime.GOARCH)))
 			})
 		})
 	})
 })
 
-func fakeBrokerPakWithDuplicateProviders(terraformVersion string) (string, error) {
-	dir, err := os.MkdirTemp("", "fakepak")
-	if err != nil {
-		return "", err
-	}
-	defer os.RemoveAll(dir)
+type option func(dir string, m *manifest.Manifest)
 
-	tfSrc := filepath.Join(dir, "terraform")
-	if err := stream.Copy(stream.FromString("dummy-file"), stream.ToFile(tfSrc)); err != nil {
-		return "", err
-	}
+func fakeBrokerpak(opts ...option) string {
+	dir := GinkgoT().TempDir()
 
-	providerOneSrc := filepath.Join(dir, "terraform-provider-google-beta_v1.19.0_x5")
-	if err := stream.Copy(stream.FromString("dummy-file"), stream.ToFile(providerOneSrc)); err != nil {
-		return "", err
-	}
-
-	providerTwoSrc := filepath.Join(dir, "terraform-provider-google-beta_v1.19.0_x4")
-	if err := stream.Copy(stream.FromString("dummy-file"), stream.ToFile(providerTwoSrc)); err != nil {
-		return "", err
-	}
-
-	exampleManifest := &manifest.Manifest{
+	m := &manifest.Manifest{
 		PackVersion: 1,
-		Name:        "my-services-pack",
+		Name:        "fake-brokerpack",
 		Version:     "1.0.0",
 		Metadata: map[string]string{
 			"author": "me@example.com",
@@ -123,27 +169,6 @@ func fakeBrokerPakWithDuplicateProviders(terraformVersion string) (string, error
 			{Os: "linux", Arch: "amd64"},
 			{Os: "darwin", Arch: "amd64"},
 		},
-		// These resources are stubbed with a local dummy file
-		TerraformResources: []manifest.TerraformResource{
-			{
-				Name:        "terraform",
-				Version:     terraformVersion,
-				Source:      tfSrc,
-				URLTemplate: tfSrc,
-			},
-			{
-				Name:        "terraform-provider-google-beta",
-				Version:     "1.19.0",
-				Source:      providerOneSrc,
-				URLTemplate: providerOneSrc,
-			},
-			{
-				Name:        "terraform-provider-google-beta",
-				Version:     "1.19.0",
-				Source:      providerTwoSrc,
-				URLTemplate: providerTwoSrc,
-			},
-		},
 		ServiceDefinitions: []string{"example-service-definition.yml"},
 		Parameters: []manifest.Parameter{
 			{Name: "TEST_PARAM", Description: "An example paramater that will be injected into Terraform's environment variables."},
@@ -151,144 +176,74 @@ func fakeBrokerPakWithDuplicateProviders(terraformVersion string) (string, error
 		EnvConfigMapping: map[string]string{"ENV_VAR": "env.var"},
 	}
 
-	if err := stream.Copy(stream.FromYaml(exampleManifest), stream.ToFile(dir, "manifest.yml")); err != nil {
-		return "", err
+	for _, o := range opts {
+		o(dir, m)
 	}
 
-	for _, path := range exampleManifest.ServiceDefinitions {
-		if err := stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition()), stream.ToFile(dir, path)); err != nil {
-			return "", err
-		}
+	Expect(stream.Copy(stream.FromYaml(m), stream.ToFile(dir, "manifest.yml"))).NotTo(HaveOccurred())
+
+	for _, path := range m.ServiceDefinitions {
+		Expect(stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition()), stream.ToFile(dir, path))).NotTo(HaveOccurred())
 	}
 
-	packName := fmt.Sprintf("/tmp/%v-%s-%s.brokerpak", uuid.New(), exampleManifest.Name, "1.0.0")
-	return packName, packer.Pack(exampleManifest, dir, packName)
+	packName := path.Join(GinkgoT().TempDir(), "fake.brokerpak")
+	Expect(packer.Pack(m, dir, packName)).NotTo(HaveOccurred())
+	return packName
 }
 
-func fakeBrokerPakWithMissingTerraformProvider(terraformVersion string) (string, error) {
-	dir, err := os.MkdirTemp("", "fakepak")
-	if err != nil {
-		return "", err
-	}
-	defer os.RemoveAll(dir)
+func withTerraform(tfVersion string) option {
+	return func(dir string, m *manifest.Manifest) {
+		fakeFile := filepath.Join(dir, "terraform")
+		Expect(stream.Copy(stream.FromString(tfVersion), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
-	tfSrc := filepath.Join(dir, "terraform")
-	if err := stream.Copy(stream.FromString("dummy-file"), stream.ToFile(tfSrc)); err != nil {
-		return "", err
+		m.TerraformResources = append(m.TerraformResources, manifest.TerraformResource{
+			Name:        "terraform",
+			Version:     tfVersion,
+			Source:      fakeFile,
+			URLTemplate: fakeFile,
+		})
 	}
-
-	providerOneSrc := filepath.Join(dir, "some_other_provider_v1.19.0_x5")
-	if err := stream.Copy(stream.FromString("dummy-file"), stream.ToFile(providerOneSrc)); err != nil {
-		return "", err
-	}
-
-	exampleManifest := &manifest.Manifest{
-		PackVersion: 1,
-		Name:        "my-services-pack",
-		Version:     "1.0.0",
-		Metadata: map[string]string{
-			"author": "me@example.com",
-		},
-		Platforms: []platform.Platform{
-			{Os: "linux", Arch: "amd64"},
-			{Os: "darwin", Arch: "amd64"},
-		},
-		// These resources are stubbed with a local dummy file
-		TerraformResources: []manifest.TerraformResource{
-			{
-				Name:        "terraform",
-				Version:     terraformVersion,
-				Source:      tfSrc,
-				URLTemplate: tfSrc,
-			},
-			{
-				Name:        "terraform-provider-google-beta",
-				Version:     "1.19.0",
-				Source:      providerOneSrc,
-				URLTemplate: providerOneSrc,
-			},
-		},
-		ServiceDefinitions: []string{"example-service-definition.yml"},
-		Parameters: []manifest.Parameter{
-			{Name: "TEST_PARAM", Description: "An example paramater that will be injected into Terraform's environment variables."},
-		},
-		EnvConfigMapping: map[string]string{"ENV_VAR": "env.var"},
-	}
-
-	if err := stream.Copy(stream.FromYaml(exampleManifest), stream.ToFile(dir, "manifest.yml")); err != nil {
-		return "", err
-	}
-
-	for _, path := range exampleManifest.ServiceDefinitions {
-		if err := stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition()), stream.ToFile(dir, path)); err != nil {
-			return "", err
-		}
-	}
-
-	packName := fmt.Sprintf("/tmp/%v-%s-%s.brokerpak", uuid.New(), exampleManifest.Name, "1.0.0")
-	return packName, packer.Pack(exampleManifest, dir, packName)
 }
 
-func fakeBrokerPakWithMissingProvider(terraformVersion string) (string, error) {
-	dir, err := os.MkdirTemp("", "fakepak")
-	if err != nil {
-		return "", err
-	}
-	defer os.RemoveAll(dir)
+func withDefaultTerraform(tfVersion string) option {
+	return func(dir string, m *manifest.Manifest) {
+		fakeFile := filepath.Join(dir, "terraform")
+		Expect(stream.Copy(stream.FromString(tfVersion), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
-	tfSrc := filepath.Join(dir, "terraform")
-	if err := stream.Copy(stream.FromString("dummy-file"), stream.ToFile(tfSrc)); err != nil {
-		return "", err
+		m.TerraformResources = append(m.TerraformResources, manifest.TerraformResource{
+			Name:        "terraform",
+			Version:     tfVersion,
+			Source:      fakeFile,
+			URLTemplate: fakeFile,
+			Default:     true,
+		})
 	}
+}
 
-	providerOneSrc := filepath.Join(dir, "some_other_provider_v1.19.0_x5")
-	if err := stream.Copy(stream.FromString("dummy-file"), stream.ToFile(providerOneSrc)); err != nil {
-		return "", err
+func withProvider(name, providerVersion, suffix string) option {
+	return func(dir string, m *manifest.Manifest) {
+		fakeFile := filepath.Join(dir, fmt.Sprintf("%s_v%s_%s", name, providerVersion, suffix))
+		Expect(stream.Copy(stream.FromString("dummy-file"), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
+
+		m.TerraformResources = append(m.TerraformResources, manifest.TerraformResource{
+			Name:        name,
+			Version:     providerVersion,
+			Source:      fakeFile,
+			URLTemplate: fakeFile,
+		})
 	}
+}
 
-	exampleManifest := &manifest.Manifest{
-		PackVersion: 1,
-		Name:        "my-services-pack",
-		Version:     "1.0.0",
-		Metadata: map[string]string{
-			"author": "me@example.com",
-		},
-		Platforms: []platform.Platform{
-			{Os: "linux", Arch: "amd64"},
-			{Os: "darwin", Arch: "amd64"},
-		},
-		// These resources are stubbed with a local dummy file
-		TerraformResources: []manifest.TerraformResource{
-			{
-				Name:        "terraform",
-				Version:     terraformVersion,
-				Source:      tfSrc,
-				URLTemplate: tfSrc,
-			},
-			{
-				Name:        "some-provider",
-				Version:     "1.19.0",
-				Source:      providerOneSrc,
-				URLTemplate: providerOneSrc,
-			},
-		},
-		ServiceDefinitions: []string{"example-service-definition.yml"},
-		Parameters: []manifest.Parameter{
-			{Name: "TEST_PARAM", Description: "An example paramater that will be injected into Terraform's environment variables."},
-		},
-		EnvConfigMapping: map[string]string{"ENV_VAR": "env.var"},
+func withMissingProvider(name, providerVersion string) option {
+	return func(dir string, m *manifest.Manifest) {
+		fakeFile := filepath.Join(dir, "file-name-does-not-match")
+		Expect(stream.Copy(stream.FromString("dummy-file"), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
+
+		m.TerraformResources = append(m.TerraformResources, manifest.TerraformResource{
+			Name:        name,
+			Version:     providerVersion,
+			Source:      fakeFile,
+			URLTemplate: fakeFile,
+		})
 	}
-
-	if err := stream.Copy(stream.FromYaml(exampleManifest), stream.ToFile(dir, "manifest.yml")); err != nil {
-		return "", err
-	}
-
-	for _, path := range exampleManifest.ServiceDefinitions {
-		if err := stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition()), stream.ToFile(dir, path)); err != nil {
-			return "", err
-		}
-	}
-
-	packName := fmt.Sprintf("/tmp/%v-%s-%s.brokerpak", uuid.New(), exampleManifest.Name, "1.0.0")
-	return packName, packer.Pack(exampleManifest, dir, packName)
 }

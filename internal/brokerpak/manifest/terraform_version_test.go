@@ -7,12 +7,12 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("GetTerraformVersion", func() {
+var _ = Describe("DefaultTerraformVersion", func() {
 	It("returns terraform version", func() {
 		m, err := manifest.Parse(fakeManifest())
 		Expect(err).NotTo(HaveOccurred())
 
-		actualVersion, err := m.GetTerraformVersion()
+		actualVersion, err := m.DefaultTerraformVersion()
 		Expect(err).NotTo(HaveOccurred())
 		Expect(actualVersion).To(Equal(version.Must(version.NewVersion("1.1.4"))))
 	})
@@ -28,16 +28,38 @@ var _ = Describe("GetTerraformVersion", func() {
 			},
 		}
 
-		_, err := exampleManifest.GetTerraformVersion()
+		_, err := exampleManifest.DefaultTerraformVersion()
 		Expect(err).To(MatchError("Malformed version: non-semver"))
 	})
 
-	It("it returns error when it cant find terraform version", func() {
+	It("it returns error when it can't find terraform version", func() {
 		exampleManifest := manifest.Manifest{
 			TerraformResources: []manifest.TerraformResource{},
 		}
 
-		_, err := exampleManifest.GetTerraformVersion()
-		Expect(err).To(MatchError("terraform provider not found"))
+		_, err := exampleManifest.DefaultTerraformVersion()
+		Expect(err).To(MatchError("terraform not found"))
+	})
+
+	When("there is more than one terraform version", func() {
+		It("returns the default version", func() {
+			m, err := manifest.Parse(fakeManifest(
+				withAdditionalEntry("terraform_binaries", map[string]interface{}{
+					"name":    "terraform",
+					"version": "1.1.5",
+					"default": false,
+				}),
+				withAdditionalEntry("terraform_binaries", map[string]interface{}{
+					"name":    "terraform",
+					"version": "1.1.6",
+					"default": true,
+				}),
+			))
+			Expect(err).NotTo(HaveOccurred())
+
+			actualVersion, err := m.DefaultTerraformVersion()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(actualVersion).To(Equal(version.Must(version.NewVersion("1.1.6"))))
+		})
 	})
 })
