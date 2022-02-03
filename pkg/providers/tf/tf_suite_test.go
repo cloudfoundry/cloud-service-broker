@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestEncryption(t *testing.T) {
+func TestTF(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "TF provider Suite")
+	RunSpecs(t, "TF Suite")
 }
