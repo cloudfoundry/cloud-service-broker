@@ -34,9 +34,11 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
 )
 
+const manifestName = "manifest.yml"
+
 // Init initializes a new brokerpak in the given directory with an example manifest and service definition.
 func Init(directory string) error {
-	exampleManifest := NewExampleManifest()
+	exampleManifest := manifest.NewExampleManifest()
 	if err := stream.Copy(stream.FromYaml(exampleManifest), stream.ToFile(directory, manifestName)); err != nil {
 		return err
 	}

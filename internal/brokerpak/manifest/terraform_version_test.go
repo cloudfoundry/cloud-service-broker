@@ -9,7 +9,7 @@ import (
 
 var _ = Describe("GetTerraformVersion", func() {
 	It("returns terraform version", func() {
-		m, err := test(testManifest)
+		m, err := manifest.Parse(fakeManifest())
 		Expect(err).NotTo(HaveOccurred())
 
 		actualVersion, err := m.GetTerraformVersion()

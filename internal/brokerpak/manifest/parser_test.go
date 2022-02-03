@@ -12,12 +12,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-//go:embed test_manifest.yaml
-var testManifest string
-
 var _ = Describe("Parser", func() {
 	It("can parse a manifest", func() {
-		m, err := test(testManifest)
+		m, err := manifest.Parse(fakeManifest())
+
 		Expect(err).NotTo(HaveOccurred())
 		Expect(m).To(Equal(&manifest.Manifest{
 			PackVersion: 1,
@@ -68,7 +66,8 @@ var _ = Describe("Parser", func() {
 	DescribeTable(
 		"missing fields",
 		func(field string) {
-			m, err := test(testManifest, without(field))
+			m, err := manifest.Parse(fakeManifest(without(field)))
+
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("missing field(s): %s", field))))
 			Expect(m).To(BeNil())
 		},
@@ -81,7 +80,8 @@ var _ = Describe("Parser", func() {
 
 	DescribeTable("missing platform data",
 		func(insert string, value map[string]interface{}) {
-			m, err := test(testManifest, withAdditionalEntry("platforms", value))
+			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("platforms", value)))
+
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("missing field(s): %s", insert))))
 			Expect(m).To(BeNil())
 		},
@@ -91,7 +91,8 @@ var _ = Describe("Parser", func() {
 
 	DescribeTable("missing terraform binary data",
 		func(insert string, value map[string]interface{}) {
-			m, err := test(testManifest, withAdditionalEntry("terraform_binaries", value))
+			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", value)))
+
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("missing field(s): %s", insert))))
 			Expect(m).To(BeNil())
 		},
@@ -101,7 +102,8 @@ var _ = Describe("Parser", func() {
 
 	DescribeTable("missing parameter data",
 		func(insert string, value map[string]interface{}) {
-			m, err := test(testManifest, withAdditionalEntry("parameters", value))
+			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("parameters", value)))
+
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("missing field(s): %s", insert))))
 			Expect(m).To(BeNil())
 		},
@@ -111,7 +113,8 @@ var _ = Describe("Parser", func() {
 
 	When("the packversion is invalid", func() {
 		It("fails", func() {
-			m, err := test(testManifest, with("packversion", 2))
+			m, err := manifest.Parse(fakeManifest(with("packversion", 2)))
+
 			Expect(err).To(MatchError(ContainSubstring("invalid value: 2: packversion")))
 			Expect(m).To(BeNil())
 		})
@@ -119,18 +122,22 @@ var _ = Describe("Parser", func() {
 
 	When("there are unknown fields", func() {
 		It("fails", func() {
-			m, err := test(testManifest, with("foo", "bar"))
+			m, err := manifest.Parse(fakeManifest(with("foo", "bar")))
+
 			Expect(err).To(MatchError(ContainSubstring("field foo not found in type manifest.Manifest")))
 			Expect(m).To(BeNil())
 		})
 	})
 })
 
+//go:embed test_manifest.yaml
+var testManifest string
+
 type option func(map[string]interface{})
 
-func test(input string, opts ...option) (*manifest.Manifest, error) {
+func fakeManifest(opts ...option) []byte {
 	var receiver map[string]interface{}
-	err := yaml.Unmarshal([]byte(input), &receiver)
+	err := yaml.Unmarshal([]byte(testManifest), &receiver)
 	Expect(err).NotTo(HaveOccurred())
 
 	for _, o := range opts {
@@ -139,7 +146,7 @@ func test(input string, opts ...option) (*manifest.Manifest, error) {
 
 	marshalled, err := yaml.Marshal(receiver)
 	Expect(err).NotTo(HaveOccurred())
-	return manifest.Parse(marshalled)
+	return marshalled
 }
 
 func without(field string) option {
