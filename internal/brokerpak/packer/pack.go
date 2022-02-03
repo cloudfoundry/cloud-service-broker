@@ -69,10 +69,15 @@ func packSources(m *manifest.Manifest, tmp string) error {
 
 func packBinaries(m *manifest.Manifest, tmp string) error {
 	for _, platform := range m.Platforms {
-		platformPath := filepath.Join(tmp, "bin", platform.Os, platform.Arch)
 		for _, resource := range m.TerraformResources {
-			log.Println("\t", brokerpakurl.URL(resource, platform), "->", platformPath)
-			if err := getter.GetAny(platformPath, brokerpakurl.URL(resource, platform)); err != nil {
+			p := filepath.Join(tmp, "bin", platform.Os, platform.Arch)
+
+			if resource.Name == "terraform" {
+				p = filepath.Join(p, resource.Version)
+			}
+
+			log.Println("\t", brokerpakurl.URL(resource, platform), "->", p)
+			if err := getter.GetAny(p, brokerpakurl.URL(resource, platform)); err != nil {
 				return err
 			}
 		}

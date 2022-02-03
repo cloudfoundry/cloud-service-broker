@@ -135,7 +135,7 @@ func (r *Registrar) createExecutor(brokerPak *reader.BrokerPakReader, vc *varcon
 	if err != nil {
 		return nil, err
 	}
-	tfVersion, err := manifest.GetTerraformVersion()
+	tfVersion, err := manifest.DefaultTerraformVersion()
 	if err != nil {
 		return nil, err
 	}

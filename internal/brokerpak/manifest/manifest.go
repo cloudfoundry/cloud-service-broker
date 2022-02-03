@@ -28,6 +28,7 @@ func (m *Manifest) Validate() (errs *validation.FieldError) {
 		m.validateVersion,
 		m.validatePlatforms,
 		m.validateTerraformResources,
+		m.validateTerraforms,
 		m.validateServiceDefinitions,
 		m.validateParameters,
 	}
@@ -81,6 +82,37 @@ func (m *Manifest) validateTerraformResources() *validation.FieldError {
 	var errs *validation.FieldError
 	for i, resource := range m.TerraformResources {
 		errs = errs.Also(resource.Validate().ViaFieldIndex("terraform_binaries", i))
+	}
+
+	return errs
+}
+
+func (m *Manifest) validateTerraforms() (errs *validation.FieldError) {
+	cache := make(map[string]struct{})
+	count := 0
+	defaults := 0
+	for _, resource := range m.TerraformResources {
+		if resource.Name == "terraform" {
+			count++
+			if resource.Default {
+				defaults++
+			}
+
+			errs = errs.Also(validation.ErrIfDuplicate(resource.Version, "version", cache))
+		}
+	}
+
+	switch {
+	case count > 1 && defaults == 0:
+		errs = errs.Also(&validation.FieldError{
+			Message: "multiple Terraform versions, but none marked as default",
+			Paths:   []string{"terraform_binaries"},
+		})
+	case count > 1 && defaults > 1:
+		errs = errs.Also(&validation.FieldError{
+			Message: "multiple Terraform versions, and multiple marked as default",
+			Paths:   []string{"terraform_binaries"},
+		})
 	}
 
 	return errs
