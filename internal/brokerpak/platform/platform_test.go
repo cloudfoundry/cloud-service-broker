@@ -12,34 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package brokerpak
+package platform_test
 
 import (
 	"errors"
 	"fmt"
 	"testing"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 )
 
 func ExamplePlatform_String() {
-	p := Platform{Os: "bsd", Arch: "amd64"}
+	p := platform.Platform{Os: "bsd", Arch: "amd64"}
 	fmt.Println(p.String())
 
 	// Output: bsd/amd64
 }
 
 func ExamplePlatform_Equals() {
-	p := Platform{Os: "beos", Arch: "webasm"}
+	p := platform.Platform{Os: "beos", Arch: "webasm"}
 	fmt.Println(p.Equals(p))
-	fmt.Println(p.Equals(CurrentPlatform()))
+	fmt.Println(p.Equals(platform.CurrentPlatform()))
 
 	// Output: true
 	// false
 }
 
 func ExamplePlatform_MatchesCurrent() {
-	fmt.Println(CurrentPlatform().MatchesCurrent())
+	fmt.Println(platform.CurrentPlatform().MatchesCurrent())
 
 	// Output: true
 }
@@ -47,11 +48,11 @@ func ExamplePlatform_MatchesCurrent() {
 func TestPlatform_Validate(t *testing.T) {
 	cases := map[string]validation.ValidatableTest{
 		"blank obj": {
-			Object: &Platform{},
+			Object: &platform.Platform{},
 			Expect: errors.New("missing field(s): arch, os"),
 		},
 		"good obj": {
-			Object: &Platform{
+			Object: &platform.Platform{
 				Os:   "linux",
 				Arch: "amd64",
 			},
