@@ -1,0 +1,30 @@
+packversion: 1
+name: gcp-services
+version: 0.1.0
+metadata:
+  author: VMware
+platforms:
+  - os: linux
+    arch: amd64
+  - os: darwin
+    arch: amd64
+terraform_binaries:
+  - name: terraform
+    version: 1.1.4
+    source: https://github.com/hashicorp/terraform/archive/v1.1.4.zip
+  - name: terraform-provider-random
+    version: 3.1.0
+    source: https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip
+env_config_mapping:
+  GOOGLE_CREDENTIALS: gcp.credentials
+  GOOGLE_PROJECT: gcp.project
+service_definitions:
+  - google-storage.yml
+  - google-redis.yml
+  - google-mysql.yml
+required_env_variables:
+  - FOO
+  - BAR
+parameters:
+  - name: param1
+    description: something about the parameter

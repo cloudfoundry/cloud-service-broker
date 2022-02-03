@@ -22,6 +22,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
 )
@@ -38,34 +40,34 @@ func fakeBrokerpak() (string, error) {
 		return "", err
 	}
 
-	exampleManifest := &Manifest{
+	exampleManifest := &manifest.Manifest{
 		PackVersion: 1,
 		Name:        "my-services-pack",
 		Version:     "1.0.0",
 		Metadata: map[string]string{
 			"author": "me@example.com",
 		},
-		Platforms: []Platform{
+		Platforms: []platform.Platform{
 			{Os: "linux", Arch: "amd64"},
 			{Os: "darwin", Arch: "amd64"},
 		},
 		// These resources are stubbed with a local dummy file
-		TerraformResources: []TerraformResource{
+		TerraformResources: []manifest.TerraformResource{
 			{
 				Name:        "terraform",
 				Version:     "0.12.0",
 				Source:      tfSrc,
-				UrlTemplate: tfSrc,
+				URLTemplate: tfSrc,
 			},
 			{
 				Name:        "terraform-provider-google-beta",
 				Version:     "1.19.0",
 				Source:      tfSrc,
-				UrlTemplate: tfSrc,
+				URLTemplate: tfSrc,
 			},
 		},
 		ServiceDefinitions: []string{"example-service-definition.yml"},
-		Parameters: []ManifestParameter{
+		Parameters: []manifest.Parameter{
 			{Name: "TEST_PARAM", Description: "An example paramater that will be injected into Terraform's environment variables."},
 		},
 		EnvConfigMapping: map[string]string{"ENV_VAR": "env.var"},

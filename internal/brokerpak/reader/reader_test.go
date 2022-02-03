@@ -1,4 +1,4 @@
-package brokerpak_test
+package reader_test
 
 import (
 	"fmt"
@@ -6,23 +6,28 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/pborman/uuid"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/reader"
 
-	. "github.com/onsi/gomega"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/platform"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/packer"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
-
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/brokerpak"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
 	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"github.com/pborman/uuid"
 )
 
 var _ = Describe("reader", func() {
 	Describe("ExtractPlatformBins", func() {
 		const terraformV13 = "0.13.0"
-		var err error
-		var binOutput string
-		var pk string
+
+		var (
+			err       error
+			binOutput string
+			pk        string
+		)
 
 		BeforeEach(func() {
 			binOutput, err = os.MkdirTemp("/tmp", "brokerPakBinOutput")
@@ -42,7 +47,7 @@ var _ = Describe("reader", func() {
 				It("should return an error", func() {
 					pk, err = fakeBrokerPakWithDuplicateProviders(terraformV13)
 					Expect(err).NotTo(HaveOccurred())
-					pakReader, err := brokerpak.OpenBrokerPak(pk)
+					pakReader, err := reader.OpenBrokerPak(pk)
 					Expect(err).NotTo(HaveOccurred())
 
 					err = pakReader.ExtractPlatformBins(binOutput)
@@ -51,22 +56,24 @@ var _ = Describe("reader", func() {
 					Expect(err).To(MatchError(fmt.Sprintf("multiple files found with prefix \"%[1]s/terraform-provider-google-beta_v1.19.0\": %[1]s/terraform-provider-google-beta_v1.19.0_x4, %[1]s/terraform-provider-google-beta_v1.19.0_x5", filePrefix)))
 				})
 			})
+
 			Context("terraform-provider in manifest not found in zip", func() {
 				It("should return an error", func() {
 					pk, err = fakeBrokerPakWithMissingTerraformProvider(terraformV13)
 					Expect(err).NotTo(HaveOccurred())
-					pakReader, err := brokerpak.OpenBrokerPak(pk)
+					pakReader, err := reader.OpenBrokerPak(pk)
 					Expect(err).NotTo(HaveOccurred())
 
 					err = pakReader.ExtractPlatformBins(binOutput)
 					Expect(err).To(MatchError(fmt.Sprintf("file with prefix \"bin/%s/%s/terraform-provider-google-beta_v1.19.0\" not found in zip", runtime.GOOS, runtime.GOARCH)))
 				})
 			})
+
 			Context("provider in manifest not found in zip", func() {
 				It("should return an error", func() {
 					pk, err = fakeBrokerPakWithMissingProvider(terraformV13)
 					Expect(err).NotTo(HaveOccurred())
-					pakReader, err := brokerpak.OpenBrokerPak(pk)
+					pakReader, err := reader.OpenBrokerPak(pk)
 					Expect(err).NotTo(HaveOccurred())
 
 					err = pakReader.ExtractPlatformBins(binOutput)
@@ -105,40 +112,40 @@ func fakeBrokerPakWithDuplicateProviders(terraformVersion string) (string, error
 		return "", err
 	}
 
-	exampleManifest := &brokerpak.Manifest{
+	exampleManifest := &manifest.Manifest{
 		PackVersion: 1,
 		Name:        "my-services-pack",
 		Version:     "1.0.0",
 		Metadata: map[string]string{
 			"author": "me@example.com",
 		},
-		Platforms: []brokerpak.Platform{
+		Platforms: []platform.Platform{
 			{Os: "linux", Arch: "amd64"},
 			{Os: "darwin", Arch: "amd64"},
 		},
 		// These resources are stubbed with a local dummy file
-		TerraformResources: []brokerpak.TerraformResource{
+		TerraformResources: []manifest.TerraformResource{
 			{
 				Name:        "terraform",
 				Version:     terraformVersion,
 				Source:      tfSrc,
-				UrlTemplate: tfSrc,
+				URLTemplate: tfSrc,
 			},
 			{
 				Name:        "terraform-provider-google-beta",
 				Version:     "1.19.0",
 				Source:      providerOneSrc,
-				UrlTemplate: providerOneSrc,
+				URLTemplate: providerOneSrc,
 			},
 			{
 				Name:        "terraform-provider-google-beta",
 				Version:     "1.19.0",
 				Source:      providerTwoSrc,
-				UrlTemplate: providerTwoSrc,
+				URLTemplate: providerTwoSrc,
 			},
 		},
 		ServiceDefinitions: []string{"example-service-definition.yml"},
-		Parameters: []brokerpak.ManifestParameter{
+		Parameters: []manifest.Parameter{
 			{Name: "TEST_PARAM", Description: "An example paramater that will be injected into Terraform's environment variables."},
 		},
 		EnvConfigMapping: map[string]string{"ENV_VAR": "env.var"},
@@ -155,8 +162,9 @@ func fakeBrokerPakWithDuplicateProviders(terraformVersion string) (string, error
 	}
 
 	packName := fmt.Sprintf("/tmp/%v-%s-%s.brokerpak", uuid.New(), exampleManifest.Name, "1.0.0")
-	return packName, exampleManifest.Pack(dir, packName)
+	return packName, packer.Pack(exampleManifest, dir, packName)
 }
+
 func fakeBrokerPakWithMissingTerraformProvider(terraformVersion string) (string, error) {
 	dir, err := os.MkdirTemp("", "fakepak")
 	if err != nil {
@@ -174,34 +182,34 @@ func fakeBrokerPakWithMissingTerraformProvider(terraformVersion string) (string,
 		return "", err
 	}
 
-	exampleManifest := &brokerpak.Manifest{
+	exampleManifest := &manifest.Manifest{
 		PackVersion: 1,
 		Name:        "my-services-pack",
 		Version:     "1.0.0",
 		Metadata: map[string]string{
 			"author": "me@example.com",
 		},
-		Platforms: []brokerpak.Platform{
+		Platforms: []platform.Platform{
 			{Os: "linux", Arch: "amd64"},
 			{Os: "darwin", Arch: "amd64"},
 		},
 		// These resources are stubbed with a local dummy file
-		TerraformResources: []brokerpak.TerraformResource{
+		TerraformResources: []manifest.TerraformResource{
 			{
 				Name:        "terraform",
 				Version:     terraformVersion,
 				Source:      tfSrc,
-				UrlTemplate: tfSrc,
+				URLTemplate: tfSrc,
 			},
 			{
 				Name:        "terraform-provider-google-beta",
 				Version:     "1.19.0",
 				Source:      providerOneSrc,
-				UrlTemplate: providerOneSrc,
+				URLTemplate: providerOneSrc,
 			},
 		},
 		ServiceDefinitions: []string{"example-service-definition.yml"},
-		Parameters: []brokerpak.ManifestParameter{
+		Parameters: []manifest.Parameter{
 			{Name: "TEST_PARAM", Description: "An example paramater that will be injected into Terraform's environment variables."},
 		},
 		EnvConfigMapping: map[string]string{"ENV_VAR": "env.var"},
@@ -218,8 +226,9 @@ func fakeBrokerPakWithMissingTerraformProvider(terraformVersion string) (string,
 	}
 
 	packName := fmt.Sprintf("/tmp/%v-%s-%s.brokerpak", uuid.New(), exampleManifest.Name, "1.0.0")
-	return packName, exampleManifest.Pack(dir, packName)
+	return packName, packer.Pack(exampleManifest, dir, packName)
 }
+
 func fakeBrokerPakWithMissingProvider(terraformVersion string) (string, error) {
 	dir, err := os.MkdirTemp("", "fakepak")
 	if err != nil {
@@ -237,34 +246,34 @@ func fakeBrokerPakWithMissingProvider(terraformVersion string) (string, error) {
 		return "", err
 	}
 
-	exampleManifest := &brokerpak.Manifest{
+	exampleManifest := &manifest.Manifest{
 		PackVersion: 1,
 		Name:        "my-services-pack",
 		Version:     "1.0.0",
 		Metadata: map[string]string{
 			"author": "me@example.com",
 		},
-		Platforms: []brokerpak.Platform{
+		Platforms: []platform.Platform{
 			{Os: "linux", Arch: "amd64"},
 			{Os: "darwin", Arch: "amd64"},
 		},
 		// These resources are stubbed with a local dummy file
-		TerraformResources: []brokerpak.TerraformResource{
+		TerraformResources: []manifest.TerraformResource{
 			{
 				Name:        "terraform",
 				Version:     terraformVersion,
 				Source:      tfSrc,
-				UrlTemplate: tfSrc,
+				URLTemplate: tfSrc,
 			},
 			{
 				Name:        "some-provider",
 				Version:     "1.19.0",
 				Source:      providerOneSrc,
-				UrlTemplate: providerOneSrc,
+				URLTemplate: providerOneSrc,
 			},
 		},
 		ServiceDefinitions: []string{"example-service-definition.yml"},
-		Parameters: []brokerpak.ManifestParameter{
+		Parameters: []manifest.Parameter{
 			{Name: "TEST_PARAM", Description: "An example paramater that will be injected into Terraform's environment variables."},
 		},
 		EnvConfigMapping: map[string]string{"ENV_VAR": "env.var"},
@@ -281,5 +290,5 @@ func fakeBrokerPakWithMissingProvider(terraformVersion string) (string, error) {
 	}
 
 	packName := fmt.Sprintf("/tmp/%v-%s-%s.brokerpak", uuid.New(), exampleManifest.Name, "1.0.0")
-	return packName, exampleManifest.Pack(dir, packName)
+	return packName, packer.Pack(exampleManifest, dir, packName)
 }
