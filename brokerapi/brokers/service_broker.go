@@ -634,6 +634,10 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	if err != nil {
 		return response, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
 	}
+	serviceHelper.AddImportedProperties(ctx, instance.PlanGUID, provisionDetails)
+	//if err != nil {
+	//	return response, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
+	//}
 
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's

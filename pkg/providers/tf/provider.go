@@ -16,6 +16,7 @@ package tf
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"code.cloudfoundry.org/lager"
@@ -278,4 +279,36 @@ func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, guid
 	}
 
 	return outs, nil
+}
+
+func (provider *terraformProvider) AddImportedProperties(ctx context.Context, planGUID string, provisionDetails json.RawMessage) (json.RawMessage, error) {
+	provider.logger.Debug("addImportedProperties", correlation.ID(ctx), lager.Data{})
+
+	// extract params that should have been stored for subsume
+	// was subsume?
+
+	for _, plan := range provider.serviceDefinition.Plans {
+		if plan.Id == planGUID {
+			if _, ok := plan.Properties["subsume"]; !ok {
+				return provisionDetails, nil
+			}
+			break
+		}
+	}
+
+	// do we need to get any vars
+	// get the result of tf show
+	// parse the result
+	// extract the vars
+
+	// merge the provisionDetails with subsume vars
+	vc, err := varcontext.Builder().
+		MergeJsonObject(provisionDetails).
+		MergeJsonObject(json.RawMessage("")).
+		Build()
+	if err != nil {
+		return provisionDetails, err
+	}
+
+	return vc.ToJson()
 }

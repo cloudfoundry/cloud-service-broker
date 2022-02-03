@@ -3,6 +3,7 @@ package brokerfakes
 
 import (
 	"context"
+	"encoding/json"
 	"sync"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
@@ -13,6 +14,21 @@ import (
 )
 
 type FakeServiceProvider struct {
+	AddImportedPropertiesStub        func(context.Context, string, json.RawMessage) (json.RawMessage, error)
+	addImportedPropertiesMutex       sync.RWMutex
+	addImportedPropertiesArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+		arg3 json.RawMessage
+	}
+	addImportedPropertiesReturns struct {
+		result1 json.RawMessage
+		result2 error
+	}
+	addImportedPropertiesReturnsOnCall map[int]struct {
+		result1 json.RawMessage
+		result2 error
+	}
 	BindStub        func(context.Context, *varcontext.VarContext) (map[string]interface{}, error)
 	bindMutex       sync.RWMutex
 	bindArgsForCall []struct {
@@ -152,6 +168,72 @@ type FakeServiceProvider struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeServiceProvider) AddImportedProperties(arg1 context.Context, arg2 string, arg3 json.RawMessage) (json.RawMessage, error) {
+	fake.addImportedPropertiesMutex.Lock()
+	ret, specificReturn := fake.addImportedPropertiesReturnsOnCall[len(fake.addImportedPropertiesArgsForCall)]
+	fake.addImportedPropertiesArgsForCall = append(fake.addImportedPropertiesArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+		arg3 json.RawMessage
+	}{arg1, arg2, arg3})
+	stub := fake.AddImportedPropertiesStub
+	fakeReturns := fake.addImportedPropertiesReturns
+	fake.recordInvocation("AddImportedProperties", []interface{}{arg1, arg2, arg3})
+	fake.addImportedPropertiesMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeServiceProvider) AddImportedPropertiesCallCount() int {
+	fake.addImportedPropertiesMutex.RLock()
+	defer fake.addImportedPropertiesMutex.RUnlock()
+	return len(fake.addImportedPropertiesArgsForCall)
+}
+
+func (fake *FakeServiceProvider) AddImportedPropertiesCalls(stub func(context.Context, string, json.RawMessage) (json.RawMessage, error)) {
+	fake.addImportedPropertiesMutex.Lock()
+	defer fake.addImportedPropertiesMutex.Unlock()
+	fake.AddImportedPropertiesStub = stub
+}
+
+func (fake *FakeServiceProvider) AddImportedPropertiesArgsForCall(i int) (context.Context, string, json.RawMessage) {
+	fake.addImportedPropertiesMutex.RLock()
+	defer fake.addImportedPropertiesMutex.RUnlock()
+	argsForCall := fake.addImportedPropertiesArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeServiceProvider) AddImportedPropertiesReturns(result1 json.RawMessage, result2 error) {
+	fake.addImportedPropertiesMutex.Lock()
+	defer fake.addImportedPropertiesMutex.Unlock()
+	fake.AddImportedPropertiesStub = nil
+	fake.addImportedPropertiesReturns = struct {
+		result1 json.RawMessage
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeServiceProvider) AddImportedPropertiesReturnsOnCall(i int, result1 json.RawMessage, result2 error) {
+	fake.addImportedPropertiesMutex.Lock()
+	defer fake.addImportedPropertiesMutex.Unlock()
+	fake.AddImportedPropertiesStub = nil
+	if fake.addImportedPropertiesReturnsOnCall == nil {
+		fake.addImportedPropertiesReturnsOnCall = make(map[int]struct {
+			result1 json.RawMessage
+			result2 error
+		})
+	}
+	fake.addImportedPropertiesReturnsOnCall[i] = struct {
+		result1 json.RawMessage
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeServiceProvider) Bind(arg1 context.Context, arg2 *varcontext.VarContext) (map[string]interface{}, error) {
@@ -788,6 +870,8 @@ func (fake *FakeServiceProvider) UpdateReturnsOnCall(i int, result1 models.Servi
 func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.addImportedPropertiesMutex.RLock()
+	defer fake.addImportedPropertiesMutex.RUnlock()
 	fake.bindMutex.RLock()
 	defer fake.bindMutex.RUnlock()
 	fake.buildInstanceCredentialsMutex.RLock()

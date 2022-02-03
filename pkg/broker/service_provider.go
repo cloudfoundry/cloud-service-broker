@@ -16,6 +16,7 @@ package broker
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
@@ -37,6 +38,9 @@ type ServiceProvider interface {
 
 	// Update makes necessary updates to resources so they match new desired configuration
 	Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
+
+	// AddImportedProperties extracts and adds properties that should have been saved as part of subsume
+	AddImportedProperties(ctx context.Context, planGUID string, provisionContext json.RawMessage) (json.RawMessage, error)
 
 	// Bind provisions the necessary resources for a user to be able to connect to the provisioned service.
 	// This may include creating service accounts, granting permissions, and adding users to services e.g. a SQL database user.
