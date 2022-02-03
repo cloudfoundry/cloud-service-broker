@@ -23,12 +23,12 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/spf13/viper"
-
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
+	"github.com/spf13/viper"
 )
 
 func TestNewRegistrar(t *testing.T) {
@@ -172,24 +172,24 @@ func TestRegistrar_resolveParameters(t *testing.T) {
 
 	cases := map[string]struct {
 		Context  map[string]interface{}
-		Params   []ManifestParameter
+		Params   []manifest.Parameter
 		Expected map[string]string
 	}{
 		"no-params": {
 			Context:  map[string]interface{}{"n": 1, "s": "two", "b": true},
-			Params:   []ManifestParameter{},
+			Params:   []manifest.Parameter{},
 			Expected: map[string]string{},
 		},
 		"missing-in-context": {
 			Context: map[string]interface{}{"n": 1, "s": "two", "b": true},
-			Params: []ManifestParameter{
+			Params: []manifest.Parameter{
 				{Name: "foo", Description: "some missing param"},
 			},
 			Expected: map[string]string{},
 		},
 		"contained-in-context": {
 			Context: map[string]interface{}{"n": 1, "s": "two", "b": true},
-			Params: []ManifestParameter{
+			Params: []manifest.Parameter{
 				{Name: "s", Description: "a string param"},
 				{Name: "b", Description: "a bool param"},
 				{Name: "n", Description: "a numeric param"},

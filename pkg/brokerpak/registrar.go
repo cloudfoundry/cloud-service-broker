@@ -21,6 +21,8 @@ import (
 	"path/filepath"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/reader"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
@@ -52,7 +54,7 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 			"prefix":            pak.ServicePrefix,
 		})
 
-		brokerPak, err := DownloadAndOpenBrokerpak(pak.BrokerpakUri)
+		brokerPak, err := reader.DownloadAndOpenBrokerpak(pak.BrokerpakUri)
 		if err != nil {
 			return fmt.Errorf("couldn't open brokerpak: %q: %v", pak.BrokerpakUri, err)
 		}
@@ -118,7 +120,7 @@ func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config Broke
 	return out, nil
 }
 
-func (r *Registrar) createExecutor(brokerPak *BrokerPakReader, vc *varcontext.VarContext) (wrapper.TerraformExecutor, error) {
+func (r *Registrar) createExecutor(brokerPak *reader.BrokerPakReader, vc *varcontext.VarContext) (wrapper.TerraformExecutor, error) {
 	dir, err := os.MkdirTemp("", "brokerpak")
 	if err != nil {
 		return nil, err
@@ -149,7 +151,7 @@ func (r *Registrar) createExecutor(brokerPak *BrokerPakReader, vc *varcontext.Va
 
 // resolveParameters resolves environment variables from the given global and
 // brokerpak specific.
-func (Registrar) resolveParameters(params []ManifestParameter, vc *varcontext.VarContext) map[string]string {
+func (Registrar) resolveParameters(params []manifest.Parameter, vc *varcontext.VarContext) map[string]string {
 	out := make(map[string]string)
 
 	context := vc.ToMap()

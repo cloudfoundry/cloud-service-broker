@@ -12,45 +12,68 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package brokerpak
+package reader
 
 import (
+	"archive/zip"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 
-	"github.com/hashicorp/go-version"
-
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/fetcher"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/zippy"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
+	"github.com/hashicorp/go-version"
 )
+
+const manifestName = "manifest.yml"
+
+// OpenBrokerPak opens the file at the given path as a BrokerPakReader.
+func OpenBrokerPak(pakPath string) (*BrokerPakReader, error) {
+	rc, err := zippy.Open(pakPath)
+	if err != nil {
+		return nil, err
+	}
+	return &BrokerPakReader{contents: rc}, nil
+}
+
+// DownloadAndOpenBrokerpak downloads a (potentially remote) brokerpak to
+// the local filesystem and opens it.
+func DownloadAndOpenBrokerpak(pakUri string) (*BrokerPakReader, error) {
+	// create a temp directory to hold the pak
+	pakDir, err := os.MkdirTemp("", "brokerpak-staging")
+	if err != nil {
+		return nil, fmt.Errorf("couldn't create brokerpak staging area for %q: %v", pakUri, err)
+	}
+
+	// Download the brokerpak
+	localLocation := filepath.Join(pakDir, "pack.brokerpak")
+	if err := fetcher.FetchBrokerpak(pakUri, localLocation); err != nil {
+		return nil, fmt.Errorf("couldn't download brokerpak %q: %v", pakUri, err)
+	}
+
+	return OpenBrokerPak(localLocation)
+}
 
 // BrokerPakReader reads bundled together Terraform and service definitions.
 type BrokerPakReader struct {
 	contents zippy.ZipReader
 }
 
-func (pak *BrokerPakReader) readYaml(name string, v interface{}) error {
-	fd := pak.contents.Find(name)
-	if fd == nil {
-		return fmt.Errorf("couldn't find the file with the name %q", name)
-	}
-
-	return stream.Copy(stream.FromReadCloserError(fd.Open()), stream.ToYaml(v))
-}
-
 // Manifest fetches the manifest out of the package.
-func (pak *BrokerPakReader) Manifest() (*Manifest, error) {
-	manifest := &Manifest{}
+func (pak *BrokerPakReader) Manifest() (*manifest.Manifest, error) {
+	var receiver manifest.Manifest
 
-	if err := pak.readYaml(manifestName, manifest); err != nil {
+	if err := pak.readYaml(manifestName, &receiver); err != nil {
 		return nil, err
 	}
 
-	return manifest, nil
+	return &receiver, nil
 }
 
 // Services gets the list of services included in the pack.
@@ -106,6 +129,10 @@ func (pak *BrokerPakReader) Close() error {
 	return nil
 }
 
+func (pak *BrokerPakReader) Contents() []*zip.File {
+	return pak.contents.List()
+}
+
 // ExtractPlatformBins extracts the binaries for the current platform to the
 // given destination.
 func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
@@ -115,7 +142,7 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 	}
 
 	if !mf.AppliesToCurrentPlatform() {
-		return fmt.Errorf("the package %q doesn't contain binaries compatible with the current platform %q", mf.Name, CurrentPlatform().String())
+		return fmt.Errorf("the package %q doesn't contain binaries compatible with the current platform %q", mf.Name, platform.CurrentPlatform().String())
 	}
 
 	terraformVersion, err := mf.GetTerraformVersion()
@@ -130,14 +157,14 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 	}
 }
 
-func (pak *BrokerPakReader) extractPlatformBins12(destination string, mf *Manifest) error {
-	plat := CurrentPlatform()
+func (pak *BrokerPakReader) extractPlatformBins12(destination string, mf *manifest.Manifest) error {
+	plat := platform.CurrentPlatform()
 	bindir := path.Join("bin", plat.Os, plat.Arch)
 	return pak.contents.ExtractDirectory(bindir, destination)
 }
 
-func (pak *BrokerPakReader) extractPlatformBins13(destination string, mf *Manifest) error {
-	plat := CurrentPlatform()
+func (pak *BrokerPakReader) extractPlatformBins13(destination string, mf *manifest.Manifest) error {
+	plat := platform.CurrentPlatform()
 	for _, r := range mf.TerraformResources {
 		if strings.HasPrefix(r.Name, "terraform-provider-") {
 			filePath, err := pak.findFileInZip(r.Name, r.Version)
@@ -159,7 +186,7 @@ func (pak *BrokerPakReader) extractPlatformBins13(destination string, mf *Manife
 }
 
 func (pak *BrokerPakReader) findFileInZip(name, version string) (string, error) {
-	plat := CurrentPlatform()
+	plat := platform.CurrentPlatform()
 	prefix := path.Join("bin", plat.Os, plat.Arch, fmt.Sprintf("%s_v%s", name, version))
 	var found []string
 
@@ -179,36 +206,18 @@ func (pak *BrokerPakReader) findFileInZip(name, version string) (string, error) 
 	}
 }
 
+func (pak *BrokerPakReader) readYaml(name string, v interface{}) error {
+	fd := pak.contents.Find(name)
+	if fd == nil {
+		return fmt.Errorf("couldn't find the file with the name %q", name)
+	}
+
+	return stream.Copy(stream.FromReadCloserError(fd.Open()), stream.ToYaml(v))
+}
+
 func providerInstallPath(destination, name, version string) string {
 	suffix := strings.SplitAfterN(name, "terraform-provider-", 2)[1]
-	plat := CurrentPlatform()
+	plat := platform.CurrentPlatform()
 	target := fmt.Sprintf("%s_%s", plat.Os, plat.Arch)
 	return filepath.Join(destination, "registry.terraform.io", "hashicorp", suffix, version, target)
-}
-
-// OpenBrokerPak opens the file at the given path as a BrokerPakReader.
-func OpenBrokerPak(pakPath string) (*BrokerPakReader, error) {
-	rc, err := zippy.Open(pakPath)
-	if err != nil {
-		return nil, err
-	}
-	return &BrokerPakReader{contents: rc}, nil
-}
-
-// DownloadAndOpenBrokerpak downloads a (potentially remote) brokerpak to
-// the local filesystem and opens it.
-func DownloadAndOpenBrokerpak(pakUri string) (*BrokerPakReader, error) {
-	// create a temp directory to hold the pak
-	pakDir, err := os.MkdirTemp("", "brokerpak-staging")
-	if err != nil {
-		return nil, fmt.Errorf("couldn't create brokerpak staging area for %q: %v", pakUri, err)
-	}
-
-	// Download the brokerpak
-	localLocation := filepath.Join(pakDir, "pack.brokerpak")
-	if err := fetchBrokerpak(pakUri, localLocation); err != nil {
-		return nil, fmt.Errorf("couldn't download brokerpak %q: %v", pakUri, err)
-	}
-
-	return OpenBrokerPak(localLocation)
 }
