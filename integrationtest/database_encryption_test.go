@@ -245,8 +245,7 @@ var _ = Describe("Database Encryption", func() {
 		Expect(err).NotTo(HaveOccurred())
 		fixturesDir = path.Join(originalDir, "fixtures", "brokerpak-with-fake-provider")
 
-		workDir, err = os.MkdirTemp("", "*-csb-test")
-		Expect(err).NotTo(HaveOccurred())
+		workDir = GinkgoT().TempDir()
 		err = os.Chdir(workDir)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -268,9 +267,6 @@ var _ = Describe("Database Encryption", func() {
 		brokerSession.Terminate()
 
 		err := os.Chdir(originalDir)
-		Expect(err).NotTo(HaveOccurred())
-
-		err = os.RemoveAll(workDir)
 		Expect(err).NotTo(HaveOccurred())
 	})
 

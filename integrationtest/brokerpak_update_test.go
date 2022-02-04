@@ -188,15 +188,6 @@ var _ = Describe("Brokerpak Update", func() {
 	buildBrokerpakFor := func(fixtureName string) {
 		var err error
 
-		if workDir == "" {
-			originalDir, err = os.Getwd()
-			Expect(err).NotTo(HaveOccurred())
-			workDir, err = os.MkdirTemp("", "*-csb-test")
-			Expect(err).NotTo(HaveOccurred())
-		}
-		err = os.Chdir(workDir)
-		Expect(err).NotTo(HaveOccurred())
-
 		fixturesDir = path.Join(originalDir, "fixtures", fixtureName)
 		buildBrokerpakCommand := exec.Command(csb, "pak", "build", fixturesDir)
 		session, err := Start(buildBrokerpakCommand, GinkgoWriter, GinkgoWriter)
@@ -213,6 +204,13 @@ var _ = Describe("Brokerpak Update", func() {
 	BeforeEach(func() {
 		var err error
 
+		originalDir, err = os.Getwd()
+		Expect(err).NotTo(HaveOccurred())
+
+		workDir = GinkgoT().TempDir()
+		err = os.Chdir(workDir)
+		Expect(err).NotTo(HaveOccurred())
+
 		buildBrokerpakFor(initialBrokerpak)
 
 		brokerUsername = uuid.New()
@@ -227,10 +225,6 @@ var _ = Describe("Brokerpak Update", func() {
 	AfterEach(func() {
 		err := os.Chdir(originalDir)
 		Expect(err).NotTo(HaveOccurred())
-
-		err = os.RemoveAll(workDir)
-		Expect(err).NotTo(HaveOccurred())
-		workDir = ""
 	})
 
 	When("brokerpak updates are disabled", func() {
