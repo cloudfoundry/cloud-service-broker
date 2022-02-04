@@ -85,13 +85,13 @@ func (pak *BrokerPakReader) Services() ([]tf.TfServiceDefinitionV1, error) {
 
 	var services []tf.TfServiceDefinitionV1
 	for _, serviceDefinition := range manifest.ServiceDefinitions {
-		tmp := tf.TfServiceDefinitionV1{}
-		if err := pak.readYaml(serviceDefinition, &tmp); err != nil {
+		var receiver tf.TfServiceDefinitionV1
+		if err := pak.readYaml(serviceDefinition, &receiver); err != nil {
 			return nil, err
 		}
 
-		tmp.RequiredEnvVars = manifest.RequiredEnvVars
-		services = append(services, tmp)
+		receiver.RequiredEnvVars = manifest.RequiredEnvVars
+		services = append(services, receiver)
 	}
 
 	return services, nil
@@ -145,39 +145,24 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 		return fmt.Errorf("the package %q doesn't contain binaries compatible with the current platform %q", mf.Name, platform.CurrentPlatform().String())
 	}
 
-	terraformVersion, err := mf.GetTerraformVersion()
+	terraformVersion, err := mf.DefaultTerraformVersion()
 	if err != nil {
 		return err
 	}
 
-	if terraformVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
-		return pak.extractPlatformBins12(destination, mf)
-	} else {
-		return pak.extractPlatformBins13(destination, mf)
-	}
-}
-
-func (pak *BrokerPakReader) extractPlatformBins12(destination string, mf *manifest.Manifest) error {
-	plat := platform.CurrentPlatform()
-	bindir := path.Join("bin", plat.Os, plat.Arch)
-	return pak.contents.ExtractDirectory(bindir, destination)
-}
-
-func (pak *BrokerPakReader) extractPlatformBins13(destination string, mf *manifest.Manifest) error {
-	plat := platform.CurrentPlatform()
 	for _, r := range mf.TerraformResources {
-		if strings.HasPrefix(r.Name, "terraform-provider-") {
-			filePath, err := pak.findFileInZip(r.Name, r.Version)
-			if err != nil {
+		switch {
+		case strings.HasPrefix(r.Name, "terraform-provider-"):
+			if err := pak.extractProvider(r, destination, terraformVersion); err != nil {
 				return err
 			}
-			if err := pak.contents.ExtractFile(filePath, providerInstallPath(destination, r.Name, r.Version)); err != nil {
-				return fmt.Errorf("error extracting terraform-provider file: %w", err)
+		case r.Name == "terraform":
+			if err := pak.extractTerraform(r, destination, terraformVersion); err != nil {
+				return err
 			}
-		} else {
-			file := filepath.Join("bin", plat.Os, plat.Arch, r.Name)
-			if err := pak.contents.ExtractFile(file, destination); err != nil {
-				return fmt.Errorf("error extracting %q to %q: %w", file, destination, err)
+		default:
+			if err := pak.extractBinary(r, destination); err != nil {
+				return err
 			}
 		}
 	}
@@ -185,9 +170,65 @@ func (pak *BrokerPakReader) extractPlatformBins13(destination string, mf *manife
 	return nil
 }
 
-func (pak *BrokerPakReader) findFileInZip(name, version string) (string, error) {
+func (pak *BrokerPakReader) extractProvider(r manifest.TerraformResource, destination string, terraformVersion *version.Version) error {
+	filePath, err := pak.findFileInZip(fmt.Sprintf("%s_v%s", r.Name, r.Version))
+	if err != nil {
+		return err
+	}
+
+	if err := pak.contents.ExtractFile(filePath, providerInstallPath(terraformVersion, destination, r.Name, r.Version)); err != nil {
+		return fmt.Errorf("error extracting terraform-provider file: %w", err)
+	}
+
+	return nil
+}
+
+func (pak *BrokerPakReader) extractBinary(r manifest.TerraformResource, destination string) error {
+	filePath, err := pak.findFileInZip(r.Name)
+	if err != nil {
+		return err
+	}
+
+	if err := pak.contents.ExtractFile(filePath, destination); err != nil {
+		return fmt.Errorf("error extracting binary file: %w", err)
+	}
+
+	return nil
+}
+
+func (pak *BrokerPakReader) extractTerraform(r manifest.TerraformResource, destination string, terraformVersion *version.Version) error {
 	plat := platform.CurrentPlatform()
-	prefix := path.Join("bin", plat.Os, plat.Arch, fmt.Sprintf("%s_v%s", name, version))
+	versionedPath := path.Join("bin", plat.Os, plat.Arch, r.Version, "terraform")
+	if pak.fileExistsInZip(versionedPath) {
+		if err := pak.contents.ExtractFile(versionedPath, filepath.Join(destination, "versions", r.Version)); err != nil {
+			return fmt.Errorf("error extracting versioned terraform binary: %w", err)
+		}
+
+		if r.Version == terraformVersion.String() {
+			if err := os.Symlink(path.Join("versions", r.Version, "terraform"), filepath.Join(destination, "terraform")); err != nil {
+				return fmt.Errorf("error creating terraform link: %w", err)
+			}
+		}
+
+		return nil
+	}
+
+	// For compatability with brokerpaks built with older versions
+	unversionedPath := path.Join("bin", plat.Os, plat.Arch, "terraform")
+	if pak.fileExistsInZip(unversionedPath) {
+		if err := pak.contents.ExtractFile(unversionedPath, destination); err != nil {
+			return fmt.Errorf("error extracting terraform binary: %w", err)
+		}
+
+		return nil
+	}
+
+	return fmt.Errorf("could not find Terraform version %s in brokerpak", r.Version)
+}
+
+func (pak *BrokerPakReader) findFileInZip(name string) (string, error) {
+	plat := platform.CurrentPlatform()
+	prefix := path.Join("bin", plat.Os, plat.Arch, name)
 	var found []string
 
 	for _, f := range pak.contents.List() {
@@ -206,6 +247,16 @@ func (pak *BrokerPakReader) findFileInZip(name, version string) (string, error) 
 	}
 }
 
+func (pak *BrokerPakReader) fileExistsInZip(path string) bool {
+	for _, f := range pak.contents.List() {
+		if f.Name == path {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (pak *BrokerPakReader) readYaml(name string, v interface{}) error {
 	fd := pak.contents.Find(name)
 	if fd == nil {
@@ -215,9 +266,13 @@ func (pak *BrokerPakReader) readYaml(name string, v interface{}) error {
 	return stream.Copy(stream.FromReadCloserError(fd.Open()), stream.ToYaml(v))
 }
 
-func providerInstallPath(destination, name, version string) string {
+func providerInstallPath(terraformVersion *version.Version, destination, name, ver string) string {
+	if terraformVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
+		return destination
+	}
+
 	suffix := strings.SplitAfterN(name, "terraform-provider-", 2)[1]
 	plat := platform.CurrentPlatform()
 	target := fmt.Sprintf("%s_%s", plat.Os, plat.Arch)
-	return filepath.Join(destination, "registry.terraform.io", "hashicorp", suffix, version, target)
+	return filepath.Join(destination, "registry.terraform.io", "hashicorp", suffix, ver, target)
 }
