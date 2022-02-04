@@ -27,20 +27,23 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/spf13/viper"
 )
 
-const (
-	dynamicHCLEnabled = "brokerpak.updates.enabled"
-)
-
-func init() {
-	viper.BindEnv(dynamicHCLEnabled, "BROKERPAK_UPDATES_ENABLED")
-	viper.SetDefault(dynamicHCLEnabled, false)
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate . JobRunner
+type JobRunner interface {
+	StageJob(jobId string, workspace *wrapper.TerraformWorkspace) error
+	Import(ctx context.Context, id string, importResources []ImportResource) error
+	Create(ctx context.Context, id string) error
+	Update(ctx context.Context, id string, templateVars map[string]interface{}) error
+	Destroy(ctx context.Context, id string, templateVars map[string]interface{}) error
+	Status(ctx context.Context, id string) (bool, string, error)
+	Outputs(ctx context.Context, id, instanceName string) (map[string]interface{}, error)
+	Wait(ctx context.Context, id string) error
 }
 
 // NewTerraformProvider creates a new ServiceProvider backed by Terraform module definitions for provision and bind.
-func NewTerraformProvider(jobRunner *TfJobRunner, logger lager.Logger, serviceDefinition TfServiceDefinitionV1, store broker.ServiceProviderStorage) broker.ServiceProvider {
+func NewTerraformProvider(jobRunner JobRunner, logger lager.Logger, serviceDefinition TfServiceDefinitionV1, store broker.ServiceProviderStorage) broker.ServiceProvider {
 	return &terraformProvider{
 		serviceDefinition: serviceDefinition,
 		jobRunner:         jobRunner,
@@ -53,48 +56,10 @@ type terraformProvider struct {
 	base.MergedInstanceCredsMixin
 
 	logger            lager.Logger
-	jobRunner         *TfJobRunner
+	jobRunner         JobRunner
 	serviceDefinition TfServiceDefinitionV1
 	store             broker.ServiceProviderStorage
 }
-
-type WorkspaceUpdater struct{}
-
-func (wu WorkspaceUpdater) UpdateWorkspaceHCL(store broker.ServiceProviderStorage, action TfServiceDefinitionV1Action, operationContext *varcontext.VarContext, tfId string) error {
-	if !viper.GetBool(dynamicHCLEnabled) {
-		return nil
-	}
-	deployment, err := store.GetTerraformDeployment(tfId)
-	if err != nil {
-		return err
-	}
-
-	currentWorkspace, err := wrapper.DeserializeWorkspace(string(deployment.Workspace))
-	if err != nil {
-		return err
-	}
-
-	workspace, err := wrapper.NewWorkspace(operationContext.ToMap(), action.Template, action.Templates, []wrapper.ParameterMapping{}, []string{}, []wrapper.ParameterMapping{})
-	if err != nil {
-		return err
-	}
-
-	workspace.State = currentWorkspace.State
-
-	workspaceString, err := workspace.Serialize()
-	if err != nil {
-		return err
-	}
-
-	deployment.Workspace = []byte(workspaceString)
-	if err := store.StoreTerraformDeployment(deployment); err != nil {
-		return fmt.Errorf("terraform provider create failed: %w", err)
-	}
-
-	return nil
-}
-
-var workspaceUpdater = WorkspaceUpdater{}
 
 // Provision creates the necessary resources that an instance of this service
 // needs to operate.
@@ -139,7 +104,7 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	if err := workspaceUpdater.UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, provisionContext, tfId); err != nil {
+	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, provisionContext, tfId); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
@@ -255,7 +220,7 @@ func (provider *terraformProvider) Unbind(ctx context.Context, instanceGUID, bin
 		"tfId":     tfId,
 	})
 
-	if err := workspaceUpdater.UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.BindSettings, vc, tfId); err != nil {
+	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.BindSettings, vc, tfId); err != nil {
 		return err
 	}
 
@@ -274,7 +239,7 @@ func (provider *terraformProvider) Deprovision(ctx context.Context, instanceGUID
 
 	tfId := generateTfId(instanceGUID, "")
 
-	if err := workspaceUpdater.UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, vc, tfId); err != nil {
+	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, vc, tfId); err != nil {
 		return nil, err
 	}
 

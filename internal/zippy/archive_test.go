@@ -1,7 +1,6 @@
 package zippy_test
 
 import (
-	"os"
 	"path"
 
 	. "github.com/cloudfoundry-incubator/cloud-service-broker/internal/testmatchers"
@@ -14,14 +13,7 @@ var _ = Describe("Archive", func() {
 	var tmpdir string
 
 	BeforeEach(func() {
-		var err error
-		tmpdir, err = os.MkdirTemp("", "test")
-		Expect(err).NotTo(HaveOccurred())
-	})
-
-	AfterEach(func() {
-		err := os.RemoveAll(tmpdir)
-		Expect(err).NotTo(HaveOccurred())
+		tmpdir = GinkgoT().TempDir()
 	})
 
 	It("creates a zip", func() {

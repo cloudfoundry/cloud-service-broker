@@ -39,8 +39,7 @@ var _ = Describe("Terraform 0.12", func() {
 		Expect(err).NotTo(HaveOccurred())
 		fixturesDir = path.Join(originalDir, "fixtures", "brokerpak-terraform-0.12")
 
-		workDir, err = os.MkdirTemp("", "*-csb-test")
-		Expect(err).NotTo(HaveOccurred())
+		workDir = GinkgoT().TempDir()
 		err = os.Chdir(workDir)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -75,9 +74,6 @@ var _ = Describe("Terraform 0.12", func() {
 		brokerSession.Terminate()
 
 		err := os.Chdir(originalDir)
-		Expect(err).NotTo(HaveOccurred())
-
-		err = os.RemoveAll(workDir)
 		Expect(err).NotTo(HaveOccurred())
 	})
 

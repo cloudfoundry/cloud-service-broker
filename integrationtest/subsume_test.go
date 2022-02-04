@@ -40,8 +40,7 @@ var _ = Describe("Subsume", func() {
 		Expect(err).NotTo(HaveOccurred())
 		fixturesDir = path.Join(originalDir, "fixtures", "brokerpak-for-subsume-cancel")
 
-		workDir, err = os.MkdirTemp("", "*-csb-test")
-		Expect(err).NotTo(HaveOccurred())
+		workDir = GinkgoT().TempDir()
 		err = os.Chdir(workDir)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -76,9 +75,6 @@ var _ = Describe("Subsume", func() {
 		brokerSession.Terminate()
 
 		err := os.Chdir(originalDir)
-		Expect(err).NotTo(HaveOccurred())
-
-		err = os.RemoveAll(workDir)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
