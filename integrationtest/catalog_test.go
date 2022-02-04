@@ -16,7 +16,6 @@ import (
 )
 
 var _ = Describe("Catalog", func() {
-
 	var (
 		originalDir      string
 		fixturesDir      string
@@ -35,8 +34,7 @@ var _ = Describe("Catalog", func() {
 		Expect(err).NotTo(HaveOccurred())
 		fixturesDir = path.Join(originalDir, "fixtures", "brokerpak-for-catalog-test")
 
-		workDir, err = os.MkdirTemp("", "*-csb-test")
-		Expect(err).NotTo(HaveOccurred())
+		workDir = GinkgoT().TempDir()
 		err = os.Chdir(workDir)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -56,9 +54,6 @@ var _ = Describe("Catalog", func() {
 		brokerSession.Terminate()
 
 		err := os.Chdir(originalDir)
-		Expect(err).NotTo(HaveOccurred())
-
-		err = os.RemoveAll(workDir)
 		Expect(err).NotTo(HaveOccurred())
 	})
 
