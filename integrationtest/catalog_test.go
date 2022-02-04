@@ -59,7 +59,7 @@ var _ = Describe("Catalog", func() {
 
 	When("a service offering has duplicate plan IDs", func() {
 		JustBeforeEach(func() {
-			userProvidedPlan := "[{\"name\": \"user-plan\",\"id\":\"8b52a460-b246-11eb-a8f5-d349948e2480\"}]"
+			const userProvidedPlan = `[{"name": "user-plan","id":"8b52a460-b246-11eb-a8f5-d349948e2480"}]`
 			runBrokerCommand.Env = append(
 				os.Environ(),
 				"CSB_LISTENER_HOST=localhost",
@@ -85,7 +85,7 @@ var _ = Describe("Catalog", func() {
 
 	When("two service offerings have duplicate plan IDs", func() {
 		JustBeforeEach(func() {
-			userProvidedPlan := "[{\"name\": \"user-plan\",\"id\":\"8b52a460-b246-11eb-a8f5-d349948e2480\"}]"
+			const userProvidedPlan = `[{"name": "user-plan","id":"8b52a460-b246-11eb-a8f5-d349948e2480"}]`
 			runBrokerCommand.Env = append(
 				os.Environ(),
 				"CSB_LISTENER_HOST=localhost",
