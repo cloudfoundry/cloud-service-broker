@@ -79,6 +79,28 @@ var _ = Describe("Registry", func() {
 				Expect(err).To(MatchError(`error validating service "test-service", duplicated value, must be unique: Builtin!: Plans[1].Name`))
 			})
 		})
+
+		Context("no plans defined", func() {
+			It("defines a default plan", func() {
+				registry := make(BrokerRegistry)
+
+				err := registry.Register(&ServiceDefinition{
+					Id:        "b9e4332e-b42b-4680-bda5-ea1506797474",
+					Name:      "test-service",
+					Plans:     []ServicePlan{},
+					IsBuiltin: true,
+				})
+				Expect(err).NotTo(HaveOccurred())
+
+				services := registry.GetAllServices()
+				Expect(services).To(HaveLen(1))
+				plans := services[0].Plans
+				Expect(plans).To(HaveLen(1))
+				Expect(plans[0].ServicePlan.Name).To(Equal("default"))
+				Expect(plans[0].ServicePlan.Description).To(Equal("default plan"))
+				Expect(plans[0].ServicePlan.ID).To(HaveLen(36))
+			})
+		})
 	})
 
 	Describe("Validate", func() {

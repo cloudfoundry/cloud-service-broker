@@ -155,6 +155,10 @@ A service plan in a human-friendly format that can be converted into an OSB comp
 | provision_overrides | map of string:any | Constant values to be overwritten for the provision calls. |
 | bind_overrides | map of string:aany |  Constant values to be overwritten for the bind calls. |
 
+Note that if no plans are specified, a default plan will be generated named `default`.
+The ID of the default plan is derived from the name and ID of the service, and will change
+if either or those change.
+
 #### Action object
 
 The Action object contains a Terraform template to execute as part of a

@@ -1,0 +1,24 @@
+version: 1
+name: alpha-service
+
+id: 76c5725c-b246-11eb-871f-ffc97563fbd0
+description: description
+display_name: Alpha Service
+image_url: https://example.com/icon.jpg
+documentation_url: https://example.com
+support_url: https://example.com/support.html
+plans:
+provision:
+  user_inputs:
+    - field_name: foo
+      type: number
+      default: 42
+      details: Answer
+    - field_name: bar
+      type: string
+      default: hello
+      details: Greeting
+    - field_name: baz
+      type: boolean
+      details: Yes or no
+      default: true

@@ -18,10 +18,11 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
-
+	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/stableuuid"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/toggles"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 var (
@@ -58,6 +59,10 @@ func (brokerRegistry BrokerRegistry) Register(service *ServiceDefinition) error 
 	}
 	service.Plans = append(service.Plans, userPlans...)
 
+	if len(service.Plans) == 0 {
+		service.Plans = []ServicePlan{brokerRegistry.defaultPlan(service)}
+	}
+
 	if err := service.Validate(); err != nil {
 		return fmt.Errorf("error validating service %q, %s", name, err)
 	}
@@ -89,7 +94,7 @@ func (brokerRegistry BrokerRegistry) Validate() (errs *validation.FieldError) {
 
 // GetEnabledServices returns a list of all registered brokers that the user
 // has enabled the use of.
-func (brokerRegistry *BrokerRegistry) GetEnabledServices() ([]*ServiceDefinition, error) {
+func (brokerRegistry BrokerRegistry) GetEnabledServices() ([]*ServiceDefinition, error) {
 	var out []*ServiceDefinition
 
 	for _, svc := range brokerRegistry.GetAllServices() {
@@ -142,4 +147,17 @@ func (brokerRegistry BrokerRegistry) GetServiceById(id string) (*ServiceDefiniti
 	}
 
 	return nil, fmt.Errorf("unknown service ID: %q", id)
+}
+
+func (brokerRegistry BrokerRegistry) defaultPlan(s *ServiceDefinition) ServicePlan {
+	t := true
+
+	return ServicePlan{
+		ServicePlan: domain.ServicePlan{
+			ID:          stableuuid.FromStrings(s.Id, s.Name),
+			Name:        "default",
+			Description: "default plan",
+			Bindable:    &t,
+		},
+	}
 }
