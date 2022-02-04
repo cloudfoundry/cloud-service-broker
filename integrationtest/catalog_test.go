@@ -35,7 +35,7 @@ var _ = Describe("Catalog", func() {
 		fixturesDir = path.Join(originalDir, "fixtures", "brokerpak-for-catalog-test")
 
 		workDir = GinkgoT().TempDir()
-		os.Chdir(workDir)
+		err = os.Chdir(workDir)
 		Expect(err).NotTo(HaveOccurred())
 
 		buildBrokerpakCommand := exec.Command(csb, "pak", "build", fixturesDir)
