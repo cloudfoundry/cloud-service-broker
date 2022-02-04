@@ -2,14 +2,10 @@ package integrationtest_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"os"
-	"os/exec"
-	"path"
 	"time"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/integrationtest/helper"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -24,71 +20,33 @@ var _ = Describe("Multiple Updates", func() {
 	)
 
 	var (
-		originalDir         string
-		fixturesDir         string
-		workDir             string
-		brokerPort          int
-		brokerUsername      string
-		brokerPassword      string
-		brokerSession       *Session
-		brokerClient        *client.Client
-		databaseFile        string
+		originalDir         helper.Original
+		testLab             *helper.TestLab
+		session             *Session
 		serviceInstanceGUID string
 	)
 
 	BeforeEach(func() {
-		var err error
-		originalDir, err = os.Getwd()
-		Expect(err).NotTo(HaveOccurred())
-		fixturesDir = path.Join(originalDir, "fixtures")
-
-		workDir = GinkgoT().TempDir()
-		err = os.Chdir(workDir)
-		Expect(err).NotTo(HaveOccurred())
-
-		command := exec.Command(csb, "pak", "build", path.Join(fixturesDir, "brokerpak-for-multiple-updates"))
-		session, err := Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
-		session.Wait(10 * time.Minute)
-
-		brokerUsername = uuid.New()
-		brokerPassword = uuid.New()
-		brokerPort = freePort()
-		databaseFile = path.Join(workDir, "databaseFile.dat")
-		runBrokerCommand := exec.Command(csb, "serve")
-		runBrokerCommand.Env = append(
-			os.Environ(),
-			"CSB_LISTENER_HOST=localhost",
-			"DB_TYPE=sqlite3",
-			fmt.Sprintf("DB_PATH=%s", databaseFile),
-			fmt.Sprintf("PORT=%d", brokerPort),
-			fmt.Sprintf("SECURITY_USER_NAME=%s", brokerUsername),
-			fmt.Sprintf("SECURITY_USER_PASSWORD=%s", brokerPassword),
-		)
-		brokerSession, err = Start(runBrokerCommand, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
-		waitForBrokerToStart(brokerPort)
-
-		brokerClient, err = client.New(brokerUsername, brokerPassword, "localhost", brokerPort)
-		Expect(err).NotTo(HaveOccurred())
+		originalDir = helper.OriginalDir()
+		testLab = helper.NewTestLab(csb)
+		testLab.BuildBrokerpak(string(originalDir), "fixtures", "brokerpak-for-multiple-updates")
+		session = testLab.StartBroker()
 	})
 
 	AfterEach(func() {
-		brokerSession.Terminate()
-
-		err := os.Chdir(originalDir)
-		Expect(err).NotTo(HaveOccurred())
+		session.Terminate()
+		originalDir.Return()
 	})
 
 	checkBindingOutput := func(expected string) {
-		bindResponse := brokerClient.Bind(serviceInstanceGUID, uuid.New(), serviceOfferingGUID, servicePlanGUID, requestID(), nil)
+		bindResponse := testLab.Client().Bind(serviceInstanceGUID, uuid.New(), serviceOfferingGUID, servicePlanGUID, requestID(), nil)
 		ExpectWithOffset(1, bindResponse.Error).NotTo(HaveOccurred())
 		ExpectWithOffset(1, string(bindResponse.ResponseBody)).To(ContainSubstring(expected))
 	}
 
 	waitForCompletion := func() {
 		Eventually(func() bool {
-			lastOperationResponse := brokerClient.LastOperation(serviceInstanceGUID, requestID())
+			lastOperationResponse := testLab.Client().LastOperation(serviceInstanceGUID, requestID())
 			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
 			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
 			var receiver domain.LastOperation
@@ -105,7 +63,7 @@ var _ = Describe("Multiple Updates", func() {
 		By("provisioning with parameters")
 		const provisionParams = `{"alpha_input":"foo","beta_input":"bar"}`
 		serviceInstanceGUID = uuid.New()
-		provisionResponse := brokerClient.Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(provisionParams))
+		provisionResponse := testLab.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(provisionParams))
 		Expect(provisionResponse.Error).NotTo(HaveOccurred())
 		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
 		waitForCompletion()
@@ -115,7 +73,7 @@ var _ = Describe("Multiple Updates", func() {
 
 		By("updating a parameter")
 		const updateOneParams = `{"beta_input":"baz"}`
-		updateOneResponse := brokerClient.Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateOneParams))
+		updateOneResponse := testLab.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateOneParams))
 		Expect(updateOneResponse.Error).NotTo(HaveOccurred())
 		Expect(updateOneResponse.StatusCode).To(Equal(http.StatusAccepted))
 		waitForCompletion()
@@ -125,7 +83,7 @@ var _ = Describe("Multiple Updates", func() {
 
 		By("updating another parameter")
 		const updateTwoParams = `{"alpha_input":"quz"}`
-		updateTwoResponse := brokerClient.Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateTwoParams))
+		updateTwoResponse := testLab.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateTwoParams))
 		Expect(updateTwoResponse.Error).NotTo(HaveOccurred())
 		Expect(updateTwoResponse.StatusCode).To(Equal(http.StatusAccepted))
 		waitForCompletion()

@@ -1,11 +1,7 @@
 package integrationtest_test
 
 import (
-	"fmt"
-	"net"
-	"net/http"
 	"testing"
-	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -35,21 +31,6 @@ var _ = SynchronizedAfterSuite(
 	func() {},
 	func() { CleanupBuildArtifacts() },
 )
-
-func freePort() int {
-	listener, err := net.Listen("tcp", "localhost:0")
-	Expect(err).NotTo(HaveOccurred())
-	defer listener.Close()
-	return listener.Addr().(*net.TCPAddr).Port
-}
-
-func waitForBrokerToStart(port int) {
-	ping := func() (*http.Response, error) {
-		return http.Head(fmt.Sprintf("http://localhost:%d", port))
-	}
-
-	Eventually(ping, 30*time.Second).Should(HaveHTTPStatus(http.StatusOK))
-}
 
 func requestID() string {
 	return uuid.New()
