@@ -43,12 +43,12 @@ var _ = Describe("Registry", func() {
 			}
 
 			err := registry.Register(&serviceDef)
-			Expect(err).To(MatchError("tried to register multiple instances of: \"test-service\""))
+			Expect(err).To(MatchError(`tried to register multiple instances of: "test-service"`))
 		})
 
 		Context("user defined plans", func() {
 			It("appends user defined plans to brokerpak service plans", func() {
-				userProvidedPlan := "[{\"name\": \"user-plan\",\"id\":\"8b52a460-b246-11eb-a8f5-d349948e2480\"}]"
+				const userProvidedPlan = `[{"name": "user-plan","id":"8b52a460-b246-11eb-a8f5-d349948e2480"}]`
 				viper.Set("service.test-service.plans", userProvidedPlan)
 
 				registry := BrokerRegistry{}
@@ -60,30 +60,30 @@ var _ = Describe("Registry", func() {
 			})
 
 			It("errors when user defined plans have duplicate plan Id", func() {
-				userProvidedPlan := "[{\"name\": \"user-plan\",\"id\":\"e1d11f65-da66-46ad-977c-6d56513baf43\"}]"
+				const userProvidedPlan = `[{"name": "user-plan","id":"e1d11f65-da66-46ad-977c-6d56513baf43"}]`
 				viper.Set("service.test-service.plans", userProvidedPlan)
 
 				registry := BrokerRegistry{}
 
 				err := registry.Register(&serviceDef)
-				Expect(err).To(MatchError("error validating service \"test-service\", duplicated value, must be unique: e1d11f65-da66-46ad-977c-6d56513baf43: Plans[1].Id"))
+				Expect(err).To(MatchError(`error validating service "test-service", duplicated value, must be unique: e1d11f65-da66-46ad-977c-6d56513baf43: Plans[1].Id`))
 			})
 
 			It("errors when user defined plans have duplicate name Id", func() {
-				userProvidedPlan := "[{\"name\": \"Builtin!\",\"id\":\"8b52a460-b246-11eb-a8f5-d349948e2480\"}]"
+				const userProvidedPlan = `[{"name": "Builtin!","id":"8b52a460-b246-11eb-a8f5-d349948e2480"}]`
 				viper.Set("service.test-service.plans", userProvidedPlan)
 
 				registry := BrokerRegistry{}
 
 				err := registry.Register(&serviceDef)
-				Expect(err).To(MatchError("error validating service \"test-service\", duplicated value, must be unique: Builtin!: Plans[1].Name"))
+				Expect(err).To(MatchError(`error validating service "test-service", duplicated value, must be unique: Builtin!: Plans[1].Name`))
 			})
 		})
 	})
 
 	Describe("Validate", func() {
 		It("should fail when same service ID is used in two different services", func() {
-			duplicateID := "b9e4332e-b42b-4680-bda5-ea1506797474"
+			const duplicateID = "b9e4332e-b42b-4680-bda5-ea1506797474"
 			registry := BrokerRegistry{
 				"test-service-1": &ServiceDefinition{
 					Id:   duplicateID,
@@ -119,7 +119,7 @@ var _ = Describe("Registry", func() {
 		})
 
 		It("should fail when same plan ID is used in two different services", func() {
-			duplicateID := "e1d11f65-da66-46ad-977c-6d56513baf43"
+			const duplicateID = "e1d11f65-da66-46ad-977c-6d56513baf43"
 			registry := BrokerRegistry{
 				"test-service-1": &ServiceDefinition{
 					Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
@@ -263,7 +263,5 @@ var _ = Describe("Registry", func() {
 			Entry("when beta are enabled and build-ins are disabled", "beta", "compatibility.enable-gcp-beta-services"),
 			Entry("when deprecated are enabled and build-ins are disabled", "deprecated", "compatibility.enable-gcp-deprecated-services"),
 		)
-
 	})
-
 })
