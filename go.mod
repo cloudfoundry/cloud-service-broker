@@ -17,7 +17,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.1.1
 	github.com/onsi/gomega v1.18.1
 	github.com/pborman/uuid v1.2.1
-	github.com/pivotal-cf/brokerapi/v8 v8.2.0
+	github.com/pivotal-cf/brokerapi/v8 v8.2.1
 	github.com/robertkrimen/otto v0.0.0-20210614181706-373ff5438452
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.4.1
@@ -72,7 +72,6 @@ require (
 	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/mitchellh/reflectwalk v1.0.0 // indirect
-	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.4.0 // indirect
