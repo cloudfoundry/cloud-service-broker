@@ -10,31 +10,31 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-func (tl *TestLab) StartBrokerCommand(env ...string) *exec.Cmd {
-	cmd := exec.Command(tl.csb, "serve")
+func (h *TestHelper) StartBrokerCommand(env ...string) *exec.Cmd {
+	cmd := exec.Command(h.csb, "serve")
 	cmd.Env = append(
 		os.Environ(),
 		"CSB_LISTENER_HOST=localhost",
 		"DB_TYPE=sqlite3",
-		fmt.Sprintf("DB_PATH=%s", tl.DatabaseFile),
-		fmt.Sprintf("PORT=%d", tl.port),
-		fmt.Sprintf("SECURITY_USER_NAME=%s", tl.username),
-		fmt.Sprintf("SECURITY_USER_PASSWORD=%s", tl.password),
+		fmt.Sprintf("DB_PATH=%s", h.databaseFile),
+		fmt.Sprintf("PORT=%d", h.port),
+		fmt.Sprintf("SECURITY_USER_NAME=%s", h.username),
+		fmt.Sprintf("SECURITY_USER_PASSWORD=%s", h.password),
 	)
 	cmd.Env = append(cmd.Env, env...)
 
 	return cmd
 }
 
-func (tl *TestLab) StartBrokerSession(env ...string) *gexec.Session {
-	cmd := tl.StartBrokerCommand(env...)
+func (h *TestHelper) StartBrokerSession(env ...string) *gexec.Session {
+	cmd := h.StartBrokerCommand(env...)
 	session, err := gexec.Start(cmd, ginkgo.GinkgoWriter, ginkgo.GinkgoWriter)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	return session
 }
 
-func (tl *TestLab) StartBroker(env ...string) *gexec.Session {
-	session := tl.StartBrokerSession(env...)
-	waitForBrokerToStart(tl.port)
+func (h *TestHelper) StartBroker(env ...string) *gexec.Session {
+	session := h.StartBrokerSession(env...)
+	waitForBrokerToStart(h.port)
 	return session
 }

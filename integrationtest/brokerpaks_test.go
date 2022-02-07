@@ -14,22 +14,20 @@ import (
 )
 
 var _ = Describe("Brokerpaks", func() {
-	var (
-		originalDir helper.Original
-	)
+	var testHelper *helper.TestHelper
 
 	BeforeEach(func() {
-		originalDir = helper.OriginalDir()
+		testHelper = helper.New(csb)
 	})
 
 	AfterEach(func() {
-		originalDir.Return()
+		testHelper.Restore()
 	})
 
 	When("duplicate plan IDs", func() {
 		It("fails to build", func() {
-			testLab := helper.NewTestLab(csb)
-			command := testLab.BuildBrokerpakCommand(string(originalDir), "fixtures", "brokerpak-with-duplicate-plan-id")
+			testLab := helper.New(csb)
+			command := testLab.BuildBrokerpakCommand(testHelper.OriginalDir, "fixtures", "brokerpak-with-duplicate-plan-id")
 			session, err := Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 			session.Wait(10 * time.Minute)
@@ -41,14 +39,14 @@ var _ = Describe("Brokerpaks", func() {
 
 	Describe("file inclusion", func() {
 		It("includes the files", func() {
-			testLab := helper.NewTestLab(csb)
+			testLab := helper.New(csb)
 
 			err := os.WriteFile(path.Join(testLab.Dir, "extrafile.sh"), []byte("echo hello"), 0777)
 			Expect(err).NotTo(HaveOccurred())
 
 			brokerpakPath := path.Join(testLab.Dir, "fake-brokerpak-0.1.0.brokerpak")
 			By("building the brokerpak", func() {
-				command := testLab.BuildBrokerpakCommand(string(originalDir), "fixtures", "brokerpak-file-inclusion")
+				command := testLab.BuildBrokerpakCommand(testHelper.OriginalDir, "fixtures", "brokerpak-file-inclusion")
 				session, err := Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 				session.Wait(10 * time.Minute)

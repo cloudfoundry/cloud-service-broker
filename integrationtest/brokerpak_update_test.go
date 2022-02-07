@@ -14,8 +14,6 @@ import (
 	. "github.com/onsi/gomega/gexec"
 	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 var _ = Describe("Brokerpak Update", func() {
@@ -39,15 +37,12 @@ var _ = Describe("Brokerpak Update", func() {
 	)
 
 	var (
-		originalDir helper.Original
-		testLab     *helper.TestLab
-		session     *Session
+		testHelper *helper.TestHelper
+		session    *Session
 	)
 
 	findRecord := func(dest interface{}, query, guid string) {
-		db, err := gorm.Open(sqlite.Open(testLab.DatabaseFile), &gorm.Config{})
-		Expect(err).NotTo(HaveOccurred())
-		result := db.Where(query, guid).First(dest)
+		result := testHelper.DBConn().Where(query, guid).First(dest)
 		ExpectWithOffset(3, result.Error).NotTo(HaveOccurred())
 		ExpectWithOffset(3, result.RowsAffected).To(Equal(int64(1)))
 	}
@@ -60,20 +55,20 @@ var _ = Describe("Brokerpak Update", func() {
 	}
 
 	createBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
-		bindResponse := testLab.Client().Bind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(bindParams))
+		bindResponse := testHelper.Client().Bind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(bindParams))
 		Expect(bindResponse.Error).NotTo(HaveOccurred())
 		Expect(bindResponse.StatusCode).To(Equal(http.StatusCreated))
 	}
 
 	deleteBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
-		unbindResponse := testLab.Client().Unbind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID())
+		unbindResponse := testHelper.Client().Unbind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID())
 		Expect(unbindResponse.Error).NotTo(HaveOccurred())
 		Expect(unbindResponse.StatusCode).To(Equal(http.StatusOK))
 	}
 
 	waitForAsyncRequest := func(serviceInstanceGUID string) {
 		Eventually(func() bool {
-			lastOperationResponse := testLab.Client().LastOperation(serviceInstanceGUID, requestID())
+			lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
 			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
 			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
 			var receiver domain.LastOperation
@@ -85,14 +80,14 @@ var _ = Describe("Brokerpak Update", func() {
 	}
 
 	updateServiceInstance := func(serviceInstanceGUID string) {
-		updateResponse := testLab.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateParams))
+		updateResponse := testHelper.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateParams))
 		Expect(updateResponse.Error).NotTo(HaveOccurred())
 		Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
 		waitForAsyncRequest(serviceInstanceGUID)
 	}
 
 	provisionServiceInstance := func(serviceInstanceGUID string) {
-		provisionResponse := testLab.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(provisionParams))
+		provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(provisionParams))
 		ExpectWithOffset(1, provisionResponse.Error).NotTo(HaveOccurred())
 		ExpectWithOffset(1, provisionResponse.StatusCode).To(Equal(http.StatusAccepted), string(provisionResponse.ResponseBody))
 
@@ -100,7 +95,7 @@ var _ = Describe("Brokerpak Update", func() {
 	}
 
 	deprovisionServiceInstance := func(serviceInstanceGUID string) {
-		deprovisionResponse := testLab.Client().Deprovision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID())
+		deprovisionResponse := testHelper.Client().Deprovision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID())
 		Expect(deprovisionResponse.Error).NotTo(HaveOccurred())
 		Expect(deprovisionResponse.StatusCode).To(Equal(http.StatusAccepted))
 		waitForAsyncRequest(serviceInstanceGUID)
@@ -144,7 +139,7 @@ var _ = Describe("Brokerpak Update", func() {
 	)
 
 	startBroker := func(updatesEnabled bool) *Session {
-		return testLab.StartBroker(fmt.Sprintf("BROKERPAK_UPDATES_ENABLED=%t", updatesEnabled))
+		return testHelper.StartBroker(fmt.Sprintf("BROKERPAK_UPDATES_ENABLED=%t", updatesEnabled))
 	}
 
 	persistedTerraformModuleDefinition := func(serviceInstanceGUID, serviceBindingGUID string) string {
@@ -157,20 +152,19 @@ var _ = Describe("Brokerpak Update", func() {
 
 	pushUpdatedBrokerpak := func(updatesEnabled bool) {
 		session.Terminate()
-		testLab.BuildBrokerpak(string(originalDir), "fixtures", updatedBrokerpak)
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", updatedBrokerpak)
 		session = startBroker(updatesEnabled)
 	}
 
 	BeforeEach(func() {
-		originalDir = helper.OriginalDir()
-		testLab = helper.NewTestLab(csb)
+		testHelper = helper.New(csb)
 
-		testLab.BuildBrokerpak(string(originalDir), "fixtures", initialBrokerpak)
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", initialBrokerpak)
 	})
 
 	AfterEach(func() {
 		session.Terminate()
-		originalDir.Return()
+		testHelper.Restore()
 	})
 
 	When("brokerpak updates are disabled", func() {

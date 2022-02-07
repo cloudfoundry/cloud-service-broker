@@ -9,27 +9,32 @@ import (
 	"github.com/pborman/uuid"
 )
 
-func NewTestLab(csb string) *TestLab {
+func New(csb string) *TestHelper {
 	tmpDir := ginkgo.GinkgoT().TempDir()
 
-	err := os.Chdir(tmpDir)
+	original, err := os.Getwd()
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-	return &TestLab{
-		csb:          csb,
+	err = os.Chdir(tmpDir)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+	return &TestHelper{
 		Dir:          tmpDir,
+		databaseFile: path.Join(tmpDir, "databaseFile.dat"),
+		OriginalDir:  original,
+		csb:          csb,
 		port:         freePort(),
 		username:     uuid.New(),
 		password:     uuid.New(),
-		DatabaseFile: path.Join(tmpDir, "DatabaseFile.dat"),
 	}
 }
 
-type TestLab struct {
+type TestHelper struct {
 	Dir          string
+	OriginalDir  string
 	csb          string
+	databaseFile string
 	port         int
 	username     string
 	password     string
-	DatabaseFile string
 }

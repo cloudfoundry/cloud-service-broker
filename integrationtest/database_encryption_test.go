@@ -14,8 +14,6 @@ import (
 	. "github.com/onsi/gomega/gexec"
 	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 var _ = Describe("Database Encryption", func() {
@@ -41,15 +39,12 @@ var _ = Describe("Database Encryption", func() {
 	)
 
 	var (
-		originalDir helper.Original
-		testLab     *helper.TestLab
-		session     *Session
+		testHelper *helper.TestHelper
+		session    *Session
 	)
 
 	findRecord := func(dest interface{}, query, guid string) {
-		db, err := gorm.Open(sqlite.Open(testLab.DatabaseFile), &gorm.Config{})
-		Expect(err).NotTo(HaveOccurred())
-		result := db.Where(query, guid).First(dest)
+		result := testHelper.DBConn().Where(query, guid).First(dest)
 		ExpectWithOffset(1, result.Error).NotTo(HaveOccurred())
 		ExpectWithOffset(1, result.RowsAffected).To(Equal(int64(1)))
 	}
@@ -97,60 +92,50 @@ var _ = Describe("Database Encryption", func() {
 	}
 
 	expectNoPasswordMetadataToExist := func() {
-		db, err := gorm.Open(sqlite.Open(testLab.DatabaseFile), &gorm.Config{})
-		Expect(err).NotTo(HaveOccurred())
 		var count int64
-		Expect(db.Model(&models.PasswordMetadata{}).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(testHelper.DBConn().Model(&models.PasswordMetadata{}).Count(&count).Error).NotTo(HaveOccurred())
 		Expect(count).To(BeZero())
 	}
 
 	expectPasswordMetadataToNotExist := func(label string) {
-		db, err := gorm.Open(sqlite.Open(testLab.DatabaseFile), &gorm.Config{})
-		Expect(err).NotTo(HaveOccurred())
 		var count int64
-		Expect(db.Model(&models.PasswordMetadata{}).Where(passwordMetadataQuery, label).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(testHelper.DBConn().Model(&models.PasswordMetadata{}).Where(passwordMetadataQuery, label).Count(&count).Error).NotTo(HaveOccurred())
 		Expect(count).To(BeZero())
 	}
 
 	expectServiceBindingDetailsToNotExist := func(serviceInstanceGUID string) {
-		db, err := gorm.Open(sqlite.Open(testLab.DatabaseFile), &gorm.Config{})
-		Expect(err).NotTo(HaveOccurred())
 		var count int64
-		Expect(db.Model(&models.ServiceBindingCredentials{}).Where(serviceInstanceFKQuery, serviceInstanceGUID).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(testHelper.DBConn().Model(&models.ServiceBindingCredentials{}).Where(serviceInstanceFKQuery, serviceInstanceGUID).Count(&count).Error).NotTo(HaveOccurred())
 		Expect(count).To(BeZero())
 	}
 
 	expectBindRequestDetailsToNotExist := func(serviceBindingGUID string) {
-		db, err := gorm.Open(sqlite.Open(testLab.DatabaseFile), &gorm.Config{})
-		Expect(err).NotTo(HaveOccurred())
 		var count int64
-		Expect(db.Model(&models.BindRequestDetails{}).Where(serviceBindingIdQuery, serviceBindingGUID).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(testHelper.DBConn().Model(&models.BindRequestDetails{}).Where(serviceBindingIdQuery, serviceBindingGUID).Count(&count).Error).NotTo(HaveOccurred())
 		Expect(count).To(BeZero())
 	}
 
 	expectServiceInstanceDetailsToNotExist := func(serviceInstanceGUID string) {
-		db, err := gorm.Open(sqlite.Open(testLab.DatabaseFile), &gorm.Config{})
-		Expect(err).NotTo(HaveOccurred())
 		var count int64
-		Expect(db.Model(&models.ServiceInstanceDetails{}).Where(serviceInstanceIdQuery, serviceInstanceGUID).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(testHelper.DBConn().Model(&models.ServiceInstanceDetails{}).Where(serviceInstanceIdQuery, serviceInstanceGUID).Count(&count).Error).NotTo(HaveOccurred())
 		Expect(count).To(BeZero())
 	}
 
 	createBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
-		bindResponse := testLab.Client().Bind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(bindParams))
+		bindResponse := testHelper.Client().Bind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(bindParams))
 		Expect(bindResponse.Error).NotTo(HaveOccurred())
 		Expect(bindResponse.StatusCode).To(Equal(http.StatusCreated))
 	}
 
 	deleteBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
-		unbindResponse := testLab.Client().Unbind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID())
+		unbindResponse := testHelper.Client().Unbind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID())
 		Expect(unbindResponse.Error).NotTo(HaveOccurred())
 		Expect(unbindResponse.StatusCode).To(Equal(http.StatusOK))
 	}
 
 	waitForAsyncRequest := func(serviceInstanceGUID string) {
 		Eventually(func() bool {
-			lastOperationResponse := testLab.Client().LastOperation(serviceInstanceGUID, requestID())
+			lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
 			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
 			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
 			var receiver domain.LastOperation
@@ -162,14 +147,14 @@ var _ = Describe("Database Encryption", func() {
 	}
 
 	updateServiceInstance := func(serviceInstanceGUID string) {
-		updateResponse := testLab.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateParams))
+		updateResponse := testHelper.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateParams))
 		Expect(updateResponse.Error).NotTo(HaveOccurred())
 		Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
 		waitForAsyncRequest(serviceInstanceGUID)
 	}
 
 	provisionServiceInstance := func(serviceInstanceGUID string) {
-		provisionResponse := testLab.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(provisionParams))
+		provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(provisionParams))
 		ExpectWithOffset(1, provisionResponse.Error).NotTo(HaveOccurred())
 		ExpectWithOffset(1, provisionResponse.StatusCode).To(Equal(http.StatusAccepted), string(provisionResponse.ResponseBody))
 
@@ -177,21 +162,21 @@ var _ = Describe("Database Encryption", func() {
 	}
 
 	deprovisionServiceInstance := func(serviceInstanceGUID string) {
-		deprovisionResponse := testLab.Client().Deprovision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID())
+		deprovisionResponse := testHelper.Client().Deprovision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID())
 		Expect(deprovisionResponse.Error).NotTo(HaveOccurred())
 		Expect(deprovisionResponse.StatusCode).To(Equal(http.StatusAccepted))
 		waitForAsyncRequest(serviceInstanceGUID)
 	}
 
 	startBrokerSession := func(encryptionEnabled bool, encryptionPasswords string) *Session {
-		return testLab.StartBrokerSession(
+		return testHelper.StartBrokerSession(
 			fmt.Sprintf("ENCRYPTION_ENABLED=%t", encryptionEnabled),
 			fmt.Sprintf("ENCRYPTION_PASSWORDS=%s", encryptionPasswords),
 		)
 	}
 
 	startBroker := func(encryptionEnabled bool, encryptionPasswords string) *Session {
-		return testLab.StartBroker(
+		return testHelper.StartBroker(
 			fmt.Sprintf("ENCRYPTION_ENABLED=%t", encryptionEnabled),
 			fmt.Sprintf("ENCRYPTION_PASSWORDS=%s", encryptionPasswords),
 		)
@@ -220,14 +205,13 @@ var _ = Describe("Database Encryption", func() {
 	)
 
 	BeforeEach(func() {
-		originalDir = helper.OriginalDir()
-		testLab = helper.NewTestLab(csb)
-		testLab.BuildBrokerpak(string(originalDir), "fixtures", "brokerpak-with-fake-provider")
+		testHelper = helper.New(csb)
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-with-fake-provider")
 	})
 
 	AfterEach(func() {
 		session.Terminate()
-		originalDir.Return()
+		testHelper.Restore()
 	})
 
 	When("encryption is turned off", func() {
@@ -583,13 +567,11 @@ var _ = Describe("Database Encryption", func() {
 				provisionServiceInstance(serviceInstanceGUID2)
 
 				By("corrupting the DB")
-				db, err := gorm.Open(sqlite.Open(testLab.DatabaseFile), &gorm.Config{})
-				Expect(err).NotTo(HaveOccurred())
 				record := models.ServiceInstanceDetails{}
 				findRecord(&record, serviceInstanceIdQuery, serviceInstanceGUID2)
 				recordToRecover := record
 				record.OtherDetails = []byte("something-that-cannot-be-decrypted")
-				Expect(db.Save(&record).Error).NotTo(HaveOccurred())
+				Expect(testHelper.DBConn().Save(&record).Error).NotTo(HaveOccurred())
 
 				By("restarting the broker with a different primary password")
 				session.Terminate()
@@ -608,7 +590,7 @@ var _ = Describe("Database Encryption", func() {
 				Expect(persistedPasswordMetadata("my-second-password").Primary).To(BeFalse())
 
 				By("fixing the corrupted value")
-				Expect(db.Save(&recordToRecover).Error).NotTo(HaveOccurred())
+				Expect(testHelper.DBConn().Save(&recordToRecover).Error).NotTo(HaveOccurred())
 
 				By("restarting the broker with same config")
 				encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)

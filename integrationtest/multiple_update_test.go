@@ -20,33 +20,31 @@ var _ = Describe("Multiple Updates", func() {
 	)
 
 	var (
-		originalDir         helper.Original
-		testLab             *helper.TestLab
+		testHelper          *helper.TestHelper
 		session             *Session
 		serviceInstanceGUID string
 	)
 
 	BeforeEach(func() {
-		originalDir = helper.OriginalDir()
-		testLab = helper.NewTestLab(csb)
-		testLab.BuildBrokerpak(string(originalDir), "fixtures", "brokerpak-for-multiple-updates")
-		session = testLab.StartBroker()
+		testHelper = helper.New(csb)
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-for-multiple-updates")
+		session = testHelper.StartBroker()
 	})
 
 	AfterEach(func() {
 		session.Terminate()
-		originalDir.Return()
+		testHelper.Restore()
 	})
 
 	checkBindingOutput := func(expected string) {
-		bindResponse := testLab.Client().Bind(serviceInstanceGUID, uuid.New(), serviceOfferingGUID, servicePlanGUID, requestID(), nil)
+		bindResponse := testHelper.Client().Bind(serviceInstanceGUID, uuid.New(), serviceOfferingGUID, servicePlanGUID, requestID(), nil)
 		ExpectWithOffset(1, bindResponse.Error).NotTo(HaveOccurred())
 		ExpectWithOffset(1, string(bindResponse.ResponseBody)).To(ContainSubstring(expected))
 	}
 
 	waitForCompletion := func() {
 		Eventually(func() bool {
-			lastOperationResponse := testLab.Client().LastOperation(serviceInstanceGUID, requestID())
+			lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
 			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
 			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
 			var receiver domain.LastOperation
@@ -63,7 +61,7 @@ var _ = Describe("Multiple Updates", func() {
 		By("provisioning with parameters")
 		const provisionParams = `{"alpha_input":"foo","beta_input":"bar"}`
 		serviceInstanceGUID = uuid.New()
-		provisionResponse := testLab.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(provisionParams))
+		provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(provisionParams))
 		Expect(provisionResponse.Error).NotTo(HaveOccurred())
 		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
 		waitForCompletion()
@@ -73,7 +71,7 @@ var _ = Describe("Multiple Updates", func() {
 
 		By("updating a parameter")
 		const updateOneParams = `{"beta_input":"baz"}`
-		updateOneResponse := testLab.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateOneParams))
+		updateOneResponse := testHelper.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateOneParams))
 		Expect(updateOneResponse.Error).NotTo(HaveOccurred())
 		Expect(updateOneResponse.StatusCode).To(Equal(http.StatusAccepted))
 		waitForCompletion()
@@ -83,7 +81,7 @@ var _ = Describe("Multiple Updates", func() {
 
 		By("updating another parameter")
 		const updateTwoParams = `{"alpha_input":"quz"}`
-		updateTwoResponse := testLab.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateTwoParams))
+		updateTwoResponse := testHelper.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateTwoParams))
 		Expect(updateTwoResponse.Error).NotTo(HaveOccurred())
 		Expect(updateTwoResponse.StatusCode).To(Equal(http.StatusAccepted))
 		waitForCompletion()
