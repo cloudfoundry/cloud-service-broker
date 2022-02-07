@@ -35,7 +35,7 @@ var _ = FDescribe("Provider", func() {
 
 				provisionInput := json.RawMessage(`{"foo":"some=param"}`)
 
-				result, err := tfProvider.AddImportedProperties(context.TODO(), defaultPlanGUID, provisionInput)
+				result, err := tfProvider.AddImportedProperties(context.TODO(), defaultPlanGUID, "", provisionInput)
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(result).To(Equal(provisionInput))
@@ -47,6 +47,8 @@ var _ = FDescribe("Provider", func() {
 				subsumePlanGUID := "6526a7be-8504-11ec-b558-276c48808143"
 				storage := new(brokerfakes.FakeServiceProviderStorage)
 				jobRunner := new(tffakes.FakeJobRunner)
+
+				jobRunner.ShowReturns("# azurerm_mssql_database.azure_sql_db:\nresource \"azurerm_mssql_database\" \"azure_sql_db\" {\nsubsume-key = \"subsume-value\"\n}\nOutputs:\nname = \"test-name\"", nil)
 
 				tfProvider := tf.NewTerraformProvider(
 					jobRunner,
@@ -67,10 +69,13 @@ var _ = FDescribe("Provider", func() {
 
 				provisionInput := json.RawMessage(`{"foo":"some=param"}`)
 
-				result, err := tfProvider.AddImportedProperties(context.TODO(), subsumePlanGUID, provisionInput)
+				result, err := tfProvider.AddImportedProperties(context.TODO(), subsumePlanGUID, "tf:dummy:", provisionInput)
 
+				_, actualTfId := jobRunner.ShowArgsForCall(0)
+				Expect(actualTfId).To(Equal("tf:dummy:"))
 				Expect(err).NotTo(HaveOccurred())
 				Expect(result).To(Equal(json.RawMessage(`{"foo":"some=param","subsume-key":"subsume-value"}`)))
+
 			})
 		})
 	})

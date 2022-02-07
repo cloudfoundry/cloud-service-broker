@@ -41,6 +41,7 @@ type JobRunner interface {
 	Status(ctx context.Context, id string) (bool, string, error)
 	Outputs(ctx context.Context, id, instanceName string) (map[string]interface{}, error)
 	Wait(ctx context.Context, id string) error
+	Show(ctx context.Context, id string) (string, error)
 }
 
 // NewTerraformProvider creates a new ServiceProvider backed by Terraform module definitions for provision and bind.
@@ -281,7 +282,7 @@ func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, guid
 	return outs, nil
 }
 
-func (provider *terraformProvider) AddImportedProperties(ctx context.Context, planGUID string, provisionDetails json.RawMessage) (json.RawMessage, error) {
+func (provider *terraformProvider) AddImportedProperties(ctx context.Context, planGUID, tfID string, provisionDetails json.RawMessage) (json.RawMessage, error) {
 	provider.logger.Debug("addImportedProperties", correlation.ID(ctx), lager.Data{})
 
 	// extract params that should have been stored for subsume
@@ -296,18 +297,32 @@ func (provider *terraformProvider) AddImportedProperties(ctx context.Context, pl
 		}
 	}
 
+	tfHCL, err := provider.jobRunner.Show(ctx, tfID)
+	if err != nil {
+		return nil, err
+	}
+
+	subsumedParameters, err := GetSubsumedParameters(tfHCL, []ReplaceVariable{
+		{
+			Name:     "azurerm_mssql_database",
+			Property: "subsume-key",
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	// do we need to get any vars
 	// get the result of tf show
 	// parse the result
 	// extract the vars
-
 	// merge the provisionDetails with subsume vars
 	vc, err := varcontext.Builder().
 		MergeJsonObject(provisionDetails).
-		MergeJsonObject(json.RawMessage("")).
+		MergeMap(subsumedParameters).
 		Build()
 	if err != nil {
-		return provisionDetails, err
+		return nil, err
 	}
 
 	return vc.ToJson()

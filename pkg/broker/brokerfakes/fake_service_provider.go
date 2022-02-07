@@ -14,12 +14,13 @@ import (
 )
 
 type FakeServiceProvider struct {
-	AddImportedPropertiesStub        func(context.Context, string, json.RawMessage) (json.RawMessage, error)
+	AddImportedPropertiesStub        func(context.Context, string, string, json.RawMessage) (json.RawMessage, error)
 	addImportedPropertiesMutex       sync.RWMutex
 	addImportedPropertiesArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
-		arg3 json.RawMessage
+		arg3 string
+		arg4 json.RawMessage
 	}
 	addImportedPropertiesReturns struct {
 		result1 json.RawMessage
@@ -170,20 +171,21 @@ type FakeServiceProvider struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeServiceProvider) AddImportedProperties(arg1 context.Context, arg2 string, arg3 json.RawMessage) (json.RawMessage, error) {
+func (fake *FakeServiceProvider) AddImportedProperties(arg1 context.Context, arg2 string, arg3 string, arg4 json.RawMessage) (json.RawMessage, error) {
 	fake.addImportedPropertiesMutex.Lock()
 	ret, specificReturn := fake.addImportedPropertiesReturnsOnCall[len(fake.addImportedPropertiesArgsForCall)]
 	fake.addImportedPropertiesArgsForCall = append(fake.addImportedPropertiesArgsForCall, struct {
 		arg1 context.Context
 		arg2 string
-		arg3 json.RawMessage
-	}{arg1, arg2, arg3})
+		arg3 string
+		arg4 json.RawMessage
+	}{arg1, arg2, arg3, arg4})
 	stub := fake.AddImportedPropertiesStub
 	fakeReturns := fake.addImportedPropertiesReturns
-	fake.recordInvocation("AddImportedProperties", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("AddImportedProperties", []interface{}{arg1, arg2, arg3, arg4})
 	fake.addImportedPropertiesMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -197,17 +199,17 @@ func (fake *FakeServiceProvider) AddImportedPropertiesCallCount() int {
 	return len(fake.addImportedPropertiesArgsForCall)
 }
 
-func (fake *FakeServiceProvider) AddImportedPropertiesCalls(stub func(context.Context, string, json.RawMessage) (json.RawMessage, error)) {
+func (fake *FakeServiceProvider) AddImportedPropertiesCalls(stub func(context.Context, string, string, json.RawMessage) (json.RawMessage, error)) {
 	fake.addImportedPropertiesMutex.Lock()
 	defer fake.addImportedPropertiesMutex.Unlock()
 	fake.AddImportedPropertiesStub = stub
 }
 
-func (fake *FakeServiceProvider) AddImportedPropertiesArgsForCall(i int) (context.Context, string, json.RawMessage) {
+func (fake *FakeServiceProvider) AddImportedPropertiesArgsForCall(i int) (context.Context, string, string, json.RawMessage) {
 	fake.addImportedPropertiesMutex.RLock()
 	defer fake.addImportedPropertiesMutex.RUnlock()
 	argsForCall := fake.addImportedPropertiesArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeServiceProvider) AddImportedPropertiesReturns(result1 json.RawMessage, result2 error) {
