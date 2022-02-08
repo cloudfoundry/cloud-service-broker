@@ -16,7 +16,7 @@ jobs:
               pull_number: context.issue.number,
             })
 
-            const allowed = ["feat\\!", "feat", "fix", "chore", "docs", "build"]
+            const allowed = ["feat\\!", "feat", "fix", "chore", "docs", "build", "test"]
             const re = new RegExp(`^(` + allowed.join('|') + `)(\\(\\w+\\))?: `)
             const title = pr['title']
 
