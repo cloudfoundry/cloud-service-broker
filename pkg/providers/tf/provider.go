@@ -284,19 +284,16 @@ func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, guid
 	return outs, nil
 }
 
-func (provider *terraformProvider) AddImportedProperties(ctx context.Context, planGUID, tfID string, provisionDetails json.RawMessage) (json.RawMessage, error) {
+func (provider *terraformProvider) AddImportedProperties(ctx context.Context, planGUID string, tfID string, inputVariables []broker.BrokerVariable, provisionDetails json.RawMessage) (json.RawMessage, error) {
 	provider.logger.Debug("addImportedProperties", correlation.ID(ctx), lager.Data{})
 
-	// extract params that should have been stored for subsume
-	// was subsume?
+	if provider.isSubsumePlan(planGUID) {
+		return provisionDetails, nil
+	}
 
-	for _, plan := range provider.serviceDefinition.Plans {
-		if plan.Id == planGUID {
-			if _, ok := plan.Properties["subsume"]; !ok {
-				return provisionDetails, nil
-			}
-			break
-		}
+	varsToReplace := provider.getVarsToReplace(inputVariables)
+	if len(varsToReplace) == 0 {
+		return provisionDetails, nil
 	}
 
 	tfHCL, err := provider.jobRunner.Show(ctx, tfID)
@@ -304,15 +301,7 @@ func (provider *terraformProvider) AddImportedProperties(ctx context.Context, pl
 		return nil, err
 	}
 
-	// do we need to get any vars
-
-	subsumedParameters, err := hclparser.GetParameters(tfHCL, []hclparser.ReplaceVariable{
-		{
-			Resource:     "azurerm_mssql_database.azure_sql_db",
-			Property:     "subsume-key",
-			ReplaceField: "field_to_replace",
-		},
-	})
+	subsumedParameters, err := hclparser.GetParameters(tfHCL, varsToReplace)
 	if err != nil {
 		return nil, fmt.Errorf("error getting subsumed parameters values: %v", err)
 	}
@@ -326,4 +315,29 @@ func (provider *terraformProvider) AddImportedProperties(ctx context.Context, pl
 	}
 
 	return vc.ToJson()
+}
+
+func (provider *terraformProvider) getVarsToReplace(inputVariables []broker.BrokerVariable) []hclparser.ReplaceVariable {
+	var varsToReplace []hclparser.ReplaceVariable
+	for _, vars := range inputVariables {
+		if vars.Replicate != "" {
+			varsToReplace = append(varsToReplace, hclparser.ReplaceVariable{
+				FieldToRead:  vars.Replicate,
+				FieldToWrite: vars.FieldName,
+			})
+		}
+	}
+	return varsToReplace
+}
+
+func (provider *terraformProvider) isSubsumePlan(planGUID string) bool {
+	for _, plan := range provider.serviceDefinition.Plans {
+		if plan.Id == planGUID {
+			if _, ok := plan.Properties["subsume"]; !ok {
+				return true
+			}
+			break
+		}
+	}
+	return false
 }

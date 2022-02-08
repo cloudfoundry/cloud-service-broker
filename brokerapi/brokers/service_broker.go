@@ -635,14 +635,13 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return response, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
 	}
 
-	serviceHelper.AddImportedProperties(ctx, instance.PlanGUID, instance.OperationGUID, provisionDetails)
-	//if err != nil {
-	//	return response, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
-	//}
+	//TODO: Consider just returning subsume vars rather then merging
+	previousDetails, err := serviceHelper.AddImportedProperties(ctx, instance.PlanGUID, instance.OperationGUID, brokerService.ProvisionInputVariables, provisionDetails)
+	if err != nil {
+		return response, fmt.Errorf("error retrieving subsume parameters for %q: %w", instanceID, err)
+	}
 
-	// validate parameters meet the service's schema and merge the user vars with
-	// the plan's
-	mergedDetails, err := mergeJSON(provisionDetails, details.GetRawParameters())
+	mergedDetails, err := mergeJSON(previousDetails, details.GetRawParameters())
 	if err != nil {
 		return response, fmt.Errorf("error merging update and provision details: %w", err)
 	}

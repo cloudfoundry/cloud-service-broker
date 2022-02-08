@@ -12,14 +12,12 @@ var _ = Describe("HclParser", func() {
 			It("succeeds", func() {
 				replaceVars := []hclparser.ReplaceVariable{
 					{
-						Resource:     "resource_type.resource_name",
-						Property:     "subsume_key",
-						ReplaceField: "field_to_replace",
+						FieldToRead:  "resource_type.resource_name.subsume_key",
+						FieldToWrite: "field_to_replace",
 					},
 					{
-						Resource:     "other_resource_type.resource_name",
-						Property:     "other_subsume_key",
-						ReplaceField: "other_field_to_replace",
+						FieldToRead:  "other_resource_type.resource_name.other_subsume_key",
+						FieldToWrite: "other_field_to_replace",
 					},
 				}
 				tfHCL := "# resource_type.resource_name:\nresource \"resource_type\" \"resource_name\" {\nsubsume_key = \"subsume_value\"\n}" +
@@ -40,9 +38,8 @@ var _ = Describe("HclParser", func() {
 			It("succeeds", func() {
 				replaceVars := []hclparser.ReplaceVariable{
 					{
-						Resource:     "resource_type.resource_name",
-						Property:     "subsume_key",
-						ReplaceField: "field_to_replace",
+						FieldToRead:  "resource_type.resource_name.subsume_key",
+						FieldToWrite: "field_to_replace",
 					},
 				}
 				tfHCL := "# resource_type.resource_name:\nresource \"resource_type\" \"resource_name\" {\nsubsume_key = \"subsume_value\"\n}"
@@ -58,14 +55,12 @@ var _ = Describe("HclParser", func() {
 			It("fails", func() {
 				replaceVars := []hclparser.ReplaceVariable{
 					{
-						Resource:     "resource_type.resource_name",
-						Property:     "subsume_key",
-						ReplaceField: "field_to_replace",
+						FieldToRead:  "resource_type.resource_name.subsume_key",
+						FieldToWrite: "field_to_replace",
 					},
 					{
-						Resource:     "other_resource_type.resource_name",
-						Property:     "other_subsume_key",
-						ReplaceField: "other_field_to_replace",
+						FieldToRead:  "other_resource_type.resource_name.other_subsume_key",
+						FieldToWrite: "other_field_to_replace",
 					},
 				}
 				tfHCL := "\n# other_resource_type.resource_name:\nresource \"other_resource_type\" \"resource_name\" {\nother_subsume_key = \"other_subsume_value\"\n}\nOutputs:\nname = \"test-name\""
@@ -80,9 +75,8 @@ var _ = Describe("HclParser", func() {
 			It("fails", func() {
 				replaceVars := []hclparser.ReplaceVariable{
 					{
-						Resource:     "resource_type.resource_name",
-						Property:     "subsume_key",
-						ReplaceField: "field_to_replace",
+						FieldToRead:  "resource_type.resource_name.subsume_key",
+						FieldToWrite: "field_to_replace",
 					},
 				}
 

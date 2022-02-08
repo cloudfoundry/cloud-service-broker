@@ -40,7 +40,7 @@ type ServiceProvider interface {
 	Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
 
 	// AddImportedProperties extracts and adds properties that should have been saved as part of subsume
-	AddImportedProperties(ctx context.Context, planGUID string, tfID string, provisionContext json.RawMessage) (json.RawMessage, error)
+	AddImportedProperties(ctx context.Context, planGUID string, tfID string, inputVariables []BrokerVariable, provisionContext json.RawMessage) (json.RawMessage, error)
 
 	// Bind provisions the necessary resources for a user to be able to connect to the provisioned service.
 	// This may include creating service accounts, granting permissions, and adding users to services e.g. a SQL database user.

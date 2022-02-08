@@ -9,12 +9,11 @@ import (
 )
 
 type ReplaceVariable struct {
-	Resource     string
-	Property     string
-	ReplaceField string
+	FieldToRead  string
+	FieldToWrite string
 }
 
-func GetParameters(tfHCL string, replaceVars []ReplaceVariable) (map[string]interface{}, error) {
+func GetParameters(tfHCL string, parameters []ReplaceVariable) (map[string]interface{}, error) {
 	splitHcl := strings.Split(tfHCL, "Outputs")
 	parsedConfig, diags := hclwrite.ParseConfig([]byte(splitHcl[0]), "", hcl.InitialPos)
 	if diags.HasErrors() {
@@ -24,25 +23,31 @@ func GetParameters(tfHCL string, replaceVars []ReplaceVariable) (map[string]inte
 	subsumedParameters := make(map[string]interface{})
 	for _, block := range parsedConfig.Body().Blocks() {
 		if block.Type() == "resource" {
-			for _, replaceVar := range replaceVars {
-				if replaceVar.Resource == strings.Join(block.Labels(), ".") {
-					subsumedParameters[replaceVar.ReplaceField] = getAttribute(block, replaceVar.Property)
+			for _, param := range parameters {
+				resourceName, attributeName := splitResource(param.FieldToRead)
+				if resourceName == strings.Join(block.Labels(), ".") {
+					subsumedParameters[param.FieldToWrite] = getAttribute(block, attributeName)
 				}
 			}
 		}
 	}
 
 	var notFoundParameters []string
-	if len(subsumedParameters) != len(replaceVars) {
-		for _, rv := range replaceVars {
-			if _, ok := subsumedParameters[rv.ReplaceField]; !ok {
-				notFoundParameters = append(notFoundParameters, fmt.Sprintf("%s.%s", rv.Resource, rv.Property))
+	if len(subsumedParameters) != len(parameters) {
+		for _, rv := range parameters {
+			if _, ok := subsumedParameters[rv.FieldToWrite]; !ok {
+				notFoundParameters = append(notFoundParameters, rv.FieldToRead)
 			}
 		}
 		return nil, fmt.Errorf("cannot find required subsumed values for fields: %s", strings.Join(notFoundParameters, ", "))
 	}
 
 	return subsumedParameters, nil
+}
+
+func splitResource(resource string) (string, string) {
+	lastInd := strings.LastIndex(resource, ".")
+	return resource[:lastInd], resource[lastInd+1:]
 }
 
 func getAttribute(block *hclwrite.Block, attribute string) string {
