@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = FDescribe("Provider", func() {
+var _ = Describe("Provider", func() {
 	Describe("AddImportedProperties", func() {
 		When("instance was not subsumed", func() {
 			It("should not change variables", func() {
@@ -74,8 +74,7 @@ var _ = FDescribe("Provider", func() {
 				_, actualTfId := jobRunner.ShowArgsForCall(0)
 				Expect(actualTfId).To(Equal("tf:dummy:"))
 				Expect(err).NotTo(HaveOccurred())
-				Expect(result).To(Equal(json.RawMessage(`{"foo":"some=param","subsume-key":"subsume-value"}`)))
-
+				Expect(result).To(Equal(json.RawMessage(`{"field_to_replace":"subsume-value","foo":"some=param"}`)))
 			})
 		})
 	})

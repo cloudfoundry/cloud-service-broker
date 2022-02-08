@@ -19,6 +19,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/hclparser"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
@@ -302,27 +304,25 @@ func (provider *terraformProvider) AddImportedProperties(ctx context.Context, pl
 		return nil, err
 	}
 
-	subsumedParameters, err := GetSubsumedParameters(tfHCL, []ReplaceVariable{
+	// do we need to get any vars
+
+	subsumedParameters, err := hclparser.GetParameters(tfHCL, []hclparser.ReplaceVariable{
 		{
-			Name:     "azurerm_mssql_database",
-			Property: "subsume-key",
+			Resource:     "azurerm_mssql_database.azure_sql_db",
+			Property:     "subsume-key",
+			ReplaceField: "field_to_replace",
 		},
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting subsumed parameters values: %v", err)
 	}
 
-	// do we need to get any vars
-	// get the result of tf show
-	// parse the result
-	// extract the vars
-	// merge the provisionDetails with subsume vars
 	vc, err := varcontext.Builder().
 		MergeJsonObject(provisionDetails).
 		MergeMap(subsumedParameters).
 		Build()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error merging subsumed parameters: %v", err)
 	}
 
 	return vc.ToJson()
