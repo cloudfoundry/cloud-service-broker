@@ -2,44 +2,32 @@ package integrationtest_test
 
 import (
 	"os"
-	"os/exec"
 	"path"
 	"time"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/integrationtest/helper"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/zippy"
-	. "github.com/onsi/gomega/gbytes"
-	. "github.com/onsi/gomega/gexec"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gexec"
 )
 
 var _ = Describe("Brokerpaks", func() {
-	var (
-		originalDir string
-		fixturesDir string
-		workDir     string
-	)
+	var testHelper *helper.TestHelper
 
 	BeforeEach(func() {
-		var err error
-		originalDir, err = os.Getwd()
-		Expect(err).NotTo(HaveOccurred())
-		fixturesDir = path.Join(originalDir, "fixtures")
-
-		workDir = GinkgoT().TempDir()
-		err = os.Chdir(workDir)
-		Expect(err).NotTo(HaveOccurred())
+		testHelper = helper.New(csb)
 	})
 
 	AfterEach(func() {
-		err := os.Chdir(originalDir)
-		Expect(err).NotTo(HaveOccurred())
+		testHelper.Restore()
 	})
 
 	When("duplicate plan IDs", func() {
 		It("fails to build", func() {
-			command := exec.Command(csb, "pak", "build", path.Join(fixturesDir, "brokerpak-with-duplicate-plan-id"))
+			testLab := helper.New(csb)
+			command := testLab.BuildBrokerpakCommand(testHelper.OriginalDir, "fixtures", "brokerpak-with-duplicate-plan-id")
 			session, err := Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 			session.Wait(10 * time.Minute)
@@ -50,15 +38,15 @@ var _ = Describe("Brokerpaks", func() {
 	})
 
 	Describe("file inclusion", func() {
-		BeforeEach(func() {
-			err := os.WriteFile(path.Join(workDir, "extrafile.sh"), []byte("echo hello"), 0777)
-			Expect(err).NotTo(HaveOccurred())
-		})
-
 		It("includes the files", func() {
-			brokerpakPath := path.Join(workDir, "fake-brokerpak-0.1.0.brokerpak")
+			testLab := helper.New(csb)
+
+			err := os.WriteFile(path.Join(testLab.Dir, "extrafile.sh"), []byte("echo hello"), 0777)
+			Expect(err).NotTo(HaveOccurred())
+
+			brokerpakPath := path.Join(testLab.Dir, "fake-brokerpak-0.1.0.brokerpak")
 			By("building the brokerpak", func() {
-				command := exec.Command(csb, "pak", "build", path.Join(fixturesDir, "brokerpak-file-inclusion"))
+				command := testLab.BuildBrokerpakCommand(testHelper.OriginalDir, "fixtures", "brokerpak-file-inclusion")
 				session, err := Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 				session.Wait(10 * time.Minute)
@@ -68,7 +56,7 @@ var _ = Describe("Brokerpaks", func() {
 				Expect(brokerpakPath).To(BeAnExistingFile())
 			})
 
-			extractedPath := path.Join(workDir, "extracted")
+			extractedPath := GinkgoT().TempDir()
 			By("unzipping the brokerpak", func() {
 				zr, err := zippy.Open(brokerpakPath)
 				Expect(err).NotTo(HaveOccurred())

@@ -4,22 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
-	"os/exec"
-	"path"
 	"time"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
-
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/integrationtest/helper"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 var _ = Describe("Brokerpak Update", func() {
@@ -43,21 +37,12 @@ var _ = Describe("Brokerpak Update", func() {
 	)
 
 	var (
-		originalDir    string
-		fixturesDir    string
-		workDir        string
-		brokerPort     int
-		brokerUsername string
-		brokerPassword string
-		brokerClient   *client.Client
-		databaseFile   string
-		brokerSession  *Session
+		testHelper *helper.TestHelper
+		session    *Session
 	)
 
 	findRecord := func(dest interface{}, query, guid string) {
-		db, err := gorm.Open(sqlite.Open(databaseFile), &gorm.Config{})
-		Expect(err).NotTo(HaveOccurred())
-		result := db.Where(query, guid).First(dest)
+		result := testHelper.DBConn().Where(query, guid).First(dest)
 		ExpectWithOffset(3, result.Error).NotTo(HaveOccurred())
 		ExpectWithOffset(3, result.RowsAffected).To(Equal(int64(1)))
 	}
@@ -70,20 +55,20 @@ var _ = Describe("Brokerpak Update", func() {
 	}
 
 	createBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
-		bindResponse := brokerClient.Bind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(bindParams))
+		bindResponse := testHelper.Client().Bind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(bindParams))
 		Expect(bindResponse.Error).NotTo(HaveOccurred())
 		Expect(bindResponse.StatusCode).To(Equal(http.StatusCreated))
 	}
 
 	deleteBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
-		unbindResponse := brokerClient.Unbind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID())
+		unbindResponse := testHelper.Client().Unbind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID())
 		Expect(unbindResponse.Error).NotTo(HaveOccurred())
 		Expect(unbindResponse.StatusCode).To(Equal(http.StatusOK))
 	}
 
 	waitForAsyncRequest := func(serviceInstanceGUID string) {
 		Eventually(func() bool {
-			lastOperationResponse := brokerClient.LastOperation(serviceInstanceGUID, requestID())
+			lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
 			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
 			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
 			var receiver domain.LastOperation
@@ -95,14 +80,14 @@ var _ = Describe("Brokerpak Update", func() {
 	}
 
 	updateServiceInstance := func(serviceInstanceGUID string) {
-		updateResponse := brokerClient.Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateParams))
+		updateResponse := testHelper.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateParams))
 		Expect(updateResponse.Error).NotTo(HaveOccurred())
 		Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
 		waitForAsyncRequest(serviceInstanceGUID)
 	}
 
 	provisionServiceInstance := func(serviceInstanceGUID string) {
-		provisionResponse := brokerClient.Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(provisionParams))
+		provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(provisionParams))
 		ExpectWithOffset(1, provisionResponse.Error).NotTo(HaveOccurred())
 		ExpectWithOffset(1, provisionResponse.StatusCode).To(Equal(http.StatusAccepted), string(provisionResponse.ResponseBody))
 
@@ -110,7 +95,7 @@ var _ = Describe("Brokerpak Update", func() {
 	}
 
 	deprovisionServiceInstance := func(serviceInstanceGUID string) {
-		deprovisionResponse := brokerClient.Deprovision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID())
+		deprovisionResponse := testHelper.Client().Deprovision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID())
 		Expect(deprovisionResponse.Error).NotTo(HaveOccurred())
 		Expect(deprovisionResponse.StatusCode).To(Equal(http.StatusAccepted))
 		waitForAsyncRequest(serviceInstanceGUID)
@@ -153,28 +138,8 @@ var _ = Describe("Brokerpak Update", func() {
 		Not(ContainSubstring(updateOutputStateKey)),
 	)
 
-	startBrokerSession := func(updatesEnabled bool) *Session {
-		runBrokerCommand := exec.Command(csb, "serve")
-		os.Unsetenv("CH_CRED_HUB_URL")
-		runBrokerCommand.Env = append(
-			os.Environ(),
-			"CSB_LISTENER_HOST=localhost",
-			"DB_TYPE=sqlite3",
-			fmt.Sprintf("BROKERPAK_UPDATES_ENABLED=%t", updatesEnabled),
-			fmt.Sprintf("DB_PATH=%s", databaseFile),
-			fmt.Sprintf("PORT=%d", brokerPort),
-			fmt.Sprintf("SECURITY_USER_NAME=%s", brokerUsername),
-			fmt.Sprintf("SECURITY_USER_PASSWORD=%s", brokerPassword),
-		)
-		session, err := Start(runBrokerCommand, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
-		return session
-	}
-
 	startBroker := func(updatesEnabled bool) *Session {
-		session := startBrokerSession(updatesEnabled)
-		waitForBrokerToStart(brokerPort)
-		return session
+		return testHelper.StartBroker(fmt.Sprintf("BROKERPAK_UPDATES_ENABLED=%t", updatesEnabled))
 	}
 
 	persistedTerraformModuleDefinition := func(serviceInstanceGUID, serviceBindingGUID string) string {
@@ -185,46 +150,21 @@ var _ = Describe("Brokerpak Update", func() {
 		return string(persistedTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID).State)
 	}
 
-	buildBrokerpakFor := func(fixtureName string) {
-		var err error
-
-		fixturesDir = path.Join(originalDir, "fixtures", fixtureName)
-		buildBrokerpakCommand := exec.Command(csb, "pak", "build", fixturesDir)
-		session, err := Start(buildBrokerpakCommand, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
-		EventuallyWithOffset(1, session, 10*time.Minute).Should(Exit(0))
-	}
-
 	pushUpdatedBrokerpak := func(updatesEnabled bool) {
-		brokerSession.Terminate()
-		buildBrokerpakFor(updatedBrokerpak)
-		brokerSession = startBroker(updatesEnabled)
+		session.Terminate()
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", updatedBrokerpak)
+		session = startBroker(updatesEnabled)
 	}
 
 	BeforeEach(func() {
-		var err error
+		testHelper = helper.New(csb)
 
-		originalDir, err = os.Getwd()
-		Expect(err).NotTo(HaveOccurred())
-
-		workDir = GinkgoT().TempDir()
-		err = os.Chdir(workDir)
-		Expect(err).NotTo(HaveOccurred())
-
-		buildBrokerpakFor(initialBrokerpak)
-
-		brokerUsername = uuid.New()
-		brokerPassword = uuid.New()
-		brokerPort = freePort()
-		databaseFile = path.Join(workDir, "databaseFile.dat")
-
-		brokerClient, err = client.New(brokerUsername, brokerPassword, "localhost", brokerPort)
-		Expect(err).NotTo(HaveOccurred())
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", initialBrokerpak)
 	})
 
 	AfterEach(func() {
-		err := os.Chdir(originalDir)
-		Expect(err).NotTo(HaveOccurred())
+		session.Terminate()
+		testHelper.Restore()
 	})
 
 	When("brokerpak updates are disabled", func() {
@@ -237,12 +177,8 @@ var _ = Describe("Brokerpak Update", func() {
 			serviceInstanceGUID = uuid.New()
 			serviceBindingGUID = uuid.New()
 
-			brokerSession = startBroker(false)
+			session = startBroker(false)
 			provisionServiceInstance(serviceInstanceGUID)
-		})
-
-		AfterEach(func() {
-			brokerSession.Terminate()
 		})
 
 		It("uses the old HCL for service instances operations", func() {
@@ -284,12 +220,8 @@ var _ = Describe("Brokerpak Update", func() {
 			serviceInstanceGUID = uuid.New()
 			serviceBindingGUID = uuid.New()
 
-			brokerSession = startBroker(true)
+			session = startBroker(true)
 			provisionServiceInstance(serviceInstanceGUID)
-		})
-
-		AfterEach(func() {
-			brokerSession.Terminate()
 		})
 
 		It("uses the updated HCL for an update", func() {
