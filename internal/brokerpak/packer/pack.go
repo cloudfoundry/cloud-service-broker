@@ -13,6 +13,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/zippy"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
 	"github.com/hashicorp/go-getter"
 )
@@ -22,7 +23,7 @@ const manifestName = "manifest.yml"
 func Pack(m *manifest.Manifest, base, dest string) error {
 	// NOTE: we use "log" rather than Lager because this is used by the CLI and
 	// needs to be human readable rather than JSON.
-	log.Println("Packing...")
+	log.Printf("Packing %q version %q with CSB version %q...\n", base, m.Version, utils.Version)
 
 	dir, err := os.MkdirTemp("", "brokerpak")
 	if err != nil {
