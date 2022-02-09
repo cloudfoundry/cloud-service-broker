@@ -1,0 +1,25 @@
+name: Conventional Commit Check
+
+on: [pull_request]
+
+jobs:
+  conventional-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const {data: pr} = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            })
+
+            const allowed = ["feat\\!", "feat", "fix", "chore", "docs", "build", "test"]
+            const re = new RegExp(`^(` + allowed.join('|') + `)(\\(\\w+\\))?: `)
+            const title = pr['title']
+
+            if (!re.test(title)) {
+               throw new Error(`PR title "${title}" does not match conventional commits filter: ${re}`)
+            }
