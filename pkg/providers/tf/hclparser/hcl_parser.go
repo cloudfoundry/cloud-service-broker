@@ -8,12 +8,12 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 )
 
-type ReplaceVariable struct {
+type ExtractVariable struct {
 	FieldToRead  string
 	FieldToWrite string
 }
 
-func GetParameters(tfHCL string, parameters []ReplaceVariable) (map[string]interface{}, error) {
+func GetParameters(tfHCL string, parameters []ExtractVariable) (map[string]interface{}, error) {
 	splitHcl := strings.Split(tfHCL, "Outputs")
 	parsedConfig, diags := hclwrite.ParseConfig([]byte(splitHcl[0]), "", hcl.InitialPos)
 	if diags.HasErrors() {

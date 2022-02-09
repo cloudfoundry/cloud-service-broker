@@ -16,7 +16,6 @@ package tf
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/hclparser"
@@ -284,44 +283,31 @@ func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, guid
 	return outs, nil
 }
 
-func (provider *terraformProvider) AddImportedProperties(ctx context.Context, planGUID string, tfID string, inputVariables []broker.BrokerVariable, provisionDetails json.RawMessage) (json.RawMessage, error) {
-	provider.logger.Debug("addImportedProperties", correlation.ID(ctx), lager.Data{})
+func (provider *terraformProvider) GetImportedProperties(ctx context.Context, planGUID string, tfID string, inputVariables []broker.BrokerVariable) (map[string]interface{}, error) {
+	provider.logger.Debug("getImportedProperties", correlation.ID(ctx), lager.Data{})
 
 	if provider.isSubsumePlan(planGUID) {
-		return provisionDetails, nil
+		return map[string]interface{}{}, nil
 	}
 
 	varsToReplace := provider.getVarsToReplace(inputVariables)
 	if len(varsToReplace) == 0 {
-		return provisionDetails, nil
+		return map[string]interface{}{}, nil
 	}
 
 	tfHCL, err := provider.jobRunner.Show(ctx, tfID)
 	if err != nil {
-		return nil, err
+		return map[string]interface{}{}, err
 	}
 
-	subsumedParameters, err := hclparser.GetParameters(tfHCL, varsToReplace)
-	if err != nil {
-		return nil, fmt.Errorf("error getting subsumed parameters values: %v", err)
-	}
-
-	vc, err := varcontext.Builder().
-		MergeJsonObject(provisionDetails).
-		MergeMap(subsumedParameters).
-		Build()
-	if err != nil {
-		return nil, fmt.Errorf("error merging subsumed parameters: %v", err)
-	}
-
-	return vc.ToJson()
+	return hclparser.GetParameters(tfHCL, varsToReplace)
 }
 
-func (provider *terraformProvider) getVarsToReplace(inputVariables []broker.BrokerVariable) []hclparser.ReplaceVariable {
-	var varsToReplace []hclparser.ReplaceVariable
+func (provider *terraformProvider) getVarsToReplace(inputVariables []broker.BrokerVariable) []hclparser.ExtractVariable {
+	var varsToReplace []hclparser.ExtractVariable
 	for _, vars := range inputVariables {
 		if vars.Replicate != "" {
-			varsToReplace = append(varsToReplace, hclparser.ReplaceVariable{
+			varsToReplace = append(varsToReplace, hclparser.ExtractVariable{
 				FieldToRead:  vars.Replicate,
 				FieldToWrite: vars.FieldName,
 			})

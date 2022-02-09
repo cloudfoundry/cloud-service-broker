@@ -2,8 +2,7 @@ package tf_test
 
 import (
 	"context"
-	"encoding/json"
-
+	"errors"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
@@ -14,9 +13,9 @@ import (
 )
 
 var _ = Describe("Provider", func() {
-	Describe("AddImportedProperties", func() {
+	Describe("GetImportedProperties", func() {
 		When("instance was not subsumed", func() {
-			It("should not change variables", func() {
+			It("should not return variables or error", func() {
 				defaultPlanGUID := "6526a7be-8504-11ec-b558-276c48808143"
 				storage := new(brokerfakes.FakeServiceProviderStorage)
 
@@ -34,42 +33,6 @@ var _ = Describe("Provider", func() {
 					storage,
 				)
 
-				provisionInput := json.RawMessage(`{"foo":"some=param"}`)
-
-				result, err := tfProvider.AddImportedProperties(context.TODO(), defaultPlanGUID, "", []broker.BrokerVariable{}, provisionInput)
-
-				Expect(err).NotTo(HaveOccurred())
-				Expect(result).To(Equal(provisionInput))
-			})
-		})
-
-		When("instance was subsumed", func() {
-			It("should add subsumed variables", func() {
-				subsumePlanGUID := "6526a7be-8504-11ec-b558-276c48808143"
-				storage := new(brokerfakes.FakeServiceProviderStorage)
-				jobRunner := new(tffakes.FakeJobRunner)
-
-				jobRunner.ShowReturns("# azurerm_mssql_database.azure_sql_db:\nresource \"azurerm_mssql_database\" \"azure_sql_db\" {\nsubsume-key = \"subsume-value\"\n}\nOutputs:\nname = \"test-name\"", nil)
-
-				tfProvider := tf.NewTerraformProvider(
-					jobRunner,
-					utils.NewLogger("test"),
-					tf.TfServiceDefinitionV1{
-						Plans: []tf.TfServiceDefinitionV1Plan{
-							{
-								Name: "subsume-plan",
-								Id:   subsumePlanGUID,
-								Properties: map[string]interface{}{
-									"subsume": true,
-								},
-							},
-						},
-					},
-					storage,
-				)
-
-				provisionInput := json.RawMessage(`{"foo":"some=param"}`)
-
 				inputVariables := []broker.BrokerVariable{
 					{
 						FieldName: "field_to_replace",
@@ -77,23 +40,27 @@ var _ = Describe("Provider", func() {
 					},
 				}
 
-				result, err := tfProvider.AddImportedProperties(context.TODO(), subsumePlanGUID, "tf:dummy:", inputVariables, provisionInput)
+				result, err := tfProvider.GetImportedProperties(context.TODO(), defaultPlanGUID, "", inputVariables)
 
-				_, actualTfId := jobRunner.ShowArgsForCall(0)
-				Expect(actualTfId).To(Equal("tf:dummy:"))
 				Expect(err).NotTo(HaveOccurred())
-				Expect(result).To(Equal(json.RawMessage(`{"field_to_replace":"subsume-value","foo":"some=param"}`)))
+				Expect(result).To(BeEmpty())
 			})
+		})
 
-			It("returns original values when no replace vars are defined", func() {
-				subsumePlanGUID := "6526a7be-8504-11ec-b558-276c48808143"
-				storage := new(brokerfakes.FakeServiceProviderStorage)
-				jobRunner := new(tffakes.FakeJobRunner)
+		When("instance was subsumed", func() {
+			var (
+				tfProvider      broker.ServiceProvider
+				fakeJobRunner   *tffakes.FakeJobRunner
+				subsumePlanGUID string
+			)
 
-				jobRunner.ShowReturns("# azurerm_mssql_database.azure_sql_db:\nresource \"azurerm_mssql_database\" \"azure_sql_db\" {\nsubsume-key = \"subsume-value\"\n}\nOutputs:\nname = \"test-name\"", nil)
+			BeforeEach(func() {
+				subsumePlanGUID = "6526a7be-8504-11ec-b558-276c48808143"
+				fakeJobRunner = new(tffakes.FakeJobRunner)
+				fakeJobRunner.ShowReturns("# azurerm_mssql_database.azure_sql_db:\nresource \"azurerm_mssql_database\" \"azure_sql_db\" {\nsubsume-key = \"subsume-value\"\n}\nOutputs:\nname = \"test-name\"", nil)
 
-				tfProvider := tf.NewTerraformProvider(
-					jobRunner,
+				tfProvider = tf.NewTerraformProvider(
+					fakeJobRunner,
 					utils.NewLogger("test"),
 					tf.TfServiceDefinitionV1{
 						Plans: []tf.TfServiceDefinitionV1Plan{
@@ -106,22 +73,53 @@ var _ = Describe("Provider", func() {
 							},
 						},
 					},
-					storage,
+					new(brokerfakes.FakeServiceProviderStorage),
 				)
+			})
 
-				provisionInput := json.RawMessage(`{"foo":"some=param"}`)
+			It("should return subsumed variables", func() {
+				inputVariables := []broker.BrokerVariable{
+					{
+						FieldName: "field_to_replace",
+						Replicate: "azurerm_mssql_database.azure_sql_db.subsume-key",
+					},
+				}
 
+				result, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "tf:dummy:", inputVariables)
+
+				_, actualTfId := fakeJobRunner.ShowArgsForCall(0)
+				Expect(actualTfId).To(Equal("tf:dummy:"))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(result).To(Equal(map[string]interface{}{"field_to_replace": "subsume-value"}))
+			})
+
+			It("returns empty list and no error when no replace vars are defined", func() {
 				inputVariables := []broker.BrokerVariable{
 					{
 						FieldName: "field_to_replace",
 					},
 				}
 
-				result, err := tfProvider.AddImportedProperties(context.TODO(), subsumePlanGUID, "tf:dummy:", inputVariables, provisionInput)
+				result, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "tf:dummy:", inputVariables)
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(result).To(Equal(json.RawMessage(`{"foo":"some=param"}`)))
-				Expect(jobRunner.ShowCallCount()).To(BeZero())
+				Expect(result).To(BeEmpty())
+				Expect(fakeJobRunner.ShowCallCount()).To(BeZero())
+			})
+
+			It("returns error when tf show fails", func() {
+				fakeJobRunner.ShowReturns("", errors.New("tf show failed"))
+
+				inputVariables := []broker.BrokerVariable{
+					{
+						FieldName: "field_to_replace",
+						Replicate: "resourc.name.attribute",
+					},
+				}
+
+				_, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "tf:dummy:", inputVariables)
+
+				Expect(err).To(MatchError("tf show failed"))
 			})
 		})
 	})

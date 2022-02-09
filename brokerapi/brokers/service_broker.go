@@ -635,13 +635,12 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return response, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
 	}
 
-	//TODO: Consider just returning subsume vars rather then merging
-	previousDetails, err := serviceHelper.AddImportedProperties(ctx, instance.PlanGUID, instance.OperationGUID, brokerService.ProvisionInputVariables, provisionDetails)
+	importedParams, err := serviceHelper.GetImportedProperties(ctx, instance.PlanGUID, instance.OperationGUID, brokerService.ProvisionInputVariables)
 	if err != nil {
 		return response, fmt.Errorf("error retrieving subsume parameters for %q: %w", instanceID, err)
 	}
 
-	mergedDetails, err := mergeJSON(previousDetails, details.GetRawParameters())
+	mergedDetails, err := mergeJSON(provisionDetails, details.GetRawParameters(), importedParams)
 	if err != nil {
 		return response, fmt.Errorf("error merging update and provision details: %w", err)
 	}
@@ -755,9 +754,10 @@ func validateNoPlanParametersOverrides(params map[string]interface{}, plan *brok
 	return nil
 }
 
-func mergeJSON(previousParams, newParams json.RawMessage) (json.RawMessage, error) {
+func mergeJSON(previousParams, newParams json.RawMessage, importParams map[string]interface{}) (json.RawMessage, error) {
 	vc, err := varcontext.Builder().
 		MergeJsonObject(previousParams).
+		MergeMap(importParams).
 		MergeJsonObject(newParams).
 		Build()
 	if err != nil {

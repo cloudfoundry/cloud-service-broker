@@ -10,7 +10,7 @@ var _ = Describe("HclParser", func() {
 	Describe("GetSubsumedParams", func() {
 		When("TF HCL contains all replace properties", func() {
 			It("succeeds", func() {
-				replaceVars := []hclparser.ReplaceVariable{
+				replaceVars := []hclparser.ExtractVariable{
 					{
 						FieldToRead:  "resource_type.resource_name.subsume_key",
 						FieldToWrite: "field_to_replace",
@@ -36,7 +36,7 @@ var _ = Describe("HclParser", func() {
 
 		When("TF HCL does not have outputs block", func() {
 			It("succeeds", func() {
-				replaceVars := []hclparser.ReplaceVariable{
+				replaceVars := []hclparser.ExtractVariable{
 					{
 						FieldToRead:  "resource_type.resource_name.subsume_key",
 						FieldToWrite: "field_to_replace",
@@ -53,7 +53,7 @@ var _ = Describe("HclParser", func() {
 
 		When("TF HCL does not contain one of the replace vars", func() {
 			It("fails", func() {
-				replaceVars := []hclparser.ReplaceVariable{
+				replaceVars := []hclparser.ExtractVariable{
 					{
 						FieldToRead:  "resource_type.resource_name.subsume_key",
 						FieldToWrite: "field_to_replace",
@@ -73,7 +73,7 @@ var _ = Describe("HclParser", func() {
 
 		When("TF HCL is empty", func() {
 			It("fails", func() {
-				replaceVars := []hclparser.ReplaceVariable{
+				replaceVars := []hclparser.ExtractVariable{
 					{
 						FieldToRead:  "resource_type.resource_name.subsume_key",
 						FieldToWrite: "field_to_replace",
@@ -88,7 +88,7 @@ var _ = Describe("HclParser", func() {
 
 		When("TF HCL cannot be parsed", func() {
 			It("fails", func() {
-				_, err := hclparser.GetParameters("not valid", []hclparser.ReplaceVariable{})
+				_, err := hclparser.GetParameters("not valid", []hclparser.ExtractVariable{})
 
 				Expect(err).To(MatchError(ContainSubstring("error parsing subsumed HCL file:")))
 			})

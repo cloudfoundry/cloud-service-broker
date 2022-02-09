@@ -3,7 +3,6 @@ package brokerfakes
 
 import (
 	"context"
-	"encoding/json"
 	"sync"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
@@ -14,23 +13,6 @@ import (
 )
 
 type FakeServiceProvider struct {
-	AddImportedPropertiesStub        func(context.Context, string, string, []broker.BrokerVariable, json.RawMessage) (json.RawMessage, error)
-	addImportedPropertiesMutex       sync.RWMutex
-	addImportedPropertiesArgsForCall []struct {
-		arg1 context.Context
-		arg2 string
-		arg3 string
-		arg4 []broker.BrokerVariable
-		arg5 json.RawMessage
-	}
-	addImportedPropertiesReturns struct {
-		result1 json.RawMessage
-		result2 error
-	}
-	addImportedPropertiesReturnsOnCall map[int]struct {
-		result1 json.RawMessage
-		result2 error
-	}
 	BindStub        func(context.Context, *varcontext.VarContext) (map[string]interface{}, error)
 	bindMutex       sync.RWMutex
 	bindArgsForCall []struct {
@@ -85,6 +67,22 @@ type FakeServiceProvider struct {
 	}
 	deprovisionsAsyncReturnsOnCall map[int]struct {
 		result1 bool
+	}
+	GetImportedPropertiesStub        func(context.Context, string, string, []broker.BrokerVariable) (map[string]interface{}, error)
+	getImportedPropertiesMutex       sync.RWMutex
+	getImportedPropertiesArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+		arg3 string
+		arg4 []broker.BrokerVariable
+	}
+	getImportedPropertiesReturns struct {
+		result1 map[string]interface{}
+		result2 error
+	}
+	getImportedPropertiesReturnsOnCall map[int]struct {
+		result1 map[string]interface{}
+		result2 error
 	}
 	GetTerraformOutputsStub        func(context.Context, string) (storage.TerraformOutputs, error)
 	getTerraformOutputsMutex       sync.RWMutex
@@ -170,79 +168,6 @@ type FakeServiceProvider struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
-}
-
-func (fake *FakeServiceProvider) AddImportedProperties(arg1 context.Context, arg2 string, arg3 string, arg4 []broker.BrokerVariable, arg5 json.RawMessage) (json.RawMessage, error) {
-	var arg4Copy []broker.BrokerVariable
-	if arg4 != nil {
-		arg4Copy = make([]broker.BrokerVariable, len(arg4))
-		copy(arg4Copy, arg4)
-	}
-	fake.addImportedPropertiesMutex.Lock()
-	ret, specificReturn := fake.addImportedPropertiesReturnsOnCall[len(fake.addImportedPropertiesArgsForCall)]
-	fake.addImportedPropertiesArgsForCall = append(fake.addImportedPropertiesArgsForCall, struct {
-		arg1 context.Context
-		arg2 string
-		arg3 string
-		arg4 []broker.BrokerVariable
-		arg5 json.RawMessage
-	}{arg1, arg2, arg3, arg4Copy, arg5})
-	stub := fake.AddImportedPropertiesStub
-	fakeReturns := fake.addImportedPropertiesReturns
-	fake.recordInvocation("AddImportedProperties", []interface{}{arg1, arg2, arg3, arg4Copy, arg5})
-	fake.addImportedPropertiesMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2, arg3, arg4, arg5)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeServiceProvider) AddImportedPropertiesCallCount() int {
-	fake.addImportedPropertiesMutex.RLock()
-	defer fake.addImportedPropertiesMutex.RUnlock()
-	return len(fake.addImportedPropertiesArgsForCall)
-}
-
-func (fake *FakeServiceProvider) AddImportedPropertiesCalls(stub func(context.Context, string, string, []broker.BrokerVariable, json.RawMessage) (json.RawMessage, error)) {
-	fake.addImportedPropertiesMutex.Lock()
-	defer fake.addImportedPropertiesMutex.Unlock()
-	fake.AddImportedPropertiesStub = stub
-}
-
-func (fake *FakeServiceProvider) AddImportedPropertiesArgsForCall(i int) (context.Context, string, string, []broker.BrokerVariable, json.RawMessage) {
-	fake.addImportedPropertiesMutex.RLock()
-	defer fake.addImportedPropertiesMutex.RUnlock()
-	argsForCall := fake.addImportedPropertiesArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4, argsForCall.arg5
-}
-
-func (fake *FakeServiceProvider) AddImportedPropertiesReturns(result1 json.RawMessage, result2 error) {
-	fake.addImportedPropertiesMutex.Lock()
-	defer fake.addImportedPropertiesMutex.Unlock()
-	fake.AddImportedPropertiesStub = nil
-	fake.addImportedPropertiesReturns = struct {
-		result1 json.RawMessage
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeServiceProvider) AddImportedPropertiesReturnsOnCall(i int, result1 json.RawMessage, result2 error) {
-	fake.addImportedPropertiesMutex.Lock()
-	defer fake.addImportedPropertiesMutex.Unlock()
-	fake.AddImportedPropertiesStub = nil
-	if fake.addImportedPropertiesReturnsOnCall == nil {
-		fake.addImportedPropertiesReturnsOnCall = make(map[int]struct {
-			result1 json.RawMessage
-			result2 error
-		})
-	}
-	fake.addImportedPropertiesReturnsOnCall[i] = struct {
-		result1 json.RawMessage
-		result2 error
-	}{result1, result2}
 }
 
 func (fake *FakeServiceProvider) Bind(arg1 context.Context, arg2 *varcontext.VarContext) (map[string]interface{}, error) {
@@ -494,6 +419,78 @@ func (fake *FakeServiceProvider) DeprovisionsAsyncReturnsOnCall(i int, result1 b
 	fake.deprovisionsAsyncReturnsOnCall[i] = struct {
 		result1 bool
 	}{result1}
+}
+
+func (fake *FakeServiceProvider) GetImportedProperties(arg1 context.Context, arg2 string, arg3 string, arg4 []broker.BrokerVariable) (map[string]interface{}, error) {
+	var arg4Copy []broker.BrokerVariable
+	if arg4 != nil {
+		arg4Copy = make([]broker.BrokerVariable, len(arg4))
+		copy(arg4Copy, arg4)
+	}
+	fake.getImportedPropertiesMutex.Lock()
+	ret, specificReturn := fake.getImportedPropertiesReturnsOnCall[len(fake.getImportedPropertiesArgsForCall)]
+	fake.getImportedPropertiesArgsForCall = append(fake.getImportedPropertiesArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+		arg3 string
+		arg4 []broker.BrokerVariable
+	}{arg1, arg2, arg3, arg4Copy})
+	stub := fake.GetImportedPropertiesStub
+	fakeReturns := fake.getImportedPropertiesReturns
+	fake.recordInvocation("GetImportedProperties", []interface{}{arg1, arg2, arg3, arg4Copy})
+	fake.getImportedPropertiesMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeServiceProvider) GetImportedPropertiesCallCount() int {
+	fake.getImportedPropertiesMutex.RLock()
+	defer fake.getImportedPropertiesMutex.RUnlock()
+	return len(fake.getImportedPropertiesArgsForCall)
+}
+
+func (fake *FakeServiceProvider) GetImportedPropertiesCalls(stub func(context.Context, string, string, []broker.BrokerVariable) (map[string]interface{}, error)) {
+	fake.getImportedPropertiesMutex.Lock()
+	defer fake.getImportedPropertiesMutex.Unlock()
+	fake.GetImportedPropertiesStub = stub
+}
+
+func (fake *FakeServiceProvider) GetImportedPropertiesArgsForCall(i int) (context.Context, string, string, []broker.BrokerVariable) {
+	fake.getImportedPropertiesMutex.RLock()
+	defer fake.getImportedPropertiesMutex.RUnlock()
+	argsForCall := fake.getImportedPropertiesArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeServiceProvider) GetImportedPropertiesReturns(result1 map[string]interface{}, result2 error) {
+	fake.getImportedPropertiesMutex.Lock()
+	defer fake.getImportedPropertiesMutex.Unlock()
+	fake.GetImportedPropertiesStub = nil
+	fake.getImportedPropertiesReturns = struct {
+		result1 map[string]interface{}
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeServiceProvider) GetImportedPropertiesReturnsOnCall(i int, result1 map[string]interface{}, result2 error) {
+	fake.getImportedPropertiesMutex.Lock()
+	defer fake.getImportedPropertiesMutex.Unlock()
+	fake.GetImportedPropertiesStub = nil
+	if fake.getImportedPropertiesReturnsOnCall == nil {
+		fake.getImportedPropertiesReturnsOnCall = make(map[int]struct {
+			result1 map[string]interface{}
+			result2 error
+		})
+	}
+	fake.getImportedPropertiesReturnsOnCall[i] = struct {
+		result1 map[string]interface{}
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeServiceProvider) GetTerraformOutputs(arg1 context.Context, arg2 string) (storage.TerraformOutputs, error) {
@@ -879,8 +876,6 @@ func (fake *FakeServiceProvider) UpdateReturnsOnCall(i int, result1 models.Servi
 func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.addImportedPropertiesMutex.RLock()
-	defer fake.addImportedPropertiesMutex.RUnlock()
 	fake.bindMutex.RLock()
 	defer fake.bindMutex.RUnlock()
 	fake.buildInstanceCredentialsMutex.RLock()
@@ -889,6 +884,8 @@ func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	defer fake.deprovisionMutex.RUnlock()
 	fake.deprovisionsAsyncMutex.RLock()
 	defer fake.deprovisionsAsyncMutex.RUnlock()
+	fake.getImportedPropertiesMutex.RLock()
+	defer fake.getImportedPropertiesMutex.RUnlock()
 	fake.getTerraformOutputsMutex.RLock()
 	defer fake.getTerraformOutputsMutex.RUnlock()
 	fake.pollInstanceMutex.RLock()
