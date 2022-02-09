@@ -79,6 +79,20 @@ var _ = Describe("Registry", func() {
 				Expect(err).To(MatchError(`error validating service "test-service", duplicated value, must be unique: Builtin!: Plans[1].Name`))
 			})
 		})
+
+		Context("no plans defined", func() {
+			It("defines a default plan", func() {
+				registry := make(BrokerRegistry)
+
+				err := registry.Register(&ServiceDefinition{
+					Id:        "b9e4332e-b42b-4680-bda5-ea1506797474",
+					Name:      "test-service",
+					Plans:     []ServicePlan{},
+					IsBuiltin: true,
+				})
+				Expect(err).To(MatchError(`service "test-service" has no plans defined; at least one plan must be specified in the service definition or via the environment variable "GSB_SERVICE_TEST_SERVICE_PLANS" or "TEST_SERVICE_CUSTOM_PLANS"`))
+			})
+		})
 	})
 
 	Describe("Validate", func() {

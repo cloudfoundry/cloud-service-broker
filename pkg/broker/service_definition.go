@@ -131,6 +131,16 @@ func (svc *ServiceDefinition) UserDefinedPlansProperty() string {
 	return fmt.Sprintf("service.%s.plans", svc.Name)
 }
 
+func (svc *ServiceDefinition) UserDefinedPlansVariable() string {
+	return strings.ToUpper(
+		strings.ReplaceAll(
+			fmt.Sprintf("%s.service.%s.plans", utils.EnvironmentVarPrefix, utils.PropertyToEnvUnprefixed(svc.Name)),
+			".",
+			"_",
+		),
+	)
+}
+
 // ProvisionDefaultOverrideProperty returns the Viper property name for the
 // object users can set to override the default values on provision.
 func (svc *ServiceDefinition) ProvisionDefaultOverrideProperty() string {
