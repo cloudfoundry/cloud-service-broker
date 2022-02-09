@@ -57,6 +57,9 @@ func (brokerRegistry BrokerRegistry) Register(service *ServiceDefinition) error 
 		return fmt.Errorf("error getting user defined plans: %q, %s", name, err)
 	}
 	service.Plans = append(service.Plans, userPlans...)
+	if len(service.Plans) == 0 {
+		return fmt.Errorf("service %q has no plans defined; at least one plan must be specified in the service definition or via the environment variable %q or %q", service.Name, service.UserDefinedPlansVariable(), service.TileUserDefinedPlansVariable())
+	}
 
 	if err := service.Validate(); err != nil {
 		return fmt.Errorf("error validating service %q, %s", name, err)
