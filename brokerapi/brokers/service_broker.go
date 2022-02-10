@@ -639,11 +639,19 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	if err != nil {
 		return response, fmt.Errorf("error retrieving subsume parameters for %q: %w", instanceID, err)
 	}
-
+	broker.Logger.Info("Updating", correlation.ID(ctx), lager.Data{
+		"instance_id":    instanceID,
+		"importedParams": importedParams,
+	})
 	mergedDetails, err := mergeJSON(provisionDetails, details.GetRawParameters(), importedParams)
 	if err != nil {
 		return response, fmt.Errorf("error merging update and provision details: %w", err)
 	}
+
+	broker.Logger.Info("Updating", correlation.ID(ctx), lager.Data{
+		"instance_id":   instanceID,
+		"mergedDetails": mergedDetails,
+	})
 
 	vars, err := brokerService.UpdateVariables(instanceID, details, mergedDetails, *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
