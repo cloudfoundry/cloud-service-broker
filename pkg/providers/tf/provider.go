@@ -17,7 +17,6 @@ package tf
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/hclparser"
 
@@ -287,16 +286,11 @@ func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, guid
 func (provider *terraformProvider) GetImportedProperties(ctx context.Context, planGUID string, tfID string, inputVariables []broker.BrokerVariable) (map[string]interface{}, error) {
 	provider.logger.Debug("getImportedProperties", correlation.ID(ctx), lager.Data{})
 
-	isSubsume := provider.isSubsumePlan(planGUID)
-	if isSubsume {
-		provider.logger.Debug("getImportedProperties", correlation.ID(ctx), lager.Data{"issubsume": isSubsume})
+	if provider.isSubsumePlan(planGUID) {
 		return map[string]interface{}{}, nil
 	}
-	provider.logger.Debug("getImportedProperties", correlation.ID(ctx), lager.Data{"issubsume": isSubsume})
 
 	varsToReplace := provider.getVarsToReplace(inputVariables)
-	provider.logger.Info("varsToReplace", lager.Data{"varsToReplace": varsToReplace})
-
 	if len(varsToReplace) == 0 {
 		return map[string]interface{}{}, nil
 	}
@@ -306,15 +300,12 @@ func (provider *terraformProvider) GetImportedProperties(ctx context.Context, pl
 		return map[string]interface{}{}, err
 	}
 
-	provider.logger.Info("tfHCL OUTPUT FELISIA", lager.Data{"tfHCL": tfHCL})
 	return hclparser.GetParameters(tfHCL, varsToReplace)
 }
 
 func (provider *terraformProvider) getVarsToReplace(inputVariables []broker.BrokerVariable) []hclparser.ExtractVariable {
 	var varsToReplace []hclparser.ExtractVariable
-	for i, vars := range inputVariables {
-		log.Printf("BrokerVariable[%s] : %v", i, vars)
-
+	for _, vars := range inputVariables {
 		if vars.Replicate != "" {
 			varsToReplace = append(varsToReplace, hclparser.ExtractVariable{
 				FieldToRead:  vars.Replicate,
@@ -328,7 +319,6 @@ func (provider *terraformProvider) getVarsToReplace(inputVariables []broker.Brok
 func (provider *terraformProvider) isSubsumePlan(planGUID string) bool {
 	for _, plan := range provider.serviceDefinition.Plans {
 		if plan.Id == planGUID {
-			log.Printf("plan.Properties: %v", plan.Properties)
 			if _, ok := plan.Properties["subsume"]; !ok {
 				return true
 			}
