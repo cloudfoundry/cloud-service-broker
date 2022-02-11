@@ -3,6 +3,7 @@ package tf_test
 import (
 	"context"
 	"errors"
+
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
@@ -85,10 +86,10 @@ var _ = Describe("Provider", func() {
 					},
 				}
 
-				result, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "tf:dummy:", inputVariables)
+				result, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "fakeInstanceGUID", inputVariables)
 
 				_, actualTfId := fakeJobRunner.ShowArgsForCall(0)
-				Expect(actualTfId).To(Equal("tf:dummy:"))
+				Expect(actualTfId).To(Equal("tf:fakeInstanceGUID:"))
 				Expect(err).NotTo(HaveOccurred())
 				Expect(result).To(Equal(map[string]interface{}{"field_to_replace": "subsume-value"}))
 			})
@@ -100,7 +101,7 @@ var _ = Describe("Provider", func() {
 					},
 				}
 
-				result, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "tf:dummy:", inputVariables)
+				result, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "fakeInstanceGUID", inputVariables)
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(result).To(BeEmpty())
@@ -117,7 +118,7 @@ var _ = Describe("Provider", func() {
 					},
 				}
 
-				_, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "tf:dummy:", inputVariables)
+				_, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "fakeInstanceGUID", inputVariables)
 
 				Expect(err).To(MatchError("tf show failed"))
 			})

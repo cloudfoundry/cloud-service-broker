@@ -635,7 +635,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return response, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
 	}
 
-	importedParams, err := serviceHelper.GetImportedProperties(ctx, instance.PlanGUID, instance.OperationGUID, brokerService.ProvisionInputVariables)
+	importedParams, err := serviceHelper.GetImportedProperties(ctx, instance.PlanGUID, instance.GUID, brokerService.ProvisionInputVariables)
 	if err != nil {
 		return response, fmt.Errorf("error retrieving subsume parameters for %q: %w", instanceID, err)
 	}

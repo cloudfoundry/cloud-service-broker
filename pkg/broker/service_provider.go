@@ -16,6 +16,7 @@ package broker
 
 import (
 	"context"
+
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
@@ -38,7 +39,7 @@ type ServiceProvider interface {
 	Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
 
 	// GetImportedProperties extracts properties that should have been saved as part of subsume operation
-	GetImportedProperties(ctx context.Context, planGUID string, tfID string, inputVariables []BrokerVariable) (map[string]interface{}, error)
+	GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []BrokerVariable) (map[string]interface{}, error)
 
 	// Bind provisions the necessary resources for a user to be able to connect to the provisioned service.
 	// This may include creating service accounts, granting permissions, and adding users to services e.g. a SQL database user.

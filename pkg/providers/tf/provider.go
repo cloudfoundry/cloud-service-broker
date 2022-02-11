@@ -283,7 +283,7 @@ func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, guid
 	return outs, nil
 }
 
-func (provider *terraformProvider) GetImportedProperties(ctx context.Context, planGUID string, tfID string, inputVariables []broker.BrokerVariable) (map[string]interface{}, error) {
+func (provider *terraformProvider) GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []broker.BrokerVariable) (map[string]interface{}, error) {
 	provider.logger.Debug("getImportedProperties", correlation.ID(ctx), lager.Data{})
 
 	if provider.isSubsumePlan(planGUID) {
@@ -295,7 +295,7 @@ func (provider *terraformProvider) GetImportedProperties(ctx context.Context, pl
 		return map[string]interface{}{}, nil
 	}
 
-	tfHCL, err := provider.jobRunner.Show(ctx, tfID)
+	tfHCL, err := provider.jobRunner.Show(ctx, generateTfId(instanceGUID, ""))
 	if err != nil {
 		return map[string]interface{}{}, err
 	}
