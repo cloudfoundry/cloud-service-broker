@@ -143,6 +143,61 @@ var _ = Describe("Parser", func() {
 		})
 	})
 
+	Context("terraform_upgrade_path", func() {
+		It("can parse and validate the upgrade path", func() {
+			m, err := manifest.Parse(fakeManifest(
+				withAdditionalEntry("terraform_binaries", map[string]interface{}{
+					"name":    "terraform",
+					"version": "4.5.6",
+					"default": true,
+				}),
+				with("terraform_upgrade_path",
+					[]map[string]interface{}{
+						{"version": "1.1.4"},
+						{"version": "4.5.6"},
+					},
+				),
+			))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(m.TerraformUpgradePath).To(Equal([]manifest.TerraformUpgradePath{
+				{Version: "1.1.4"},
+				{Version: "4.5.6"},
+			}))
+		})
+
+		It("must be semver", func() {
+			m, err := manifest.Parse(fakeManifest(with("terraform_upgrade_path",
+				[]map[string]interface{}{
+					{"version": "non-semver"},
+				},
+			)))
+			Expect(err).To(MatchError(ContainSubstring("invalid value: non-semver: terraform_upgrade_path[0].version")))
+			Expect(m).To(BeNil())
+		})
+
+		It("must be in order", func() {
+			m, err := manifest.Parse(fakeManifest(with("terraform_upgrade_path",
+				[]map[string]interface{}{
+					{"version": "1.2.3"},
+					{"version": "1.2.4"},
+					{"version": "1.2.1"},
+				},
+			)))
+			Expect(err).To(MatchError(ContainSubstring(`expect versions to be in ascending order: "1.2.1" <= "1.2.4": terraform_upgrade_path[2].version`)))
+			Expect(m).To(BeNil())
+		})
+
+		It("must have a corresponding terraform binary", func() {
+			m, err := manifest.Parse(fakeManifest(with("terraform_upgrade_path",
+				[]map[string]interface{}{
+					{"version": "1.2.3"},
+				},
+			)))
+			Expect(err).To(MatchError(ContainSubstring(`no corresponding terrafom resource for terraform version "1.2.3": terraform_upgrade_path[0].version`)))
+			Expect(m).To(BeNil())
+		})
+	})
+
 	DescribeTable(
 		"missing fields",
 		func(field string) {

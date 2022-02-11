@@ -39,17 +39,18 @@ and which services it will provide.
 #### Manifest YAML file
 
 | Field | Type | Description |
-| --- | --- | --- |
+| --- | --- |--- |
 | packversion* | int | The version of the schema the manifest adheres to. This MUST be set to `1` to be compatible with the brokerpak specification v1. |
 | version* | string | The version of this brokerpak. It's RECOMMENDED you follow [semantic versioning](https://semver.org/) for your brokerpaks. |
 | name* | string | The name of this brokerpak. It's RECOMMENDED that this be lower-case and include only alphanumeric characters, dashes, and underscores. |
 | metadata | object | A free-form field for key/value pairs of additional information about this brokerpak. This could include the authors, creation date, source code repository, etc. |
 | platforms* | array of platform | The platforms this brokerpak will be executed on. |
-| terraform_binaries* | array of Terraform resource | The list of Terraform providers and Terraform that'll be bundled with the brokerpak. *The broker currently only supports terraform v0.12.x*|
+| terraform_binaries* | array of Terraform resource | The list of Terraform providers and Terraform that'll be bundled with the brokerpak. *The broker currently only supports terraform v0.12.x* |
 | service_definitions* | array of string | Each entry points to a file relative to the manifest that defines a service as part of the brokerpak. |
 | parameters | array of parameter | These values are set as environment variables when Terraform is executed. |
-| required_env_variables | array of string | These are the required environment variables that will be passed through to the terraform execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution.
+| required_env_variables | array of string | These are the required environment variables that will be passed through to the terraform execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution. |
 | env_config_mapping |map[string]string | List of mappings of environment variables into config keys, see [functions](#functions) for more information on how to use these |
+| terraform_upgrade_path | array of Terraform Upgrade Path | List of Terraform version steps when performing upgrade in ascending order |
 
 #### Platform object
 
@@ -81,6 +82,15 @@ These variables are first resolved from the configuration of the brokerpak then 
 | --- | --- | --- |
 | name* | string | The environment variable that will be injected e.g. `PROJECT_ID`. |
 | description* | string | A human readable description of what the variable represents. |
+
+#### Terraform Upgrade Path object
+
+This structure holds information about a step in the Terraform upgrade process
+
+| Field | Type | Description |
+| --- | --- | --- |
+| version | semver | The terraform version to step through |
+
 
 ### Example
 
