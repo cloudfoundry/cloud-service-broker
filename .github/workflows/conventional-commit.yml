@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
             const {data: pr} = await github.rest.pulls.get({
