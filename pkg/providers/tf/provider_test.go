@@ -36,8 +36,8 @@ var _ = Describe("Provider", func() {
 
 				inputVariables := []broker.BrokerVariable{
 					{
-						FieldName: "field_to_replace",
-						Replicate: "azurerm_mssql_database.azure_sql_db.subsume-key",
+						FieldName:   "field_to_replace",
+						TFAttribute: "azurerm_mssql_database.azure_sql_db.subsume-key",
 					},
 				}
 
@@ -81,8 +81,8 @@ var _ = Describe("Provider", func() {
 			It("should return subsumed variables", func() {
 				inputVariables := []broker.BrokerVariable{
 					{
-						FieldName: "field_to_replace",
-						Replicate: "azurerm_mssql_database.azure_sql_db.subsume-key",
+						FieldName:   "field_to_replace",
+						TFAttribute: "azurerm_mssql_database.azure_sql_db.subsume-key",
 					},
 				}
 
@@ -113,8 +113,8 @@ var _ = Describe("Provider", func() {
 
 				inputVariables := []broker.BrokerVariable{
 					{
-						FieldName: "field_to_replace",
-						Replicate: "resourc.name.attribute",
+						FieldName:   "field_to_replace",
+						TFAttribute: "resourc.name.attribute",
 					},
 				}
 

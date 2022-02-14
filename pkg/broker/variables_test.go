@@ -70,16 +70,16 @@ func TestBrokerVariable_ToSchema(t *testing.T) {
 				Constraints: map[string]interface{}{
 					"examples": []string{"SAMPLEA", "SAMPLEB"},
 				},
-				Replicate: "test.fake.field",
+				TFAttribute: "test.fake.field",
 			},
 			map[string]interface{}{
-				"title":       "Full Test Field Name",
-				"default":     "some-value",
-				"type":        JsonTypeString,
-				"description": "more information",
-				"enum":        []interface{}{"a", "b"},
-				"examples":    []string{"SAMPLEA", "SAMPLEB"},
-				"replicate":   "test.fake.field",
+				"title":        "Full Test Field Name",
+				"default":      "some-value",
+				"type":         JsonTypeString,
+				"description":  "more information",
+				"enum":         []interface{}{"a", "b"},
+				"examples":     []string{"SAMPLEA", "SAMPLEB"},
+				"tf_attribute": "test.fake.field",
 			},
 		},
 		"prohibit update is copied": {
@@ -229,10 +229,10 @@ func TestBrokerVariable_Validate(t *testing.T) {
 	}{
 		"valid fields": {
 			Variable: BrokerVariable{
-				FieldName: "test",
-				Details:   "test variable",
-				Type:      JsonTypeInteger,
-				Replicate: "type.name.attribute",
+				FieldName:   "test",
+				Details:     "test variable",
+				Type:        JsonTypeInteger,
+				TFAttribute: "type.name.attribute",
 			},
 			Expected: nil,
 		},
@@ -251,14 +251,14 @@ func TestBrokerVariable_Validate(t *testing.T) {
 			},
 			Expected: errors.New("field must match '^(|object|boolean|array|number|string|integer)$': type"),
 		},
-		"invalid replicate": {
+		"invalid tf_attribute": {
 			Variable: BrokerVariable{
-				FieldName: "test",
-				Details:   "test variable",
-				Type:      JsonTypeInteger,
-				Replicate: "thisisnot.validtfattribute",
+				FieldName:   "test",
+				Details:     "test variable",
+				Type:        JsonTypeInteger,
+				TFAttribute: "thisisnot.validtfattribute",
 			},
-			Expected: errors.New("field must match '^([-a-zA-Z0-9_-]*\\.[-a-zA-Z0-9_-]*){2}': replicate"),
+			Expected: errors.New("field must match '^([-a-zA-Z0-9_-]*\\.[-a-zA-Z0-9_-]*){2}': tf_attribute"),
 		},
 	}
 

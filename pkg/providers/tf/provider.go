@@ -306,9 +306,9 @@ func (provider *terraformProvider) GetImportedProperties(ctx context.Context, pl
 func (provider *terraformProvider) getVarsToReplace(inputVariables []broker.BrokerVariable) []hclparser.ExtractVariable {
 	var varsToReplace []hclparser.ExtractVariable
 	for _, vars := range inputVariables {
-		if vars.Replicate != "" {
+		if vars.TFAttribute != "" {
 			varsToReplace = append(varsToReplace, hclparser.ExtractVariable{
-				FieldToRead:  vars.Replicate,
+				FieldToRead:  vars.TFAttribute,
 				FieldToWrite: vars.FieldName,
 			})
 		}

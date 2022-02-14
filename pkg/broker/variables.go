@@ -58,7 +58,7 @@ type BrokerVariable struct {
 	// http://json-schema.org/latest/json-schema-validation.html
 	Constraints    map[string]interface{} `yaml:"constraints,omitempty"`
 	ProhibitUpdate bool                   `yaml:"prohibit_update,omitempty"`
-	Replicate      string                 `yaml:"replicate,omitempty"`
+	TFAttribute    string                 `yaml:"tf_attribute,omitempty"`
 }
 
 // ImportVariable Variable definition for TF import support
@@ -73,9 +73,9 @@ var _ validation.Validatable = (*ServiceDefinition)(nil)
 
 // Validate implements validation.Validatable.
 func (bv *BrokerVariable) Validate() (errs *validation.FieldError) {
-	if bv.Replicate != "" {
+	if bv.TFAttribute != "" {
 		errs = errs.Also(
-			validation.ErrIfNotTerraformAttributePath(bv.Replicate, "replicate"),
+			validation.ErrIfNotTerraformAttributePath(bv.TFAttribute, "tf_attribute"),
 		)
 	}
 
@@ -136,8 +136,8 @@ func (bv *BrokerVariable) ToSchema() map[string]interface{} {
 		schema[validation.KeyProhibitUpdate] = bv.ProhibitUpdate
 	}
 
-	if bv.Replicate != "" {
-		schema[validation.KeyReplicate] = bv.Replicate
+	if bv.TFAttribute != "" {
+		schema[validation.KeyTFAttribute] = bv.TFAttribute
 	}
 
 	return schema
