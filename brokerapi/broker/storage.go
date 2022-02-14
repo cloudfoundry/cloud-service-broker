@@ -1,4 +1,4 @@
-package brokers
+package broker
 
 import (
 	"encoding/json"
@@ -7,6 +7,9 @@ import (
 
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
 )
+
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate . Storage
 
 type Storage interface {
 	broker.ServiceProviderStorage

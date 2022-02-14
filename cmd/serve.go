@@ -21,7 +21,7 @@ import (
 	"net/http"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/brokers"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
@@ -84,12 +84,12 @@ func serve() {
 	encryptor := setupDBEncryption(db, logger)
 
 	// init broker
-	cfg, err := brokers.NewBrokerConfigFromEnv(logger)
+	cfg, err := broker.NewBrokerConfigFromEnv(logger)
 	if err != nil {
 		logger.Fatal("Error initializing service broker config", err)
 	}
 	var serviceBroker domain.ServiceBroker
-	serviceBroker, err = brokers.New(cfg, logger, storage.New(db, encryptor))
+	serviceBroker, err = broker.New(cfg, logger, storage.New(db, encryptor))
 	if err != nil {
 		logger.Fatal("Error initializing service broker", err)
 	}
