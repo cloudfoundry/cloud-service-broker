@@ -36,7 +36,11 @@ func fakeBrokerpak() (string, error) {
 	defer os.RemoveAll(dir)
 
 	tfSrc := filepath.Join(dir, "terraform")
-	if err := stream.Copy(stream.FromString("dummy-file"), stream.ToFile(tfSrc)); err != nil {
+	if err := os.WriteFile(tfSrc, []byte("dummy-file"), 0644); err != nil {
+		return "", err
+	}
+	tfpSrc := filepath.Join(dir, "terraform-provider-google-beta_v1.19.0")
+	if err := os.WriteFile(tfpSrc, []byte("dummy-file"), 0644); err != nil {
 		return "", err
 	}
 
@@ -62,13 +66,13 @@ func fakeBrokerpak() (string, error) {
 			{
 				Name:        "terraform-provider-google-beta",
 				Version:     "1.19.0",
-				Source:      tfSrc,
-				URLTemplate: tfSrc,
+				Source:      tfpSrc,
+				URLTemplate: tfpSrc,
 			},
 		},
 		ServiceDefinitions: []string{"example-service-definition.yml"},
 		Parameters: []manifest.Parameter{
-			{Name: "TEST_PARAM", Description: "An example paramater that will be injected into Terraform's environment variables."},
+			{Name: "TEST_PARAM", Description: "An example parameter that will be injected into Terraform's environment variables."},
 		},
 		EnvConfigMapping: map[string]string{"ENV_VAR": "env.var"},
 	}

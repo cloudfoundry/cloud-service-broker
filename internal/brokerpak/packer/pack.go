@@ -13,6 +13,7 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/zippy"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
 	"github.com/hashicorp/go-getter"
 )
@@ -22,7 +23,7 @@ const manifestName = "manifest.yml"
 func Pack(m *manifest.Manifest, base, dest string) error {
 	// NOTE: we use "log" rather than Lager because this is used by the CLI and
 	// needs to be human readable rather than JSON.
-	log.Println("Packing...")
+	log.Printf("Packing %q version %q with CSB version %q...\n", base, m.Version, utils.Version)
 
 	dir, err := os.MkdirTemp("", "brokerpak")
 	if err != nil {
@@ -69,10 +70,15 @@ func packSources(m *manifest.Manifest, tmp string) error {
 
 func packBinaries(m *manifest.Manifest, tmp string) error {
 	for _, platform := range m.Platforms {
-		platformPath := filepath.Join(tmp, "bin", platform.Os, platform.Arch)
 		for _, resource := range m.TerraformResources {
-			log.Println("\t", brokerpakurl.URL(resource, platform), "->", platformPath)
-			if err := getter.GetAny(platformPath, brokerpakurl.URL(resource, platform)); err != nil {
+			p := filepath.Join(tmp, "bin", platform.Os, platform.Arch)
+
+			if resource.Name == "terraform" {
+				p = filepath.Join(p, resource.Version)
+			}
+
+			log.Println("\t", brokerpakurl.URL(resource, platform), "->", p)
+			if err := getter.GetAny(p, brokerpakurl.URL(resource, platform)); err != nil {
 				return err
 			}
 		}

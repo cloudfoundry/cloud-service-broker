@@ -173,7 +173,7 @@ func TestBrokerVariable_ValidateVariables(t *testing.T) {
 					},
 				},
 			},
-			Expected: errors.New("1 error(s) occurred: test: test must be one of the following: \"one\", \"theother\""),
+			Expected: errors.New(`1 error(s) occurred: test: test must be one of the following: "one", "theother"`),
 		},
 		"test missing": {
 			Parameters: map[string]interface{}{},

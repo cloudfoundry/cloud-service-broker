@@ -39,7 +39,7 @@ func TestDecodeOriginatingIdentityHeader(t *testing.T) {
 		},
 		{
 			name:     "non encoded value",
-			ctx:      context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, "cloudfoundry { \"user_id\": \"683ea748-3092-4ff4-b656-39cacc4d5360\" }"),
+			ctx:      context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, `cloudfoundry { "user_id": "683ea748-3092-4ff4-b656-39cacc4d5360" }`),
 			expected: nil,
 		},
 		{

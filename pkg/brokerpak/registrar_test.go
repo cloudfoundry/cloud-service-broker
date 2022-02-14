@@ -293,7 +293,7 @@ func TestRegistrar_walk(t *testing.T) {
 					"example": {Config: `{}`},
 				},
 			},
-			Expected: "couldn't merge config for brokerpak \"example\": 1 error(s) occurred: invalid character 'a' looking for beginning of value",
+			Expected: `couldn't merge config for brokerpak "example": 1 error(s) occurred: invalid character 'a' looking for beginning of value`,
 		},
 		"bad local config": {
 			Config: &ServerConfig{
@@ -302,7 +302,7 @@ func TestRegistrar_walk(t *testing.T) {
 					"example": {Config: `b`},
 				},
 			},
-			Expected: "couldn't merge config for brokerpak \"example\": 1 error(s) occurred: invalid character 'b' looking for beginning of value",
+			Expected: `couldn't merge config for brokerpak "example": 1 error(s) occurred: invalid character 'b' looking for beginning of value`,
 		},
 		"walk error": {
 			Config: &ServerConfig{

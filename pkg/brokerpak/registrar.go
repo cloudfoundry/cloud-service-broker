@@ -88,12 +88,16 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 			return errs
 		}
 
-		if manifest, err := brokerPak.Manifest(); err == nil {
-			for env, config := range manifest.EnvConfigMapping {
-				viper.BindEnv(config, env)
-			}
+		mf, err := brokerPak.Manifest()
+		if err != nil {
+			return fmt.Errorf("error reading brokerpak manifest: %w", err)
 		}
 
+		for env, config := range mf.EnvConfigMapping {
+			viper.BindEnv(config, env)
+		}
+
+		registerLogger.Info("registration-successful", lager.Data{"version": mf.Version})
 		return nil
 	})
 }
@@ -135,7 +139,7 @@ func (r *Registrar) createExecutor(brokerPak *reader.BrokerPakReader, vc *varcon
 	if err != nil {
 		return nil, err
 	}
-	tfVersion, err := manifest.GetTerraformVersion()
+	tfVersion, err := manifest.DefaultTerraformVersion()
 	if err != nil {
 		return nil, err
 	}

@@ -2,21 +2,25 @@
 package manifest
 
 import (
+	"fmt"
+
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
+	"github.com/hashicorp/go-version"
 )
 
 type Manifest struct {
-	PackVersion        int                 `yaml:"packversion"`
-	Name               string              `yaml:"name"`
-	Version            string              `yaml:"version"`
-	Metadata           map[string]string   `yaml:"metadata"`
-	Platforms          []platform.Platform `yaml:"platforms"`
-	TerraformResources []TerraformResource `yaml:"terraform_binaries"`
-	ServiceDefinitions []string            `yaml:"service_definitions"`
-	Parameters         []Parameter         `yaml:"parameters"`
-	RequiredEnvVars    []string            `yaml:"required_env_variables"`
-	EnvConfigMapping   map[string]string   `yaml:"env_config_mapping"`
+	PackVersion          int                    `yaml:"packversion"`
+	Name                 string                 `yaml:"name"`
+	Version              string                 `yaml:"version"`
+	Metadata             map[string]string      `yaml:"metadata"`
+	Platforms            []platform.Platform    `yaml:"platforms"`
+	TerraformResources   []TerraformResource    `yaml:"terraform_binaries"`
+	ServiceDefinitions   []string               `yaml:"service_definitions"`
+	Parameters           []Parameter            `yaml:"parameters"`
+	RequiredEnvVars      []string               `yaml:"required_env_variables"`
+	EnvConfigMapping     map[string]string      `yaml:"env_config_mapping"`
+	TerraformUpgradePath []TerraformUpgradePath `yaml:"terraform_upgrade_path"`
 }
 
 var _ validation.Validatable = (*Manifest)(nil)
@@ -28,6 +32,8 @@ func (m *Manifest) Validate() (errs *validation.FieldError) {
 		m.validateVersion,
 		m.validatePlatforms,
 		m.validateTerraformResources,
+		m.validateTerraforms,
+		m.validateTerraformUpgradePath,
 		m.validateServiceDefinitions,
 		m.validateParameters,
 	}
@@ -81,6 +87,69 @@ func (m *Manifest) validateTerraformResources() *validation.FieldError {
 	var errs *validation.FieldError
 	for i, resource := range m.TerraformResources {
 		errs = errs.Also(resource.Validate().ViaFieldIndex("terraform_binaries", i))
+	}
+
+	return errs
+}
+
+func (m *Manifest) validateTerraforms() (errs *validation.FieldError) {
+	cache := make(map[string]struct{})
+	count := 0
+	defaults := 0
+	for _, resource := range m.TerraformResources {
+		if resource.Name == "terraform" {
+			count++
+			if resource.Default {
+				defaults++
+			}
+
+			errs = errs.Also(validation.ErrIfDuplicate(resource.Version, "version", cache))
+		}
+	}
+
+	switch {
+	case count > 1 && defaults == 0:
+		errs = errs.Also(&validation.FieldError{
+			Message: "multiple Terraform versions, but none marked as default",
+			Paths:   []string{"terraform_binaries"},
+		})
+	case count > 1 && defaults > 1:
+		errs = errs.Also(&validation.FieldError{
+			Message: "multiple Terraform versions, and multiple marked as default",
+			Paths:   []string{"terraform_binaries"},
+		})
+	}
+
+	return errs
+}
+
+func (m *Manifest) validateTerraformUpgradePath() (errs *validation.FieldError) {
+	available := make(map[string]bool)
+	for _, v := range m.TerraformResources {
+		if v.Name == "terraform" {
+			available[v.Version] = true
+		}
+	}
+
+	cur := version.Must(version.NewVersion("0.0.0"))
+	for i, v := range m.TerraformUpgradePath {
+		ver, err := version.NewVersion(v.Version)
+		switch {
+		case err != nil:
+			errs = errs.Also(validation.ErrInvalidValue(v.Version, "version")).ViaFieldIndex("terraform_upgrade_path", i)
+		case !ver.GreaterThan(cur):
+			errs = errs.Also((&validation.FieldError{
+				Message: fmt.Sprintf("expect versions to be in ascending order: %q <= %q", v.Version, cur.String()),
+				Paths:   []string{"version"},
+			}).ViaFieldIndex("terraform_upgrade_path", i))
+		case !available[v.Version]:
+			errs = errs.Also((&validation.FieldError{
+				Message: fmt.Sprintf("no corresponding terrafom resource for terraform version %q", v.Version),
+				Paths:   []string{"version"},
+			}).ViaFieldIndex("terraform_upgrade_path", i))
+		}
+
+		cur = ver
 	}
 
 	return errs
