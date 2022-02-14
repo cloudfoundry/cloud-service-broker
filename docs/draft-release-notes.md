@@ -7,3 +7,4 @@ This is necessary for subsume operations when brokerpak update is enabled, since
 
 ### Fix:
 - When a service has no plans, there is now an error on broker startup.
+- A 30s timeout has been added for connecting to the broker state database
