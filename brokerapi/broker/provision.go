@@ -88,14 +88,14 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	instanceDetails.SpaceGUID = details.SpaceGUID
 	instanceDetails.OrganizationGUID = details.OrganizationGUID
 
-	//if err := broker.store.StoreServiceInstanceDetails(instanceDetails); err != nil {
-	//	return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance cannot be deprovisioned through cf. Contact your operator for cleanup", err)
-	//}
-	//
-	//// save provision request details
-	//if err := broker.store.StoreProvisionRequestDetails(instanceID, details.RawParameters); err != nil {
-	//	return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
-	//}
+	if err := broker.store.StoreServiceInstanceDetails(instanceDetails); err != nil {
+		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance cannot be deprovisioned through cf. Contact your operator for cleanup", err)
+	}
+
+	// save provision request details
+	if err := broker.store.StoreProvisionRequestDetails(instanceID, details.RawParameters); err != nil {
+		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
+	}
 
 	return domain.ProvisionedServiceSpec{IsAsync: shouldProvisionAsync, DashboardURL: "", OperationData: instanceDetails.OperationGUID}, nil
 }
