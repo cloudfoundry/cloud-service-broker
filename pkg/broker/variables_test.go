@@ -70,14 +70,16 @@ func TestBrokerVariable_ToSchema(t *testing.T) {
 				Constraints: map[string]interface{}{
 					"examples": []string{"SAMPLEA", "SAMPLEB"},
 				},
+				TFAttribute: "test.fake.field",
 			},
 			map[string]interface{}{
-				"title":       "Full Test Field Name",
-				"default":     "some-value",
-				"type":        JsonTypeString,
-				"description": "more information",
-				"enum":        []interface{}{"a", "b"},
-				"examples":    []string{"SAMPLEA", "SAMPLEB"},
+				"title":        "Full Test Field Name",
+				"default":      "some-value",
+				"type":         JsonTypeString,
+				"description":  "more information",
+				"enum":         []interface{}{"a", "b"},
+				"examples":     []string{"SAMPLEA", "SAMPLEB"},
+				"tf_attribute": "test.fake.field",
 			},
 		},
 		"prohibit update is copied": {
@@ -202,6 +204,67 @@ func TestBrokerVariable_ValidateVariables(t *testing.T) {
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
 			actual := ValidateVariables(tc.Parameters, tc.Variables)
+			if tc.Expected == nil {
+				if actual != nil {
+					t.Fatalf("Expected ValidateVariables not to raise an error but got %v", actual)
+				}
+			} else {
+				if actual == nil {
+					t.Fatalf("Expected ValidateVariables to be: %q, got: %v", tc.Expected.Error(), actual)
+				}
+
+				if actual.Error() != tc.Expected.Error() {
+					t.Errorf("Expected ValidateVariables error to be: %q, got: %q", tc.Expected.Error(), actual.Error())
+				}
+			}
+		})
+	}
+}
+
+func TestBrokerVariable_Validate(t *testing.T) {
+	cases := map[string]struct {
+		Parameters map[string]interface{}
+		Variable   BrokerVariable
+		Expected   error
+	}{
+		"valid fields": {
+			Variable: BrokerVariable{
+				FieldName:   "test",
+				Details:     "test variable",
+				Type:        JsonTypeInteger,
+				TFAttribute: "type.name.attribute",
+			},
+			Expected: nil,
+		},
+		"blank fields": {
+			Variable: BrokerVariable{
+				FieldName: "",
+				Details:   "",
+			},
+			Expected: errors.New("missing field(s): details, field_name"),
+		},
+		"invalid JSON type": {
+			Variable: BrokerVariable{
+				FieldName: "test",
+				Details:   "test variable",
+				Type:      "map",
+			},
+			Expected: errors.New("field must match '^(|object|boolean|array|number|string|integer)$': type"),
+		},
+		"invalid tf_attribute": {
+			Variable: BrokerVariable{
+				FieldName:   "test",
+				Details:     "test variable",
+				Type:        JsonTypeInteger,
+				TFAttribute: "thisisnot.validtfattribute",
+			},
+			Expected: errors.New("field must match '^([-a-zA-Z0-9_-]*\\.[-a-zA-Z0-9_-]*){2}': tf_attribute"),
+		},
+	}
+
+	for tn, tc := range cases {
+		t.Run(tn, func(t *testing.T) {
+			actual := tc.Variable.Validate()
 			if tc.Expected == nil {
 				if actual != nil {
 					t.Fatalf("Expected ValidateVariables not to raise an error but got %v", actual)

@@ -63,6 +63,20 @@ type FakeJobRunner struct {
 		result1 map[string]interface{}
 		result2 error
 	}
+	ShowStub        func(context.Context, string) (string, error)
+	showMutex       sync.RWMutex
+	showArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+	}
+	showReturns struct {
+		result1 string
+		result2 error
+	}
+	showReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
 	StageJobStub        func(string, *wrapper.TerraformWorkspace) error
 	stageJobMutex       sync.RWMutex
 	stageJobArgsForCall []struct {
@@ -379,6 +393,71 @@ func (fake *FakeJobRunner) OutputsReturnsOnCall(i int, result1 map[string]interf
 	}{result1, result2}
 }
 
+func (fake *FakeJobRunner) Show(arg1 context.Context, arg2 string) (string, error) {
+	fake.showMutex.Lock()
+	ret, specificReturn := fake.showReturnsOnCall[len(fake.showArgsForCall)]
+	fake.showArgsForCall = append(fake.showArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	stub := fake.ShowStub
+	fakeReturns := fake.showReturns
+	fake.recordInvocation("Show", []interface{}{arg1, arg2})
+	fake.showMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeJobRunner) ShowCallCount() int {
+	fake.showMutex.RLock()
+	defer fake.showMutex.RUnlock()
+	return len(fake.showArgsForCall)
+}
+
+func (fake *FakeJobRunner) ShowCalls(stub func(context.Context, string) (string, error)) {
+	fake.showMutex.Lock()
+	defer fake.showMutex.Unlock()
+	fake.ShowStub = stub
+}
+
+func (fake *FakeJobRunner) ShowArgsForCall(i int) (context.Context, string) {
+	fake.showMutex.RLock()
+	defer fake.showMutex.RUnlock()
+	argsForCall := fake.showArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeJobRunner) ShowReturns(result1 string, result2 error) {
+	fake.showMutex.Lock()
+	defer fake.showMutex.Unlock()
+	fake.ShowStub = nil
+	fake.showReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeJobRunner) ShowReturnsOnCall(i int, result1 string, result2 error) {
+	fake.showMutex.Lock()
+	defer fake.showMutex.Unlock()
+	fake.ShowStub = nil
+	if fake.showReturnsOnCall == nil {
+		fake.showReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.showReturnsOnCall[i] = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeJobRunner) StageJob(arg1 string, arg2 *wrapper.TerraformWorkspace) error {
 	fake.stageJobMutex.Lock()
 	ret, specificReturn := fake.stageJobReturnsOnCall[len(fake.stageJobArgsForCall)]
@@ -645,6 +724,8 @@ func (fake *FakeJobRunner) Invocations() map[string][][]interface{} {
 	defer fake.importMutex.RUnlock()
 	fake.outputsMutex.RLock()
 	defer fake.outputsMutex.RUnlock()
+	fake.showMutex.RLock()
+	defer fake.showMutex.RUnlock()
 	fake.stageJobMutex.RLock()
 	defer fake.stageJobMutex.RUnlock()
 	fake.statusMutex.RLock()

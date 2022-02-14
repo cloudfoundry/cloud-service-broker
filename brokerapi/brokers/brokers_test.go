@@ -183,6 +183,9 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 		Provider: &brokerfakes.FakeServiceProvider{
 			ProvisionsAsyncStub:   func() bool { return isAsync },
 			DeprovisionsAsyncStub: func() bool { return isAsync },
+			GetImportedPropertiesStub: func(ctx context.Context, planGUID string, tfID string, inputVariables []broker.BrokerVariable) (map[string]interface{}, error) {
+				return map[string]interface{}{}, nil
+			},
 			ProvisionStub: func(ctx context.Context, vc *varcontext.VarContext) (storage.ServiceInstanceDetails, error) {
 				return storage.ServiceInstanceDetails{
 					Outputs: map[string]interface{}{"mynameis": "instancename", "foo": "baz"},
@@ -963,6 +966,36 @@ func TestServiceBroker_Update(t *testing.T) {
 				var r map[string]interface{}
 				failIfErr(t, "parsing", json.Unmarshal(m.RequestDetails, &r))
 				assertEqual(t, "merged", map[string]interface{}{"foo": "quz", "guz": "muz", "baz": "quz"}, r)
+			},
+		},
+		"provision, update and imported params merged": {
+			ServiceState: StateNone,
+			AsyncService: true,
+			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
+				p := stub.ProvisionDetails()
+				p.RawParameters = json.RawMessage(`{"foo":"bar","baz":"quz"}`)
+				_, err := broker.Provision(context.TODO(), fakeInstanceId, p, true)
+				failIfErr(t, "provisioning", err)
+
+				stub.Provider.GetImportedPropertiesReturns(map[string]interface{}{"foo": "quz", "guz": "muz", "laz": "taz"}, nil)
+
+				u := stub.UpdateDetails()
+				u.RawParameters = json.RawMessage(`{"guz":"duz"}`)
+
+				_, err = broker.Update(context.TODO(), fakeInstanceId, u, true)
+				failIfErr(t, "updating", err)
+
+				db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+				if err != nil {
+					t.Fatalf("couldn't create database: %v", err)
+				}
+				var m models.ProvisionRequestDetails
+				err = db.Where(`service_instance_id=?`, fakeInstanceId).First(&m).Error
+				failIfErr(t, "reading details", err)
+				var r map[string]interface{}
+				failIfErr(t, "parsing", json.Unmarshal(m.RequestDetails, &r))
+
+				assertEqual(t, "merged", map[string]interface{}{"foo": "quz", "guz": "duz", "baz": "quz", "laz": "taz"}, r)
 			},
 		},
 		"update params not persisted if operation fails": {

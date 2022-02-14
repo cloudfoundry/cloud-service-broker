@@ -365,3 +365,18 @@ func (runner *TfJobRunner) Wait(ctx context.Context, id string) error {
 		}
 	}
 }
+
+// Show returns the output from terraform show command
+func (runner *TfJobRunner) Show(ctx context.Context, id string) (string, error) {
+	deployment, err := runner.store.GetTerraformDeployment(id)
+	if err != nil {
+		return "", err
+	}
+
+	workspace, err := runner.hydrateWorkspace(ctx, deployment)
+	if err != nil {
+		return "", err
+	}
+
+	return workspace.Show(ctx)
+}

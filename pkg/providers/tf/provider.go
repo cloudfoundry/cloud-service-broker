@@ -18,6 +18,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/hclparser"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
@@ -40,6 +42,7 @@ type JobRunner interface {
 	Status(ctx context.Context, id string) (bool, string, error)
 	Outputs(ctx context.Context, id, instanceName string) (map[string]interface{}, error)
 	Wait(ctx context.Context, id string) error
+	Show(ctx context.Context, id string) (string, error)
 }
 
 // NewTerraformProvider creates a new ServiceProvider backed by Terraform module definitions for provision and bind.
@@ -278,4 +281,49 @@ func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, guid
 	}
 
 	return outs, nil
+}
+
+func (provider *terraformProvider) GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []broker.BrokerVariable) (map[string]interface{}, error) {
+	provider.logger.Debug("getImportedProperties", correlation.ID(ctx), lager.Data{})
+
+	if provider.isSubsumePlan(planGUID) {
+		return map[string]interface{}{}, nil
+	}
+
+	varsToReplace := provider.getVarsToReplace(inputVariables)
+	if len(varsToReplace) == 0 {
+		return map[string]interface{}{}, nil
+	}
+
+	tfHCL, err := provider.jobRunner.Show(ctx, generateTfId(instanceGUID, ""))
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+
+	return hclparser.GetParameters(tfHCL, varsToReplace)
+}
+
+func (provider *terraformProvider) getVarsToReplace(inputVariables []broker.BrokerVariable) []hclparser.ExtractVariable {
+	var varsToReplace []hclparser.ExtractVariable
+	for _, vars := range inputVariables {
+		if vars.TFAttribute != "" {
+			varsToReplace = append(varsToReplace, hclparser.ExtractVariable{
+				FieldToRead:  vars.TFAttribute,
+				FieldToWrite: vars.FieldName,
+			})
+		}
+	}
+	return varsToReplace
+}
+
+func (provider *terraformProvider) isSubsumePlan(planGUID string) bool {
+	for _, plan := range provider.serviceDefinition.Plans {
+		if plan.Id == planGUID {
+			if _, ok := plan.Properties["subsume"]; !ok {
+				return true
+			}
+			break
+		}
+	}
+	return false
 }
