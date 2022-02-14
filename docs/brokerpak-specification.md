@@ -313,16 +313,17 @@ The variable object describes a particular input or output variable. The
 structure is turned into a JSONSchema to validate the inputs or outputs.
 Outputs are _only_ validated on integration tests.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| required | boolean | Should the user request fail if this variable isn't provided? |
-| field_name* | string | The name of the JSON field this variable serializes/deserializes to. |
-| type* | string | The JSON type of the field. This MUST be a valid JSONSchema type excepting `null`. |
-| details* | string | Provides explanation about the purpose of the variable. |
-| default | any | The default value for this field. If `null`, the field MUST be marked as required. If a string, it will be executed as a HIL expression and cast to the appropriate type described in the `type` field. See the [Expression language reference](#expression-language-reference) section for more information about what's available. |
-| enum | map of any:string | Valid values for the field and their human-readable descriptions suitable for displaying in a drop-down list. |
-| constraints | map of string:any | Holds additional JSONSchema validation for the field. Feature flag `enable-catalog-schemas` controls whether to serve Json schemas in catalog. The following keys are supported: `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`. |
-| prohibit_update | boolean | Defines if the field value can be updated on update operation. |
+| Field           | Type | Description                                                                                                                                                                                                                                                                                                                                                                                           |
+|-----------------| --- |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| required        | boolean | Should the user request fail if this variable isn't provided?                                                                                                                                                                                                                                                                                                                                         |
+| field_name*     | string | The name of the JSON field this variable serializes/deserializes to.                                                                                                                                                                                                                                                                                                                                  |
+| type*           | string | The JSON type of the field. This MUST be a valid JSONSchema type excepting `null`.                                                                                                                                                                                                                                                                                                                    |
+| details*        | string | Provides explanation about the purpose of the variable.                                                                                                                                                                                                                                                                                                                                               |
+| default         | any | The default value for this field. If `null`, the field MUST be marked as required. If a string, it will be executed as a HIL expression and cast to the appropriate type described in the `type` field. See the [Expression language reference](#expression-language-reference) section for more information about what's available.                                                                  |
+| enum            | map of any:string | Valid values for the field and their human-readable descriptions suitable for displaying in a drop-down list.                                                                                                                                                                                                                                                                                         |
+| constraints     | map of string:any | Holds additional JSONSchema validation for the field. Feature flag `enable-catalog-schemas` controls whether to serve Json schemas in catalog. The following keys are supported: `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`. |
+| tf_attribute    | string | The tf resource attribute from which the value of this field can be extracted from (e.g. `azurerm_mssql_database.azure_sql_db.name`). To be specified for subsume use cases only.                                                                                                                                                                                                                     |
+| prohibit_update | boolean | Defines if the field value can be updated on update operation.                                                                                                                                                                                                                                                                                                                                        |
 
 #### Computed Variable Object
 
@@ -370,6 +371,7 @@ provision:
     field_name: username
     type: string
     details: The username to create
+    tf_attribute: resourceType.resourceName.user
   computed_inputs: []
   template: |-
     variable domain {type = string}

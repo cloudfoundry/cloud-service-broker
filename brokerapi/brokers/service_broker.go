@@ -635,9 +635,12 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return response, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
 	}
 
-	// validate parameters meet the service's schema and merge the user vars with
-	// the plan's
-	mergedDetails, err := mergeJSON(provisionDetails, details.GetRawParameters())
+	importedParams, err := serviceHelper.GetImportedProperties(ctx, instance.PlanGUID, instance.GUID, brokerService.ProvisionInputVariables)
+	if err != nil {
+		return response, fmt.Errorf("error retrieving subsume parameters for %q: %w", instanceID, err)
+	}
+
+	mergedDetails, err := mergeJSON(provisionDetails, details.GetRawParameters(), importedParams)
 	if err != nil {
 		return response, fmt.Errorf("error merging update and provision details: %w", err)
 	}
@@ -751,9 +754,10 @@ func validateNoPlanParametersOverrides(params map[string]interface{}, plan *brok
 	return nil
 }
 
-func mergeJSON(previousParams, newParams json.RawMessage) (json.RawMessage, error) {
+func mergeJSON(previousParams, newParams json.RawMessage, importParams map[string]interface{}) (json.RawMessage, error) {
 	vc, err := varcontext.Builder().
 		MergeJsonObject(previousParams).
+		MergeMap(importParams).
 		MergeJsonObject(newParams).
 		Build()
 	if err != nil {

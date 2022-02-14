@@ -24,10 +24,11 @@ import (
 )
 
 var (
-	osbNameRegex             = regexp.MustCompile(`^[a-zA-Z0-9-\.]+$`)
-	terraformIdentifierRegex = regexp.MustCompile(`^[a-z_]*$`)
-	jsonSchemaTypeRegex      = regexp.MustCompile(`^(|object|boolean|array|number|string|integer)$`)
-	uuidRegex                = regexp.MustCompile(`^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$`)
+	osbNameRegex                = regexp.MustCompile(`^[a-zA-Z0-9-\.]+$`)
+	terraformIdentifierRegex    = regexp.MustCompile(`^[a-z_]*$`)
+	terraformAttributePathRegex = regexp.MustCompile(`^([-a-zA-Z0-9_-]*\.[-a-zA-Z0-9_-]*){2}`)
+	jsonSchemaTypeRegex         = regexp.MustCompile(`^(|object|boolean|array|number|string|integer)$`)
+	uuidRegex                   = regexp.MustCompile(`^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$`)
 )
 
 // ErrIfNotHCL returns an error if the value is not valid HCL.
@@ -82,6 +83,12 @@ func ErrIfNotOSBName(value, field string) *FieldError {
 // schema type.
 func ErrIfNotJSONSchemaType(value, field string) *FieldError {
 	return ErrIfNotMatch(value, jsonSchemaTypeRegex, field)
+}
+
+// ErrIfNotTerraformAttributePath returns an error if the value is not a valid
+// Terraform identifier for an attribute in the HCL.
+func ErrIfNotTerraformAttributePath(value, field string) *FieldError {
+	return ErrIfNotMatch(value, terraformAttributePathRegex, field)
 }
 
 // ErrIfNotTerraformIdentifier returns an error if the value is not a valid

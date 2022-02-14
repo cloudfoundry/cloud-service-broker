@@ -58,6 +58,7 @@ type BrokerVariable struct {
 	// http://json-schema.org/latest/json-schema-validation.html
 	Constraints    map[string]interface{} `yaml:"constraints,omitempty"`
 	ProhibitUpdate bool                   `yaml:"prohibit_update,omitempty"`
+	TFAttribute    string                 `yaml:"tf_attribute,omitempty"`
 }
 
 // ImportVariable Variable definition for TF import support
@@ -72,6 +73,12 @@ var _ validation.Validatable = (*ServiceDefinition)(nil)
 
 // Validate implements validation.Validatable.
 func (bv *BrokerVariable) Validate() (errs *validation.FieldError) {
+	if bv.TFAttribute != "" {
+		errs = errs.Also(
+			validation.ErrIfNotTerraformAttributePath(bv.TFAttribute, "tf_attribute"),
+		)
+	}
+
 	return errs.Also(
 		validation.ErrIfBlank(bv.FieldName, "field_name"),
 		validation.ErrIfNotJSONSchemaType(string(bv.Type), "type"),
@@ -129,6 +136,10 @@ func (bv *BrokerVariable) ToSchema() map[string]interface{} {
 		schema[validation.KeyProhibitUpdate] = bv.ProhibitUpdate
 	}
 
+	if bv.TFAttribute != "" {
+		schema[validation.KeyTFAttribute] = bv.TFAttribute
+	}
+
 	return schema
 }
 
@@ -158,7 +169,6 @@ func fieldNameToLabel(fieldName string) string {
 
 // ApplyDefaults adds default values for missing broker variables.
 func ApplyDefaults(parameters map[string]interface{}, variables []BrokerVariable) {
-
 	for _, v := range variables {
 		if _, ok := parameters[v.FieldName]; !ok && v.Default != nil {
 			parameters[v.FieldName] = v.Default
