@@ -39,17 +39,18 @@ and which services it will provide.
 #### Manifest YAML file
 
 | Field | Type | Description |
-| --- | --- | --- |
+| --- | --- |--- |
 | packversion* | int | The version of the schema the manifest adheres to. This MUST be set to `1` to be compatible with the brokerpak specification v1. |
 | version* | string | The version of this brokerpak. It's RECOMMENDED you follow [semantic versioning](https://semver.org/) for your brokerpaks. |
 | name* | string | The name of this brokerpak. It's RECOMMENDED that this be lower-case and include only alphanumeric characters, dashes, and underscores. |
 | metadata | object | A free-form field for key/value pairs of additional information about this brokerpak. This could include the authors, creation date, source code repository, etc. |
 | platforms* | array of platform | The platforms this brokerpak will be executed on. |
-| terraform_binaries* | array of Terraform resource | The list of Terraform providers and Terraform that'll be bundled with the brokerpak. *The broker currently only supports terraform v0.12.x*|
+| terraform_binaries* | array of Terraform resource | The list of Terraform providers and Terraform that'll be bundled with the brokerpak. *The broker currently only supports terraform v0.12.x* |
 | service_definitions* | array of string | Each entry points to a file relative to the manifest that defines a service as part of the brokerpak. |
 | parameters | array of parameter | These values are set as environment variables when Terraform is executed. |
-| required_env_variables | array of string | These are the required environment variables that will be passed through to the terraform execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution.
+| required_env_variables | array of string | These are the required environment variables that will be passed through to the terraform execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution. |
 | env_config_mapping |map[string]string | List of mappings of environment variables into config keys, see [functions](#functions) for more information on how to use these |
+| terraform_upgrade_path | array of Terraform Upgrade Path | List of Terraform version steps when performing upgrade in ascending order |
 
 #### Platform object
 
@@ -81,6 +82,15 @@ These variables are first resolved from the configuration of the brokerpak then 
 | --- | --- | --- |
 | name* | string | The environment variable that will be injected e.g. `PROJECT_ID`. |
 | description* | string | A human readable description of what the variable represents. |
+
+#### Terraform Upgrade Path object
+
+This structure holds information about a step in the Terraform upgrade process
+
+| Field | Type | Description |
+| --- | --- | --- |
+| version | semver | The terraform version to step through |
+
 
 ### Example
 
@@ -303,16 +313,17 @@ The variable object describes a particular input or output variable. The
 structure is turned into a JSONSchema to validate the inputs or outputs.
 Outputs are _only_ validated on integration tests.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| required | boolean | Should the user request fail if this variable isn't provided? |
-| field_name* | string | The name of the JSON field this variable serializes/deserializes to. |
-| type* | string | The JSON type of the field. This MUST be a valid JSONSchema type excepting `null`. |
-| details* | string | Provides explanation about the purpose of the variable. |
-| default | any | The default value for this field. If `null`, the field MUST be marked as required. If a string, it will be executed as a HIL expression and cast to the appropriate type described in the `type` field. See the [Expression language reference](#expression-language-reference) section for more information about what's available. |
-| enum | map of any:string | Valid values for the field and their human-readable descriptions suitable for displaying in a drop-down list. |
-| constraints | map of string:any | Holds additional JSONSchema validation for the field. Feature flag `enable-catalog-schemas` controls whether to serve Json schemas in catalog. The following keys are supported: `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`. |
-| prohibit_update | boolean | Defines if the field value can be updated on update operation. |
+| Field           | Type | Description                                                                                                                                                                                                                                                                                                                                                                                           |
+|-----------------| --- |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| required        | boolean | Should the user request fail if this variable isn't provided?                                                                                                                                                                                                                                                                                                                                         |
+| field_name*     | string | The name of the JSON field this variable serializes/deserializes to.                                                                                                                                                                                                                                                                                                                                  |
+| type*           | string | The JSON type of the field. This MUST be a valid JSONSchema type excepting `null`.                                                                                                                                                                                                                                                                                                                    |
+| details*        | string | Provides explanation about the purpose of the variable.                                                                                                                                                                                                                                                                                                                                               |
+| default         | any | The default value for this field. If `null`, the field MUST be marked as required. If a string, it will be executed as a HIL expression and cast to the appropriate type described in the `type` field. See the [Expression language reference](#expression-language-reference) section for more information about what's available.                                                                  |
+| enum            | map of any:string | Valid values for the field and their human-readable descriptions suitable for displaying in a drop-down list.                                                                                                                                                                                                                                                                                         |
+| constraints     | map of string:any | Holds additional JSONSchema validation for the field. Feature flag `enable-catalog-schemas` controls whether to serve Json schemas in catalog. The following keys are supported: `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`. |
+| tf_attribute    | string | The tf resource attribute from which the value of this field can be extracted from (e.g. `azurerm_mssql_database.azure_sql_db.name`). To be specified for subsume use cases only.                                                                                                                                                                                                                     |
+| prohibit_update | boolean | Defines if the field value can be updated on update operation.                                                                                                                                                                                                                                                                                                                                        |
 
 #### Computed Variable Object
 
@@ -360,6 +371,7 @@ provision:
     field_name: username
     type: string
     details: The username to create
+    tf_attribute: resourceType.resourceName.user
   computed_inputs: []
   template: |-
     variable domain {type = string}
