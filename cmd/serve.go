@@ -21,11 +21,11 @@ import (
 	"net/http"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/brokers"
+	osbapiBroker "github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	pakBroker "github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/brokerpak"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/server"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/toggles"
@@ -84,12 +84,12 @@ func serve() {
 	encryptor := setupDBEncryption(db, logger)
 
 	// init broker
-	cfg, err := brokers.NewBrokerConfigFromEnv(logger)
+	cfg, err := osbapiBroker.NewBrokerConfigFromEnv(logger)
 	if err != nil {
 		logger.Fatal("Error initializing service broker config", err)
 	}
 	var serviceBroker domain.ServiceBroker
-	serviceBroker, err = brokers.New(cfg, logger, storage.New(db, encryptor))
+	serviceBroker, err = osbapiBroker.New(cfg, logger, storage.New(db, encryptor))
 	if err != nil {
 		logger.Fatal("Error initializing service broker", err)
 	}
@@ -122,7 +122,7 @@ func serve() {
 func serveDocs() {
 	logger := utils.NewLogger("cloud-service-broker")
 	// init broker
-	registry := broker.BrokerRegistry{}
+	registry := pakBroker.BrokerRegistry{}
 	if err := brokerpak.RegisterAll(registry); err != nil {
 		logger.Error("loading brokerpaks", err)
 	}
@@ -154,7 +154,7 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
 	return config.Encryptor
 }
 
-func startServer(registry broker.BrokerRegistry, db *sql.DB, brokerapi http.Handler) {
+func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.Handler) {
 	logger := utils.NewLogger("cloud-service-broker")
 
 	router := mux.NewRouter()

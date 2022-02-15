@@ -12,19 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package brokers_test
+package broker_test
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"os"
 	"reflect"
 	"strings"
 	"testing"
 
 	"code.cloudfoundry.org/lager"
-	. "github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/brokers"
+	. "github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
@@ -808,7 +809,7 @@ func TestServiceBroker_GetBinding(t *testing.T) {
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
 				_, err := broker.GetBinding(context.Background(), fakeInstanceId, fakeBindingId, domain.FetchBindingDetails{})
 
-				assertEqual(t, "expect get binding not supported err", ErrGetBindingsUnsupported, err)
+				assertEqual(t, "expect get binding not supported err", apiresponses.NewFailureResponse(errors.New("the service_bindings endpoint is unsupported"), http.StatusBadRequest, "unsupported"), err)
 			},
 		},
 	}
@@ -823,7 +824,7 @@ func TestServiceBroker_GetInstance(t *testing.T) {
 			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
 				_, err := broker.GetInstance(context.Background(), fakeInstanceId, domain.FetchInstanceDetails{})
 
-				assertEqual(t, "expect get instances not supported err", ErrGetInstancesUnsupported, err)
+				assertEqual(t, "expect get instances not supported err", apiresponses.NewFailureResponse(errors.New("the service_instances endpoint is unsupported"), http.StatusBadRequest, "unsupported"), err)
 			},
 		},
 	}
