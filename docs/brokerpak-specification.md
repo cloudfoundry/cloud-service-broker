@@ -45,7 +45,7 @@ and which services it will provide.
 | name* | string | The name of this brokerpak. It's RECOMMENDED that this be lower-case and include only alphanumeric characters, dashes, and underscores. |
 | metadata | object | A free-form field for key/value pairs of additional information about this brokerpak. This could include the authors, creation date, source code repository, etc. |
 | platforms* | array of platform | The platforms this brokerpak will be executed on. |
-| terraform_binaries* | array of Terraform resource | The list of Terraform providers and Terraform that'll be bundled with the brokerpak. *The broker currently only supports terraform v0.12.x* |
+| terraform_binaries* | array of Terraform resource | The list of Terraform providers and Terraform that'll be bundled with the brokerpak. *The broker currently only supports terraform version v0.12.x and higher*|
 | service_definitions* | array of string | Each entry points to a file relative to the manifest that defines a service as part of the brokerpak. |
 | parameters | array of parameter | These values are set as environment variables when Terraform is executed. |
 | required_env_variables | array of string | These are the required environment variables that will be passed through to the terraform execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution. |
