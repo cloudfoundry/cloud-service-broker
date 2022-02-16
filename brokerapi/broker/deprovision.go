@@ -8,7 +8,6 @@ import (
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/request"
-	"github.com/pivotal-cf/brokerapi/v8"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 )
@@ -27,14 +26,14 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 	exists, err := broker.store.ExistsServiceInstanceDetails(instanceID)
 	switch {
 	case err != nil:
-		return response, err
+		return response, fmt.Errorf("database error checking for existing instance: %s", err)
 	case !exists:
 		return response, apiresponses.ErrInstanceDoesNotExist
 	}
 
 	instance, err := broker.store.GetServiceInstanceDetails(instanceID)
 	if err != nil {
-		return response, err
+		return response, fmt.Errorf("database error getting existing instance: %s", err)
 	}
 
 	brokerService, serviceProvider, err := broker.getDefinitionAndProvider(instance.ServiceGUID)
@@ -50,7 +49,7 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 
 	// if async deprovisioning isn't allowed but this service needs it, throw an error
 	if serviceProvider.DeprovisionsAsync() && !clientSupportsAsync {
-		return response, brokerapi.ErrAsyncRequired
+		return response, apiresponses.ErrAsyncRequired
 	}
 
 	rawParameters, err := broker.store.GetProvisionRequestDetails(instanceID)
@@ -98,5 +97,4 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return response, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance will remain visible in cf. Contact your operator for cleanup", err)
 	}
 	return response, nil
-
 }

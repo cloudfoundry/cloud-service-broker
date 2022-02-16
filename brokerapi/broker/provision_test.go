@@ -218,6 +218,17 @@ var _ = Describe("Provision", func() {
 		})
 	})
 
+	When("provider provision errors", func() {
+		BeforeEach(func() {
+			fakeServiceProvider.ProvisionReturns(storage.ServiceInstanceDetails{}, errors.New("cannot provision right now"))
+		})
+
+		It("should error", func() {
+			_, err := serviceBroker.Provision(context.TODO(), "new-instance", provisionDetails, true)
+			Expect(err).To(MatchError("cannot provision right now"))
+		})
+	})
+
 	When("instance already exists", func() {
 		BeforeEach(func() {
 			fakeStorage.ExistsServiceInstanceDetailsReturns(true, nil)
