@@ -77,8 +77,6 @@ func (runner *TfJobRunner) StageJob(jobId string, workspace *wrapper.TerraformWo
 		if err != nil {
 			return err
 		}
-	default:
-		break
 	}
 
 	workspaceString, err := workspace.Serialize()
