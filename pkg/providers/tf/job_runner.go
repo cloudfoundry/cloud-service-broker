@@ -77,10 +77,6 @@ func (runner *TfJobRunner) StageJob(jobId string, workspace *wrapper.TerraformWo
 		if err != nil {
 			return err
 		}
-	default:
-		if err := runner.store.StoreTerraformDeployment(deployment); err != nil {
-			return err
-		}
 	}
 
 	workspaceString, err := workspace.Serialize()
@@ -90,7 +86,8 @@ func (runner *TfJobRunner) StageJob(jobId string, workspace *wrapper.TerraformWo
 
 	deployment.Workspace = []byte(workspaceString)
 	deployment.LastOperationType = "validation"
-	return runner.operationFinished(nil, workspace, deployment)
+
+	return runner.store.StoreTerraformDeployment(deployment)
 }
 
 func (runner *TfJobRunner) markJobStarted(deployment storage.TerraformDeployment, operationType string) error {
