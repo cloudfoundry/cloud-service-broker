@@ -237,7 +237,7 @@ var _ = Describe("Provision", func() {
 			}
 
 			_, err := serviceBroker.Provision(context.TODO(), "new-instance", provisionDetails, true)
-			Expect(err).To(MatchError("plan ID \"some-non-existent-plan\" could not be found"))
+			Expect(err).To(MatchError(`plan ID "some-non-existent-plan" could not be found`))
 		})
 	})
 
@@ -249,7 +249,7 @@ var _ = Describe("Provision", func() {
 			}
 
 			_, err := serviceBroker.Provision(context.TODO(), "new-instance", provisionDetails, true)
-			Expect(err).To(MatchError("unknown service ID: \"some-non-existent-offering\""))
+			Expect(err).To(MatchError(`unknown service ID: "some-non-existent-offering"`))
 		})
 	})
 
