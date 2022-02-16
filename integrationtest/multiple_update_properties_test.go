@@ -13,7 +13,7 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
-var _ = Describe("Multiple Updates", func() {
+var _ = Describe("Multiple Updates to Properties", func() {
 	const (
 		serviceOfferingGUID = "76c5725c-b246-11eb-871f-ffc97563fbd0"
 		servicePlanGUID     = "8b52a460-b246-11eb-a8f5-d349948e2480"
