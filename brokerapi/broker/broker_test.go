@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"net/http"
 	"os"
 	"reflect"
 	"strings"
@@ -565,36 +564,6 @@ func TestServiceBroker_LastOperation(t *testing.T) {
 				failIfErr(t, "checking last operation", err)
 				assertEqual(t, "polls that return finished should result in a succeeded state", domain.Succeeded, status.State)
 				assertEqual(t, "polls that return finished should have status message", "message", status.Description)
-			},
-		},
-	}
-
-	cases.Run(t)
-}
-
-func TestServiceBroker_GetBinding(t *testing.T) {
-	cases := BrokerEndpointTestSuite{
-		"called-on-bound": {
-			ServiceState: StateBound,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				_, err := broker.GetBinding(context.Background(), fakeInstanceId, fakeBindingId, domain.FetchBindingDetails{})
-
-				assertEqual(t, "expect get binding not supported err", apiresponses.NewFailureResponse(errors.New("the service_bindings endpoint is unsupported"), http.StatusBadRequest, "unsupported"), err)
-			},
-		},
-	}
-
-	cases.Run(t)
-}
-
-func TestServiceBroker_GetInstance(t *testing.T) {
-	cases := BrokerEndpointTestSuite{
-		"called-while-provisioned": {
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				_, err := broker.GetInstance(context.Background(), fakeInstanceId, domain.FetchInstanceDetails{})
-
-				assertEqual(t, "expect get instances not supported err", apiresponses.NewFailureResponse(errors.New("the service_instances endpoint is unsupported"), http.StatusBadRequest, "unsupported"), err)
 			},
 		},
 	}
