@@ -8,13 +8,13 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/brokerpakurl"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/fetcher"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/zippy"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/brokerpakurl"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/fetcher"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
+	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
 	"github.com/hashicorp/go-getter"
 )
 

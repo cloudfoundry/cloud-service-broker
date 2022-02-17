@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cast"
 )

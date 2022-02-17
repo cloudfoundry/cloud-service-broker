@@ -25,7 +25,7 @@ package toggles
 import (
 	"sort"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/spf13/viper"
 )
 

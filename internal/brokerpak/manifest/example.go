@@ -1,6 +1,6 @@
 package manifest
 
-import "github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/platform"
+import "github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 
 // NewExampleManifest creates a new manifest with sample values for the service broker suitable for giving a user a template to manually edit.
 func NewExampleManifest() Manifest {

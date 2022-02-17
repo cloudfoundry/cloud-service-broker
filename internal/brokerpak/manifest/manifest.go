@@ -4,8 +4,8 @@ package manifest
 import (
 	"fmt"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/platform"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/hashicorp/go-version"
 )
 
