@@ -43,8 +43,8 @@ func (instance TestInstance) Start(logger io.Writer, config []string) error {
 		}, config...)
 		serverCommand.Stdout = logger
 		serverCommand.Stderr = logger
+		fmt.Printf("Starting broker on workspace %s, with build %s, with env %v", instance.workspace, instance.brokerBuild, serverCommand.Env)
 		err := serverCommand.Run()
-
 		ginkgo.Fail(fmt.Sprintf("%e: failed starting broker on workspace %s, with build %s, with env %v", err, instance.workspace, instance.brokerBuild, serverCommand.Env))
 	}()
 
