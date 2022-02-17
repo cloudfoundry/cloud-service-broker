@@ -21,6 +21,9 @@ provision:
     - field_name: update_input
       type: string
       details: input to be returned during update
+    - field_name: extra_input
+      type: string
+      details: parameter added in brokerpak update
   outputs:
     - field_name: provision_output
       type: string

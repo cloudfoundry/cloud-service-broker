@@ -20,7 +20,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 )
 
 // Migration holds the information necessary to modify the values in the tile.

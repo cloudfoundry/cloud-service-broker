@@ -1,6 +1,6 @@
 package manifest
 
-import "github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
+import "github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 
 type TerraformResource struct {
 	// Name holds the name of this resource. e.g. terraform-provider-google-beta

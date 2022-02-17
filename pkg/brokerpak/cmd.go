@@ -22,16 +22,16 @@ import (
 	"path/filepath"
 	"text/tabwriter"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/reader"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/reader"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/packer"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/generator"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/server"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/packer"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/generator"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/server"
+	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
 )
 
 const manifestName = "manifest.yml"

@@ -3,9 +3,9 @@ package storage_test
 import (
 	"errors"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

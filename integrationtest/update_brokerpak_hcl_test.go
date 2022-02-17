@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/integrationtest/helper"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
+	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -16,14 +16,14 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
-var _ = Describe("Brokerpak Update", func() {
+var _ = Describe("Update Brokerpak HCL", func() {
 	const (
 		provisionParams             = `{"provision_input":"bar"}`
 		bindParams                  = `{"bind_input":"quz"}`
 		updateParams                = `{"update_input": "update output value"}`
 		updateOutputStateKey        = `"update_output"`
 		updatedUpdateOutputStateKey = `"update_output_updated"`
-		updatedOutputHCL            = `output update_output_updated { value = "${var.update_input}" }`
+		updatedOutputHCL            = `output update_output_updated { value = "${var.update_input == null ? "empty" : var.update_input }${var.extra_input == null ? "empty" : var.extra_input}" }`
 		initialOutputHCL            = `output update_output { value = "${var.update_input}" }`
 		initialBindingOutputHCL     = `bind_output { value = "${var.provision_output} and bind output value" }`
 		updatedBindingOutputHCL     = `bind_output_updated { value = "${var.provision_output} and bind output value" }`
@@ -79,7 +79,7 @@ var _ = Describe("Brokerpak Update", func() {
 		}, time.Minute*2, time.Second*10).Should(BeTrue())
 	}
 
-	updateServiceInstance := func(serviceInstanceGUID string) {
+	updateServiceInstance := func(serviceInstanceGUID, updateParams string) {
 		updateResponse := testHelper.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateParams))
 		Expect(updateResponse.Error).NotTo(HaveOccurred())
 		Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
@@ -181,12 +181,12 @@ var _ = Describe("Brokerpak Update", func() {
 			provisionServiceInstance(serviceInstanceGUID)
 		})
 
-		It("uses the old HCL for service instances operations", func() {
+		It("uses the original HCL for service instances operations", func() {
 			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(false)
 
-			updateServiceInstance(serviceInstanceGUID)
+			updateServiceInstance(serviceInstanceGUID, updateParams)
 
 			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beInitialTerraformHCL)
 			Expect(persistedTerraformState(serviceInstanceGUID, "")).To(haveInitialOutputs)
@@ -196,7 +196,7 @@ var _ = Describe("Brokerpak Update", func() {
 			Expect(persistedTerraformState(serviceInstanceGUID, "")).To(haveEmtpyState)
 		})
 
-		It("uses the initial HCL for binding operations", func() {
+		It("uses the original HCL for binding operations", func() {
 			createBinding(serviceInstanceGUID, serviceBindingGUID)
 			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, serviceBindingGUID)).To(beInitialBindingTerraformHCL)
 			Expect(persistedTerraformState(serviceInstanceGUID, serviceBindingGUID)).To(haveInitialBindingOutputs)
@@ -207,6 +207,16 @@ var _ = Describe("Brokerpak Update", func() {
 
 			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, serviceBindingGUID)).To(beInitialBindingTerraformHCL)
 			Expect(persistedTerraformState(serviceInstanceGUID, serviceBindingGUID)).To(haveEmtpyState)
+		})
+
+		It("ignores extra parameters added in the update", func() {
+			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beInitialTerraformHCL)
+
+			pushUpdatedBrokerpak(false)
+
+			updateServiceInstance(serviceInstanceGUID, `{"update_input":"update output value","extra_input":"foo"}`)
+
+			Expect(persistedTerraformState(serviceInstanceGUID, "")).To(haveInitialOutputs)
 		})
 	})
 
@@ -229,7 +239,7 @@ var _ = Describe("Brokerpak Update", func() {
 
 			pushUpdatedBrokerpak(true)
 
-			updateServiceInstance(serviceInstanceGUID)
+			updateServiceInstance(serviceInstanceGUID, updateParams)
 
 			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beUpdatedTerraformHCL)
 			Expect(persistedTerraformState(serviceInstanceGUID, "")).To(haveUpdatedOutputs)
@@ -257,6 +267,16 @@ var _ = Describe("Brokerpak Update", func() {
 
 			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, serviceBindingGUID)).To(beUpdatedBindingTerraformHCL)
 			Expect(persistedTerraformState(serviceInstanceGUID, serviceBindingGUID)).To(haveEmtpyState)
+		})
+
+		It("uses extra parameters added in the update", func() {
+			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beInitialTerraformHCL)
+
+			pushUpdatedBrokerpak(true)
+
+			updateServiceInstance(serviceInstanceGUID, `{"update_input":"update output value","extra_input":" and extra parameter"}`)
+
+			Expect(persistedTerraformState(serviceInstanceGUID, "")).To(ContainSubstring(`"value": "update output value and extra parameter"`))
 		})
 	})
 })

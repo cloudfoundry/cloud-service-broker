@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker/brokerfakes"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/tffakes"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/tffakes"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

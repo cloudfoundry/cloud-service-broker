@@ -3,9 +3,9 @@ package broker
 import (
 	"encoding/json"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
