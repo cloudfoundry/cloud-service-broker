@@ -18,7 +18,7 @@ var csb string
 
 var _ = SynchronizedBeforeSuite(
 	func() []byte {
-		path, err := Build("github.com/cloudfoundry-incubator/cloud-service-broker")
+		path, err := Build("github.com/cloudfoundry/cloud-service-broker")
 		Expect(err).NotTo(HaveOccurred())
 		return []byte(path)
 	},

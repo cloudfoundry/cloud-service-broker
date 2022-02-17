@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/hashicorp/go-multierror"
 	"gopkg.in/yaml.v3"
 )

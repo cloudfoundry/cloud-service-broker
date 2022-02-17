@@ -3,7 +3,7 @@ package passwordparser_test
 import (
 	"strings"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/passwordparser"
+	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/passwordparser"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

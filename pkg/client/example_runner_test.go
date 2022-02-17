@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 )
 
 func ExampleCompleteServiceExample_jsonSpec() {

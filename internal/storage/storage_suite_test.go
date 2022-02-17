@@ -3,11 +3,11 @@ package storage_test
 import (
 	"testing"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage/storagefakes"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage/storagefakes"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
 	"gorm.io/driver/sqlite"
 
 	"gorm.io/gorm"

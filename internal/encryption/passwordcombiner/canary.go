@@ -3,7 +3,7 @@ package passwordcombiner
 import (
 	"fmt"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/gcmencryptor"
+	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/gcmencryptor"
 )
 
 // CanaryInput is the value that is encrypted with the key and stored in the database

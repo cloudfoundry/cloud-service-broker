@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext/interpolation"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext/interpolation"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 	multierror "github.com/hashicorp/go-multierror"
 	"github.com/spf13/cast"
 )

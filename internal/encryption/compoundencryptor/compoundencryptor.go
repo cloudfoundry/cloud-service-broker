@@ -1,6 +1,6 @@
 package compoundencryptor
 
-import "github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
+import "github.com/cloudfoundry/cloud-service-broker/internal/storage"
 
 func New(encryptor storage.Encryptor, decryptors ...storage.Encryptor) storage.Encryptor {
 	return CompoundEncryptor{
