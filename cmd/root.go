@@ -19,7 +19,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

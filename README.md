@@ -1,18 +1,18 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![test](https://github.com/cloudfoundry-incubator/cloud-service-broker/workflows/test/badge.svg?branch=master)](https://github.com/cloudfoundry-incubator/cloud-service-broker/actions?query=workflow%3Atest+branch%3Amaster)
-[![Go Report Card](https://goreportcard.com/badge/github.com/cloudfoundry-incubator/cloud-service-broker)](https://goreportcard.com/report/github.com/cloudfoundry-incubator/cloud-service-broker)
+[![test](https://github.com/cloudfoundry/cloud-service-broker/workflows/test/badge.svg?branch=master)](https://github.com/cloudfoundry/cloud-service-broker/actions?query=workflow%3Atest+branch%3Amaster)
+[![Go Report Card](https://goreportcard.com/badge/github.com/cloudfoundry/cloud-service-broker)](https://goreportcard.com/report/github.com/cloudfoundry/cloud-service-broker)
 
 # Cloud Service Broker
 
 This is a service broker built to be used with [Cloud Foundry](https://docs.cloudfoundry.org/services/overview.html) and Kubernetes. It adheres to the [Open Service Broker API v2.13](https://github.com/openservicebrokerapi/servicebroker/blob/v2.13/spec.md).
 
-Cloud Service Broker is an extension of the [GCP Service Broker](https://github.com/GoogleCloudPlatform/gcp-service-broker) and uses [Brokerpaks](https://github.com/cloudfoundry-incubator/cloud-service-broker/blob/master/docs/brokerpak-intro.md) to expose services. As long as your target public cloud has a [Terraform provider](https://www.terraform.io/docs/providers/index.html), services can be provisioned via a common interface using standard `cf` CLI commands.
+Cloud Service Broker is an extension of the [GCP Service Broker](https://github.com/GoogleCloudPlatform/gcp-service-broker) and uses [Brokerpaks](https://github.com/cloudfoundry/cloud-service-broker/blob/master/docs/brokerpak-intro.md) to expose services. As long as your target public cloud has a [Terraform provider](https://www.terraform.io/docs/providers/index.html), services can be provisioned via a common interface using standard `cf` CLI commands.
 
 Some of the benefits over traditional, IaaS-provided, service brokers include: 
 - **Easily extensible and maintainable** Less talking to far flung teams, more getting work done. 
 - **One common broker for all brokered services.** Cloud Service Broker decouples the service broker functionality from the catalog of services that it exposes.
 - **Credhub integration out-of-the-box** CredHub encrypts and manages all the secrets associated with your usage of cloud services.
-- **Community** When you expose a service via a [Brokerpak](https://github.com/cloudfoundry-incubator/cloud-service-broker/blob/master/docs/brokerpak-intro.md), you can make it available to everyone who uses CSB.
+- **Community** When you expose a service via a [Brokerpak](https://github.com/cloudfoundry/cloud-service-broker/blob/master/docs/brokerpak-intro.md), you can make it available to everyone who uses CSB.
 - **Easy to migrate existing services using [TF Import](https://www.terraform.io/docs/import/index.html)** We call this "Migration-less" Migration, more on this **coming soon!** 
 
 ## Architecture
@@ -78,9 +78,9 @@ There are make targets for most common dev tasks.
 
 ## Bug Reports, Feature Requests, Documentation Requests & Support
 
-[File a GitHub issue](https://github.com/cloudfoundry-incubator/cloud-service-broker/issues) for bug reports and documentation or feature requests. Please use the provided templates.  
+[File a GitHub issue](https://github.com/cloudfoundry/cloud-service-broker/issues) for bug reports and documentation or feature requests. Please use the provided templates.  
 
 ## Contributing
 We are always looking for folks to contribute Brokerpaks! 
 
-See [Brokerpak Dissection](https://github.com/cloudfoundry-incubator/cloud-service-broker/blob/master/docs/brokerpak-dissection.md) for more information on how to build one yourself.
+See [Brokerpak Dissection](https://github.com/cloudfoundry/cloud-service-broker/blob/master/docs/brokerpak-dissection.md) for more information on how to build one yourself.

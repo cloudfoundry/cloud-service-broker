@@ -7,14 +7,14 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/reader"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/reader"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/packer"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/packer"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

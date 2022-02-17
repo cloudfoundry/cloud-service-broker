@@ -84,7 +84,7 @@ Broker service configuration values:
 
 ## Feature flags Configuration
 
-Feature flags can be toggled through the following configuration values. See also [Feature Flags section in tile.yml ](https://github.com/cloudfoundry-incubator/cloud-service-broker/blob/master/tile.yml#L133-L199) or [source code occurences of "toggles.Features.Toggle"](https://github.com/cloudfoundry-incubator/cloud-service-broker/search?q=toggles.Features.Toggle&type=code)
+Feature flags can be toggled through the following configuration values. See also [Feature Flags section in tile.yml ](https://github.com/cloudfoundry/cloud-service-broker/blob/master/tile.yml#L133-L199) or [source code occurences of "toggles.Features.Toggle"](https://github.com/cloudfoundry/cloud-service-broker/search?q=toggles.Features.Toggle&type=code)
 | Environment Variable | Config File Value | Type | Description | Default |
 |----------------------|------|-------------|------------------|----------|
 | <tt>GSB_COMPATIBILITY_ENABLE_BUILTIN_BROKERPAKS</tt> <b>*</b> | compatibility.enable_builtin_brokerpaks | Boolean | <p>Load brokerpaks that are built-in to the software.</p>| "true" |

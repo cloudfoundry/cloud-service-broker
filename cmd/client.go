@@ -18,9 +18,9 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/server"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/server"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/pborman/uuid"
 	"github.com/spf13/cobra"
 )
