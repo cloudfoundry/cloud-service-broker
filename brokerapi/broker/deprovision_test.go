@@ -4,22 +4,22 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
-	pkgBroker "github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
-	pkgBrokerFakes "github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker/brokerfakes"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
+	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
+	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
+	pkgBroker "github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/middlewares"
 	"golang.org/x/net/context"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/broker"
+	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 )
 
 var _ = Describe("Deprovision", func() {
