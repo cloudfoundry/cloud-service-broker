@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/broker/brokerfakes"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
@@ -28,13 +30,12 @@ var _ = Describe("Deprovision", func() {
 	)
 
 	var (
-		operationID         string
-		brokerConfig        *broker.BrokerConfig
+		serviceBroker      *broker.ServiceBroker
+		deprovisionDetails domain.DeprovisionDetails
+		operationID        string
+
 		fakeStorage         *brokerfakes.FakeStorage
 		fakeServiceProvider *pkgBrokerFakes.FakeServiceProvider
-		serviceBroker       *broker.ServiceBroker
-		deprovisionDetails  domain.DeprovisionDetails
-		providerBuilder     func(logger lager.Logger, store pkgBroker.ServiceProviderStorage) pkgBroker.ServiceProvider
 	)
 
 	BeforeEach(func() {
@@ -43,10 +44,10 @@ var _ = Describe("Deprovision", func() {
 		operationID = "test-operation-id"
 		fakeServiceProvider.DeprovisionReturns(&operationID, nil)
 
-		providerBuilder = func(logger lager.Logger, store pkgBroker.ServiceProviderStorage) pkgBroker.ServiceProvider {
+		providerBuilder := func(logger lager.Logger, store pkgBroker.ServiceProviderStorage) pkgBroker.ServiceProvider {
 			return fakeServiceProvider
 		}
-		brokerConfig = &broker.BrokerConfig{
+		brokerConfig := &broker.BrokerConfig{
 			Registry: pkgBroker.BrokerRegistry{
 				"test-service": &pkgBroker.ServiceDefinition{
 					Id:   offeringID,
@@ -63,6 +64,10 @@ var _ = Describe("Deprovision", func() {
 							},
 						},
 					},
+					ProvisionComputedVariables: []varcontext.DefaultVariable{
+						{Name: "labels", Default: "${json.marshal(request.default_labels)}", Overwrite: true},
+						{Name: "copyOriginatingIdentity", Default: "${json.marshal(request.x_broker_api_originating_identity)}", Overwrite: true},
+					},
 					ProviderBuilder: providerBuilder,
 				},
 			},
@@ -70,13 +75,15 @@ var _ = Describe("Deprovision", func() {
 
 		fakeStorage = &brokerfakes.FakeStorage{}
 		fakeStorage.ExistsServiceInstanceDetailsReturns(true, nil)
-		fakeStorage.GetProvisionRequestDetailsReturns(json.RawMessage(`{"foo":"something", "import_field_1":"hello"}`), nil)
+		fakeStorage.GetProvisionRequestDetailsReturns(json.RawMessage{}, nil)
 		fakeStorage.GetServiceInstanceDetailsReturns(storage.ServiceInstanceDetails{
-			ServiceGUID:   offeringID,
-			PlanGUID:      planID,
-			GUID:          instanceToDeleteID,
-			OperationType: "provision",
-			OperationGUID: operationID,
+			ServiceGUID:      offeringID,
+			PlanGUID:         planID,
+			GUID:             instanceToDeleteID,
+			SpaceGUID:        "test-space",
+			OrganizationGUID: "test-org",
+			OperationType:    "provision",
+			OperationGUID:    operationID,
 		}, nil)
 
 		var err error
@@ -107,12 +114,10 @@ var _ = Describe("Deprovision", func() {
 
 			By("validating call to deprovision")
 			Expect(fakeServiceProvider.DeprovisionCallCount()).To(Equal(1))
-			actualCtx, instanceID, actualDetails, actualsVars := fakeServiceProvider.DeprovisionArgsForCall(0)
+			actualCtx, instanceID, actualDetails, _ := fakeServiceProvider.DeprovisionArgsForCall(0)
 			Expect(actualCtx.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
 			Expect(instanceID).To(Equal(instanceToDeleteID))
 			Expect(actualDetails).To(Equal(deprovisionDetails))
-			Expect(actualsVars.GetString("plan-defined-key")).To(Equal("plan-defined-value"))
-			Expect(actualsVars.GetString("other-plan-defined-key")).To(Equal("other-plan-defined-value"))
 
 			By("validating SI details delete call")
 			Expect(fakeStorage.DeleteServiceInstanceDetailsCallCount()).To(Equal(1))
@@ -123,6 +128,53 @@ var _ = Describe("Deprovision", func() {
 			Expect(fakeStorage.DeleteProvisionRequestDetailsCallCount()).To(Equal(1))
 			actualInstance := fakeStorage.DeleteProvisionRequestDetailsArgsForCall(0)
 			Expect(actualInstance).To(Equal(instanceToDeleteID))
+		})
+
+		Describe("deprovision variables", func() {
+			When("there were provision variables during provision or update", func() {
+				BeforeEach(func() {
+					fakeStorage.GetProvisionRequestDetailsReturns(json.RawMessage(`{"foo":"something", "import_field_1":"hello"}`), nil)
+				})
+
+				It("should use the provision variables", func() {
+					_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
+					Expect(err).ToNot(HaveOccurred())
+
+					By("validating provider provision has been called with the right vars")
+					Expect(fakeServiceProvider.DeprovisionCallCount()).To(Equal(1))
+					_, _, _, actualVars := fakeServiceProvider.DeprovisionArgsForCall(0)
+					Expect(actualVars.GetString("foo")).To(Equal("something"))
+					Expect(actualVars.GetString("import_field_1")).To(Equal("hello"))
+				})
+			})
+
+			Describe("provision computed variables", func() {
+				It("passes computed variables to deprovision", func() {
+					header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
+					newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
+
+					_, err := serviceBroker.Deprovision(newContext, instanceToDeleteID, deprovisionDetails, true)
+					Expect(err).ToNot(HaveOccurred())
+
+					By("validating provider provision has been called with the right vars")
+					Expect(fakeServiceProvider.DeprovisionCallCount()).To(Equal(1))
+					_, _, _, actualVars := fakeServiceProvider.DeprovisionArgsForCall(0)
+
+					Expect(actualVars.GetString("copyOriginatingIdentity")).To(Equal(`{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`))
+					Expect(actualVars.GetString("labels")).To(Equal(`{"pcf-instance-id":"test-instance-id","pcf-organization-guid":"","pcf-space-guid":""}`))
+				})
+			})
+
+			It("passes plan provided service properties", func() {
+				_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
+				Expect(err).ToNot(HaveOccurred())
+
+				By("validating provider provision has been called with the right vars")
+				Expect(fakeServiceProvider.DeprovisionCallCount()).To(Equal(1))
+				_, _, _, actualVars := fakeServiceProvider.DeprovisionArgsForCall(0)
+				Expect(actualVars.GetString("plan-defined-key")).To(Equal("plan-defined-value"))
+				Expect(actualVars.GetString("other-plan-defined-key")).To(Equal("other-plan-defined-value"))
+			})
 		})
 	})
 

@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+
+	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/broker"
@@ -30,12 +33,11 @@ var _ = Describe("Provision", func() {
 	)
 
 	var (
-		brokerConfig        *broker.BrokerConfig
+		serviceBroker    *broker.ServiceBroker
+		provisionDetails domain.ProvisionDetails
+
 		fakeStorage         *brokerfakes.FakeStorage
 		fakeServiceProvider *pkgBrokerFakes.FakeServiceProvider
-		serviceBroker       *broker.ServiceBroker
-		provisionDetails    domain.ProvisionDetails
-		providerBuilder     func(logger lager.Logger, store pkgBroker.ServiceProviderStorage) pkgBroker.ServiceProvider
 	)
 
 	BeforeEach(func() {
@@ -47,10 +49,10 @@ var _ = Describe("Provision", func() {
 			OperationGUID: operationID,
 		}, nil)
 
-		providerBuilder = func(logger lager.Logger, store pkgBroker.ServiceProviderStorage) pkgBroker.ServiceProvider {
+		providerBuilder := func(logger lager.Logger, store pkgBroker.ServiceProviderStorage) pkgBroker.ServiceProvider {
 			return fakeServiceProvider
 		}
-		brokerConfig = &broker.BrokerConfig{
+		brokerConfig := &broker.BrokerConfig{
 			Registry: pkgBroker.BrokerRegistry{
 				"test-service": &pkgBroker.ServiceDefinition{
 					Id:   offeringID,
@@ -92,6 +94,10 @@ var _ = Describe("Provision", func() {
 							TfResource: "fake.tf.resource",
 						},
 					},
+					ProvisionComputedVariables: []varcontext.DefaultVariable{
+						{Name: "labels", Default: "${json.marshal(request.default_labels)}", Overwrite: true},
+						{Name: "copyOriginatingIdentity", Default: "${json.marshal(request.x_broker_api_originating_identity)}", Overwrite: true},
+					},
 					ProviderBuilder: providerBuilder,
 				},
 			},
@@ -109,6 +115,7 @@ var _ = Describe("Provision", func() {
 			PlanID:           planID,
 			SpaceGUID:        spaceID,
 			OrganizationGUID: orgID,
+			RawContext:       json.RawMessage(fmt.Sprintf(`{"organization_guid":%q, "space_guid": %q}`, orgID, spaceID)),
 		}
 	})
 
@@ -127,10 +134,8 @@ var _ = Describe("Provision", func() {
 
 			By("validating provider provision has been called")
 			Expect(fakeServiceProvider.ProvisionCallCount()).To(Equal(1))
-			actualContext, actualVars := fakeServiceProvider.ProvisionArgsForCall(0)
+			actualContext, _ := fakeServiceProvider.ProvisionArgsForCall(0)
 			Expect(actualContext.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
-			Expect(actualVars.GetString("plan-defined-key")).To(Equal("plan-defined-value"))
-			Expect(actualVars.GetString("other-plan-defined-key")).To(Equal("other-plan-defined-value"))
 
 			By("validating SI details storing call")
 			Expect(fakeStorage.StoreServiceInstanceDetailsCallCount()).To(Equal(1))
@@ -145,7 +150,7 @@ var _ = Describe("Provision", func() {
 			Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(1))
 			actualSI, actualParams := fakeStorage.StoreProvisionRequestDetailsArgsForCall(0)
 			Expect(actualSI).To(Equal(newInstanceID))
-			Expect(actualParams).To(Equal(provisionDetails.RawParameters))
+			Expect(actualParams).To(BeNil())
 		})
 
 		It("should provision with parameters", func() {
@@ -162,8 +167,6 @@ var _ = Describe("Provision", func() {
 			By("validating provision has been called")
 			Expect(fakeServiceProvider.ProvisionCallCount()).To(Equal(1))
 			_, actualVars := fakeServiceProvider.ProvisionArgsForCall(0)
-			Expect(actualVars.GetString("plan-defined-key")).To(Equal("plan-defined-value"))
-			Expect(actualVars.GetString("other-plan-defined-key")).To(Equal("other-plan-defined-value"))
 			Expect(actualVars.GetString("foo")).To(Equal("something"))
 			Expect(actualVars.GetString("import_field_1")).To(Equal("hello"))
 
@@ -172,6 +175,36 @@ var _ = Describe("Provision", func() {
 			actualSI, actualParams := fakeStorage.StoreProvisionRequestDetailsArgsForCall(0)
 			Expect(actualSI).To(Equal(newInstanceID))
 			Expect(actualParams).To(Equal(expectedParams))
+		})
+
+		Describe("provision variables", func() {
+			It("passes plan provided service properties", func() {
+				_, err := serviceBroker.Provision(context.TODO(), newInstanceID, provisionDetails, true)
+				Expect(err).ToNot(HaveOccurred())
+
+				By("validating provider provision has been called with the right vars")
+				Expect(fakeServiceProvider.ProvisionCallCount()).To(Equal(1))
+				_, actualVars := fakeServiceProvider.ProvisionArgsForCall(0)
+				Expect(actualVars.GetString("plan-defined-key")).To(Equal("plan-defined-value"))
+				Expect(actualVars.GetString("other-plan-defined-key")).To(Equal("other-plan-defined-value"))
+			})
+
+			Describe("provision computed variables", func() {
+				It("passes computed variables", func() {
+					header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
+					newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
+
+					_, err := serviceBroker.Provision(newContext, newInstanceID, provisionDetails, true)
+					Expect(err).ToNot(HaveOccurred())
+
+					By("validating provider provision has been called with the right vars")
+					Expect(fakeServiceProvider.ProvisionCallCount()).To(Equal(1))
+					_, actualVars := fakeServiceProvider.ProvisionArgsForCall(0)
+
+					Expect(actualVars.GetString("copyOriginatingIdentity")).To(Equal(`{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`))
+					Expect(actualVars.GetString("labels")).To(Equal(`{"pcf-instance-id":"test-instance-id","pcf-organization-guid":"test-org-id","pcf-space-guid":"test-space-id"}`))
+				})
+			})
 		})
 	})
 
