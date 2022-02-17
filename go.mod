@@ -1,4 +1,4 @@
-module github.com/cloudfoundry-incubator/cloud-service-broker
+module github.com/cloudfoundry/cloud-service-broker
 
 go 1.17
 

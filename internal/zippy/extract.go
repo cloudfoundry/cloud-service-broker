@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/stream"
+	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
 )
 
 // ExtractDirectory extracts a path within the zip file to a target directory

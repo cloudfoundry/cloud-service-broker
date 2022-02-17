@@ -4,7 +4,7 @@ package storagefakes
 import (
 	"sync"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 )
 
 type FakeEncryptor struct {

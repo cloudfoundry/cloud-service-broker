@@ -3,7 +3,7 @@ package broker_test
 import (
 	"fmt"
 
-	. "github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
+	. "github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v8/domain"

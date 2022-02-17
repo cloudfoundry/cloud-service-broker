@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
 )

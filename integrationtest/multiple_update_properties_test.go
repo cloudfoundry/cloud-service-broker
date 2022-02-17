@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/integrationtest/helper"
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"

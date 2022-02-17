@@ -3,9 +3,9 @@ package tf
 import (
 	"fmt"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/spf13/viper"
 )
 

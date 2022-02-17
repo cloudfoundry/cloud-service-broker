@@ -19,7 +19,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/brokerpak"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/brokerpak"
 	"github.com/spf13/cobra"
 )
 

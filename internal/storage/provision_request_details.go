@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
 )
 
 type ProvisionRequestDetails struct {

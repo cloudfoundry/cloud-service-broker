@@ -1,7 +1,7 @@
 package helper
 
 import (
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/client"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
 	"github.com/onsi/gomega"
 )
 

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/brokerapi/broker"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 )
 
 type FakeStorage struct {

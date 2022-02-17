@@ -4,9 +4,9 @@ import (
 	_ "embed"
 	"fmt"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v3"

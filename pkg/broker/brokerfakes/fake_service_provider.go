@@ -5,10 +5,10 @@ import (
 	"context"
 	"sync"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 

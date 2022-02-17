@@ -1,7 +1,7 @@
 package manifest_test
 
 import (
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/brokerpakurl"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/brokerpakurl"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 )
 
 func TestTerraformResource_URL(t *testing.T) {

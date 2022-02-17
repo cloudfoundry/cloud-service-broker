@@ -3,9 +3,9 @@ package compoundencryptor_test
 import (
 	"errors"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/compoundencryptor"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage/storagefakes"
+	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/compoundencryptor"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage/storagefakes"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

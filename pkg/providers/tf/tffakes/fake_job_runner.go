@@ -5,8 +5,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/wrapper"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
 )
 
 type FakeJobRunner struct {

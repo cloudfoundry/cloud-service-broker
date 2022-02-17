@@ -23,9 +23,9 @@ SRC = $(shell find . -name "*.go" | grep -v "_test\." )
 
 VERSION := $(or $(VERSION), dev)
 
-LDFLAGS="-X github.com/cloudfoundry-incubator/cloud-service-broker/utils.Version=$(VERSION)"
+LDFLAGS="-X github.com/cloudfoundry/cloud-service-broker/utils.Version=$(VERSION)"
 
-PKG="github.com/cloudfoundry-incubator/cloud-service-broker"
+PKG="github.com/cloudfoundry/cloud-service-broker"
 
 .PHONY: deps-go-binary
 deps-go-binary:

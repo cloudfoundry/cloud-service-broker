@@ -1,7 +1,7 @@
 package hclparser_test
 
 import (
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/providers/tf/hclparser"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/hclparser"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

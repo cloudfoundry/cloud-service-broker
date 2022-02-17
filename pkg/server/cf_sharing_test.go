@@ -21,7 +21,7 @@ import (
 
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/pkg/server/fakes"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/server/fakes"
 )
 
 func TestCfSharingWraper_Services(t *testing.T) {

@@ -51,7 +51,7 @@ packages:
     - go_buildpack
     path: /tmp/cloud-service-broker.zip
     env:
-      GOPACKAGENAME: github.com/cloudfoundry-incubator/cloud-service-broker
+      GOPACKAGENAME: github.com/cloudfoundry/cloud-service-broker
       GOVERSION: go1.16
       # You can override plans here.
   needs_cf_credentials: true

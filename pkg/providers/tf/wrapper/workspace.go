@@ -29,8 +29,8 @@ import (
 	"github.com/hashicorp/go-version"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
+	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )
 
 // DefaultInstanceName is the default name of an instance of a particular module.

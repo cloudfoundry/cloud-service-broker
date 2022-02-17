@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/utils/correlation"
+	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 )

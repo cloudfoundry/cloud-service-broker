@@ -5,8 +5,8 @@ import (
 	"path"
 	"time"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/integrationtest/helper"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/zippy"
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
+	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"

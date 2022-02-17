@@ -3,12 +3,12 @@ package encryption
 import (
 	"errors"
 
-	"github.com/cloudfoundry-incubator/cloud-service-broker/db_service/models"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/compoundencryptor"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/noopencryptor"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/passwordcombiner"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/encryption/passwordparser"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/compoundencryptor"
+	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/noopencryptor"
+	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/passwordcombiner"
+	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/passwordparser"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"gorm.io/gorm"
 )
 

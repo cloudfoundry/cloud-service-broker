@@ -14,7 +14,7 @@
 
 package broker
 
-import "github.com/cloudfoundry-incubator/cloud-service-broker/pkg/validation"
+import "github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 
 // ServiceExample holds example configurations for a service that _should_
 // work.
