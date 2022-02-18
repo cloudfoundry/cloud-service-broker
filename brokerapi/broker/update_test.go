@@ -102,14 +102,6 @@ var _ = Describe("Update", func() {
 							ProhibitUpdate: true,
 						},
 					},
-					//ImportInputVariables: []pkgBroker.ImportVariable{
-					//	{
-					//		Name:       "import_field_1",
-					//		Type:       "string",
-					//		Details:    "fake import field",
-					//		TfResource: "fake.tf.resource",
-					//	},
-					//},
 					ProvisionComputedVariables: []varcontext.DefaultVariable{
 						{Name: "labels", Default: "${json.marshal(request.default_labels)}", Overwrite: true},
 						{Name: "copyOriginatingIdentity", Default: "${json.marshal(request.x_broker_api_originating_identity)}", Overwrite: true},
