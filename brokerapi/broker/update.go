@@ -96,10 +96,12 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return domain.UpdateServiceSpec{}, err
 	}
 
-	// save instance details
-	instance.PlanGUID = newInstanceDetails.PlanId
-	if err := broker.store.StoreServiceInstanceDetails(instance); err != nil {
-		return domain.UpdateServiceSpec{}, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance cannot be deprovisioned through cf. Contact your operator for cleanup", err)
+	// save instance plan change
+	if instance.PlanGUID != details.PlanID {
+		instance.PlanGUID = details.PlanID
+		if err := broker.store.StoreServiceInstanceDetails(instance); err != nil {
+			return domain.UpdateServiceSpec{}, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance cannot be deprovisioned through cf. Contact your operator for cleanup", err)
+		}
 	}
 
 	// save provision request details

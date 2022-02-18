@@ -1,10 +1,11 @@
 package broker_test
 
 import (
-	"code.cloudfoundry.org/lager"
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -173,14 +174,8 @@ var _ = Describe("Update", func() {
 				actualContext, _ := fakeServiceProvider.UpdateArgsForCall(0)
 				Expect(actualContext.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
 
-				By("validating SI details storing call")
-				Expect(fakeStorage.StoreServiceInstanceDetailsCallCount()).To(Equal(1))
-				actualSIDetails := fakeStorage.StoreServiceInstanceDetailsArgsForCall(0)
-				Expect(actualSIDetails.GUID).To(Equal(instanceID))
-				Expect(actualSIDetails.ServiceGUID).To(Equal(offeringID))
-				Expect(actualSIDetails.PlanGUID).To(Equal(""))
-				Expect(actualSIDetails.SpaceGUID).To(Equal(spaceID))
-				Expect(actualSIDetails.OrganizationGUID).To(Equal(orgID))
+				By("validating SI details is not updated")
+				Expect(fakeStorage.StoreServiceInstanceDetailsCallCount()).To(Equal(0))
 
 				By("validating provision parameters storing call")
 				Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(1))
@@ -227,7 +222,7 @@ var _ = Describe("Update", func() {
 				actualSIDetails := fakeStorage.StoreServiceInstanceDetailsArgsForCall(0)
 				Expect(actualSIDetails.GUID).To(Equal(instanceID))
 				Expect(actualSIDetails.ServiceGUID).To(Equal(offeringID))
-				Expect(actualSIDetails.PlanGUID).To(Equal(""))
+				Expect(actualSIDetails.PlanGUID).To(Equal(newPlanID))
 				Expect(actualSIDetails.SpaceGUID).To(Equal(spaceID))
 				Expect(actualSIDetails.OrganizationGUID).To(Equal(orgID))
 			})
@@ -269,14 +264,8 @@ var _ = Describe("Update", func() {
 				Expect(actualVars.GetString("foo")).To(Equal("quz"))
 				Expect(actualVars.GetString("guz")).To(Equal("muz"))
 
-				By("validating SI details storing call")
-				Expect(fakeStorage.StoreServiceInstanceDetailsCallCount()).To(Equal(1))
-				actualSIDetails := fakeStorage.StoreServiceInstanceDetailsArgsForCall(0)
-				Expect(actualSIDetails.GUID).To(Equal(instanceID))
-				Expect(actualSIDetails.ServiceGUID).To(Equal(offeringID))
-				Expect(actualSIDetails.PlanGUID).To(Equal(""))
-				Expect(actualSIDetails.SpaceGUID).To(Equal(spaceID))
-				Expect(actualSIDetails.OrganizationGUID).To(Equal(orgID))
+				By("validating SI details is not updated")
+				Expect(fakeStorage.StoreServiceInstanceDetailsCallCount()).To(Equal(0))
 
 				By("validating provision details have been stored")
 				Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(1))
@@ -561,6 +550,8 @@ var _ = Describe("Update", func() {
 			})
 
 			It("should error", func() {
+				updateDetails.PlanID = newPlanID
+
 				_, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
 				Expect(err).To(MatchError("error saving instance details to database: failed to store SI details. WARNING: this instance cannot be deprovisioned through cf. Contact your operator for cleanup"))
 			})
