@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	cp "github.com/otiai10/copy"
 	"os"
 	"path"
 	"time"
+
+	cp "github.com/otiai10/copy"
 )
 
 var InvocationStore = ""
@@ -22,4 +23,9 @@ func main() {
 		panic(err.Error())
 	}
 	cp.Copy(pwd, targetDir)
+	responseTFPath := path.Join(InvocationStore, "mock_tf_state.json")
+	if _, err := os.Stat(responseTFPath); err == nil {
+		cp.Copy(responseTFPath, path.Join(pwd, "terraform.tfstate"))
+	}
+
 }

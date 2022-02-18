@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/hashicorp/go-retryablehttp"
-	"github.com/onsi/ginkgo/v2"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os/exec"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/hashicorp/go-retryablehttp"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 )
 
 type TestInstance struct {
@@ -60,13 +61,13 @@ func waitForHttpServer(s string) error {
 	return err
 }
 
-func (instance TestInstance) Provision(serviceName string, planName string, params map[string]interface{}) error {
+func (instance TestInstance) Provision(serviceName string, planName string, params map[string]interface{}) (string, error) {
 	instanceID, resp, err := instance.provision(serviceName, planName, params)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return instance.pollLastOperation(instanceID, resp.OperationData)
+	return instanceID, instance.pollLastOperation("service_instances/"+instanceID+"/last_operation", resp.OperationData)
 }
 
 func (instance TestInstance) provision(serviceName string, planName string, params map[string]interface{}) (string, *apiresponses.ProvisioningResponse, error) {
@@ -104,7 +105,7 @@ func (instance TestInstance) provision(serviceName string, planName string, para
 	return instanceId.String(), &response, json.Unmarshal(body, &response)
 }
 
-func (instance TestInstance) pollLastOperation(instanceID string, lastOperation string) error {
+func (instance TestInstance) pollLastOperation(pollingURL string, lastOperation string) error {
 	timeout := time.After(5 * time.Second)
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
@@ -112,9 +113,9 @@ func (instance TestInstance) pollLastOperation(instanceID string, lastOperation 
 	for true {
 		select {
 		case <-timeout:
-			return fmt.Errorf("timed out polling %s %s", instanceID, lastOperation)
+			return fmt.Errorf("timed out polling %s %s", pollingURL, lastOperation)
 		case <-ticker.C:
-			data, status, err := instance.httpInvokeBroker("service_instances/"+instanceID+"/last_operation", "GET", nil)
+			data, status, err := instance.httpInvokeBroker(pollingURL, "GET", nil)
 			if err != nil {
 				return err
 			}
@@ -170,3 +171,58 @@ func (instance TestInstance) BrokerUrl(subPath string) string {
 	return fmt.Sprintf("http://localhost:%s/v2/%s", instance.port, subPath)
 }
 
+func (instance TestInstance) Bind(serviceName, planName, instanceID string, params map[string]interface{}) (map[string]interface{}, error) {
+	catalog, err := instance.Catalog()
+	if err != nil {
+		return nil, err
+	}
+	serviceGuid, planGuid := FindServicePlanGUIDs(catalog, serviceName, planName)
+
+	bindingResult, err := instance.bind(serviceGuid, planGuid, params, instanceID)
+	if err != nil {
+		return nil, err
+	}
+
+	return bindingResult, nil
+}
+
+func (instance TestInstance) fetchBinding(instanceID string, bindingID uuid.UUID) (map[string]interface{}, error) {
+	bindingResponseJSON, statusCode, err := instance.httpInvokeBroker(fmt.Sprintf("service_instances/%s/service_bindings/%s", instanceID, bindingID), "GET", nil)
+	if err != nil {
+		return nil, err
+	}
+	if !(statusCode == http.StatusOK || statusCode == http.StatusContinue) {
+		return nil, fmt.Errorf("request failed: status %d: body %s", statusCode, bindingResponseJSON)
+	}
+
+	bindingResponse := apiresponses.BindingResponse{}
+
+	return bindingResponse.Credentials.(map[string]interface{}), json.Unmarshal(bindingResponseJSON, &bindingResponse)
+}
+
+func (instance TestInstance) bind(serviceGuid, planGuid string, params map[string]interface{}, instanceID string) (map[string]interface{}, error) {
+	bindDetails := domain.BindDetails{
+		ServiceID: serviceGuid,
+		PlanID:    planGuid,
+	}
+
+	if params != nil {
+		data, err := json.Marshal(&params)
+		if err != nil {
+			return nil, err
+		}
+		bindDetails.RawParameters = json.RawMessage(data)
+	}
+	data, err := json.Marshal(bindDetails)
+	if err != nil {
+		return nil, err
+	}
+	bindingID := uuid.New()
+	body, status, err := instance.httpInvokeBroker(fmt.Sprintf("service_instances/%s/service_bindings/%s?accepts_incomplete=true", instanceID, bindingID), "PUT", bytes.NewBuffer(data))
+	if !(status == http.StatusCreated) {
+		return nil, fmt.Errorf("request failed: status %d: body %s", status, body)
+	}
+	bindingResponse := apiresponses.BindingResponse{}
+
+	return bindingResponse.Credentials.(map[string]interface{}), json.Unmarshal(body, &bindingResponse)
+}

@@ -1,10 +1,6 @@
 package brokerpaktestframework
 
 import (
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/manifest"
-	"github.com/cloudfoundry-incubator/cloud-service-broker/internal/brokerpak/platform"
-	"github.com/onsi/gomega/gexec"
-	"gopkg.in/yaml.v3"
 	"io"
 	"io/ioutil"
 	"os"
@@ -13,10 +9,15 @@ import (
 	"path/filepath"
 	"runtime"
 	"time"
+
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
+	"github.com/onsi/gomega/gexec"
+	"gopkg.in/yaml.v3"
 )
 
 func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.Writer) (TestInstance, error) {
-	csbBuild, err := gexec.Build("github.com/cloudfoundry-incubator/cloud-service-broker")
+	csbBuild, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker")
 	if err != nil {
 		return TestInstance{}, err
 	}
