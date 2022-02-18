@@ -30,14 +30,14 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	exists, err := broker.store.ExistsServiceInstanceDetails(instanceID)
 	switch {
 	case err != nil:
-		return response, err
+		return response, fmt.Errorf("database error checking for existing instance: %s", err)
 	case !exists:
 		return response, apiresponses.ErrInstanceDoesNotExist
 	}
 
 	instance, err := broker.store.GetServiceInstanceDetails(instanceID)
 	if err != nil {
-		return response, err
+		return response, fmt.Errorf("database error getting existing instance: %s", err)
 	}
 
 	brokerService, serviceHelper, err := broker.getDefinitionAndProvider(instance.ServiceGUID)
@@ -63,11 +63,9 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	allowUpdate, err := brokerService.AllowedUpdate(details)
-
 	if err != nil {
 		return response, err
 	}
-
 	if !allowUpdate {
 		return response, ErrNonUpdatableParameter
 	}
