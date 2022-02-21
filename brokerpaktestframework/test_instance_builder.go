@@ -16,15 +16,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.Writer) (TestInstance, error) {
+func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.Writer) (*TestInstance, error) {
 	csbBuild, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker")
 	if err != nil {
-		return TestInstance{}, err
+		return nil, err
 	}
 
 	workingDir, err := createWorkspace(brokerPackDir, provider.Binary)
 	if err != nil {
-		return TestInstance{}, err
+		return nil, err
 	}
 
 	command := exec.Command(csbBuild, "pak", "build")
@@ -32,12 +32,12 @@ func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.W
 	session, err := gexec.Start(command, logger, logger)
 
 	if err != nil {
-		return TestInstance{}, err
+		return nil, err
 	}
 
 	session.Wait(5 * time.Minute)
 
-	return TestInstance{brokerBuild: csbBuild, workspace: workingDir, username: "u", password: "p", port: "8080"}, nil
+	return &TestInstance{brokerBuild: csbBuild, workspace: workingDir, username: "u", password: "p", port: "8080"}, nil
 }
 
 func createWorkspace(brokerPackDir string, build string) (string, error) {

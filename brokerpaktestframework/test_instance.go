@@ -7,47 +7,47 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"os/exec"
 	"time"
 
+	"github.com/onsi/gomega/gexec"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/onsi/ginkgo/v2"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 )
 
 type TestInstance struct {
-	brokerBuild string
-	workspace   string
-	password    string
-	username    string
-	port        string
+	brokerBuild   string
+	workspace     string
+	password      string
+	username      string
+	port          string
+	serverSession *gexec.Session
 }
 
-func (instance TestInstance) Start(logger io.Writer, config []string) error {
+func (instance *TestInstance) Start(logger io.Writer, config []string) error {
 	file, err := ioutil.TempFile("", "test-db")
 	if err != nil {
 		return err
 	}
-
-	go func() {
-		defer ginkgo.GinkgoRecover()
-		serverCommand := exec.Command(instance.brokerBuild)
-		serverCommand.Dir = instance.workspace
-		serverCommand.Env = append([]string{
-			"DB_PATH=" + file.Name(),
-			"DB_TYPE=sqlite3",
-			"PORT=" + instance.port,
-			"SECURITY_USER_NAME=" + instance.username,
-			"SECURITY_USER_PASSWORD=" + instance.password,
-		}, config...)
-		serverCommand.Stdout = logger
-		serverCommand.Stderr = logger
-		fmt.Printf("Starting broker on workspace %s, with build %s, with env %v", instance.workspace, instance.brokerBuild, serverCommand.Env)
-		err := serverCommand.Run()
-		ginkgo.Fail(fmt.Sprintf("%e: failed starting broker on workspace %s, with build %s, with env %v", err, instance.workspace, instance.brokerBuild, serverCommand.Env))
-	}()
+	serverCommand := exec.Command(instance.brokerBuild)
+	serverCommand.Dir = instance.workspace
+	serverCommand.Env = append([]string{
+		"DB_PATH=" + file.Name(),
+		"DB_TYPE=sqlite3",
+		"PORT=" + instance.port,
+		"SECURITY_USER_NAME=" + instance.username,
+		"SECURITY_USER_PASSWORD=" + instance.password,
+	}, config...)
+	fmt.Printf("Starting broker on workspace %s, with build %s, with env %v", instance.workspace, instance.brokerBuild, serverCommand.Env)
+	start, err := gexec.Start(serverCommand, logger, logger)
+	if err != nil {
+		return err
+	}
+	instance.serverSession = start
 
 	return waitForHttpServer("http://localhost:" + instance.port)
 }
@@ -61,7 +61,7 @@ func waitForHttpServer(s string) error {
 	return err
 }
 
-func (instance TestInstance) Provision(serviceName string, planName string, params map[string]interface{}) (string, error) {
+func (instance *TestInstance) Provision(serviceName string, planName string, params map[string]interface{}) (string, error) {
 	instanceID, resp, err := instance.provision(serviceName, planName, params)
 	if err != nil {
 		return "", err
@@ -70,7 +70,7 @@ func (instance TestInstance) Provision(serviceName string, planName string, para
 	return instanceID, instance.pollLastOperation("service_instances/"+instanceID+"/last_operation", resp.OperationData)
 }
 
-func (instance TestInstance) provision(serviceName string, planName string, params map[string]interface{}) (string, *apiresponses.ProvisioningResponse, error) {
+func (instance *TestInstance) provision(serviceName string, planName string, params map[string]interface{}) (string, *apiresponses.ProvisioningResponse, error) {
 	catalog, err := instance.Catalog()
 	if err != nil {
 		return "", nil, err
@@ -105,12 +105,12 @@ func (instance TestInstance) provision(serviceName string, planName string, para
 	return instanceId.String(), &response, json.Unmarshal(body, &response)
 }
 
-func (instance TestInstance) pollLastOperation(pollingURL string, lastOperation string) error {
+func (instance *TestInstance) pollLastOperation(pollingURL string, lastOperation string) error {
 	timeout := time.After(5 * time.Second)
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 
-	for true {
+	for {
 		select {
 		case <-timeout:
 			return fmt.Errorf("timed out polling %s %s", pollingURL, lastOperation)
@@ -132,10 +132,9 @@ func (instance TestInstance) pollLastOperation(pollingURL string, lastOperation 
 			}
 		}
 	}
-	return nil
 }
 
-func (instance TestInstance) Catalog() (*apiresponses.CatalogResponse, error) {
+func (instance *TestInstance) Catalog() (*apiresponses.CatalogResponse, error) {
 	catalogJson, status, err := instance.httpInvokeBroker("catalog", "GET", nil)
 	if err != nil {
 		return nil, err
@@ -148,7 +147,7 @@ func (instance TestInstance) Catalog() (*apiresponses.CatalogResponse, error) {
 	return resp, json.Unmarshal(catalogJson, resp)
 }
 
-func (instance TestInstance) httpInvokeBroker(subpath string, method string, body io.Reader) ([]byte, int, error) {
+func (instance *TestInstance) httpInvokeBroker(subpath string, method string, body io.Reader) ([]byte, int, error) {
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}
@@ -167,11 +166,11 @@ func (instance TestInstance) httpInvokeBroker(subpath string, method string, bod
 	return contents, response.StatusCode, err
 }
 
-func (instance TestInstance) BrokerUrl(subPath string) string {
+func (instance *TestInstance) BrokerUrl(subPath string) string {
 	return fmt.Sprintf("http://localhost:%s/v2/%s", instance.port, subPath)
 }
 
-func (instance TestInstance) Bind(serviceName, planName, instanceID string, params map[string]interface{}) (map[string]interface{}, error) {
+func (instance *TestInstance) Bind(serviceName, planName, instanceID string, params map[string]interface{}) (map[string]interface{}, error) {
 	catalog, err := instance.Catalog()
 	if err != nil {
 		return nil, err
@@ -186,21 +185,7 @@ func (instance TestInstance) Bind(serviceName, planName, instanceID string, para
 	return bindingResult, nil
 }
 
-func (instance TestInstance) fetchBinding(instanceID string, bindingID uuid.UUID) (map[string]interface{}, error) {
-	bindingResponseJSON, statusCode, err := instance.httpInvokeBroker(fmt.Sprintf("service_instances/%s/service_bindings/%s", instanceID, bindingID), "GET", nil)
-	if err != nil {
-		return nil, err
-	}
-	if !(statusCode == http.StatusOK || statusCode == http.StatusContinue) {
-		return nil, fmt.Errorf("request failed: status %d: body %s", statusCode, bindingResponseJSON)
-	}
-
-	bindingResponse := apiresponses.BindingResponse{}
-
-	return bindingResponse.Credentials.(map[string]interface{}), json.Unmarshal(bindingResponseJSON, &bindingResponse)
-}
-
-func (instance TestInstance) bind(serviceGuid, planGuid string, params map[string]interface{}, instanceID string) (map[string]interface{}, error) {
+func (instance *TestInstance) bind(serviceGuid, planGuid string, params map[string]interface{}, instanceID string) (map[string]interface{}, error) {
 	bindDetails := domain.BindDetails{
 		ServiceID: serviceGuid,
 		PlanID:    planGuid,
@@ -219,10 +204,19 @@ func (instance TestInstance) bind(serviceGuid, planGuid string, params map[strin
 	}
 	bindingID := uuid.New()
 	body, status, err := instance.httpInvokeBroker(fmt.Sprintf("service_instances/%s/service_bindings/%s?accepts_incomplete=true", instanceID, bindingID), "PUT", bytes.NewBuffer(data))
+	if err != nil {
+		return nil, err
+	}
 	if !(status == http.StatusCreated) {
 		return nil, fmt.Errorf("request failed: status %d: body %s", status, body)
 	}
 	bindingResponse := apiresponses.BindingResponse{}
 
 	return bindingResponse.Credentials.(map[string]interface{}), json.Unmarshal(body, &bindingResponse)
+}
+
+func (instance *TestInstance) Cleanup() error {
+	instance.serverSession.Terminate()
+	err := os.RemoveAll(instance.workspace)
+	return err
 }
