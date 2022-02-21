@@ -13,7 +13,6 @@ import (
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/middlewares"
@@ -503,7 +502,7 @@ var _ = Describe("Update", func() {
 	})
 
 	Describe("storage errors", func() {
-		When("storage errors when checking SI details", func() {
+		Context("storage errors when checking SI details", func() {
 			BeforeEach(func() {
 				fakeStorage.ExistsServiceInstanceDetailsReturns(false, errors.New("failed to check existence"))
 			})
@@ -514,7 +513,7 @@ var _ = Describe("Update", func() {
 			})
 		})
 
-		When("storage errors when getting SI details", func() {
+		Context("storage errors when getting SI details", func() {
 			BeforeEach(func() {
 				fakeStorage.GetServiceInstanceDetailsReturns(storage.ServiceInstanceDetails{}, errors.New("failed to get SI details"))
 			})
@@ -525,7 +524,7 @@ var _ = Describe("Update", func() {
 			})
 		})
 
-		When("storage errors when getting provision parameters", func() {
+		Context("storage errors when getting provision parameters", func() {
 			BeforeEach(func() {
 				fakeStorage.GetProvisionRequestDetailsReturns(json.RawMessage{}, errors.New("failed to get provision parameters"))
 			})
@@ -536,7 +535,7 @@ var _ = Describe("Update", func() {
 			})
 		})
 
-		When("storage errors when storing SI details", func() {
+		Context("storage errors when storing SI details", func() {
 			BeforeEach(func() {
 				fakeStorage.StoreServiceInstanceDetailsReturns(errors.New("failed to store SI details"))
 			})
@@ -549,7 +548,7 @@ var _ = Describe("Update", func() {
 			})
 		})
 
-		When("storage errors when storing provision parameters", func() {
+		Context("storage errors when storing provision parameters", func() {
 			BeforeEach(func() {
 				fakeStorage.StoreProvisionRequestDetailsReturns(errors.New("failed to store provision parameters"))
 			})
