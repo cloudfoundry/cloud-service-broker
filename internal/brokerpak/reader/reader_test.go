@@ -7,12 +7,10 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/reader"
-
-	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
-
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/packer"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/reader"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
 	. "github.com/onsi/ginkgo/v2"
@@ -79,13 +77,9 @@ var _ = Describe("reader", func() {
 				binOutput := GinkgoT().TempDir()
 				Expect(pakReader.ExtractPlatformBins(binOutput)).NotTo(HaveOccurred())
 
-				By("checking for the default version link")
-				details, err := os.Readlink(filepath.Join(binOutput, "terraform"))
+				data, err := os.ReadFile(filepath.Join(binOutput, "versions", terraformV13, "terraform"))
 				Expect(err).NotTo(HaveOccurred())
-				Expect(details).To(Equal("versions/0.13.0/terraform"))
-
-				By("checking that the link points to something")
-				Expect(filepath.Join(binOutput, "versions", terraformV13, "terraform")).To(BeAnExistingFile())
+				Expect(data).To(Equal([]byte(terraformV13)))
 			})
 		})
 
@@ -104,15 +98,20 @@ var _ = Describe("reader", func() {
 				binOutput := GinkgoT().TempDir()
 				Expect(pakReader.ExtractPlatformBins(binOutput)).NotTo(HaveOccurred())
 
-				By("checking for the default version")
-				details, err := os.Readlink(filepath.Join(binOutput, "terraform"))
+				By("checking for v0.12")
+				data, err := os.ReadFile(filepath.Join(binOutput, "versions", terraformV12, "terraform"))
 				Expect(err).NotTo(HaveOccurred())
-				Expect(details).To(Equal("versions/1.1.1/terraform"))
+				Expect(data).To(Equal([]byte(terraformV12)))
 
-				By("checking for all the versions")
-				Expect(filepath.Join(binOutput, "versions", terraformV12, "terraform")).To(BeAnExistingFile())
-				Expect(filepath.Join(binOutput, "versions", terraformV13, "terraform")).To(BeAnExistingFile())
-				Expect(filepath.Join(binOutput, "versions", "1.1.1", "terraform")).To(BeAnExistingFile())
+				By("checking for v0.13")
+				data, err = os.ReadFile(filepath.Join(binOutput, "versions", terraformV13, "terraform"))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(data).To(Equal([]byte(terraformV13)))
+
+				By("checking for v1.1.1")
+				data, err = os.ReadFile(filepath.Join(binOutput, "versions", "1.1.1", "terraform"))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(data).To(Equal([]byte("1.1.1")))
 			})
 		})
 
@@ -193,7 +192,7 @@ func fakeBrokerpak(opts ...option) string {
 
 func withTerraform(tfVersion string) option {
 	return func(dir string, m *manifest.Manifest) {
-		fakeFile := filepath.Join(dir, "terraform")
+		fakeFile := filepath.Join(dir, tfVersion, "terraform")
 		Expect(stream.Copy(stream.FromString(tfVersion), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
 		m.TerraformResources = append(m.TerraformResources, manifest.TerraformResource{
@@ -207,7 +206,7 @@ func withTerraform(tfVersion string) option {
 
 func withDefaultTerraform(tfVersion string) option {
 	return func(dir string, m *manifest.Manifest) {
-		fakeFile := filepath.Join(dir, "terraform")
+		fakeFile := filepath.Join(dir, tfVersion, "terraform")
 		Expect(stream.Copy(stream.FromString(tfVersion), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
 		m.TerraformResources = append(m.TerraformResources, manifest.TerraformResource{

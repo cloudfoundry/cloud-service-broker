@@ -157,7 +157,7 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 				return err
 			}
 		case r.Name == "terraform":
-			if err := pak.extractTerraform(r, destination, terraformVersion); err != nil {
+			if err := pak.extractTerraform(r, destination); err != nil {
 				return err
 			}
 		default:
@@ -196,18 +196,12 @@ func (pak *BrokerPakReader) extractBinary(r manifest.TerraformResource, destinat
 	return nil
 }
 
-func (pak *BrokerPakReader) extractTerraform(r manifest.TerraformResource, destination string, terraformVersion *version.Version) error {
+func (pak *BrokerPakReader) extractTerraform(r manifest.TerraformResource, destination string) error {
 	plat := platform.CurrentPlatform()
 	versionedPath := path.Join("bin", plat.Os, plat.Arch, r.Version, "terraform")
 	if pak.fileExistsInZip(versionedPath) {
 		if err := pak.contents.ExtractFile(versionedPath, filepath.Join(destination, "versions", r.Version)); err != nil {
 			return fmt.Errorf("error extracting versioned terraform binary: %w", err)
-		}
-
-		if r.Version == terraformVersion.String() {
-			if err := os.Symlink(path.Join("versions", r.Version, "terraform"), filepath.Join(destination, "terraform")); err != nil {
-				return fmt.Errorf("error creating terraform link: %w", err)
-			}
 		}
 
 		return nil
@@ -216,7 +210,7 @@ func (pak *BrokerPakReader) extractTerraform(r manifest.TerraformResource, desti
 	// For compatability with brokerpaks built with older versions
 	unversionedPath := path.Join("bin", plat.Os, plat.Arch, "terraform")
 	if pak.fileExistsInZip(unversionedPath) {
-		if err := pak.contents.ExtractFile(unversionedPath, destination); err != nil {
+		if err := pak.contents.ExtractFile(unversionedPath, filepath.Join(destination, "versions", r.Version)); err != nil {
 			return fmt.Errorf("error extracting terraform binary: %w", err)
 		}
 

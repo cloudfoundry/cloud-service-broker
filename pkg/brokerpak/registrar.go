@@ -144,7 +144,7 @@ func (r *Registrar) createExecutor(brokerPak *reader.BrokerPakReader, vc *varcon
 		return nil, err
 	}
 
-	binPath := filepath.Join(dir, "terraform")
+	binPath := filepath.Join(dir, "versions", tfVersion.String(), "terraform")
 	executor := wrapper.CustomTerraformExecutor(binPath, dir, tfVersion, wrapper.DefaultExecutor)
 
 	params := r.resolveParameters(manifest.Parameters, vc)
