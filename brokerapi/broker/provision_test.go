@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 
 	"code.cloudfoundry.org/lager"
@@ -44,8 +46,7 @@ var _ = Describe("Provision", func() {
 		fakeServiceProvider = &pkgBrokerFakes.FakeServiceProvider{}
 		fakeServiceProvider.ProvisionsAsyncReturns(true)
 		fakeServiceProvider.ProvisionReturns(storage.ServiceInstanceDetails{
-			GUID:          newInstanceID,
-			OperationType: "provision",
+			OperationType: models.ProvisionOperationType,
 			OperationGUID: operationID,
 		}, nil)
 
@@ -247,6 +248,10 @@ var _ = Describe("Provision", func() {
 
 				_, err := serviceBroker.Provision(context.TODO(), "new-instance", provisionDetails, true)
 				Expect(err).ToNot(HaveOccurred())
+			})
+
+			AfterEach(func() {
+				viper.Set(broker.DisableRequestPropertyValidation, false)
 			})
 		})
 	})
