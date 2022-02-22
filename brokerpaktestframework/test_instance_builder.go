@@ -14,6 +14,8 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/onsi/gomega/gexec"
 	"gopkg.in/yaml.v3"
+
+	cp "github.com/otiai10/copy"
 )
 
 func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.Writer) (*TestInstance, error) {
@@ -45,7 +47,7 @@ func createWorkspace(brokerPackDir string, build string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	err = linkBrokerpackFiles(brokerPackDir, workingDir)
+	err = copyBrokerpackFiles(brokerPackDir, workingDir)
 	if err != nil {
 		return "", err
 	}
@@ -53,18 +55,18 @@ func createWorkspace(brokerPackDir string, build string) (string, error) {
 	return workingDir, templateManifest(brokerPackDir, build, workingDir)
 }
 
-func linkBrokerpackFiles(brokerPackDir string, workingDir string) error {
+func copyBrokerpackFiles(brokerPackDir string, workingDir string) error {
 	yamlFiles, err := filepath.Glob(brokerPackDir + "/*.yml")
 	if err != nil {
 		return err
 	}
 	for _, file := range yamlFiles {
-		err = os.Link(file, path.Join(workingDir, filepath.Base(file)))
+		err = cp.Copy(file, path.Join(workingDir, filepath.Base(file)))
 		if err != nil {
 			return err
 		}
 	}
-	err = os.Symlink(path.Join(brokerPackDir, "terraform"), path.Join(workingDir, "terraform"))
+	err = cp.Copy(path.Join(brokerPackDir, "terraform"), path.Join(workingDir, "terraform"))
 	if err != nil {
 		return err
 	}
