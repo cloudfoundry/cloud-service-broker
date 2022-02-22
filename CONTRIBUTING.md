@@ -1,33 +1,45 @@
-# Contributing to Pivotal Projects
+# Contributing to Cloud Service Broker
 
-We’d love to accept your patches and contributions to this project. Please review the following guidelines you'll need to follow in order to make a contribution.
+The Cloud Service Broker team uses GitHub and accepts contributions via
+[pull request](https://help.github.com/articles/using-pull-requests).
 
-# Brokerpak Philosophy
-We anticipate that many of the contributions we receive from the CSB Community will be Brokerpaks which expose new services to operators/developers through the Broker. Our friends at Google have done an awesome job putting together a concise explanation of what a Brokerpak is and the philosophy behind them, check it out [in the docs here.](https://github.com/cloudfoundry/cloud-service-broker/blob/master/docs/brokerpak-intro.md)
-
-They've also put together some specifications which we will be aligning to (and modifying as needed). [The specs can be found here.](https://github.com/cloudfoundry/cloud-service-broker/blob/master/docs/brokerpak-specification.md) 
-
-## Acceptance Testing
-
-Please see our files + documentation on [Acceptance Testing](https://github.com/cloudfoundry/cloud-service-broker/tree/master/acceptance-tests) before you submit a Pull Request. Acceptance testing your code before submitting a Pull Request makes it more likely to be merged with `master` without incident. 
-
-## Unit + End-to-End Testing
-Please see our documentation on [Unit + End-to-End Testing](https://github.com/cloudfoundry/cloud-service-broker/blob/master/TESTING.md) before you submit a Pull Request. Acceptance testing your code before submitting a Pull Request makes it more likely to be merged with `master` without incident. 
-
-## Code reviews
-
-All submissions, including submissions by project members, require review and we use GitHub's pull requests for this purpose. Please consult [GitHub Help](https://help.github.com/articles/about-pull-requests/) if you need more information about using pull requests.
-
+See the [docs](https://github.com/cloudfoundry/cloud-service-broker/tree/main/docs) for design notes and other helpful information on getting started.
 
 ## Contributor License Agreement
 
-All contributors to this project must have a signed Contributor License Agreement (**"CLA"**) on file with us. The CLA grants us the permissions we need to use and redistribute your contributions as part of the project; you or your employer retain the copyright to your contribution. Head over to https://cla.pivotal.io/ to see your current agreement(s) on file or to sign a new one.
+Follow these steps to make a contribution to any of our open source repositories:
 
-We generally only need you (or your employer) to sign our CLA once and once signed, you should be able to submit contributions to any Pivotal project. 
+1. Ensure that you have signed our CLA Agreement [here](https://www.cloudfoundry.org/community/cla).
+1. Set your name and email (these should match the information on your submitted CLA)
 
-Note: if you would like to submit an "_obvious fix_" for something like a typo, formatting issue or spelling mistake, you may not need to sign the CLA. Please see our information on [obvious fixes](https://cla.pivotal.io/about#obvious-fix) for more details. 
+        git config --global user.name "Firstname Lastname"
+        git config --global user.email "your_email@example.com"
 
+1. All contributions must be sent using GitHub pull requests as they create a nice audit trail and structured approach.
+   The originating github user has to either have a github id on-file with the list of approved users that have signed the CLA or they can be a public "member" of a GitHub organization for a group that has signed the corporate CLA. This enables the corporations to manage their users themselves instead of having to tell us when someone joins/leaves an organization. By removing a user from an organization's GitHub account, their new contributions are no longer approved because they are no longer covered under a CLA.
 
+   If a contribution is deemed to be covered by an existing CLA, then it is analyzed for engineering quality and product fit before merging it.
 
+   If a contribution is not covered by the CLA, then the automated CLA system notifies the submitter politely that we cannot identify their CLA and ask them to sign either an individual or corporate CLA. This happens automatically as a comment on pull requests.
 
+   When the project receives a new CLA, it is recorded in the project records, the CLA is added to the database for the automated system uses, then we manually make the Pull Request as having a CLA on-file.
+
+## Contribution Workflow
+
+1. Fork the repository
+1. Check out `main` of cloud-service-broker
+1. Create a feature branch (`git checkout -b better_csb`)
+1. Make changes on your branch
+1. Run unit and integration tests (`make run-tests`)
+1. Make clear commit message using [conventional commits style](https://www.conventionalcommits.org/en/v1.0.0/#summary)
+3. Push to your fork (`git push origin better_csb`)
+4. Submit your PR
+
+### PR Considerations
+We favor pull requests with very small, single commits with a single purpose.
+
+Your pull request is much more likely to be accepted if:
+* Your pull request includes tests (unit and integration)
+* Your pull request is small and focused.
+* Your pull request has a clear message that conveys the intent of your change.
 
