@@ -25,6 +25,6 @@ jobs:
   call-dependabot-pr-workflow:
     needs: test
     if: ${{ success() && github.actor == 'dependabot[bot]' }}
-    uses: cloudfoundry-incubator/cloud-service-broker/.github/workflows/dependabot-test.yml@main
+    uses: cloudfoundry/cloud-service-broker/.github/workflows/dependabot-test.yml@main
     with:
       pr_number: ${{ github.event.number }}
