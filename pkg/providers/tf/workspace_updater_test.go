@@ -98,8 +98,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 
 	setUpProvider := func(serviceDefinition tf.TfServiceDefinitionV1) broker.ServiceProvider {
 		testLogger := utils.NewLogger("test")
-		jobRunner := tf.NewTfJobRunner(nil, store)
-		jobRunner.Executor = dummyExecutor
+		jobRunner := tf.NewTfJobRunner(nil, store, dummyExecutor)
 		return tf.NewTerraformProvider(jobRunner, testLogger, serviceDefinition, store)
 	}
 

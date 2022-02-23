@@ -36,10 +36,11 @@ const (
 )
 
 // NewTfJobRunner constructs a new JobRunner for the given project.
-func NewTfJobRunner(envVars map[string]string, store broker.ServiceProviderStorage) *TfJobRunner {
+func NewTfJobRunner(envVars map[string]string, store broker.ServiceProviderStorage, executor wrapper.TerraformExecutor) *TfJobRunner {
 	return &TfJobRunner{
-		EnvVars: envVars,
-		store:   store,
+		envVars:  envVars,
+		store:    store,
+		executor: executor,
 	}
 }
 
@@ -54,18 +55,18 @@ func NewTfJobRunner(envVars map[string]string, store broker.ServiceProviderStora
 // The TfJobRunner keeps track of the workspace and the Terraform state file so
 // subsequent commands will operate on the same structure.
 type TfJobRunner struct {
-	// EnvVars is a list of environment variables that should be included in executor
+	// envVars is a list of environment variables that should be included in executor
 	// env (usually Terraform provider credentials)
-	EnvVars map[string]string
-	// Executor holds a custom executor that will be called when commands are run.
-	Executor wrapper.TerraformExecutor
+	envVars map[string]string
+	// executor holds a custom executor that will be called when commands are run.
+	executor wrapper.TerraformExecutor
 	store    broker.ServiceProviderStorage
 }
 
 // StageJob stages a job to be executed. Before the workspace is saved to the
 // database, the modules and inputs are validated by Terraform.
 func (runner *TfJobRunner) StageJob(jobId string, workspace *wrapper.TerraformWorkspace) error {
-	workspace.Executor = runner.Executor
+	workspace.Executor = runner.executor
 
 	deployment := storage.TerraformDeployment{ID: jobId}
 	exists, err := runner.store.ExistsTerraformDeployment(jobId)
@@ -109,7 +110,7 @@ func (runner *TfJobRunner) hydrateWorkspace(ctx context.Context, deployment stor
 		return nil, err
 	}
 
-	ws.Executor = wrapper.CustomEnvironmentExecutor(runner.EnvVars, runner.Executor)
+	ws.Executor = wrapper.CustomEnvironmentExecutor(runner.envVars, runner.executor)
 
 	logger := utils.NewLogger("job-runner")
 	logger.Debug("wrapping", correlation.ID(ctx), lager.Data{

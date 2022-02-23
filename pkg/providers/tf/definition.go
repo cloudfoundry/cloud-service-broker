@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
@@ -25,6 +26,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
+	"github.com/hashicorp/go-version"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/spf13/viper"
 )
@@ -220,7 +222,7 @@ func (tfb *TfServiceDefinitionV1) loadTemplates() error {
 
 // ToService converts the flat TfServiceDefinitionV1 into a broker.ServiceDefinition
 // that the registry can use.
-func (tfb *TfServiceDefinitionV1) ToService(executor wrapper.TerraformExecutor) (*broker.ServiceDefinition, error) {
+func (tfb *TfServiceDefinitionV1) ToService(tfBinContext TfBinariesContext) (*broker.ServiceDefinition, error) {
 	if err := tfb.loadTemplates(); err != nil {
 		return nil, err
 	}
@@ -287,9 +289,17 @@ func (tfb *TfServiceDefinitionV1) ToService(executor wrapper.TerraformExecutor) 
 		PlanVariables:         append(tfb.ProvisionSettings.PlanInputs, tfb.BindSettings.PlanInputs...),
 		Examples:              tfb.Examples,
 		ProviderBuilder: func(logger lager.Logger, store broker.ServiceProviderStorage) broker.ServiceProvider {
-			jobRunner := NewTfJobRunner(envVars, store)
-			jobRunner.Executor = executor
-			return NewTerraformProvider(jobRunner, logger, constDefn, store)
+			executor := wrapper.CustomEnvironmentExecutor(
+				tfBinContext.Params,
+				wrapper.CustomTerraformExecutor(
+					filepath.Join(tfBinContext.Dir, "versions", tfBinContext.TfVersion.String(), "terraform"),
+					tfBinContext.Dir,
+					tfBinContext.TfVersion,
+					wrapper.DefaultExecutor,
+				),
+			)
+
+			return NewTerraformProvider(NewTfJobRunner(envVars, store, executor), logger, constDefn, store)
 		},
 	}, nil
 }
@@ -547,4 +557,13 @@ func (tfb TfCatalogDefinitionV1) Validate() (errs *validation.FieldError) {
 	}
 
 	return errs
+}
+
+// TfBinariesContext is used to hold information about the location of
+// terraform binaries on disk along with some metadata about how
+// to run them.
+type TfBinariesContext struct {
+	Dir       string
+	TfVersion *version.Version
+	Params    map[string]string
 }

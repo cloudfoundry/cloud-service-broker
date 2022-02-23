@@ -18,14 +18,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/reader"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/spf13/cast"
@@ -60,7 +58,7 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 		}
 		defer brokerPak.Close()
 
-		executor, err := r.createExecutor(brokerPak, vc)
+		tfBinariesContext, err := r.extractTfBinaries(brokerPak, vc)
 		if err != nil {
 			return err
 		}
@@ -71,7 +69,7 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 			return err
 		}
 
-		defns, err := r.toDefinitions(services, pak, executor)
+		defns, err := r.toDefinitions(services, pak, tfBinariesContext)
 		if err != nil {
 			return err
 		}
@@ -102,7 +100,7 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 	})
 }
 
-func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config BrokerpakSourceConfig, executor wrapper.TerraformExecutor) ([]*broker.ServiceDefinition, error) {
+func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config BrokerpakSourceConfig, tfBinariesContext tf.TfBinariesContext) ([]*broker.ServiceDefinition, error) {
 	var out []*broker.ServiceDefinition
 
 	toIgnore := utils.NewStringSet(config.ExcludedServicesSlice()...)
@@ -113,7 +111,7 @@ func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config Broke
 
 		svc.Name = config.ServicePrefix + svc.Name
 
-		bs, err := svc.ToService(executor)
+		bs, err := svc.ToService(tfBinariesContext)
 		if err != nil {
 			return nil, err
 		}
@@ -124,49 +122,31 @@ func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config Broke
 	return out, nil
 }
 
-func (r *Registrar) createExecutor(brokerPak *reader.BrokerPakReader, vc *varcontext.VarContext) (wrapper.TerraformExecutor, error) {
+func (r *Registrar) extractTfBinaries(brokerPak *reader.BrokerPakReader, vc *varcontext.VarContext) (tf.TfBinariesContext, error) {
 	dir, err := os.MkdirTemp("", "brokerpak")
 	if err != nil {
-		return nil, err
+		return tf.TfBinariesContext{}, err
 	}
 
 	// extract the Terraform directory
 	if err := brokerPak.ExtractPlatformBins(dir); err != nil {
-		return nil, err
+		return tf.TfBinariesContext{}, err
 	}
 
 	manifest, err := brokerPak.Manifest()
 	if err != nil {
-		return nil, err
+		return tf.TfBinariesContext{}, err
 	}
 	tfVersion, err := manifest.DefaultTerraformVersion()
 	if err != nil {
-		return nil, err
+		return tf.TfBinariesContext{}, err
 	}
 
-	binPath := filepath.Join(dir, "versions", tfVersion.String(), "terraform")
-	executor := wrapper.CustomTerraformExecutor(binPath, dir, tfVersion, wrapper.DefaultExecutor)
-
-	params := r.resolveParameters(manifest.Parameters, vc)
-	executor = wrapper.CustomEnvironmentExecutor(params, executor)
-
-	return executor, nil
-}
-
-// resolveParameters resolves environment variables from the given global and
-// brokerpak specific.
-func (Registrar) resolveParameters(params []manifest.Parameter, vc *varcontext.VarContext) map[string]string {
-	out := make(map[string]string)
-
-	context := vc.ToMap()
-	for _, p := range params {
-		val, ok := context[p.Name]
-		if ok {
-			out[p.Name] = cast.ToString(val)
-		}
-	}
-
-	return out
+	return tf.TfBinariesContext{
+		Dir:       dir,
+		TfVersion: tfVersion,
+		Params:    resolveParameters(manifest.Parameters, vc),
+	}, nil
 }
 
 func (r *Registrar) walk(callback registrarWalkFunc) error {
@@ -192,4 +172,20 @@ func (r *Registrar) walk(callback registrarWalkFunc) error {
 // Registrar expects to become the owner of the configuration afterwards.
 func NewRegistrar(sc *ServerConfig) *Registrar {
 	return &Registrar{config: sc}
+}
+
+// resolveParameters resolves environment variables from the given global and
+// brokerpak specific.
+func resolveParameters(params []manifest.Parameter, vc *varcontext.VarContext) map[string]string {
+	out := make(map[string]string)
+
+	context := vc.ToMap()
+	for _, p := range params {
+		val, ok := context[p.Name]
+		if ok {
+			out[p.Name] = cast.ToString(val)
+		}
+	}
+
+	return out
 }

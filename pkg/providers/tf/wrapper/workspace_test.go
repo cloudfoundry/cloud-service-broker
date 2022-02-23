@@ -98,7 +98,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 
 			// check validator got ran
 			if !executorRan {
-				t.Fatal("Executor did not get run as part of the function")
+				t.Fatal("executor did not get run as part of the function")
 			}
 
 			// check workspace destroyed
@@ -187,7 +187,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 
 			// check validator got ran
 			if !executorRan {
-				t.Fatal("Executor did not get run as part of the function")
+				t.Fatal("executor did not get run as part of the function")
 			}
 
 			// check workspace destroyed
