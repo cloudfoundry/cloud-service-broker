@@ -15,10 +15,8 @@
 package brokerpak
 
 import (
-	"context"
 	"errors"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -26,7 +24,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/spf13/viper"
 )
@@ -63,10 +60,6 @@ func TestNewRegistrar(t *testing.T) {
 }
 
 func TestRegistrar_toDefinitions(t *testing.T) {
-	nopExecutor := func(context.Context, *exec.Cmd) (wrapper.ExecutionOutput, error) {
-		return wrapper.ExecutionOutput{}, nil
-	}
-
 	fakeDefn := func(name, id string) tf.TfServiceDefinitionV1 {
 		ex := tf.NewExampleTfServiceDefinition()
 		ex.Id = id
@@ -118,7 +111,7 @@ func TestRegistrar_toDefinitions(t *testing.T) {
 	for tn, tc := range goodCases {
 		t.Run(tn, func(t *testing.T) {
 			r := NewRegistrar(nil)
-			defns, err := r.toDefinitions(tc.Services, tc.Config, nopExecutor)
+			defns, err := r.toDefinitions(tc.Services, tc.Config, tf.TfBinariesContext{})
 			if err != nil {
 				t.Fatalf("Expected no error, got: %v", err)
 			}
@@ -151,7 +144,7 @@ func TestRegistrar_toDefinitions(t *testing.T) {
 	for tn, tc := range badCases {
 		t.Run(tn, func(t *testing.T) {
 			r := NewRegistrar(nil)
-			defns, err := r.toDefinitions(tc.Services, tc.Config, nopExecutor)
+			defns, err := r.toDefinitions(tc.Services, tc.Config, tf.TfBinariesContext{})
 			if err == nil {
 				t.Fatal("Expected error, got: <nil>")
 			}
@@ -167,9 +160,7 @@ func TestRegistrar_toDefinitions(t *testing.T) {
 	}
 }
 
-func TestRegistrar_resolveParameters(t *testing.T) {
-	r := NewRegistrar(nil)
-
+func TestResolveParameters(t *testing.T) {
 	cases := map[string]struct {
 		Context  map[string]interface{}
 		Params   []manifest.Parameter
@@ -205,7 +196,7 @@ func TestRegistrar_resolveParameters(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			actual := r.resolveParameters(tc.Params, vc)
+			actual := resolveParameters(tc.Params, vc)
 			if !reflect.DeepEqual(actual, tc.Expected) {
 				t.Errorf("Expected params to be: %v got %v", tc.Expected, actual)
 			}
