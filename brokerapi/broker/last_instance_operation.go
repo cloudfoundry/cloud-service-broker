@@ -42,7 +42,6 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 	lastOperationType := instance.OperationType
 
 	done, message, err := serviceProvider.PollInstance(ctx, instance.GUID)
-
 	if err != nil {
 		return domain.LastOperation{State: domain.Failed, Description: err.Error()}, nil
 	}
@@ -54,6 +53,7 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 	// the instance may have been invalidated, so we pass its primary key rather than the
 	// instance directly.
 	updateErr := broker.updateStateOnOperationCompletion(ctx, serviceProvider, lastOperationType, instanceID)
+
 	return domain.LastOperation{State: domain.Succeeded, Description: message}, updateErr
 }
 

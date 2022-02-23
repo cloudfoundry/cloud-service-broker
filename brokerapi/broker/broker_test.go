@@ -38,7 +38,6 @@ import (
 	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v8"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 	"github.com/pivotal-cf/brokerapi/v8/middlewares"
 	"github.com/spf13/viper"
 	"gorm.io/driver/sqlite"
@@ -500,69 +499,6 @@ func TestServiceBroker_Unbind(t *testing.T) {
 				_, err := broker.Unbind(context.Background(), fakeInstanceId, fakeBindingId, stub.UnbindDetails(), true)
 				assertTrue(t, "Should have returned error", err != nil)
 				assertTrue(t, "errors should match", strings.Contains(err.Error(), "error while decrypting"))
-			},
-		},
-	}
-
-	cases.Run(t)
-}
-
-func TestServiceBroker_LastOperation(t *testing.T) {
-	cases := BrokerEndpointTestSuite{
-		"missing-instance": {
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				_, err := broker.LastOperation(context.Background(), "invalid-instance-id", domain.PollDetails{OperationData: "operationtoken"})
-				assertEqual(t, "errors should match", apiresponses.ErrInstanceDoesNotExist, err)
-			},
-		},
-		"called-on-synchronous-service": {
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				_, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
-				assertEqual(t, "errors should match", apiresponses.ErrAsyncRequired, err)
-			},
-		},
-		"called-on-async-service": {
-			AsyncService: true,
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				_, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
-				failIfErr(t, "shouldn't be called on async service", err)
-
-				assertEqual(t, "PollInstanceCallCount should match", 1, stub.Provider.PollInstanceCallCount())
-			},
-		},
-		"poll-returns-failure": {
-			AsyncService: true,
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				stub.Provider.PollInstanceReturns(false, "", errors.New("not-retryable"))
-				status, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
-				failIfErr(t, "checking last operation", err)
-				assertEqual(t, "non-retryable errors should result in a failure state", domain.Failed, status.State)
-				assertEqual(t, "description should be error string", "not-retryable", status.Description)
-			},
-		},
-		"poll-returns-not-done": {
-			AsyncService: true,
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				stub.Provider.PollInstanceReturns(false, "", nil)
-				status, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
-				failIfErr(t, "checking last operation", err)
-				assertEqual(t, "polls that return no error should result in an in-progress state", domain.InProgress, status.State)
-			},
-		},
-		"poll-returns-success": {
-			AsyncService: true,
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				stub.Provider.PollInstanceReturns(true, "message", nil)
-				status, err := broker.LastOperation(context.Background(), fakeInstanceId, domain.PollDetails{OperationData: "operationtoken"})
-				failIfErr(t, "checking last operation", err)
-				assertEqual(t, "polls that return finished should result in a succeeded state", domain.Succeeded, status.State)
-				assertEqual(t, "polls that return finished should have status message", "message", status.Description)
 			},
 		},
 	}
