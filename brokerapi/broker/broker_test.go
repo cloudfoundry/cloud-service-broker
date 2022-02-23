@@ -569,19 +569,3 @@ func TestServiceBroker_LastOperation(t *testing.T) {
 
 	cases.Run(t)
 }
-
-func TestServiceBroker_LastBindingOperation(t *testing.T) {
-	cases := BrokerEndpointTestSuite{
-		"called-while-bound": {
-			ServiceState: StateProvisioned,
-			AsyncService: true,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				_, err := broker.LastBindingOperation(context.Background(), fakeInstanceId, fakeBindingId, domain.PollDetails{})
-
-				assertEqual(t, "expect last binding to return async required", apiresponses.ErrAsyncRequired, err)
-			},
-		},
-	}
-
-	cases.Run(t)
-}
