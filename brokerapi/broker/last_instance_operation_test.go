@@ -214,7 +214,7 @@ var _ = Describe("LastInstanceOperation", func() {
 			fakeServiceProvider.PollInstanceReturns(false, "operation in progress still", nil)
 		})
 
-		It("should complete provision", func() {
+		It("should not update the service instance", func() {
 			response, err := serviceBroker.LastOperation(context.TODO(), instanceID, pollDetails)
 			Expect(err).ToNot(HaveOccurred())
 
