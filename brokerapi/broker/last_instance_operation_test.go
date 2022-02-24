@@ -9,7 +9,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -61,40 +60,7 @@ var _ = Describe("LastInstanceOperation", func() {
 								ID:   planID,
 								Name: "test-plan",
 							},
-							ServiceProperties: map[string]interface{}{
-								"plan-defined-key":       "plan-defined-value",
-								"other-plan-defined-key": "other-plan-defined-value",
-							},
 						},
-					},
-					ProvisionInputVariables: []pkgBroker.BrokerVariable{
-						{
-							FieldName: "foo",
-							Type:      "string",
-							Details:   "fake field name",
-						},
-						{
-							FieldName: "baz",
-							Type:      "string",
-							Details:   "other fake field name",
-						},
-						{
-							FieldName: "guz",
-							Type:      "string",
-							Details:   "yet another fake field name",
-						},
-					},
-					ImportInputVariables: []pkgBroker.ImportVariable{
-						{
-							Name:       "import_field_1",
-							Type:       "string",
-							Details:    "fake import field",
-							TfResource: "fake.tf.resource",
-						},
-					},
-					ProvisionComputedVariables: []varcontext.DefaultVariable{
-						{Name: "labels", Default: "${json.marshal(request.default_labels)}", Overwrite: true},
-						{Name: "copyOriginatingIdentity", Default: "${json.marshal(request.x_broker_api_originating_identity)}", Overwrite: true},
 					},
 					ProviderBuilder: providerBuilder,
 				},
