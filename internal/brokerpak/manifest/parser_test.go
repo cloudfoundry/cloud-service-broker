@@ -127,7 +127,28 @@ var _ = Describe("Parser", func() {
 				Expect(err).To(MatchError("error validating manifest: multiple Terraform versions, and multiple marked as default: terraform_binaries"))
 				Expect(m).To(BeNil())
 			})
+		})
 
+		When("the default is not the highest version", func() {
+			It("fails", func() {
+				m, err := manifest.Parse(fakeManifest(
+					withAdditionalEntry("terraform_binaries", map[string]interface{}{
+						"name":    "terraform",
+						"version": "1.1.5",
+					}),
+					withAdditionalEntry("terraform_binaries", map[string]interface{}{
+						"name":    "terraform",
+						"version": "1.1.6",
+						"default": true,
+					}),
+					withAdditionalEntry("terraform_binaries", map[string]interface{}{
+						"name":    "terraform",
+						"version": "1.1.7",
+					}),
+				))
+				Expect(err).To(MatchError("error validating manifest: default version of Terraform must be the highest version: terraform_binaries"))
+				Expect(m).To(BeNil())
+			})
 		})
 
 		When("there are duplicate versions", func() {
@@ -273,6 +294,19 @@ var _ = Describe("Parser", func() {
 				"default": true,
 			})))
 			Expect(err).To(MatchError(ContainSubstring("This field is only valid for `terraform`: terraform_binaries[2].default")))
+			Expect(m).To(BeNil())
+		})
+	})
+
+	When("a terraform version is not valid semver", func() {
+		It("fails", func() {
+			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]interface{}{
+				"name":    "terraform",
+				"version": "not.semver",
+				"default": true,
+			})))
+
+			Expect(err).To(MatchError(ContainSubstring("invalid value: not.semver: version")))
 			Expect(m).To(BeNil())
 		})
 	})
