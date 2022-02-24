@@ -95,12 +95,22 @@ func (m *Manifest) validateTerraformResources() *validation.FieldError {
 func (m *Manifest) validateTerraforms() (errs *validation.FieldError) {
 	cache := make(map[string]struct{})
 	count := 0
-	defaults := 0
+	highest := version.Must(version.NewVersion("0.0.0"))
+	var defaults []*version.Version
 	for _, resource := range m.TerraformResources {
 		if resource.Name == "terraform" {
 			count++
+
+			ver, err := version.NewVersion(resource.Version)
+			switch {
+			case err != nil:
+				errs = errs.Also(validation.ErrInvalidValue(resource.Version, "version"))
+			case ver.GreaterThan(highest):
+				highest = ver
+			}
+
 			if resource.Default {
-				defaults++
+				defaults = append(defaults, ver)
 			}
 
 			errs = errs.Also(validation.ErrIfDuplicate(resource.Version, "version", cache))
@@ -108,14 +118,19 @@ func (m *Manifest) validateTerraforms() (errs *validation.FieldError) {
 	}
 
 	switch {
-	case count > 1 && defaults == 0:
+	case count > 1 && len(defaults) == 0:
 		errs = errs.Also(&validation.FieldError{
 			Message: "multiple Terraform versions, but none marked as default",
 			Paths:   []string{"terraform_binaries"},
 		})
-	case count > 1 && defaults > 1:
+	case count > 1 && len(defaults) > 1:
 		errs = errs.Also(&validation.FieldError{
 			Message: "multiple Terraform versions, and multiple marked as default",
+			Paths:   []string{"terraform_binaries"},
+		})
+	case len(defaults) == 1 && !defaults[0].Equal(highest):
+		errs = errs.Also(&validation.FieldError{
+			Message: "default version of Terraform must be the highest version",
 			Paths:   []string{"terraform_binaries"},
 		})
 	}
