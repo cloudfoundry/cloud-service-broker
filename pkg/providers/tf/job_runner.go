@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"code.cloudfoundry.org/lager"
@@ -36,11 +37,11 @@ const (
 )
 
 // NewTfJobRunner constructs a new JobRunner for the given project.
-func NewTfJobRunner(envVars map[string]string, store broker.ServiceProviderStorage, executor wrapper.TerraformExecutor) *TfJobRunner {
+func NewTfJobRunner(envVars map[string]string, store broker.ServiceProviderStorage, tfBinContext TfBinariesContext) *TfJobRunner {
 	return &TfJobRunner{
-		envVars:  envVars,
-		store:    store,
-		executor: executor,
+		envVars:      envVars,
+		store:        store,
+		tfBinContext: tfBinContext,
 	}
 }
 
@@ -59,14 +60,27 @@ type TfJobRunner struct {
 	// env (usually Terraform provider credentials)
 	envVars map[string]string
 	// executor holds a custom executor that will be called when commands are run.
-	executor wrapper.TerraformExecutor
-	store    broker.ServiceProviderStorage
+	store        broker.ServiceProviderStorage
+	tfBinContext TfBinariesContext
+}
+
+func (runner *TfJobRunner) executor() wrapper.TerraformExecutor {
+	return wrapper.CustomEnvironmentExecutor(
+		runner.tfBinContext.Params,
+		wrapper.CustomTerraformExecutor(
+			filepath.Join(runner.tfBinContext.Dir, "versions", runner.tfBinContext.TfVersion.String(), "terraform"),
+			runner.tfBinContext.Dir,
+			runner.tfBinContext.TfVersion,
+			wrapper.DefaultExecutor,
+		),
+	)
+
 }
 
 // StageJob stages a job to be executed. Before the workspace is saved to the
 // database, the modules and inputs are validated by Terraform.
 func (runner *TfJobRunner) StageJob(jobId string, workspace *wrapper.TerraformWorkspace) error {
-	workspace.Executor = runner.executor
+	workspace.Executor = runner.executor()
 
 	deployment := storage.TerraformDeployment{ID: jobId}
 	exists, err := runner.store.ExistsTerraformDeployment(jobId)
@@ -110,7 +124,7 @@ func (runner *TfJobRunner) hydrateWorkspace(ctx context.Context, deployment stor
 		return nil, err
 	}
 
-	ws.Executor = wrapper.CustomEnvironmentExecutor(runner.envVars, runner.executor)
+	ws.Executor = wrapper.CustomEnvironmentExecutor(runner.envVars, runner.executor())
 
 	logger := utils.NewLogger("job-runner")
 	logger.Debug("wrapping", correlation.ID(ctx), lager.Data{

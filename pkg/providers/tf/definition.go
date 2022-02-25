@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
@@ -289,17 +288,7 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext TfBinariesContext) (*br
 		PlanVariables:         append(tfb.ProvisionSettings.PlanInputs, tfb.BindSettings.PlanInputs...),
 		Examples:              tfb.Examples,
 		ProviderBuilder: func(logger lager.Logger, store broker.ServiceProviderStorage) broker.ServiceProvider {
-			executor := wrapper.CustomEnvironmentExecutor(
-				tfBinContext.Params,
-				wrapper.CustomTerraformExecutor(
-					filepath.Join(tfBinContext.Dir, "versions", tfBinContext.TfVersion.String(), "terraform"),
-					tfBinContext.Dir,
-					tfBinContext.TfVersion,
-					wrapper.DefaultExecutor,
-				),
-			)
-
-			return NewTerraformProvider(NewTfJobRunner(envVars, store, executor), logger, constDefn, store)
+			return NewTerraformProvider(NewTfJobRunner(envVars, store, tfBinContext), logger, constDefn, store)
 		},
 	}, nil
 }

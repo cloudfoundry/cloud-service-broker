@@ -46,7 +46,7 @@ func init() {
 			db = db_service.New(logger)
 			encryptor := setupDBEncryption(db, logger)
 			store := storage.New(db, encryptor)
-			jobRunner = tf.NewTfJobRunner(nil, store, nil)
+			jobRunner = tf.NewTfJobRunner(nil, store, tf.TfBinariesContext{})
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
