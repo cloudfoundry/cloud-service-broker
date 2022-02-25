@@ -70,7 +70,19 @@ func (instance *TestInstance) Provision(serviceName string, planName string, par
 	return instanceID, instance.pollLastOperation("service_instances/"+instanceID+"/last_operation", resp.OperationData)
 }
 
+func (instance *TestInstance) Update(instanceGuid string, serviceName string, planName string, params map[string]interface{}) error {
+	resp, err := instance.update(instanceGuid, serviceName, planName, params)
+
+	if err != nil {
+		return err
+	}
+
+	return instance.pollLastOperation("service_instances/"+instanceGuid+"/last_operation", resp.OperationData)
+}
+
 func (instance *TestInstance) provision(serviceName string, planName string, params map[string]interface{}) (string, *apiresponses.ProvisioningResponse, error) {
+	instanceId := uuid.New().String()
+
 	catalog, err := instance.Catalog()
 	if err != nil {
 		return "", nil, err
@@ -91,8 +103,7 @@ func (instance *TestInstance) provision(serviceName string, planName string, par
 	if err != nil {
 		return "", nil, err
 	}
-	instanceId := uuid.New()
-	body, status, err := instance.httpInvokeBroker("service_instances/"+instanceId.String()+"?accepts_incomplete=true", "PUT", bytes.NewBuffer(data))
+	body, status, err := instance.httpInvokeBroker("service_instances/"+instanceId+"?accepts_incomplete=true", "PUT", bytes.NewBuffer(data))
 	if err != nil {
 		return "", nil, err
 	}
@@ -102,7 +113,41 @@ func (instance *TestInstance) provision(serviceName string, planName string, par
 
 	response := apiresponses.ProvisioningResponse{}
 
-	return instanceId.String(), &response, json.Unmarshal(body, &response)
+	return instanceId, &response, json.Unmarshal(body, &response)
+}
+
+func (instance *TestInstance) update(instanceId, serviceName, planName string, params map[string]interface{}) (*apiresponses.UpdateResponse, error) {
+	catalog, err := instance.Catalog()
+	if err != nil {
+		return nil, err
+	}
+	serviceGuid, planGuid := FindServicePlanGUIDs(catalog, serviceName, planName)
+	details := domain.UpdateDetails{
+		ServiceID: serviceGuid,
+		PlanID:    planGuid,
+	}
+	if params != nil {
+		data, err := json.Marshal(&params)
+		if err != nil {
+			return nil, err
+		}
+		details.RawParameters = json.RawMessage(data)
+	}
+	data, err := json.Marshal(details)
+	if err != nil {
+		return nil, err
+	}
+	body, status, err := instance.httpInvokeBroker("service_instances/"+instanceId+"?accepts_incomplete=true", "PATCH", bytes.NewBuffer(data))
+	if err != nil {
+		return nil, err
+	}
+	if status != http.StatusAccepted {
+		return nil, fmt.Errorf("request failed: status %d: body %s", status, body)
+	}
+
+	response := apiresponses.UpdateResponse{}
+
+	return &response, json.Unmarshal(body, &response)
 }
 
 func (instance *TestInstance) pollLastOperation(pollingURL string, lastOperation string) error {
