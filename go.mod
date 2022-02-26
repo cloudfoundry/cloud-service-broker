@@ -6,7 +6,7 @@ require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20210802130126-03ba1c405d5e
 	code.cloudfoundry.org/lager v2.0.0+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/google/uuid v1.1.2
+	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-getter v1.5.11
 	github.com/hashicorp/go-multierror v1.1.1
