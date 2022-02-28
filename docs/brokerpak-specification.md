@@ -65,13 +65,14 @@ The platform OS and architecture follow Go's naming scheme.
 
 This structure holds information about a specific Terraform version or Resource.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| name* | string | The name of this resource. e.g. `terraform-provider-google-beta`. |
-| version* | string | The version of the resource e.g. 1.19.0. *The broker currently only supports terraform version 0.12.x*|
-| source | string | (optional) The URL to a zip of the source code for the resource. |
-| url_template | string | (optional) A custom URL template to get the release of the given tool. Available parameters are ${name}, ${version}, ${os}, and ${arch}. If unspecified the default Hashicorp Terraform download server is used. Can be a local file. |
-| default | boolean | (optional) Where there is more than one version of Terraform, this nominates the default version. |
+| Field        | Type    | Description                                                                                                                                                                                                                               |
+|--------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| name*        | string  | The name of this resource. e.g. `terraform-provider-google-beta`.                                                                                                                                                                         |
+| version*     | string  | The version of the resource e.g. 1.19.0. *The broker currently only supports terraform version 0.12.x*                                                                                                                                    |
+| source       | string  | (optional) The URL to a zip of the source code for the resource.                                                                                                                                                                          |
+| url_template | string  | (optional) A custom URL template to get the release of the given tool. Available parameters are ${name}, ${version}, ${os}, and ${arch}. If unspecified the default Hashicorp Terraform download server is used. Can be a local file.     |
+| provider     | string  | (optional) The provider in the form of `namespace/type` (e.g `cyrilgdn/postgresql`). This is required if the provider is not provided by Hashicorp. This should match the source of the provider in terraform.required_providers. |
+| default      | boolean | (optional) Where there is more than one version of Terraform, this nominates the default version.                                                                                                                                         |
 
 #### Parameter object
 

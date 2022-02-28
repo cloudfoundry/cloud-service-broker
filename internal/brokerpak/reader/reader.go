@@ -176,7 +176,7 @@ func (pak *BrokerPakReader) extractProvider(r manifest.TerraformResource, destin
 		return err
 	}
 
-	if err := pak.contents.ExtractFile(filePath, providerInstallPath(terraformVersion, destination, r.Name, r.Version)); err != nil {
+	if err := pak.contents.ExtractFile(filePath, providerInstallPath(terraformVersion, destination, r)); err != nil {
 		return fmt.Errorf("error extracting terraform-provider file: %w", err)
 	}
 
@@ -260,13 +260,19 @@ func (pak *BrokerPakReader) readYaml(name string, v interface{}) error {
 	return stream.Copy(stream.FromReadCloserError(fd.Open()), stream.ToYaml(v))
 }
 
-func providerInstallPath(terraformVersion *version.Version, destination, name, ver string) string {
+func providerInstallPath(terraformVersion *version.Version, destination string, tfResource manifest.TerraformResource) string {
 	if terraformVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
 		return destination
 	}
 
-	suffix := strings.SplitAfterN(name, "terraform-provider-", 2)[1]
 	plat := platform.CurrentPlatform()
-	target := fmt.Sprintf("%s_%s", plat.Os, plat.Arch)
-	return filepath.Join(destination, "registry.terraform.io", "hashicorp", suffix, ver, target)
+
+	return filepath.Join(
+		destination,
+		"registry.terraform.io",
+		tfResource.GetProviderNamespace(),
+		tfResource.GetProviderType(),
+		tfResource.Version,
+		fmt.Sprintf("%s_%s", plat.Os, plat.Arch),
+	)
 }
