@@ -1,6 +1,11 @@
 package manifest
 
-import "github.com/cloudfoundry/cloud-service-broker/pkg/validation"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
+)
 
 type TerraformResource struct {
 	// Name holds the name of this resource. e.g. terraform-provider-google-beta
@@ -12,6 +17,9 @@ type TerraformResource struct {
 	// Source holds the URI of an archive that contains the source code for this release.
 	Source string `yaml:"source"`
 
+	// Provider holds path to extract the provider path.
+	Provider string `yaml:"provider,omitempty"`
+
 	// URLTemplate holds a custom URL template to get the release of the given tool.
 	// Parameters available are ${name}, ${version}, ${os}, and ${arch}.
 	// If non is specified HashicorpUrlTemplate is used.
@@ -19,6 +27,27 @@ type TerraformResource struct {
 
 	// Default is used to mark the default Terraform version when there is more than one
 	Default bool `yaml:"default"`
+}
+
+func (tr TerraformResource) GetProviderNamespace() string {
+	if tr.Provider != "" {
+		return strings.Split(tr.Provider, "/")[0]
+	}
+
+	return "hashicorp"
+}
+
+func (tr TerraformResource) GetProviderType() string {
+	if tr.Provider != "" {
+		return strings.Split(tr.Provider, "/")[1]
+	}
+
+	parts := strings.SplitAfterN(tr.Name, "terraform-provider-", 2)
+	if len(parts) == 2 {
+		return parts[1]
+	}
+
+	return tr.Name
 }
 
 var _ validation.Validatable = (*TerraformResource)(nil)
@@ -29,6 +58,7 @@ func (tr *TerraformResource) Validate() (errs *validation.FieldError) {
 		validation.ErrIfBlank(tr.Name, "name"),
 		validation.ErrIfBlank(tr.Version, "version"),
 		tr.validateDefault(),
+		tr.validateModule(),
 	)
 }
 
@@ -37,6 +67,20 @@ func (tr *TerraformResource) validateDefault() *validation.FieldError {
 		return &validation.FieldError{
 			Message: "This field is only valid for `terraform`",
 			Paths:   []string{"default"},
+		}
+	}
+
+	return nil
+}
+
+func (tr *TerraformResource) validateModule() *validation.FieldError {
+	if tr.Provider != "" {
+		parts := strings.Split(tr.Provider, "/")
+		if len(parts) == 0 || len(parts) > 2 {
+			return &validation.FieldError{
+				Message: fmt.Sprintf("This field is only valid for %s. Provide module as `namespace/name`.", tr.Name),
+				Paths:   []string{"module"},
+			}
 		}
 	}
 

@@ -28,8 +28,8 @@ var _ = Describe("reader", func() {
 			It("extracts providers to same directory", func() {
 				pk := fakeBrokerpak(
 					withTerraform(terraformV12),
-					withProvider("terraform-provider-google-beta", "1.19.0", "x4"),
-					withProvider("terraform-provider-google", "1.19.0", "x5"),
+					withProvider("", "terraform-provider-google-beta", "1.19.0", "x4"),
+					withProvider("", "terraform-provider-google", "1.19.0", "x5"),
 				)
 
 				pakReader, err := reader.OpenBrokerPak(pk)
@@ -47,8 +47,8 @@ var _ = Describe("reader", func() {
 			It("extracts providers to a directory hierarchy", func() {
 				pk := fakeBrokerpak(
 					withTerraform(terraformV13),
-					withProvider("terraform-provider-google-beta", "1.19.0", "x4"),
-					withProvider("terraform-provider-google", "1.19.0", "x5"),
+					withProvider("", "terraform-provider-google-beta", "1.19.0", "x4"),
+					withProvider("other-namespace/google", "terraform-provider-google", "1.19.0", "x5"),
 				)
 
 				pakReader, err := reader.OpenBrokerPak(pk)
@@ -58,9 +58,11 @@ var _ = Describe("reader", func() {
 				Expect(pakReader.ExtractPlatformBins(binOutput)).NotTo(HaveOccurred())
 
 				plat := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
-				binOutput = filepath.Join(binOutput, "registry.terraform.io", "hashicorp")
-				Expect(filepath.Join(binOutput, "google-beta", "1.19.0", plat, "terraform-provider-google-beta_v1.19.0_x4")).To(BeAnExistingFile())
-				Expect(filepath.Join(binOutput, "google", "1.19.0", plat, "terraform-provider-google_v1.19.0_x5")).To(BeAnExistingFile())
+				hashicorpBinOutput := filepath.Join(binOutput, "registry.terraform.io", "hashicorp")
+				Expect(filepath.Join(hashicorpBinOutput, "google-beta", "1.19.0", plat, "terraform-provider-google-beta_v1.19.0_x4")).To(BeAnExistingFile())
+
+				otherNamespaceBinOutput := filepath.Join(binOutput, "registry.terraform.io", "other-namespace")
+				Expect(filepath.Join(otherNamespaceBinOutput, "google", "1.19.0", plat, "terraform-provider-google_v1.19.0_x5")).To(BeAnExistingFile())
 			})
 		})
 
@@ -68,7 +70,7 @@ var _ = Describe("reader", func() {
 			It("extracts correctly", func() {
 				pk := fakeBrokerpak(
 					withTerraform(terraformV13),
-					withProvider("terraform-provider-google-beta", "1.19.0", "x4"),
+					withProvider("", "terraform-provider-google-beta", "1.19.0", "x4"),
 				)
 
 				pakReader, err := reader.OpenBrokerPak(pk)
@@ -89,7 +91,7 @@ var _ = Describe("reader", func() {
 					withTerraform(terraformV12),
 					withTerraform(terraformV13),
 					withDefaultTerraform("1.1.1"),
-					withProvider("terraform-provider-google-beta", "1.19.0", "x4"),
+					withProvider("", "terraform-provider-google-beta", "1.19.0", "x4"),
 				)
 
 				pakReader, err := reader.OpenBrokerPak(pk)
@@ -119,8 +121,8 @@ var _ = Describe("reader", func() {
 			It("should return an error", func() {
 				pk := fakeBrokerpak(
 					withTerraform(terraformV13),
-					withProvider("terraform-provider-google-beta", "1.19.0", "x4"),
-					withProvider("terraform-provider-google-beta", "1.19.0", "x5"),
+					withProvider("", "terraform-provider-google-beta", "1.19.0", "x4"),
+					withProvider("", "terraform-provider-google-beta", "1.19.0", "x5"),
 				)
 
 				pakReader, err := reader.OpenBrokerPak(pk)
@@ -219,7 +221,7 @@ func withDefaultTerraform(tfVersion string) option {
 	}
 }
 
-func withProvider(name, providerVersion, suffix string) option {
+func withProvider(provider, name, providerVersion, suffix string) option {
 	return func(dir string, m *manifest.Manifest) {
 		fakeFile := filepath.Join(dir, fmt.Sprintf("%s_v%s_%s", name, providerVersion, suffix))
 		Expect(stream.Copy(stream.FromString("dummy-file"), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
@@ -227,6 +229,7 @@ func withProvider(name, providerVersion, suffix string) option {
 		m.TerraformResources = append(m.TerraformResources, manifest.TerraformResource{
 			Name:        name,
 			Version:     providerVersion,
+			Provider:    provider,
 			Source:      fakeFile,
 			URLTemplate: fakeFile,
 		})
