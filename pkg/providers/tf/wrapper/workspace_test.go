@@ -32,25 +32,25 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 	// - The function creates and destroys its own dir.
 
 	cases := map[string]struct {
-		Exec func(ws *TerraformWorkspace)
+		Exec func(ws *TerraformWorkspace, executor TerraformExecutor)
 	}{
-		"validate": {Exec: func(ws *TerraformWorkspace) {
-			ws.Validate(context.TODO())
+		"validate": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
+			ws.Validate(context.TODO(), executor)
 		}},
-		"apply": {Exec: func(ws *TerraformWorkspace) {
-			ws.Apply(context.TODO())
+		"apply": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
+			ws.Apply(context.TODO(), executor)
 		}},
-		"destroy": {Exec: func(ws *TerraformWorkspace) {
-			ws.Destroy(context.TODO())
+		"destroy": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
+			ws.Destroy(context.TODO(), executor)
 		}},
-		"import": {Exec: func(ws *TerraformWorkspace) {
-			ws.Import(context.TODO(), map[string]string{})
+		"import": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
+			ws.Import(context.TODO(), executor, map[string]string{})
 		}},
-		"show": {Exec: func(ws *TerraformWorkspace) {
-			ws.Show(context.TODO())
+		"show": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
+			ws.Show(context.TODO(), executor)
 		}},
-		"plan": {Exec: func(ws *TerraformWorkspace) {
-			ws.Plan(context.TODO())
+		"plan": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
+			ws.Plan(context.TODO(), executor)
 		}},
 	}
 
@@ -67,7 +67,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 			// "running" tf
 			executorRan := false
 			cmdDir := ""
-			ws.Executor = func(ctx context.Context, cmd *exec.Cmd) (ExecutionOutput, error) {
+			executor := func(ctx context.Context, cmd *exec.Cmd) (ExecutionOutput, error) {
 				executorRan = true
 				cmdDir = cmd.Dir
 
@@ -94,7 +94,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 			}
 
 			// run function
-			tc.Exec(ws)
+			tc.Exec(ws, executor)
 
 			// check validator got ran
 			if !executorRan {
@@ -121,25 +121,25 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 	// - The function creates and destroys its own dir.
 
 	cases := map[string]struct {
-		Exec func(ws *TerraformWorkspace)
+		Exec func(ws *TerraformWorkspace, executor TerraformExecutor)
 	}{
-		"validate": {Exec: func(ws *TerraformWorkspace) {
-			ws.Validate(context.TODO())
+		"validate": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
+			ws.Validate(context.TODO(), executor)
 		}},
-		"apply": {Exec: func(ws *TerraformWorkspace) {
-			ws.Apply(context.TODO())
+		"apply": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
+			ws.Apply(context.TODO(), executor)
 		}},
-		"destroy": {Exec: func(ws *TerraformWorkspace) {
-			ws.Destroy(context.TODO())
+		"destroy": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
+			ws.Destroy(context.TODO(), executor)
 		}},
-		"import": {Exec: func(ws *TerraformWorkspace) {
-			ws.Import(context.TODO(), map[string]string{})
+		"import": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
+			ws.Import(context.TODO(), executor, map[string]string{})
 		}},
-		"show": {Exec: func(ws *TerraformWorkspace) {
-			ws.Show(context.TODO())
+		"show": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
+			ws.Show(context.TODO(), executor)
 		}},
-		"plan": {Exec: func(ws *TerraformWorkspace) {
-			ws.Plan(context.TODO())
+		"plan": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
+			ws.Plan(context.TODO(), executor)
 		}},
 	}
 
@@ -156,7 +156,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 			// "running" tf
 			executorRan := false
 			cmdDir := ""
-			ws.Executor = func(ctx context.Context, cmd *exec.Cmd) (ExecutionOutput, error) {
+			executor := func(ctx context.Context, cmd *exec.Cmd) (ExecutionOutput, error) {
 				executorRan = true
 				cmdDir = cmd.Dir
 
@@ -183,7 +183,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 			}
 
 			// run function
-			tc.Exec(ws)
+			tc.Exec(ws, executor)
 
 			// check validator got ran
 			if !executorRan {
