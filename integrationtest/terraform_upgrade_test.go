@@ -47,6 +47,16 @@ var _ = Describe("Terraform Upgrade", func() {
 		Expect(json.Unmarshal(workspaceReceiver.State, &stateReceiver)).NotTo(HaveOccurred())
 		return stateReceiver.Version
 	}
+	pollLastOperation := func(serviceInstanceGUID string) domain.LastOperationState {
+		lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
+		Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
+		Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
+		var receiver domain.LastOperation
+		err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
+		Expect(err).NotTo(HaveOccurred())
+		return receiver.State
+	}
+	pollingTimeouts := []interface{}{time.Minute * 2, time.Second * 10}
 
 	Context("TF Upgrades are enabled", func() {
 		It("runs 'terraform apply' at each version in the upgrade path", func() {
@@ -58,16 +68,7 @@ var _ = Describe("Terraform Upgrade", func() {
 			Expect(provisionResponse.Error).NotTo(HaveOccurred())
 			Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
 
-			Eventually(func() bool {
-				lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
-				Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
-				Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
-				var receiver domain.LastOperation
-				err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(receiver.State).NotTo(Equal("failed"))
-				return receiver.State == "succeeded"
-			}, time.Minute*2, time.Second*10).Should(BeTrue())
+			Eventually(pollLastOperation(serviceInstanceGUID), pollingTimeouts...).Should(Equal(domain.Succeeded))
 			Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.13.7"))
 
 			By("updating the brokerpak and restarting the broker")
@@ -81,16 +82,7 @@ var _ = Describe("Terraform Upgrade", func() {
 			Expect(updateResponse.Error).NotTo(HaveOccurred())
 			Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
 
-			Eventually(func() bool {
-				lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
-				Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
-				Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
-				var receiver domain.LastOperation
-				err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(receiver.State).NotTo(Equal("failed"))
-				return receiver.State == "succeeded"
-			}, time.Minute*2, time.Second*10).Should(BeTrue())
+			Eventually(pollLastOperation(serviceInstanceGUID), pollingTimeouts...).Should(Equal(domain.Succeeded))
 
 			By("observing that the TF state file has been updated to the latest version")
 			Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("1.1.6"))
@@ -107,16 +99,7 @@ var _ = Describe("Terraform Upgrade", func() {
 			Expect(provisionResponse.Error).NotTo(HaveOccurred())
 			Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
 
-			Eventually(func() bool {
-				lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
-				Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
-				Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
-				var receiver domain.LastOperation
-				err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(receiver.State).NotTo(Equal("failed"))
-				return receiver.State == "succeeded"
-			}, time.Minute*2, time.Second*10).Should(BeTrue())
+			Eventually(pollLastOperation(serviceInstanceGUID), pollingTimeouts...).Should(Equal(domain.Succeeded))
 			Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.13.7"))
 
 			By("updating the brokerpak and restarting the broker")
@@ -129,19 +112,11 @@ var _ = Describe("Terraform Upgrade", func() {
 			Expect(updateResponse.Error).NotTo(HaveOccurred())
 			Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
 
-			Eventually(func() bool {
-				lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
-				Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
-				Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
-				var receiver domain.LastOperation
-				err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(receiver.State).NotTo(Equal("suceeded"))
-				return receiver.State == "failed"
-			}, time.Minute*2, time.Second*10).Should(BeTrue())
+			Eventually(pollLastOperation(serviceInstanceGUID), pollingTimeouts...).Should(Equal(domain.Failed))
 
 			By("observing that the TF version remains the same in the state file")
 			Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.13.7"))
 		})
 	})
+
 })

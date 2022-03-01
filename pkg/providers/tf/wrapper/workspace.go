@@ -126,7 +126,7 @@ type TerraformWorkspace struct {
 	// If left nil, the default executor is used.
 	Executor          TerraformExecutor `json:"-"`
 	Transformer       TfTransformer     `json:"transform"`
-	TfBinariesContext TfBinariesContext
+	TfBinariesContext TfBinariesContext `json:"-"`
 
 	dirLock sync.Mutex
 	dir     string

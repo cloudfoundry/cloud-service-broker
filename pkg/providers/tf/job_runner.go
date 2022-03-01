@@ -256,35 +256,10 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 	}
 
 	go func() {
-		if viper.GetBool(tfUpgradeEnabled) {
-			currentTfVersion, err := workspace.StateVersion()
-			if err != nil {
-				runner.operationFinished(err, workspace, deployment)
-				return
-			}
-			if currentTfVersion.LessThan(runner.tfBinContext.TfVersion) {
-				for _, targetTfVersion := range runner.tfBinContext.TfUpgradePath {
-					if currentTfVersion.LessThan(targetTfVersion.GetTerraformVersion()) {
-						workspace.SetExecutorVersion(targetTfVersion.GetTerraformVersion())
-						err := workspace.Apply(ctx)
-						if err != nil {
-							runner.operationFinished(err, workspace, deployment)
-							return
-						}
-					}
-				}
-			}
-			workspace.SetDefaultExecutor()
-		} else {
-			currentTfVersion, err := workspace.StateVersion()
-			if err != nil {
-				runner.operationFinished(err, workspace, deployment)
-				return
-			}
-			if currentTfVersion.LessThan(runner.tfBinContext.TfVersion) {
-				runner.operationFinished(errors.New("failed"), workspace, deployment)
-				return
-			}
+		err = runner.performTerraformUpgrade(ctx, workspace)
+		if err != nil {
+			runner.operationFinished(err, workspace, deployment)
+			return
 		}
 
 		workspace.Instances[0].Configuration = limitedConfig
@@ -292,6 +267,32 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 		err = workspace.Apply(ctx)
 		runner.operationFinished(err, workspace, deployment)
 	}()
+
+	return nil
+}
+
+func (runner *TfJobRunner) performTerraformUpgrade(ctx context.Context, workspace *wrapper.TerraformWorkspace) error {
+	defer workspace.SetDefaultExecutor()
+	currentTfVersion, err := workspace.StateVersion()
+	if err != nil {
+		return err
+	}
+
+	if viper.GetBool(tfUpgradeEnabled) {
+		if currentTfVersion.LessThan(runner.tfBinContext.TfVersion) {
+			for _, targetTfVersion := range runner.tfBinContext.TfUpgradePath {
+				if currentTfVersion.LessThan(targetTfVersion.GetTerraformVersion()) {
+					workspace.SetExecutorVersion(targetTfVersion.GetTerraformVersion())
+					err = workspace.Apply(ctx)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+	} else if currentTfVersion.LessThan(runner.tfBinContext.TfVersion) {
+		return errors.New("apply attempted with a newer version of terraform than the state")
+	}
 
 	return nil
 }
