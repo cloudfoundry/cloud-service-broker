@@ -19,6 +19,8 @@ import (
 	"os"
 	"path"
 
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
@@ -555,5 +557,5 @@ type TfBinariesContext struct {
 	Dir           string
 	TfVersion     *version.Version
 	Params        map[string]string
-	TfUpgradePath []*version.Version
+	TfUpgradePath []manifest.TerraformUpgradePath
 }

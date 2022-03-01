@@ -307,45 +307,6 @@ func (workspace *TerraformWorkspace) initializeFs(ctx context.Context) error {
 	return nil
 }
 
-func (workspace *TerraformWorkspace) initializeFsNoInit(ctx context.Context) error {
-	workspace.dirLock.Lock()
-	// create a temp directory
-	if dir, err := os.MkdirTemp("", "gsb"); err == nil {
-		workspace.dir = dir
-	} else {
-		return err
-	}
-
-	var err error
-
-	terraformLen := 0
-	for _, module := range workspace.Modules {
-		terraformLen += len(module.Definition)
-		for _, def := range module.Definitions {
-			terraformLen += len(def)
-		}
-	}
-
-	if len(workspace.Modules) == 1 && len(workspace.Modules[0].Definition) == 0 && terraformLen > 0 {
-		err = workspace.initializeFsFlat()
-	} else {
-		err = workspace.initializeFsModules()
-	}
-
-	if err != nil {
-		return err
-	}
-
-	// write the state if it exists
-	if len(workspace.State) > 0 {
-		if err := os.WriteFile(workspace.tfStatePath(), workspace.State, 0755); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // TeardownFs removes the directory we executed Terraform in and updates the
 // state from it.
 func (workspace *TerraformWorkspace) teardownFs() error {

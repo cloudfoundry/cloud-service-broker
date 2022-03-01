@@ -36,7 +36,7 @@ const (
 	Succeeded  = "succeeded"
 	Failed     = "failed"
 
-	tfUpgradeEnabled = "brokerpak.terraform.upgrades.disabled"
+	tfUpgradeEnabled = "brokerpak.terraform.upgrades.enabled"
 )
 
 func init() {
@@ -260,19 +260,31 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 			currentTfVersion, err := workspace.StateVersion()
 			if err != nil {
 				runner.operationFinished(err, workspace, deployment)
+				return
 			}
 			if currentTfVersion.LessThan(runner.tfBinContext.TfVersion) {
 				for _, targetTfVersion := range runner.tfBinContext.TfUpgradePath {
-					if currentTfVersion.LessThan(targetTfVersion) {
-						workspace.SetExecutorVersion(targetTfVersion)
+					if currentTfVersion.LessThan(targetTfVersion.GetTerraformVersion()) {
+						workspace.SetExecutorVersion(targetTfVersion.GetTerraformVersion())
 						err := workspace.Apply(ctx)
 						if err != nil {
 							runner.operationFinished(err, workspace, deployment)
+							return
 						}
 					}
 				}
 			}
 			workspace.SetDefaultExecutor()
+		} else {
+			currentTfVersion, err := workspace.StateVersion()
+			if err != nil {
+				runner.operationFinished(err, workspace, deployment)
+				return
+			}
+			if currentTfVersion.LessThan(runner.tfBinContext.TfVersion) {
+				runner.operationFinished(errors.New("failed"), workspace, deployment)
+				return
+			}
 		}
 
 		workspace.Instances[0].Configuration = limitedConfig
