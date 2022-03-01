@@ -24,7 +24,7 @@ var _ = Describe("Terraform Upgrade", func() {
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-0.12")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-0.13")
 
 		session = testHelper.StartBroker()
 	})
@@ -49,9 +49,9 @@ var _ = Describe("Terraform Upgrade", func() {
 	}
 
 	FIt("runs 'terraform apply' at each version in the upgrade path", func() {
-		By("provisioning a service instance at 0.12")
-		const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
-		const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
+		By("provisioning a service instance at 0.13")
+		const serviceOfferingGUID = "29d4119f-2e88-4e85-8c40-7360f3d9c695"
+		const servicePlanGUID = "056c052c-e7b0-4c8e-8d6b-18616e06a7ac"
 		serviceInstanceGUID := uuid.New()
 		provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
 		Expect(provisionResponse.Error).NotTo(HaveOccurred())
@@ -67,7 +67,7 @@ var _ = Describe("Terraform Upgrade", func() {
 			Expect(receiver.State).NotTo(Equal("failed"))
 			return receiver.State == "succeeded"
 		}, time.Minute*2, time.Second*10).Should(BeTrue())
-		Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.12.21"))
+		Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.13.7"))
 
 		By("updating the brokerpak and restarting the broker")
 		session.Terminate()
@@ -88,9 +88,9 @@ var _ = Describe("Terraform Upgrade", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(receiver.State).NotTo(Equal("failed"))
 			return receiver.State == "succeeded"
-		})
+		}, time.Minute*2, time.Second*10).Should(BeTrue())
 
 		By("observing that the TF state file has been updated to the latest version")
-		Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("1.1.6"))
+		Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.14.9"))
 	})
 })

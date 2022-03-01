@@ -552,7 +552,8 @@ func (tfb TfCatalogDefinitionV1) Validate() (errs *validation.FieldError) {
 // terraform binaries on disk along with some metadata about how
 // to run them.
 type TfBinariesContext struct {
-	Dir       string
-	TfVersion *version.Version
-	Params    map[string]string
+	Dir           string
+	TfVersion     *version.Version
+	Params        map[string]string
+	TfUpgradePath []*version.Version
 }

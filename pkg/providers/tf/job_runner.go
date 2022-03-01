@@ -18,8 +18,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"path/filepath"
 	"time"
+
+	"github.com/spf13/viper"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
@@ -34,7 +35,14 @@ const (
 	InProgress = "in progress"
 	Succeeded  = "succeeded"
 	Failed     = "failed"
+
+	tfUpgradeEnabled = "brokerpak.terraform.upgrades.disabled"
 )
+
+func init() {
+	viper.BindEnv(tfUpgradeEnabled, "TERRAFORM_UPGRADES_ENABLED")
+	viper.SetDefault(tfUpgradeEnabled, false)
+}
 
 // NewTfJobRunner constructs a new JobRunner for the given project.
 func NewTfJobRunner(envVars map[string]string, store broker.ServiceProviderStorage, tfBinContext TfBinariesContext) *TfJobRunner {
@@ -64,23 +72,16 @@ type TfJobRunner struct {
 	tfBinContext TfBinariesContext
 }
 
-func (runner *TfJobRunner) executor() wrapper.TerraformExecutor {
-	return wrapper.CustomEnvironmentExecutor(
-		runner.tfBinContext.Params,
-		wrapper.CustomTerraformExecutor(
-			filepath.Join(runner.tfBinContext.Dir, "versions", runner.tfBinContext.TfVersion.String(), "terraform"),
-			runner.tfBinContext.Dir,
-			runner.tfBinContext.TfVersion,
-			wrapper.DefaultExecutor,
-		),
-	)
-
-}
-
 // StageJob stages a job to be executed. Before the workspace is saved to the
 // database, the modules and inputs are validated by Terraform.
 func (runner *TfJobRunner) StageJob(jobId string, workspace *wrapper.TerraformWorkspace) error {
-	workspace.Executor = runner.executor()
+	workspace.TfBinariesContext = wrapper.TfBinariesContext{
+		Dir:       runner.tfBinContext.Dir,
+		TfVersion: runner.tfBinContext.TfVersion,
+		Params:    runner.tfBinContext.Params,
+		EnvVars:   runner.envVars,
+	}
+	workspace.SetDefaultExecutor()
 
 	deployment := storage.TerraformDeployment{ID: jobId}
 	exists, err := runner.store.ExistsTerraformDeployment(jobId)
@@ -124,7 +125,13 @@ func (runner *TfJobRunner) hydrateWorkspace(ctx context.Context, deployment stor
 		return nil, err
 	}
 
-	ws.Executor = wrapper.CustomEnvironmentExecutor(runner.envVars, runner.executor())
+	ws.TfBinariesContext = wrapper.TfBinariesContext{
+		Dir:       runner.tfBinContext.Dir,
+		TfVersion: runner.tfBinContext.TfVersion,
+		Params:    runner.tfBinContext.Params,
+		EnvVars:   runner.envVars,
+	}
+	ws.SetDefaultExecutor()
 
 	logger := utils.NewLogger("job-runner")
 	logger.Debug("wrapping", correlation.ID(ctx), lager.Data{
@@ -239,20 +246,38 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 	if err != nil {
 		return err
 	}
-
 	limitedConfig := make(map[string]interface{})
 	for _, name := range inputList {
 		limitedConfig[name] = templateVars[name]
 	}
-
-	workspace.Instances[0].Configuration = limitedConfig
 
 	if err := runner.markJobStarted(deployment, models.UpdateOperationType); err != nil {
 		return err
 	}
 
 	go func() {
-		err := workspace.Apply(ctx)
+		if viper.GetBool(tfUpgradeEnabled) {
+			currentTfVersion, err := workspace.StateVersion()
+			if err != nil {
+				runner.operationFinished(err, workspace, deployment)
+			}
+			if currentTfVersion.LessThan(runner.tfBinContext.TfVersion) {
+				for _, targetTfVersion := range runner.tfBinContext.TfUpgradePath {
+					if currentTfVersion.LessThan(targetTfVersion) {
+						workspace.SetExecutorVersion(targetTfVersion)
+						err := workspace.Apply(ctx)
+						if err != nil {
+							runner.operationFinished(err, workspace, deployment)
+						}
+					}
+				}
+			}
+			workspace.SetDefaultExecutor()
+		}
+
+		workspace.Instances[0].Configuration = limitedConfig
+
+		err = workspace.Apply(ctx)
 		runner.operationFinished(err, workspace, deployment)
 	}()
 

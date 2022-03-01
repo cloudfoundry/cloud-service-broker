@@ -22,6 +22,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -123,11 +124,36 @@ type TerraformWorkspace struct {
 
 	// Executor is a function that gets invoked to shell out to Terraform.
 	// If left nil, the default executor is used.
-	Executor    TerraformExecutor `json:"-"`
-	Transformer TfTransformer     `json:"transform"`
+	Executor          TerraformExecutor `json:"-"`
+	Transformer       TfTransformer     `json:"transform"`
+	TfBinariesContext TfBinariesContext
 
 	dirLock sync.Mutex
 	dir     string
+}
+
+// TfBinariesContext is used to hold information about the location of
+// terraform binaries on disk along with some metadata about how
+// to run them.
+type TfBinariesContext struct {
+	Dir       string
+	TfVersion *version.Version
+	Params    map[string]string
+	EnvVars   map[string]string
+}
+
+type tfState struct {
+	Version string `json:"terraform_version"`
+}
+
+func (workspace *TerraformWorkspace) StateVersion() (*version.Version, error) {
+	tf := tfState{}
+	err := json.Unmarshal(workspace.State, &tf)
+	if err != nil {
+		return nil, err
+	}
+	return version.NewVersion(tf.Version)
+
 }
 
 // String returns a human-friendly representation of the workspace suitable for
@@ -281,6 +307,45 @@ func (workspace *TerraformWorkspace) initializeFs(ctx context.Context) error {
 	return nil
 }
 
+func (workspace *TerraformWorkspace) initializeFsNoInit(ctx context.Context) error {
+	workspace.dirLock.Lock()
+	// create a temp directory
+	if dir, err := os.MkdirTemp("", "gsb"); err == nil {
+		workspace.dir = dir
+	} else {
+		return err
+	}
+
+	var err error
+
+	terraformLen := 0
+	for _, module := range workspace.Modules {
+		terraformLen += len(module.Definition)
+		for _, def := range module.Definitions {
+			terraformLen += len(def)
+		}
+	}
+
+	if len(workspace.Modules) == 1 && len(workspace.Modules[0].Definition) == 0 && terraformLen > 0 {
+		err = workspace.initializeFsFlat()
+	} else {
+		err = workspace.initializeFsModules()
+	}
+
+	if err != nil {
+		return err
+	}
+
+	// write the state if it exists
+	if len(workspace.State) > 0 {
+		if err := os.WriteFile(workspace.tfStatePath(), workspace.State, 0755); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // TeardownFs removes the directory we executed Terraform in and updates the
 // state from it.
 func (workspace *TerraformWorkspace) teardownFs() error {
@@ -339,6 +404,34 @@ func (workspace *TerraformWorkspace) Apply(ctx context.Context) error {
 
 	_, err = workspace.runTf(ctx, "apply", "-auto-approve", "-no-color")
 	return err
+}
+
+func (workspace *TerraformWorkspace) SetDefaultExecutor() {
+	workspace.Executor = CustomEnvironmentExecutor(workspace.TfBinariesContext.EnvVars,
+		CustomEnvironmentExecutor(
+			workspace.TfBinariesContext.Params,
+			CustomTerraformExecutor(
+				filepath.Join(workspace.TfBinariesContext.Dir, "versions", workspace.TfBinariesContext.TfVersion.String(), "terraform"),
+				workspace.TfBinariesContext.Dir,
+				workspace.TfBinariesContext.TfVersion,
+				DefaultExecutor,
+			),
+		),
+	)
+}
+
+func (workspace *TerraformWorkspace) SetExecutorVersion(tfVersion *version.Version) {
+	workspace.Executor = CustomEnvironmentExecutor(workspace.TfBinariesContext.EnvVars,
+		CustomEnvironmentExecutor(
+			workspace.TfBinariesContext.Params,
+			CustomTerraformExecutor(
+				filepath.Join(workspace.TfBinariesContext.Dir, "versions", tfVersion.String(), "terraform"),
+				workspace.TfBinariesContext.Dir,
+				workspace.TfBinariesContext.TfVersion,
+				DefaultExecutor,
+			),
+		),
+	)
 }
 
 func (workspace *TerraformWorkspace) Plan(ctx context.Context) error {

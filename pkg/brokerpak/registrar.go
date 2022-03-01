@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/hashicorp/go-version"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/reader"
@@ -137,15 +139,23 @@ func (r *Registrar) extractTfBinaries(brokerPak *reader.BrokerPakReader, vc *var
 	if err != nil {
 		return tf.TfBinariesContext{}, err
 	}
+
 	tfVersion, err := manifest.DefaultTerraformVersion()
 	if err != nil {
 		return tf.TfBinariesContext{}, err
 	}
 
+	var tfUpgradePath []*version.Version
+
+	for _, v := range manifest.TerraformUpgradePath {
+		tfUpgradePath = append(tfUpgradePath, version.Must(version.NewVersion(v.Version)))
+	}
+
 	return tf.TfBinariesContext{
-		Dir:       dir,
-		TfVersion: tfVersion,
-		Params:    resolveParameters(manifest.Parameters, vc),
+		Dir:           dir,
+		TfVersion:     tfVersion,
+		Params:        resolveParameters(manifest.Parameters, vc),
+		TfUpgradePath: tfUpgradePath,
 	}, nil
 }
 
