@@ -47,14 +47,16 @@ var _ = Describe("Terraform Upgrade", func() {
 		Expect(json.Unmarshal(workspaceReceiver.State, &stateReceiver)).NotTo(HaveOccurred())
 		return stateReceiver.Version
 	}
-	pollLastOperation := func(serviceInstanceGUID string) domain.LastOperationState {
-		lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
-		Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
-		Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
-		var receiver domain.LastOperation
-		err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
-		Expect(err).NotTo(HaveOccurred())
-		return receiver.State
+	pollLastOperation := func(serviceInstanceGUID string) func() domain.LastOperationState {
+		return func() domain.LastOperationState {
+			lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
+			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
+			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
+			var receiver domain.LastOperation
+			err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
+			Expect(err).NotTo(HaveOccurred())
+			return receiver.State
+		}
 	}
 	Context("TF Upgrades are enabled", func() {
 		It("runs 'terraform apply' at each version in the upgrade path", func() {
