@@ -43,6 +43,9 @@ type ExecutionOutput struct {
 	StdErr string
 }
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate . TerraformExecutor
+
 // TerraformExecutor is the function that shells out to Terraform.
 // It can intercept, modify or retry the given command.
 type TerraformExecutor func(context.Context, *exec.Cmd) (ExecutionOutput, error)
