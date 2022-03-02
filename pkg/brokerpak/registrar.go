@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/reader"
@@ -100,7 +102,7 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 	})
 }
 
-func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config BrokerpakSourceConfig, tfBinariesContext tf.TfBinariesContext) ([]*broker.ServiceDefinition, error) {
+func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config BrokerpakSourceConfig, tfBinariesContext wrapper.TFBinariesContext) ([]*broker.ServiceDefinition, error) {
 	var out []*broker.ServiceDefinition
 
 	toIgnore := utils.NewStringSet(config.ExcludedServicesSlice()...)
@@ -122,32 +124,32 @@ func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config Broke
 	return out, nil
 }
 
-func (r *Registrar) extractTfBinaries(brokerPak *reader.BrokerPakReader, vc *varcontext.VarContext) (tf.TfBinariesContext, error) {
+func (r *Registrar) extractTfBinaries(brokerPak *reader.BrokerPakReader, vc *varcontext.VarContext) (wrapper.TFBinariesContext, error) {
 	dir, err := os.MkdirTemp("", "brokerpak")
 	if err != nil {
-		return tf.TfBinariesContext{}, err
+		return wrapper.TFBinariesContext{}, err
 	}
 
 	// extract the Terraform directory
 	if err := brokerPak.ExtractPlatformBins(dir); err != nil {
-		return tf.TfBinariesContext{}, err
+		return wrapper.TFBinariesContext{}, err
 	}
 
 	manifest, err := brokerPak.Manifest()
 	if err != nil {
-		return tf.TfBinariesContext{}, err
+		return wrapper.TFBinariesContext{}, err
 	}
 
 	tfVersion, err := manifest.DefaultTerraformVersion()
 	if err != nil {
-		return tf.TfBinariesContext{}, err
+		return wrapper.TFBinariesContext{}, err
 	}
 
-	return tf.TfBinariesContext{
-		Dir:           dir,
-		TfVersion:     tfVersion,
-		Params:        resolveParameters(manifest.Parameters, vc),
-		TfUpgradePath: manifest.TerraformUpgradePath,
+	return wrapper.TFBinariesContext{
+		Dir:              dir,
+		DefaultTfVersion: tfVersion,
+		Params:           resolveParameters(manifest.Parameters, vc),
+		TfUpgradePath:    manifest.TerraformUpgradePath,
 	}, nil
 }
 

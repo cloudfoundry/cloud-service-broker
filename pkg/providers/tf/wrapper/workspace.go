@@ -452,3 +452,25 @@ func updatePath(vars []string, path string) string {
 	}
 	return fmt.Sprintf("PATH=%s", path)
 }
+
+func (workspace *TerraformWorkspace) UpdateInstanceConfiguration(templateVars map[string]interface{}) error {
+	// we may be doing this twice in the case of dynamic HCL, that is fine.
+	inputList, err := workspace.Modules[0].Inputs()
+	if err != nil {
+		return err
+	}
+	limitedConfig := make(map[string]interface{})
+	for _, name := range inputList {
+		limitedConfig[name] = templateVars[name]
+	}
+	workspace.Instances[0].Configuration = limitedConfig
+	return nil
+}
+
+func (workspace *TerraformWorkspace) ModuleDefinitions() []ModuleDefinition {
+	return workspace.Modules
+}
+
+func (workspace *TerraformWorkspace) ModuleInstances() []ModuleInstance {
+	return workspace.Instances
+}

@@ -18,10 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"path/filepath"
 	"time"
-
-	"github.com/hashicorp/go-version"
 
 	"github.com/spf13/viper"
 
@@ -48,11 +45,12 @@ func init() {
 }
 
 // NewTfJobRunner constructs a new JobRunner for the given project.
-func NewTfJobRunner(envVars map[string]string, store broker.ServiceProviderStorage, tfBinContext TfBinariesContext) *TfJobRunner {
+func NewTfJobRunner(store broker.ServiceProviderStorage, executorFactory wrapper.ExecutorFactory, tfBinContext wrapper.TFBinariesContext, workspaceFactory WorkspaceFactory) *TfJobRunner {
 	return &TfJobRunner{
-		envVars:      envVars,
-		store:        store,
-		tfBinContext: tfBinContext,
+		store:            store,
+		tfBinContext:     tfBinContext,
+		WorkspaceFactory: workspaceFactory,
+		ExecutorFactory:  executorFactory,
 	}
 }
 
@@ -67,12 +65,11 @@ func NewTfJobRunner(envVars map[string]string, store broker.ServiceProviderStora
 // The TfJobRunner keeps track of the workspace and the Terraform state file so
 // subsequent commands will operate on the same structure.
 type TfJobRunner struct {
-	// envVars is a list of environment variables that should be included in executor
-	// env (usually Terraform provider credentials)
-	envVars map[string]string
 	// executor holds a custom executor that will be called when commands are run.
 	store        broker.ServiceProviderStorage
-	tfBinContext TfBinariesContext
+	tfBinContext wrapper.TFBinariesContext
+	WorkspaceFactory
+	wrapper.ExecutorFactory
 }
 
 // StageJob stages a job to be executed. Before the workspace is saved to the
@@ -178,34 +175,6 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 	return nil
 }
 
-func (runner *TfJobRunner) DefaultExecutor() wrapper.TerraformExecutor {
-	return wrapper.CustomEnvironmentExecutor(runner.envVars,
-		wrapper.CustomEnvironmentExecutor(
-			runner.tfBinContext.Params,
-			wrapper.CustomTerraformExecutor(
-				filepath.Join(runner.tfBinContext.Dir, "versions", runner.tfBinContext.TfVersion.String(), "terraform"),
-				runner.tfBinContext.Dir,
-				runner.tfBinContext.TfVersion,
-				wrapper.DefaultExecutor,
-			),
-		),
-	)
-}
-
-func (runner *TfJobRunner) VersionedExecutor(tfVersion *version.Version) wrapper.TerraformExecutor {
-	return wrapper.CustomEnvironmentExecutor(runner.envVars,
-		wrapper.CustomEnvironmentExecutor(
-			runner.tfBinContext.Params,
-			wrapper.CustomTerraformExecutor(
-				filepath.Join(runner.tfBinContext.Dir, "versions", tfVersion.String(), "terraform"),
-				runner.tfBinContext.Dir,
-				runner.tfBinContext.TfVersion,
-				wrapper.DefaultExecutor,
-			),
-		),
-	)
-}
-
 // Create runs `terraform apply` on the given workspace in the background.
 // The status of the job can be found by polling the Status function.
 func (runner *TfJobRunner) Create(ctx context.Context, id string) error {
@@ -237,19 +206,9 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 		return err
 	}
 
-	workspace, err := wrapper.DeserializeWorkspace(deployment.Workspace)
+	workspace, err := runner.CreateWorkspace(deployment)
 	if err != nil {
 		return err
-	}
-
-	// we may be doing this twice in the case of dynamic HCL, that is fine.
-	inputList, err := workspace.Modules[0].Inputs()
-	if err != nil {
-		return err
-	}
-	limitedConfig := make(map[string]interface{})
-	for _, name := range inputList {
-		limitedConfig[name] = templateVars[name]
 	}
 
 	if err := runner.markJobStarted(deployment, models.UpdateOperationType); err != nil {
@@ -262,8 +221,8 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 			runner.operationFinished(err, workspace, deployment)
 			return
 		}
-
-		workspace.Instances[0].Configuration = limitedConfig
+		err = workspace.UpdateInstanceConfiguration(templateVars)
+		runner.operationFinished(err, workspace, deployment)
 
 		err = workspace.Apply(ctx, runner.DefaultExecutor())
 		runner.operationFinished(err, workspace, deployment)
@@ -272,14 +231,14 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 	return nil
 }
 
-func (runner *TfJobRunner) performTerraformUpgrade(ctx context.Context, workspace *wrapper.TerraformWorkspace) error {
+func (runner *TfJobRunner) performTerraformUpgrade(ctx context.Context, workspace Workspace) error {
 	currentTfVersion, err := workspace.StateVersion()
 	if err != nil {
 		return err
 	}
 
 	if viper.GetBool(tfUpgradeEnabled) {
-		if currentTfVersion.LessThan(runner.tfBinContext.TfVersion) {
+		if currentTfVersion.LessThan(runner.tfBinContext.DefaultTfVersion) {
 			for _, targetTfVersion := range runner.tfBinContext.TfUpgradePath {
 				if currentTfVersion.LessThan(targetTfVersion.GetTerraformVersion()) {
 					err = workspace.Apply(ctx, runner.VersionedExecutor(targetTfVersion.GetTerraformVersion()))
@@ -289,7 +248,7 @@ func (runner *TfJobRunner) performTerraformUpgrade(ctx context.Context, workspac
 				}
 			}
 		}
-	} else if currentTfVersion.LessThan(runner.tfBinContext.TfVersion) {
+	} else if currentTfVersion.LessThan(runner.tfBinContext.DefaultTfVersion) {
 		return errors.New("apply attempted with a newer version of terraform than the state")
 	}
 
@@ -335,13 +294,13 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 
 // operationFinished closes out the state of the background job so clients that
 // are polling can get the results.
-func (runner *TfJobRunner) operationFinished(err error, workspace *wrapper.TerraformWorkspace, deployment storage.TerraformDeployment) error {
+func (runner *TfJobRunner) operationFinished(err error, workspace Workspace, deployment storage.TerraformDeployment) error {
 	// we shouldn't update the status on update when updating the HCL, as the status comes either from the provision call or a previous update
 	if err == nil {
 		lastOperationMessage := ""
 		// maybe do if deployment.LastOperationType != "validation" so we don't do the status update on staging a job.
 		// previously we would only stage a job on provision so state would be empty and the outputs would be null.
-		outputs, err := workspace.Outputs(workspace.Instances[0].InstanceName)
+		outputs, err := workspace.Outputs(workspace.ModuleInstances()[0].InstanceName)
 		if err == nil {
 			if status, ok := outputs["status"]; ok {
 				lastOperationMessage = fmt.Sprintf("%v", status)
