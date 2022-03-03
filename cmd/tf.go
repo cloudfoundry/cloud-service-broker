@@ -46,7 +46,7 @@ func init() {
 			db = db_service.New(logger)
 			encryptor := setupDBEncryption(db, logger)
 			store := storage.New(db, encryptor)
-			jobRunner = tf.NewTfJobRunner(nil, store, tf.TfBinariesContext{})
+			jobRunner = tf.NewTfJobRunner(store, wrapper.NewExecutorFactory("", nil, nil), wrapper.TFBinariesContext{}, tf.NewWorkspaceFactory())
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
@@ -67,7 +67,7 @@ func init() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			ws, err := wrapper.DeserializeWorkspace(string(deployment.Workspace))
+			ws, err := wrapper.DeserializeWorkspace(deployment.Workspace)
 			if err != nil {
 				fmt.Printf("Error: %s\n", err.Error())
 				log.Fatal(err)

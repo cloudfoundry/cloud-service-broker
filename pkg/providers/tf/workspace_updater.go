@@ -27,7 +27,7 @@ func UpdateWorkspaceHCL(store broker.ServiceProviderStorage, action TfServiceDef
 		return err
 	}
 
-	currentWorkspace, err := wrapper.DeserializeWorkspace(string(deployment.Workspace))
+	currentWorkspace, err := wrapper.DeserializeWorkspace(deployment.Workspace)
 	if err != nil {
 		return err
 	}

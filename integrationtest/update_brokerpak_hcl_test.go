@@ -50,7 +50,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 	persistedTerraformWorkspace := func(serviceInstanceGUID, serviceBindingGUID string) *wrapper.TerraformWorkspace {
 		record := models.TerraformDeployment{}
 		findRecord(&record, tfWorkspaceIdQuery, fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, serviceBindingGUID))
-		ws, _ := wrapper.DeserializeWorkspace(string(record.Workspace))
+		ws, _ := wrapper.DeserializeWorkspace(record.Workspace)
 		return ws
 	}
 
