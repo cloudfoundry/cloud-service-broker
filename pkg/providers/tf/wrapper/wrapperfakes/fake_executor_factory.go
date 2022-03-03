@@ -9,16 +9,6 @@ import (
 )
 
 type FakeExecutorFactory struct {
-	DefaultExecutorStub        func() wrapper.TerraformExecutor
-	defaultExecutorMutex       sync.RWMutex
-	defaultExecutorArgsForCall []struct {
-	}
-	defaultExecutorReturns struct {
-		result1 wrapper.TerraformExecutor
-	}
-	defaultExecutorReturnsOnCall map[int]struct {
-		result1 wrapper.TerraformExecutor
-	}
 	VersionedExecutorStub        func(*version.Version) wrapper.TerraformExecutor
 	versionedExecutorMutex       sync.RWMutex
 	versionedExecutorArgsForCall []struct {
@@ -32,59 +22,6 @@ type FakeExecutorFactory struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
-}
-
-func (fake *FakeExecutorFactory) DefaultExecutor() wrapper.TerraformExecutor {
-	fake.defaultExecutorMutex.Lock()
-	ret, specificReturn := fake.defaultExecutorReturnsOnCall[len(fake.defaultExecutorArgsForCall)]
-	fake.defaultExecutorArgsForCall = append(fake.defaultExecutorArgsForCall, struct {
-	}{})
-	stub := fake.DefaultExecutorStub
-	fakeReturns := fake.defaultExecutorReturns
-	fake.recordInvocation("DefaultExecutor", []interface{}{})
-	fake.defaultExecutorMutex.Unlock()
-	if stub != nil {
-		return stub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeExecutorFactory) DefaultExecutorCallCount() int {
-	fake.defaultExecutorMutex.RLock()
-	defer fake.defaultExecutorMutex.RUnlock()
-	return len(fake.defaultExecutorArgsForCall)
-}
-
-func (fake *FakeExecutorFactory) DefaultExecutorCalls(stub func() wrapper.TerraformExecutor) {
-	fake.defaultExecutorMutex.Lock()
-	defer fake.defaultExecutorMutex.Unlock()
-	fake.DefaultExecutorStub = stub
-}
-
-func (fake *FakeExecutorFactory) DefaultExecutorReturns(result1 wrapper.TerraformExecutor) {
-	fake.defaultExecutorMutex.Lock()
-	defer fake.defaultExecutorMutex.Unlock()
-	fake.DefaultExecutorStub = nil
-	fake.defaultExecutorReturns = struct {
-		result1 wrapper.TerraformExecutor
-	}{result1}
-}
-
-func (fake *FakeExecutorFactory) DefaultExecutorReturnsOnCall(i int, result1 wrapper.TerraformExecutor) {
-	fake.defaultExecutorMutex.Lock()
-	defer fake.defaultExecutorMutex.Unlock()
-	fake.DefaultExecutorStub = nil
-	if fake.defaultExecutorReturnsOnCall == nil {
-		fake.defaultExecutorReturnsOnCall = make(map[int]struct {
-			result1 wrapper.TerraformExecutor
-		})
-	}
-	fake.defaultExecutorReturnsOnCall[i] = struct {
-		result1 wrapper.TerraformExecutor
-	}{result1}
 }
 
 func (fake *FakeExecutorFactory) VersionedExecutor(arg1 *version.Version) wrapper.TerraformExecutor {
@@ -151,8 +88,6 @@ func (fake *FakeExecutorFactory) VersionedExecutorReturnsOnCall(i int, result1 w
 func (fake *FakeExecutorFactory) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.defaultExecutorMutex.RLock()
-	defer fake.defaultExecutorMutex.RUnlock()
 	fake.versionedExecutorMutex.RLock()
 	defer fake.versionedExecutorMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

@@ -36,12 +36,12 @@ const (
 	Succeeded  = "succeeded"
 	Failed     = "failed"
 
-	tfUpgradeEnabled = "brokerpak.terraform.upgrades.enabled"
+	TfUpgradeEnabled = "brokerpak.terraform.upgrades.enabled"
 )
 
 func init() {
-	viper.BindEnv(tfUpgradeEnabled, "TERRAFORM_UPGRADES_ENABLED")
-	viper.SetDefault(tfUpgradeEnabled, false)
+	viper.BindEnv(TfUpgradeEnabled, "TERRAFORM_UPGRADES_ENABLED")
+	viper.SetDefault(TfUpgradeEnabled, false)
 }
 
 // NewTfJobRunner constructs a new JobRunner for the given project.
@@ -175,6 +175,10 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 	return nil
 }
 
+func (runner *TfJobRunner) DefaultExecutor() wrapper.TerraformExecutor {
+	return runner.VersionedExecutor(runner.tfBinContext.DefaultTfVersion)
+}
+
 // Create runs `terraform apply` on the given workspace in the background.
 // The status of the job can be found by polling the Status function.
 func (runner *TfJobRunner) Create(ctx context.Context, id string) error {
@@ -222,7 +226,10 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 			return
 		}
 		err = workspace.UpdateInstanceConfiguration(templateVars)
-		runner.operationFinished(err, workspace, deployment)
+		if err != nil {
+			runner.operationFinished(err, workspace, deployment)
+			return
+		}
 
 		err = workspace.Apply(ctx, runner.DefaultExecutor())
 		runner.operationFinished(err, workspace, deployment)
@@ -237,8 +244,11 @@ func (runner *TfJobRunner) performTerraformUpgrade(ctx context.Context, workspac
 		return err
 	}
 
-	if viper.GetBool(tfUpgradeEnabled) {
+	if viper.GetBool(TfUpgradeEnabled) {
 		if currentTfVersion.LessThan(runner.tfBinContext.DefaultTfVersion) {
+			if runner.tfBinContext.TfUpgradePath == nil || len(runner.tfBinContext.TfUpgradePath) == 0 {
+				return errors.New("terraform version mismatch and no upgrade path specified")
+			}
 			for _, targetTfVersion := range runner.tfBinContext.TfUpgradePath {
 				if currentTfVersion.LessThan(targetTfVersion.GetTerraformVersion()) {
 					err = workspace.Apply(ctx, runner.VersionedExecutor(targetTfVersion.GetTerraformVersion()))

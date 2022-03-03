@@ -18,12 +18,11 @@ type TFBinariesContext struct {
 	TfUpgradePath []manifest.TerraformUpgradePath
 }
 
-func NewExecutorFactoryImp(tfBinContext TFBinariesContext, envVars map[string]string) ExecutorFactory {
+func NewExecutorFactoryImp(dir string, params map[string]string, envVars map[string]string) ExecutorFactory {
 	return ExecutorFactoryImp{
-		Dir:              tfBinContext.Dir,
-		DefaultTfVersion: tfBinContext.DefaultTfVersion,
-		Params:           tfBinContext.Params,
-		EnvVars:          envVars,
+		Dir:     dir,
+		Params:  params,
+		EnvVars: envVars,
 	}
 }
 
@@ -38,12 +37,7 @@ type ExecutorFactoryImp struct {
 //counterfeiter:generate . ExecutorFactory
 
 type ExecutorFactory interface {
-	DefaultExecutor() TerraformExecutor
 	VersionedExecutor(tfVersion *version.Version) TerraformExecutor
-}
-
-func (executorFactory ExecutorFactoryImp) DefaultExecutor() TerraformExecutor {
-	return executorFactory.VersionedExecutor(executorFactory.DefaultTfVersion)
 }
 
 func (executorFactory ExecutorFactoryImp) VersionedExecutor(tfVersion *version.Version) TerraformExecutor {
