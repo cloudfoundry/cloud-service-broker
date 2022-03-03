@@ -18,8 +18,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"path/filepath"
 	"time"
+
+	"github.com/spf13/viper"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
@@ -34,14 +35,22 @@ const (
 	InProgress = "in progress"
 	Succeeded  = "succeeded"
 	Failed     = "failed"
+
+	TfUpgradeEnabled = "brokerpak.terraform.upgrades.enabled"
 )
 
+func init() {
+	viper.BindEnv(TfUpgradeEnabled, "TERRAFORM_UPGRADES_ENABLED")
+	viper.SetDefault(TfUpgradeEnabled, false)
+}
+
 // NewTfJobRunner constructs a new JobRunner for the given project.
-func NewTfJobRunner(envVars map[string]string, store broker.ServiceProviderStorage, tfBinContext TfBinariesContext) *TfJobRunner {
+func NewTfJobRunner(store broker.ServiceProviderStorage, executorFactory wrapper.ExecutorBuilder, tfBinContext wrapper.TFBinariesContext, workspaceFactory WorkspaceBuilder) *TfJobRunner {
 	return &TfJobRunner{
-		envVars:      envVars,
-		store:        store,
-		tfBinContext: tfBinContext,
+		store:            store,
+		tfBinContext:     tfBinContext,
+		WorkspaceBuilder: workspaceFactory,
+		ExecutorBuilder:  executorFactory,
 	}
 }
 
@@ -56,32 +65,16 @@ func NewTfJobRunner(envVars map[string]string, store broker.ServiceProviderStora
 // The TfJobRunner keeps track of the workspace and the Terraform state file so
 // subsequent commands will operate on the same structure.
 type TfJobRunner struct {
-	// envVars is a list of environment variables that should be included in executor
-	// env (usually Terraform provider credentials)
-	envVars map[string]string
 	// executor holds a custom executor that will be called when commands are run.
 	store        broker.ServiceProviderStorage
-	tfBinContext TfBinariesContext
-}
-
-func (runner *TfJobRunner) executor() wrapper.TerraformExecutor {
-	return wrapper.CustomEnvironmentExecutor(
-		runner.tfBinContext.Params,
-		wrapper.CustomTerraformExecutor(
-			filepath.Join(runner.tfBinContext.Dir, "versions", runner.tfBinContext.TfVersion.String(), "terraform"),
-			runner.tfBinContext.Dir,
-			runner.tfBinContext.TfVersion,
-			wrapper.DefaultExecutor,
-		),
-	)
-
+	tfBinContext wrapper.TFBinariesContext
+	WorkspaceBuilder
+	wrapper.ExecutorBuilder
 }
 
 // StageJob stages a job to be executed. Before the workspace is saved to the
 // database, the modules and inputs are validated by Terraform.
 func (runner *TfJobRunner) StageJob(jobId string, workspace *wrapper.TerraformWorkspace) error {
-	workspace.Executor = runner.executor()
-
 	deployment := storage.TerraformDeployment{ID: jobId}
 	exists, err := runner.store.ExistsTerraformDeployment(jobId)
 	switch {
@@ -118,22 +111,6 @@ func (runner *TfJobRunner) markJobStarted(deployment storage.TerraformDeployment
 	return nil
 }
 
-func (runner *TfJobRunner) hydrateWorkspace(ctx context.Context, deployment storage.TerraformDeployment) (*wrapper.TerraformWorkspace, error) {
-	ws, err := wrapper.DeserializeWorkspace(string(deployment.Workspace))
-	if err != nil {
-		return nil, err
-	}
-
-	ws.Executor = wrapper.CustomEnvironmentExecutor(runner.envVars, runner.executor())
-
-	logger := utils.NewLogger("job-runner")
-	logger.Debug("wrapping", correlation.ID(ctx), lager.Data{
-		"wrapper": ws,
-	})
-
-	return ws, nil
-}
-
 // ImportResource represents TF resource to IaaS resource ID mapping for import
 type ImportResource struct {
 	TfResource   string
@@ -148,7 +125,7 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 		return err
 	}
 
-	workspace, err := runner.hydrateWorkspace(ctx, deployment)
+	workspace, err := wrapper.DeserializeWorkspace(deployment.Workspace)
 	if err != nil {
 		return err
 	}
@@ -163,12 +140,12 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 		for _, resource := range importResources {
 			resources[resource.TfResource] = resource.IaaSResource
 		}
-		if err := workspace.Import(ctx, resources); err != nil {
+		if err := workspace.Import(ctx, runner.DefaultExecutor(), resources); err != nil {
 			logger.Error("Import Failed", err)
 			runner.operationFinished(err, workspace, deployment)
 			return
 		}
-		mainTf, err := workspace.Show(ctx)
+		mainTf, err := workspace.Show(ctx, runner.DefaultExecutor())
 		if err == nil {
 			var tf string
 			var parameterVals map[string]string
@@ -184,11 +161,11 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 					"tf":        tf,
 				})
 
-				err = workspace.Plan(ctx)
+				err = workspace.Plan(ctx, runner.DefaultExecutor())
 				if err != nil {
 					logger.Error("plan failed", err)
 				} else {
-					err = workspace.Apply(ctx)
+					err = workspace.Apply(ctx, runner.DefaultExecutor())
 				}
 			}
 		}
@@ -196,6 +173,10 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 	}()
 
 	return nil
+}
+
+func (runner *TfJobRunner) DefaultExecutor() wrapper.TerraformExecutor {
+	return runner.VersionedExecutor(runner.tfBinContext.DefaultTfVersion)
 }
 
 // Create runs `terraform apply` on the given workspace in the background.
@@ -206,7 +187,7 @@ func (runner *TfJobRunner) Create(ctx context.Context, id string) error {
 		return fmt.Errorf("error getting TF deployment: %w", err)
 	}
 
-	workspace, err := runner.hydrateWorkspace(ctx, deployment)
+	workspace, err := wrapper.DeserializeWorkspace(deployment.Workspace)
 	if err != nil {
 		return fmt.Errorf("error hydrating workspace: %w", err)
 	}
@@ -216,7 +197,7 @@ func (runner *TfJobRunner) Create(ctx context.Context, id string) error {
 	}
 
 	go func() {
-		err := workspace.Apply(ctx)
+		err := workspace.Apply(ctx, runner.DefaultExecutor())
 		runner.operationFinished(err, workspace, deployment)
 	}()
 
@@ -229,32 +210,57 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 		return err
 	}
 
-	workspace, err := runner.hydrateWorkspace(ctx, deployment)
+	workspace, err := runner.CreateWorkspace(deployment)
 	if err != nil {
 		return err
 	}
-
-	// we may be doing this twice in the case of dynamic HCL, that is fine.
-	inputList, err := workspace.Modules[0].Inputs()
-	if err != nil {
-		return err
-	}
-
-	limitedConfig := make(map[string]interface{})
-	for _, name := range inputList {
-		limitedConfig[name] = templateVars[name]
-	}
-
-	workspace.Instances[0].Configuration = limitedConfig
 
 	if err := runner.markJobStarted(deployment, models.UpdateOperationType); err != nil {
 		return err
 	}
 
 	go func() {
-		err := workspace.Apply(ctx)
+		err = runner.performTerraformUpgrade(ctx, workspace)
+		if err != nil {
+			runner.operationFinished(err, workspace, deployment)
+			return
+		}
+		err = workspace.UpdateInstanceConfiguration(templateVars)
+		if err != nil {
+			runner.operationFinished(err, workspace, deployment)
+			return
+		}
+
+		err = workspace.Apply(ctx, runner.DefaultExecutor())
 		runner.operationFinished(err, workspace, deployment)
 	}()
+
+	return nil
+}
+
+func (runner *TfJobRunner) performTerraformUpgrade(ctx context.Context, workspace Workspace) error {
+	currentTfVersion, err := workspace.StateVersion()
+	if err != nil {
+		return err
+	}
+
+	if viper.GetBool(TfUpgradeEnabled) {
+		if currentTfVersion.LessThan(runner.tfBinContext.DefaultTfVersion) {
+			if runner.tfBinContext.TfUpgradePath == nil || len(runner.tfBinContext.TfUpgradePath) == 0 {
+				return errors.New("terraform version mismatch and no upgrade path specified")
+			}
+			for _, targetTfVersion := range runner.tfBinContext.TfUpgradePath {
+				if currentTfVersion.LessThan(targetTfVersion.GetTerraformVersion()) {
+					err = workspace.Apply(ctx, runner.VersionedExecutor(targetTfVersion.GetTerraformVersion()))
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+	} else if currentTfVersion.LessThan(runner.tfBinContext.DefaultTfVersion) {
+		return errors.New("apply attempted with a newer version of terraform than the state")
+	}
 
 	return nil
 }
@@ -267,7 +273,7 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 		return err
 	}
 
-	workspace, err := runner.hydrateWorkspace(ctx, deployment)
+	workspace, err := wrapper.DeserializeWorkspace(deployment.Workspace)
 	if err != nil {
 		return err
 	}
@@ -289,7 +295,7 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 	}
 
 	go func() {
-		err := workspace.Destroy(ctx)
+		err := workspace.Destroy(ctx, runner.DefaultExecutor())
 		runner.operationFinished(err, workspace, deployment)
 	}()
 
@@ -298,13 +304,13 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 
 // operationFinished closes out the state of the background job so clients that
 // are polling can get the results.
-func (runner *TfJobRunner) operationFinished(err error, workspace *wrapper.TerraformWorkspace, deployment storage.TerraformDeployment) error {
+func (runner *TfJobRunner) operationFinished(err error, workspace Workspace, deployment storage.TerraformDeployment) error {
 	// we shouldn't update the status on update when updating the HCL, as the status comes either from the provision call or a previous update
 	if err == nil {
 		lastOperationMessage := ""
 		// maybe do if deployment.LastOperationType != "validation" so we don't do the status update on staging a job.
 		// previously we would only stage a job on provision so state would be empty and the outputs would be null.
-		outputs, err := workspace.Outputs(workspace.Instances[0].InstanceName)
+		outputs, err := workspace.Outputs(workspace.ModuleInstances()[0].InstanceName)
 		if err == nil {
 			if status, ok := outputs["status"]; ok {
 				lastOperationMessage = fmt.Sprintf("%v", status)
@@ -354,7 +360,7 @@ func (runner *TfJobRunner) Outputs(ctx context.Context, id, instanceName string)
 		return nil, fmt.Errorf("error getting TF deployment: %w", err)
 	}
 
-	ws, err := wrapper.DeserializeWorkspace(string(deployment.Workspace))
+	ws, err := wrapper.DeserializeWorkspace(deployment.Workspace)
 	if err != nil {
 		return nil, fmt.Errorf("error deserializing workspace: %w", err)
 	}
@@ -385,10 +391,10 @@ func (runner *TfJobRunner) Show(ctx context.Context, id string) (string, error) 
 		return "", err
 	}
 
-	workspace, err := runner.hydrateWorkspace(ctx, deployment)
+	workspace, err := wrapper.DeserializeWorkspace(deployment.Workspace)
 	if err != nil {
 		return "", err
 	}
 
-	return workspace.Show(ctx)
+	return workspace.Show(ctx, runner.DefaultExecutor())
 }

@@ -25,7 +25,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/hashicorp/go-version"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/spf13/viper"
 )
@@ -221,7 +220,7 @@ func (tfb *TfServiceDefinitionV1) loadTemplates() error {
 
 // ToService converts the flat TfServiceDefinitionV1 into a broker.ServiceDefinition
 // that the registry can use.
-func (tfb *TfServiceDefinitionV1) ToService(tfBinContext TfBinariesContext) (*broker.ServiceDefinition, error) {
+func (tfb *TfServiceDefinitionV1) ToService(tfBinContext wrapper.TFBinariesContext) (*broker.ServiceDefinition, error) {
 	if err := tfb.loadTemplates(); err != nil {
 		return nil, err
 	}
@@ -288,7 +287,8 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext TfBinariesContext) (*br
 		PlanVariables:         append(tfb.ProvisionSettings.PlanInputs, tfb.BindSettings.PlanInputs...),
 		Examples:              tfb.Examples,
 		ProviderBuilder: func(logger lager.Logger, store broker.ServiceProviderStorage) broker.ServiceProvider {
-			return NewTerraformProvider(NewTfJobRunner(envVars, store, tfBinContext), logger, constDefn, store)
+			executorFactory := wrapper.NewExecutorFactory(tfBinContext.Dir, tfBinContext.Params, envVars)
+			return NewTerraformProvider(NewTfJobRunner(store, executorFactory, tfBinContext, NewWorkspaceFactory()), logger, constDefn, store)
 		},
 	}, nil
 }
@@ -546,13 +546,4 @@ func (tfb TfCatalogDefinitionV1) Validate() (errs *validation.FieldError) {
 	}
 
 	return errs
-}
-
-// TfBinariesContext is used to hold information about the location of
-// terraform binaries on disk along with some metadata about how
-// to run them.
-type TfBinariesContext struct {
-	Dir       string
-	TfVersion *version.Version
-	Params    map[string]string
 }
