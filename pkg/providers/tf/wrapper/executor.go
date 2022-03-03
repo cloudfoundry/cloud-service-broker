@@ -70,23 +70,32 @@ func DefaultExecutor(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) 
 // from a given plugin directory rather than the Terraform that's on the PATH
 // which will download provider binaries from the web.
 func CustomTerraformExecutor(tfBinaryPath, tfPluginDir string, tfVersion *version.Version, wrapped TerraformExecutor) TerraformExecutor {
-	return func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
-		subCommand := c.Args[1]
-		subCommandArgs := c.Args[2:]
+	return customerExecutor{tfBinaryPath: tfBinaryPath, tfPluginDir: tfPluginDir, tfVersion: tfVersion, wrapped: wrapped}
+}
 
-		if subCommand == "init" {
-			if tfVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
-				subCommandArgs = append([]string{"-get-plugins=false"}, subCommandArgs...)
-			}
-			subCommandArgs = append([]string{fmt.Sprintf("-plugin-dir=%s", tfPluginDir)}, subCommandArgs...)
+type customerExecutor struct {
+	tfBinaryPath string
+	tfPluginDir  string
+	tfVersion    *version.Version
+	wrapped      TerraformExecutor
+}
+
+func (e customerExecutor) TerraformExecutor(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
+	subCommand := c.Args[1]
+	subCommandArgs := c.Args[2:]
+
+	if subCommand == "init" {
+		if e.tfVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
+			subCommandArgs = append([]string{"-get-plugins=false"}, subCommandArgs...)
 		}
-
-		allArgs := append([]string{subCommand}, subCommandArgs...)
-		newCmd := exec.Command(tfBinaryPath, allArgs...)
-		newCmd.Dir = c.Dir
-		newCmd.Env = append(c.Env, updatePath(c.Env, tfPluginDir))
-		return wrapped(ctx, newCmd)
+		subCommandArgs = append([]string{fmt.Sprintf("-plugin-dir=%s", tfPluginDir)}, subCommandArgs...)
 	}
+
+	allArgs := append([]string{subCommand}, subCommandArgs...)
+	newCmd := exec.Command(tfBinaryPath, allArgs...)
+	newCmd.Dir = c.Dir
+	newCmd.Env = append(c.Env, updatePath(c.Env, tfPluginDir))
+	return wrapped(ctx, newCmd)
 }
 
 // CustomEnvironmentExecutor sets custom environment variables on the Terraform

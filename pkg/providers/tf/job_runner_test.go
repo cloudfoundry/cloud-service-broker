@@ -54,7 +54,7 @@ var _ = XDescribe("TfJobRunner", func() {
 			runner.Update(context.TODO(), id, templateVars)
 
 			Expect(fakeWorkspace.ApplyCallCount()).To(Equal(3))
-			Expect(fakeWorkspace.ApplyArgsForCall(0)).To(Equal())
+			//Expect(fakeWorkspace.ApplyArgsForCall(0)).To(Equal())
 
 			Expect(fakeStore.GetTerraformDeploymentCallCount()).To(Equal(1))
 			Expect(workspaceFactory.CreateWorkspaceCallCount()).To(Equal(1))
