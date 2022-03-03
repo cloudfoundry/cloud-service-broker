@@ -22,8 +22,13 @@ const manifestName = "manifest.yml"
 
 func Pack(m *manifest.Manifest, base, dest string) error {
 	// NOTE: we use "log" rather than Lager because this is used by the CLI and
-	// needs to be human readable rather than JSON.
-	log.Printf("Packing %q version %q with CSB version %q...\n", base, m.Version, utils.Version)
+	// needs to be human-readable rather than JSON.
+	switch base {
+	case "":
+		log.Printf("Packing brokerpak version %q with CSB version %q...\n", m.Version, utils.Version)
+	default:
+		log.Printf("Packing %q version %q with CSB version %q...\n", base, m.Version, utils.Version)
+	}
 
 	dir, err := os.MkdirTemp("", "brokerpak")
 	if err != nil {
