@@ -8,7 +8,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 )
 
-type FakeWorkspaceFactory struct {
+type FakeWorkspaceBuilder struct {
 	CreateWorkspaceStub        func(storage.TerraformDeployment) (tf.Workspace, error)
 	createWorkspaceMutex       sync.RWMutex
 	createWorkspaceArgsForCall []struct {
@@ -26,7 +26,7 @@ type FakeWorkspaceFactory struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeWorkspaceFactory) CreateWorkspace(arg1 storage.TerraformDeployment) (tf.Workspace, error) {
+func (fake *FakeWorkspaceBuilder) CreateWorkspace(arg1 storage.TerraformDeployment) (tf.Workspace, error) {
 	fake.createWorkspaceMutex.Lock()
 	ret, specificReturn := fake.createWorkspaceReturnsOnCall[len(fake.createWorkspaceArgsForCall)]
 	fake.createWorkspaceArgsForCall = append(fake.createWorkspaceArgsForCall, struct {
@@ -45,26 +45,26 @@ func (fake *FakeWorkspaceFactory) CreateWorkspace(arg1 storage.TerraformDeployme
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeWorkspaceFactory) CreateWorkspaceCallCount() int {
+func (fake *FakeWorkspaceBuilder) CreateWorkspaceCallCount() int {
 	fake.createWorkspaceMutex.RLock()
 	defer fake.createWorkspaceMutex.RUnlock()
 	return len(fake.createWorkspaceArgsForCall)
 }
 
-func (fake *FakeWorkspaceFactory) CreateWorkspaceCalls(stub func(storage.TerraformDeployment) (tf.Workspace, error)) {
+func (fake *FakeWorkspaceBuilder) CreateWorkspaceCalls(stub func(storage.TerraformDeployment) (tf.Workspace, error)) {
 	fake.createWorkspaceMutex.Lock()
 	defer fake.createWorkspaceMutex.Unlock()
 	fake.CreateWorkspaceStub = stub
 }
 
-func (fake *FakeWorkspaceFactory) CreateWorkspaceArgsForCall(i int) storage.TerraformDeployment {
+func (fake *FakeWorkspaceBuilder) CreateWorkspaceArgsForCall(i int) storage.TerraformDeployment {
 	fake.createWorkspaceMutex.RLock()
 	defer fake.createWorkspaceMutex.RUnlock()
 	argsForCall := fake.createWorkspaceArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeWorkspaceFactory) CreateWorkspaceReturns(result1 tf.Workspace, result2 error) {
+func (fake *FakeWorkspaceBuilder) CreateWorkspaceReturns(result1 tf.Workspace, result2 error) {
 	fake.createWorkspaceMutex.Lock()
 	defer fake.createWorkspaceMutex.Unlock()
 	fake.CreateWorkspaceStub = nil
@@ -74,7 +74,7 @@ func (fake *FakeWorkspaceFactory) CreateWorkspaceReturns(result1 tf.Workspace, r
 	}{result1, result2}
 }
 
-func (fake *FakeWorkspaceFactory) CreateWorkspaceReturnsOnCall(i int, result1 tf.Workspace, result2 error) {
+func (fake *FakeWorkspaceBuilder) CreateWorkspaceReturnsOnCall(i int, result1 tf.Workspace, result2 error) {
 	fake.createWorkspaceMutex.Lock()
 	defer fake.createWorkspaceMutex.Unlock()
 	fake.CreateWorkspaceStub = nil
@@ -90,7 +90,7 @@ func (fake *FakeWorkspaceFactory) CreateWorkspaceReturnsOnCall(i int, result1 tf
 	}{result1, result2}
 }
 
-func (fake *FakeWorkspaceFactory) Invocations() map[string][][]interface{} {
+func (fake *FakeWorkspaceBuilder) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.createWorkspaceMutex.RLock()
@@ -102,7 +102,7 @@ func (fake *FakeWorkspaceFactory) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *FakeWorkspaceFactory) recordInvocation(key string, args []interface{}) {
+func (fake *FakeWorkspaceBuilder) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -114,4 +114,4 @@ func (fake *FakeWorkspaceFactory) recordInvocation(key string, args []interface{
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ tf.WorkspaceFactory = new(FakeWorkspaceFactory)
+var _ tf.WorkspaceBuilder = new(FakeWorkspaceBuilder)

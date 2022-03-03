@@ -45,12 +45,12 @@ func init() {
 }
 
 // NewTfJobRunner constructs a new JobRunner for the given project.
-func NewTfJobRunner(store broker.ServiceProviderStorage, executorFactory wrapper.ExecutorFactory, tfBinContext wrapper.TFBinariesContext, workspaceFactory WorkspaceFactory) *TfJobRunner {
+func NewTfJobRunner(store broker.ServiceProviderStorage, executorFactory wrapper.ExecutorBuilder, tfBinContext wrapper.TFBinariesContext, workspaceFactory WorkspaceBuilder) *TfJobRunner {
 	return &TfJobRunner{
 		store:            store,
 		tfBinContext:     tfBinContext,
-		WorkspaceFactory: workspaceFactory,
-		ExecutorFactory:  executorFactory,
+		WorkspaceBuilder: workspaceFactory,
+		ExecutorBuilder:  executorFactory,
 	}
 }
 
@@ -68,8 +68,8 @@ type TfJobRunner struct {
 	// executor holds a custom executor that will be called when commands are run.
 	store        broker.ServiceProviderStorage
 	tfBinContext wrapper.TFBinariesContext
-	WorkspaceFactory
-	wrapper.ExecutorFactory
+	WorkspaceBuilder
+	wrapper.ExecutorBuilder
 }
 
 // StageJob stages a job to be executed. Before the workspace is saved to the

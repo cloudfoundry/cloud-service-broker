@@ -18,15 +18,15 @@ type TFBinariesContext struct {
 	TfUpgradePath []manifest.TerraformUpgradePath
 }
 
-func NewExecutorFactoryImp(dir string, params map[string]string, envVars map[string]string) ExecutorFactory {
-	return ExecutorFactoryImp{
+func NewExecutorFactory(dir string, params map[string]string, envVars map[string]string) ExecutorBuilder {
+	return ExecutorFactory{
 		Dir:     dir,
 		Params:  params,
 		EnvVars: envVars,
 	}
 }
 
-type ExecutorFactoryImp struct {
+type ExecutorFactory struct {
 	Dir              string
 	DefaultTfVersion *version.Version
 	Params           map[string]string
@@ -34,13 +34,13 @@ type ExecutorFactoryImp struct {
 }
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
-//counterfeiter:generate . ExecutorFactory
+//counterfeiter:generate . ExecutorBuilder
 
-type ExecutorFactory interface {
+type ExecutorBuilder interface {
 	VersionedExecutor(tfVersion *version.Version) TerraformExecutor
 }
 
-func (executorFactory ExecutorFactoryImp) VersionedExecutor(tfVersion *version.Version) TerraformExecutor {
+func (executorFactory ExecutorFactory) VersionedExecutor(tfVersion *version.Version) TerraformExecutor {
 	return CustomEnvironmentExecutor(executorFactory.EnvVars,
 		CustomEnvironmentExecutor(
 			executorFactory.Params,

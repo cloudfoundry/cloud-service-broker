@@ -6,19 +6,19 @@ import (
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
-//counterfeiter:generate . WorkspaceFactory
+//counterfeiter:generate . WorkspaceBuilder
 
-type WorkspaceFactory interface {
+type WorkspaceBuilder interface {
 	CreateWorkspace(deployment storage.TerraformDeployment) (Workspace, error)
 }
 
-func NewWorkspaceFactoryImpl() WorkspaceFactoryImpl {
-	return WorkspaceFactoryImpl{}
+func NewWorkspaceFactory() WorkspaceFactory {
+	return WorkspaceFactory{}
 }
 
-type WorkspaceFactoryImpl struct {
+type WorkspaceFactory struct {
 }
 
-func (w WorkspaceFactoryImpl) CreateWorkspace(deployment storage.TerraformDeployment) (Workspace, error) {
+func (w WorkspaceFactory) CreateWorkspace(deployment storage.TerraformDeployment) (Workspace, error) {
 	return wrapper.DeserializeWorkspace(deployment.Workspace)
 }

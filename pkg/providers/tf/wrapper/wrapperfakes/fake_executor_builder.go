@@ -8,7 +8,7 @@ import (
 	version "github.com/hashicorp/go-version"
 )
 
-type FakeExecutorFactory struct {
+type FakeExecutorBuilder struct {
 	VersionedExecutorStub        func(*version.Version) wrapper.TerraformExecutor
 	versionedExecutorMutex       sync.RWMutex
 	versionedExecutorArgsForCall []struct {
@@ -24,7 +24,7 @@ type FakeExecutorFactory struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeExecutorFactory) VersionedExecutor(arg1 *version.Version) wrapper.TerraformExecutor {
+func (fake *FakeExecutorBuilder) VersionedExecutor(arg1 *version.Version) wrapper.TerraformExecutor {
 	fake.versionedExecutorMutex.Lock()
 	ret, specificReturn := fake.versionedExecutorReturnsOnCall[len(fake.versionedExecutorArgsForCall)]
 	fake.versionedExecutorArgsForCall = append(fake.versionedExecutorArgsForCall, struct {
@@ -43,26 +43,26 @@ func (fake *FakeExecutorFactory) VersionedExecutor(arg1 *version.Version) wrappe
 	return fakeReturns.result1
 }
 
-func (fake *FakeExecutorFactory) VersionedExecutorCallCount() int {
+func (fake *FakeExecutorBuilder) VersionedExecutorCallCount() int {
 	fake.versionedExecutorMutex.RLock()
 	defer fake.versionedExecutorMutex.RUnlock()
 	return len(fake.versionedExecutorArgsForCall)
 }
 
-func (fake *FakeExecutorFactory) VersionedExecutorCalls(stub func(*version.Version) wrapper.TerraformExecutor) {
+func (fake *FakeExecutorBuilder) VersionedExecutorCalls(stub func(*version.Version) wrapper.TerraformExecutor) {
 	fake.versionedExecutorMutex.Lock()
 	defer fake.versionedExecutorMutex.Unlock()
 	fake.VersionedExecutorStub = stub
 }
 
-func (fake *FakeExecutorFactory) VersionedExecutorArgsForCall(i int) *version.Version {
+func (fake *FakeExecutorBuilder) VersionedExecutorArgsForCall(i int) *version.Version {
 	fake.versionedExecutorMutex.RLock()
 	defer fake.versionedExecutorMutex.RUnlock()
 	argsForCall := fake.versionedExecutorArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeExecutorFactory) VersionedExecutorReturns(result1 wrapper.TerraformExecutor) {
+func (fake *FakeExecutorBuilder) VersionedExecutorReturns(result1 wrapper.TerraformExecutor) {
 	fake.versionedExecutorMutex.Lock()
 	defer fake.versionedExecutorMutex.Unlock()
 	fake.VersionedExecutorStub = nil
@@ -71,7 +71,7 @@ func (fake *FakeExecutorFactory) VersionedExecutorReturns(result1 wrapper.Terraf
 	}{result1}
 }
 
-func (fake *FakeExecutorFactory) VersionedExecutorReturnsOnCall(i int, result1 wrapper.TerraformExecutor) {
+func (fake *FakeExecutorBuilder) VersionedExecutorReturnsOnCall(i int, result1 wrapper.TerraformExecutor) {
 	fake.versionedExecutorMutex.Lock()
 	defer fake.versionedExecutorMutex.Unlock()
 	fake.VersionedExecutorStub = nil
@@ -85,7 +85,7 @@ func (fake *FakeExecutorFactory) VersionedExecutorReturnsOnCall(i int, result1 w
 	}{result1}
 }
 
-func (fake *FakeExecutorFactory) Invocations() map[string][][]interface{} {
+func (fake *FakeExecutorBuilder) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.versionedExecutorMutex.RLock()
@@ -97,7 +97,7 @@ func (fake *FakeExecutorFactory) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *FakeExecutorFactory) recordInvocation(key string, args []interface{}) {
+func (fake *FakeExecutorBuilder) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -109,4 +109,4 @@ func (fake *FakeExecutorFactory) recordInvocation(key string, args []interface{}
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ wrapper.ExecutorFactory = new(FakeExecutorFactory)
+var _ wrapper.ExecutorBuilder = new(FakeExecutorBuilder)
