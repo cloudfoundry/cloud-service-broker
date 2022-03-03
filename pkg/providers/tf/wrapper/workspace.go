@@ -49,7 +49,7 @@ type ExecutionOutput struct {
 // TerraformExecutor is the function that shells out to Terraform.
 // It can intercept, modify or retry the given command.
 type TerraformExecutor interface {
-	TerraformExecutor(context.Context, *exec.Cmd) (ExecutionOutput, error)
+	Execute(context.Context, *exec.Cmd) (ExecutionOutput, error)
 }
 
 var planMessageMatcher = regexp.MustCompile(`Plan: \d+ to add, \d+ to change, (\d+) to destroy\.`)
@@ -445,7 +445,7 @@ func (workspace *TerraformWorkspace) runTf(ctx context.Context, executor Terrafo
 	c.Env = os.Environ()
 	c.Dir = workspace.dir
 
-	return executor.TerraformExecutor(ctx, c)
+	return executor.Execute(ctx, c)
 }
 
 func updatePath(vars []string, path string) string {

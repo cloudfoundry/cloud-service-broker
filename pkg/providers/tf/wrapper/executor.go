@@ -16,7 +16,13 @@ import (
 
 // DefaultExecutor is the default executor that shells out to Terraform
 // and logs results to stdout.
-func DefaultExecutor(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
+func DefaultExecutor() TerraformExecutor {
+	return defaultExecutor{}
+}
+
+type defaultExecutor struct{}
+
+func (defaultExecutor) Execute(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
 	logger := utils.NewLogger("terraform@" + c.Dir).WithData(correlation.ID(ctx))
 
 	logger.Info("starting process", lager.Data{
@@ -70,17 +76,17 @@ func DefaultExecutor(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) 
 // from a given plugin directory rather than the Terraform that's on the PATH
 // which will download provider binaries from the web.
 func CustomTerraformExecutor(tfBinaryPath, tfPluginDir string, tfVersion *version.Version, wrapped TerraformExecutor) TerraformExecutor {
-	return customerExecutor{tfBinaryPath: tfBinaryPath, tfPluginDir: tfPluginDir, tfVersion: tfVersion, wrapped: wrapped}
+	return customExecutor{tfBinaryPath: tfBinaryPath, tfPluginDir: tfPluginDir, tfVersion: tfVersion, wrapped: wrapped}
 }
 
-type customerExecutor struct {
+type customExecutor struct {
 	tfBinaryPath string
 	tfPluginDir  string
 	tfVersion    *version.Version
 	wrapped      TerraformExecutor
 }
 
-func (e customerExecutor) TerraformExecutor(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
+func (e customExecutor) Execute(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
 	subCommand := c.Args[1]
 	subCommandArgs := c.Args[2:]
 
@@ -88,24 +94,31 @@ func (e customerExecutor) TerraformExecutor(ctx context.Context, c *exec.Cmd) (E
 		if e.tfVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
 			subCommandArgs = append([]string{"-get-plugins=false"}, subCommandArgs...)
 		}
-		subCommandArgs = append([]string{fmt.Sprintf("-plugin-dir=%s", tfPluginDir)}, subCommandArgs...)
+		subCommandArgs = append([]string{fmt.Sprintf("-plugin-dir=%s", e.tfPluginDir)}, subCommandArgs...)
 	}
 
 	allArgs := append([]string{subCommand}, subCommandArgs...)
-	newCmd := exec.Command(tfBinaryPath, allArgs...)
+	newCmd := exec.Command(e.tfBinaryPath, allArgs...)
 	newCmd.Dir = c.Dir
-	newCmd.Env = append(c.Env, updatePath(c.Env, tfPluginDir))
-	return wrapped(ctx, newCmd)
+	newCmd.Env = append(c.Env, updatePath(c.Env, e.tfPluginDir))
+	return e.wrapped.Execute(ctx, newCmd)
 }
 
 // CustomEnvironmentExecutor sets custom environment variables on the Terraform
 // execution.
 func CustomEnvironmentExecutor(environment map[string]string, wrapped TerraformExecutor) TerraformExecutor {
-	return func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
-		for k, v := range environment {
-			c.Env = append(c.Env, fmt.Sprintf("%s=%s", k, v))
-		}
+	return customEnvironmentExecutor{environment: environment, wrapped: wrapped}
+}
 
-		return wrapped(ctx, c)
+type customEnvironmentExecutor struct {
+	wrapped     TerraformExecutor
+	environment map[string]string
+}
+
+func (executor customEnvironmentExecutor) Execute(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
+	for k, v := range executor.environment {
+		c.Env = append(c.Env, fmt.Sprintf("%s=%s", k, v))
 	}
+
+	return executor.wrapped.Execute(ctx, c)
 }

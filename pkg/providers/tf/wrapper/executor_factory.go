@@ -54,7 +54,7 @@ func (executorFactory ExecutorFactoryImp) VersionedExecutor(tfVersion *version.V
 				filepath.Join(executorFactory.Dir, "versions", tfVersion.String(), "terraform"),
 				executorFactory.Dir,
 				tfVersion,
-				DefaultExecutor,
+				DefaultExecutor(),
 			),
 		),
 	)

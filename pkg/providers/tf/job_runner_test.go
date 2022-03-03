@@ -33,9 +33,9 @@ var _ = XDescribe("TfJobRunner", func() {
 			}
 			workspaceFactory := &tffakes.FakeWorkspaceFactory{}
 			fakeWorkspace := &tffakes.FakeWorkspace{}
-			fakeExecutorDefault := wrapperfakes.FakeTerraformExecutor{}
-			fakeExecutor1 := wrapperfakes.FakeTerraformExecutor{}
-			fakeExecutor2 := wrapperfakes.FakeTerraformExecutor{}
+			fakeExecutorDefault := &wrapperfakes.FakeTerraformExecutor{}
+			fakeExecutor1 := &wrapperfakes.FakeTerraformExecutor{}
+			fakeExecutor2 := &wrapperfakes.FakeTerraformExecutor{}
 			runner := tf.NewTfJobRunner(fakeStore, fakeExecutorFactory, tfBinContext, workspaceFactory)
 
 			var id string
@@ -44,9 +44,9 @@ var _ = XDescribe("TfJobRunner", func() {
 			}
 			fakeStore.GetTerraformDeploymentReturns(deployment, nil)
 			workspaceFactory.CreateWorkspaceReturns(fakeWorkspace, nil)
-			fakeExecutorFactory.DefaultExecutorReturnsOnCall(0, fakeExecutorDefault.Spy)
-			fakeExecutorFactory.VersionedExecutorReturnsOnCall(0, fakeExecutor1.Spy)
-			fakeExecutorFactory.VersionedExecutorReturnsOnCall(1, fakeExecutor2.Spy)
+			fakeExecutorFactory.DefaultExecutorReturnsOnCall(0, fakeExecutorDefault)
+			fakeExecutorFactory.VersionedExecutorReturnsOnCall(0, fakeExecutor1)
+			fakeExecutorFactory.VersionedExecutorReturnsOnCall(1, fakeExecutor2)
 
 			fakeWorkspace.StateVersionReturns(version.Must(version.NewVersion("0.0.1")), nil)
 

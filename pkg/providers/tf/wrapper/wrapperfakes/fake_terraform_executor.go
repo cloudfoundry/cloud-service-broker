@@ -10,17 +10,17 @@ import (
 )
 
 type FakeTerraformExecutor struct {
-	Stub        func(context.Context, *exec.Cmd) (wrapper.ExecutionOutput, error)
-	mutex       sync.RWMutex
-	argsForCall []struct {
+	ExecuteStub        func(context.Context, *exec.Cmd) (wrapper.ExecutionOutput, error)
+	executeMutex       sync.RWMutex
+	executeArgsForCall []struct {
 		arg1 context.Context
 		arg2 *exec.Cmd
 	}
-	returns struct {
+	executeReturns struct {
 		result1 wrapper.ExecutionOutput
 		result2 error
 	}
-	returnsOnCall map[int]struct {
+	executeReturnsOnCall map[int]struct {
 		result1 wrapper.ExecutionOutput
 		result2 error
 	}
@@ -28,65 +28,66 @@ type FakeTerraformExecutor struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeTerraformExecutor) Spy(arg1 context.Context, arg2 *exec.Cmd) (wrapper.ExecutionOutput, error) {
-	fake.mutex.Lock()
-	ret, specificReturn := fake.returnsOnCall[len(fake.argsForCall)]
-	fake.argsForCall = append(fake.argsForCall, struct {
+func (fake *FakeTerraformExecutor) Execute(arg1 context.Context, arg2 *exec.Cmd) (wrapper.ExecutionOutput, error) {
+	fake.executeMutex.Lock()
+	ret, specificReturn := fake.executeReturnsOnCall[len(fake.executeArgsForCall)]
+	fake.executeArgsForCall = append(fake.executeArgsForCall, struct {
 		arg1 context.Context
 		arg2 *exec.Cmd
 	}{arg1, arg2})
-	stub := fake.Stub
-	returns := fake.returns
-	fake.recordInvocation("TerraformExecutor", []interface{}{arg1, arg2})
-	fake.mutex.Unlock()
+	stub := fake.ExecuteStub
+	fakeReturns := fake.executeReturns
+	fake.recordInvocation("Execute", []interface{}{arg1, arg2})
+	fake.executeMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return returns.result1, returns.result2
+	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeTerraformExecutor) CallCount() int {
-	fake.mutex.RLock()
-	defer fake.mutex.RUnlock()
-	return len(fake.argsForCall)
+func (fake *FakeTerraformExecutor) ExecuteCallCount() int {
+	fake.executeMutex.RLock()
+	defer fake.executeMutex.RUnlock()
+	return len(fake.executeArgsForCall)
 }
 
-func (fake *FakeTerraformExecutor) Calls(stub func(context.Context, *exec.Cmd) (wrapper.ExecutionOutput, error)) {
-	fake.mutex.Lock()
-	defer fake.mutex.Unlock()
-	fake.Stub = stub
+func (fake *FakeTerraformExecutor) ExecuteCalls(stub func(context.Context, *exec.Cmd) (wrapper.ExecutionOutput, error)) {
+	fake.executeMutex.Lock()
+	defer fake.executeMutex.Unlock()
+	fake.ExecuteStub = stub
 }
 
-func (fake *FakeTerraformExecutor) ArgsForCall(i int) (context.Context, *exec.Cmd) {
-	fake.mutex.RLock()
-	defer fake.mutex.RUnlock()
-	return fake.argsForCall[i].arg1, fake.argsForCall[i].arg2
+func (fake *FakeTerraformExecutor) ExecuteArgsForCall(i int) (context.Context, *exec.Cmd) {
+	fake.executeMutex.RLock()
+	defer fake.executeMutex.RUnlock()
+	argsForCall := fake.executeArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeTerraformExecutor) Returns(result1 wrapper.ExecutionOutput, result2 error) {
-	fake.mutex.Lock()
-	defer fake.mutex.Unlock()
-	fake.Stub = nil
-	fake.returns = struct {
+func (fake *FakeTerraformExecutor) ExecuteReturns(result1 wrapper.ExecutionOutput, result2 error) {
+	fake.executeMutex.Lock()
+	defer fake.executeMutex.Unlock()
+	fake.ExecuteStub = nil
+	fake.executeReturns = struct {
 		result1 wrapper.ExecutionOutput
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeTerraformExecutor) ReturnsOnCall(i int, result1 wrapper.ExecutionOutput, result2 error) {
-	fake.mutex.Lock()
-	defer fake.mutex.Unlock()
-	fake.Stub = nil
-	if fake.returnsOnCall == nil {
-		fake.returnsOnCall = make(map[int]struct {
+func (fake *FakeTerraformExecutor) ExecuteReturnsOnCall(i int, result1 wrapper.ExecutionOutput, result2 error) {
+	fake.executeMutex.Lock()
+	defer fake.executeMutex.Unlock()
+	fake.ExecuteStub = nil
+	if fake.executeReturnsOnCall == nil {
+		fake.executeReturnsOnCall = make(map[int]struct {
 			result1 wrapper.ExecutionOutput
 			result2 error
 		})
 	}
-	fake.returnsOnCall[i] = struct {
+	fake.executeReturnsOnCall[i] = struct {
 		result1 wrapper.ExecutionOutput
 		result2 error
 	}{result1, result2}
@@ -95,8 +96,8 @@ func (fake *FakeTerraformExecutor) ReturnsOnCall(i int, result1 wrapper.Executio
 func (fake *FakeTerraformExecutor) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.mutex.RLock()
-	defer fake.mutex.RUnlock()
+	fake.executeMutex.RLock()
+	defer fake.executeMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
@@ -116,4 +117,4 @@ func (fake *FakeTerraformExecutor) recordInvocation(key string, args []interface
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ wrapper.TerraformExecutor = new(FakeTerraformExecutor).Spy
+var _ wrapper.TerraformExecutor = new(FakeTerraformExecutor)

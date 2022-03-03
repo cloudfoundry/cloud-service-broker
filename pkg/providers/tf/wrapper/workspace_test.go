@@ -67,7 +67,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 			// "running" tf
 			executorRan := false
 			cmdDir := ""
-			executor := func(ctx context.Context, cmd *exec.Cmd) (ExecutionOutput, error) {
+			executor := newTestExecutor(func(ctx context.Context, cmd *exec.Cmd) (ExecutionOutput, error) {
 				executorRan = true
 				cmdDir = cmd.Dir
 
@@ -91,7 +91,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 				}
 
 				return ExecutionOutput{}, nil
-			}
+			})
 
 			// run function
 			tc.Exec(ws, executor)
@@ -156,7 +156,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 			// "running" tf
 			executorRan := false
 			cmdDir := ""
-			executor := func(ctx context.Context, cmd *exec.Cmd) (ExecutionOutput, error) {
+			executor := newTestExecutor(func(ctx context.Context, cmd *exec.Cmd) (ExecutionOutput, error) {
 				executorRan = true
 				cmdDir = cmd.Dir
 
@@ -180,7 +180,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 				}
 
 				return ExecutionOutput{}, nil
-			}
+			})
 
 			// run function
 			tc.Exec(ws, executor)
@@ -249,12 +249,12 @@ func TestCustomTerraformExecutor012(t *testing.T) {
 			actual := exec.Command("!actual-never-got-called!")
 
 			tfVersion, _ := version.NewVersion("0.12.0")
-			executor := CustomTerraformExecutor(customBinary, customPlugins, tfVersion, func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
+			executor := CustomTerraformExecutor(customBinary, customPlugins, tfVersion, newTestExecutor(func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
 				actual = c
 				return ExecutionOutput{}, nil
-			})
+			}))
 
-			executor(context.TODO(), tc.Input)
+			executor.Execute(context.TODO(), tc.Input)
 
 			if actual.Path != tc.Expected.Path {
 				t.Errorf("path wasn't updated, expected: %q, actual: %q", tc.Expected.Path, actual.Path)
@@ -293,12 +293,12 @@ func TestCustomTerraformExecutor013(t *testing.T) {
 			actual := exec.Command("!actual-never-got-called!")
 
 			tfVersion, _ := version.NewVersion("0.13.0")
-			executor := CustomTerraformExecutor(customBinary, customPlugins, tfVersion, func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
+			executor := CustomTerraformExecutor(customBinary, customPlugins, tfVersion, newTestExecutor(func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
 				actual = c
 				return ExecutionOutput{}, nil
-			})
+			}))
 
-			executor(context.TODO(), tc.Input)
+			executor.Execute(context.TODO(), tc.Input)
 
 			if actual.Path != tc.Expected.Path {
 				t.Errorf("path wasn't updated, expected: %q, actual: %q", tc.Expected.Path, actual.Path)
@@ -320,15 +320,26 @@ func TestCustomEnvironmentExecutor(t *testing.T) {
 	c.Env = []string{"ORIGINAL=value"}
 
 	actual := exec.Command("!actual-never-got-called!")
-	executor := CustomEnvironmentExecutor(map[string]string{"FOO": "bar"}, func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
+	executor := CustomEnvironmentExecutor(map[string]string{"FOO": "bar"}, newTestExecutor(func(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
 		actual = c
 		return ExecutionOutput{}, nil
-	})
+	}))
 
-	executor(context.TODO(), c)
+	executor.Execute(context.TODO(), c)
 	expected := []string{"ORIGINAL=value", "FOO=bar"}
 
 	if !reflect.DeepEqual(expected, actual.Env) {
 		t.Fatalf("Expected %v actual %v", expected, actual)
 	}
+}
+func newTestExecutor(function func(ctx context.Context, cmd *exec.Cmd) (ExecutionOutput, error)) testExecutor {
+	return testExecutor{function: function}
+}
+
+type testExecutor struct {
+	function func(ctx context.Context, cmd *exec.Cmd) (ExecutionOutput, error)
+}
+
+func (exec testExecutor) Execute(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
+	return exec.function(ctx, c)
 }
