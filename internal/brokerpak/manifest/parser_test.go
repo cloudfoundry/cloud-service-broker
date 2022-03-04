@@ -4,9 +4,10 @@ import (
 	_ "embed"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
-
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/internal/tfproviderfqn"
+	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v3"
@@ -32,16 +33,32 @@ var _ = Describe("Parser", func() {
 					Arch: "amd64",
 				},
 			},
-			TerraformResources: []manifest.TerraformResource{
+			TerraformVersions: []manifest.TerraformVersion{
 				{
-					Name:    "terraform",
-					Version: "1.1.4",
-					Source:  "https://github.com/hashicorp/terraform/archive/v1.1.4.zip",
+					Version:     version.Must(version.NewVersion("1.1.4")),
+					Source:      "https://github.com/hashicorp/terraform/archive/v1.1.4.zip",
+					URLTemplate: "https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip",
 				},
+			},
+			TerraformProviders: []manifest.TerraformProvider{
 				{
 					Name:    "terraform-provider-random",
-					Version: "3.1.0",
+					Version: version.Must(version.NewVersion("3.1.0")),
 					Source:  "https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip",
+					Provider: tfproviderfqn.TfProviderFQN{
+						Hostname:  "registry.terraform.io",
+						Namespace: "other",
+						Type:      "random",
+					},
+					URLTemplate: "https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip",
+				},
+			},
+			Binaries: []manifest.Binary{
+				{
+					Name:        "other-random-binary",
+					Version:     "latest",
+					Source:      "nothing-important",
+					URLTemplate: "./tools/${name}/build/${name}_${version}_${os}_${arch}.zip",
 				},
 			},
 			ServiceDefinitions: []string{
@@ -78,21 +95,19 @@ var _ = Describe("Parser", func() {
 				}),
 			))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(m.TerraformResources).To(ContainElements(
-				manifest.TerraformResource{
-					Name:    "terraform",
-					Version: "1.1.4",
-					Source:  "https://github.com/hashicorp/terraform/archive/v1.1.4.zip",
+			Expect(m.TerraformVersions).To(ConsistOf(
+				manifest.TerraformVersion{
+					Version:     version.Must(version.NewVersion("1.1.4")),
+					Source:      "https://github.com/hashicorp/terraform/archive/v1.1.4.zip",
+					Default:     false,
+					URLTemplate: "https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip",
+				},
+				manifest.TerraformVersion{
+					Version: version.Must(version.NewVersion("1.1.5")),
 					Default: false,
 				},
-				manifest.TerraformResource{
-					Name:    "terraform",
-					Version: "1.1.5",
-					Default: false,
-				},
-				manifest.TerraformResource{
-					Name:    "terraform",
-					Version: "1.1.6",
+				manifest.TerraformVersion{
+					Version: version.Must(version.NewVersion("1.1.6")),
 					Default: true,
 				},
 			))
@@ -180,9 +195,9 @@ var _ = Describe("Parser", func() {
 				),
 			))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(m.TerraformUpgradePath).To(Equal([]manifest.TerraformUpgradePath{
-				{Version: "1.1.4"},
-				{Version: "4.5.6"},
+			Expect(m.TerraformUpgradePath).To(Equal([]*version.Version{
+				version.Must(version.NewVersion("1.1.4")),
+				version.Must(version.NewVersion("4.5.6")),
 			}))
 		})
 
@@ -252,8 +267,8 @@ var _ = Describe("Parser", func() {
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("missing field(s): %s", insert))))
 			Expect(m).To(BeNil())
 		},
-		Entry("name", "terraform_binaries[2].name", map[string]interface{}{"version": "1.2.3", "source": "https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip"}),
-		Entry("version", "terraform_binaries[2].version", map[string]interface{}{"name": "hello"}),
+		Entry("name", "terraform_binaries[3].name", map[string]interface{}{"version": "1.2.3", "source": "https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip"}),
+		Entry("version", "terraform_binaries[3].version", map[string]interface{}{"name": "hello"}),
 	)
 
 	DescribeTable("missing parameter data",
@@ -266,6 +281,31 @@ var _ = Describe("Parser", func() {
 		Entry("name", "parameters[1].name", map[string]interface{}{"description": "something"}),
 		Entry("description", "parameters[1].description", map[string]interface{}{"name": "hello"}),
 	)
+
+	DescribeTable("terraform provider locations",
+		func(provider, expected string) {
+			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]interface{}{
+				"name":     "terraform-provider-foo",
+				"version":  "1.2.3",
+				"provider": provider,
+			})))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(m.TerraformProviders[1].Provider.String()).To(Equal(expected))
+		},
+		Entry("empty 'provider' field", "", "registry.terraform.io/hashicorp/foo"),
+		Entry("just type", "lala", "registry.terraform.io/hashicorp/lala"),
+		Entry("type and namespace", "mycorp/lala", "registry.terraform.io/mycorp/lala"),
+		Entry("fully qualified", "mything.io/mycorp/lala", "mything.io/mycorp/lala"),
+	)
+
+	When("yaml is invalid", func() {
+		It("fails", func() {
+			m, err := manifest.Parse([]byte(`not yam-ls:`))
+
+			Expect(err).To(MatchError(ContainSubstring("error parsing manifest: yaml: unmarshal errors:")))
+			Expect(m).To(BeNil())
+		})
+	})
 
 	When("the packversion is invalid", func() {
 		It("fails", func() {
@@ -280,7 +320,7 @@ var _ = Describe("Parser", func() {
 		It("fails", func() {
 			m, err := manifest.Parse(fakeManifest(with("foo", "bar")))
 
-			Expect(err).To(MatchError(ContainSubstring("field foo not found in type manifest.Manifest")))
+			Expect(err).To(MatchError(ContainSubstring("field foo not found in type manifest.parser")))
 			Expect(m).To(BeNil())
 		})
 	})
@@ -293,7 +333,7 @@ var _ = Describe("Parser", func() {
 				"source":  "https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip",
 				"default": true,
 			})))
-			Expect(err).To(MatchError(ContainSubstring("This field is only valid for `terraform`: terraform_binaries[2].default")))
+			Expect(err).To(MatchError(ContainSubstring("This field is only valid for `terraform`: terraform_binaries[3].default")))
 			Expect(m).To(BeNil())
 		})
 	})
@@ -306,20 +346,20 @@ var _ = Describe("Parser", func() {
 				"default": true,
 			})))
 
-			Expect(err).To(MatchError(ContainSubstring("invalid value: not.semver: version")))
+			Expect(err).To(MatchError(ContainSubstring(`error validating manifest: Malformed version: not.semver: terraform_binaries[3].version`)))
 			Expect(m).To(BeNil())
 		})
 	})
 })
 
 //go:embed test_manifest.yaml
-var testManifest string
+var testManifest []byte
 
 type option func(map[string]interface{})
 
 func fakeManifest(opts ...option) []byte {
 	var receiver map[string]interface{}
-	err := yaml.Unmarshal([]byte(testManifest), &receiver)
+	err := yaml.Unmarshal(testManifest, &receiver)
 	Expect(err).NotTo(HaveOccurred())
 
 	for _, o := range opts {
