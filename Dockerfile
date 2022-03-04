@@ -18,7 +18,9 @@ RUN apk upgrade
 RUN apk add --update gcc g++
 WORKDIR /app
 ADD . /app
-RUN CGO_ENABLED=1 GOOS=linux go build -o ./build/cloud-service-broker
+
+ARG CSB_VERSION=0.0.0
+RUN CGO_ENABLED=1 GOOS=linux go build -o ./build/cloud-service-broker -ldflags "-X github.com/cloudfoundry/cloud-service-broker/utils.Version=$CSB_VERSION"
 
 FROM alpine:latest
 
