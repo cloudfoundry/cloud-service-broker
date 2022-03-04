@@ -15,6 +15,7 @@
 package brokerpak
 
 import (
+	_ "embed"
 	"fmt"
 	"io"
 	"log"
@@ -22,10 +23,9 @@ import (
 	"path/filepath"
 	"text/tabwriter"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/reader"
-
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/packer"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/reader"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/generator"
@@ -36,17 +36,17 @@ import (
 
 const manifestName = "manifest.yml"
 
+//go:embed "examples/manifest.yml"
+var exampleManifest []byte
+
 // Init initializes a new brokerpak in the given directory with an example manifest and service definition.
 func Init(directory string) error {
-	exampleManifest := manifest.NewExampleManifest()
-	if err := stream.Copy(stream.FromYaml(exampleManifest), stream.ToFile(directory, manifestName)); err != nil {
+	if err := os.WriteFile(manifestName, exampleManifest, 0600); err != nil {
 		return err
 	}
 
-	for _, path := range exampleManifest.ServiceDefinitions {
-		if err := stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition()), stream.ToFile(directory, path)); err != nil {
-			return err
-		}
+	if err := stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition()), stream.ToFile(directory, "example-service-definition.yml")); err != nil {
+		return err
 	}
 
 	return nil

@@ -1,0 +1,27 @@
+packversion: 1
+name: my-services-pack
+version: 1.0.0
+metadata:
+    author: me@example.com
+platforms:
+    - os: linux
+      arch: "386"
+    - os: linux
+      arch: amd64
+terraform_binaries:
+    - name: terraform
+      version: 0.13.0
+      source: https://github.com/hashicorp/terraform/archive/v0.13.0.zip
+      default: false
+    - name: terraform-provider-google-beta
+      version: 1.19.0
+      source: https://github.com/terraform-providers/terraform-provider-google/archive/v1.19.0.zip
+      default: false
+service_definitions:
+    - example-service-definition.yml
+parameters:
+    - name: MY_ENVIRONMENT_VARIABLE
+      description: Set this to whatever you like.
+required_env_variables: []
+env_config_mapping: {}
+terraform_upgrade_path: []
