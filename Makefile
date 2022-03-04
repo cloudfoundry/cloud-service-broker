@@ -118,7 +118,7 @@ format: ## format the source
 
 .PHONY: build-image
 build-image: Dockerfile ## build a Docker image
-	docker build --tag csb .
+	docker build --tag csb . --build-arg CSB_VERSION=$(VERSION)
 
 ###### Env Var Checks #########################################################
 
