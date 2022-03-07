@@ -26,6 +26,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
+	"github.com/hashicorp/go-version"
 )
 
 func fakeBrokerpak() (string, error) {
@@ -56,16 +57,17 @@ func fakeBrokerpak() (string, error) {
 			{Os: "darwin", Arch: "amd64"},
 		},
 		// These resources are stubbed with a local dummy file
-		TerraformResources: []manifest.TerraformResource{
+		TerraformVersions: []manifest.TerraformVersion{
 			{
-				Name:        "terraform",
-				Version:     "0.12.0",
+				Version:     version.Must(version.NewVersion("0.12.0")),
 				Source:      tfSrc,
 				URLTemplate: tfSrc,
 			},
+		},
+		TerraformProviders: []manifest.TerraformProvider{
 			{
 				Name:        "terraform-provider-google-beta",
-				Version:     "1.19.0",
+				Version:     version.Must(version.NewVersion("1.19.0")),
 				Source:      tfpSrc,
 				URLTemplate: tfpSrc,
 			},
@@ -77,7 +79,12 @@ func fakeBrokerpak() (string, error) {
 		EnvConfigMapping: map[string]string{"ENV_VAR": "env.var"},
 	}
 
-	if err := stream.Copy(stream.FromYaml(exampleManifest), stream.ToFile(dir, manifestName)); err != nil {
+	data, err := exampleManifest.Serialize()
+	if err != nil {
+		return "", err
+	}
+
+	if err := stream.Copy(stream.FromBytes(data), stream.ToFile(dir, manifestName)); err != nil {
 		return "", err
 	}
 

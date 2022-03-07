@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/hashicorp/go-version"
 	"github.com/spf13/viper"
 
@@ -83,10 +82,10 @@ var _ = Describe("TfJobRunner", func() {
 			fakeStore.GetTerraformDeploymentReturns(deployment, nil)
 			workspaceFactory.CreateWorkspaceReturns(fakeWorkspace, nil)
 			tfVersion := "1.1"
-			fakeWorkspace.StateVersionReturns(NewVersion(tfVersion), nil)
+			fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 			fakeWorkspace.UpdateInstanceConfigurationReturns(genericError)
 
-			runner := tf.NewTfJobRunner(fakeStore, fakeExecutorFactory, wrapper.TFBinariesContext{DefaultTfVersion: NewVersion(tfVersion)}, workspaceFactory)
+			runner := tf.NewTfJobRunner(fakeStore, fakeExecutorFactory, wrapper.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, workspaceFactory)
 			Expect(runner.Update(context.TODO(), deploymentId, nil)).To(Succeed())
 			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
 
@@ -98,9 +97,9 @@ var _ = Describe("TfJobRunner", func() {
 			fakeStore.GetTerraformDeploymentReturns(deployment, nil)
 			workspaceFactory.CreateWorkspaceReturns(fakeWorkspace, nil)
 			tfVersion := "1.1"
-			fakeWorkspace.StateVersionReturns(NewVersion(tfVersion), nil)
+			fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 
-			runner := tf.NewTfJobRunner(fakeStore, fakeExecutorFactory, wrapper.TFBinariesContext{DefaultTfVersion: NewVersion(tfVersion)}, workspaceFactory)
+			runner := tf.NewTfJobRunner(fakeStore, fakeExecutorFactory, wrapper.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, workspaceFactory)
 			templateVars := map[string]interface{}{"var": "value"}
 
 			Expect(runner.Update(context.TODO(), deploymentId, templateVars)).To(Succeed())
@@ -115,10 +114,10 @@ var _ = Describe("TfJobRunner", func() {
 			fakeStore.GetTerraformDeploymentReturns(deployment, nil)
 			workspaceFactory.CreateWorkspaceReturns(fakeWorkspace, nil)
 			tfVersion := "1.1"
-			fakeWorkspace.StateVersionReturns(NewVersion(tfVersion), nil)
+			fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 			fakeWorkspace.OutputsReturns(map[string]interface{}{"status": "status from terraform"}, nil)
 
-			runner := tf.NewTfJobRunner(fakeStore, fakeExecutorFactory, wrapper.TFBinariesContext{DefaultTfVersion: NewVersion(tfVersion)}, workspaceFactory)
+			runner := tf.NewTfJobRunner(fakeStore, fakeExecutorFactory, wrapper.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, workspaceFactory)
 
 			Expect(runner.Update(context.TODO(), deploymentId, nil)).To(Succeed())
 			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
@@ -131,10 +130,10 @@ var _ = Describe("TfJobRunner", func() {
 			fakeStore.GetTerraformDeploymentReturns(deployment, nil)
 			workspaceFactory.CreateWorkspaceReturns(fakeWorkspace, nil)
 			tfVersion := "1.1"
-			fakeWorkspace.StateVersionReturns(NewVersion(tfVersion), nil)
+			fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 			fakeWorkspace.ApplyReturns(genericError)
 
-			runner := tf.NewTfJobRunner(fakeStore, fakeExecutorFactory, wrapper.TFBinariesContext{DefaultTfVersion: NewVersion(tfVersion)}, workspaceFactory)
+			runner := tf.NewTfJobRunner(fakeStore, fakeExecutorFactory, wrapper.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, workspaceFactory)
 
 			Expect(runner.Update(context.TODO(), deploymentId, nil)).To(Succeed())
 			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
@@ -148,11 +147,11 @@ var _ = Describe("TfJobRunner", func() {
 			})
 			It("runs apply with all tf versions in the upgrade path", func() {
 				tfBinContext := wrapper.TFBinariesContext{
-					DefaultTfVersion: NewVersion("0.1.0"),
-					TfUpgradePath: []manifest.TerraformUpgradePath{
-						{Version: "0.0.1"},
-						{Version: "0.0.2"},
-						{Version: "0.1.0"},
+					DefaultTfVersion: newVersion("0.1.0"),
+					TfUpgradePath: []*version.Version{
+						newVersion("0.0.1"),
+						newVersion("0.0.2"),
+						newVersion("0.1.0"),
 					},
 				}
 				fakeExecutor1 := &wrapperfakes.FakeTerraformExecutor{}
@@ -164,7 +163,7 @@ var _ = Describe("TfJobRunner", func() {
 				fakeExecutorFactory.VersionedExecutorReturnsOnCall(1, fakeExecutor2)
 				fakeExecutorFactory.VersionedExecutorReturnsOnCall(2, fakeExecutorDefault)
 
-				fakeWorkspace.StateVersionReturns(NewVersion("0.0.1"), nil)
+				fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
 				fakeWorkspace.ModuleInstancesReturns([]wrapper.ModuleInstance{{ModuleName: "moduleName"}})
 
 				runner := tf.NewTfJobRunner(fakeStore, fakeExecutorFactory, tfBinContext, workspaceFactory)
@@ -180,19 +179,19 @@ var _ = Describe("TfJobRunner", func() {
 				Expect(getExecutor(fakeWorkspace, 1)).To(Equal(fakeExecutorDefault))
 
 				Expect(fakeExecutorFactory.VersionedExecutorCallCount()).To(Equal(3))
-				Expect(fakeExecutorFactory.VersionedExecutorArgsForCall(0)).To(Equal(NewVersion("0.0.2")))
-				Expect(fakeExecutorFactory.VersionedExecutorArgsForCall(1)).To(Equal(NewVersion("0.1.0")))
-				Expect(fakeExecutorFactory.VersionedExecutorArgsForCall(2)).To(Equal(NewVersion("0.1.0")))
+				Expect(fakeExecutorFactory.VersionedExecutorArgsForCall(0)).To(Equal(newVersion("0.0.2")))
+				Expect(fakeExecutorFactory.VersionedExecutorArgsForCall(1)).To(Equal(newVersion("0.1.0")))
+				Expect(fakeExecutorFactory.VersionedExecutorArgsForCall(2)).To(Equal(newVersion("0.1.0")))
 			})
 
 			It("fails the update, if the version of version of statefile does not match the default tf version, and no upgrade path is specified", func() {
 				tfBinContext := wrapper.TFBinariesContext{
-					DefaultTfVersion: NewVersion("0.1.0"),
+					DefaultTfVersion: newVersion("0.1.0"),
 				}
 
 				fakeStore.GetTerraformDeploymentReturns(deployment, nil)
 				workspaceFactory.CreateWorkspaceReturns(fakeWorkspace, nil)
-				fakeWorkspace.StateVersionReturns(NewVersion("0.0.1"), nil)
+				fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
 
 				runner := tf.NewTfJobRunner(fakeStore, fakeExecutorFactory, tfBinContext, workspaceFactory)
 				runner.Update(context.TODO(), deploymentId, nil)
@@ -210,12 +209,12 @@ var _ = Describe("TfJobRunner", func() {
 
 			It("fails the update, if the version of version of statefile does not match the default tf version", func() {
 				tfBinContext := wrapper.TFBinariesContext{
-					DefaultTfVersion: NewVersion("0.1.0"),
+					DefaultTfVersion: newVersion("0.1.0"),
 				}
 
 				fakeStore.GetTerraformDeploymentReturns(deployment, nil)
 				workspaceFactory.CreateWorkspaceReturns(fakeWorkspace, nil)
-				fakeWorkspace.StateVersionReturns(NewVersion("0.0.1"), nil)
+				fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
 
 				runner := tf.NewTfJobRunner(fakeStore, fakeExecutorFactory, tfBinContext, workspaceFactory)
 				runner.Update(context.TODO(), deploymentId, nil)
@@ -227,13 +226,13 @@ var _ = Describe("TfJobRunner", func() {
 
 			It("performs the update, default tf version matches instance", func() {
 				tfBinContext := wrapper.TFBinariesContext{
-					DefaultTfVersion: NewVersion("0.1.0"),
+					DefaultTfVersion: newVersion("0.1.0"),
 				}
 
 				fakeStore.GetTerraformDeploymentReturns(deployment, nil)
 				workspaceFactory.CreateWorkspaceReturns(fakeWorkspace, nil)
 				fakeExecutorFactory.VersionedExecutorReturnsOnCall(0, fakeExecutorDefault)
-				fakeWorkspace.StateVersionReturns(NewVersion("0.1.0"), nil)
+				fakeWorkspace.StateVersionReturns(newVersion("0.1.0"), nil)
 
 				var templateVars map[string]interface{}
 
@@ -275,6 +274,6 @@ func lastStoredLastOperation(fakeStore *brokerfakes.FakeStorage) func() string {
 	}
 }
 
-func NewVersion(v string) *version.Version {
+func newVersion(v string) *version.Version {
 	return version.Must(version.NewVersion(v))
 }
