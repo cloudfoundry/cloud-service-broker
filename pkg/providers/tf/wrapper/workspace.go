@@ -37,21 +37,6 @@ const (
 	DefaultInstanceName = "instance"
 )
 
-// ExecutionOutput captures output from tf cli execution
-type ExecutionOutput struct {
-	StdOut string
-	StdErr string
-}
-
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
-//counterfeiter:generate . TerraformExecutor
-
-// TerraformExecutor is the function that shells out to Terraform.
-// It can intercept, modify or retry the given command.
-type TerraformExecutor interface {
-	Execute(context.Context, *exec.Cmd) (ExecutionOutput, error)
-}
-
 var planMessageMatcher = regexp.MustCompile(`Plan: \d+ to add, \d+ to change, (\d+) to destroy\.`)
 
 // NewWorkspace creates a new TerraformWorkspace from a given template and variables to populate an instance of it.
