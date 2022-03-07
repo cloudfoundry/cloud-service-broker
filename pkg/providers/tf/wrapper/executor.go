@@ -14,6 +14,21 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate . TerraformExecutor
+
+// TerraformExecutor is the function that shells out to Terraform.
+// It can intercept, modify or retry the given command.
+type TerraformExecutor interface {
+	Execute(context.Context, *exec.Cmd) (ExecutionOutput, error)
+}
+
+// ExecutionOutput captures output from tf cli execution
+type ExecutionOutput struct {
+	StdOut string
+	StdErr string
+}
+
 // DefaultExecutor is the default executor that shells out to Terraform
 // and logs results to stdout.
 func DefaultExecutor() TerraformExecutor {
