@@ -7,23 +7,22 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 )
 
 const HashicorpUrlTemplate = "https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip"
 
-func URL(resource manifest.TerraformResource, plat platform.Platform) string {
-	replacer := strings.NewReplacer("${name}", resource.Name, "${version}", resource.Version, "${os}", plat.Os, "${arch}", plat.Arch)
+func URL(name, version, urlTemplate string, plat platform.Platform) string {
+	replacer := strings.NewReplacer("${name}", name, "${version}", version, "${os}", plat.Os, "${arch}", plat.Arch)
 	var url string
 
 	switch {
-	case resource.URLTemplate == "":
+	case urlTemplate == "":
 		url = HashicorpUrlTemplate
-	case isURL(resource.URLTemplate):
-		url = resource.URLTemplate
+	case isURL(urlTemplate):
+		url = urlTemplate
 	default:
-		url, _ = filepath.Abs(resource.URLTemplate)
+		url, _ = filepath.Abs(urlTemplate)
 	}
 
 	return replacer.Replace(url)

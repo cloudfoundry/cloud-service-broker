@@ -11,8 +11,10 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/reader"
+	"github.com/cloudfoundry/cloud-service-broker/internal/tfproviderfqn"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
+	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -197,9 +199,8 @@ func withTerraform(tfVersion string) option {
 		fakeFile := filepath.Join(dir, tfVersion, "terraform")
 		Expect(stream.Copy(stream.FromString(tfVersion), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
-		m.TerraformResources = append(m.TerraformResources, manifest.TerraformResource{
-			Name:        "terraform",
-			Version:     tfVersion,
+		m.TerraformVersions = append(m.TerraformVersions, manifest.TerraformVersion{
+			Version:     version.Must(version.NewVersion(tfVersion)),
 			Source:      fakeFile,
 			URLTemplate: fakeFile,
 		})
@@ -211,12 +212,11 @@ func withDefaultTerraform(tfVersion string) option {
 		fakeFile := filepath.Join(dir, tfVersion, "terraform")
 		Expect(stream.Copy(stream.FromString(tfVersion), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
-		m.TerraformResources = append(m.TerraformResources, manifest.TerraformResource{
-			Name:        "terraform",
-			Version:     tfVersion,
+		m.TerraformVersions = append(m.TerraformVersions, manifest.TerraformVersion{
+			Version:     version.Must(version.NewVersion(tfVersion)),
+			Default:     true,
 			Source:      fakeFile,
 			URLTemplate: fakeFile,
-			Default:     true,
 		})
 	}
 }
@@ -226,10 +226,10 @@ func withProvider(provider, name, providerVersion, suffix string) option {
 		fakeFile := filepath.Join(dir, fmt.Sprintf("%s_v%s_%s", name, providerVersion, suffix))
 		Expect(stream.Copy(stream.FromString("dummy-file"), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
-		m.TerraformResources = append(m.TerraformResources, manifest.TerraformResource{
+		m.TerraformProviders = append(m.TerraformProviders, manifest.TerraformProvider{
 			Name:        name,
-			Version:     providerVersion,
-			Provider:    provider,
+			Version:     version.Must(version.NewVersion(providerVersion)),
+			Provider:    tfproviderfqn.Must(name, provider),
 			Source:      fakeFile,
 			URLTemplate: fakeFile,
 		})
@@ -241,9 +241,9 @@ func withMissingProvider(name, providerVersion string) option {
 		fakeFile := filepath.Join(dir, "file-name-does-not-match")
 		Expect(stream.Copy(stream.FromString("dummy-file"), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
-		m.TerraformResources = append(m.TerraformResources, manifest.TerraformResource{
+		m.TerraformProviders = append(m.TerraformProviders, manifest.TerraformProvider{
 			Name:        name,
-			Version:     providerVersion,
+			Version:     version.Must(version.NewVersion(providerVersion)),
 			Source:      fakeFile,
 			URLTemplate: fakeFile,
 		})

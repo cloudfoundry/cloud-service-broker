@@ -57,15 +57,28 @@ func Pack(m *manifest.Manifest, base, dest string) error {
 }
 
 func packSources(m *manifest.Manifest, tmp string) error {
-	for _, resource := range m.TerraformResources {
-		if resource.Source == "" {
-			continue
+	packSource := func(source, name string) error {
+		if source == "" {
+			return nil
 		}
+		destination := filepath.Join(tmp, "src", name+".zip")
 
-		destination := filepath.Join(tmp, "src", resource.Name+".zip")
+		log.Println("\t", source, "->", destination)
+		return fetcher.FetchArchive(source, destination)
+	}
 
-		log.Println("\t", resource.Source, "->", destination)
-		if err := fetcher.FetchArchive(resource.Source, destination); err != nil {
+	for _, resource := range m.TerraformVersions {
+		if err := packSource(resource.Source, "terraform"); err != nil {
+			return err
+		}
+	}
+	for _, resource := range m.TerraformProviders {
+		if err := packSource(resource.Source, resource.Name); err != nil {
+			return err
+		}
+	}
+	for _, resource := range m.Binaries {
+		if err := packSource(resource.Source, resource.Name); err != nil {
 			return err
 		}
 	}
@@ -75,15 +88,23 @@ func packSources(m *manifest.Manifest, tmp string) error {
 
 func packBinaries(m *manifest.Manifest, tmp string) error {
 	for _, platform := range m.Platforms {
-		for _, resource := range m.TerraformResources {
-			p := filepath.Join(tmp, "bin", platform.Os, platform.Arch)
+		p := filepath.Join(tmp, "bin", platform.Os, platform.Arch)
 
-			if resource.Name == "terraform" {
-				p = filepath.Join(p, resource.Version)
+		for _, resource := range m.TerraformVersions {
+			log.Println("\t", brokerpakurl.URL("terraform", resource.Version.String(), resource.URLTemplate, platform), "->", filepath.Join(p, resource.Version.String()))
+			if err := getter.GetAny(filepath.Join(p, resource.Version.String()), brokerpakurl.URL("terraform", resource.Version.String(), resource.URLTemplate, platform)); err != nil {
+				return err
 			}
-
-			log.Println("\t", brokerpakurl.URL(resource, platform), "->", p)
-			if err := getter.GetAny(p, brokerpakurl.URL(resource, platform)); err != nil {
+		}
+		for _, resource := range m.TerraformProviders {
+			log.Println("\t", brokerpakurl.URL(resource.Name, resource.Version.String(), resource.URLTemplate, platform), "->", p)
+			if err := getter.GetAny(p, brokerpakurl.URL(resource.Name, resource.Version.String(), resource.URLTemplate, platform)); err != nil {
+				return err
+			}
+		}
+		for _, resource := range m.Binaries {
+			log.Println("\t", brokerpakurl.URL(resource.Name, resource.Version, resource.URLTemplate, platform), "->", p)
+			if err := getter.GetAny(p, brokerpakurl.URL(resource.Name, resource.Version, resource.URLTemplate, platform)); err != nil {
 				return err
 			}
 		}
@@ -138,8 +159,15 @@ func packDefinitions(m *manifest.Manifest, tmp, base string) error {
 	}
 
 	manifestCopy.ServiceDefinitions = servicePaths
+	data, err := manifestCopy.Serialize()
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(tmp, manifestName), data, 0600); err != nil {
+		return err
+	}
 
-	return stream.Copy(stream.FromYaml(manifestCopy), stream.ToFile(tmp, manifestName))
+	return nil
 }
 
 func clearRefs(sd *tf.TfServiceDefinitionV1Action) {

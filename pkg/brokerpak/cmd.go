@@ -130,7 +130,13 @@ func finfo(pack string, out io.Writer) error {
 		fmt.Fprintln(out, "Dependencies")
 		w := cmdTabWriter(out)
 		fmt.Fprintln(w, "NAME\tVERSION\tSOURCE")
-		for _, resource := range mf.TerraformResources {
+		for _, resource := range mf.TerraformVersions {
+			fmt.Fprintf(w, "%s\t%s\t%s\n", "terraform", resource.Version.String(), resource.Source)
+		}
+		for _, resource := range mf.TerraformProviders {
+			fmt.Fprintf(w, "%s\t%s\t%s\n", resource.Name, resource.Version.String(), resource.Source)
+		}
+		for _, resource := range mf.Binaries {
 			fmt.Fprintf(w, "%s\t%s\t%s\n", resource.Name, resource.Version, resource.Source)
 		}
 		w.Flush()

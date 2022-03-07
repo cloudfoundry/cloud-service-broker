@@ -3,7 +3,6 @@ package wrapper
 import (
 	"path/filepath"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/hashicorp/go-version"
 )
 
@@ -15,7 +14,7 @@ type TFBinariesContext struct {
 	DefaultTfVersion *version.Version
 	Params           map[string]string
 
-	TfUpgradePath []manifest.TerraformUpgradePath
+	TfUpgradePath []*version.Version
 }
 
 func NewExecutorFactory(dir string, params map[string]string, envVars map[string]string) ExecutorBuilder {

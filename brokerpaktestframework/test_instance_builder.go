@@ -12,10 +12,10 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
+	"github.com/hashicorp/go-version"
 	"github.com/onsi/gomega/gexec"
-	"gopkg.in/yaml.v3"
-
 	cp "github.com/otiai10/copy"
+	"gopkg.in/yaml.v3"
 )
 
 func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.Writer) (*TestInstance, error) {
@@ -103,10 +103,9 @@ func templateManifest(brokerPackDir string, build string, workingDir string) err
 }
 
 func replaceTerraformBinaries(parsedManifest *manifest.Manifest, terraformBuild string) error {
-	parsedManifest.TerraformResources = []manifest.TerraformResource{
+	parsedManifest.TerraformVersions = []manifest.TerraformVersion{
 		{
-			Name:        "terraform",
-			Version:     "1.1.4",
+			Version:     version.Must(version.NewVersion("1.1.4")),
 			URLTemplate: terraformBuild,
 		},
 	}

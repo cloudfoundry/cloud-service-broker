@@ -12,9 +12,16 @@ terraform_binaries:
   - name: terraform
     version: 1.1.4
     source: https://github.com/hashicorp/terraform/archive/v1.1.4.zip
+    url_template: https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip
   - name: terraform-provider-random
     version: 3.1.0
     source: https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip
+    url_template: https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip
+    provider: registry.terraform.io/other/random
+  - name: other-random-binary
+    source: nothing-important
+    version: latest
+    url_template: ./tools/${name}/build/${name}_${version}_${os}_${arch}.zip
 env_config_mapping:
   GOOGLE_CREDENTIALS: gcp.credentials
   GOOGLE_PROJECT: gcp.project

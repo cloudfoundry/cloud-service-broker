@@ -63,7 +63,7 @@ func TestTerraformResource_URL(t *testing.T) {
 
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			u := brokerpakurl.URL(tc.Resource, tc.Plat)
+			u := brokerpakurl.URL(tc.Resource.Name, tc.Resource.Version, tc.Resource.URLTemplate, tc.Plat)
 			if u != tc.ExpectedURL {
 				t.Errorf("Expected URL to be %v, got %v", tc.ExpectedURL, u)
 			}

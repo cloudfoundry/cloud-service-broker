@@ -250,8 +250,8 @@ func (runner *TfJobRunner) performTerraformUpgrade(ctx context.Context, workspac
 				return errors.New("terraform version mismatch and no upgrade path specified")
 			}
 			for _, targetTfVersion := range runner.tfBinContext.TfUpgradePath {
-				if currentTfVersion.LessThan(targetTfVersion.GetTerraformVersion()) {
-					err = workspace.Apply(ctx, runner.VersionedExecutor(targetTfVersion.GetTerraformVersion()))
+				if currentTfVersion.LessThan(targetTfVersion) {
+					err = workspace.Apply(ctx, runner.VersionedExecutor(targetTfVersion))
 					if err != nil {
 						return err
 					}

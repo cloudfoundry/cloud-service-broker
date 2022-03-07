@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"fmt"
 	"os"
 	"path"
 
@@ -15,6 +16,7 @@ func New(csb string) *TestHelper {
 	original, err := os.Getwd()
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
+	fmt.Fprintf(ginkgo.GinkgoWriter, "running test in: %s\n", tmpDir)
 	err = os.Chdir(tmpDir)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
