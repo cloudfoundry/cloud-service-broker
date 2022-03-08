@@ -21,23 +21,16 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"regexp"
 	"strings"
 	"sync"
 
 	"github.com/hashicorp/go-version"
-
-	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )
 
 // DefaultInstanceName is the default name of an instance of a particular module.
 const (
 	DefaultInstanceName = "instance"
 )
-
-var planMessageMatcher = regexp.MustCompile(`Plan: \d+ to add, \d+ to change, (\d+) to destroy\.`)
 
 // NewWorkspace creates a new TerraformWorkspace from a given template and variables to populate an instance of it.
 // The created instance will have the name specified by the DefaultInstanceName constant.
@@ -236,8 +229,7 @@ func (workspace *TerraformWorkspace) initializeFsModules() error {
 	return nil
 }
 
-// initializeFs initializes the filesystem directory necessary to run Terraform.
-func (workspace *TerraformWorkspace) initializeFs(ctx context.Context, executor TerraformExecutor) error {
+func (workspace *TerraformWorkspace) initializeFsWithoutTerraformInit() error {
 	workspace.dirLock.Lock()
 	// create a temp directory
 	if dir, err := os.MkdirTemp("", "gsb"); err == nil {
@@ -268,16 +260,10 @@ func (workspace *TerraformWorkspace) initializeFs(ctx context.Context, executor 
 
 	// write the state if it exists
 	if len(workspace.State) > 0 {
-		if err := os.WriteFile(workspace.tfStatePath(), workspace.State, 0755); err != nil {
+		if err = os.WriteFile(workspace.tfStatePath(), workspace.State, 0755); err != nil {
 			return err
 		}
 	}
-
-	// run "terraform init"
-	if _, err := workspace.runTf(ctx, executor, "init", "-no-color"); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -314,123 +300,29 @@ func (workspace *TerraformWorkspace) Outputs(instance string) (map[string]interf
 	return state.GetOutputs(), nil
 }
 
-// Validate runs `terraform Validate` on this workspace.
-// This function blocks if another Terraform command is running on this workspace.
-func (workspace *TerraformWorkspace) Validate(ctx context.Context, executor TerraformExecutor) error {
-	err := workspace.initializeFs(ctx, executor)
+func (workspace *TerraformWorkspace) Execute(ctx context.Context, executor TerraformExecutor, commands ...TerraformCommand) (ExecutionOutput, error) {
+	err := workspace.initializeFsWithoutTerraformInit()
 	defer workspace.teardownFs()
 	if err != nil {
-		return err
+		return ExecutionOutput{}, err
 	}
+	var lastExecutionOutput ExecutionOutput
 
-	_, err = workspace.runTf(ctx, executor, "validate", "-no-color")
+	for _, command := range commands {
+		c := exec.Command("terraform", command.Command()...)
+		c.Env = os.Environ()
+		c.Dir = workspace.dir
 
-	return err
-}
-
-// Apply runs `terraform apply` on this workspace.
-// This function blocks if another Terraform command is running on this workspace.
-func (workspace *TerraformWorkspace) Apply(ctx context.Context, executor TerraformExecutor) error {
-	err := workspace.initializeFs(ctx, executor)
-	defer workspace.teardownFs()
-	if err != nil {
-		return err
-	}
-
-	_, err = workspace.runTf(ctx, executor, "apply", "-auto-approve", "-no-color")
-	return err
-}
-
-func (workspace *TerraformWorkspace) Plan(ctx context.Context, executor TerraformExecutor) error {
-	logger := utils.NewLogger("terraform-plan").WithData(correlation.ID(ctx))
-
-	err := workspace.initializeFs(ctx, executor)
-	defer workspace.teardownFs()
-	if err != nil {
-		return err
-	}
-
-	output, err := workspace.runTf(ctx, executor, "plan", "-no-color")
-	if err != nil {
-		return err
-	}
-
-	matches := planMessageMatcher.FindStringSubmatch(output.StdOut)
-	switch {
-	case len(matches) == 0: // presumably: "No changes. Infrastructure is up-to-date."
-		logger.Info("no-match")
-	case len(matches) == 2 && matches[1] == "0":
-		logger.Info("no-destroyed")
-	default:
-		logger.Info("cancelling-destroy", lager.Data{"stdout": output.StdOut, "stderr": output.StdErr})
-		return fmt.Errorf("terraform plan shows that resources would be destroyed - cancelling subsume")
-	}
-
-	return nil
-}
-
-// Destroy runs `terraform destroy` on this workspace.
-// This function blocks if another Terraform command is running on this workspace.
-func (workspace *TerraformWorkspace) Destroy(ctx context.Context, executor TerraformExecutor) error {
-	err := workspace.initializeFs(ctx, executor)
-	defer workspace.teardownFs()
-	if err != nil {
-		return err
-	}
-
-	_, err = workspace.runTf(ctx, executor, "destroy", "-auto-approve", "-no-color")
-	return err
-}
-
-// Import runs `terraform import` on this workspace.
-// This function blocks if another Terraform command is running on this workspace.
-func (workspace *TerraformWorkspace) Import(ctx context.Context, executor TerraformExecutor, resources map[string]string) error {
-	err := workspace.initializeFs(ctx, executor)
-	defer workspace.teardownFs()
-	if err != nil {
-		return err
-	}
-
-	for resource, id := range resources {
-		_, err = workspace.runTf(ctx, executor, "import", resource, id)
+		lastExecutionOutput, err = executor.Execute(ctx, c)
 		if err != nil {
-			return err
+			return ExecutionOutput{}, err
 		}
 	}
-
-	return nil
-}
-
-// Show runs `terraform show` on this workspace.
-// This function blocks if another Terraform command is running on this workspace.
-func (workspace *TerraformWorkspace) Show(ctx context.Context, executor TerraformExecutor) (string, error) {
-	err := workspace.initializeFs(ctx, executor)
-	defer workspace.teardownFs()
-	if err != nil {
-		return "", err
-	}
-
-	output, err := workspace.runTf(ctx, executor, "show", "-no-color")
-	if err != nil {
-		return "", err
-	}
-
-	return output.StdOut, nil
+	return lastExecutionOutput, nil
 }
 
 func (workspace *TerraformWorkspace) tfStatePath() string {
 	return path.Join(workspace.dir, "terraform.tfstate")
-}
-
-func (workspace *TerraformWorkspace) runTf(ctx context.Context, executor TerraformExecutor, subCommand string, args ...string) (ExecutionOutput, error) {
-	sub := []string{subCommand}
-	sub = append(sub, args...)
-
-	c := exec.Command("terraform", sub...)
-	c.Env = os.Environ()
-	c.Dir = workspace.dir
-
-	return executor.Execute(ctx, c)
 }
 
 func updatePath(vars []string, path string) string {
