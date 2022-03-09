@@ -34,23 +34,8 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 	cases := map[string]struct {
 		Exec func(ws *TerraformWorkspace, executor TerraformExecutor)
 	}{
-		"validate": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
-			ws.Validate(context.TODO(), executor)
-		}},
-		"apply": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
-			ws.Apply(context.TODO(), executor)
-		}},
-		"destroy": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
-			ws.Destroy(context.TODO(), executor)
-		}},
-		"import": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
-			ws.Import(context.TODO(), executor, map[string]string{})
-		}},
-		"show": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
-			ws.Show(context.TODO(), executor)
-		}},
-		"plan": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
-			ws.Plan(context.TODO(), executor)
+		"execute": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
+			ws.Execute(context.TODO(), executor, ApplyCommand{})
 		}},
 	}
 
@@ -123,23 +108,8 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 	cases := map[string]struct {
 		Exec func(ws *TerraformWorkspace, executor TerraformExecutor)
 	}{
-		"validate": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
-			ws.Validate(context.TODO(), executor)
-		}},
-		"apply": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
-			ws.Apply(context.TODO(), executor)
-		}},
-		"destroy": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
-			ws.Destroy(context.TODO(), executor)
-		}},
-		"import": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
-			ws.Import(context.TODO(), executor, map[string]string{})
-		}},
-		"show": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
-			ws.Show(context.TODO(), executor)
-		}},
-		"plan": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
-			ws.Plan(context.TODO(), executor)
+		"execute": {Exec: func(ws *TerraformWorkspace, executor TerraformExecutor) {
+			ws.Execute(context.TODO(), executor, ApplyCommand{})
 		}},
 	}
 
