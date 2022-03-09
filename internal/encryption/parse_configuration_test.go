@@ -41,7 +41,7 @@ var _ = Describe("ParseConfiguration()", func() {
 
 			It("returns an error", func() {
 				config, err := encryption.ParseConfiguration(db, false, password)
-				Expect(err).To(MatchError("encryption is disabled but a primary password is set"))
+				Expect(err).To(MatchError("encryption disabled but a primary password is set; either enable encryption or to disable encryption, mark the existing passwords as non-primary but do not remove them"))
 				Expect(config).To(BeZero())
 			})
 		})
@@ -260,7 +260,7 @@ var _ = Describe("ParseConfiguration()", func() {
 
 			It("returns an error", func() {
 				config, err := encryption.ParseConfiguration(db, true, password)
-				Expect(err).To(MatchError("encryption is enabled but no primary password is set"))
+				Expect(err).To(MatchError("encryption enabled but no primary password is set; either disable encryption or to enable encryption, mark one of the passwords as primary"))
 				Expect(config).To(BeZero())
 			})
 		})

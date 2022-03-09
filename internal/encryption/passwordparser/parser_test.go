@@ -113,7 +113,7 @@ var _ = Describe("Parser", func() {
 		Entry(
 			"bad JSON",
 			`[{"stuf"`,
-			`password configuration JSON error: unexpected end of JSON input`,
+			`password configuration could not be parsed as JSON: unexpected end of JSON input`,
 		),
 		Entry(
 			"password length too short",
@@ -143,7 +143,7 @@ var _ = Describe("Parser", func() {
 		Entry(
 			"multiple primaries",
 			`[{"label":"barfoo","password":{"secret":"veryverysecretpassword"},"primary":true},{"label":"barbaz","password":{"secret":"anotherveryverysecretpassword"}},{"label":"bazquz","password":{"secret":"yetanotherveryverysecretpassword"},"primary":true}]`,
-			`password configuration error: expected exactly one primary, got multiple: [].primary`,
+			`password configuration error: expected exactly one primary, got multiple; mark one password as primary and others as non-primary but do not remove them: [].primary`,
 		),
 	)
 })

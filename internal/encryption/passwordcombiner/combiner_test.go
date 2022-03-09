@@ -275,7 +275,7 @@ var _ = Describe("Combine()", func() {
 					},
 				}
 				combined, err := passwordcombiner.Combine(db, password, storedMetadata)
-				Expect(err).To(MatchError(`corrupt database - more than one primary found in table password_metadata`))
+				Expect(err).To(MatchError(`corrupt database - more than one primary found in table password_metadata; mark only one as primary but do not remove rows`))
 				Expect(combined).To(BeEmpty())
 			})
 		})

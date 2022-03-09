@@ -20,7 +20,7 @@ func Parse(input string) ([]PasswordEntry, error) {
 
 	var r receiver
 	if err := json.Unmarshal([]byte(input), &r); err != nil {
-		return nil, fmt.Errorf("password configuration JSON error: %w", err)
+		return nil, fmt.Errorf("password configuration could not be parsed as JSON: %w", err)
 	}
 
 	if len(r) == 0 {
@@ -76,7 +76,7 @@ func validate(passwordEntries []PasswordEntry) (errs *validation.FieldError) {
 		return errs
 	default:
 		return errs.Also(&validation.FieldError{
-			Message: "expected exactly one primary, got multiple",
+			Message: "expected exactly one primary, got multiple; mark one password as primary and others as non-primary but do not remove them",
 			Paths:   []string{"[].primary"},
 		})
 	}
