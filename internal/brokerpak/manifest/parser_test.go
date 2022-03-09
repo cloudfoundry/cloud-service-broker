@@ -178,6 +178,21 @@ var _ = Describe("Parser", func() {
 			})
 		})
 	})
+	Context("terraform_state_provider_replacements", func() {
+		It("can parse and validate the provider replacements", func() {
+			m, err := manifest.Parse(fakeManifest(with("terraform_state_provider_replacements",
+				map[string]string{
+					"registry.terraform.io/-/random": "registry.terraform.io/hashicorp/random",
+				},
+			)))
+
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(m.TerraformStateProviderReplacements).To(Equal(map[string]string{
+				"registry.terraform.io/-/random": "registry.terraform.io/hashicorp/random",
+			}))
+		})
+	})
 
 	Context("terraform_upgrade_path", func() {
 		It("can parse and validate the upgrade path", func() {
