@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/go-version"
 	"github.com/onsi/gomega/gexec"
 	cp "github.com/otiai10/copy"
-	"gopkg.in/yaml.v3"
 )
 
 func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.Writer) (*TestInstance, error) {
@@ -94,11 +93,16 @@ func templateManifest(brokerPackDir string, build string, workingDir string) err
 		return err
 	}
 
-	encoder := yaml.NewEncoder(outputFile)
-	err = encoder.Encode(parsedManifest)
+	serializedManifest, err := parsedManifest.Serialize()
 	if err != nil {
 		return err
 	}
+
+	_, err = outputFile.Write(serializedManifest)
+	if err != nil {
+		return err
+	}
+
 	return outputFile.Close()
 }
 
