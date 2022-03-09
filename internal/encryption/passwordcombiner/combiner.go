@@ -105,7 +105,7 @@ func storedWithPrimary(stored []models.PasswordMetadata) (map[string]models.Pass
 			case "":
 				primary = p.Label
 			default:
-				return nil, "", errors.New("corrupt database - more than one primary found in table password_metadata")
+				return nil, "", errors.New("corrupt database - more than one primary found in table password_metadata; mark only one as primary but do not remove rows")
 			}
 		}
 	}

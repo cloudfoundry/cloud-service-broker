@@ -24,6 +24,6 @@ func decryptCanary(encryptor gcmencryptor.GCMEncryptor, canary []byte, label str
 	case err.Error() == "cipher: message authentication failed", err.Error() == "malformed ciphertext":
 		return fmt.Errorf("canary mismatch for password labeled %q - check that the password value has not changed", label)
 	default:
-		return err
+		return fmt.Errorf("encryption canary error: %w", err)
 	}
 }

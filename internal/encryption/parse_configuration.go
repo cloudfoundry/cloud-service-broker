@@ -64,9 +64,9 @@ func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configurat
 
 	switch {
 	case enabled && !parsedPrimaryOK:
-		return Configuration{}, errors.New("encryption is enabled but no primary password is set")
+		return Configuration{}, errors.New("encryption enabled but no primary password is set; either disable encryption or to enable encryption, mark one of the passwords as primary")
 	case !enabled && parsedPrimaryOK:
-		return Configuration{}, errors.New("encryption is disabled but a primary password is set")
+		return Configuration{}, errors.New("encryption disabled but a primary password is set; either enable encryption or to disable encryption, mark the existing passwords as non-primary but do not remove them")
 	}
 
 	result := Configuration{
