@@ -23,7 +23,7 @@ var _ = Describe("Provider", func() {
 				storage := new(brokerfakes.FakeServiceProviderStorage)
 
 				tfProvider := tf.NewTerraformProvider(
-					tf.NewTfJobRunner(storage, wrapper.NewExecutorFactory("", nil, nil), wrapper.TFBinariesContext{}, tf.NewWorkspaceFactory()),
+					tf.NewTfJobRunner(storage, wrapper.TFBinariesContext{}, tf.NewWorkspaceFactory(), nil),
 					utils.NewLogger("test"),
 					tf.TfServiceDefinitionV1{
 						Plans: []tf.TfServiceDefinitionV1Plan{
