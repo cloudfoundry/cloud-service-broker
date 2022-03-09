@@ -26,7 +26,7 @@ var _ = Describe("ProvisionRequestDetails", func() {
 				encryptor.EncryptReturns(nil, errors.New("bang"))
 
 				err := store.StoreProvisionRequestDetails("fake-instance-id", json.RawMessage(`{"foo":"bar"}`))
-				Expect(err).To(MatchError("error encoding details: bang"))
+				Expect(err).To(MatchError("error encoding details: encryption error: bang"))
 			})
 		})
 
@@ -67,7 +67,7 @@ var _ = Describe("ProvisionRequestDetails", func() {
 				encryptor.DecryptReturns(nil, errors.New("bang"))
 
 				_, err := store.GetProvisionRequestDetails("fake-instance-id")
-				Expect(err).To(MatchError("error decoding provision request details: bang"))
+				Expect(err).To(MatchError("error decoding provision request details: decryption error: bang"))
 			})
 		})
 

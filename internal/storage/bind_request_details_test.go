@@ -52,7 +52,7 @@ var _ = Describe("BindRequestDetails", func() {
 					ServiceBindingGUID:  serviceBindingId,
 					RequestDetails:      json.RawMessage(`{"foo":"bar"}`),
 				})
-				Expect(err).To(MatchError("error encoding details: bang"))
+				Expect(err).To(MatchError("error encoding details: encryption error: bang"))
 			})
 		})
 
@@ -91,7 +91,7 @@ var _ = Describe("BindRequestDetails", func() {
 				encryptor.DecryptReturns(nil, errors.New("bang"))
 
 				_, err := store.GetBindRequestDetails("fake-binding-id", "fake-instance-id")
-				Expect(err).To(MatchError("error decoding bind request details: bang"))
+				Expect(err).To(MatchError("error decoding bind request details: decryption error: bang"))
 			})
 		})
 

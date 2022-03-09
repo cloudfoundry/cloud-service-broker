@@ -1,6 +1,8 @@
 package storage_test
 
 import (
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -39,9 +41,15 @@ var _ = BeforeEach(func() {
 
 	encryptor = &storagefakes.FakeEncryptor{
 		DecryptStub: func(bytes []byte) ([]byte, error) {
+			if string(bytes) == `cannot-be-decrypted` {
+				return nil, errors.New("fake decryption error")
+			}
 			return []byte(`{"decrypted":` + string(bytes) + `}`), nil
 		},
 		EncryptStub: func(bytes []byte) ([]byte, error) {
+			if strings.Contains(string(bytes), `cannot-be-encrypted`) {
+				return nil, errors.New("fake encryption error")
+			}
 			return []byte(`{"encrypted":` + string(bytes) + `}`), nil
 		},
 	}

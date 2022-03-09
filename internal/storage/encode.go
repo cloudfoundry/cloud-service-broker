@@ -1,11 +1,14 @@
 package storage
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 func (s *Storage) encodeBytes(b []byte) ([]byte, error) {
 	c, err := s.encryptor.Encrypt(b)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("encryption error: %w", err)
 	}
 
 	return c, nil
@@ -14,14 +17,19 @@ func (s *Storage) encodeBytes(b []byte) ([]byte, error) {
 func (s *Storage) encodeJSON(a interface{}) ([]byte, error) {
 	b, err := json.Marshal(a)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("JSON marshal error: %w", err)
 	}
 
 	return s.encodeBytes(b)
 }
 
 func (s *Storage) decodeBytes(a []byte) ([]byte, error) {
-	return s.encryptor.Decrypt(a)
+	d, err := s.encryptor.Decrypt(a)
+	if err != nil {
+		return nil, fmt.Errorf("decryption error: %w", err)
+	}
+
+	return d, nil
 }
 
 func (s *Storage) decodeJSONObject(a []byte) (map[string]interface{}, error) {
@@ -32,7 +40,7 @@ func (s *Storage) decodeJSONObject(a []byte) (map[string]interface{}, error) {
 
 	var receiver map[string]interface{}
 	if err := json.Unmarshal(b, &receiver); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("JSON parse error: %w", err)
 	}
 
 	return receiver, nil
