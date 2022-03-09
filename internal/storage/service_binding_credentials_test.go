@@ -41,7 +41,7 @@ var _ = Describe("ServiceBindingCredentials", func() {
 				encryptor.EncryptReturns(nil, errors.New("bang"))
 
 				err := store.CreateServiceBindingCredentials(storage.ServiceBindingCredentials{})
-				Expect(err).To(MatchError("error encoding credentials: bang"))
+				Expect(err).To(MatchError("error encoding credentials: encryption error: bang"))
 			})
 		})
 	})
@@ -70,7 +70,7 @@ var _ = Describe("ServiceBindingCredentials", func() {
 				encryptor.DecryptReturns(nil, errors.New("bang"))
 
 				_, err := store.GetServiceBindingCredentials("fake-binding-id", "fake-instance-id")
-				Expect(err).To(MatchError("error decoding credentials: bang"))
+				Expect(err).To(MatchError("error decoding credentials: decryption error: bang"))
 			})
 		})
 

@@ -73,7 +73,7 @@ func (s *Storage) GetServiceInstanceDetails(guid string) (ServiceInstanceDetails
 	case err != nil:
 		return ServiceInstanceDetails{}, err
 	case !exists:
-		return ServiceInstanceDetails{}, fmt.Errorf("could not find serivce instance details for: %s", guid)
+		return ServiceInstanceDetails{}, fmt.Errorf("could not find service instance details for: %s", guid)
 	}
 
 	var receiver models.ServiceInstanceDetails

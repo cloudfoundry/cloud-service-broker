@@ -30,19 +30,19 @@ func (s *Storage) updateAllServiceBindingCredentials() error {
 		for i := range serviceBindingCredentialsBatch {
 			creds, err := s.decodeJSONObject(serviceBindingCredentialsBatch[i].OtherDetails)
 			if err != nil {
-				return err
+				return fmt.Errorf("decode error for %q: %w", serviceBindingCredentialsBatch[i].BindingId, err)
 			}
 
 			serviceBindingCredentialsBatch[i].OtherDetails, err = s.encodeJSON(creds)
 			if err != nil {
-				return err
+				return fmt.Errorf("encode error for %q: %w", serviceBindingCredentialsBatch[i].BindingId, err)
 			}
 		}
 
 		return tx.Save(&serviceBindingCredentialsBatch).Error
 	})
 	if result.Error != nil {
-		return fmt.Errorf("error re-enoding service binding credentials: %v", result.Error)
+		return fmt.Errorf("error re-encoding service binding credentials: %v", result.Error)
 	}
 
 	return nil
@@ -54,19 +54,19 @@ func (s *Storage) updateAllBindRequestDetails() error {
 		for i := range bindRequestDetailsBatch {
 			details, err := s.decodeBytes(bindRequestDetailsBatch[i].RequestDetails)
 			if err != nil {
-				return err
+				return fmt.Errorf("decode error for %q: %w", bindRequestDetailsBatch[i].ServiceBindingId, err)
 			}
 
 			bindRequestDetailsBatch[i].RequestDetails, err = s.encodeBytes(details)
 			if err != nil {
-				return err
+				return fmt.Errorf("encode error for %q: %w", bindRequestDetailsBatch[i].ServiceBindingId, err)
 			}
 		}
 
 		return tx.Save(&bindRequestDetailsBatch).Error
 	})
 	if result.Error != nil {
-		return fmt.Errorf("error re-encoding bindr request details: %v", result.Error)
+		return fmt.Errorf("error re-encoding service binding request details: %v", result.Error)
 	}
 
 	return nil
@@ -78,12 +78,12 @@ func (s *Storage) updateAllProvisionRequestDetails() error {
 		for i := range provisionRequestDetailsBatch {
 			details, err := s.decodeBytes(provisionRequestDetailsBatch[i].RequestDetails)
 			if err != nil {
-				return err
+				return fmt.Errorf("decode error for %q: %w", provisionRequestDetailsBatch[i].ServiceInstanceId, err)
 			}
 
 			provisionRequestDetailsBatch[i].RequestDetails, err = s.encodeBytes(details)
 			if err != nil {
-				return err
+				return fmt.Errorf("encode error for %q: %w", provisionRequestDetailsBatch[i].ServiceInstanceId, err)
 			}
 		}
 
@@ -102,19 +102,19 @@ func (s *Storage) updateAllServiceInstanceDetails() error {
 		for i := range serviceInstanceDetailsBatch {
 			outputs, err := s.decodeJSONObject(serviceInstanceDetailsBatch[i].OtherDetails)
 			if err != nil {
-				return err
+				return fmt.Errorf("decode error for %q: %w", serviceInstanceDetailsBatch[i].ID, err)
 			}
 
 			serviceInstanceDetailsBatch[i].OtherDetails, err = s.encodeJSON(outputs)
 			if err != nil {
-				return err
+				return fmt.Errorf("encode error for %q: %w", serviceInstanceDetailsBatch[i].ID, err)
 			}
 		}
 
 		return tx.Save(&serviceInstanceDetailsBatch).Error
 	})
 	if result.Error != nil {
-		return fmt.Errorf("error reencrypting: %v", result.Error)
+		return fmt.Errorf("error re-encoding service instance details: %v", result.Error)
 	}
 
 	return nil
@@ -126,19 +126,19 @@ func (s *Storage) updateAllTerraformDeployments() error {
 		for i := range terraformDeploymentBatch {
 			workspace, err := s.decodeBytes(terraformDeploymentBatch[i].Workspace)
 			if err != nil {
-				return err
+				return fmt.Errorf("decode error for %q: %w", terraformDeploymentBatch[i].ID, err)
 			}
 
 			terraformDeploymentBatch[i].Workspace, err = s.encodeBytes(workspace)
 			if err != nil {
-				return err
+				return fmt.Errorf("encode error for %q: %w", terraformDeploymentBatch[i].ID, err)
 			}
 		}
 
 		return tx.Save(&terraformDeploymentBatch).Error
 	})
 	if result.Error != nil {
-		return fmt.Errorf("error reencrypting: %v", result.Error)
+		return fmt.Errorf("error re-encoding terraform deployment: %v", result.Error)
 	}
 
 	return nil

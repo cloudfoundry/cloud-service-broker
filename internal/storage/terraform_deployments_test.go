@@ -36,7 +36,7 @@ var _ = Describe("TerraformDeployments", func() {
 				encryptor.EncryptReturns(nil, errors.New("bang"))
 
 				err := store.StoreTerraformDeployment(storage.TerraformDeployment{})
-				Expect(err).To(MatchError("error encoding workspace: bang"))
+				Expect(err).To(MatchError("error encoding workspace: encryption error: bang"))
 			})
 		})
 
@@ -87,7 +87,7 @@ var _ = Describe("TerraformDeployments", func() {
 				encryptor.DecryptReturns(nil, errors.New("bang"))
 
 				_, err := store.GetTerraformDeployment("fake-id-1")
-				Expect(err).To(MatchError("error decoding workspace: bang"))
+				Expect(err).To(MatchError("error decoding workspace: decryption error: bang"))
 			})
 		})
 
