@@ -9,19 +9,20 @@ import (
 
 // Manifest is the internal model for the brokerpak manifest
 type Manifest struct {
-	PackVersion          int
-	Name                 string
-	Version              string
-	Metadata             map[string]string
-	Platforms            []platform.Platform
-	TerraformVersions    []TerraformVersion
-	TerraformProviders   []TerraformProvider
-	Binaries             []Binary
-	ServiceDefinitions   []string
-	Parameters           []Parameter
-	RequiredEnvVars      []string
-	EnvConfigMapping     map[string]string
-	TerraformUpgradePath []*version.Version
+	PackVersion                        int
+	Name                               string
+	Version                            string
+	Metadata                           map[string]string
+	Platforms                          []platform.Platform
+	TerraformVersions                  []TerraformVersion
+	TerraformProviders                 []TerraformProvider
+	Binaries                           []Binary
+	ServiceDefinitions                 []string
+	Parameters                         []Parameter
+	RequiredEnvVars                    []string
+	EnvConfigMapping                   map[string]string
+	TerraformUpgradePath               []*version.Version
+	TerraformStateProviderReplacements map[string]string
 }
 
 type TerraformVersion struct {

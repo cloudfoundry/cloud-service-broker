@@ -14,17 +14,18 @@ import (
 // parser is used to parse the brokerpak manifest.
 // In code we should use the Manifest type
 type parser struct {
-	PackVersion          int                    `yaml:"packversion"`
-	Name                 string                 `yaml:"name"`
-	Version              string                 `yaml:"version"`
-	Metadata             map[string]string      `yaml:"metadata"`
-	Platforms            []platform.Platform    `yaml:"platforms"`
-	TerraformResources   []TerraformResource    `yaml:"terraform_binaries"`
-	ServiceDefinitions   []string               `yaml:"service_definitions"`
-	Parameters           []Parameter            `yaml:"parameters"`
-	RequiredEnvVars      []string               `yaml:"required_env_variables"`
-	EnvConfigMapping     map[string]string      `yaml:"env_config_mapping"`
-	TerraformUpgradePath []TerraformUpgradePath `yaml:"terraform_upgrade_path,omitempty"`
+	PackVersion                        int                    `yaml:"packversion"`
+	Name                               string                 `yaml:"name"`
+	Version                            string                 `yaml:"version"`
+	Metadata                           map[string]string      `yaml:"metadata"`
+	Platforms                          []platform.Platform    `yaml:"platforms"`
+	TerraformResources                 []TerraformResource    `yaml:"terraform_binaries"`
+	ServiceDefinitions                 []string               `yaml:"service_definitions"`
+	Parameters                         []Parameter            `yaml:"parameters"`
+	RequiredEnvVars                    []string               `yaml:"required_env_variables"`
+	EnvConfigMapping                   map[string]string      `yaml:"env_config_mapping"`
+	TerraformUpgradePath               []TerraformUpgradePath `yaml:"terraform_upgrade_path,omitempty"`
+	TerraformStateProviderReplacements map[string]string      `yaml:"terraform_state_provider_replacements,omitempty"`
 }
 
 func Parse(input []byte) (*Manifest, error) {
@@ -46,6 +47,7 @@ func Parse(input []byte) (*Manifest, error) {
 	result.Parameters = receiver.Parameters
 	result.RequiredEnvVars = receiver.RequiredEnvVars
 	result.EnvConfigMapping = receiver.EnvConfigMapping
+	result.TerraformStateProviderReplacements = receiver.TerraformStateProviderReplacements
 
 	steps := []func() *validation.FieldError{
 		func() (errs *validation.FieldError) {
