@@ -60,7 +60,7 @@ func (s *Storage) GetBindRequestDetails(bindingID string, instanceID string) (js
 
 	decoded, err := s.decodeBytes(receiver.RequestDetails)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding bind request details: %w", err)
+		return nil, fmt.Errorf("error decoding bind request details %q: %w", bindingID, err)
 	}
 
 	return decoded, nil
