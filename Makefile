@@ -60,7 +60,7 @@ test-integration: deps-go-binary ## run integration tests
 	$(GO) run github.com/onsi/ginkgo/v2/ginkgo -p integrationtest/...
 
 .PHONY: test-integration-with-cache
-test-integration-with-cache: deps-go-binary .pak_cache ## run integration with local cache
+test-integration-with-cache: deps-go-binary .pak-cache ## run integration with local cache
 	PAK_BUILD_CACHE_PATH=$(PAK_CACHE) $(GO) run github.com/onsi/ginkgo/v2/ginkgo -p integrationtest/...
 
 .pak-cache:
