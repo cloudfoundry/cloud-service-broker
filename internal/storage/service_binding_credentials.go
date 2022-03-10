@@ -51,7 +51,7 @@ func (s *Storage) GetServiceBindingCredentials(bindingID, serviceInstanceID stri
 
 	decoded, err := s.decodeJSONObject(receiver.OtherDetails)
 	if err != nil {
-		return ServiceBindingCredentials{}, fmt.Errorf("error decoding credentials: %w", err)
+		return ServiceBindingCredentials{}, fmt.Errorf("error decoding binding credentials %q: %w", bindingID, err)
 	}
 
 	return ServiceBindingCredentials{

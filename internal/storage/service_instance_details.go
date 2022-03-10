@@ -83,7 +83,7 @@ func (s *Storage) GetServiceInstanceDetails(guid string) (ServiceInstanceDetails
 
 	decoded, err := s.decodeJSONObject(receiver.OtherDetails)
 	if err != nil {
-		return ServiceInstanceDetails{}, fmt.Errorf("error decoding outputs: %w", err)
+		return ServiceInstanceDetails{}, fmt.Errorf("error decoding service instance outputs %q: %w", guid, err)
 	}
 
 	return ServiceInstanceDetails{
