@@ -2,6 +2,8 @@ SHELL = /bin/bash
 GO-VERSION = 1.17
 GO-VER = go$(GO-VERSION)
 
+PAK_CACHE=$(PWD)/.pak-cache
+
 OSFAMILY=$(shell uname)
 ifeq ($(OSFAMILY),Darwin)
 OSFAMILY=darwin
@@ -57,6 +59,12 @@ test-units: deps-go-binary ## run unit tests
 test-integration: deps-go-binary ## run integration tests
 	$(GO) run github.com/onsi/ginkgo/v2/ginkgo -p integrationtest/...
 
+.PHONY: test-integration-with-cache
+test-integration-with-cache: deps-go-binary .pak_cache ## run integration with local cache
+	PAK_BUILD_CACHE_PATH=$(PAK_CACHE) $(GO) run github.com/onsi/ginkgo/v2/ginkgo -p integrationtest/...
+
+.pak-cache:
+	mkdir -p $(PAK_CACHE)
 ###### Build ##################################################################
 
 ./build/cloud-service-broker.linux: $(SRC)
