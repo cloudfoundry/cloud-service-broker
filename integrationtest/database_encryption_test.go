@@ -582,8 +582,8 @@ var _ = Describe("Database Encryption", func() {
 				session.Wait(time.Minute)
 
 				Expect(session.ExitCode()).NotTo(BeZero())
-				Expect(session.Out).To(Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`))
-				Expect(session.Err).To(Say(`Error rotating database encryption`))
+				Expect(session.Out).To(Say(`cloud-service-broker.refusing to encrypt the database as some fields cannot be successfully read`))
+				Expect(session.Err).To(Say(`decode error for service instance details "\S+": decryption error: cipher: message authentication failed`))
 
 				By("checking password metadata are not removed")
 				Expect(persistedPasswordMetadata("my-first-password").Primary).To(BeTrue())
@@ -604,6 +604,60 @@ var _ = Describe("Database Encryption", func() {
 				Expect(persistedPasswordMetadata("my-first-password").Primary).To(BeFalse())
 				Expect(persistedPasswordMetadata("my-second-password").Primary).To(BeTrue())
 			})
+		})
+	})
+
+	When("encryption is turned on for a corrupted database", func() {
+		BeforeEach(func() {
+			Expect(testHelper.DBConn().Migrator().CreateTable(&models.ServiceInstanceDetails{})).NotTo(HaveOccurred())
+			Expect(testHelper.DBConn().Create(&models.ServiceInstanceDetails{
+				ID:           "fake-id-1",
+				OtherDetails: []byte(`{"valid":"json"}`),
+			}).Error).NotTo(HaveOccurred())
+			Expect(testHelper.DBConn().Create(&models.ServiceInstanceDetails{
+				ID:           "fake-id-2",
+				OtherDetails: []byte("not-json"),
+			}).Error).NotTo(HaveOccurred())
+		})
+
+		It("fails without encrypting anything", func() {
+			const encryptionPasswords = `[{"primary":true,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`
+			session = startBrokerSession(true, encryptionPasswords)
+
+			Eventually(session).WithTimeout(time.Minute).Should(Exit(2))
+			Expect(session.Out).To(Say(`cloud-service-broker.refusing to encrypt the database as some fields cannot be successfully read`))
+			Expect(session.Err).To(Say(`decode error for service instance details "fake-id-2": JSON parse error: invalid character 'o' in literal null \(expecting 'u'\)`))
+
+			var receiver models.ServiceInstanceDetails
+			Expect(testHelper.DBConn().Where("id= ? ", "fake-id-1").First(&receiver).Error).NotTo(HaveOccurred())
+			Expect(receiver.OtherDetails).To(Equal([]byte(`{"valid":"json"}`)))
+		})
+	})
+
+	When("a password is removed for a corrupt database", func() {
+		It("does not clean up the password metadata", func() {
+			By("registering the password")
+			const encryptionPasswords = `[{"label":"obsolete","password":{"secret":"supersecretcoolpassword"}}]`
+			session = startBroker(false, encryptionPasswords)
+			session.Terminate()
+
+			var receiver models.PasswordMetadata
+			Expect(testHelper.DBConn().Where("label=?", "obsolete").First(&receiver).Error).NotTo(HaveOccurred())
+
+			By("corrupting the database")
+			Expect(testHelper.DBConn().Create(&models.ServiceInstanceDetails{
+				ID:           "fake-id-2",
+				OtherDetails: []byte("not-json"),
+			}).Error).NotTo(HaveOccurred())
+
+			By("starting the broker and checking that the password is not removed")
+			session = startBroker(false, "")
+
+			Expect(testHelper.DBConn().Where("label=?", "obsolete").First(&receiver).Error).NotTo(HaveOccurred())
+			Expect(session.Out).To(SatisfyAll(
+				Say(`cloud-service-broker.database-field-error`),
+				Say(`decode error for service instance details \\"fake-id-2\\": JSON parse error: invalid character 'o' in literal null \(expecting 'u'\)`),
+			))
 		})
 	})
 })
