@@ -34,8 +34,11 @@ func (s *Storage) decodeBytes(a []byte) ([]byte, error) {
 
 func (s *Storage) decodeJSONObject(a []byte) (map[string]interface{}, error) {
 	b, err := s.decodeBytes(a)
-	if err != nil {
+	switch {
+	case err != nil:
 		return nil, err
+	case len(b) == 0:
+		return nil, nil
 	}
 
 	var receiver map[string]interface{}

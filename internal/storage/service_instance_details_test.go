@@ -116,7 +116,7 @@ var _ = Describe("ServiceInstanceDetails", func() {
 				encryptor.DecryptReturns(nil, errors.New("bang"))
 
 				_, err := store.GetServiceInstanceDetails("fake-id-1")
-				Expect(err).To(MatchError("error decoding outputs: decryption error: bang"))
+				Expect(err).To(MatchError(`error decoding service instance outputs "fake-id-1": decryption error: bang`))
 			})
 		})
 
@@ -124,6 +124,17 @@ var _ = Describe("ServiceInstanceDetails", func() {
 			It("returns an error", func() {
 				_, err := store.GetServiceInstanceDetails("not-there")
 				Expect(err).To(MatchError("could not find service instance details for: not-there"))
+			})
+		})
+
+		When("OtherDetails field is empty", func() {
+			It("succeeds with an empty result", func() {
+				encryptor.DecryptReturns([]byte(""), nil)
+
+				r, err := store.GetServiceInstanceDetails("fake-id-1")
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(r.Outputs).To(BeEmpty())
 			})
 		})
 	})

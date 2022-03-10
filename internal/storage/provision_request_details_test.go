@@ -67,7 +67,7 @@ var _ = Describe("ProvisionRequestDetails", func() {
 				encryptor.DecryptReturns(nil, errors.New("bang"))
 
 				_, err := store.GetProvisionRequestDetails("fake-instance-id")
-				Expect(err).To(MatchError("error decoding provision request details: decryption error: bang"))
+				Expect(err).To(MatchError(`error decoding provision request details "fake-instance-id": decryption error: bang`))
 			})
 		})
 

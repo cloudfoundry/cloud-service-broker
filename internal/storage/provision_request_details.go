@@ -57,7 +57,7 @@ func (s *Storage) GetProvisionRequestDetails(serviceInstanceID string) (json.Raw
 
 	decoded, err := s.decodeBytes(receiver.RequestDetails)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding provision request details: %w", err)
+		return nil, fmt.Errorf("error decoding provision request details %q: %w", serviceInstanceID, err)
 	}
 
 	return decoded, nil
