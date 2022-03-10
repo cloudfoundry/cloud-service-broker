@@ -91,7 +91,7 @@ var _ = Describe("BindRequestDetails", func() {
 				encryptor.DecryptReturns(nil, errors.New("bang"))
 
 				_, err := store.GetBindRequestDetails("fake-binding-id", "fake-instance-id")
-				Expect(err).To(MatchError("error decoding bind request details: decryption error: bang"))
+				Expect(err).To(MatchError(`error decoding bind request details "fake-binding-id": decryption error: bang`))
 			})
 		})
 

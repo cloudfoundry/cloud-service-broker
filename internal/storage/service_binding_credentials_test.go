@@ -70,7 +70,7 @@ var _ = Describe("ServiceBindingCredentials", func() {
 				encryptor.DecryptReturns(nil, errors.New("bang"))
 
 				_, err := store.GetServiceBindingCredentials("fake-binding-id", "fake-instance-id")
-				Expect(err).To(MatchError("error decoding credentials: decryption error: bang"))
+				Expect(err).To(MatchError(`error decoding binding credentials "fake-binding-id": decryption error: bang`))
 			})
 		})
 
@@ -78,6 +78,17 @@ var _ = Describe("ServiceBindingCredentials", func() {
 			It("returns an error", func() {
 				_, err := store.GetServiceBindingCredentials("not-there", "also-not-there")
 				Expect(err).To(MatchError(`could not find binding credentials for binding "not-there" and service instance "also-not-there"`))
+			})
+		})
+
+		When("OtherDetails field is empty", func() {
+			It("succeeds with an empty result", func() {
+				encryptor.DecryptReturns([]byte(""), nil)
+
+				r, err := store.GetServiceBindingCredentials("fake-binding-id", "fake-instance-id")
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(r.Credentials).To(BeEmpty())
 			})
 		})
 	})

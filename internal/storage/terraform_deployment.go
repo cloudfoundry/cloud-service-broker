@@ -61,7 +61,7 @@ func (s *Storage) GetTerraformDeployment(id string) (TerraformDeployment, error)
 
 	decoded, err := s.decodeBytes(receiver.Workspace)
 	if err != nil {
-		return TerraformDeployment{}, fmt.Errorf("error decoding workspace: %w", err)
+		return TerraformDeployment{}, fmt.Errorf("error decoding workspace %q: %w", id, err)
 	}
 
 	return TerraformDeployment{
