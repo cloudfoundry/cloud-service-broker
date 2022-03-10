@@ -28,12 +28,12 @@ func (s *Storage) updateAllServiceBindingCredentials() error {
 	var serviceBindingCredentialsBatch []models.ServiceBindingCredentials
 	result := s.db.FindInBatches(&serviceBindingCredentialsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range serviceBindingCredentialsBatch {
-			creds, err := s.decodeJSONObject(serviceBindingCredentialsBatch[i].OtherDetails)
+			data, err := s.decodeBytes(serviceBindingCredentialsBatch[i].OtherDetails)
 			if err != nil {
 				return fmt.Errorf("decode error for %q: %w", serviceBindingCredentialsBatch[i].BindingId, err)
 			}
 
-			serviceBindingCredentialsBatch[i].OtherDetails, err = s.encodeJSON(creds)
+			serviceBindingCredentialsBatch[i].OtherDetails, err = s.encodeBytes(data)
 			if err != nil {
 				return fmt.Errorf("encode error for %q: %w", serviceBindingCredentialsBatch[i].BindingId, err)
 			}
@@ -52,12 +52,12 @@ func (s *Storage) updateAllBindRequestDetails() error {
 	var bindRequestDetailsBatch []models.BindRequestDetails
 	result := s.db.FindInBatches(&bindRequestDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range bindRequestDetailsBatch {
-			details, err := s.decodeBytes(bindRequestDetailsBatch[i].RequestDetails)
+			data, err := s.decodeBytes(bindRequestDetailsBatch[i].RequestDetails)
 			if err != nil {
 				return fmt.Errorf("decode error for %q: %w", bindRequestDetailsBatch[i].ServiceBindingId, err)
 			}
 
-			bindRequestDetailsBatch[i].RequestDetails, err = s.encodeBytes(details)
+			bindRequestDetailsBatch[i].RequestDetails, err = s.encodeBytes(data)
 			if err != nil {
 				return fmt.Errorf("encode error for %q: %w", bindRequestDetailsBatch[i].ServiceBindingId, err)
 			}
@@ -76,12 +76,12 @@ func (s *Storage) updateAllProvisionRequestDetails() error {
 	var provisionRequestDetailsBatch []models.ProvisionRequestDetails
 	result := s.db.FindInBatches(&provisionRequestDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range provisionRequestDetailsBatch {
-			details, err := s.decodeBytes(provisionRequestDetailsBatch[i].RequestDetails)
+			data, err := s.decodeBytes(provisionRequestDetailsBatch[i].RequestDetails)
 			if err != nil {
 				return fmt.Errorf("decode error for %q: %w", provisionRequestDetailsBatch[i].ServiceInstanceId, err)
 			}
 
-			provisionRequestDetailsBatch[i].RequestDetails, err = s.encodeBytes(details)
+			provisionRequestDetailsBatch[i].RequestDetails, err = s.encodeBytes(data)
 			if err != nil {
 				return fmt.Errorf("encode error for %q: %w", provisionRequestDetailsBatch[i].ServiceInstanceId, err)
 			}
@@ -100,12 +100,12 @@ func (s *Storage) updateAllServiceInstanceDetails() error {
 	var serviceInstanceDetailsBatch []models.ServiceInstanceDetails
 	result := s.db.FindInBatches(&serviceInstanceDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range serviceInstanceDetailsBatch {
-			outputs, err := s.decodeJSONObject(serviceInstanceDetailsBatch[i].OtherDetails)
+			data, err := s.decodeBytes(serviceInstanceDetailsBatch[i].OtherDetails)
 			if err != nil {
 				return fmt.Errorf("decode error for %q: %w", serviceInstanceDetailsBatch[i].ID, err)
 			}
 
-			serviceInstanceDetailsBatch[i].OtherDetails, err = s.encodeJSON(outputs)
+			serviceInstanceDetailsBatch[i].OtherDetails, err = s.encodeBytes(data)
 			if err != nil {
 				return fmt.Errorf("encode error for %q: %w", serviceInstanceDetailsBatch[i].ID, err)
 			}
@@ -124,12 +124,12 @@ func (s *Storage) updateAllTerraformDeployments() error {
 	var terraformDeploymentBatch []models.TerraformDeployment
 	result := s.db.FindInBatches(&terraformDeploymentBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range terraformDeploymentBatch {
-			workspace, err := s.decodeBytes(terraformDeploymentBatch[i].Workspace)
+			data, err := s.decodeBytes(terraformDeploymentBatch[i].Workspace)
 			if err != nil {
 				return fmt.Errorf("decode error for %q: %w", terraformDeploymentBatch[i].ID, err)
 			}
 
-			terraformDeploymentBatch[i].Workspace, err = s.encodeBytes(workspace)
+			terraformDeploymentBatch[i].Workspace, err = s.encodeBytes(data)
 			if err != nil {
 				return fmt.Errorf("encode error for %q: %w", terraformDeploymentBatch[i].ID, err)
 			}
