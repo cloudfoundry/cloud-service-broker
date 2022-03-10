@@ -55,7 +55,7 @@ func Init(directory string) error {
 // Pack creates a new brokerpak from the given directory which MUST contain a
 // manifest.yml file. If the pack was successful, the returned string will be
 // the path to the created brokerpak.
-func Pack(directory string) (string, error) {
+func Pack(directory string, cachePath string) (string, error) {
 	data, err := os.ReadFile(filepath.Join(directory, manifestName))
 	if err != nil {
 		return "", err
@@ -72,7 +72,7 @@ func Pack(directory string) (string, error) {
 		version = m.Version
 	}
 	packname := fmt.Sprintf("%s-%s.brokerpak", m.Name, version)
-	return packname, packer.Pack(m, directory, packname)
+	return packname, packer.Pack(m, directory, packname, cachePath)
 }
 
 // Info writes out human-readable information about the brokerpak.

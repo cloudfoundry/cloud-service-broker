@@ -190,7 +190,7 @@ func fakeBrokerpak(opts ...option) string {
 	}
 
 	packName := path.Join(GinkgoT().TempDir(), "fake.brokerpak")
-	Expect(packer.Pack(m, dir, packName)).NotTo(HaveOccurred())
+	Expect(packer.Pack(m, dir, packName, "")).NotTo(HaveOccurred())
 	return packName
 }
 
