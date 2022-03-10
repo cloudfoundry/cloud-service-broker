@@ -67,21 +67,6 @@ var _ = Describe("UpdateAllRecords", func() {
 
 	Describe("errors", func() {
 		Context("service binding credentials", func() {
-			When("OtherDetails is not JSON", func() {
-				BeforeEach(func() {
-					Expect(db.Create(&models.ServiceBindingCredentials{
-						OtherDetails:      []byte(`not-json`),
-						ServiceId:         "fake-other-service-id",
-						ServiceInstanceId: "fake-instance-id",
-						BindingId:         "fake-bad-binding-id",
-					}).Error).NotTo(HaveOccurred())
-				})
-
-				It("returns an error", func() {
-					Expect(store.UpdateAllRecords()).To(MatchError(`error re-encoding service binding credentials: decode error for "fake-bad-binding-id": JSON parse error: invalid character 'o' in literal null (expecting 'u')`))
-				})
-			})
-
 			When("OtherDetails cannot be decrypted", func() {
 				BeforeEach(func() {
 					Expect(db.Create(&models.ServiceBindingCredentials{
@@ -172,19 +157,6 @@ var _ = Describe("UpdateAllRecords", func() {
 		})
 
 		Context("service instance details", func() {
-			When("OtherDetails is not JSON", func() {
-				BeforeEach(func() {
-					Expect(db.Create(&models.ServiceInstanceDetails{
-						ID:           "fake-bad-id",
-						OtherDetails: []byte(`not-json`),
-					}).Error).NotTo(HaveOccurred())
-				})
-
-				It("returns an error", func() {
-					Expect(store.UpdateAllRecords()).To(MatchError(`error re-encoding service instance details: decode error for "fake-bad-id": JSON parse error: invalid character 'o' in literal null (expecting 'u')`))
-				})
-			})
-
 			When("OtherDetails cannot be decrypted", func() {
 				BeforeEach(func() {
 					Expect(db.Create(&models.ServiceInstanceDetails{
