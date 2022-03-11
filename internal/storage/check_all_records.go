@@ -70,7 +70,7 @@ func (s *Storage) checkAllProvisionRequestDetails() (errs *multierror.Error) {
 	var provisionRequestDetailsBatch []models.ProvisionRequestDetails
 	result := s.db.FindInBatches(&provisionRequestDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range provisionRequestDetailsBatch {
-			_, err := s.decodeBytes(provisionRequestDetailsBatch[i].RequestDetails)
+			_, err := s.decodeJSONObject(provisionRequestDetailsBatch[i].RequestDetails)
 			if err != nil {
 				errs = multierror.Append(fmt.Errorf("decode error for provision request details %q: %w", provisionRequestDetailsBatch[i].ServiceInstanceId, err), errs)
 			}

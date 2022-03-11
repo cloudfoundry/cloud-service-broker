@@ -47,7 +47,7 @@ type ServiceProvider interface {
 	Bind(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error)
 	// BuildInstanceCredentials combines the bindRecord with any additional
 	// info from the instance to create credentials for the binding.
-	BuildInstanceCredentials(ctx context.Context, credentials map[string]interface{}, outputs storage.TerraformOutputs) (*domain.Binding, error)
+	BuildInstanceCredentials(ctx context.Context, credentials map[string]interface{}, outputs storage.JSONObject) (*domain.Binding, error)
 	// Unbind deprovisions the resources created with Bind.
 	Unbind(ctx context.Context, instanceGUID, bindingID string, vc *varcontext.VarContext) error
 	// Deprovision deprovisions the service.
@@ -62,7 +62,7 @@ type ServiceProvider interface {
 	// This function is optional, but will be called after async provisions, updates, and possibly
 	// on broker version changes.
 	// Return a nil error if you choose not to implement this function.
-	GetTerraformOutputs(ctx context.Context, guid string) (storage.TerraformOutputs, error)
+	GetTerraformOutputs(ctx context.Context, guid string) (storage.JSONObject, error)
 }
 
 //counterfeiter:generate . ServiceProviderStorage

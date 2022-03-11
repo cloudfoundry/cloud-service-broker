@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/toggles"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
@@ -380,8 +381,9 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 // For example, to create a default database name based on a user-provided instance name.
 // Therefore, they get executed conditionally if a user-provided variable does not exist.
 // Computed variables get executed either unconditionally or conditionally for greater flexibility.
-func (svc *ServiceDefinition) variables(constants map[string]interface{},
-	rawUserProvidedParameters json.RawMessage,
+func (svc *ServiceDefinition) variables(
+	constants map[string]interface{},
+	userProvidedParameters map[string]interface{},
 	plan ServicePlan) (*varcontext.VarContext, error) {
 
 	globalDefaults, err := ProvisionGlobalDefaults()
@@ -396,7 +398,7 @@ func (svc *ServiceDefinition) variables(constants map[string]interface{},
 		SetEvalConstants(constants).
 		MergeMap(globalDefaults).
 		MergeMap(provisionDefaultOverrides).
-		MergeJsonObject(rawUserProvidedParameters).
+		MergeMap(userProvidedParameters).
 		MergeMap(plan.ProvisionOverrides).
 		MergeDefaults(svc.provisionDefaults()).
 		MergeMap(plan.GetServiceProperties()).
@@ -405,27 +407,35 @@ func (svc *ServiceDefinition) variables(constants map[string]interface{},
 	return buildAndValidate(builder, svc.ProvisionInputVariables)
 }
 
-func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details domain.ProvisionDetails, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) ProvisionVariables(instanceID string, details paramparser.ProvisionDetails, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
 	// The namespaces of these values roughly align with the OSB spec.
 	constants := map[string]interface{}{
-		"request.plan_id":                           details.PlanID,
-		"request.service_id":                        details.ServiceID,
-		"request.instance_id":                       instanceId,
-		"request.default_labels":                    utils.ExtractDefaultProvisionLabels(instanceId, details),
-		"request.context":                           unmarshalJsonToMap(details.GetRawContext()),
+		"request.plan_id":     details.PlanID,
+		"request.service_id":  details.ServiceID,
+		"request.instance_id": instanceID,
+		"request.default_labels": map[string]string{
+			"pcf-organization-guid": utils.InvalidLabelChars.ReplaceAllString(details.OrganizationGUID, "_"),
+			"pcf-space-guid":        utils.InvalidLabelChars.ReplaceAllString(details.SpaceGUID, "_"),
+			"pcf-instance-id":       utils.InvalidLabelChars.ReplaceAllString(instanceID, "_"),
+		},
+		"request.context": details.RequestContext,
 		"request.x_broker_api_originating_identity": originatingIdentity,
 	}
 
-	return svc.variables(constants, details.GetRawParameters(), plan)
+	return svc.variables(constants, details.RequestParams, plan)
 }
 
-func (svc *ServiceDefinition) UpdateVariables(instanceId string, details domain.UpdateDetails, mergedUserProvidedParameters json.RawMessage, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) UpdateVariables(instanceId string, details paramparser.UpdateDetails, mergedUserProvidedParameters map[string]interface{}, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
 	constants := map[string]interface{}{
-		"request.plan_id":                           details.PlanID,
-		"request.service_id":                        details.ServiceID,
-		"request.instance_id":                       instanceId,
-		"request.default_labels":                    utils.ExtractDefaultUpdateLabels(instanceId, details),
-		"request.context":                           unmarshalJsonToMap(details.GetRawContext()),
+		"request.plan_id":     details.PlanID,
+		"request.service_id":  details.ServiceID,
+		"request.instance_id": instanceId,
+		"request.default_labels": map[string]string{
+			"pcf-organization-guid": utils.InvalidLabelChars.ReplaceAllString(details.PreviousOrgID, "_"),
+			"pcf-space-guid":        utils.InvalidLabelChars.ReplaceAllString(details.PreviousSpaceID, "_"),
+			"pcf-instance-id":       utils.InvalidLabelChars.ReplaceAllString(instanceId, "_"),
+		},
+		"request.context": details.RequestContext,
 		"request.x_broker_api_originating_identity": originatingIdentity,
 	}
 	return svc.variables(constants, mergedUserProvidedParameters, plan)
@@ -503,18 +513,10 @@ func buildAndValidate(builder *varcontext.ContextBuilder, vars []BrokerVariable)
 	return vc, nil
 }
 
-func (svc *ServiceDefinition) AllowedUpdate(details domain.UpdateDetails) (bool, error) {
-	if details.GetRawParameters() == nil || len(details.GetRawParameters()) == 0 {
-		return true, nil
-	}
-
-	out := map[string]interface{}{}
-	if err := json.Unmarshal(details.GetRawParameters(), &out); err != nil {
-		return false, err
-	}
+func (svc *ServiceDefinition) AllowedUpdate(params map[string]interface{}) (bool, error) {
 	for _, param := range svc.ProvisionInputVariables {
 		if param.ProhibitUpdate {
-			if _, ok := out[param.FieldName]; ok {
+			if _, ok := params[param.FieldName]; ok {
 				return false, nil
 			}
 		}

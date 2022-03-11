@@ -28,7 +28,7 @@ type MergedInstanceCredsMixin struct{}
 
 // BuildInstanceCredentials combines the bind credentials with the connection
 // information in the instance details to get a full set of connection details.
-func (b *MergedInstanceCredsMixin) BuildInstanceCredentials(ctx context.Context, credentials map[string]interface{}, outputs storage.TerraformOutputs) (*domain.Binding, error) {
+func (b *MergedInstanceCredsMixin) BuildInstanceCredentials(ctx context.Context, credentials map[string]interface{}, outputs storage.JSONObject) (*domain.Binding, error) {
 	vc, err := varcontext.Builder().
 		MergeMap(outputs).
 		MergeMap(credentials).

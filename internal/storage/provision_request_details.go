@@ -1,19 +1,13 @@
 package storage
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
 )
 
-type ProvisionRequestDetails struct {
-	ServiceInstanceGUID string
-	RequestDetails      []byte
-}
-
-func (s *Storage) StoreProvisionRequestDetails(serviceInstanceID string, details json.RawMessage) error {
-	encoded, err := s.encodeBytes(details)
+func (s *Storage) StoreProvisionRequestDetails(serviceInstanceID string, details JSONObject) error {
+	encoded, err := s.encodeJSON(details)
 	if err != nil {
 		return fmt.Errorf("error encoding details: %w", err)
 	}
@@ -41,7 +35,7 @@ func (s *Storage) StoreProvisionRequestDetails(serviceInstanceID string, details
 	return nil
 }
 
-func (s *Storage) GetProvisionRequestDetails(serviceInstanceID string) (json.RawMessage, error) {
+func (s *Storage) GetProvisionRequestDetails(serviceInstanceID string) (JSONObject, error) {
 	exists, err := s.existsProvisionRequestDetails(serviceInstanceID)
 	switch {
 	case err != nil:
@@ -55,7 +49,7 @@ func (s *Storage) GetProvisionRequestDetails(serviceInstanceID string) (json.Raw
 		return nil, fmt.Errorf("error finding provision request details record: %w", err)
 	}
 
-	decoded, err := s.decodeBytes(receiver.RequestDetails)
+	decoded, err := s.decodeJSONObject(receiver.RequestDetails)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding provision request details %q: %w", serviceInstanceID, err)
 	}

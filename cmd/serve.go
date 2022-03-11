@@ -153,8 +153,12 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
 	err = storage.New(db, config.Encryptor).CheckAllRecords()
 	switch {
 	case err != nil:
-		// Note that this is not fatal because that would be a breaking change. But we do log errors that we find
-		// as they may prompt users to resolve them, and the log could be useful debugging other errors.
+		// This error denotes that there was a problem reading at least one database field.
+		// If you see this error, examine the rows and the error message and try to correct the data if you can.
+		// If there is data in the database that cannot be read, it may not be possible to update the service
+		// instance or service binding that it relates to. This may not be a problem in the short term, but in
+		// the longer term you should aim to delete the object. It may be necessary to raise an issue to get
+		// assistance with this.
 		logger.Error("database-field-error", err)
 	case len(config.ToDeleteLabels) > 0:
 		logger.Info("removing-state-password-metadata", lager.Data{"labels": config.ToDeleteLabels})

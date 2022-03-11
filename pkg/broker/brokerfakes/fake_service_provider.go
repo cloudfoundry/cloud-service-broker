@@ -27,12 +27,12 @@ type FakeServiceProvider struct {
 		result1 map[string]interface{}
 		result2 error
 	}
-	BuildInstanceCredentialsStub        func(context.Context, map[string]interface{}, storage.TerraformOutputs) (*domain.Binding, error)
+	BuildInstanceCredentialsStub        func(context.Context, map[string]interface{}, storage.JSONObject) (*domain.Binding, error)
 	buildInstanceCredentialsMutex       sync.RWMutex
 	buildInstanceCredentialsArgsForCall []struct {
 		arg1 context.Context
 		arg2 map[string]interface{}
-		arg3 storage.TerraformOutputs
+		arg3 storage.JSONObject
 	}
 	buildInstanceCredentialsReturns struct {
 		result1 *domain.Binding
@@ -84,18 +84,18 @@ type FakeServiceProvider struct {
 		result1 map[string]interface{}
 		result2 error
 	}
-	GetTerraformOutputsStub        func(context.Context, string) (storage.TerraformOutputs, error)
+	GetTerraformOutputsStub        func(context.Context, string) (storage.JSONObject, error)
 	getTerraformOutputsMutex       sync.RWMutex
 	getTerraformOutputsArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
 	}
 	getTerraformOutputsReturns struct {
-		result1 storage.TerraformOutputs
+		result1 storage.JSONObject
 		result2 error
 	}
 	getTerraformOutputsReturnsOnCall map[int]struct {
-		result1 storage.TerraformOutputs
+		result1 storage.JSONObject
 		result2 error
 	}
 	PollInstanceStub        func(context.Context, string) (bool, string, error)
@@ -235,13 +235,13 @@ func (fake *FakeServiceProvider) BindReturnsOnCall(i int, result1 map[string]int
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) BuildInstanceCredentials(arg1 context.Context, arg2 map[string]interface{}, arg3 storage.TerraformOutputs) (*domain.Binding, error) {
+func (fake *FakeServiceProvider) BuildInstanceCredentials(arg1 context.Context, arg2 map[string]interface{}, arg3 storage.JSONObject) (*domain.Binding, error) {
 	fake.buildInstanceCredentialsMutex.Lock()
 	ret, specificReturn := fake.buildInstanceCredentialsReturnsOnCall[len(fake.buildInstanceCredentialsArgsForCall)]
 	fake.buildInstanceCredentialsArgsForCall = append(fake.buildInstanceCredentialsArgsForCall, struct {
 		arg1 context.Context
 		arg2 map[string]interface{}
-		arg3 storage.TerraformOutputs
+		arg3 storage.JSONObject
 	}{arg1, arg2, arg3})
 	stub := fake.BuildInstanceCredentialsStub
 	fakeReturns := fake.buildInstanceCredentialsReturns
@@ -262,13 +262,13 @@ func (fake *FakeServiceProvider) BuildInstanceCredentialsCallCount() int {
 	return len(fake.buildInstanceCredentialsArgsForCall)
 }
 
-func (fake *FakeServiceProvider) BuildInstanceCredentialsCalls(stub func(context.Context, map[string]interface{}, storage.TerraformOutputs) (*domain.Binding, error)) {
+func (fake *FakeServiceProvider) BuildInstanceCredentialsCalls(stub func(context.Context, map[string]interface{}, storage.JSONObject) (*domain.Binding, error)) {
 	fake.buildInstanceCredentialsMutex.Lock()
 	defer fake.buildInstanceCredentialsMutex.Unlock()
 	fake.BuildInstanceCredentialsStub = stub
 }
 
-func (fake *FakeServiceProvider) BuildInstanceCredentialsArgsForCall(i int) (context.Context, map[string]interface{}, storage.TerraformOutputs) {
+func (fake *FakeServiceProvider) BuildInstanceCredentialsArgsForCall(i int) (context.Context, map[string]interface{}, storage.JSONObject) {
 	fake.buildInstanceCredentialsMutex.RLock()
 	defer fake.buildInstanceCredentialsMutex.RUnlock()
 	argsForCall := fake.buildInstanceCredentialsArgsForCall[i]
@@ -493,7 +493,7 @@ func (fake *FakeServiceProvider) GetImportedPropertiesReturnsOnCall(i int, resul
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) GetTerraformOutputs(arg1 context.Context, arg2 string) (storage.TerraformOutputs, error) {
+func (fake *FakeServiceProvider) GetTerraformOutputs(arg1 context.Context, arg2 string) (storage.JSONObject, error) {
 	fake.getTerraformOutputsMutex.Lock()
 	ret, specificReturn := fake.getTerraformOutputsReturnsOnCall[len(fake.getTerraformOutputsArgsForCall)]
 	fake.getTerraformOutputsArgsForCall = append(fake.getTerraformOutputsArgsForCall, struct {
@@ -519,7 +519,7 @@ func (fake *FakeServiceProvider) GetTerraformOutputsCallCount() int {
 	return len(fake.getTerraformOutputsArgsForCall)
 }
 
-func (fake *FakeServiceProvider) GetTerraformOutputsCalls(stub func(context.Context, string) (storage.TerraformOutputs, error)) {
+func (fake *FakeServiceProvider) GetTerraformOutputsCalls(stub func(context.Context, string) (storage.JSONObject, error)) {
 	fake.getTerraformOutputsMutex.Lock()
 	defer fake.getTerraformOutputsMutex.Unlock()
 	fake.GetTerraformOutputsStub = stub
@@ -532,28 +532,28 @@ func (fake *FakeServiceProvider) GetTerraformOutputsArgsForCall(i int) (context.
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeServiceProvider) GetTerraformOutputsReturns(result1 storage.TerraformOutputs, result2 error) {
+func (fake *FakeServiceProvider) GetTerraformOutputsReturns(result1 storage.JSONObject, result2 error) {
 	fake.getTerraformOutputsMutex.Lock()
 	defer fake.getTerraformOutputsMutex.Unlock()
 	fake.GetTerraformOutputsStub = nil
 	fake.getTerraformOutputsReturns = struct {
-		result1 storage.TerraformOutputs
+		result1 storage.JSONObject
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) GetTerraformOutputsReturnsOnCall(i int, result1 storage.TerraformOutputs, result2 error) {
+func (fake *FakeServiceProvider) GetTerraformOutputsReturnsOnCall(i int, result1 storage.JSONObject, result2 error) {
 	fake.getTerraformOutputsMutex.Lock()
 	defer fake.getTerraformOutputsMutex.Unlock()
 	fake.GetTerraformOutputsStub = nil
 	if fake.getTerraformOutputsReturnsOnCall == nil {
 		fake.getTerraformOutputsReturnsOnCall = make(map[int]struct {
-			result1 storage.TerraformOutputs
+			result1 storage.JSONObject
 			result2 error
 		})
 	}
 	fake.getTerraformOutputsReturnsOnCall[i] = struct {
-		result1 storage.TerraformOutputs
+		result1 storage.JSONObject
 		result2 error
 	}{result1, result2}
 }

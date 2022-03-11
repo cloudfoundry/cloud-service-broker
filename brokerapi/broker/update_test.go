@@ -173,7 +173,7 @@ var _ = Describe("Update", func() {
 				Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(1))
 				actualSI, actualParams := fakeStorage.StoreProvisionRequestDetailsArgsForCall(0)
 				Expect(actualSI).To(Equal(instanceID))
-				Expect(actualParams).To(Equal(json.RawMessage(`{}`)))
+				Expect(actualParams).To(BeEmpty())
 			})
 		})
 
@@ -262,7 +262,7 @@ var _ = Describe("Update", func() {
 				By("validating provision details have been stored")
 				Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(1))
 				_, actualRequestVars := fakeStorage.StoreProvisionRequestDetailsArgsForCall(0)
-				Expect(actualRequestVars).To(Equal(json.RawMessage(`{"foo":"quz","guz":"muz"}`)))
+				Expect(actualRequestVars).To(Equal(storage.JSONObject{"foo": "quz", "guz": "muz"}))
 			})
 		})
 	})
@@ -270,7 +270,7 @@ var _ = Describe("Update", func() {
 	Describe("update variables", func() {
 		Describe("passing variables on provision and update", func() {
 			BeforeEach(func() {
-				fakeStorage.GetProvisionRequestDetailsReturns(json.RawMessage(`{"foo":"bar","baz":"quz"}`), nil)
+				fakeStorage.GetProvisionRequestDetailsReturns(map[string]interface{}{"foo": "bar", "baz": "quz"}, nil)
 			})
 
 			It("should merge all variables", func() {
@@ -303,13 +303,13 @@ var _ = Describe("Update", func() {
 				By("validating provision details have been stored")
 				Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(1))
 				_, actualRequestVars := fakeStorage.StoreProvisionRequestDetailsArgsForCall(0)
-				Expect(actualRequestVars).To(Equal(json.RawMessage(`{"baz":"quz","foo":"quz","guz":"muz"}`)))
+				Expect(actualRequestVars).To(Equal(storage.JSONObject{"baz": "quz", "foo": "quz", "guz": "muz"}))
 			})
 		})
 
 		Describe("passing variables on provision, import and update", func() {
 			BeforeEach(func() {
-				fakeStorage.GetProvisionRequestDetailsReturns(json.RawMessage(`{"foo":"bar","baz":"quz"}`), nil)
+				fakeStorage.GetProvisionRequestDetailsReturns(map[string]interface{}{"foo": "bar", "baz": "quz"}, nil)
 				fakeServiceProvider.GetImportedPropertiesReturns(map[string]interface{}{"foo": "quz", "guz": "muz", "laz": "taz"}, nil)
 			})
 
@@ -345,7 +345,7 @@ var _ = Describe("Update", func() {
 				By("validating provision details have been stored")
 				Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(1))
 				_, actualRequestVars := fakeStorage.StoreProvisionRequestDetailsArgsForCall(0)
-				Expect(actualRequestVars).To(Equal(json.RawMessage(`{"baz":"quz","foo":"quz","guz":"duz","laz":"taz"}`)))
+				Expect(actualRequestVars).To(Equal(storage.JSONObject{"baz": "quz", "foo": "quz", "guz": "duz", "laz": "taz"}))
 			})
 		})
 
@@ -527,7 +527,7 @@ var _ = Describe("Update", func() {
 
 		Context("storage errors when getting provision parameters", func() {
 			BeforeEach(func() {
-				fakeStorage.GetProvisionRequestDetailsReturns(json.RawMessage{}, errors.New("failed to get provision parameters"))
+				fakeStorage.GetProvisionRequestDetailsReturns(nil, errors.New("failed to get provision parameters"))
 			})
 
 			It("should error", func() {
