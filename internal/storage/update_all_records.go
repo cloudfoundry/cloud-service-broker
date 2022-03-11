@@ -42,7 +42,7 @@ func (s *Storage) updateAllServiceBindingCredentials() error {
 		return tx.Save(&serviceBindingCredentialsBatch).Error
 	})
 	if result.Error != nil {
-		return fmt.Errorf("error re-encoding service binding credentials: %v", result.Error)
+		return fmt.Errorf("error re-encoding service binding credentials: %w", result.Error)
 	}
 
 	return nil
@@ -66,7 +66,7 @@ func (s *Storage) updateAllBindRequestDetails() error {
 		return tx.Save(&bindRequestDetailsBatch).Error
 	})
 	if result.Error != nil {
-		return fmt.Errorf("error re-encoding service binding request details: %v", result.Error)
+		return fmt.Errorf("error re-encoding service binding request details: %w", result.Error)
 	}
 
 	return nil
@@ -90,7 +90,7 @@ func (s *Storage) updateAllProvisionRequestDetails() error {
 		return tx.Save(&provisionRequestDetailsBatch).Error
 	})
 	if result.Error != nil {
-		return fmt.Errorf("error re-encoding provision request details: %v", result.Error)
+		return fmt.Errorf("error re-encoding provision request details: %w", result.Error)
 	}
 
 	return nil
@@ -114,7 +114,7 @@ func (s *Storage) updateAllServiceInstanceDetails() error {
 		return tx.Save(&serviceInstanceDetailsBatch).Error
 	})
 	if result.Error != nil {
-		return fmt.Errorf("error re-encoding service instance details: %v", result.Error)
+		return fmt.Errorf("error re-encoding service instance details: %w", result.Error)
 	}
 
 	return nil
@@ -138,7 +138,7 @@ func (s *Storage) updateAllTerraformDeployments() error {
 		return tx.Save(&terraformDeploymentBatch).Error
 	})
 	if result.Error != nil {
-		return fmt.Errorf("error re-encoding terraform deployment: %v", result.Error)
+		return fmt.Errorf("error re-encoding terraform deployment: %w", result.Error)
 	}
 
 	return nil

@@ -137,6 +137,10 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
 	}
 
 	if config.Changed {
+		if err := storage.New(db, config.RotationEncryptor).CheckAllRecords(); err != nil {
+			logger.Fatal("refusing to encrypt the database as some fields cannot be successfully read", err)
+		}
+
 		logger.Info("rotating-database-encryption", lager.Data{"previous-primary": labelName(config.StoredPrimaryLabel), "new-primary": labelName(config.ConfiguredPrimaryLabel)})
 		if err := storage.New(db, config.RotationEncryptor).UpdateAllRecords(); err != nil {
 			logger.Fatal("Error rotating database encryption", err)
@@ -146,7 +150,13 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
 		}
 	}
 
-	if len(config.ToDeleteLabels) > 0 {
+	err = storage.New(db, config.Encryptor).CheckAllRecords()
+	switch {
+	case err != nil:
+		// Note that this is not fatal because that would be a breaking change. But we do log errors that we find
+		// as they may prompt users to resolve them, and the log could be useful debugging other errors.
+		logger.Error("database-field-error", err)
+	case len(config.ToDeleteLabels) > 0:
 		logger.Info("removing-state-password-metadata", lager.Data{"labels": config.ToDeleteLabels})
 		if err := encryption.DeletePasswordMetadata(db, config.ToDeleteLabels); err != nil {
 			logger.Fatal("Error deleting stale password metadata", err)
