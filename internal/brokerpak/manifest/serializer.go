@@ -4,15 +4,16 @@ import "gopkg.in/yaml.v3"
 
 func (m *Manifest) Serialize() ([]byte, error) {
 	p := parser{
-		PackVersion:        m.PackVersion,
-		Name:               m.Name,
-		Version:            m.Version,
-		Metadata:           m.Metadata,
-		Platforms:          m.Platforms,
-		ServiceDefinitions: m.ServiceDefinitions,
-		Parameters:         m.Parameters,
-		RequiredEnvVars:    m.RequiredEnvVars,
-		EnvConfigMapping:   m.EnvConfigMapping,
+		PackVersion:                        m.PackVersion,
+		Name:                               m.Name,
+		Version:                            m.Version,
+		Metadata:                           m.Metadata,
+		Platforms:                          m.Platforms,
+		ServiceDefinitions:                 m.ServiceDefinitions,
+		Parameters:                         m.Parameters,
+		RequiredEnvVars:                    m.RequiredEnvVars,
+		EnvConfigMapping:                   m.EnvConfigMapping,
+		TerraformStateProviderReplacements: m.TerraformStateProviderReplacements,
 	}
 
 	for _, v := range m.TerraformUpgradePath {

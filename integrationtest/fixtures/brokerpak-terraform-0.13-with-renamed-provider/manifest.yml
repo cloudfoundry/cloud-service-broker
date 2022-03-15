@@ -10,12 +10,13 @@ platforms:
   arch: amd64
 terraform_binaries:
 - name: terraform
-  version: 0.12.21
-- name: terraform
   version: 0.13.7
   default: true
 - name: terraform-provider-random
+  provider: "ContentSquare/random"
   version: 3.1.0
-  source: https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip
+  source: https://github.com/ContentSquare/terraform-provider-random/archive/refs/tags/3.1.0.zip
+  url_template: https://github.com/ContentSquare/${name}/releases/download/${version}/${name}_${version}_${os}_${arch}.zip
 service_definitions:
 - fake-service.yml
+
