@@ -1,33 +1,13 @@
 package wrapper
 
-import "fmt"
-
 type TerraformCommand interface {
 	Command() []string
 }
 
-func NewInit012Command(pluginDir string) TerraformCommand {
-	return init012Command{pluginDir: pluginDir}
-}
+type InitCommand struct{}
 
-type init012Command struct {
-	pluginDir string
-}
-
-func (cmd init012Command) Command() []string {
-	return []string{"init", fmt.Sprintf("-plugin-dir=%s", cmd.pluginDir), "-get-plugins=false", "-no-color"}
-}
-
-func NewInitCommand(pluginDir string) TerraformCommand {
-	return initCommand{pluginDir: pluginDir}
-}
-
-type initCommand struct {
-	pluginDir string
-}
-
-func (cmd initCommand) Command() []string {
-	return []string{"init", fmt.Sprintf("-plugin-dir=%s", cmd.pluginDir), "-no-color"}
+func (InitCommand) Command() []string {
+	return []string{"init", "-no-color"}
 }
 
 type ApplyCommand struct{}
@@ -61,17 +41,4 @@ type ImportCommand struct {
 
 func (cmd ImportCommand) Command() []string {
 	return []string{"import", cmd.Addr, cmd.ID}
-}
-
-type renameProviderCommand struct {
-	oldProviderName string
-	newProviderName string
-}
-
-func (cmd renameProviderCommand) Command() []string {
-	return []string{"state", "replace-provider", cmd.oldProviderName, cmd.newProviderName}
-}
-
-func NewRenameProviderCommand(oldProviderName, newProviderName string) TerraformCommand {
-	return renameProviderCommand{oldProviderName: oldProviderName, newProviderName: newProviderName}
 }

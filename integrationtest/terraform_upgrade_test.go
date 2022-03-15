@@ -61,8 +61,8 @@ var _ = Describe("Terraform Upgrade", func() {
 	Context("TF Upgrades are enabled", func() {
 		It("runs 'terraform apply' at each version in the upgrade path", func() {
 			By("provisioning a service instance at 0.13")
-			const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
-			const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
+			const serviceOfferingGUID = "29d4119f-2e88-4e85-8c40-7360f3d9c695"
+			const servicePlanGUID = "056c052c-e7b0-4c8e-8d6b-18616e06a7ac"
 			serviceInstanceGUID := uuid.New()
 			provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
 			Expect(provisionResponse.Error).NotTo(HaveOccurred())
@@ -92,8 +92,8 @@ var _ = Describe("Terraform Upgrade", func() {
 	Context("TF Upgrades are disabled", func() {
 		It("does not upgrade the instance", func() {
 			By("provisioning a service instance at 0.13")
-			const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
-			const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
+			const serviceOfferingGUID = "29d4119f-2e88-4e85-8c40-7360f3d9c695"
+			const servicePlanGUID = "056c052c-e7b0-4c8e-8d6b-18616e06a7ac"
 			serviceInstanceGUID := uuid.New()
 			provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
 			Expect(provisionResponse.Error).NotTo(HaveOccurred())

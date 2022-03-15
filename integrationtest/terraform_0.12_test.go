@@ -1,6 +1,7 @@
 package integrationtest_test
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -38,7 +39,15 @@ var _ = Describe("Terraform 0.12", func() {
 		Expect(provisionResponse.Error).NotTo(HaveOccurred())
 		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
 
-		Eventually(pollLastOperation(testHelper, serviceInstanceGUID), time.Minute*2, lastOperationPollingFrequency).ShouldNot(Equal(domain.InProgress))
-		Expect(pollLastOperation(testHelper, serviceInstanceGUID)()).To(Equal(domain.Succeeded))
+		Eventually(func() bool {
+			lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
+			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
+			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
+			var receiver domain.LastOperation
+			err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(receiver.State).NotTo(Equal("failed"))
+			return receiver.State == "succeeded"
+		}, time.Minute*2, time.Second*10).Should(BeTrue())
 	})
 })

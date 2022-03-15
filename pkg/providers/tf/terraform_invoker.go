@@ -14,21 +14,19 @@ type TerraformInvokerBuilder interface {
 	VersionedTerraformInvoker(version *version.Version) TerraformInvoker
 }
 
-func NewTerraformInvokerFactory(executorBuilder wrapper.ExecutorBuilder, terraformPluginsDirectory string, pluginRenames map[string]string) TerraformInvokerBuilder {
-	return TerraformInvokerFactory{executorBuilder: executorBuilder, terraformPluginsDirectory: terraformPluginsDirectory, pluginRenames: pluginRenames}
+func NewTerraformInvokerFactory(executorBuilder wrapper.ExecutorBuilder) TerraformInvokerBuilder {
+	return TerraformInvokerFactory{executorBuilder: executorBuilder}
 }
 
 type TerraformInvokerFactory struct {
-	executorBuilder           wrapper.ExecutorBuilder
-	terraformPluginsDirectory string
-	pluginRenames             map[string]string
+	executorBuilder wrapper.ExecutorBuilder
 }
 
 func (factory TerraformInvokerFactory) VersionedTerraformInvoker(tfVersion *version.Version) TerraformInvoker {
 	if tfVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
-		return NewTerraform012Invoker(factory.executorBuilder.VersionedExecutor(tfVersion), factory.terraformPluginsDirectory)
+		return Terraform012Invoker{executor: factory.executorBuilder.VersionedExecutor(tfVersion)}
 	} else {
-		return NewTerraformDefaultInvoker(factory.executorBuilder.VersionedExecutor(tfVersion), factory.terraformPluginsDirectory, factory.pluginRenames)
+		return TerraformDefaultInvoker{executor: factory.executorBuilder.VersionedExecutor(tfVersion)}
 	}
 }
 

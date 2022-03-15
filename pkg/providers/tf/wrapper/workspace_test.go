@@ -233,6 +233,10 @@ func TestCustomTerraformExecutor012(t *testing.T) {
 			if !reflect.DeepEqual(actual.Env, tc.Expected.Env) {
 				t.Errorf("env wasn't updated, expected: %q, actual: %q", tc.Expected.Env, actual.Env)
 			}
+
+			if !reflect.DeepEqual(actual.Args, tc.Expected.Args) {
+				t.Errorf("args weren't updated correctly, expected: %#v, actual: %#v", tc.Expected.Args, actual.Args)
+			}
 		})
 	}
 }
@@ -272,6 +276,10 @@ func TestCustomTerraformExecutor013(t *testing.T) {
 
 			if !reflect.DeepEqual(actual.Env, tc.Expected.Env) {
 				t.Errorf("env wasn't updated, expected: %q, actual: %q", tc.Expected.Env, actual.Env)
+			}
+
+			if !reflect.DeepEqual(actual.Args, tc.Expected.Args) {
+				t.Errorf("args weren't updated correctly, expected: %#v, actual: %#v", tc.Expected.Args, actual.Args)
 			}
 		})
 	}

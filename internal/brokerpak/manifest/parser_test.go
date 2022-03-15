@@ -77,7 +77,6 @@ var _ = Describe("Parser", func() {
 				"GOOGLE_CREDENTIALS": "gcp.credentials",
 				"GOOGLE_PROJECT":     "gcp.project",
 			},
-			TerraformStateProviderReplacements: map[string]string{"registry.terraform.io/-/random": "registry.terraform.io/hashicorp/random"},
 		}))
 	})
 
