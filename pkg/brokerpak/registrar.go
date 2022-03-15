@@ -146,10 +146,11 @@ func (r *Registrar) extractTfBinaries(brokerPak *reader.BrokerPakReader, vc *var
 	}
 
 	return wrapper.TFBinariesContext{
-		Dir:              dir,
-		DefaultTfVersion: tfVersion,
-		Params:           resolveParameters(manifest.Parameters, vc),
-		TfUpgradePath:    manifest.TerraformUpgradePath,
+		Dir:                  dir,
+		DefaultTfVersion:     tfVersion,
+		Params:               resolveParameters(manifest.Parameters, vc),
+		TfUpgradePath:        manifest.TerraformUpgradePath,
+		ProviderReplacements: manifest.TerraformStateProviderReplacements,
 	}, nil
 }
 
