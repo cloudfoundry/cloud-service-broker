@@ -69,7 +69,7 @@ type renameProviderCommand struct {
 }
 
 func (cmd renameProviderCommand) Command() []string {
-	return []string{"state", "replace-provider", cmd.oldProviderName, cmd.newProviderName}
+	return []string{"state", "replace-provider", "-auto-approve", cmd.oldProviderName, cmd.newProviderName}
 }
 
 func NewRenameProviderCommand(oldProviderName, newProviderName string) TerraformCommand {
