@@ -11,7 +11,6 @@ import (
 //counterfeiter:generate . Workspace
 type Workspace interface {
 	Serialize() (string, error)
-	HasState() bool
 
 	StateVersion() (*version.Version, error)
 	Outputs(instance string) (map[string]interface{}, error)

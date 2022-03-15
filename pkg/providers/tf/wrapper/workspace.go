@@ -120,10 +120,7 @@ func (workspace *TerraformWorkspace) StateVersion() (*version.Version, error) {
 		return nil, err
 	}
 	return version.NewVersion(tf.Version)
-}
 
-func (workspace *TerraformWorkspace) HasState() bool {
-	return workspace.State != nil
 }
 
 // String returns a human-friendly representation of the workspace suitable for
