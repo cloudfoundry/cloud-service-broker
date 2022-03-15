@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
@@ -518,7 +519,11 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			}
 			defer viper.Reset()
 
-			details := domain.ProvisionDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
+			details := paramparser.ProvisionDetails{
+				RequestParams:  mustUnmarshal(tc.UserParams),
+				RequestContext: mustUnmarshal(tc.RawContext),
+			}
+
 			plan := ServicePlan{ServiceProperties: tc.ServiceProperties, ProvisionOverrides: tc.ProvisionOverrides}
 			vars, err := service.ProvisionVariables("instance-id-here", details, plan, tc.OriginatingIdentity)
 
@@ -786,8 +791,8 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			}
 			defer viper.Reset()
 
-			details := domain.UpdateDetails{RawContext: json.RawMessage(tc.RawContext)}
-			mergedUserProvidedParams := json.RawMessage(tc.MergedUserProvidedParams)
+			details := paramparser.UpdateDetails{RequestContext: mustUnmarshal(tc.RawContext)}
+			mergedUserProvidedParams := mustUnmarshal(tc.MergedUserProvidedParams)
 			plan := ServicePlan{ServiceProperties: tc.ServiceProperties, ProvisionOverrides: tc.ProvisionOverrides}
 			vars, err := service.UpdateVariables("instance-id-here", details, mergedUserProvidedParams, plan, tc.OriginatingIdentity)
 
@@ -1086,4 +1091,16 @@ func expectError(t *testing.T, expected, actual error) {
 	case !expectedErr && gotErr:
 		t.Fatalf("Expected no error but got: %v", actual)
 	}
+}
+
+func mustUnmarshal(input string) (result map[string]interface{}) {
+	if len(input) == 0 {
+		return
+	}
+
+	if err := json.Unmarshal([]byte(input), &result); err != nil {
+		panic(err)
+	}
+
+	return
 }

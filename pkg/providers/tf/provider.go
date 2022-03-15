@@ -272,7 +272,7 @@ func (provider *terraformProvider) DeprovisionsAsync() bool {
 // This function is optional, but will be called after async provisions, updates, and possibly
 // on broker version changes.
 // Return a nil error if you choose not to implement this function.
-func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, guid string) (storage.TerraformOutputs, error) {
+func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, guid string) (storage.JSONObject, error) {
 	tfId := generateTfId(guid, "")
 
 	outs, err := provider.jobRunner.Outputs(ctx, tfId, wrapper.DefaultInstanceName)

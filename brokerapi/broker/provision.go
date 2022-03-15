@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/utils/request"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
@@ -43,13 +44,18 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 		return domain.ProvisionedServiceSpec{}, apiresponses.ErrInstanceAlreadyExists
 	}
 
-	brokerService, serviceHelper, err := broker.getDefinitionAndProvider(details.ServiceID)
+	parsedDetails, err := paramparser.ParseProvisionDetails(details)
+	if err != nil {
+		return domain.ProvisionedServiceSpec{}, ErrInvalidUserInput
+	}
+
+	brokerService, serviceHelper, err := broker.getDefinitionAndProvider(parsedDetails.ServiceID)
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
 
 	// verify the service exists and the plan exists
-	plan, err := brokerService.GetPlanById(details.PlanID)
+	plan, err := brokerService.GetPlanById(parsedDetails.PlanID)
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
@@ -61,7 +67,8 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	}
 
 	// Give the user a better error message if they give us a bad request
-	if err := validateProvisionParameters(details.GetRawParameters(),
+	if err := validateProvisionParameters(
+		parsedDetails.RequestParams,
 		brokerService.ProvisionInputVariables,
 		brokerService.ImportInputVariables,
 		plan); err != nil {
@@ -70,7 +77,7 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
-	vars, err := brokerService.ProvisionVariables(instanceID, details, *plan, request.DecodeOriginatingIdentityHeader(ctx))
+	vars, err := brokerService.ProvisionVariables(instanceID, parsedDetails, *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
@@ -82,18 +89,18 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	}
 
 	// save instance details
-	instanceDetails.ServiceGUID = details.ServiceID
+	instanceDetails.ServiceGUID = parsedDetails.ServiceID
 	instanceDetails.GUID = instanceID
-	instanceDetails.PlanGUID = details.PlanID
-	instanceDetails.SpaceGUID = details.SpaceGUID
-	instanceDetails.OrganizationGUID = details.OrganizationGUID
+	instanceDetails.PlanGUID = parsedDetails.PlanID
+	instanceDetails.SpaceGUID = parsedDetails.SpaceGUID
+	instanceDetails.OrganizationGUID = parsedDetails.OrganizationGUID
 
 	if err := broker.store.StoreServiceInstanceDetails(instanceDetails); err != nil {
 		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance cannot be deprovisioned through cf. Contact your operator for cleanup", err)
 	}
 
 	// save provision request details
-	if err := broker.store.StoreProvisionRequestDetails(instanceID, details.RawParameters); err != nil {
+	if err := broker.store.StoreProvisionRequestDetails(instanceID, parsedDetails.RequestParams); err != nil {
 		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
 	}
 

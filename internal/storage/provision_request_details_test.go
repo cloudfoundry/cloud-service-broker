@@ -1,10 +1,10 @@
 package storage_test
 
 import (
-	"encoding/json"
 	"errors"
 
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -12,7 +12,7 @@ import (
 var _ = Describe("ProvisionRequestDetails", func() {
 	Describe("StoreProvisionRequestDetails", func() {
 		It("creates the right object in the database", func() {
-			err := store.StoreProvisionRequestDetails("fake-instance-id", json.RawMessage(`{"foo":"bar"}`))
+			err := store.StoreProvisionRequestDetails("fake-instance-id", map[string]interface{}{"foo": "bar"})
 			Expect(err).NotTo(HaveOccurred())
 
 			var receiver models.ProvisionRequestDetails
@@ -25,7 +25,7 @@ var _ = Describe("ProvisionRequestDetails", func() {
 			It("returns an error", func() {
 				encryptor.EncryptReturns(nil, errors.New("bang"))
 
-				err := store.StoreProvisionRequestDetails("fake-instance-id", json.RawMessage(`{"foo":"bar"}`))
+				err := store.StoreProvisionRequestDetails("fake-instance-id", map[string]interface{}{"foo": "bar"})
 				Expect(err).To(MatchError("error encoding details: encryption error: bang"))
 			})
 		})
@@ -39,7 +39,7 @@ var _ = Describe("ProvisionRequestDetails", func() {
 			})
 
 			It("updates the existing record", func() {
-				err := store.StoreProvisionRequestDetails("fake-instance-id", json.RawMessage(`{"foo":"qux"}`))
+				err := store.StoreProvisionRequestDetails("fake-instance-id", map[string]interface{}{"foo": "qux"})
 				Expect(err).NotTo(HaveOccurred())
 
 				var receiver []models.ProvisionRequestDetails
@@ -59,7 +59,7 @@ var _ = Describe("ProvisionRequestDetails", func() {
 		It("reads the right object from the database", func() {
 			r, err := store.GetProvisionRequestDetails("fake-instance-id")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(r).To(Equal(json.RawMessage(`{"decrypted":{"foo":"bar"}}`)))
+			Expect(r).To(Equal(storage.JSONObject{"decrypted": map[string]interface{}{"foo": "bar"}}))
 		})
 
 		When("decoding fails", func() {
@@ -68,6 +68,15 @@ var _ = Describe("ProvisionRequestDetails", func() {
 
 				_, err := store.GetProvisionRequestDetails("fake-instance-id")
 				Expect(err).To(MatchError(`error decoding provision request details "fake-instance-id": decryption error: bang`))
+			})
+		})
+
+		When("JSON parsing fails", func() {
+			It("returns an error", func() {
+				encryptor.DecryptReturns([]byte("not-json"), nil)
+
+				_, err := store.GetProvisionRequestDetails("fake-instance-id")
+				Expect(err).To(MatchError(`error decoding provision request details "fake-instance-id": JSON parse error: invalid character 'o' in literal null (expecting 'u')`))
 			})
 		})
 

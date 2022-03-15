@@ -1,8 +1,6 @@
 package broker_test
 
 import (
-	"encoding/json"
-
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	. "github.com/onsi/ginkgo/v2"
@@ -244,26 +242,14 @@ var _ = Describe("ServiceDefinition", func() {
 		}
 
 		DescribeTable("returns the correct result",
-			func(rawParams string, expected bool) {
-				actual, err := serviceDefinition.AllowedUpdate(
-					domain.UpdateDetails{
-						RawParameters: json.RawMessage(rawParams),
-					})
+			func(params map[string]interface{}, expected bool) {
+				actual, err := serviceDefinition.AllowedUpdate(params)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(actual).To(Equal(expected))
 			},
-			Entry("allowed", `{"allowed":"some_val"}`, true),
-			Entry("prohibited", `{"prohibited":"some_val"}`, false),
-			Entry("empty", "", true),
+			Entry("allowed", map[string]interface{}{"allowed": "some_val"}, true),
+			Entry("prohibited", map[string]interface{}{"prohibited": "some_val"}, false),
+			Entry("empty", nil, true),
 		)
-
-		It("should error when it receives bed json", func() {
-			_, err := serviceDefinition.AllowedUpdate(
-				domain.UpdateDetails{
-					RawParameters: json.RawMessage(`{"bogus"}`),
-				})
-			Expect(err).To(MatchError("invalid character '}' after object key"))
-		})
-
 	})
 })

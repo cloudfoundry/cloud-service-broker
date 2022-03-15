@@ -6,6 +6,7 @@ import (
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/utils/request"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
@@ -52,15 +53,15 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return response, apiresponses.ErrAsyncRequired
 	}
 
-	rawParameters, err := broker.store.GetProvisionRequestDetails(instanceID)
+	parameters, err := broker.store.GetProvisionRequestDetails(instanceID)
 	if err != nil {
 		return response, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
 	}
 
-	provisionDetails := domain.ProvisionDetails{
+	provisionDetails := paramparser.ProvisionDetails{
 		ServiceID:     details.ServiceID,
 		PlanID:        details.PlanID,
-		RawParameters: rawParameters,
+		RequestParams: parameters,
 	}
 
 	// validate parameters meet the service's schema and merge the user vars with

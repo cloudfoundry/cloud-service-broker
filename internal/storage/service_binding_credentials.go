@@ -6,13 +6,11 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
 )
 
-type Credentials map[string]interface{}
-
 type ServiceBindingCredentials struct {
 	ServiceGUID         string
 	ServiceInstanceGUID string
 	BindingGUID         string
-	Credentials         Credentials
+	Credentials         JSONObject
 }
 
 func (s *Storage) CreateServiceBindingCredentials(binding ServiceBindingCredentials) error {

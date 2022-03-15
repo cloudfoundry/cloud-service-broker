@@ -15,7 +15,6 @@
 package broker
 
 import (
-	"encoding/json"
 	"fmt"
 	"sort"
 	"strings"
@@ -55,14 +54,9 @@ func New(cfg *BrokerConfig, logger lager.Logger, store Storage) (*ServiceBroker,
 	}, nil
 }
 
-func validateProvisionParameters(rawParams json.RawMessage, validUserInputFields []broker.BrokerVariable, validImportFields []broker.ImportVariable, plan *broker.ServicePlan) error {
-	if len(rawParams) == 0 {
+func validateProvisionParameters(params map[string]interface{}, validUserInputFields []broker.BrokerVariable, validImportFields []broker.ImportVariable, plan *broker.ServicePlan) error {
+	if len(params) == 0 {
 		return nil
-	}
-
-	var params map[string]interface{}
-	if err := json.Unmarshal(rawParams, &params); err != nil {
-		return ErrInvalidUserInput
 	}
 
 	// As this is a new check we have feature-flagged it so that it can easily be disabled

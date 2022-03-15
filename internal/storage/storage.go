@@ -13,3 +13,5 @@ func New(db *gorm.DB, encryptor Encryptor) *Storage {
 		encryptor: encryptor,
 	}
 }
+
+type JSONObject map[string]interface{}

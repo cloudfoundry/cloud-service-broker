@@ -2,12 +2,12 @@ package broker
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/utils/request"
@@ -45,8 +45,13 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return response, err
 	}
 
+	parsedDetails, err := paramparser.ParseUpdateDetails(details)
+	if err != nil {
+		return domain.UpdateServiceSpec{}, ErrInvalidUserInput
+	}
+
 	// verify the service exists and the plan exists
-	plan, err := brokerService.GetPlanById(details.PlanID)
+	plan, err := brokerService.GetPlanById(parsedDetails.PlanID)
 	if err != nil {
 		return response, err
 	}
@@ -58,11 +63,11 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	// Give the user a better error message if they give us a bad request
-	if err := validateProvisionParameters(details.GetRawParameters(), brokerService.ProvisionInputVariables, nil, plan); err != nil {
+	if err := validateProvisionParameters(parsedDetails.RequestParams, brokerService.ProvisionInputVariables, nil, plan); err != nil {
 		return domain.UpdateServiceSpec{}, err
 	}
 
-	allowUpdate, err := brokerService.AllowedUpdate(details)
+	allowUpdate, err := brokerService.AllowedUpdate(parsedDetails.RequestParams)
 	if err != nil {
 		return response, err
 	}
@@ -80,12 +85,12 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return response, fmt.Errorf("error retrieving subsume parameters for %q: %w", instanceID, err)
 	}
 
-	mergedDetails, err := mergeJSON(provisionDetails, details.GetRawParameters(), importedParams)
+	mergedDetails, err := mergeJSON(provisionDetails, parsedDetails.RequestParams, importedParams)
 	if err != nil {
 		return response, fmt.Errorf("error merging update and provision details: %w", err)
 	}
 
-	vars, err := brokerService.UpdateVariables(instanceID, details, mergedDetails, *plan, request.DecodeOriginatingIdentityHeader(ctx))
+	vars, err := brokerService.UpdateVariables(instanceID, parsedDetails, mergedDetails, *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return response, err
 	}
@@ -97,8 +102,8 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	// save instance plan change
-	if instance.PlanGUID != details.PlanID {
-		instance.PlanGUID = details.PlanID
+	if instance.PlanGUID != parsedDetails.PlanID {
+		instance.PlanGUID = parsedDetails.PlanID
 		if err := broker.store.StoreServiceInstanceDetails(instance); err != nil {
 			return domain.UpdateServiceSpec{}, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance cannot be deprovisioned through cf. Contact your operator for cleanup", err)
 		}
@@ -116,15 +121,15 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	return response, nil
 }
 
-func mergeJSON(previousParams, newParams json.RawMessage, importParams map[string]interface{}) (json.RawMessage, error) {
+func mergeJSON(previousParams, newParams, importParams map[string]interface{}) (map[string]interface{}, error) {
 	vc, err := varcontext.Builder().
-		MergeJsonObject(previousParams).
+		MergeMap(previousParams).
 		MergeMap(importParams).
-		MergeJsonObject(newParams).
+		MergeMap(newParams).
 		Build()
 	if err != nil {
 		return nil, err
 	}
 
-	return vc.ToJson()
+	return vc.ToMap(), nil
 }

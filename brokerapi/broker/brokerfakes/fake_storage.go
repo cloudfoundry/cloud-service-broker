@@ -121,17 +121,17 @@ type FakeStorage struct {
 		result1 json.RawMessage
 		result2 error
 	}
-	GetProvisionRequestDetailsStub        func(string) (json.RawMessage, error)
+	GetProvisionRequestDetailsStub        func(string) (storage.JSONObject, error)
 	getProvisionRequestDetailsMutex       sync.RWMutex
 	getProvisionRequestDetailsArgsForCall []struct {
 		arg1 string
 	}
 	getProvisionRequestDetailsReturns struct {
-		result1 json.RawMessage
+		result1 storage.JSONObject
 		result2 error
 	}
 	getProvisionRequestDetailsReturnsOnCall map[int]struct {
-		result1 json.RawMessage
+		result1 storage.JSONObject
 		result2 error
 	}
 	GetServiceBindingCredentialsStub        func(string, string) (storage.ServiceBindingCredentials, error)
@@ -185,11 +185,11 @@ type FakeStorage struct {
 	storeBindRequestDetailsReturnsOnCall map[int]struct {
 		result1 error
 	}
-	StoreProvisionRequestDetailsStub        func(string, json.RawMessage) error
+	StoreProvisionRequestDetailsStub        func(string, storage.JSONObject) error
 	storeProvisionRequestDetailsMutex       sync.RWMutex
 	storeProvisionRequestDetailsArgsForCall []struct {
 		arg1 string
-		arg2 json.RawMessage
+		arg2 storage.JSONObject
 	}
 	storeProvisionRequestDetailsReturns struct {
 		result1 error
@@ -788,7 +788,7 @@ func (fake *FakeStorage) GetBindRequestDetailsReturnsOnCall(i int, result1 json.
 	}{result1, result2}
 }
 
-func (fake *FakeStorage) GetProvisionRequestDetails(arg1 string) (json.RawMessage, error) {
+func (fake *FakeStorage) GetProvisionRequestDetails(arg1 string) (storage.JSONObject, error) {
 	fake.getProvisionRequestDetailsMutex.Lock()
 	ret, specificReturn := fake.getProvisionRequestDetailsReturnsOnCall[len(fake.getProvisionRequestDetailsArgsForCall)]
 	fake.getProvisionRequestDetailsArgsForCall = append(fake.getProvisionRequestDetailsArgsForCall, struct {
@@ -813,7 +813,7 @@ func (fake *FakeStorage) GetProvisionRequestDetailsCallCount() int {
 	return len(fake.getProvisionRequestDetailsArgsForCall)
 }
 
-func (fake *FakeStorage) GetProvisionRequestDetailsCalls(stub func(string) (json.RawMessage, error)) {
+func (fake *FakeStorage) GetProvisionRequestDetailsCalls(stub func(string) (storage.JSONObject, error)) {
 	fake.getProvisionRequestDetailsMutex.Lock()
 	defer fake.getProvisionRequestDetailsMutex.Unlock()
 	fake.GetProvisionRequestDetailsStub = stub
@@ -826,28 +826,28 @@ func (fake *FakeStorage) GetProvisionRequestDetailsArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *FakeStorage) GetProvisionRequestDetailsReturns(result1 json.RawMessage, result2 error) {
+func (fake *FakeStorage) GetProvisionRequestDetailsReturns(result1 storage.JSONObject, result2 error) {
 	fake.getProvisionRequestDetailsMutex.Lock()
 	defer fake.getProvisionRequestDetailsMutex.Unlock()
 	fake.GetProvisionRequestDetailsStub = nil
 	fake.getProvisionRequestDetailsReturns = struct {
-		result1 json.RawMessage
+		result1 storage.JSONObject
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeStorage) GetProvisionRequestDetailsReturnsOnCall(i int, result1 json.RawMessage, result2 error) {
+func (fake *FakeStorage) GetProvisionRequestDetailsReturnsOnCall(i int, result1 storage.JSONObject, result2 error) {
 	fake.getProvisionRequestDetailsMutex.Lock()
 	defer fake.getProvisionRequestDetailsMutex.Unlock()
 	fake.GetProvisionRequestDetailsStub = nil
 	if fake.getProvisionRequestDetailsReturnsOnCall == nil {
 		fake.getProvisionRequestDetailsReturnsOnCall = make(map[int]struct {
-			result1 json.RawMessage
+			result1 storage.JSONObject
 			result2 error
 		})
 	}
 	fake.getProvisionRequestDetailsReturnsOnCall[i] = struct {
-		result1 json.RawMessage
+		result1 storage.JSONObject
 		result2 error
 	}{result1, result2}
 }
@@ -1106,12 +1106,12 @@ func (fake *FakeStorage) StoreBindRequestDetailsReturnsOnCall(i int, result1 err
 	}{result1}
 }
 
-func (fake *FakeStorage) StoreProvisionRequestDetails(arg1 string, arg2 json.RawMessage) error {
+func (fake *FakeStorage) StoreProvisionRequestDetails(arg1 string, arg2 storage.JSONObject) error {
 	fake.storeProvisionRequestDetailsMutex.Lock()
 	ret, specificReturn := fake.storeProvisionRequestDetailsReturnsOnCall[len(fake.storeProvisionRequestDetailsArgsForCall)]
 	fake.storeProvisionRequestDetailsArgsForCall = append(fake.storeProvisionRequestDetailsArgsForCall, struct {
 		arg1 string
-		arg2 json.RawMessage
+		arg2 storage.JSONObject
 	}{arg1, arg2})
 	stub := fake.StoreProvisionRequestDetailsStub
 	fakeReturns := fake.storeProvisionRequestDetailsReturns
@@ -1132,13 +1132,13 @@ func (fake *FakeStorage) StoreProvisionRequestDetailsCallCount() int {
 	return len(fake.storeProvisionRequestDetailsArgsForCall)
 }
 
-func (fake *FakeStorage) StoreProvisionRequestDetailsCalls(stub func(string, json.RawMessage) error) {
+func (fake *FakeStorage) StoreProvisionRequestDetailsCalls(stub func(string, storage.JSONObject) error) {
 	fake.storeProvisionRequestDetailsMutex.Lock()
 	defer fake.storeProvisionRequestDetailsMutex.Unlock()
 	fake.StoreProvisionRequestDetailsStub = stub
 }
 
-func (fake *FakeStorage) StoreProvisionRequestDetailsArgsForCall(i int) (string, json.RawMessage) {
+func (fake *FakeStorage) StoreProvisionRequestDetailsArgsForCall(i int) (string, storage.JSONObject) {
 	fake.storeProvisionRequestDetailsMutex.RLock()
 	defer fake.storeProvisionRequestDetailsMutex.RUnlock()
 	argsForCall := fake.storeProvisionRequestDetailsArgsForCall[i]

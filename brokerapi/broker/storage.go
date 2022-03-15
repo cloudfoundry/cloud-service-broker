@@ -21,8 +21,8 @@ type Storage interface {
 	StoreBindRequestDetails(bindRequestDetails storage.BindRequestDetails) error
 	GetBindRequestDetails(bindingID, instanceID string) (json.RawMessage, error)
 	DeleteBindRequestDetails(bindingID, instanceID string) error
-	StoreProvisionRequestDetails(serviceInstanceID string, details json.RawMessage) error
-	GetProvisionRequestDetails(serviceInstanceID string) (json.RawMessage, error)
+	StoreProvisionRequestDetails(serviceInstanceID string, details storage.JSONObject) error
+	GetProvisionRequestDetails(serviceInstanceID string) (storage.JSONObject, error)
 	DeleteProvisionRequestDetails(serviceInstanceID string) error
 	StoreServiceInstanceDetails(d storage.ServiceInstanceDetails) error
 	GetServiceInstanceDetails(guid string) (storage.ServiceInstanceDetails, error)

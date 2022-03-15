@@ -3,9 +3,8 @@ package storage_test
 import (
 	"errors"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
-
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -102,7 +101,7 @@ var _ = Describe("ServiceInstanceDetails", func() {
 			Expect(r.GUID).To(Equal("fake-id-2"))
 			Expect(r.Location).To(Equal("fake-location-2"))
 			Expect(r.URL).To(Equal("fake-url-2"))
-			Expect(r.Outputs).To(Equal(storage.TerraformOutputs{"decrypted": map[string]interface{}{"foo": "bar-2"}}))
+			Expect(r.Outputs).To(Equal(storage.JSONObject{"decrypted": map[string]interface{}{"foo": "bar-2"}}))
 			Expect(r.ServiceGUID).To(Equal("fake-service-id-2"))
 			Expect(r.PlanGUID).To(Equal("fake-plan-id-2"))
 			Expect(r.SpaceGUID).To(Equal("fake-space-guid-2"))

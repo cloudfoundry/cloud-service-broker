@@ -15,13 +15,10 @@
 package utils
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"reflect"
 	"testing"
-
-	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 func ExamplePropertyToEnv() {
@@ -85,63 +82,6 @@ func ExampleGetDefaultProjectId() {
 	fmt.Printf("%s, %v\n", projectId, err)
 
 	// Output: my-project-123, <nil>
-}
-
-func TestExtractDefaultProvisionLabels(t *testing.T) {
-	tests := map[string]struct {
-		instanceId string
-		details    domain.ProvisionDetails
-		expected   map[string]string
-	}{
-		"empty everything": {
-			instanceId: "",
-			details:    domain.ProvisionDetails{},
-			expected: map[string]string{
-				"pcf-organization-guid": "",
-				"pcf-space-guid":        "",
-				"pcf-instance-id":       "",
-			},
-		},
-		"osb 2.13": {
-			instanceId: "my-instance",
-			details:    domain.ProvisionDetails{OrganizationGUID: "org-guid", SpaceGUID: "space-guid"},
-			expected: map[string]string{
-				"pcf-organization-guid": "org-guid",
-				"pcf-space-guid":        "space-guid",
-				"pcf-instance-id":       "my-instance",
-			},
-		},
-		"osb future": {
-			instanceId: "my-instance",
-			details: domain.ProvisionDetails{
-				OrganizationGUID: "org-guid",
-				SpaceGUID:        "space-guid",
-				RawContext:       json.RawMessage(`{"organization_guid":"org-override", "space_guid":"space-override"}`),
-			},
-			expected: map[string]string{
-				"pcf-organization-guid": "org-override",
-				"pcf-space-guid":        "space-override",
-				"pcf-instance-id":       "my-instance",
-			},
-		},
-		"osb special characters": {
-			instanceId: "my~instance.",
-			details:    domain.ProvisionDetails{},
-			expected: map[string]string{
-				"pcf-organization-guid": "",
-				"pcf-space-guid":        "",
-				"pcf-instance-id":       "my_instance_",
-			},
-		},
-	}
-
-	for tn, tc := range tests {
-		labels := ExtractDefaultProvisionLabels(tc.instanceId, tc.details)
-
-		if !reflect.DeepEqual(labels, tc.expected) {
-			t.Errorf("Error runniung case %q, expected: %v got: %v", tn, tc.expected, labels)
-		}
-	}
 }
 
 func TestSplitNewlineDelimitedList(t *testing.T) {
