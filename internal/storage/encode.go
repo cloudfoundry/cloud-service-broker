@@ -32,7 +32,7 @@ func (s *Storage) decodeBytes(a []byte) ([]byte, error) {
 	return d, nil
 }
 
-func (s *Storage) decodeJSONObject(a []byte) (map[string]interface{}, error) {
+func (s *Storage) decodeJSONObject(a []byte) (JSONObject, error) {
 	b, err := s.decodeBytes(a)
 	switch {
 	case err != nil:
@@ -41,7 +41,7 @@ func (s *Storage) decodeJSONObject(a []byte) (map[string]interface{}, error) {
 		return nil, nil
 	}
 
-	var receiver map[string]interface{}
+	var receiver JSONObject
 	if err := json.Unmarshal(b, &receiver); err != nil {
 		return nil, fmt.Errorf("JSON parse error: %w", err)
 	}

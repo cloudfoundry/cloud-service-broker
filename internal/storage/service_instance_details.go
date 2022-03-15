@@ -6,14 +6,12 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
 )
 
-type TerraformOutputs map[string]interface{}
-
 type ServiceInstanceDetails struct {
 	GUID             string
 	Name             string
 	Location         string
 	URL              string
-	Outputs          TerraformOutputs
+	Outputs          JSONObject
 	ServiceGUID      string
 	PlanGUID         string
 	SpaceGUID        string

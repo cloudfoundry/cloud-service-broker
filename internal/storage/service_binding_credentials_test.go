@@ -16,7 +16,7 @@ var _ = Describe("ServiceBindingCredentials", func() {
 				ServiceGUID:         "fake-service-id",
 				ServiceInstanceGUID: "fake-instance-id",
 				BindingGUID:         "fake-binding-id",
-				Credentials: storage.Credentials{
+				Credentials: storage.JSONObject{
 					"fake-cred-1": "fake-val-1",
 					"fake-cred-2": "fake-val-2",
 				},
@@ -57,7 +57,7 @@ var _ = Describe("ServiceBindingCredentials", func() {
 			Expect(r.ServiceGUID).To(Equal("fake-service-id"))
 			Expect(r.ServiceInstanceGUID).To(Equal("fake-instance-id"))
 			Expect(r.BindingGUID).To(Equal("fake-binding-id"))
-			Expect(r.Credentials).To(Equal(storage.Credentials{
+			Expect(r.Credentials).To(Equal(storage.JSONObject{
 				"decrypted": map[string]interface{}{
 					"foo": "baz",
 					"bar": "quz",

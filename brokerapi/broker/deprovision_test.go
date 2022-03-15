@@ -1,7 +1,6 @@
 package broker_test
 
 import (
-	"encoding/json"
 	"errors"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
@@ -75,7 +74,7 @@ var _ = Describe("Deprovision", func() {
 
 		fakeStorage = &brokerfakes.FakeStorage{}
 		fakeStorage.ExistsServiceInstanceDetailsReturns(true, nil)
-		fakeStorage.GetProvisionRequestDetailsReturns(json.RawMessage{}, nil)
+		fakeStorage.GetProvisionRequestDetailsReturns(nil, nil)
 		fakeStorage.GetServiceInstanceDetailsReturns(storage.ServiceInstanceDetails{
 			ServiceGUID:      offeringID,
 			PlanGUID:         planID,
@@ -133,7 +132,7 @@ var _ = Describe("Deprovision", func() {
 		Describe("deprovision variables", func() {
 			When("there were provision variables during provision or update", func() {
 				BeforeEach(func() {
-					fakeStorage.GetProvisionRequestDetailsReturns(json.RawMessage(`{"foo":"something", "import_field_1":"hello"}`), nil)
+					fakeStorage.GetProvisionRequestDetailsReturns(map[string]interface{}{"foo": "something", "import_field_1": "hello"}, nil)
 				})
 
 				It("should use the provision variables", func() {
@@ -286,7 +285,7 @@ var _ = Describe("Deprovision", func() {
 
 		When("storage errors when getting provision params", func() {
 			BeforeEach(func() {
-				fakeStorage.GetProvisionRequestDetailsReturns(json.RawMessage{}, errors.New("failed to get SI provision params"))
+				fakeStorage.GetProvisionRequestDetailsReturns(nil, errors.New("failed to get SI provision params"))
 			})
 
 			It("should error", func() {

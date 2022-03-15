@@ -35,14 +35,14 @@ var _ = Describe("LastInstanceOperation", func() {
 
 		fakeStorage         *brokerfakes.FakeStorage
 		fakeServiceProvider *pkgBrokerFakes.FakeServiceProvider
-		expectedTFOutput    storage.TerraformOutputs
+		expectedTFOutput    storage.JSONObject
 	)
 
 	BeforeEach(func() {
 		fakeServiceProvider = &pkgBrokerFakes.FakeServiceProvider{}
 		fakeServiceProvider.ProvisionsAsyncReturns(true)
 		fakeServiceProvider.DeprovisionsAsyncReturns(true)
-		expectedTFOutput = storage.TerraformOutputs{"output": "value"}
+		expectedTFOutput = storage.JSONObject{"output": "value"}
 		fakeServiceProvider.GetTerraformOutputsReturns(expectedTFOutput, nil)
 		fakeServiceProvider.PollInstanceReturns(true, "operation complete", nil)
 

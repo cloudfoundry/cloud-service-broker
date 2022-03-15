@@ -155,11 +155,11 @@ var _ = Describe("Provision", func() {
 		})
 
 		It("should provision with parameters", func() {
-			expectedParams := json.RawMessage(`{"foo":"something", "import_field_1":"hello"}`)
+			expectedParams := storage.JSONObject{"foo": "something", "import_field_1": "hello"}
 			provisionDetails = domain.ProvisionDetails{
 				ServiceID:     offeringID,
 				PlanID:        planID,
-				RawParameters: expectedParams,
+				RawParameters: json.RawMessage(`{"foo":"something", "import_field_1":"hello"}`),
 			}
 
 			_, err := serviceBroker.Provision(context.TODO(), newInstanceID, provisionDetails, true)

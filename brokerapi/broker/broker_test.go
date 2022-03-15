@@ -192,7 +192,7 @@ func fakeService(t *testing.T, isAsync bool) *serviceStub {
 			BindStub: func(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error) {
 				return map[string]interface{}{"foo": "bar"}, nil
 			},
-			BuildInstanceCredentialsStub: func(ctx context.Context, creds map[string]interface{}, outs storage.TerraformOutputs) (*domain.Binding, error) {
+			BuildInstanceCredentialsStub: func(ctx context.Context, creds map[string]interface{}, outs storage.JSONObject) (*domain.Binding, error) {
 				mixin := base.MergedInstanceCredsMixin{}
 				return mixin.BuildInstanceCredentials(ctx, creds, outs)
 			},
