@@ -2,6 +2,7 @@
 
 ### Features:
 - Allow usage of non-Hashicorp providers.
+- `beta` tagged services are disabled by default. These can be enabled by supplying the environment variable: `GSB_COMPATIBILITY_ENABLE_BETA_SERVICES=true`
 
 ### Fixes:
 - If multiple versions of Terraform are specified, the nominated default version must be highest version
