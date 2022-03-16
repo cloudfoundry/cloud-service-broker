@@ -18,6 +18,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/hclparser"
 
 	"code.cloudfoundry.org/lager"
@@ -25,7 +27,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/builtin/base"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
@@ -34,7 +35,7 @@ import (
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 //counterfeiter:generate . JobRunner
 type JobRunner interface {
-	StageJob(jobId string, workspace *wrapper.TerraformWorkspace) error
+	StageJob(jobId string, workspace *workspace.TerraformWorkspace) error
 	Import(ctx context.Context, id string, importResources []ImportResource) error
 	Create(ctx context.Context, id string) error
 	Update(ctx context.Context, id string, templateVars map[string]interface{}) error
@@ -134,23 +135,23 @@ func (provider *terraformProvider) Bind(ctx context.Context, bindContext *varcon
 		return nil, fmt.Errorf("error from job runner: %w", err)
 	}
 
-	return provider.jobRunner.Outputs(ctx, tfId, wrapper.DefaultInstanceName)
+	return provider.jobRunner.Outputs(ctx, tfId, workspace.DefaultInstanceName)
 }
 
 func (provider *terraformProvider) importCreate(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
 	varsMap := vars.ToMap()
 
-	var parameterMappings, addParams []wrapper.ParameterMapping
+	var parameterMappings, addParams []workspace.ParameterMapping
 
 	for _, importParameterMapping := range action.ImportParameterMappings {
-		parameterMappings = append(parameterMappings, wrapper.ParameterMapping{
+		parameterMappings = append(parameterMappings, workspace.ParameterMapping{
 			TfVariable:    importParameterMapping.TfVariable,
 			ParameterName: importParameterMapping.ParameterName,
 		})
 	}
 
 	for _, addParam := range action.ImportParametersToAdd {
-		addParams = append(addParams, wrapper.ParameterMapping{
+		addParams = append(addParams, workspace.ParameterMapping{
 			TfVariable:    addParam.TfVariable,
 			ParameterName: addParam.ParameterName,
 		})
@@ -178,7 +179,7 @@ func (provider *terraformProvider) importCreate(ctx context.Context, vars *varco
 		return "", err
 	}
 
-	workspace, err := wrapper.NewWorkspace(varsMap, "", action.Templates, parameterMappings, action.ImportParametersToDelete, addParams)
+	workspace, err := workspace.NewWorkspace(varsMap, "", action.Templates, parameterMappings, action.ImportParametersToDelete, addParams)
 	if err != nil {
 		return tfId, err
 	}
@@ -197,7 +198,7 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 		return "", err
 	}
 
-	workspace, err := wrapper.NewWorkspace(vars.ToMap(), action.Template, action.Templates, []wrapper.ParameterMapping{}, []string{}, []wrapper.ParameterMapping{})
+	workspace, err := workspace.NewWorkspace(vars.ToMap(), action.Template, action.Templates, []workspace.ParameterMapping{}, []string{}, []workspace.ParameterMapping{})
 	if err != nil {
 		return tfId, fmt.Errorf("error creating workspace: %w", err)
 	}
@@ -275,7 +276,7 @@ func (provider *terraformProvider) DeprovisionsAsync() bool {
 func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, guid string) (storage.JSONObject, error) {
 	tfId := generateTfId(guid, "")
 
-	outs, err := provider.jobRunner.Outputs(ctx, tfId, wrapper.DefaultInstanceName)
+	outs, err := provider.jobRunner.Outputs(ctx, tfId, workspace.DefaultInstanceName)
 	if err != nil {
 		return nil, err
 	}

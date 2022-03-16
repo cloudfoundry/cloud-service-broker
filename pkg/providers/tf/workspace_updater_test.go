@@ -7,7 +7,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -57,16 +57,16 @@ var _ = Describe("WorkspaceUpdater", func() {
 		})
 
 		By("creating a fake provisioned service instance", func() {
-			workspace := wrapper.TerraformWorkspace{
-				Modules: []wrapper.ModuleDefinition{{
+			workspace := workspace.TerraformWorkspace{
+				Modules: []workspace.ModuleDefinition{{
 					Name:       "fake module name",
 					Definition: "fake definition",
 				}},
-				Instances: []wrapper.ModuleInstance{{
+				Instances: []workspace.ModuleInstance{{
 					ModuleName:   "fake module name",
 					InstanceName: "fake instance name",
 				}},
-				Transformer: wrapper.TfTransformer{},
+				Transformer: workspace.TfTransformer{},
 				State:       []byte(terraformState),
 			}
 
@@ -127,22 +127,22 @@ var _ = Describe("WorkspaceUpdater", func() {
 			Expect(actualTerraformDeployment.LastOperationMessage).To(Equal("fake operation message"))
 
 			By("checking that the modules and instances are updated, but the state remains the same")
-			expectedWorkspace := wrapper.TerraformWorkspace{
-				Modules: []wrapper.ModuleDefinition{{
+			expectedWorkspace := workspace.TerraformWorkspace{
+				Modules: []workspace.ModuleDefinition{{
 					Name:       "brokertemplate",
 					Definition: template,
 				}},
-				Instances: []wrapper.ModuleInstance{{
+				Instances: []workspace.ModuleInstance{{
 					ModuleName:   "brokertemplate",
 					InstanceName: "instance",
 					Configuration: map[string]interface{}{
 						"resourceGroup": nil,
 					},
 				}},
-				Transformer: wrapper.TfTransformer{
-					ParameterMappings:  []wrapper.ParameterMapping{},
+				Transformer: workspace.TfTransformer{
+					ParameterMappings:  []workspace.ParameterMapping{},
 					ParametersToRemove: []string{},
-					ParametersToAdd:    []wrapper.ParameterMapping{},
+					ParametersToAdd:    []workspace.ParameterMapping{},
 				},
 				State: []byte(terraformState),
 			}

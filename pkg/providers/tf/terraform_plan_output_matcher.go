@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
+
 	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
 )
 
 var planMessageMatcher = regexp.MustCompile(`Plan: \d+ to add, \d+ to change, (\d+) to destroy\.`)
 
-func CheckTerraformPlanOutput(logger lager.Logger, output wrapper.ExecutionOutput) error {
+func CheckTerraformPlanOutput(logger lager.Logger, output executor.ExecutionOutput) error {
 	matches := planMessageMatcher.FindStringSubmatch(output.StdOut)
 	switch {
 	case len(matches) == 0: // presumably: "No changes. Infrastructure is up-to-date."

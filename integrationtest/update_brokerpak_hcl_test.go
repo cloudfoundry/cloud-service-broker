@@ -6,9 +6,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -47,10 +48,10 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		ExpectWithOffset(3, result.RowsAffected).To(Equal(int64(1)))
 	}
 
-	persistedTerraformWorkspace := func(serviceInstanceGUID, serviceBindingGUID string) *wrapper.TerraformWorkspace {
+	persistedTerraformWorkspace := func(serviceInstanceGUID, serviceBindingGUID string) *workspace.TerraformWorkspace {
 		record := models.TerraformDeployment{}
 		findRecord(&record, tfWorkspaceIdQuery, fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, serviceBindingGUID))
-		ws, _ := wrapper.DeserializeWorkspace(record.Workspace)
+		ws, _ := workspace.DeserializeWorkspace(record.Workspace)
 		return ws
 	}
 

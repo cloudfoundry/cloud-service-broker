@@ -8,7 +8,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+
 	"github.com/onsi/gomega/gexec"
 )
 
@@ -86,7 +87,7 @@ func (p TerraformMock) FirstTerraformInvocationVars() (map[string]interface{}, e
 	return vars, nil
 }
 
-func (p TerraformMock) setTFStateFile(state wrapper.Tfstate) error {
+func (p TerraformMock) setTFStateFile(state workspace.Tfstate) error {
 	file, err := os.Create(path.Join(p.invocationStore, "mock_tf_state.json"))
 	if err != nil {
 		return err
@@ -116,7 +117,7 @@ func (p TerraformMock) ReturnTFState(values []TFStateValue) error {
 		}
 	}
 
-	return p.setTFStateFile(wrapper.Tfstate{
+	return p.setTFStateFile(workspace.Tfstate{
 		Version: 4,
 		Outputs: outputs})
 }

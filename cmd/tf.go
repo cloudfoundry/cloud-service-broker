@@ -22,12 +22,16 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
+
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 
 	"github.com/cloudfoundry/cloud-service-broker/db_service"
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/spf13/cobra"
 	"gorm.io/gorm"
@@ -46,7 +50,7 @@ func init() {
 			db = db_service.New(logger)
 			encryptor := setupDBEncryption(db, logger)
 			store := storage.New(db, encryptor)
-			jobRunner = tf.NewTfJobRunner(store, wrapper.TFBinariesContext{}, tf.NewWorkspaceFactory(), tf.NewTerraformInvokerFactory(wrapper.NewExecutorFactory("", nil, nil), "", map[string]string{}))
+			jobRunner = tf.NewTfJobRunner(store, executor.TFBinariesContext{}, workspace.NewWorkspaceFactory(), invoker.NewTerraformInvokerFactory(executor.NewExecutorFactory("", nil, nil), "", map[string]string{}))
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
@@ -67,7 +71,7 @@ func init() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			ws, err := wrapper.DeserializeWorkspace(deployment.Workspace)
+			ws, err := workspace.DeserializeWorkspace(deployment.Workspace)
 			if err != nil {
 				fmt.Printf("Error: %s\n", err.Error())
 				log.Fatal(err)

@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
+
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+
 	"github.com/hashicorp/go-version"
 	"github.com/spf13/viper"
 
@@ -12,7 +16,6 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -32,7 +35,7 @@ var _ = Describe("TfJobRunner", func() {
 		fakeStore = &brokerfakes.FakeStorage{}
 		workspaceFactory = &tffakes.FakeWorkspaceBuilder{}
 		fakeWorkspace = &tffakes.FakeWorkspace{}
-		fakeWorkspace.ModuleInstancesReturns([]wrapper.ModuleInstance{{ModuleName: "moduleName"}})
+		fakeWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "moduleName"}})
 		fakeInvokerBuilder = &tffakes.FakeTerraformInvokerBuilder{}
 		fakeDefaultInvoker = &tffakes.FakeTerraformInvoker{}
 		deploymentId = "deploymentID"
@@ -45,14 +48,14 @@ var _ = Describe("TfJobRunner", func() {
 	Describe("Update", func() {
 		It("fails, when deployment can't be found", func() {
 			fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, genericError)
-			runner := tf.NewTfJobRunner(fakeStore, wrapper.TFBinariesContext{}, workspaceFactory, fakeInvokerBuilder)
+			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{}, workspaceFactory, fakeInvokerBuilder)
 			Expect(runner.Update(context.TODO(), deploymentId, nil)).To(MatchError(genericError))
 		})
 
 		It("fails, when workspace can't be created", func() {
 			fakeStore.GetTerraformDeploymentReturns(deployment, nil)
 			workspaceFactory.CreateWorkspaceReturns(nil, genericError)
-			runner := tf.NewTfJobRunner(fakeStore, wrapper.TFBinariesContext{}, workspaceFactory, fakeInvokerBuilder)
+			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{}, workspaceFactory, fakeInvokerBuilder)
 			Expect(runner.Update(context.TODO(), deploymentId, nil)).To(MatchError(genericError))
 		})
 
@@ -60,7 +63,7 @@ var _ = Describe("TfJobRunner", func() {
 			fakeStore.GetTerraformDeploymentReturns(deployment, nil)
 			workspaceFactory.CreateWorkspaceReturns(fakeWorkspace, nil)
 			fakeStore.StoreTerraformDeploymentReturns(genericError)
-			runner := tf.NewTfJobRunner(fakeStore, wrapper.TFBinariesContext{}, workspaceFactory, fakeInvokerBuilder)
+			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{}, workspaceFactory, fakeInvokerBuilder)
 			Expect(runner.Update(context.TODO(), deploymentId, nil)).To(MatchError(genericError))
 		})
 
@@ -69,7 +72,7 @@ var _ = Describe("TfJobRunner", func() {
 			workspaceFactory.CreateWorkspaceReturns(fakeWorkspace, nil)
 			fakeWorkspace.StateVersionReturns(nil, genericError)
 
-			runner := tf.NewTfJobRunner(fakeStore, wrapper.TFBinariesContext{}, workspaceFactory, fakeInvokerBuilder)
+			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{}, workspaceFactory, fakeInvokerBuilder)
 			Expect(runner.Update(context.TODO(), deploymentId, nil)).To(Succeed())
 			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
 
@@ -84,7 +87,7 @@ var _ = Describe("TfJobRunner", func() {
 			fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 			fakeWorkspace.UpdateInstanceConfigurationReturns(genericError)
 
-			runner := tf.NewTfJobRunner(fakeStore, wrapper.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, workspaceFactory, fakeInvokerBuilder)
+			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, workspaceFactory, fakeInvokerBuilder)
 			Expect(runner.Update(context.TODO(), deploymentId, nil)).To(Succeed())
 			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
 
@@ -99,7 +102,7 @@ var _ = Describe("TfJobRunner", func() {
 			fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 
-			runner := tf.NewTfJobRunner(fakeStore, wrapper.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, workspaceFactory, fakeInvokerBuilder)
+			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, workspaceFactory, fakeInvokerBuilder)
 			templateVars := map[string]interface{}{"var": "value"}
 
 			Expect(runner.Update(context.TODO(), deploymentId, templateVars)).To(Succeed())
@@ -118,7 +121,7 @@ var _ = Describe("TfJobRunner", func() {
 			fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 			fakeWorkspace.OutputsReturns(map[string]interface{}{"status": "status from terraform"}, nil)
 
-			runner := tf.NewTfJobRunner(fakeStore, wrapper.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, workspaceFactory, fakeInvokerBuilder)
+			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, workspaceFactory, fakeInvokerBuilder)
 
 			Expect(runner.Update(context.TODO(), deploymentId, nil)).To(Succeed())
 			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
@@ -135,7 +138,7 @@ var _ = Describe("TfJobRunner", func() {
 			fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 			fakeDefaultInvoker.ApplyReturns(genericError)
 
-			runner := tf.NewTfJobRunner(fakeStore, wrapper.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, workspaceFactory, fakeInvokerBuilder)
+			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, workspaceFactory, fakeInvokerBuilder)
 
 			Expect(runner.Update(context.TODO(), deploymentId, nil)).To(Succeed())
 			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
@@ -148,7 +151,7 @@ var _ = Describe("TfJobRunner", func() {
 				viper.Set(tf.TfUpgradeEnabled, true)
 			})
 			It("runs apply with all tf versions in the upgrade path", func() {
-				tfBinContext := wrapper.TFBinariesContext{
+				tfBinContext := executor.TFBinariesContext{
 					DefaultTfVersion: newVersion("0.1.0"),
 					TfUpgradePath: []*version.Version{
 						newVersion("0.0.1"),
@@ -166,7 +169,7 @@ var _ = Describe("TfJobRunner", func() {
 				fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(2, fakeDefaultInvoker)
 
 				fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
-				fakeWorkspace.ModuleInstancesReturns([]wrapper.ModuleInstance{{ModuleName: "moduleName"}})
+				fakeWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "moduleName"}})
 
 				runner := tf.NewTfJobRunner(fakeStore, tfBinContext, workspaceFactory, fakeInvokerBuilder)
 				runner.Update(context.TODO(), deploymentId, nil)
@@ -190,7 +193,7 @@ var _ = Describe("TfJobRunner", func() {
 			})
 
 			It("fails the update, if the version of version of statefile does not match the default tf version, and no upgrade path is specified", func() {
-				tfBinContext := wrapper.TFBinariesContext{
+				tfBinContext := executor.TFBinariesContext{
 					DefaultTfVersion: newVersion("0.1.0"),
 				}
 
@@ -213,7 +216,7 @@ var _ = Describe("TfJobRunner", func() {
 			})
 
 			It("fails the update, if the version of version of statefile does not match the default tf version", func() {
-				tfBinContext := wrapper.TFBinariesContext{
+				tfBinContext := executor.TFBinariesContext{
 					DefaultTfVersion: newVersion("0.1.0"),
 				}
 
@@ -230,7 +233,7 @@ var _ = Describe("TfJobRunner", func() {
 			})
 
 			It("performs the update, default tf version matches instance", func() {
-				tfBinContext := wrapper.TFBinariesContext{
+				tfBinContext := executor.TFBinariesContext{
 					DefaultTfVersion: newVersion("0.1.0"),
 				}
 
@@ -258,7 +261,7 @@ var _ = Describe("TfJobRunner", func() {
 
 })
 
-func getWorkspace(invoker *tffakes.FakeTerraformInvoker, pos int) tf.Workspace {
+func getWorkspace(invoker *tffakes.FakeTerraformInvoker, pos int) workspace.Workspace {
 	_, workspace := invoker.ApplyArgsForCall(pos)
 	return workspace
 }

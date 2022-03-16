@@ -19,9 +19,13 @@ import (
 	"os"
 	"path"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
+
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
@@ -220,7 +224,7 @@ func (tfb *TfServiceDefinitionV1) loadTemplates() error {
 
 // ToService converts the flat TfServiceDefinitionV1 into a broker.ServiceDefinition
 // that the registry can use.
-func (tfb *TfServiceDefinitionV1) ToService(tfBinContext wrapper.TFBinariesContext) (*broker.ServiceDefinition, error) {
+func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesContext) (*broker.ServiceDefinition, error) {
 	if err := tfb.loadTemplates(); err != nil {
 		return nil, err
 	}
@@ -287,8 +291,8 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext wrapper.TFBinariesConte
 		PlanVariables:         append(tfb.ProvisionSettings.PlanInputs, tfb.BindSettings.PlanInputs...),
 		Examples:              tfb.Examples,
 		ProviderBuilder: func(logger lager.Logger, store broker.ServiceProviderStorage) broker.ServiceProvider {
-			executorFactory := wrapper.NewExecutorFactory(tfBinContext.Dir, tfBinContext.Params, envVars)
-			return NewTerraformProvider(NewTfJobRunner(store, tfBinContext, NewWorkspaceFactory(), NewTerraformInvokerFactory(executorFactory, tfBinContext.Dir, tfBinContext.ProviderReplacements)), logger, constDefn, store)
+			executorFactory := executor.NewExecutorFactory(tfBinContext.Dir, tfBinContext.Params, envVars)
+			return NewTerraformProvider(NewTfJobRunner(store, tfBinContext, workspace.NewWorkspaceFactory(), invoker.NewTerraformInvokerFactory(executorFactory, tfBinContext.Dir, tfBinContext.ProviderReplacements)), logger, constDefn, store)
 		},
 	}, nil
 }
@@ -465,7 +469,7 @@ func (action *TfServiceDefinitionV1Action) validateTemplateInputs() (errs *valid
 		inputs.Add(in.Name)
 	}
 
-	tfModule := wrapper.ModuleDefinition{Definition: action.Template, Definitions: action.Templates}
+	tfModule := workspace.ModuleDefinition{Definition: action.Template, Definitions: action.Templates}
 	tfIn, err := tfModule.Inputs()
 	if err != nil {
 		return &validation.FieldError{
@@ -493,7 +497,7 @@ func (action *TfServiceDefinitionV1Action) validateTemplateOutputs() (errs *vali
 		definedOutputs.Add(in.FieldName)
 	}
 
-	tfModule := wrapper.ModuleDefinition{Definition: action.Template, Definitions: action.Templates}
+	tfModule := workspace.ModuleDefinition{Definition: action.Template, Definitions: action.Templates}
 	tfOut, err := tfModule.Outputs()
 	if err != nil {
 		return &validation.FieldError{
