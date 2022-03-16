@@ -21,11 +21,11 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/spf13/viper"
 )
@@ -113,7 +113,7 @@ func TestRegistrar_toDefinitions(t *testing.T) {
 	for tn, tc := range goodCases {
 		t.Run(tn, func(t *testing.T) {
 			r := NewRegistrar(nil)
-			defns, err := r.toDefinitions(tc.Services, tc.Config, wrapper.TFBinariesContext{})
+			defns, err := r.toDefinitions(tc.Services, tc.Config, executor.TFBinariesContext{})
 			if err != nil {
 				t.Fatalf("Expected no error, got: %v", err)
 			}
@@ -146,7 +146,7 @@ func TestRegistrar_toDefinitions(t *testing.T) {
 	for tn, tc := range badCases {
 		t.Run(tn, func(t *testing.T) {
 			r := NewRegistrar(nil)
-			defns, err := r.toDefinitions(tc.Services, tc.Config, wrapper.TFBinariesContext{})
+			defns, err := r.toDefinitions(tc.Services, tc.Config, executor.TFBinariesContext{})
 			if err == nil {
 				t.Fatal("Expected error, got: <nil>")
 			}

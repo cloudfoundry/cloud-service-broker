@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 )
 
 type FakeJobRunner struct {
@@ -77,11 +77,11 @@ type FakeJobRunner struct {
 		result1 string
 		result2 error
 	}
-	StageJobStub        func(string, *wrapper.TerraformWorkspace) error
+	StageJobStub        func(string, *workspace.TerraformWorkspace) error
 	stageJobMutex       sync.RWMutex
 	stageJobArgsForCall []struct {
 		arg1 string
-		arg2 *wrapper.TerraformWorkspace
+		arg2 *workspace.TerraformWorkspace
 	}
 	stageJobReturns struct {
 		result1 error
@@ -458,12 +458,12 @@ func (fake *FakeJobRunner) ShowReturnsOnCall(i int, result1 string, result2 erro
 	}{result1, result2}
 }
 
-func (fake *FakeJobRunner) StageJob(arg1 string, arg2 *wrapper.TerraformWorkspace) error {
+func (fake *FakeJobRunner) StageJob(arg1 string, arg2 *workspace.TerraformWorkspace) error {
 	fake.stageJobMutex.Lock()
 	ret, specificReturn := fake.stageJobReturnsOnCall[len(fake.stageJobArgsForCall)]
 	fake.stageJobArgsForCall = append(fake.stageJobArgsForCall, struct {
 		arg1 string
-		arg2 *wrapper.TerraformWorkspace
+		arg2 *workspace.TerraformWorkspace
 	}{arg1, arg2})
 	stub := fake.StageJobStub
 	fakeReturns := fake.stageJobReturns
@@ -484,13 +484,13 @@ func (fake *FakeJobRunner) StageJobCallCount() int {
 	return len(fake.stageJobArgsForCall)
 }
 
-func (fake *FakeJobRunner) StageJobCalls(stub func(string, *wrapper.TerraformWorkspace) error) {
+func (fake *FakeJobRunner) StageJobCalls(stub func(string, *workspace.TerraformWorkspace) error) {
 	fake.stageJobMutex.Lock()
 	defer fake.stageJobMutex.Unlock()
 	fake.StageJobStub = stub
 }
 
-func (fake *FakeJobRunner) StageJobArgsForCall(i int) (string, *wrapper.TerraformWorkspace) {
+func (fake *FakeJobRunner) StageJobArgsForCall(i int) (string, *workspace.TerraformWorkspace) {
 	fake.stageJobMutex.RLock()
 	defer fake.stageJobMutex.RUnlock()
 	argsForCall := fake.stageJobArgsForCall[i]

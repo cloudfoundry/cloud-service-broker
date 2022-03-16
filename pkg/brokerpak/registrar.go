@@ -19,13 +19,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/reader"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/spf13/cast"
@@ -102,7 +102,7 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 	})
 }
 
-func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config BrokerpakSourceConfig, tfBinariesContext wrapper.TFBinariesContext) ([]*broker.ServiceDefinition, error) {
+func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config BrokerpakSourceConfig, tfBinariesContext executor.TFBinariesContext) ([]*broker.ServiceDefinition, error) {
 	var out []*broker.ServiceDefinition
 
 	toIgnore := utils.NewStringSet(config.ExcludedServicesSlice()...)
@@ -124,28 +124,28 @@ func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config Broke
 	return out, nil
 }
 
-func (r *Registrar) extractTfBinaries(brokerPak *reader.BrokerPakReader, vc *varcontext.VarContext) (wrapper.TFBinariesContext, error) {
+func (r *Registrar) extractTfBinaries(brokerPak *reader.BrokerPakReader, vc *varcontext.VarContext) (executor.TFBinariesContext, error) {
 	dir, err := os.MkdirTemp("", "brokerpak")
 	if err != nil {
-		return wrapper.TFBinariesContext{}, err
+		return executor.TFBinariesContext{}, err
 	}
 
 	// extract the Terraform directory
 	if err := brokerPak.ExtractPlatformBins(dir); err != nil {
-		return wrapper.TFBinariesContext{}, err
+		return executor.TFBinariesContext{}, err
 	}
 
 	manifest, err := brokerPak.Manifest()
 	if err != nil {
-		return wrapper.TFBinariesContext{}, err
+		return executor.TFBinariesContext{}, err
 	}
 
 	tfVersion, err := manifest.DefaultTerraformVersion()
 	if err != nil {
-		return wrapper.TFBinariesContext{}, err
+		return executor.TFBinariesContext{}, err
 	}
 
-	return wrapper.TFBinariesContext{
+	return executor.TFBinariesContext{
 		Dir:                  dir,
 		DefaultTfVersion:     tfVersion,
 		Params:               resolveParameters(manifest.Parameters, vc),

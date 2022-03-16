@@ -4,7 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
@@ -23,7 +24,7 @@ var _ = Describe("Provider", func() {
 				storage := new(brokerfakes.FakeServiceProviderStorage)
 
 				tfProvider := tf.NewTerraformProvider(
-					tf.NewTfJobRunner(storage, wrapper.TFBinariesContext{}, tf.NewWorkspaceFactory(), nil),
+					tf.NewTfJobRunner(storage, executor.TFBinariesContext{}, workspace.NewWorkspaceFactory(), nil),
 					utils.NewLogger("test"),
 					tf.TfServiceDefinitionV1{
 						Plans: []tf.TfServiceDefinitionV1Plan{
