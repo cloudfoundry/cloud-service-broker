@@ -39,7 +39,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 		Exec func(ws *TerraformWorkspace, executor executor.TerraformExecutor)
 	}{
 		"execute": {Exec: func(ws *TerraformWorkspace, executor executor.TerraformExecutor) {
-			ws.Execute(context.TODO(), executor, command.ApplyCommand{})
+			ws.Execute(context.TODO(), executor, command.Apply{})
 		}},
 	}
 
@@ -113,7 +113,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 		Exec func(ws *TerraformWorkspace, executor executor.TerraformExecutor)
 	}{
 		"execute": {Exec: func(ws *TerraformWorkspace, executor executor.TerraformExecutor) {
-			ws.Execute(context.TODO(), executor, command.ApplyCommand{})
+			ws.Execute(context.TODO(), executor, command.Apply{})
 		}},
 	}
 
