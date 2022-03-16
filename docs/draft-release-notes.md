@@ -2,6 +2,7 @@
 
 ### Features:
 - Allow usage of non-Hashicorp providers.
+- `beta` tagged services are disabled by default. These can be enabled by supplying the environment variable: `GSB_COMPATIBILITY_ENABLE_BETA_SERVICES=true`
 - brokerpaks can rename terraform providers in the instance state by specifying renames in the manifest using `terraform_state_provider_replacements`
 
 

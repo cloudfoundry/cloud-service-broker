@@ -238,7 +238,7 @@ var _ = Describe("Registry", func() {
 			Entry("when preview are enabled and build-ins are enabled", "preview", "compatibility.enable-preview-services"),
 			Entry("when unmaintained are enabled and build-ins are enabled", "unmaintained", "compatibility.enable-unmaintained-services"),
 			Entry("when eol are enabled and build-ins are enabled", "eol", "compatibility.enable-eol-services"),
-			Entry("when beta are enabled and build-ins are enabled", "beta", "compatibility.enable-gcp-beta-services"),
+			Entry("when beta are enabled and build-ins are enabled", "beta", "compatibility.enable-beta-services"),
 			Entry("when deprecated are enabled and build-ins are enabled", "deprecated", "compatibility.enable-gcp-deprecated-services"),
 		)
 
