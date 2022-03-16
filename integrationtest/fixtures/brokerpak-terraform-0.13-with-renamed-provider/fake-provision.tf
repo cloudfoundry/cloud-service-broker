@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     random = {
-      source = "hashicorp/random"
+      source = "ContentSquare/random"
       version = "3.1.0"
     }
   }
