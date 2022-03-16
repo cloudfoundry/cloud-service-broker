@@ -16,5 +16,6 @@ terraform_binaries:
   default: true
 - name: terraform-provider-random
   version: 3.1.0
+  source: https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip
 service_definitions:
 - fake-service.yml
