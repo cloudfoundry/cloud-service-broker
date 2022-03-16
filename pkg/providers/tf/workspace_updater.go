@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/spf13/viper"
 )
@@ -27,12 +27,12 @@ func UpdateWorkspaceHCL(store broker.ServiceProviderStorage, action TfServiceDef
 		return err
 	}
 
-	currentWorkspace, err := wrapper.DeserializeWorkspace(deployment.Workspace)
+	currentWorkspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
 	if err != nil {
 		return err
 	}
 
-	workspace, err := wrapper.NewWorkspace(operationContext.ToMap(), action.Template, action.Templates, []wrapper.ParameterMapping{}, []string{}, []wrapper.ParameterMapping{})
+	workspace, err := workspace.NewWorkspace(operationContext.ToMap(), action.Template, action.Templates, []workspace.ParameterMapping{}, []string{}, []workspace.ParameterMapping{})
 	if err != nil {
 		return err
 	}

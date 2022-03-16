@@ -7,12 +7,13 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/reader"
 	"github.com/cloudfoundry/cloud-service-broker/internal/tfproviderfqn"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
 	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo/v2"

@@ -20,6 +20,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
+
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+
 	"github.com/hashicorp/go-version"
 
 	"github.com/spf13/viper"
@@ -28,7 +33,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/wrapper"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )
@@ -48,9 +52,9 @@ func init() {
 
 // NewTfJobRunner constructs a new JobRunner for the given project.
 func NewTfJobRunner(store broker.ServiceProviderStorage,
-	tfBinContext wrapper.TFBinariesContext,
-	workspaceFactory WorkspaceBuilder,
-	invokerBuilder TerraformInvokerBuilder) *TfJobRunner {
+	tfBinContext executor.TFBinariesContext,
+	workspaceFactory workspace.WorkspaceBuilder,
+	invokerBuilder invoker.TerraformInvokerBuilder) *TfJobRunner {
 	return &TfJobRunner{
 		store:                   store,
 		tfBinContext:            tfBinContext,
@@ -72,14 +76,14 @@ func NewTfJobRunner(store broker.ServiceProviderStorage,
 type TfJobRunner struct {
 	// executor holds a custom executor that will be called when commands are run.
 	store        broker.ServiceProviderStorage
-	tfBinContext wrapper.TFBinariesContext
-	WorkspaceBuilder
-	TerraformInvokerBuilder
+	tfBinContext executor.TFBinariesContext
+	workspace.WorkspaceBuilder
+	invoker.TerraformInvokerBuilder
 }
 
 // StageJob stages a job to be executed. Before the workspace is saved to the
 // database, the modules and inputs are validated by Terraform.
-func (runner *TfJobRunner) StageJob(jobId string, workspace *wrapper.TerraformWorkspace) error {
+func (runner *TfJobRunner) StageJob(jobId string, workspace *workspace.TerraformWorkspace) error {
 	deployment := storage.TerraformDeployment{ID: jobId}
 	exists, err := runner.store.ExistsTerraformDeployment(jobId)
 	switch {
@@ -130,7 +134,7 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 		return err
 	}
 
-	workspace, err := wrapper.DeserializeWorkspace(deployment.Workspace)
+	workspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
 	if err != nil {
 		return err
 	}
@@ -182,7 +186,7 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 	return nil
 }
 
-func (runner *TfJobRunner) terraformPlanToCheckNoResourcesDeleted(invoker TerraformInvoker, ctx context.Context, workspace *wrapper.TerraformWorkspace, logger lager.Logger) error {
+func (runner *TfJobRunner) terraformPlanToCheckNoResourcesDeleted(invoker invoker.TerraformInvoker, ctx context.Context, workspace *workspace.TerraformWorkspace, logger lager.Logger) error {
 	planOutput, err := invoker.Plan(ctx, workspace)
 	if err != nil {
 		return err
@@ -191,11 +195,11 @@ func (runner *TfJobRunner) terraformPlanToCheckNoResourcesDeleted(invoker Terraf
 	return err
 }
 
-func (runner *TfJobRunner) DefaultInvoker() TerraformInvoker {
+func (runner *TfJobRunner) DefaultInvoker() invoker.TerraformInvoker {
 	return runner.VersionedInvoker(runner.tfBinContext.DefaultTfVersion)
 }
 
-func (runner *TfJobRunner) VersionedInvoker(version *version.Version) TerraformInvoker {
+func (runner *TfJobRunner) VersionedInvoker(version *version.Version) invoker.TerraformInvoker {
 	return runner.VersionedTerraformInvoker(version)
 }
 
@@ -207,7 +211,7 @@ func (runner *TfJobRunner) Create(ctx context.Context, id string) error {
 		return fmt.Errorf("error getting TF deployment: %w", err)
 	}
 
-	workspace, err := wrapper.DeserializeWorkspace(deployment.Workspace)
+	workspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
 	if err != nil {
 		return fmt.Errorf("error hydrating workspace: %w", err)
 	}
@@ -258,7 +262,7 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 	return nil
 }
 
-func (runner *TfJobRunner) performTerraformUpgrade(ctx context.Context, workspace Workspace) error {
+func (runner *TfJobRunner) performTerraformUpgrade(ctx context.Context, workspace workspace.Workspace) error {
 	currentTfVersion, err := workspace.StateVersion()
 	if err != nil {
 		return err
@@ -293,7 +297,7 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 		return err
 	}
 
-	workspace, err := wrapper.DeserializeWorkspace(deployment.Workspace)
+	workspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
 	if err != nil {
 		return err
 	}
@@ -324,7 +328,7 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 
 // operationFinished closes out the state of the background job so clients that
 // are polling can get the results.
-func (runner *TfJobRunner) operationFinished(err error, workspace Workspace, deployment storage.TerraformDeployment) error {
+func (runner *TfJobRunner) operationFinished(err error, workspace workspace.Workspace, deployment storage.TerraformDeployment) error {
 	// we shouldn't update the status on update when updating the HCL, as the status comes either from the provision call or a previous update
 	if err == nil {
 		lastOperationMessage := ""
@@ -380,7 +384,7 @@ func (runner *TfJobRunner) Outputs(ctx context.Context, id, instanceName string)
 		return nil, fmt.Errorf("error getting TF deployment: %w", err)
 	}
 
-	ws, err := wrapper.DeserializeWorkspace(deployment.Workspace)
+	ws, err := workspace.DeserializeWorkspace(deployment.Workspace)
 	if err != nil {
 		return nil, fmt.Errorf("error deserializing workspace: %w", err)
 	}
@@ -411,7 +415,7 @@ func (runner *TfJobRunner) Show(ctx context.Context, id string) (string, error) 
 		return "", err
 	}
 
-	workspace, err := wrapper.DeserializeWorkspace(deployment.Workspace)
+	workspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
 	if err != nil {
 		return "", err
 	}
