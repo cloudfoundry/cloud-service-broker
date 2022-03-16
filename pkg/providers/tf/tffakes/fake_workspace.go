@@ -26,18 +26,15 @@ type FakeWorkspace struct {
 		result1 wrapper.ExecutionOutput
 		result2 error
 	}
-	ImportStub        func(context.Context, wrapper.TerraformExecutor, map[string]string) error
-	importMutex       sync.RWMutex
-	importArgsForCall []struct {
-		arg1 context.Context
-		arg2 wrapper.TerraformExecutor
-		arg3 map[string]string
+	HasStateStub        func() bool
+	hasStateMutex       sync.RWMutex
+	hasStateArgsForCall []struct {
 	}
-	importReturns struct {
-		result1 error
+	hasStateReturns struct {
+		result1 bool
 	}
-	importReturnsOnCall map[int]struct {
-		result1 error
+	hasStateReturnsOnCall map[int]struct {
+		result1 bool
 	}
 	ModuleDefinitionsStub        func() []wrapper.ModuleDefinition
 	moduleDefinitionsMutex       sync.RWMutex
@@ -177,20 +174,17 @@ func (fake *FakeWorkspace) ExecuteReturnsOnCall(i int, result1 wrapper.Execution
 	}{result1, result2}
 }
 
-func (fake *FakeWorkspace) Import(arg1 context.Context, arg2 wrapper.TerraformExecutor, arg3 map[string]string) error {
-	fake.importMutex.Lock()
-	ret, specificReturn := fake.importReturnsOnCall[len(fake.importArgsForCall)]
-	fake.importArgsForCall = append(fake.importArgsForCall, struct {
-		arg1 context.Context
-		arg2 wrapper.TerraformExecutor
-		arg3 map[string]string
-	}{arg1, arg2, arg3})
-	stub := fake.ImportStub
-	fakeReturns := fake.importReturns
-	fake.recordInvocation("Import", []interface{}{arg1, arg2, arg3})
-	fake.importMutex.Unlock()
+func (fake *FakeWorkspace) HasState() bool {
+	fake.hasStateMutex.Lock()
+	ret, specificReturn := fake.hasStateReturnsOnCall[len(fake.hasStateArgsForCall)]
+	fake.hasStateArgsForCall = append(fake.hasStateArgsForCall, struct {
+	}{})
+	stub := fake.HasStateStub
+	fakeReturns := fake.hasStateReturns
+	fake.recordInvocation("HasState", []interface{}{})
+	fake.hasStateMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub()
 	}
 	if specificReturn {
 		return ret.result1
@@ -198,45 +192,38 @@ func (fake *FakeWorkspace) Import(arg1 context.Context, arg2 wrapper.TerraformEx
 	return fakeReturns.result1
 }
 
-func (fake *FakeWorkspace) ImportCallCount() int {
-	fake.importMutex.RLock()
-	defer fake.importMutex.RUnlock()
-	return len(fake.importArgsForCall)
+func (fake *FakeWorkspace) HasStateCallCount() int {
+	fake.hasStateMutex.RLock()
+	defer fake.hasStateMutex.RUnlock()
+	return len(fake.hasStateArgsForCall)
 }
 
-func (fake *FakeWorkspace) ImportCalls(stub func(context.Context, wrapper.TerraformExecutor, map[string]string) error) {
-	fake.importMutex.Lock()
-	defer fake.importMutex.Unlock()
-	fake.ImportStub = stub
+func (fake *FakeWorkspace) HasStateCalls(stub func() bool) {
+	fake.hasStateMutex.Lock()
+	defer fake.hasStateMutex.Unlock()
+	fake.HasStateStub = stub
 }
 
-func (fake *FakeWorkspace) ImportArgsForCall(i int) (context.Context, wrapper.TerraformExecutor, map[string]string) {
-	fake.importMutex.RLock()
-	defer fake.importMutex.RUnlock()
-	argsForCall := fake.importArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
-}
-
-func (fake *FakeWorkspace) ImportReturns(result1 error) {
-	fake.importMutex.Lock()
-	defer fake.importMutex.Unlock()
-	fake.ImportStub = nil
-	fake.importReturns = struct {
-		result1 error
+func (fake *FakeWorkspace) HasStateReturns(result1 bool) {
+	fake.hasStateMutex.Lock()
+	defer fake.hasStateMutex.Unlock()
+	fake.HasStateStub = nil
+	fake.hasStateReturns = struct {
+		result1 bool
 	}{result1}
 }
 
-func (fake *FakeWorkspace) ImportReturnsOnCall(i int, result1 error) {
-	fake.importMutex.Lock()
-	defer fake.importMutex.Unlock()
-	fake.ImportStub = nil
-	if fake.importReturnsOnCall == nil {
-		fake.importReturnsOnCall = make(map[int]struct {
-			result1 error
+func (fake *FakeWorkspace) HasStateReturnsOnCall(i int, result1 bool) {
+	fake.hasStateMutex.Lock()
+	defer fake.hasStateMutex.Unlock()
+	fake.HasStateStub = nil
+	if fake.hasStateReturnsOnCall == nil {
+		fake.hasStateReturnsOnCall = make(map[int]struct {
+			result1 bool
 		})
 	}
-	fake.importReturnsOnCall[i] = struct {
-		result1 error
+	fake.hasStateReturnsOnCall[i] = struct {
+		result1 bool
 	}{result1}
 }
 
@@ -588,8 +575,8 @@ func (fake *FakeWorkspace) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.executeMutex.RLock()
 	defer fake.executeMutex.RUnlock()
-	fake.importMutex.RLock()
-	defer fake.importMutex.RUnlock()
+	fake.hasStateMutex.RLock()
+	defer fake.hasStateMutex.RUnlock()
 	fake.moduleDefinitionsMutex.RLock()
 	defer fake.moduleDefinitionsMutex.RUnlock()
 	fake.moduleInstancesMutex.RLock()
