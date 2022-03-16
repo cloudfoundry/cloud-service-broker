@@ -31,7 +31,7 @@ var (
 		"preview":      toggles.Features.Toggle("enable-preview-services", true, `Enable services that are new to the broker this release.`),
 		"unmaintained": toggles.Features.Toggle("enable-unmaintained-services", false, `Enable broker services that are unmaintained.`),
 		"eol":          toggles.Features.Toggle("enable-eol-services", false, `Enable broker services that are end of life.`),
-		"beta":         toggles.Features.Toggle("enable-gcp-beta-services", true, "Enable services that are in GCP Beta. These have no SLA or support policy."),
+		"beta":         toggles.Features.Toggle("enable-beta-services", false, "Enable services that are tagged as Beta These have no SLA or support policy."),
 		"deprecated":   toggles.Features.Toggle("enable-gcp-deprecated-services", false, "Enable services that use deprecated GCP components."),
 		"terraform":    toggles.Features.Toggle("enable-terraform-services", false, "Enable services that use the experimental, unstable, Terraform back-end."),
 	}
