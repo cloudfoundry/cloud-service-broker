@@ -2,6 +2,8 @@
 
 ### Features:
 - Allow usage of non-Hashicorp providers.
+- brokerpaks can rename terraform providers in the instance state by specifying renames in the manifest using `terraform_state_provider_replacements`
+
 
 ### Fixes:
 - If multiple versions of Terraform are specified, the nominated default version must be highest version

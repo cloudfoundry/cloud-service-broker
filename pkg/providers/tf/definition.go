@@ -288,7 +288,7 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext wrapper.TFBinariesConte
 		Examples:              tfb.Examples,
 		ProviderBuilder: func(logger lager.Logger, store broker.ServiceProviderStorage) broker.ServiceProvider {
 			executorFactory := wrapper.NewExecutorFactory(tfBinContext.Dir, tfBinContext.Params, envVars)
-			return NewTerraformProvider(NewTfJobRunner(store, tfBinContext, NewWorkspaceFactory(), NewTerraformInvokerFactory(executorFactory)), logger, constDefn, store)
+			return NewTerraformProvider(NewTfJobRunner(store, tfBinContext, NewWorkspaceFactory(), NewTerraformInvokerFactory(executorFactory, tfBinContext.Dir, tfBinContext.ProviderReplacements)), logger, constDefn, store)
 		},
 	}, nil
 }

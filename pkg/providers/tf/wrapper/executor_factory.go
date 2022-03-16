@@ -14,7 +14,8 @@ type TFBinariesContext struct {
 	DefaultTfVersion *version.Version
 	Params           map[string]string
 
-	TfUpgradePath []*version.Version
+	TfUpgradePath        []*version.Version
+	ProviderReplacements map[string]string
 }
 
 func NewExecutorFactory(dir string, params map[string]string, envVars map[string]string) ExecutorBuilder {

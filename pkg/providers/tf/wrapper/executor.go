@@ -102,18 +102,7 @@ type customExecutor struct {
 }
 
 func (e customExecutor) Execute(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
-	subCommand := c.Args[1]
-	subCommandArgs := c.Args[2:]
-
-	if subCommand == "init" {
-		if e.tfVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
-			subCommandArgs = append([]string{"-get-plugins=false"}, subCommandArgs...)
-		}
-		subCommandArgs = append([]string{fmt.Sprintf("-plugin-dir=%s", e.tfPluginDir)}, subCommandArgs...)
-	}
-
-	allArgs := append([]string{subCommand}, subCommandArgs...)
-	newCmd := exec.Command(e.tfBinaryPath, allArgs...)
+	newCmd := exec.Command(e.tfBinaryPath, c.Args[1:]...)
 	newCmd.Dir = c.Dir
 	newCmd.Env = append(c.Env, updatePath(c.Env, e.tfPluginDir))
 	return e.wrapped.Execute(ctx, newCmd)
