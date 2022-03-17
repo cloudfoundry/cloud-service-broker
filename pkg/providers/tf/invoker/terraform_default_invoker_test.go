@@ -41,8 +41,8 @@ var _ = Context("Terpkg/providers/tf/invokerraformDefaultInvoker", func() {
 				Expect(actualContext).To(Equal(expectedContext))
 				Expect(actualExecutor).To(Equal(fakeExecutor))
 				Expect(actualCommands).To(Equal([]command.TerraformCommand{
-					command.NewInitCommand(pluginDirectory),
-					command.ApplyCommand{},
+					command.NewInit(pluginDirectory),
+					command.Apply{},
 				}))
 			})
 		})
@@ -58,9 +58,9 @@ var _ = Context("Terpkg/providers/tf/invokerraformDefaultInvoker", func() {
 				Expect(actualContext).To(Equal(expectedContext))
 				Expect(actualExecutor).To(Equal(fakeExecutor))
 				Expect(actualCommands).To(Equal([]command.TerraformCommand{
-					command.NewRenameProviderCommand("old_provider_1", "new_provider_1"),
-					command.NewInitCommand(pluginDirectory),
-					command.ApplyCommand{},
+					command.NewRenameProvider("old_provider_1", "new_provider_1"),
+					command.NewInit(pluginDirectory),
+					command.Apply{},
 				}))
 			})
 		})
