@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/utils/request"
@@ -25,6 +27,11 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return domain.UnbindSpec{}, err
 	}
 
+	parsedDetails, err := paramparser.ParseUnbindDetails(details)
+	if err != nil {
+		return domain.UnbindSpec{}, err
+	}
+
 	// validate existence of binding
 	exists, err := broker.store.ExistsServiceBindingCredentials(bindingID, instanceID)
 	switch {
@@ -41,23 +48,19 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	}
 
 	// verify the service exists and the plan exists
-	plan, err := serviceDefinition.GetPlanById(details.PlanID)
+	plan, err := serviceDefinition.GetPlanById(parsedDetails.PlanID)
 	if err != nil {
 		return domain.UnbindSpec{}, err
 	}
 
-	rawParameters, err := broker.store.GetBindRequestDetails(bindingID, instanceID)
+	storedParams, err := broker.store.GetBindRequestDetails(bindingID, instanceID)
 	if err != nil {
 		return domain.UnbindSpec{}, fmt.Errorf("error retrieving bind request details for %q: %w", instanceID, err)
 	}
 
-	bindDetails := domain.BindDetails{
-		PlanID:        details.PlanID,
-		ServiceID:     details.ServiceID,
-		RawParameters: rawParameters,
-	}
+	parsedDetails.RequestParams = storedParams
 
-	vars, err := serviceDefinition.BindVariables(instance, bindingID, bindDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
+	vars, err := serviceDefinition.BindVariables(instance, bindingID, parsedDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return domain.UnbindSpec{}, err
 	}

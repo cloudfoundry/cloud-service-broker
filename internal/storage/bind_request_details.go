@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
@@ -10,7 +9,7 @@ import (
 type BindRequestDetails struct {
 	ServiceInstanceGUID string
 	ServiceBindingGUID  string
-	RequestDetails      []byte
+	RequestDetails      JSONObject
 }
 
 func (s *Storage) StoreBindRequestDetails(bindRequestDetails BindRequestDetails) error {
@@ -18,7 +17,7 @@ func (s *Storage) StoreBindRequestDetails(bindRequestDetails BindRequestDetails)
 		return nil
 	}
 
-	encoded, err := s.encodeBytes(bindRequestDetails.RequestDetails)
+	encoded, err := s.encodeJSON(bindRequestDetails.RequestDetails)
 	if err != nil {
 		return fmt.Errorf("error encoding details: %w", err)
 	}
@@ -44,7 +43,7 @@ func (s *Storage) StoreBindRequestDetails(bindRequestDetails BindRequestDetails)
 	return nil
 }
 
-func (s *Storage) GetBindRequestDetails(bindingID string, instanceID string) (json.RawMessage, error) {
+func (s *Storage) GetBindRequestDetails(bindingID string, instanceID string) (JSONObject, error) {
 	exists, err := s.existsBindRequestDetails(bindingID, instanceID)
 	switch {
 	case err != nil:
@@ -58,7 +57,7 @@ func (s *Storage) GetBindRequestDetails(bindingID string, instanceID string) (js
 		return nil, fmt.Errorf("error finding bind request details record: %w", err)
 	}
 
-	decoded, err := s.decodeBytes(receiver.RequestDetails)
+	decoded, err := s.decodeJSONObject(receiver.RequestDetails)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding bind request details %q: %w", bindingID, err)
 	}

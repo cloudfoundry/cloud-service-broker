@@ -41,16 +41,6 @@ var _ = Describe("ParseBindDetails", func() {
 		}))
 	})
 
-	When("params are not valid JSON", func() {
-		It("returns an error", func() {
-			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{BindResource: &domain.BindResource{}, RawParameters: []byte("not-json")})
-
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError(`error parsing request parameters: invalid character 'o' in literal null (expecting 'u')`))
-			Expect(bindDetails).To(BeZero())
-		})
-	})
-
 	When("no bind_resource is instantiated", func() {
 		It("returns an error", func() {
 			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{})
@@ -63,13 +53,30 @@ var _ = Describe("ParseBindDetails", func() {
 
 	When("context is not valid JSON", func() {
 		It("returns an error", func() {
+			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{BindResource: &domain.BindResource{}, RawContext: []byte("not-json")})
 
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(`error parsing request context: invalid character 'o' in literal null (expecting 'u')`))
+			Expect(bindDetails).To(BeZero())
+		})
+	})
+
+	When("params are not valid JSON", func() {
+		It("returns an error", func() {
+			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{BindResource: &domain.BindResource{}, RawParameters: []byte("not-json")})
+
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(`error parsing request parameters: invalid character 'o' in literal null (expecting 'u')`))
+			Expect(bindDetails).To(BeZero())
 		})
 	})
 
 	When("input is empty", func() {
 		It("succeeds with an empty result", func() {
+			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{BindResource: &domain.BindResource{}})
 
+			Expect(err).NotTo(HaveOccurred())
+			Expect(bindDetails).To(BeZero())
 		})
 	})
 })

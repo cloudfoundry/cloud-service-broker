@@ -441,12 +441,6 @@ func (svc *ServiceDefinition) UpdateVariables(instanceId string, details parampa
 	return svc.variables(constants, mergedUserProvidedParameters, plan)
 }
 
-func unmarshalJsonToMap(rawContext json.RawMessage) map[string]interface{} {
-	rawContextMap := map[string]interface{}{}
-	json.Unmarshal(rawContext, &rawContextMap)
-	return rawContextMap
-}
-
 // BindVariables gets the variable resolution context for a bind request.
 // Variables have a very specific resolution order, and this function populates the context to preserve that.
 // The variable resolution order is the following:
@@ -457,10 +451,10 @@ func unmarshalJsonToMap(rawContext json.RawMessage) map[string]interface{} {
 // 4. Operator default variables loaded from the environment.
 // 5. Default variables (in `bind_input_variables`).
 //
-func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDetails, bindingID string, details domain.BindDetails, plan *ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
-	appGuid := ""
-	if details.BindResource != nil {
-		appGuid = details.BindResource.AppGuid
+func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDetails, bindingID string, details paramparser.BindDetails, plan *ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
+	var appGuid string
+	if details.BindAppGuid != "" {
+		appGuid = details.BindAppGuid
 	}
 
 	// The namespaces of these values roughly align with the OSB spec.
@@ -470,7 +464,7 @@ func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDeta
 		// specified in the URL
 		"request.binding_id":  bindingID,
 		"request.instance_id": instance.GUID,
-		"request.context":     unmarshalJsonToMap(details.GetRawContext()),
+		"request.context":     details.RequestContext,
 
 		// specified in the request body
 		// Note: the value in instance is considered the official record so values
@@ -489,7 +483,7 @@ func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDeta
 	builder := varcontext.Builder().
 		SetEvalConstants(constants).
 		MergeMap(svc.BindDefaultOverrides()).
-		MergeJsonObject(details.GetRawParameters()).
+		MergeMap(details.RequestParams).
 		MergeMap(plan.BindOverrides).
 		MergeDefaults(svc.bindDefaults()).
 		MergeDefaults(svc.BindComputedVariables)

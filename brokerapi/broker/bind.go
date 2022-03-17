@@ -2,7 +2,6 @@ package broker
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -59,19 +58,19 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	}
 
 	// verify the service exists and the plan exists
-	plan, err := serviceDefinition.GetPlanById(details.PlanID)
+	plan, err := serviceDefinition.GetPlanById(parsedDetails.PlanID)
 	if err != nil {
 		return domain.Binding{}, fmt.Errorf("error getting service plan: %w", err)
 	}
 
 	// Give the user a better error message if they give us a bad request
-	if err := validateBindParameters(details.GetRawParameters(), serviceDefinition.BindInputVariables); err != nil {
+	if err := validateBindParameters(parsedDetails.RequestParams, serviceDefinition.BindInputVariables); err != nil {
 		return domain.Binding{}, err
 	}
 
 	// validate parameters meet the service's schema and merge the plan's vars with
 	// the user's
-	vars, err := serviceDefinition.BindVariables(instanceRecord, bindingID, details, plan, request.DecodeOriginatingIdentityHeader(ctx))
+	vars, err := serviceDefinition.BindVariables(instanceRecord, bindingID, parsedDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return domain.Binding{}, fmt.Errorf("error generating bind variables: %w", err)
 	}
@@ -86,7 +85,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	newCreds := storage.ServiceBindingCredentials{
 		ServiceInstanceGUID: instanceID,
 		BindingGUID:         bindingID,
-		ServiceGUID:         details.ServiceID,
+		ServiceGUID:         parsedDetails.ServiceID,
 		Credentials:         credsDetails,
 	}
 	if err := broker.store.CreateServiceBindingCredentials(newCreds); err != nil {
@@ -97,7 +96,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	bindRequest := storage.BindRequestDetails{
 		ServiceInstanceGUID: instanceID,
 		ServiceBindingGUID:  bindingID,
-		RequestDetails:      details.RawParameters,
+		RequestDetails:      parsedDetails.RequestParams,
 	}
 
 	if err := broker.store.StoreBindRequestDetails(bindRequest); err != nil {
@@ -117,7 +116,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 			return domain.Binding{}, fmt.Errorf("bind failure: unable to put credentials in Credstore: %w", err)
 		}
 
-		_, err = broker.Credstore.AddPermission(credentialName, "mtls-app:"+details.AppGUID, []string{"read"})
+		_, err = broker.Credstore.AddPermission(credentialName, "mtls-app:"+parsedDetails.AppGUID, []string{"read"})
 		if err != nil {
 			return domain.Binding{}, fmt.Errorf("bind failure: unable to add Credstore permissions to app: %w", err)
 		}
@@ -130,14 +129,9 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	return *binding, nil
 }
 
-func validateBindParameters(rawParams json.RawMessage, validUserInputFields []broker.BrokerVariable) error {
-	if len(rawParams) == 0 {
+func validateBindParameters(params map[string]interface{}, validUserInputFields []broker.BrokerVariable) error {
+	if len(params) == 0 {
 		return nil
-	}
-
-	var params map[string]interface{}
-	if err := json.Unmarshal(rawParams, &params); err != nil {
-		return ErrInvalidUserInput
 	}
 
 	// As this is a new check we have feature-flagged it so that it can easily be disabled
