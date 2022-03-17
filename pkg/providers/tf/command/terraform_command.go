@@ -5,18 +5,18 @@ import (
 )
 
 func NewInit012Command(pluginDir string) TerraformCommand {
-	return init012Command{pluginDir: pluginDir}
+	return init012{pluginDir: pluginDir}
 }
 
-type init012Command struct {
+type init012 struct {
 	pluginDir string
 }
 
-func (cmd init012Command) Command() []string {
+func (cmd init012) Command() []string {
 	return []string{"init", fmt.Sprintf("-plugin-dir=%s", cmd.pluginDir), "-get-plugins=false", "-no-color"}
 }
 
-func NewInitCommand(pluginDir string) TerraformCommand {
+func NewInit(pluginDir string) TerraformCommand {
 	return initCommand{pluginDir: pluginDir}
 }
 
@@ -28,48 +28,48 @@ func (cmd initCommand) Command() []string {
 	return []string{"init", fmt.Sprintf("-plugin-dir=%s", cmd.pluginDir), "-no-color"}
 }
 
-type ApplyCommand struct{}
+type Apply struct{}
 
-func (ApplyCommand) Command() []string {
+func (Apply) Command() []string {
 	return []string{"apply", "-auto-approve", "-no-color"}
 }
 
-type DestroyCommand struct{}
+type Destroy struct{}
 
-func (DestroyCommand) Command() []string {
+func (Destroy) Command() []string {
 	return []string{"destroy", "-auto-approve", "-no-color"}
 }
 
-type ShowCommand struct{}
+type Show struct{}
 
-func (ShowCommand) Command() []string {
+func (Show) Command() []string {
 	return []string{"show", "-no-color"}
 }
 
-type PlanCommand struct{}
+type Plan struct{}
 
-func (PlanCommand) Command() []string {
+func (Plan) Command() []string {
 	return []string{"plan", "-no-color"}
 }
 
-type ImportCommand struct {
+type Import struct {
 	Addr string
 	ID   string
 }
 
-func (cmd ImportCommand) Command() []string {
+func (cmd Import) Command() []string {
 	return []string{"import", cmd.Addr, cmd.ID}
 }
 
-type renameProviderCommand struct {
+type renameProvider struct {
 	oldProviderName string
 	newProviderName string
 }
 
-func (cmd renameProviderCommand) Command() []string {
+func (cmd renameProvider) Command() []string {
 	return []string{"state", "replace-provider", "-auto-approve", cmd.oldProviderName, cmd.newProviderName}
 }
 
-func NewRenameProviderCommand(oldProviderName, newProviderName string) TerraformCommand {
-	return renameProviderCommand{oldProviderName: oldProviderName, newProviderName: newProviderName}
+func NewRenameProvider(oldProviderName, newProviderName string) TerraformCommand {
+	return renameProvider{oldProviderName: oldProviderName, newProviderName: newProviderName}
 }

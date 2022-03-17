@@ -24,7 +24,7 @@ func (cmd TerraformDefaultInvoker) Apply(ctx context.Context, workspace workspac
 	if workspace.HasState() {
 		commands = cmd.ReplacementCommands()
 	}
-	commands = append(commands, command.NewInitCommand(cmd.pluginDirectory), command.ApplyCommand{})
+	commands = append(commands, command.NewInit(cmd.pluginDirectory), command.Apply{})
 
 	_, err := workspace.Execute(ctx, cmd.executor, commands...)
 	return err
@@ -32,30 +32,30 @@ func (cmd TerraformDefaultInvoker) Apply(ctx context.Context, workspace workspac
 
 func (cmd TerraformDefaultInvoker) Show(ctx context.Context, workspace workspace.Workspace) (string, error) {
 	output, err := workspace.Execute(ctx, cmd.executor,
-		command.NewInitCommand(cmd.pluginDirectory),
-		command.ShowCommand{})
+		command.NewInit(cmd.pluginDirectory),
+		command.Show{})
 	return output.StdOut, err
 }
 
 func (cmd TerraformDefaultInvoker) Destroy(ctx context.Context, workspace workspace.Workspace) error {
 	_, err := workspace.Execute(ctx, cmd.executor,
-		command.NewInitCommand(cmd.pluginDirectory),
-		command.DestroyCommand{})
+		command.NewInit(cmd.pluginDirectory),
+		command.Destroy{})
 	return err
 }
 
 func (cmd TerraformDefaultInvoker) Plan(ctx context.Context, workspace workspace.Workspace) (executor.ExecutionOutput, error) {
 	return workspace.Execute(ctx, cmd.executor,
-		command.NewInitCommand(cmd.pluginDirectory),
-		command.PlanCommand{})
+		command.NewInit(cmd.pluginDirectory),
+		command.Plan{})
 }
 
 func (cmd TerraformDefaultInvoker) Import(ctx context.Context, workspace workspace.Workspace, resources map[string]string) error {
 	commands := []command.TerraformCommand{
-		command.NewInitCommand(cmd.pluginDirectory),
+		command.NewInit(cmd.pluginDirectory),
 	}
 	for resource, id := range resources {
-		commands = append(commands, command.ImportCommand{Addr: resource, ID: id})
+		commands = append(commands, command.Import{Addr: resource, ID: id})
 	}
 
 	_, err := workspace.Execute(ctx, cmd.executor, commands...)
@@ -68,7 +68,7 @@ func (replace providerReplaceGenerator) ReplacementCommands() []command.Terrafor
 	var commands []command.TerraformCommand
 
 	for old, new := range replace {
-		commands = append(commands, command.NewRenameProviderCommand(old, new))
+		commands = append(commands, command.NewRenameProvider(old, new))
 	}
 
 	return commands
