@@ -272,7 +272,7 @@ var _ = Describe("Unbind", func() {
 				_, err := serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, false)
 
 				Expect(err).To(HaveOccurred())
-				Expect(err).To(MatchError(fmt.Sprintf(`unbind-error`)))
+				Expect(err).To(MatchError(`unbind-error`))
 			})
 		})
 		When("fails to delete service binding credentials", func() {
