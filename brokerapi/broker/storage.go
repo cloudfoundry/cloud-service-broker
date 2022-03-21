@@ -1,8 +1,6 @@
 package broker
 
 import (
-	"encoding/json"
-
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -19,7 +17,7 @@ type Storage interface {
 	ExistsServiceBindingCredentials(bindingID, serviceInstanceID string) (bool, error)
 	DeleteServiceBindingCredentials(bindingID, serviceInstanceID string) error
 	StoreBindRequestDetails(bindRequestDetails storage.BindRequestDetails) error
-	GetBindRequestDetails(bindingID, instanceID string) (json.RawMessage, error)
+	GetBindRequestDetails(bindingID, instanceID string) (storage.JSONObject, error)
 	DeleteBindRequestDetails(bindingID, instanceID string) error
 	StoreProvisionRequestDetails(serviceInstanceID string, details storage.JSONObject) error
 	GetProvisionRequestDetails(serviceInstanceID string) (storage.JSONObject, error)

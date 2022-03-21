@@ -37,7 +37,7 @@ var _ = Describe("ParseUpdateDetails", func() {
 
 	When("params are not valid JSON", func() {
 		It("returns an error", func() {
-			ud, err := paramparser.ParseProvisionDetails(domain.ProvisionDetails{
+			ud, err := paramparser.ParseUpdateDetails(domain.UpdateDetails{
 				RawParameters: []byte(`not-json`),
 			})
 
@@ -48,7 +48,7 @@ var _ = Describe("ParseUpdateDetails", func() {
 
 	When("context is not valid JSON", func() {
 		It("returns an error", func() {
-			ud, err := paramparser.ParseProvisionDetails(domain.ProvisionDetails{
+			ud, err := paramparser.ParseUpdateDetails(domain.UpdateDetails{
 				RawContext: []byte(`not-json`),
 			})
 
@@ -59,7 +59,7 @@ var _ = Describe("ParseUpdateDetails", func() {
 
 	When("input is empty", func() {
 		It("succeeds with an empty result", func() {
-			ud, err := paramparser.ParseProvisionDetails(domain.ProvisionDetails{})
+			ud, err := paramparser.ParseUpdateDetails(domain.UpdateDetails{})
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(ud).To(BeZero())

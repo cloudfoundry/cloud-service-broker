@@ -1013,10 +1013,11 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 			defer viper.Reset()
 
 			details := domain.BindDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
+			parsedDetails, _ := paramparser.ParseBindDetails(details)
 			instance := storage.ServiceInstanceDetails{Outputs: tc.InstanceVars}
 
 			service.Plans[0].BindOverrides = tc.BindOverrides
-			vars, err := service.BindVariables(instance, "binding-id-here", details, &service.Plans[0], tc.OriginatingIdentity)
+			vars, err := service.BindVariables(instance, "binding-id-here", parsedDetails, &service.Plans[0], tc.OriginatingIdentity)
 
 			expectError(t, tc.ExpectedError, err)
 

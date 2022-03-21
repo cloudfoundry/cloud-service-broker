@@ -51,7 +51,7 @@ func (s *Storage) checkAllBindRequestDetails() (errs *multierror.Error) {
 	var bindRequestDetailsBatch []models.BindRequestDetails
 	result := s.db.FindInBatches(&bindRequestDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range bindRequestDetailsBatch {
-			_, err := s.decodeBytes(bindRequestDetailsBatch[i].RequestDetails)
+			_, err := s.decodeJSONObject(bindRequestDetailsBatch[i].RequestDetails)
 			if err != nil {
 				errs = multierror.Append(fmt.Errorf("decode error for binding request details %q: %w", bindRequestDetailsBatch[i].ServiceBindingId, err), errs)
 			}
