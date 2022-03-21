@@ -112,17 +112,14 @@ type TerraformWorkspace struct {
 	dir     string
 }
 
-type tfState struct {
-	Version string `json:"terraform_version"`
-}
-
 func (workspace *TerraformWorkspace) StateVersion() (*version.Version, error) {
-	tf := tfState{}
-	err := json.Unmarshal(workspace.State, &tf)
-	if err != nil {
+	var receiver struct {
+		Version string `json:"terraform_version"`
+	}
+	if err := json.Unmarshal(workspace.State, &receiver); err != nil {
 		return nil, err
 	}
-	return version.NewVersion(tf.Version)
+	return version.NewVersion(receiver.Version)
 }
 
 func (workspace *TerraformWorkspace) HasState() bool {
