@@ -36,8 +36,8 @@ var _ = Context("Terraform012Invoker", func() {
 			Expect(actualContext).To(Equal(expectedContext))
 			Expect(actualExecutor).To(Equal(fakeExecutor))
 			Expect(actualCommands).To(Equal([]command.TerraformCommand{
-				command.NewInit012Command(pluginDirectory),
-				command.Apply{},
+				command.NewInit012(pluginDirectory),
+				command.NewApply(),
 			}))
 		})
 	})

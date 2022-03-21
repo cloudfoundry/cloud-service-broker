@@ -22,7 +22,7 @@ func pollLastOperation(testHelper *helper.TestHelper, serviceInstanceGUID string
 	return func() domain.LastOperationState {
 		lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
 		Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
-		Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
+		Expect(lastOperationResponse.StatusCode).To(Or(Equal(http.StatusOK), Equal(http.StatusGone)))
 		var receiver domain.LastOperation
 		err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
 		Expect(err).NotTo(HaveOccurred())

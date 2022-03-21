@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Context("Terpkg/providers/tf/invokerraformDefaultInvoker", func() {
+var _ = Context("TerraformDefaultInvoker", func() {
 	var fakeExecutor *executorfakes.FakeTerraformExecutor
 	var fakeWorkspace *tffakes.FakeWorkspace
 	var invokerUnderTest invoker.TerraformInvoker
@@ -42,7 +42,7 @@ var _ = Context("Terpkg/providers/tf/invokerraformDefaultInvoker", func() {
 				Expect(actualExecutor).To(Equal(fakeExecutor))
 				Expect(actualCommands).To(Equal([]command.TerraformCommand{
 					command.NewInit(pluginDirectory),
-					command.Apply{},
+					command.NewApply(),
 				}))
 			})
 		})
@@ -60,7 +60,42 @@ var _ = Context("Terpkg/providers/tf/invokerraformDefaultInvoker", func() {
 				Expect(actualCommands).To(Equal([]command.TerraformCommand{
 					command.NewRenameProvider("old_provider_1", "new_provider_1"),
 					command.NewInit(pluginDirectory),
-					command.Apply{},
+					command.NewApply(),
+				}))
+			})
+		})
+	})
+
+	Context("Destroy", func() {
+		Context("has no renames", func() {
+			BeforeEach(func() {
+				invokerUnderTest = invoker.NewTerraformDefaultInvoker(fakeExecutor, pluginDirectory, nil)
+			})
+			It("initializes the workspace and applies", func() {
+				invokerUnderTest.Destroy(expectedContext, fakeWorkspace)
+
+				Expect(fakeWorkspace.ExecuteCallCount()).To(Equal(1))
+				actualContext, actualExecutor, actualCommands := fakeWorkspace.ExecuteArgsForCall(0)
+				Expect(actualContext).To(Equal(expectedContext))
+				Expect(actualExecutor).To(Equal(fakeExecutor))
+				Expect(actualCommands).To(Equal([]command.TerraformCommand{
+					command.NewInit(pluginDirectory),
+					command.NewDestroy(),
+				}))
+			})
+		})
+		Context("has renames", func() {
+			It("renames providers before, initializing the workspace and applies", func() {
+				invokerUnderTest.Destroy(expectedContext, fakeWorkspace)
+
+				Expect(fakeWorkspace.ExecuteCallCount()).To(Equal(1))
+				actualContext, actualExecutor, actualCommands := fakeWorkspace.ExecuteArgsForCall(0)
+				Expect(actualContext).To(Equal(expectedContext))
+				Expect(actualExecutor).To(Equal(fakeExecutor))
+				Expect(actualCommands).To(Equal([]command.TerraformCommand{
+					command.NewRenameProvider("old_provider_1", "new_provider_1"),
+					command.NewInit(pluginDirectory),
+					command.NewDestroy(),
 				}))
 			})
 		})

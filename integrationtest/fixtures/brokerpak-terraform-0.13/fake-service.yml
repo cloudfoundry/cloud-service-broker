@@ -18,4 +18,11 @@ provision:
     - field_name: alpha_input
       type: string
       details: alpha input
+bind:
+  template_refs:
+    main: fake-provision.tf
+  user_inputs:
+    - field_name: alpha_input
+      type: string
+      details: alpha input
 
