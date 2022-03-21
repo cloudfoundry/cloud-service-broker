@@ -48,7 +48,13 @@ var _ = Describe("CheckAllRecords", func() {
 
 			Expect(db.Create(&models.BindRequestDetails{
 				RequestDetails:    []byte(`cannot-be-decrypted`),
-				ServiceBindingId:  "fake-bad-binding-id",
+				ServiceBindingId:  "fake-bad-binding-id-1",
+				ServiceInstanceId: "fake-bad-instance-id",
+			}).Error).NotTo(HaveOccurred())
+
+			Expect(db.Create(&models.BindRequestDetails{
+				RequestDetails:    []byte(`request-details-not-json`),
+				ServiceBindingId:  "fake-bad-binding-id-2",
 				ServiceInstanceId: "fake-bad-instance-id",
 			}).Error).NotTo(HaveOccurred())
 
@@ -77,7 +83,8 @@ var _ = Describe("CheckAllRecords", func() {
 				ContainSubstring(`decode error for service binding credential "fake-bad-binding-id-2": decryption error: fake decryption error`),
 				ContainSubstring(`decode error for provision request details "fake-bad-instance-id-1": decryption error: fake decryption error`),
 				ContainSubstring(`decode error for provision request details "fake-bad-instance-id-2": JSON parse error: invalid character 'r' looking for beginning of value`),
-				ContainSubstring(`decode error for binding request details "fake-bad-binding-id": decryption error: fake decryption error`),
+				ContainSubstring(`decode error for binding request details "fake-bad-binding-id-1": decryption error: fake decryption error`),
+				ContainSubstring(`decode error for binding request details "fake-bad-binding-id-2": JSON parse error: invalid character 'r' looking for beginning of value`),
 				ContainSubstring(`decode error for service instance details "fake-bad-instance-id-1": JSON parse error: invalid character 's' looking for beginning of value`),
 				ContainSubstring(`decode error for service instance details "fake-bad-instance-id-2": decryption error: fake decryption error`),
 				ContainSubstring(`decode error for terraform deployment "fake-bad-id": decryption error: fake decryption error`),

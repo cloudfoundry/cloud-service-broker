@@ -14,11 +14,7 @@ var _ = Describe("ParseBindDetails", func() {
 			PlanID:    "fake-plan-id",
 			ServiceID: "fake-service-id",
 			BindResource: &domain.BindResource{
-				AppGuid:            "fake-bind-app-guid",
-				SpaceGuid:          "fake-bind-space-guid",
-				Route:              "fake-bind-route",
-				CredentialClientID: "fake-bind-credential-client-id",
-				BackupAgent:        false,
+				AppGuid: "fake-bind-app-guid",
 			},
 			RawContext:    []byte(`{"foo": "bar"}`),
 			RawParameters: []byte(`{"baz": "quz"}`),
@@ -28,26 +24,29 @@ var _ = Describe("ParseBindDetails", func() {
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(bindDetails).To(Equal(paramparser.BindDetails{
-			AppGUID:                fakeDomainBindDetails.AppGUID,
-			PlanID:                 fakeDomainBindDetails.PlanID,
-			ServiceID:              fakeDomainBindDetails.ServiceID,
-			BindAppGuid:            fakeDomainBindDetails.BindResource.AppGuid,
-			BindSpaceGuid:          fakeDomainBindDetails.BindResource.SpaceGuid,
-			BindRoute:              fakeDomainBindDetails.BindResource.Route,
-			BindCredentialClientID: fakeDomainBindDetails.BindResource.CredentialClientID,
-			BindBackupAgent:        false,
-			RequestParams:          map[string]interface{}{"baz": "quz"},
-			RequestContext:         map[string]interface{}{"foo": "bar"},
+			AppGUID:        "fake-app-guid",
+			PlanID:         "fake-plan-id",
+			ServiceID:      "fake-service-id",
+			BindAppGUID:    "fake-bind-app-guid",
+			RequestParams:  map[string]interface{}{"baz": "quz"},
+			RequestContext: map[string]interface{}{"foo": "bar"},
 		}))
 	})
 
 	When("no bind_resource is instantiated", func() {
-		It("returns an error", func() {
-			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{})
+		It("succeeds", func() {
+			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
+				AppGUID:   "fake-app-guid",
+				PlanID:    "fake-plan-id",
+				ServiceID: "fake-service-id",
+			})
 
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError(`error parsing bind request details: missing bind_resource`))
-			Expect(bindDetails).To(BeZero())
+			Expect(err).NotTo(HaveOccurred())
+			Expect(bindDetails).To(Equal(paramparser.BindDetails{
+				AppGUID:   "fake-app-guid",
+				PlanID:    "fake-plan-id",
+				ServiceID: "fake-service-id",
+			}))
 		})
 	})
 
@@ -55,7 +54,6 @@ var _ = Describe("ParseBindDetails", func() {
 		It("returns an error", func() {
 			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{BindResource: &domain.BindResource{}, RawContext: []byte("not-json")})
 
-			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(`error parsing request context: invalid character 'o' in literal null (expecting 'u')`))
 			Expect(bindDetails).To(BeZero())
 		})
@@ -65,7 +63,6 @@ var _ = Describe("ParseBindDetails", func() {
 		It("returns an error", func() {
 			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{BindResource: &domain.BindResource{}, RawParameters: []byte("not-json")})
 
-			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError(`error parsing request parameters: invalid character 'o' in literal null (expecting 'u')`))
 			Expect(bindDetails).To(BeZero())
 		})

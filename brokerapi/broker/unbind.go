@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
-
 	"code.cloudfoundry.org/lager"
+	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/utils/request"
 	"github.com/pivotal-cf/brokerapi/v8/domain"

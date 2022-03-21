@@ -452,11 +452,6 @@ func (svc *ServiceDefinition) UpdateVariables(instanceId string, details parampa
 // 5. Default variables (in `bind_input_variables`).
 //
 func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDetails, bindingID string, details paramparser.BindDetails, plan *ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
-	var appGuid string
-	if details.BindAppGuid != "" {
-		appGuid = details.BindAppGuid
-	}
-
 	// The namespaces of these values roughly align with the OSB spec.
 	constants := map[string]interface{}{
 		"request.x_broker_api_originating_identity": originatingIdentity,
@@ -472,7 +467,7 @@ func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDeta
 		// the duplicate sending of fields is likely to be removed.
 		"request.plan_id":         instance.PlanGUID,
 		"request.service_id":      instance.ServiceGUID,
-		"request.app_guid":        appGuid,
+		"request.app_guid":        details.BindAppGUID,
 		"request.plan_properties": plan.GetServiceProperties(),
 
 		// specified by the existing instance

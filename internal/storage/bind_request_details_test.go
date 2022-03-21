@@ -1,7 +1,6 @@
 package storage_test
 
 import (
-	"encoding/json"
 	"errors"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -20,7 +19,7 @@ var _ = Describe("BindRequestDetails", func() {
 			err := store.StoreBindRequestDetails(storage.BindRequestDetails{
 				ServiceInstanceGUID: serviceInstanceId,
 				ServiceBindingGUID:  serviceBindingId,
-				RequestDetails:      json.RawMessage(`{"foo":"bar"}`),
+				RequestDetails:      storage.JSONObject{"foo": "bar"},
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -50,7 +49,7 @@ var _ = Describe("BindRequestDetails", func() {
 				err := store.StoreBindRequestDetails(storage.BindRequestDetails{
 					ServiceInstanceGUID: serviceInstanceId,
 					ServiceBindingGUID:  serviceBindingId,
-					RequestDetails:      json.RawMessage(`{"foo":"bar"}`),
+					RequestDetails:      storage.JSONObject{"foo": "bar"},
 				})
 				Expect(err).To(MatchError("error encoding details: encryption error: bang"))
 			})
@@ -68,7 +67,7 @@ var _ = Describe("BindRequestDetails", func() {
 				err := store.StoreBindRequestDetails(storage.BindRequestDetails{
 					ServiceInstanceGUID: serviceInstanceId,
 					ServiceBindingGUID:  serviceBindingId,
-					RequestDetails:      json.RawMessage(`{"foo":"qux"}`),
+					RequestDetails:      storage.JSONObject{"foo": "qux"},
 				})
 				Expect(err).To(MatchError(ContainSubstring("error saving bind request details: Binding already exists")))
 			})
@@ -83,7 +82,7 @@ var _ = Describe("BindRequestDetails", func() {
 		It("reads the right object from the database", func() {
 			r, err := store.GetBindRequestDetails("fake-binding-id", "fake-instance-id")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(r).To(Equal(json.RawMessage(`{"decrypted":{"foo":"bar"}}`)))
+			Expect(r).To(Equal(storage.JSONObject{"decrypted": map[string]interface{}{"foo": "bar"}}))
 		})
 
 		When("decoding fails", func() {

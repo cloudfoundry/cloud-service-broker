@@ -8,32 +8,23 @@ import (
 )
 
 type BindDetails struct {
-	AppGUID                string
-	PlanID                 string
-	ServiceID              string
-	BindAppGuid            string
-	BindSpaceGuid          string
-	BindRoute              string
-	BindCredentialClientID string
-	BindBackupAgent        bool
-	RequestParams          map[string]interface{}
-	RequestContext         map[string]interface{}
+	AppGUID        string
+	PlanID         string
+	ServiceID      string
+	BindAppGUID    string
+	RequestParams  map[string]interface{}
+	RequestContext map[string]interface{}
 }
 
 func ParseBindDetails(input domain.BindDetails) (BindDetails, error) {
-	if input.BindResource == nil {
-		return BindDetails{}, fmt.Errorf("error parsing bind request details: missing bind_resource")
+	result := BindDetails{
+		AppGUID:   input.AppGUID,
+		PlanID:    input.PlanID,
+		ServiceID: input.ServiceID,
 	}
 
-	result := BindDetails{
-		AppGUID:                input.AppGUID,
-		PlanID:                 input.PlanID,
-		ServiceID:              input.ServiceID,
-		BindAppGuid:            input.BindResource.AppGuid,
-		BindSpaceGuid:          input.BindResource.SpaceGuid,
-		BindRoute:              input.BindResource.Route,
-		BindCredentialClientID: input.BindResource.CredentialClientID,
-		BindBackupAgent:        input.BindResource.BackupAgent,
+	if input.BindResource != nil {
+		result.BindAppGUID = input.BindResource.AppGuid
 	}
 
 	if len(input.RawParameters) > 0 {

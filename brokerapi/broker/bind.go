@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
-
 	"code.cloudfoundry.org/lager"
+	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
@@ -54,7 +53,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 
 	parsedDetails, err := paramparser.ParseBindDetails(details)
 	if err != nil {
-		return domain.Binding{}, err
+		return domain.Binding{}, ErrInvalidUserInput
 	}
 
 	// verify the service exists and the plan exists
