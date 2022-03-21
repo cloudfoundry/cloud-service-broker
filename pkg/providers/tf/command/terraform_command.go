@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func NewInit012Command(pluginDir string) TerraformCommand {
+func NewInit012(pluginDir string) TerraformCommand {
 	return init012{pluginDir: pluginDir}
 }
 
@@ -28,36 +28,55 @@ func (cmd initCommand) Command() []string {
 	return []string{"init", fmt.Sprintf("-plugin-dir=%s", cmd.pluginDir), "-no-color"}
 }
 
-type Apply struct{}
+type apply struct{}
 
-func (Apply) Command() []string {
+func NewApply() TerraformCommand {
+	return apply{}
+}
+func (apply) Command() []string {
 	return []string{"apply", "-auto-approve", "-no-color"}
 }
 
-type Destroy struct{}
+func NewDestroy() TerraformCommand {
+	return destroy{}
+}
 
-func (Destroy) Command() []string {
+type destroy struct{}
+
+func (destroy) Command() []string {
 	return []string{"destroy", "-auto-approve", "-no-color"}
 }
 
-type Show struct{}
+func NewShow() TerraformCommand {
+	return show{}
+}
 
-func (Show) Command() []string {
+type show struct{}
+
+func (show) Command() []string {
 	return []string{"show", "-no-color"}
 }
 
-type Plan struct{}
+func NewPlan() TerraformCommand {
+	return plan{}
+}
 
-func (Plan) Command() []string {
+type plan struct{}
+
+func (plan) Command() []string {
 	return []string{"plan", "-no-color"}
 }
 
-type Import struct {
+func NewImport(addr, id string) TerraformCommand {
+	return importCmd{Addr: addr, ID: id}
+}
+
+type importCmd struct {
 	Addr string
 	ID   string
 }
 
-func (cmd Import) Command() []string {
+func (cmd importCmd) Command() []string {
 	return []string{"import", cmd.Addr, cmd.ID}
 }
 
