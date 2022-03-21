@@ -41,12 +41,3 @@ func ParseBindDetails(input domain.BindDetails) (BindDetails, error) {
 
 	return result, nil
 }
-
-func ParseUnbindDetails(input domain.UnbindDetails) (BindDetails, error) {
-	result := BindDetails{
-		PlanID:    input.PlanID,
-		ServiceID: input.ServiceID,
-	}
-
-	return result, nil
-}

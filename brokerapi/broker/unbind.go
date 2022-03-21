@@ -26,11 +26,6 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return domain.UnbindSpec{}, err
 	}
 
-	parsedDetails, err := paramparser.ParseUnbindDetails(details)
-	if err != nil {
-		return domain.UnbindSpec{}, err
-	}
-
 	// validate existence of binding
 	exists, err := broker.store.ExistsServiceBindingCredentials(bindingID, instanceID)
 	switch {
@@ -47,7 +42,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	}
 
 	// verify the service exists and the plan exists
-	plan, err := serviceDefinition.GetPlanById(parsedDetails.PlanID)
+	plan, err := serviceDefinition.GetPlanById(details.PlanID)
 	if err != nil {
 		return domain.UnbindSpec{}, err
 	}
@@ -57,7 +52,11 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return domain.UnbindSpec{}, fmt.Errorf("error retrieving bind request details for %q: %w", instanceID, err)
 	}
 
-	parsedDetails.RequestParams = storedParams
+	parsedDetails := paramparser.BindDetails{
+		PlanID:        details.PlanID,
+		ServiceID:     details.ServiceID,
+		RequestParams: storedParams,
+	}
 
 	vars, err := serviceDefinition.BindVariables(instance, bindingID, parsedDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
