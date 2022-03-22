@@ -73,33 +73,6 @@ var _ = Describe("Unbind", func() {
 							},
 						},
 					},
-					ProvisionInputVariables: []pkgBroker.BrokerVariable{
-						{
-							FieldName: "foo",
-							Type:      "string",
-							Details:   "fake field name",
-						},
-						{
-							FieldName: "baz",
-							Type:      "string",
-							Details:   "other fake field name",
-						},
-						{
-							FieldName: "guz",
-							Type:      "string",
-							Details:   "yet another fake field name",
-						},
-						{
-							FieldName:      "prohibit-update-field",
-							Type:           "string",
-							Details:        "fake field name",
-							ProhibitUpdate: true,
-						},
-					},
-					ProvisionComputedVariables: []varcontext.DefaultVariable{
-						{Name: "labels", Default: "${json.marshal(request.default_labels)}", Overwrite: true},
-						{Name: "copyOriginatingIdentity", Default: "${json.marshal(request.x_broker_api_originating_identity)}", Overwrite: true},
-					},
 					BindInputVariables: []pkgBroker.BrokerVariable{
 						{
 							FieldName: "foo",
