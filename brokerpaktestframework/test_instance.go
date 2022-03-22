@@ -56,7 +56,7 @@ func waitForHttpServer(s string) error {
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 4
 	retryClient.RetryWaitMin = time.Millisecond * 200
-	retryClient.RetryWaitMax = time.Millisecond * 500
+	retryClient.RetryWaitMax = time.Millisecond * 1000
 	_, err := retryClient.Get(s)
 	return err
 }
