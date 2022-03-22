@@ -24,7 +24,7 @@ func (cmd TerraformDefaultInvoker) Apply(ctx context.Context, workspace workspac
 	if workspace.HasState() {
 		commands = cmd.ReplacementCommands()
 	}
-	commands = append(commands, command.NewInit(cmd.pluginDirectory), command.Apply{})
+	commands = append(commands, command.NewInit(cmd.pluginDirectory), command.NewApply())
 
 	_, err := workspace.Execute(ctx, cmd.executor, commands...)
 	return err
@@ -33,21 +33,24 @@ func (cmd TerraformDefaultInvoker) Apply(ctx context.Context, workspace workspac
 func (cmd TerraformDefaultInvoker) Show(ctx context.Context, workspace workspace.Workspace) (string, error) {
 	output, err := workspace.Execute(ctx, cmd.executor,
 		command.NewInit(cmd.pluginDirectory),
-		command.Show{})
+		command.NewShow())
 	return output.StdOut, err
 }
 
 func (cmd TerraformDefaultInvoker) Destroy(ctx context.Context, workspace workspace.Workspace) error {
 	_, err := workspace.Execute(ctx, cmd.executor,
-		command.NewInit(cmd.pluginDirectory),
-		command.Destroy{})
+		append(
+			cmd.ReplacementCommands(),
+			command.NewInit(cmd.pluginDirectory),
+			command.NewDestroy(),
+		)...)
 	return err
 }
 
 func (cmd TerraformDefaultInvoker) Plan(ctx context.Context, workspace workspace.Workspace) (executor.ExecutionOutput, error) {
 	return workspace.Execute(ctx, cmd.executor,
 		command.NewInit(cmd.pluginDirectory),
-		command.Plan{})
+		command.NewPlan())
 }
 
 func (cmd TerraformDefaultInvoker) Import(ctx context.Context, workspace workspace.Workspace, resources map[string]string) error {
@@ -55,7 +58,7 @@ func (cmd TerraformDefaultInvoker) Import(ctx context.Context, workspace workspa
 		command.NewInit(cmd.pluginDirectory),
 	}
 	for resource, id := range resources {
-		commands = append(commands, command.Import{Addr: resource, ID: id})
+		commands = append(commands, command.NewImport(resource, id))
 	}
 
 	_, err := workspace.Execute(ctx, cmd.executor, commands...)

@@ -2,7 +2,6 @@
 package brokerfakes
 
 import (
-	"encoding/json"
 	"sync"
 
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
@@ -107,18 +106,18 @@ type FakeStorage struct {
 		result1 bool
 		result2 error
 	}
-	GetBindRequestDetailsStub        func(string, string) (json.RawMessage, error)
+	GetBindRequestDetailsStub        func(string, string) (storage.JSONObject, error)
 	getBindRequestDetailsMutex       sync.RWMutex
 	getBindRequestDetailsArgsForCall []struct {
 		arg1 string
 		arg2 string
 	}
 	getBindRequestDetailsReturns struct {
-		result1 json.RawMessage
+		result1 storage.JSONObject
 		result2 error
 	}
 	getBindRequestDetailsReturnsOnCall map[int]struct {
-		result1 json.RawMessage
+		result1 storage.JSONObject
 		result2 error
 	}
 	GetProvisionRequestDetailsStub        func(string) (storage.JSONObject, error)
@@ -723,7 +722,7 @@ func (fake *FakeStorage) ExistsTerraformDeploymentReturnsOnCall(i int, result1 b
 	}{result1, result2}
 }
 
-func (fake *FakeStorage) GetBindRequestDetails(arg1 string, arg2 string) (json.RawMessage, error) {
+func (fake *FakeStorage) GetBindRequestDetails(arg1 string, arg2 string) (storage.JSONObject, error) {
 	fake.getBindRequestDetailsMutex.Lock()
 	ret, specificReturn := fake.getBindRequestDetailsReturnsOnCall[len(fake.getBindRequestDetailsArgsForCall)]
 	fake.getBindRequestDetailsArgsForCall = append(fake.getBindRequestDetailsArgsForCall, struct {
@@ -749,7 +748,7 @@ func (fake *FakeStorage) GetBindRequestDetailsCallCount() int {
 	return len(fake.getBindRequestDetailsArgsForCall)
 }
 
-func (fake *FakeStorage) GetBindRequestDetailsCalls(stub func(string, string) (json.RawMessage, error)) {
+func (fake *FakeStorage) GetBindRequestDetailsCalls(stub func(string, string) (storage.JSONObject, error)) {
 	fake.getBindRequestDetailsMutex.Lock()
 	defer fake.getBindRequestDetailsMutex.Unlock()
 	fake.GetBindRequestDetailsStub = stub
@@ -762,28 +761,28 @@ func (fake *FakeStorage) GetBindRequestDetailsArgsForCall(i int) (string, string
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeStorage) GetBindRequestDetailsReturns(result1 json.RawMessage, result2 error) {
+func (fake *FakeStorage) GetBindRequestDetailsReturns(result1 storage.JSONObject, result2 error) {
 	fake.getBindRequestDetailsMutex.Lock()
 	defer fake.getBindRequestDetailsMutex.Unlock()
 	fake.GetBindRequestDetailsStub = nil
 	fake.getBindRequestDetailsReturns = struct {
-		result1 json.RawMessage
+		result1 storage.JSONObject
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeStorage) GetBindRequestDetailsReturnsOnCall(i int, result1 json.RawMessage, result2 error) {
+func (fake *FakeStorage) GetBindRequestDetailsReturnsOnCall(i int, result1 storage.JSONObject, result2 error) {
 	fake.getBindRequestDetailsMutex.Lock()
 	defer fake.getBindRequestDetailsMutex.Unlock()
 	fake.GetBindRequestDetailsStub = nil
 	if fake.getBindRequestDetailsReturnsOnCall == nil {
 		fake.getBindRequestDetailsReturnsOnCall = make(map[int]struct {
-			result1 json.RawMessage
+			result1 storage.JSONObject
 			result2 error
 		})
 	}
 	fake.getBindRequestDetailsReturnsOnCall[i] = struct {
-		result1 json.RawMessage
+		result1 storage.JSONObject
 		result2 error
 	}{result1, result2}
 }

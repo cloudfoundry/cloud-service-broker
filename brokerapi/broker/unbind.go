@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/utils/request"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
@@ -46,18 +47,25 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return domain.UnbindSpec{}, fmt.Errorf("error retrieving service instance details: %s", err)
 	}
 
-	rawParameters, err := broker.store.GetBindRequestDetails(bindingID, instanceID)
+	// verify the service exists and the plan exists
+	plan, err := serviceDefinition.GetPlanById(details.PlanID)
+	if err != nil {
+		return domain.UnbindSpec{}, err
+	}
+
+	storedParams, err := broker.store.GetBindRequestDetails(bindingID, instanceID)
+
 	if err != nil {
 		return domain.UnbindSpec{}, fmt.Errorf("error retrieving bind request details for %q: %w", instanceID, err)
 	}
 
-	bindDetails := domain.BindDetails{
+	parsedDetails := paramparser.BindDetails{
 		PlanID:        details.PlanID,
 		ServiceID:     details.ServiceID,
-		RawParameters: rawParameters,
+		RequestParams: storedParams,
 	}
 
-	vars, err := serviceDefinition.BindVariables(instance, bindingID, bindDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
+	vars, err := serviceDefinition.BindVariables(instance, bindingID, parsedDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return domain.UnbindSpec{}, err
 	}
