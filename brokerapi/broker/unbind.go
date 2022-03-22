@@ -21,7 +21,13 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		"details":     details,
 	})
 
+	// verify the service exists and the plan exists
 	serviceDefinition, serviceProvider, err := broker.getDefinitionAndProvider(details.ServiceID)
+	if err != nil {
+		return domain.UnbindSpec{}, err
+	}
+
+	plan, err := serviceDefinition.GetPlanById(details.PlanID)
 	if err != nil {
 		return domain.UnbindSpec{}, err
 	}
@@ -41,13 +47,8 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return domain.UnbindSpec{}, fmt.Errorf("error retrieving service instance details: %s", err)
 	}
 
-	// verify the service exists and the plan exists
-	plan, err := serviceDefinition.GetPlanById(details.PlanID)
-	if err != nil {
-		return domain.UnbindSpec{}, err
-	}
-
 	storedParams, err := broker.store.GetBindRequestDetails(bindingID, instanceID)
+
 	if err != nil {
 		return domain.UnbindSpec{}, fmt.Errorf("error retrieving bind request details for %q: %w", instanceID, err)
 	}
@@ -69,6 +70,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	}
 
 	if broker.Credstore != nil {
+
 		credentialName := getCredentialName(broker.getServiceName(serviceDefinition), bindingID)
 
 		err = broker.Credstore.DeletePermission(credentialName)
