@@ -72,17 +72,6 @@ var _ = Describe("Unbind", func() {
 								"other-plan-defined-key": "other-plan-defined-value",
 							},
 						},
-						{
-							ServicePlan: domain.ServicePlan{
-								ID:            planID,
-								Name:          "new-test-plan",
-								PlanUpdatable: &planUpdatable,
-							},
-							ServiceProperties: map[string]interface{}{
-								"new-plan-defined-key":       "plan-defined-value",
-								"new-other-plan-defined-key": "other-plan-defined-value",
-							},
-						},
 					},
 					ProvisionInputVariables: []pkgBroker.BrokerVariable{
 						{
@@ -109,6 +98,32 @@ var _ = Describe("Unbind", func() {
 					},
 					ProvisionComputedVariables: []varcontext.DefaultVariable{
 						{Name: "labels", Default: "${json.marshal(request.default_labels)}", Overwrite: true},
+						{Name: "copyOriginatingIdentity", Default: "${json.marshal(request.x_broker_api_originating_identity)}", Overwrite: true},
+					},
+					BindInputVariables: []pkgBroker.BrokerVariable{
+						{
+							FieldName: "foo",
+							Type:      "string",
+							Details:   "fake field name",
+						},
+						{
+							FieldName: "baz",
+							Type:      "string",
+							Details:   "other fake field name",
+						},
+						{
+							FieldName: "guz",
+							Type:      "string",
+							Details:   "yet another fake field name",
+						},
+						{
+							FieldName:      "prohibit-update-field",
+							Type:           "string",
+							Details:        "fake field name",
+							ProhibitUpdate: true,
+						},
+					},
+					BindComputedVariables: []varcontext.DefaultVariable{
 						{Name: "copyOriginatingIdentity", Default: "${json.marshal(request.x_broker_api_originating_identity)}", Overwrite: true},
 					},
 					ProviderBuilder: providerBuilder,
@@ -233,6 +248,22 @@ var _ = Describe("Unbind", func() {
 					_, _, _, actualVars := fakeServiceProvider.UnbindArgsForCall(0)
 					Expect(actualVars.GetString("foo")).To(Equal("bar"))
 
+				})
+			})
+
+			Describe("computed variables", func() {
+				It("passes computed variables to unbind", func() {
+					header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
+					newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
+
+					_, err = serviceBroker.Unbind(newContext, instanceID, bindingID, unbindDetails, true)
+					Expect(err).NotTo(HaveOccurred())
+
+					By("validating provider provision has been called with the right vars")
+					Expect(fakeServiceProvider.UnbindCallCount()).To(Equal(1))
+					_, _, _, actualVars := fakeServiceProvider.UnbindArgsForCall(0)
+
+					Expect(actualVars.GetString("copyOriginatingIdentity")).To(Equal(`{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`))
 				})
 			})
 		})
