@@ -69,8 +69,16 @@ var _ = Describe("CheckAllRecords", func() {
 			}).Error).NotTo(HaveOccurred())
 
 			Expect(db.Create(&models.TerraformDeployment{
-				ID:                   "fake-bad-id",
+				ID:                   "fake-bad-id-1",
 				Workspace:            []byte("cannot-be-decrypted"),
+				LastOperationType:    "create",
+				LastOperationState:   "succeeded",
+				LastOperationMessage: "amazing",
+			}).Error).NotTo(HaveOccurred())
+
+			Expect(db.Create(&models.TerraformDeployment{
+				ID:                   "fake-bad-id-2",
+				Workspace:            []byte("workspace-not-json"),
 				LastOperationType:    "create",
 				LastOperationState:   "succeeded",
 				LastOperationMessage: "amazing",
@@ -87,7 +95,8 @@ var _ = Describe("CheckAllRecords", func() {
 				ContainSubstring(`decode error for binding request details "fake-bad-binding-id-2": JSON parse error: invalid character 'r' looking for beginning of value`),
 				ContainSubstring(`decode error for service instance details "fake-bad-instance-id-1": JSON parse error: invalid character 's' looking for beginning of value`),
 				ContainSubstring(`decode error for service instance details "fake-bad-instance-id-2": decryption error: fake decryption error`),
-				ContainSubstring(`decode error for terraform deployment "fake-bad-id": decryption error: fake decryption error`),
+				ContainSubstring(`decode error for terraform deployment "fake-bad-id-1": decryption error: fake decryption error`),
+				ContainSubstring(`decode error for terraform deployment "fake-bad-id-2": JSON parse error: invalid character 'w' looking for beginning of value`),
 			)))
 		})
 	})

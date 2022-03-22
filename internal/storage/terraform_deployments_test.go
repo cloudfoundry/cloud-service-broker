@@ -76,7 +76,7 @@ var _ = Describe("TerraformDeployments", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(r.ID).To(Equal("fake-id-2"))
-			Expect(r.Workspace).To(Equal([]byte(`{"decrypted":fake-workspace-2}`)))
+			Expect(r.Workspace).To(Equal([]byte(`{"decrypted":{"workspace":"fake-2"}}`)))
 			Expect(r.LastOperationType).To(Equal("update"))
 			Expect(r.LastOperationState).To(Equal("failed"))
 			Expect(r.LastOperationMessage).To(Equal("too bad"))
@@ -135,21 +135,21 @@ var _ = Describe("TerraformDeployments", func() {
 func addFakeTerraformDeployments() {
 	Expect(db.Create(&models.TerraformDeployment{
 		ID:                   "fake-id-1",
-		Workspace:            []byte("fake-workspace-1"),
+		Workspace:            []byte(`{"workspace":"fake-1"}`),
 		LastOperationType:    "create",
 		LastOperationState:   "succeeded",
 		LastOperationMessage: "amazing",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.TerraformDeployment{
 		ID:                   "fake-id-2",
-		Workspace:            []byte("fake-workspace-2"),
+		Workspace:            []byte(`{"workspace":"fake-2"}`),
 		LastOperationType:    "update",
 		LastOperationState:   "failed",
 		LastOperationMessage: "too bad",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.TerraformDeployment{
 		ID:                   "fake-id-3",
-		Workspace:            []byte("fake-workspace-3"),
+		Workspace:            []byte(`{"workspace":"fake-3"}`),
 		LastOperationType:    "update",
 		LastOperationState:   "succeeded",
 		LastOperationMessage: "great",
