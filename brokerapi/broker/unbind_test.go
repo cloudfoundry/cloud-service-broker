@@ -2,7 +2,6 @@ package broker_test
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
@@ -41,6 +40,10 @@ var _ = Describe("Unbind", func() {
 		fakeStorage         *brokerfakes.FakeStorage
 		fakeServiceProvider *pkgBrokerFakes.FakeServiceProvider
 		fakeCredStore       *credstorefakes.FakeCredStore
+
+		brokerConfig *broker.BrokerConfig
+
+		err error
 	)
 
 	BeforeEach(func() {
@@ -52,7 +55,7 @@ var _ = Describe("Unbind", func() {
 		}
 		planUpdatable := true
 
-		brokerConfig := &broker.BrokerConfig{
+		brokerConfig = &broker.BrokerConfig{
 			Registry: pkgBroker.BrokerRegistry{
 				"test-service": &pkgBroker.ServiceDefinition{
 					Id:   offeringID,
@@ -117,7 +120,7 @@ var _ = Describe("Unbind", func() {
 		fakeStorage = &brokerfakes.FakeStorage{}
 
 		var err error
-		serviceBroker, err = broker.New(brokerConfig, utils.NewLogger("brokers-test"), fakeStorage)
+		serviceBroker, err = broker.New(brokerConfig, utils.NewLogger("unbind-test-with-credhub"), fakeStorage)
 		Expect(err).ToNot(HaveOccurred())
 
 		unbindDetails = domain.UnbindDetails{
@@ -139,37 +142,100 @@ var _ = Describe("Unbind", func() {
 				OperationType:    models.ProvisionOperationType,
 				OperationGUID:    "provision-operation-GUID",
 			}, nil)
-			fakeStorage.GetBindRequestDetailsReturns(json.RawMessage(`{"decrypted":{"foo":"bar"}}`), nil)
+			fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{"foo": "bar"}, nil)
 		})
 
-		It("should remove binding from database", func() {
-			expectedHeader := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
-			newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, expectedHeader)
+		When("credhub enabled", func() {
+			It("should remove binding from database", func() {
+				expectedHeader := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
+				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, expectedHeader)
 
-			response, err := serviceBroker.Unbind(newContext, instanceID, bindingID, unbindDetails, false)
-			Expect(err).ToNot(HaveOccurred())
+				response, err := serviceBroker.Unbind(newContext, instanceID, bindingID, unbindDetails, false)
+				Expect(err).ToNot(HaveOccurred())
 
-			By("validating response")
-			Expect(response).To(BeZero())
+				By("validating response")
+				Expect(response).To(BeZero())
 
-			By("validating provider unbind has been called")
-			Expect(fakeServiceProvider.UnbindCallCount()).To(Equal(1))
-			actualContext, _, _, _ := fakeServiceProvider.UnbindArgsForCall(0)
-			Expect(actualContext.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
+				By("validating provider unbind has been called")
+				Expect(fakeServiceProvider.UnbindCallCount()).To(Equal(1))
+				actualContext, actualInstanceID, actualBindingID, _ := fakeServiceProvider.UnbindArgsForCall(0)
+				Expect(actualContext.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
+				Expect(actualBindingID).To(Equal(bindingID))
+				Expect(actualInstanceID).To(Equal(instanceID))
 
-			By("validating DeleteServiceBindingCredentials has been called")
-			Expect(fakeStorage.DeleteServiceBindingCredentialsCallCount()).To(Equal(1))
-			actualBindingId, actualInstanceID := fakeStorage.DeleteServiceBindingCredentialsArgsForCall(0)
-			Expect(actualBindingId).To(Equal(bindingID))
-			Expect(actualInstanceID).To(Equal(instanceID))
+				By("validating credstore delete has been called")
+				Expect(fakeCredStore.DeletePermissionCallCount()).To(Equal(1))
+				Expect(fakeCredStore.DeleteCallCount()).To(Equal(1))
 
-			By("validating DeleteBindRequestDetails has been called")
-			Expect(fakeStorage.DeleteBindRequestDetailsCallCount()).To(Equal(1))
-			actualBindingId, actualInstanceID = fakeStorage.DeleteBindRequestDetailsArgsForCall(0)
-			Expect(actualBindingId).To(Equal(bindingID))
-			Expect(actualInstanceID).To(Equal(instanceID))
+				By("validating DeleteServiceBindingCredentials has been called")
+				Expect(fakeStorage.DeleteServiceBindingCredentialsCallCount()).To(Equal(1))
+				actualBindingID, actualInstanceID = fakeStorage.DeleteServiceBindingCredentialsArgsForCall(0)
+				Expect(actualBindingID).To(Equal(bindingID))
+				Expect(actualInstanceID).To(Equal(instanceID))
+
+				By("validating DeleteBindRequestDetails has been called")
+				Expect(fakeStorage.DeleteBindRequestDetailsCallCount()).To(Equal(1))
+				actualBindingID, actualInstanceID = fakeStorage.DeleteBindRequestDetailsArgsForCall(0)
+				Expect(actualBindingID).To(Equal(bindingID))
+				Expect(actualInstanceID).To(Equal(instanceID))
+			})
 		})
 
+		When("credhub disabled", func() {
+			BeforeEach(func() {
+				brokerConfig.Credstore = nil
+				serviceBroker, err = broker.New(brokerConfig, utils.NewLogger("unbind-test-no-credhub"), fakeStorage)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("should remove binding from database", func() {
+				expectedHeader := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
+				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, expectedHeader)
+
+				response, err := serviceBroker.Unbind(newContext, instanceID, bindingID, unbindDetails, false)
+				Expect(err).ToNot(HaveOccurred())
+
+				By("validating response")
+				Expect(response).To(BeZero())
+
+				By("validating provider unbind has been called")
+				Expect(fakeServiceProvider.UnbindCallCount()).To(Equal(1))
+				actualContext, actualInstanceID, actualBindingID, _ := fakeServiceProvider.UnbindArgsForCall(0)
+				Expect(actualContext.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
+				Expect(actualBindingID).To(Equal(bindingID))
+				Expect(actualInstanceID).To(Equal(instanceID))
+
+				By("validating DeleteServiceBindingCredentials has been called")
+				Expect(fakeStorage.DeleteServiceBindingCredentialsCallCount()).To(Equal(1))
+				actualBindingID, actualInstanceID = fakeStorage.DeleteServiceBindingCredentialsArgsForCall(0)
+				Expect(actualBindingID).To(Equal(bindingID))
+				Expect(actualInstanceID).To(Equal(instanceID))
+
+				By("validating DeleteBindRequestDetails has been called")
+				Expect(fakeStorage.DeleteBindRequestDetailsCallCount()).To(Equal(1))
+				actualBindingID, actualInstanceID = fakeStorage.DeleteBindRequestDetailsArgsForCall(0)
+				Expect(actualBindingID).To(Equal(bindingID))
+				Expect(actualInstanceID).To(Equal(instanceID))
+			})
+		})
+
+		Describe("unbind variables", func() {
+			When("unbind variables are provided", func() {
+				BeforeEach(func() {
+					fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{"foo": "bar"}, nil)
+				})
+
+				It("should use the variables in unbind", func() {
+					_, err = serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, true)
+					Expect(err).NotTo(HaveOccurred())
+
+					By("validating the provider unbind has been called with correct vars")
+					_, _, _, actualVars := fakeServiceProvider.UnbindArgsForCall(0)
+					Expect(actualVars.GetString("foo")).To(Equal("bar"))
+
+				})
+			})
+		})
 	})
 
 	Describe("unsuccessful unbind", func() {
@@ -185,7 +251,7 @@ var _ = Describe("Unbind", func() {
 				OperationType:    models.ProvisionOperationType,
 				OperationGUID:    "provision-operation-GUID",
 			}, nil)
-			fakeStorage.GetBindRequestDetailsReturns(json.RawMessage(`{"decrypted":{"foo":"bar"}}`), nil)
+			fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{"foo": "bar"}, nil)
 		})
 
 		When("error validating the service exists", func() {
@@ -255,7 +321,7 @@ var _ = Describe("Unbind", func() {
 		})
 		When("error retrieving bind parameters", func() {
 			BeforeEach(func() {
-				fakeStorage.GetBindRequestDetailsReturns(json.RawMessage{}, fmt.Errorf("error"))
+				fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{}, fmt.Errorf("error"))
 			})
 			It("should error", func() {
 				_, err := serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, false)
