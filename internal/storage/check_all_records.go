@@ -108,7 +108,7 @@ func (s *Storage) checkAllTerraformDeployments() (errs *multierror.Error) {
 	var terraformDeploymentBatch []models.TerraformDeployment
 	result := s.db.FindInBatches(&terraformDeploymentBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range terraformDeploymentBatch {
-			_, err := s.decodeBytes(terraformDeploymentBatch[i].Workspace)
+			_, err := s.decodeJSONObject(terraformDeploymentBatch[i].Workspace)
 			if err != nil {
 				errs = multierror.Append(fmt.Errorf("decode error for terraform deployment %q: %w", terraformDeploymentBatch[i].ID, err), errs)
 			}

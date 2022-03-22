@@ -59,9 +59,9 @@ var _ = Describe("UpdateAllRecords", func() {
 			var receiver []models.TerraformDeployment
 			Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
 			Expect(receiver).To(HaveLen(3))
-			Expect(receiver[0].Workspace).To(Equal([]byte(`{"encrypted":{"decrypted":fake-workspace-1}}`)))
-			Expect(receiver[1].Workspace).To(Equal([]byte(`{"encrypted":{"decrypted":fake-workspace-2}}`)))
-			Expect(receiver[2].Workspace).To(Equal([]byte(`{"encrypted":{"decrypted":fake-workspace-3}}`)))
+			Expect(receiver[0].Workspace).To(Equal([]byte(`{"encrypted":{"decrypted":{"workspace":"fake-1"}}}`)))
+			Expect(receiver[1].Workspace).To(Equal([]byte(`{"encrypted":{"decrypted":{"workspace":"fake-2"}}}`)))
+			Expect(receiver[2].Workspace).To(Equal([]byte(`{"encrypted":{"decrypted":{"workspace":"fake-3"}}}`)))
 		})
 	})
 
