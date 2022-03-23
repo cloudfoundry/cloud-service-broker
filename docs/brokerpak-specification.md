@@ -51,6 +51,7 @@ and which services it will provide.
 | required_env_variables | array of string | These are the required environment variables that will be passed through to the terraform execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution. |
 | env_config_mapping |map[string]string | List of mappings of environment variables into config keys, see [functions](#functions) for more information on how to use these |
 | terraform_upgrade_path | array of Terraform Upgrade Path | List of Terraform version steps when performing upgrade in ascending order |
+| terraform_state_provider_replacements | map of Terraform provider names | Map of terraform providers, where the key represents the old name of the provider and the value represents the new name of the provider. Can be used to replace the provider in the terraform state file when switching providers or upgrading to 0.13. |
 
 #### Platform object
 
