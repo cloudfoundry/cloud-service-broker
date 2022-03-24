@@ -511,7 +511,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
 			if len(tc.DefaultOverride) > 0 {
-				viper.Set(service.ProvisionDefaultOverrideProperty(), tc.DefaultOverride)
+				viper.Set(ProvisionDefaultOverrideProperty(SERVICE_SCOPE, service.Name), tc.DefaultOverride)
 			}
 			if len(tc.GlobalDefaults) > 0 {
 				viper.Set(GlobalProvisionDefaults, tc.GlobalDefaults)
@@ -779,7 +779,7 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
 			if len(tc.DefaultOverride) > 0 {
-				viper.Set(service.ProvisionDefaultOverrideProperty(), tc.DefaultOverride)
+				viper.Set(ProvisionDefaultOverrideProperty(SERVICE_SCOPE, service.Name), tc.DefaultOverride)
 			}
 			if len(tc.GlobalDefaults) > 0 {
 				viper.Set(GlobalProvisionDefaults, tc.GlobalDefaults)
@@ -1004,7 +1004,7 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			viper.Set(service.BindDefaultOverrideProperty(), tc.DefaultOverride)
+			viper.Set(BindDefaultOverrideProperty(SERVICE_SCOPE, service.Name), tc.DefaultOverride)
 			defer viper.Reset()
 
 			details := domain.BindDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}

@@ -2,6 +2,7 @@
 
 ### Features:
 - Allow usage of non-Hashicorp providers.
+- Add additional provision/bind default override scopes (org GUID, space GUID and k8s namespace).
 
 ### Fixes:
 - If multiple versions of Terraform are specified, the nominated default version must be highest version
@@ -9,4 +10,3 @@
 - Error messages during encryption tell you how to fix the issue
 - Error messages during encryption log DB row ID
 - Checks the database for readability of all fields before attempting encryption or removing salt
-

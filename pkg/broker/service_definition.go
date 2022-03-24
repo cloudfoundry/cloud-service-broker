@@ -35,6 +35,19 @@ var enableCatalogSchemas = toggles.Features.Toggle("enable-catalog-schemas", fal
 // GlobalProvisionDefaults viper key for global provision defaults
 const GlobalProvisionDefaults = "provision.defaults"
 
+type OverrideScope string
+
+const (
+	// Property Prefix to override parameters based on service plan name
+	SERVICE_SCOPE OverrideScope = "service"
+	// Property Prefix to override parameters based on space GUID
+	SPACE_SCOPE = "space"
+	// Property Prefix to override parameters based on org GUID
+	ORG_SCOPE = "org"
+	// Property Prefix to override parameters based on kubernetes namespace
+	NAMESPACE_SCOPE = "namespace"
+)
+
 // ServiceDefinition holds the necessary details to describe an OSB service and
 // provision it.
 type ServiceDefinition struct {
@@ -65,6 +78,29 @@ type ServiceDefinition struct {
 
 	// IsBuiltin is true if the service is built-in to the platform.
 	IsBuiltin bool
+}
+
+type RequestContextObject struct {
+	Platform string `json:"platform"`
+
+	// Context for platform 'cloudfoundry'
+	// https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object
+	OrganizationGUID        string            `json:"organization_guid"`
+	OrganizationName        string            `json:"organization_name"`
+	OrganizationAnnotations map[string]string `json:"organization_annotations"`
+	SpaceGUID               string            `json:"space_guid"`
+	SpaceName               string            `json:"space_name"`
+	SpaceAnnotations        map[string]string `json:"space_annotations"`
+
+	// Context for platform 'kubernetes'
+	// https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#kubernetes-context-object
+	Namespace            string            `json:"namespace"`
+	NamespaceAnnotations map[string]string `json:"namespace_annotations"`
+	ClusterID            string            `json:"clusterid"`
+
+	// Shared context properties between both platforms
+	InstanceName        string            `json:"instance_name"`
+	InstanceAnnotations map[string]string `json:"instance_annotations"`
 }
 
 var _ validation.Validatable = (*ServiceDefinition)(nil)
@@ -143,14 +179,14 @@ func (svc *ServiceDefinition) UserDefinedPlansVariable() string {
 
 // ProvisionDefaultOverrideProperty returns the Viper property name for the
 // object users can set to override the default values on provision.
-func (svc *ServiceDefinition) ProvisionDefaultOverrideProperty() string {
-	return fmt.Sprintf("service.%s.provision.defaults", svc.Name)
+func ProvisionDefaultOverrideProperty(scope OverrideScope, scopeID string) string {
+	return fmt.Sprintf("%s.%s.provision.defaults", scope, scopeID)
 }
 
 // ProvisionDefaultOverrides returns the deserialized JSON object for the
 // operator-provided property overrides.
-func (svc *ServiceDefinition) ProvisionDefaultOverrides() (map[string]interface{}, error) {
-	return unmarshalViper(svc.ProvisionDefaultOverrideProperty())
+func ProvisionDefaultOverrides(scope OverrideScope, scopeID string) (map[string]interface{}, error) {
+	return unmarshalViper(ProvisionDefaultOverrideProperty(scope, scopeID))
 }
 
 func ProvisionGlobalDefaults() (map[string]interface{}, error) {
@@ -176,14 +212,15 @@ func (svc *ServiceDefinition) IsRoleWhitelistEnabled() bool {
 
 // BindDefaultOverrideProperty returns the Viper property name for the
 // object users can set to override the default values on bind.
-func (svc *ServiceDefinition) BindDefaultOverrideProperty() string {
-	return fmt.Sprintf("service.%s.bind.defaults", svc.Name)
+func BindDefaultOverrideProperty(scope OverrideScope, scopeID string) string {
+	return fmt.Sprintf("%s.%s.bind.defaults", scope, scopeID)
 }
 
 // BindDefaultOverrides returns the deserialized JSON object for the
 // operator-provided property overrides.
-func (svc *ServiceDefinition) BindDefaultOverrides() map[string]interface{} {
-	return viper.GetStringMap(svc.BindDefaultOverrideProperty())
+// Allows the usage of a scope and its associated IDs (e.g. "service" -> Service Plan Name)
+func BindDefaultOverrides(scope OverrideScope, scopeID string) map[string]interface{} {
+	return viper.GetStringMap(BindDefaultOverrideProperty(scope, scopeID))
 }
 
 // TileUserDefinedPlansVariable returns the name of the user defined plans
@@ -381,6 +418,7 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 // Therefore, they get executed conditionally if a user-provided variable does not exist.
 // Computed variables get executed either unconditionally or conditionally for greater flexibility.
 func (svc *ServiceDefinition) variables(constants map[string]interface{},
+	rawRequestContext json.RawMessage,
 	rawUserProvidedParameters json.RawMessage,
 	plan ServicePlan) (*varcontext.VarContext, error) {
 
@@ -388,14 +426,40 @@ func (svc *ServiceDefinition) variables(constants map[string]interface{},
 	if err != nil {
 		return nil, err
 	}
-	provisionDefaultOverrides, err := svc.ProvisionDefaultOverrides()
+	requestContext := &RequestContextObject{}
+	if rawRequestContext != nil && len(rawRequestContext) != 0 {
+		if err = json.Unmarshal(rawRequestContext, &requestContext); err != nil {
+			return nil, fmt.Errorf("unable to unmarshal request context: %w", err)
+		}
+	}
+
+	serviceProvisionDefaultOverrides, err := ProvisionDefaultOverrides(SERVICE_SCOPE, svc.Name)
 	if err != nil {
 		return nil, err
 	}
+
+	orgProvisionDefaultOverrides, err := ProvisionDefaultOverrides(ORG_SCOPE, requestContext.OrganizationGUID)
+	if err != nil {
+		return nil, err
+	}
+
+	spaceProvisionDefaultOverrides, err := ProvisionDefaultOverrides(SPACE_SCOPE, requestContext.SpaceGUID)
+	if err != nil {
+		return nil, err
+	}
+
+	namespaceProvisionDefaultOverrides, err := ProvisionDefaultOverrides(NAMESPACE_SCOPE, requestContext.Namespace)
+	if err != nil {
+		return nil, err
+	}
+
 	builder := varcontext.Builder().
 		SetEvalConstants(constants).
 		MergeMap(globalDefaults).
-		MergeMap(provisionDefaultOverrides).
+		MergeMap(serviceProvisionDefaultOverrides).
+		MergeMap(orgProvisionDefaultOverrides).
+		MergeMap(spaceProvisionDefaultOverrides).
+		MergeMap(namespaceProvisionDefaultOverrides).
 		MergeJsonObject(rawUserProvidedParameters).
 		MergeMap(plan.ProvisionOverrides).
 		MergeDefaults(svc.provisionDefaults()).
@@ -416,7 +480,7 @@ func (svc *ServiceDefinition) ProvisionVariables(instanceId string, details doma
 		"request.x_broker_api_originating_identity": originatingIdentity,
 	}
 
-	return svc.variables(constants, details.GetRawParameters(), plan)
+	return svc.variables(constants, details.GetRawContext(), details.GetRawParameters(), plan)
 }
 
 func (svc *ServiceDefinition) UpdateVariables(instanceId string, details domain.UpdateDetails, mergedUserProvidedParameters json.RawMessage, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
@@ -428,7 +492,7 @@ func (svc *ServiceDefinition) UpdateVariables(instanceId string, details domain.
 		"request.context":                           unmarshalJsonToMap(details.GetRawContext()),
 		"request.x_broker_api_originating_identity": originatingIdentity,
 	}
-	return svc.variables(constants, mergedUserProvidedParameters, plan)
+	return svc.variables(constants, details.GetRawContext(), mergedUserProvidedParameters, plan)
 }
 
 func unmarshalJsonToMap(rawContext json.RawMessage) map[string]interface{} {
@@ -476,9 +540,24 @@ func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDeta
 		"instance.details": instance.Outputs,
 	}
 
+	requestContext := &RequestContextObject{}
+	if details.GetRawContext() != nil && len(details.GetRawContext()) != 0 {
+		if err := json.Unmarshal(details.GetRawContext(), &requestContext); err != nil {
+			return nil, fmt.Errorf("failed unmarshalling request context: %w", err)
+		}
+	}
+
+	serviceBindDefaultOverrides := BindDefaultOverrides(SERVICE_SCOPE, svc.Name)
+	orgBindDefaultOverrides := BindDefaultOverrides(ORG_SCOPE, requestContext.OrganizationGUID)
+	spaceBindDefaultOverrides := BindDefaultOverrides(SPACE_SCOPE, requestContext.SpaceGUID)
+	namespaceBindDefaultOverrides := BindDefaultOverrides(NAMESPACE_SCOPE, requestContext.Namespace)
+
 	builder := varcontext.Builder().
 		SetEvalConstants(constants).
-		MergeMap(svc.BindDefaultOverrides()).
+		MergeMap(serviceBindDefaultOverrides).
+		MergeMap(orgBindDefaultOverrides).
+		MergeMap(spaceBindDefaultOverrides).
+		MergeMap(namespaceBindDefaultOverrides).
 		MergeJsonObject(details.GetRawParameters()).
 		MergeMap(plan.BindOverrides).
 		MergeDefaults(svc.bindDefaults()).
