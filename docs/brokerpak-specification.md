@@ -121,11 +121,16 @@ service_definitions:
 parameters:
 - name: TF_VAR_redis_version
   description: Set this to override the Redis version globally via injected Terraform variable.
-env_config_mapping:
-  ENV_CONFIG_VAL: env.config_val
 required_env_variables:
 - ENV_VARIABLE1
 - ENV_VARIABLE2
+env_config_mapping:
+  ENV_CONFIG_VAL: env.config_val
+terraform_upgrade_path:
+- version: 0.12.21
+- version: 0.13.7
+terraform_state_provider_replacements:
+  registry.terraform.io/-/random: "registry.terraform.io/hashicorp/random"
 ```
 
 ## Services
