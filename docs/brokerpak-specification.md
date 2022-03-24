@@ -462,7 +462,7 @@ The broker makes additional variables available to be used during provision and 
 
 The order of combining all plan properties before invoking Terraform is as follows:
 1. Operator default variables loaded from the environment.
-   * `GSB_PROVISION_DEFAULTS` values first and then `GSB_SERVICE_*SERVICE_NAME*_PROVISION_DEFAULTS`. 
+   * `GSB_PROVISION_DEFAULTS` values first and then `GSB_*SCOPE*_*SCOPE_ID*_PROVISION_DEFAULTS`.  Scope can be "SERVICE","ORG","SPACE" or "NAMESPACE" and the corresponding IDs are the service name, organization GUID, space GUID and the name of the namespace.
 1. User defined variables provided during provision/bind call.
    * The variable constraints are defined in `service_definitions.provision.user_inputs` or `service_definitions.bind.user_inputs` 
    * These values overwrite the above values if set.

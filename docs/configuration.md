@@ -140,6 +140,9 @@ Brokerpak configuration values:
 |<tt>GSB_BROKERPAK_CONFIG</tt>|brokerpak.config| string | JSON global config for broker pak services|
 |<tt>GSB_PROVISION_DEFAULTS</tt>|provision.defaults| string | JSON global provision defaults|
 |<tt>GSB_SERVICE_*SERVICE_NAME*_PROVISION_DEFAULTS</tt>|service.*service-name*.provision.defaults| string | JSON provision defaults override for *service-name*|
+|<tt>GSB_ORG_*ORG_GUID*_PROVISION_DEFAULTS</tt>|org.*org-guid*.provision.defaults| string | JSON provision defaults override for *org-guid*|
+|<tt>GSB_SPACE_*SPACE_GUID*_PROVISION_DEFAULTS</tt>|space.*space-guid*.provision.defaults| string | JSON provision defaults override for *space-guid*|
+|<tt>GSB_NAMESPACE_*NAMESPACE*_PROVISION_DEFAULTS</tt>|namespace.*namespace*.provision.defaults| string | JSON provision defaults override for *namespace*|
 |<tt>GSB_SERVICE_*SERVICE_NAME*_PLANS</tt>|service.*service-name*.plans| string | JSON plan collection to augment plans for *service-name*|
 
 
