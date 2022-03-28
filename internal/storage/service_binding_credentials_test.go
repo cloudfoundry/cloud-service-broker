@@ -81,16 +81,19 @@ var _ = Describe("ServiceBindingCredentials", func() {
 			})
 		})
 
-		When("OtherDetails field is empty", func() {
-			It("succeeds with an empty result", func() {
-				encryptor.DecryptReturns([]byte(""), nil)
+		DescribeTable(
+			"JSON parsing",
+			func(input []byte) {
+				encryptor.DecryptReturns(input, nil)
 
 				r, err := store.GetServiceBindingCredentials("fake-binding-id", "fake-instance-id")
 				Expect(err).NotTo(HaveOccurred())
-
-				Expect(r.Credentials).To(BeEmpty())
-			})
-		})
+				Expect(r.Credentials).To(Equal(storage.JSONObject(nil)))
+			},
+			Entry("null", []byte(`null`)),
+			Entry("empty", []byte(``)),
+			Entry("nil", []byte(nil)),
+		)
 	})
 
 	Describe("ExistsServiceBindingCredentials", func() {
