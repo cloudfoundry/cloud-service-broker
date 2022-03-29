@@ -107,6 +107,20 @@ var _ = Describe("BindRequestDetails", func() {
 				Expect(details).To(BeNil())
 			})
 		})
+
+		DescribeTable(
+			"JSON parsing",
+			func(input []byte) {
+				encryptor.DecryptReturns(input, nil)
+
+				r, err := store.GetBindRequestDetails("fake-binding-id", "fake-instance-id")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(r).To(Equal(storage.JSONObject(nil)))
+			},
+			Entry("null", []byte(`null`)),
+			Entry("empty", []byte(``)),
+			Entry("nil", []byte(nil)),
+		)
 	})
 
 	Describe("DeleteBindRequestDetails", func() {

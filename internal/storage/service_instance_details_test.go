@@ -126,16 +126,19 @@ var _ = Describe("ServiceInstanceDetails", func() {
 			})
 		})
 
-		When("OtherDetails field is empty", func() {
-			It("succeeds with an empty result", func() {
-				encryptor.DecryptReturns([]byte(""), nil)
+		DescribeTable(
+			"JSON parsing",
+			func(input []byte) {
+				encryptor.DecryptReturns(input, nil)
 
 				r, err := store.GetServiceInstanceDetails("fake-id-1")
 				Expect(err).NotTo(HaveOccurred())
-
-				Expect(r.Outputs).To(BeEmpty())
-			})
-		})
+				Expect(r.Outputs).To(Equal(storage.JSONObject(nil)))
+			},
+			Entry("null", []byte(`null`)),
+			Entry("empty", []byte(``)),
+			Entry("nil", []byte(nil)),
+		)
 	})
 
 	Describe("ExistsServiceInstanceDetails", func() {

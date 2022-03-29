@@ -86,6 +86,20 @@ var _ = Describe("ProvisionRequestDetails", func() {
 				Expect(err).To(MatchError("could not find provision request details for service instance: not-there"))
 			})
 		})
+
+		DescribeTable(
+			"JSON parsing",
+			func(input []byte) {
+				encryptor.DecryptReturns(input, nil)
+
+				r, err := store.GetProvisionRequestDetails("fake-instance-id")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(r).To(Equal(storage.JSONObject(nil)))
+			},
+			Entry("null", []byte(`null`)),
+			Entry("empty", []byte(``)),
+			Entry("nil", []byte(nil)),
+		)
 	})
 
 	Describe("DeleteProvisionRequestDetails", func() {
