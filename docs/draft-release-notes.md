@@ -12,4 +12,5 @@
 - Error messages during encryption tell you how to fix the issue
 - Error messages during encryption log DB row ID
 - Checks the database for readability of all fields before attempting encryption or removing salt
+- Better logging when setting up database connection leading to improved debug experience
 

@@ -124,9 +124,11 @@ func setupMysqlDb(logger lager.Logger) (*gorm.DB, error) {
 	}
 
 	logger.Info("Connecting to MySQL Database", lager.Data{
-		"host": dbHost,
-		"port": dbPort,
-		"name": dbName,
+		"host":     dbHost,
+		"port":     dbPort,
+		"name":     dbName,
+		"username": dbUsername,
+		"tls":      tlsStr,
 	})
 
 	connStr := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local&timeout=30s%v", dbUsername, dbPassword, dbHost, dbPort, dbName, tlsStr)
