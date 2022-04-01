@@ -105,7 +105,7 @@ func PropertyToEnvUnprefixed(propertyName string) string {
 func SetParameter(input json.RawMessage, key string, value interface{}) (json.RawMessage, error) {
 	params := make(map[string]interface{})
 
-	if input != nil && len(input) != 0 {
+	if len(input) != 0 {
 		err := json.Unmarshal(input, &params)
 		if err != nil {
 			return nil, err
