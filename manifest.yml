@@ -23,5 +23,5 @@ applications:
   - go_buildpack
   env:
     GOPACKAGENAME: github.com/cloudfoundry/cloud-service-broker
-    GOVERSION: go1.17
+    GOVERSION: go1.18
   random-route: true
