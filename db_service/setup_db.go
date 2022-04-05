@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"os"
 
-	"gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/go-sql-driver/mysql"
@@ -102,7 +102,7 @@ func setupSqlite3Db(logger lager.Logger) (*gorm.DB, error) {
 	}
 
 	logger.Info("WARNING: DO NOT USE SQLITE3 IN PRODUCTION!")
-	return gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
+	return gorm.Open(sqlite.Open(dbPath+"?_pragma=busy_timeout(30000)"), &gorm.Config{})
 }
 
 func setupMysqlDb(logger lager.Logger) (*gorm.DB, error) {

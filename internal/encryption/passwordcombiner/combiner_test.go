@@ -5,9 +5,9 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/gcmencryptor"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/passwordcombiner"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/passwordparser"
+	"github.com/glebarez/sqlite"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
