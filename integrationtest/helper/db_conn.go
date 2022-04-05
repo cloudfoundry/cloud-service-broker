@@ -1,8 +1,8 @@
 package helper
 
 import (
+	"github.com/glebarez/sqlite"
 	"github.com/onsi/gomega"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 

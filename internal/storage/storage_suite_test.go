@@ -2,6 +2,8 @@ package storage_test
 
 import (
 	"errors"
+	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -10,7 +12,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage/storagefakes"
 
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
-	"gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
 
 	"gorm.io/gorm"
 
@@ -22,6 +24,8 @@ var (
 	db        *gorm.DB
 	encryptor *storagefakes.FakeEncryptor
 	store     *storage.Storage
+
+	tmpDB *os.File
 )
 
 func TestStorage(t *testing.T) {
@@ -31,7 +35,10 @@ func TestStorage(t *testing.T) {
 
 var _ = BeforeEach(func() {
 	var err error
-	db, err = gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	tmpDB, err = ioutil.TempFile("/tmp", "test.db")
+	Expect(err).NotTo(HaveOccurred())
+
+	db, err = gorm.Open(sqlite.Open(tmpDB.Name()), &gorm.Config{})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(db.Migrator().CreateTable(&models.ServiceBindingCredentials{})).NotTo(HaveOccurred())
 	Expect(db.Migrator().CreateTable(&models.ProvisionRequestDetails{})).NotTo(HaveOccurred())
@@ -55,4 +62,8 @@ var _ = BeforeEach(func() {
 	}
 
 	store = storage.New(db, encryptor)
+})
+
+var _ = AfterEach(func() {
+	os.Remove(tmpDB.Name())
 })

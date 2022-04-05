@@ -20,8 +20,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
-	"gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/go-sql-driver/mysql"
@@ -71,6 +72,12 @@ func init() {
 // SetupDb pulls db credentials from the environment, connects to the db, and returns the db connection
 func SetupDb(logger lager.Logger) *gorm.DB {
 	dbType := viper.GetString(dbTypeProp)
+
+	if strings.HasPrefix(viper.GetString(dbHostProp), "/") {
+		dbType = DbTypeSqlite3
+		viper.Set(dbPathProp, viper.GetString(dbHostProp))
+	}
+
 	var db *gorm.DB
 	var err error
 	// if provided, use database injected by CF via VCAP_SERVICES environment variable
