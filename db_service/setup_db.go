@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/glebarez/sqlite"
 
@@ -73,6 +74,12 @@ func SetupDb(logger lager.Logger) *gorm.DB {
 	dbType := viper.GetString(dbTypeProp)
 	var db *gorm.DB
 	var err error
+
+	if strings.HasPrefix(viper.GetString(dbHostProp), "/") {
+		dbType = DbTypeSqlite3
+		viper.Set(dbPathProp, viper.GetString(dbHostProp))
+	}
+
 	// if provided, use database injected by CF via VCAP_SERVICES environment variable
 	if err := UseVcapServices(); err != nil {
 		logger.Info("Invalid VCAP_SERVICES environment variable - falling back to explicit environment variables")
