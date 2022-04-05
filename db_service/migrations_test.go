@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
-	"github.com/glebarez/sqlite"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 

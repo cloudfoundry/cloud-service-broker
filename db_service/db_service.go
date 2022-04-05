@@ -21,7 +21,7 @@ import (
 	"code.cloudfoundry.org/lager"
 	"gorm.io/gorm"
 
-	_ "github.com/glebarez/sqlite"
+	_ "gorm.io/driver/sqlite"
 )
 
 var once sync.Once

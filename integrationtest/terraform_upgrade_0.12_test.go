@@ -30,7 +30,7 @@ func pollLastOperation(testHelper *helper.TestHelper, serviceInstanceGUID string
 	}
 }
 
-var _ = FDescribe("Terraform 0.12 Upgrade", func() {
+var _ = Describe("Terraform 0.12 Upgrade", func() {
 	const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
 	const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
 
@@ -53,9 +53,7 @@ var _ = FDescribe("Terraform 0.12 Upgrade", func() {
 
 	terraformStateVersion := func(serviceInstanceGUID string) string {
 		var tfDeploymentReceiver models.TerraformDeployment
-		dbCon := testHelper.DBConn()
-		Expect(dbCon.Where("id = ?", fmt.Sprintf("tf:%s:", serviceInstanceGUID)).First(&tfDeploymentReceiver).Error).NotTo(HaveOccurred())
-
+		Expect(testHelper.DBConn().Where("id = ?", fmt.Sprintf("tf:%s:", serviceInstanceGUID)).First(&tfDeploymentReceiver).Error).NotTo(HaveOccurred())
 		var workspaceReceiver struct {
 			State []byte `json:"tfstate"`
 		}
@@ -77,7 +75,6 @@ var _ = FDescribe("Terraform 0.12 Upgrade", func() {
 
 			Eventually(pollLastOperation(testHelper, serviceInstanceGUID), time.Minute*2, lastOperationPollingFrequency).ShouldNot(Equal(domain.InProgress))
 			Expect(pollLastOperation(testHelper, serviceInstanceGUID)()).To(Equal(domain.Succeeded))
-
 			Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.12.21"))
 
 			By("updating the brokerpak and restarting the broker")
@@ -100,7 +97,7 @@ var _ = FDescribe("Terraform 0.12 Upgrade", func() {
 	})
 
 	Context("TF Upgrades are disabled", func() {
-		FIt("does not upgrade the instance", func() {
+		It("does not upgrade the instance", func() {
 			By("provisioning a service instance at 0.12")
 			serviceInstanceGUID := uuid.New()
 			provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
@@ -108,7 +105,7 @@ var _ = FDescribe("Terraform 0.12 Upgrade", func() {
 			Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
 
 			Eventually(pollLastOperation(testHelper, serviceInstanceGUID), time.Minute*2, lastOperationPollingFrequency).Should(Equal(domain.Succeeded))
-			//Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.12.21"))
+			Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.12.21"))
 
 			By("updating the brokerpak and restarting the broker")
 			session.Terminate()

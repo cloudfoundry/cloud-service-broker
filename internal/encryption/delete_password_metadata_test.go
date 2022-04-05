@@ -3,7 +3,7 @@ package encryption_test
 import (
 	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption"
-	"github.com/glebarez/sqlite"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	. "github.com/onsi/ginkgo/v2"

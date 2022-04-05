@@ -34,12 +34,12 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/builtin/base"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/glebarez/sqlite"
 	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v8"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/middlewares"
 	"github.com/spf13/viper"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
