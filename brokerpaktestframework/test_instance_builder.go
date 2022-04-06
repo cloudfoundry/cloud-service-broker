@@ -113,6 +113,7 @@ func replaceTerraformBinaries(parsedManifest *manifest.Manifest, terraformBuild 
 			URLTemplate: terraformBuild,
 		},
 	}
+	parsedManifest.TerraformProviders = nil
 	return nil
 }
 
