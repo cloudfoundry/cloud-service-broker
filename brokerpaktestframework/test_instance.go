@@ -194,7 +194,7 @@ func (instance *TestInstance) Catalog() (*apiresponses.CatalogResponse, error) {
 
 func (instance *TestInstance) httpInvokeBroker(subpath string, method string, body io.Reader) ([]byte, int, error) {
 	client := &http.Client{
-		Timeout: time.Second * 10,
+		Timeout: time.Second * 0,
 	}
 	req, err := http.NewRequest(method, instance.BrokerUrl(subpath), body)
 	if err != nil {
