@@ -6,7 +6,7 @@ import (
 )
 
 func (h *TestHelper) Client() *client.Client {
-	brokerClient, err := client.New(h.username, h.password, "localhost", h.port)
+	brokerClient, err := client.New(h.username, h.password, "localhost", h.Port)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	return brokerClient
 }
