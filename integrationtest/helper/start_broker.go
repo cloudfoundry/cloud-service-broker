@@ -17,7 +17,7 @@ func (h *TestHelper) StartBrokerCommand(env ...string) *exec.Cmd {
 		"CSB_LISTENER_HOST=localhost",
 		"DB_TYPE=sqlite3",
 		fmt.Sprintf("DB_PATH=%s", h.databaseFile),
-		fmt.Sprintf("PORT=%d", h.port),
+		fmt.Sprintf("PORT=%d", h.Port),
 		fmt.Sprintf("SECURITY_USER_NAME=%s", h.username),
 		fmt.Sprintf("SECURITY_USER_PASSWORD=%s", h.password),
 	)
@@ -35,6 +35,6 @@ func (h *TestHelper) StartBrokerSession(env ...string) *gexec.Session {
 
 func (h *TestHelper) StartBroker(env ...string) *gexec.Session {
 	session := h.StartBrokerSession(env...)
-	waitForBrokerToStart(h.port)
+	waitForBrokerToStart(h.Port)
 	return session
 }

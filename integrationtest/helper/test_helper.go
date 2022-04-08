@@ -25,7 +25,7 @@ func New(csb string) *TestHelper {
 		databaseFile: path.Join(tmpDir, "databaseFile.dat"),
 		OriginalDir:  original,
 		csb:          csb,
-		port:         freePort(),
+		Port:         freePort(),
 		username:     uuid.New(),
 		password:     uuid.New(),
 	}
@@ -34,9 +34,9 @@ func New(csb string) *TestHelper {
 type TestHelper struct {
 	Dir          string
 	OriginalDir  string
+	Port         int
 	csb          string
 	databaseFile string
-	port         int
 	username     string
 	password     string
 }
