@@ -24,6 +24,7 @@ import (
 	osbapiBroker "github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/db_service"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption"
+	"github.com/cloudfoundry/cloud-service-broker/internal/infohandler"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	pakBroker "github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/brokerpak"
@@ -184,6 +185,7 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 	server.AddDocsHandler(router, registry)
 	router.HandleFunc("/examples", server.NewExampleHandler(registry))
 	server.AddHealthHandler(router, db)
+	router.HandleFunc("/info", infohandler.NewDefault())
 
 	port := viper.GetString(apiPortProp)
 	host := viper.GetString(apiHostProp)
