@@ -16,8 +16,6 @@ package broker_test
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"os"
 	"reflect"
 	"testing"
@@ -30,14 +28,11 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/credstore"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/credstore/credstorefakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/builtin/base"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/pborman/uuid"
-	"github.com/pivotal-cf/brokerapi/v8"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/pivotal-cf/brokerapi/v8/middlewares"
 	"github.com/spf13/viper"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -328,123 +323,4 @@ func initService(t *testing.T, state InstanceState, broker *ServiceBroker, stub 
 		_, err := broker.Deprovision(context.Background(), fakeInstanceId, stub.DeprovisionDetails(), true)
 		failIfErr(t, "deprovisioning", err)
 	}
-}
-
-func TestServiceBroker_Bind(t *testing.T) {
-	cases := BrokerEndpointTestSuite{
-		"good-request": {
-			ServiceState: StateBound,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				assertEqual(t, "BindCallCount should match", 1, stub.Provider.BindCallCount())
-				assertEqual(t, "BuildInstanceCredentialsCallCount should match", 1, stub.Provider.BuildInstanceCredentialsCallCount())
-			},
-		},
-		"good-request-with-credstore": {
-			ServiceState: StateBound,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				assertEqual(t, "BindCallCount should match", 1, stub.Provider.BindCallCount())
-				assertEqual(t, "BuildInstanceCredentialsCallCount should match", 1, stub.Provider.BuildInstanceCredentialsCallCount())
-				fcs := broker.Credstore.(*credstorefakes.FakeCredStore)
-				assertEqual(t, "Credstore Put call count should match", 1, fcs.PutCallCount())
-				assertEqual(t, "Credstore AddPermission call count should match", 1, fcs.AddPermissionCallCount())
-			},
-			Credstore: &credstorefakes.FakeCredStore{},
-		},
-		"good-request-with-parameter": {
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				req := stub.BindDetails()
-				req.RawParameters = json.RawMessage(`{"valid_bind_parameter":"yes"}`)
-				_, err := broker.Bind(context.Background(), fakeInstanceId, fakeBindingId, req, true)
-				failIfErr(t, "bind with parameter", err)
-			},
-		},
-		"originating-header": {
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
-				newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
-				broker.Bind(newContext, fakeInstanceId, fakeBindingId, stub.BindDetails(), true)
-				assertEqual(t, "bind calls should match", 1, stub.Provider.BindCallCount())
-				_, actualVarContext := stub.Provider.BindArgsForCall(0)
-				expectedOriginatingIdentityMap := `{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`
-
-				assertEqual(t, "originatingIdentity should match", expectedOriginatingIdentityMap, actualVarContext.GetString("originatingIdentity"))
-			},
-		},
-		"duplicate-request": {
-			ServiceState: StateBound,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				_, err := broker.Bind(context.Background(), fakeInstanceId, fakeBindingId, stub.BindDetails(), true)
-				assertEqual(t, "errors should match", brokerapi.ErrBindingAlreadyExists, err)
-			},
-		},
-		"bad-bind-call": {
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, bkr *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				req := stub.BindDetails()
-				stub.Provider.BindStub = func(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error) {
-					return nil, errors.New("fake error")
-				}
-
-				_, err := bkr.Bind(context.Background(), fakeInstanceId, "bad-bind-call", req, true)
-				assertEqual(t, "errors should match", "error performing bind: fake error", err.Error())
-			},
-		},
-		"bad-request-invalid-json": {
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				req := stub.BindDetails()
-				req.RawParameters = json.RawMessage("{invalid json")
-				_, err := broker.Bind(context.Background(), fakeInstanceId, fakeBindingId, req, true)
-				assertEqual(t, "errors should match", ErrInvalidUserInput, err)
-			},
-		},
-		"bad-request-invalid-parameter": {
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				req := stub.BindDetails()
-				req.RawParameters = json.RawMessage(`{"invalid_bind_parameter":"no","other_invalid_parameter":"also no"}`)
-				_, err := broker.Bind(context.Background(), fakeInstanceId, fakeBindingId, req, true)
-				assertEqual(t, "errors should match", errors.New("additional properties are not allowed: invalid_bind_parameter, other_invalid_parameter"), err)
-			},
-		},
-		"bad-request-invalid-parameter-disabled": {
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				req := stub.BindDetails()
-				req.RawParameters = json.RawMessage(`{"invalid_bind_parameter":"no","other_invalid_parameter":"also no"}`)
-				viper.Set(DisableRequestPropertyValidation, true)
-				_, err := broker.Bind(context.Background(), fakeInstanceId, fakeBindingId, req, true)
-				failIfErr(t, "failed even though check was disabled", err)
-			},
-		},
-		"bind-variables-override-instance-variables": {
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				req := stub.BindDetails()
-				bindResult, err := broker.Bind(context.Background(), fakeInstanceId, "override-params", req, true)
-				failIfErr(t, "binding", err)
-				credMap, ok := bindResult.Credentials.(map[string]interface{})
-				assertTrue(t, "bind result credentials should be a map", ok)
-				assertEqual(t, "credential overridden", "bar", credMap["foo"].(string))
-			},
-		},
-		"bind-returns-credhub-ref": {
-			ServiceState: StateProvisioned,
-			Check: func(t *testing.T, broker *ServiceBroker, stub *serviceStub, encryptor *storagefakes.FakeEncryptor) {
-				req := stub.BindDetails()
-				bindResult, err := broker.Bind(context.Background(), fakeInstanceId, "override-params", req, true)
-				failIfErr(t, "binding", err)
-				credMap, ok := bindResult.Credentials.(map[string]interface{})
-				assertTrue(t, "bind result credentials should be a map", ok)
-				assertTrue(t, "value foo missing", credMap["foo"] == nil)
-				assertTrue(t, "cred-hub ref exists", credMap["credhub-ref"] != nil)
-				assertEqual(t, "cred-hub ref has correct value", "/c/csb/fake-service-name/override-params/secrets-and-services", credMap["credhub-ref"].(string))
-			},
-			Credstore: &credstorefakes.FakeCredStore{},
-		},
-	}
-
-	cases.Run(t)
 }
