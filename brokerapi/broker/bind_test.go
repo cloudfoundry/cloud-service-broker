@@ -301,7 +301,7 @@ var _ = Describe("Bind", func() {
 			It("should error", func() {
 				_, err := serviceBroker.Bind(context.TODO(), instanceID, bindingID, bindDetails, false)
 
-				Expect(err).To(MatchError(fmt.Sprintf(`additional properties are not allowed: invalid_bind_field`)))
+				Expect(err).To(MatchError(`additional properties are not allowed: invalid_bind_field`))
 			})
 		})
 
