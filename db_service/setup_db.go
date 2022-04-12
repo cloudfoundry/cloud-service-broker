@@ -31,17 +31,20 @@ import (
 )
 
 const (
-	caCertProp     = "db.ca.cert"
-	clientCertProp = "db.client.cert"
-	clientKeyProp  = "db.client.key"
-	dbTLS          = "db.tls"
-	dbHostProp     = "db.host"
-	dbUserProp     = "db.user"
-	dbPassProp     = "db.password"
-	dbPortProp     = "db.port"
-	dbNameProp     = "db.name"
-	dbTypeProp     = "db.type"
-	dbPathProp     = "db.path"
+	caCertProp          = "db.ca.cert"
+	clientCertProp      = "db.client.cert"
+	clientKeyProp       = "db.client.key"
+	dbTLSSkipVerifyProp = "db.tls.skip_verify"
+	dbTLSServerName     = "db.tls.server_name"
+
+	dbTLS      = "db.tls"
+	dbHostProp = "db.host"
+	dbUserProp = "db.user"
+	dbPassProp = "db.password"
+	dbPortProp = "db.port"
+	dbNameProp = "db.name"
+	dbTypeProp = "db.type"
+	dbPathProp = "db.path"
 
 	DbTypeMysql   = "mysql"
 	DbTypeSqlite3 = "sqlite3"
@@ -51,6 +54,10 @@ func init() {
 	viper.BindEnv(caCertProp, "CA_CERT")
 	viper.BindEnv(clientCertProp, "CLIENT_CERT")
 	viper.BindEnv(clientKeyProp, "CLIENT_KEY")
+	viper.BindEnv(dbTLSSkipVerifyProp, "TLS_SKIP_VERIFY")
+	viper.SetDefault(dbTLSSkipVerifyProp, "false")
+	viper.BindEnv(dbTLSServerName, "TLS_SERVER_NAME")
+
 	viper.BindEnv(dbTLS, "DB_TLS")
 	viper.SetDefault(dbTLS, "true")
 	viper.BindEnv(dbHostProp, "DB_HOST")
@@ -146,24 +153,23 @@ func generateTlsStringFromEnv() (string, error) {
 
 	// make sure ssl is set up for this connection
 	if caCert != "" && clientCertStr != "" && clientKeyStr != "" {
-		tlsStr = "&tls=custom"
-
 		rootCertPool := x509.NewCertPool()
-
 		if ok := rootCertPool.AppendCertsFromPEM([]byte(caCert)); !ok {
-			return "", fmt.Errorf("error appending cert: %s", errors.New(""))
+			return "", fmt.Errorf("error appending CA cert")
 		}
-		clientCert := make([]tls.Certificate, 0, 1)
 
+		clientCert := make([]tls.Certificate, 0, 1)
 		certs, err := tls.X509KeyPair([]byte(clientCertStr), []byte(clientKeyStr))
 		if err != nil {
 			return "", fmt.Errorf("error parsing cert pair: %s", err)
 		}
 		clientCert = append(clientCert, certs)
+
 		mysql.RegisterTLSConfig("custom", &tls.Config{
 			RootCAs:            rootCertPool,
 			Certificates:       clientCert,
-			InsecureSkipVerify: true,
+			ServerName:         viper.GetString(dbTLSServerName),
+			InsecureSkipVerify: viper.GetBool(dbTLSSkipVerifyProp),
 		})
 	}
 
