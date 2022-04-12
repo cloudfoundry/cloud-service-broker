@@ -2,7 +2,6 @@ package brokerpaktestframework
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -42,7 +41,7 @@ func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.W
 }
 
 func createWorkspace(brokerPackDir string, build string) (string, error) {
-	workingDir, err := ioutil.TempDir("", "prefix")
+	workingDir, err := os.MkdirTemp("", "prefix")
 	if err != nil {
 		return "", err
 	}
@@ -77,7 +76,7 @@ func copyBrokerpackFiles(brokerPackDir string, workingDir string) error {
 }
 
 func templateManifest(brokerPackDir string, build string, workingDir string) error {
-	contents, err := ioutil.ReadFile(path.Join(brokerPackDir, "manifest.yml"))
+	contents, err := os.ReadFile(path.Join(brokerPackDir, "manifest.yml"))
 	if err != nil {
 		return err
 	}
