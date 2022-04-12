@@ -197,7 +197,7 @@ func (pak *BrokerPakReader) extractTerraform(r manifest.TerraformVersion, destin
 		return nil
 	}
 
-	// For compatability with brokerpaks built with older versions
+	// For compatibility with brokerpaks built with older versions
 	unversionedPath := path.Join("bin", plat.Os, plat.Arch, "terraform")
 	if pak.fileExistsInZip(unversionedPath) {
 		if err := pak.contents.ExtractFile(unversionedPath, filepath.Join(destination, "versions", r.Version.String())); err != nil {

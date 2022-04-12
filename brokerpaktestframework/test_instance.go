@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -29,7 +28,7 @@ type TestInstance struct {
 }
 
 func (instance *TestInstance) Start(logger io.Writer, config []string) error {
-	file, err := ioutil.TempFile("", "test-db")
+	file, err := os.CreateTemp("", "test-db")
 	if err != nil {
 		return err
 	}

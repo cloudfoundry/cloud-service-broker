@@ -3,7 +3,6 @@ package brokerpaktestframework
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -14,7 +13,7 @@ import (
 )
 
 func NewTerraformMock() (TerraformMock, error) {
-	dir, err := ioutil.TempDir("", "invocation_store")
+	dir, err := os.MkdirTemp("", "invocation_store")
 	if err != nil {
 		return TerraformMock{}, err
 	}
@@ -45,11 +44,11 @@ func (p TerraformMock) ApplyInvocations() ([]TerraformInvocation, error) {
 }
 
 func (p TerraformMock) Invocations() ([]TerraformInvocation, error) {
-	fileInfo, err := ioutil.ReadDir(p.invocationStore)
+	fileInfo, err := os.ReadDir(p.invocationStore)
 	if err != nil {
 		return nil, err
 	}
-	invocations := []TerraformInvocation{}
+	var invocations []TerraformInvocation
 
 	for _, file := range fileInfo {
 		parts := strings.Split(file.Name(), "-")
@@ -59,7 +58,7 @@ func (p TerraformMock) Invocations() ([]TerraformInvocation, error) {
 }
 
 func (p TerraformMock) Reset() error {
-	dir, err := ioutil.ReadDir(p.invocationStore)
+	dir, err := os.ReadDir(p.invocationStore)
 	if err != nil {
 		return err
 	}
