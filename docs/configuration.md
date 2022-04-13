@@ -22,20 +22,20 @@ Connection details for the backing database for the service broker.
 
 You can configure the following values:
 
-| Environment Variable          | Config File Value       | Type | Description                                                         |
-|-------------------------------|-------------------------|-------------|---------------------------------------------------------------------|
-| <tt>DB_HOST</tt> <b>*</b>     | db.host                 | string | <p>Database host </p>                                               |
-| <tt>DB_USERNAME</tt>          | db.user                 | string | <p>Database username </p>                                           |
-| <tt>DB_PASSWORD</tt>          | db.password             | secret | <p>Database password </p>                                           |
-| <tt>DB_PORT</tt> <b>*</b>     | db.port                 | string | <p>Database port (defaults to 3306)  Default: <code>3306</code></p> |
-| <tt>DB_NAME</tt> <b>*</b>     | db.name                 | string | <p>Database name  Default: <code>servicebroker</code></p>           |
-| <tt>CA_CERT</tt>              | db.ca.cert              | text | <p>Server CA cert </p>                                              |
-| <tt>CLIENT_CERT</tt>          | db.client.cert          | text | <p>Client cert </p>                                                 |
-| <tt>CLIENT_KEY</tt>           | db.client.key           | text | <p>Client key </p>                                                  |
-| <tt>TLS_SKIP_VERIFY</tt>      | db.tls.skip_verify      | text | <p>Skip host name verification when using custom certs </p>         |
-| <tt>TLS_SKIP_VERIFY</tt>      | db.tls.skip_verify      | text | <p>Skip host name verification when using custom certs </p>         |
-| <tt>ENCRYPTION_ENABLED</tt>   | db.encryption.enabled   | Boolean | <p>Enable encryption of sensitive data in the database </p>         |
-| <tt>ENCRYPTION_PASSWORDS</tt> | db.encryption.passwords | text | <p>JSON collection of passwords </p>                                |
+| Environment Variable          | Config File Value       | Type | Description                                                                                                           |
+|-------------------------------|-------------------------|-------------|-----------------------------------------------------------------------------------------------------------------------|
+| <tt>DB_HOST</tt> <b>*</b>     | db.host                 | string | <p>Database host </p>                                                                                                 |
+| <tt>DB_USERNAME</tt>          | db.user                 | string | <p>Database username </p>                                                                                             |
+| <tt>DB_PASSWORD</tt>          | db.password             | secret | <p>Database password </p>                                                                                             |
+| <tt>DB_PORT</tt> <b>*</b>     | db.port                 | string | <p>Database port (defaults to 3306)  Default: <code>3306</code></p>                                                   |
+| <tt>DB_NAME</tt> <b>*</b>     | db.name                 | string | <p>Database name  Default: <code>servicebroker</code></p>                                                             |
+| <tt>DB_TLS</tt> <b>*</b>      | db.tls                  | string | <p>Enforce TLS on connection to Database. Allowed values:<code>true</code>,<code>false</code>,<code>custom</code></p> |
+| <tt>CA_CERT</tt>              | db.ca.cert              | text | <p>Server CA cert </p>                                                                                                |
+| <tt>CLIENT_CERT</tt>          | db.client.cert          | text | <p>Client cert </p>                                                                                                   |
+| <tt>CLIENT_KEY</tt>           | db.client.key           | text | <p>Client key </p>                                                                                                    |
+| <tt>TLS_SKIP_VERIFY</tt>      | db.tls.skip_verify      | text | <p>Skip hostname and certificate verification</p>                                                                     |
+| <tt>ENCRYPTION_ENABLED</tt>   | db.encryption.enabled   | Boolean | <p>Enable encryption of sensitive data in the database </p>                                                           |
+| <tt>ENCRYPTION_PASSWORDS</tt> | db.encryption.passwords | text | <p>JSON collection of passwords </p>                                                                                  |
 
 Example:
 ```

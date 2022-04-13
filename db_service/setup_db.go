@@ -35,7 +35,6 @@ const (
 	clientCertProp      = "db.client.cert"
 	clientKeyProp       = "db.client.key"
 	dbTLSSkipVerifyProp = "db.tls.skip_verify"
-	dbTLSServerName     = "db.tls.server_name"
 
 	dbTLS      = "db.tls"
 	dbHostProp = "db.host"
@@ -56,7 +55,6 @@ func init() {
 	viper.BindEnv(clientKeyProp, "CLIENT_KEY")
 	viper.BindEnv(dbTLSSkipVerifyProp, "TLS_SKIP_VERIFY")
 	viper.SetDefault(dbTLSSkipVerifyProp, "false")
-	viper.BindEnv(dbTLSServerName, "TLS_SERVER_NAME")
 
 	viper.BindEnv(dbTLS, "DB_TLS")
 	viper.SetDefault(dbTLS, "true")
@@ -149,7 +147,15 @@ func generateTlsStringFromEnv() (string, error) {
 	caCert := viper.GetString(caCertProp)
 	clientCertStr := viper.GetString(clientCertProp)
 	clientKeyStr := viper.GetString(clientKeyProp)
-	tlsStr := fmt.Sprintf("&tls=%s", viper.GetString(dbTLS))
+	tlsKey := viper.GetString(dbTLS)
+	tlsSkipVerify := viper.GetBool(dbTLSSkipVerifyProp)
+
+	var tlsStr string
+	if tlsKey == "true" && tlsSkipVerify {
+		tlsStr = "&tls=skip-verify"
+	} else {
+		tlsStr = fmt.Sprintf("&tls=%s", tlsKey)
+	}
 
 	// make sure ssl is set up for this connection
 	if caCert != "" && clientCertStr != "" && clientKeyStr != "" {
@@ -158,18 +164,16 @@ func generateTlsStringFromEnv() (string, error) {
 			return "", fmt.Errorf("error appending CA cert")
 		}
 
-		clientCert := make([]tls.Certificate, 0, 1)
 		certs, err := tls.X509KeyPair([]byte(clientCertStr), []byte(clientKeyStr))
 		if err != nil {
 			return "", fmt.Errorf("error parsing cert pair: %s", err)
 		}
-		clientCert = append(clientCert, certs)
+		clientCert := []tls.Certificate{certs}
 
 		mysql.RegisterTLSConfig("custom", &tls.Config{
 			RootCAs:            rootCertPool,
 			Certificates:       clientCert,
-			ServerName:         viper.GetString(dbTLSServerName),
-			InsecureSkipVerify: viper.GetBool(dbTLSSkipVerifyProp),
+			InsecureSkipVerify: tlsSkipVerify,
 		})
 	}
 
