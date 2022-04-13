@@ -1,4 +1,4 @@
-package workspace_test
+package workspace
 
 import (
 	"testing"

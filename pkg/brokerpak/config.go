@@ -17,7 +17,6 @@ package brokerpak
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -160,7 +159,6 @@ func ListBrokerpaks(directory string) ([]string, error) {
 		if err != nil {
 			return err
 		}
-		log.Printf("examining file %v", path)
 		if filepath.Ext(path) == ".brokerpak" {
 			path, err := filepath.Abs(path)
 			if err != nil {
