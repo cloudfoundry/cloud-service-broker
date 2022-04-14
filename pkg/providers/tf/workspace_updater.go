@@ -38,6 +38,7 @@ func UpdateWorkspaceHCL(store broker.ServiceProviderStorage, action TfServiceDef
 	}
 
 	workspace.State = currentWorkspace.State
+	workspace.AdditionalState = currentWorkspace.AdditionalState
 
 	workspaceString, err := workspace.Serialize()
 	if err != nil {
