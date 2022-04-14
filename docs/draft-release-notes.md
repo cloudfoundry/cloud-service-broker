@@ -2,6 +2,7 @@
 
 ### Features:
 - new "/info" endpoint for diagnostics reports broker version and uptime
+- allow users to configure the TLS `skip-verify` option when using custom certificates
 
 ### Fixes:
 
