@@ -31,17 +31,18 @@ import (
 )
 
 const (
-	caCertProp     = "db.ca.cert"
-	clientCertProp = "db.client.cert"
-	clientKeyProp  = "db.client.key"
-	dbTLS          = "db.tls"
-	dbHostProp     = "db.host"
-	dbUserProp     = "db.user"
-	dbPassProp     = "db.password"
-	dbPortProp     = "db.port"
-	dbNameProp     = "db.name"
-	dbTypeProp     = "db.type"
-	dbPathProp     = "db.path"
+	caCertProp          = "db.ca.cert"
+	clientCertProp      = "db.client.cert"
+	clientKeyProp       = "db.client.key"
+	customTLSSkipVerify = "db.custom_certs.tls_skip_verify"
+	dbTLS               = "db.tls"
+	dbHostProp          = "db.host"
+	dbUserProp          = "db.user"
+	dbPassProp          = "db.password"
+	dbPortProp          = "db.port"
+	dbNameProp          = "db.name"
+	dbTypeProp          = "db.type"
+	dbPathProp          = "db.path"
 
 	DbTypeMysql   = "mysql"
 	DbTypeSqlite3 = "sqlite3"
@@ -53,6 +54,9 @@ func init() {
 	viper.BindEnv(clientKeyProp, "CLIENT_KEY")
 	viper.BindEnv(dbTLS, "DB_TLS")
 	viper.SetDefault(dbTLS, "true")
+	viper.BindEnv(customTLSSkipVerify, "CUSTOM_CERT_TLS_SKIP_VERIFY")
+	viper.SetDefault(customTLSSkipVerify, true)
+
 	viper.BindEnv(dbHostProp, "DB_HOST")
 	viper.BindEnv(dbUserProp, "DB_USERNAME")
 	viper.BindEnv(dbPassProp, "DB_PASSWORD")
@@ -142,6 +146,8 @@ func generateTlsStringFromEnv() (string, error) {
 	caCert := viper.GetString(caCertProp)
 	clientCertStr := viper.GetString(clientCertProp)
 	clientKeyStr := viper.GetString(clientKeyProp)
+	skipVerify := viper.GetBool(customTLSSkipVerify)
+
 	tlsStr := fmt.Sprintf("&tls=%s", viper.GetString(dbTLS))
 
 	// make sure ssl is set up for this connection
@@ -153,17 +159,17 @@ func generateTlsStringFromEnv() (string, error) {
 		if ok := rootCertPool.AppendCertsFromPEM([]byte(caCert)); !ok {
 			return "", fmt.Errorf("error appending cert: %s", errors.New(""))
 		}
-		clientCert := make([]tls.Certificate, 0, 1)
 
 		certs, err := tls.X509KeyPair([]byte(clientCertStr), []byte(clientKeyStr))
 		if err != nil {
 			return "", fmt.Errorf("error parsing cert pair: %s", err)
 		}
-		clientCert = append(clientCert, certs)
+		clientCert := []tls.Certificate{certs}
+
 		mysql.RegisterTLSConfig("custom", &tls.Config{
 			RootCAs:            rootCertPool,
 			Certificates:       clientCert,
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: skipVerify,
 		})
 	}
 
