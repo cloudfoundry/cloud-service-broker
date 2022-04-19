@@ -21,6 +21,8 @@ var _ = Describe("WorkspaceUpdater", func() {
 		lastOperationState   = "fake operation state"
 		lastOperationMessage = "fake operation message"
 		terraformState       = "fake terraform state"
+		additionalStateFile  = "fake.pem"
+		additionalStateData  = "fake additional state"
 		template             = `
 				variable resourceGroup {type = string}
 	
@@ -66,8 +68,9 @@ var _ = Describe("WorkspaceUpdater", func() {
 					ModuleName:   "fake module name",
 					InstanceName: "fake instance name",
 				}},
-				Transformer: workspace.TfTransformer{},
-				State:       []byte(terraformState),
+				Transformer:     workspace.TfTransformer{},
+				State:           []byte(terraformState),
+				AdditionalState: map[string][]byte{additionalStateFile: []byte(additionalStateData)},
 			}
 
 			ws, err := workspace.Serialize()
@@ -144,7 +147,8 @@ var _ = Describe("WorkspaceUpdater", func() {
 					ParametersToRemove: []string{},
 					ParametersToAdd:    []workspace.ParameterMapping{},
 				},
-				State: []byte(terraformState),
+				State:           []byte(terraformState),
+				AdditionalState: map[string][]byte{additionalStateFile: []byte(additionalStateData)},
 			}
 			ew, err := expectedWorkspace.Serialize()
 			Expect(err).NotTo(HaveOccurred())
