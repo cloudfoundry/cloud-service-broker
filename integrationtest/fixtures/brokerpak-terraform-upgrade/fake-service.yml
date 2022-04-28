@@ -14,3 +14,6 @@ plans:
 provision:
   template_refs:
     main: fake-provision.tf
+bind:
+  template_refs:
+    main: fake-provision.tf

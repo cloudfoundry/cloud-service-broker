@@ -16,20 +16,6 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
-var lastOperationPollingFrequency = time.Second * 1
-
-func pollLastOperation(testHelper *helper.TestHelper, serviceInstanceGUID string) func() domain.LastOperationState {
-	return func() domain.LastOperationState {
-		lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
-		Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
-		Expect(lastOperationResponse.StatusCode).To(Or(Equal(http.StatusOK), Equal(http.StatusGone)))
-		var receiver domain.LastOperation
-		err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
-		Expect(err).NotTo(HaveOccurred())
-		return receiver.State
-	}
-}
-
 var _ = Describe("Terraform 0.12 Upgrade", func() {
 	const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
 	const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
