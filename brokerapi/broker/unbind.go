@@ -65,7 +65,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	}
 
 	// remove binding from service provider
-	if err = serviceProvider.Unbind(ctx, instanceID, bindingID, vars); err != nil {
+	if err := serviceProvider.Unbind(ctx, instanceID, bindingID, vars); err != nil {
 		return domain.UnbindSpec{}, err
 	}
 

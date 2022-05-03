@@ -19,7 +19,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("delete", func() {
+var _ = Describe("upgrade terraform before deprovision", func() {
 	const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
 	const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
 
@@ -81,7 +81,7 @@ var _ = Describe("delete", func() {
 
 				Eventually(pollLastOperation(testHelper, serviceInstanceGUID), time.Minute*2, time.Second*10).Should(Equal(domain.Succeeded))
 
-				By("observing that the TF state file has been updated to the latest version before destroy")
+				By("observing that the TF version has been updated to latest before destroy")
 				Expect(session).To(gbytes.Say("versions/0.13.7/terraform\",\"apply\""))
 				Expect(session).To(gbytes.Say("versions/0.14.9/terraform\",\"apply\""))
 				Expect(session).To(gbytes.Say("versions/1.0.10/terraform\",\"apply\""))
