@@ -19,7 +19,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("unbind", func() {
+var _ = Describe("delete", func() {
 	const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
 	const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
 
@@ -55,8 +55,8 @@ var _ = Describe("unbind", func() {
 	}
 
 	Context("Terraform Upgrades are enabled", func() {
-		Describe("existing binding created with Terraform 0.12", func() {
-			It("upgrades the terraform to latest", func() {
+		Describe("service instance created with Terraform 0.12", func() {
+			It("upgrades the terraform to latest before deleting", func() {
 				By("provisioning a service instance at 0.12")
 				serviceInstanceGUID := uuid.New()
 				provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
@@ -67,24 +67,19 @@ var _ = Describe("unbind", func() {
 				Expect(pollLastOperation(testHelper, serviceInstanceGUID)()).To(Equal(domain.Succeeded))
 				Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.12.21"))
 
-				By("creating a binding")
-				bindGUID := uuid.New()
-				bindResponse := testHelper.Client().Bind(serviceInstanceGUID, bindGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
-
-				Expect(bindResponse.Error).NotTo(HaveOccurred())
-				Expect(bindResponse.StatusCode).To(Equal(http.StatusCreated))
-
 				By("updating the brokerpak and restarting the broker")
 				session.Terminate()
 				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
 
 				session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
 
-				By("deleting the instance binding")
-				deleteBindResponse := testHelper.Client().Unbind(serviceInstanceGUID, bindGUID, serviceOfferingGUID, servicePlanGUID, requestID())
+				By("deleting the service instance")
+				deleteBindResponse := testHelper.Client().Deprovision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID())
 
 				Expect(deleteBindResponse.Error).NotTo(HaveOccurred())
-				Expect(deleteBindResponse.StatusCode).To(Equal(http.StatusOK))
+				Expect(deleteBindResponse.StatusCode).To(Equal(http.StatusAccepted))
+
+				Eventually(pollLastOperation(testHelper, serviceInstanceGUID), time.Minute*2, time.Second*10).Should(Equal(domain.Succeeded))
 
 				By("observing that the TF state file has been updated to the latest version before destroy")
 				Expect(session).To(gbytes.Say("versions/0.13.7/terraform\",\"apply\""))
@@ -97,8 +92,8 @@ var _ = Describe("unbind", func() {
 	})
 
 	Context("Terraform upgrades are disabled", func() {
-		Describe("existing binding created with Terraform 0.12", func() {
-			It("fails to delete binding", func() {
+		Describe("existing service created with Terraform 0.12", func() {
+			It("fails to delete service", func() {
 				By("provisioning a service instance at 0.12")
 				serviceInstanceGUID := uuid.New()
 				provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
@@ -109,26 +104,20 @@ var _ = Describe("unbind", func() {
 				Expect(pollLastOperation(testHelper, serviceInstanceGUID)()).To(Equal(domain.Succeeded))
 				Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.12.21"))
 
-				By("creating a binding")
-				bindGUID := uuid.New()
-				bindResponse := testHelper.Client().Bind(serviceInstanceGUID, bindGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
-
-				Expect(bindResponse.Error).NotTo(HaveOccurred())
-				Expect(bindResponse.StatusCode).To(Equal(http.StatusCreated))
-
 				By("updating the brokerpak and restarting the broker")
 				session.Terminate()
 				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
 
 				session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=false")
 
-				By("deleting the instance binding")
-				deleteBindResponse := testHelper.Client().Unbind(serviceInstanceGUID, bindGUID, serviceOfferingGUID, servicePlanGUID, requestID())
+				By("deleting the service instance")
+				deleteBindResponse := testHelper.Client().Deprovision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID())
 
-				Expect(deleteBindResponse.StatusCode).To(Equal(http.StatusInternalServerError))
+				Expect(deleteBindResponse.Error).NotTo(HaveOccurred())
+				Expect(deleteBindResponse.StatusCode).To(Equal(http.StatusAccepted))
 
-				By("observing that the destroy failed due to mismatched TF versions")
-				Expect(session).To(gbytes.Say("apply attempted with a newer version of terraform than the state"))
+				Eventually(pollLastOperation(testHelper, serviceInstanceGUID), time.Minute*2, time.Second*10).Should(Equal(domain.Failed))
+				Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.12.21"))
 
 			})
 		})
