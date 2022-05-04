@@ -249,6 +249,7 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 			runner.operationFinished(err, workspace, deployment)
 			return
 		}
+
 		err = workspace.UpdateInstanceConfiguration(templateVars)
 		if err != nil {
 			runner.operationFinished(err, workspace, deployment)
@@ -319,6 +320,12 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 	}
 
 	go func() {
+		err = runner.performTerraformUpgrade(ctx, workspace)
+		if err != nil {
+			runner.operationFinished(err, workspace, deployment)
+			return
+		}
+
 		err = runner.DefaultInvoker().Destroy(ctx, workspace)
 		runner.operationFinished(err, workspace, deployment)
 	}()
