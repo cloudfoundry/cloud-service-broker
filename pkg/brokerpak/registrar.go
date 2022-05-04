@@ -157,8 +157,8 @@ func (r *Registrar) extractTfBinaries(brokerPak *reader.BrokerPakReader, vc *var
 func (r *Registrar) walk(callback registrarWalkFunc) error {
 	for name, pak := range r.config.Brokerpaks {
 		vc, err := varcontext.Builder().
-			MergeJsonObject(json.RawMessage(r.config.Config)).
-			MergeJsonObject(json.RawMessage(pak.Config)).
+			MergeJSONObject(json.RawMessage(r.config.Config)).
+			MergeJSONObject(json.RawMessage(pak.Config)).
 			Build()
 
 		if err != nil {
