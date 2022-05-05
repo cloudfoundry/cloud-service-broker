@@ -83,8 +83,7 @@ func init() {
 			}
 
 			if onlyState {
-				fmt.Println(string(ws.State))
-				fmt.Printf("%+v\n", ws.AdditionalState)
+				fmt.Printf("%s", string(ws.State))
 			} else {
 				fmt.Println(ws)
 			}

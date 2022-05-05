@@ -21,7 +21,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"strings"
 	"sync"
 
@@ -103,11 +102,11 @@ func DeserializeWorkspace(definition []byte) (*TerraformWorkspace, error) {
 // - The function updates the tfstate once finished.
 // - The function creates and destroys its own dir.
 type TerraformWorkspace struct {
-	Modules         []ModuleDefinition `json:"modules"`
-	Instances       []ModuleInstance   `json:"instances"`
-	State           []byte             `json:"tfstate"`
-	AdditionalState map[string][]byte  `json:"additional_state"`
-	Transformer     TfTransformer      `json:"transform"`
+	Modules   []ModuleDefinition `json:"modules"`
+	Instances []ModuleInstance   `json:"instances"`
+	State     []byte             `json:"tfstate"`
+
+	Transformer TfTransformer `json:"transform"`
 
 	dirLock sync.Mutex
 	dir     string
@@ -236,11 +235,13 @@ func (workspace *TerraformWorkspace) initializeFsModules() error {
 func (workspace *TerraformWorkspace) initializeFsWithoutTerraformInit() error {
 	workspace.dirLock.Lock()
 	// create a temp directory
-	dir, err := os.MkdirTemp("", "gsb")
-	if err != nil {
+	if dir, err := os.MkdirTemp("", "gsb"); err == nil {
+		workspace.dir = dir
+	} else {
 		return err
 	}
-	workspace.dir = dir
+
+	var err error
 
 	terraformLen := 0
 	for _, module := range workspace.Modules {
@@ -260,15 +261,24 @@ func (workspace *TerraformWorkspace) initializeFsWithoutTerraformInit() error {
 		return err
 	}
 
-	return workspace.restoreState()
+	// write the state if it exists
+	if len(workspace.State) > 0 {
+		if err = os.WriteFile(workspace.tfStatePath(), workspace.State, 0755); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // TeardownFs removes the directory we executed Terraform in and updates the
 // state from it.
 func (workspace *TerraformWorkspace) teardownFs() error {
-	if err := workspace.saveState(); err != nil {
+	bytes, err := os.ReadFile(workspace.tfStatePath())
+	if err != nil {
 		return err
 	}
+
+	workspace.State = bytes
 
 	if err := os.RemoveAll(workspace.dir); err != nil {
 		return err
@@ -338,48 +348,4 @@ func (workspace *TerraformWorkspace) ModuleDefinitions() []ModuleDefinition {
 
 func (workspace *TerraformWorkspace) ModuleInstances() []ModuleInstance {
 	return workspace.Instances
-}
-
-func (workspace *TerraformWorkspace) restoreState() error {
-	for f, d := range workspace.AdditionalState {
-		p := filepath.Join(workspace.dir, f)
-		if err := os.WriteFile(p, d, 0600); err != nil {
-			return fmt.Errorf("error writing additional state file %q: %w", p, err)
-		}
-	}
-
-	if len(workspace.State) > 0 {
-		if err := os.WriteFile(workspace.tfStatePath(), workspace.State, 0755); err != nil {
-			return fmt.Errorf("error writing primary state file %q: %w", workspace.tfStatePath(), err)
-		}
-	}
-
-	return nil
-}
-
-func (workspace *TerraformWorkspace) saveState() error {
-	files, err := filepath.Glob(filepath.Join(workspace.dir, "*.pem"))
-	if err != nil {
-		return fmt.Errorf("glob error in %q: %w", workspace.dir, err)
-	}
-
-	for _, f := range files {
-		data, err := os.ReadFile(f)
-		if err != nil {
-			return fmt.Errorf("error reading additional state file: %q: %w", f, err)
-		}
-		if workspace.AdditionalState == nil {
-			workspace.AdditionalState = make(map[string][]byte)
-		}
-		workspace.AdditionalState[filepath.Base(f)] = data
-	}
-
-	data, err := os.ReadFile(workspace.tfStatePath())
-	if err != nil {
-		return fmt.Errorf("error reading primary state file: %q: %w", workspace.tfStatePath(), err)
-	}
-
-	workspace.State = data
-
-	return nil
 }
