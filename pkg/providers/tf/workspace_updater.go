@@ -18,11 +18,11 @@ func init() {
 	viper.SetDefault(dynamicHCLEnabled, false)
 }
 
-func UpdateWorkspaceHCL(store broker.ServiceProviderStorage, action TfServiceDefinitionV1Action, operationContext *varcontext.VarContext, tfId string) error {
+func UpdateWorkspaceHCL(store broker.ServiceProviderStorage, action TfServiceDefinitionV1Action, operationContext *varcontext.VarContext, tfID string) error {
 	if !viper.GetBool(dynamicHCLEnabled) {
 		return nil
 	}
-	deployment, err := store.GetTerraformDeployment(tfId)
+	deployment, err := store.GetTerraformDeployment(tfID)
 	if err != nil {
 		return err
 	}

@@ -47,7 +47,7 @@ func init() {
 }
 
 func GetAuthedConfig() (*jwt.Config, error) {
-	rootCreds := GetServiceAccountJson()
+	rootCreds := GetServiceAccountJSON()
 	conf, err := google.JWTConfigFromJSON([]byte(rootCreds), cloudPlatformScope)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing config from credentials: %s", err)
@@ -153,20 +153,20 @@ func jsonDiff(superset, subset json.RawMessage) ([]byte, error) {
 	return json.Marshal(remainder)
 }
 
-// GetDefaultProjectId gets the default project id for the service broker based
+// GetDefaultProjectID gets the default project id for the service broker based
 // on the JSON Service Account key.
-func GetDefaultProjectId() (string, error) {
+func GetDefaultProjectID() (string, error) {
 	serviceAccount := make(map[string]string)
-	if err := json.Unmarshal([]byte(GetServiceAccountJson()), &serviceAccount); err != nil {
+	if err := json.Unmarshal([]byte(GetServiceAccountJSON()), &serviceAccount); err != nil {
 		return "", fmt.Errorf("could not unmarshal service account details. %v", err)
 	}
 
 	return serviceAccount["project_id"], nil
 }
 
-// GetServiceAccountJson gets the raw JSON credentials of the Service Account
+// GetServiceAccountJSON gets the raw JSON credentials of the Service Account
 // the service broker acts as.
-func GetServiceAccountJson() string {
+func GetServiceAccountJSON() string {
 	return viper.GetString("google.account")
 }
 
@@ -201,9 +201,9 @@ func NewLogger(name string) lager.Logger {
 func SplitNewlineDelimitedList(paksText string) []string {
 	var out []string
 	for _, pak := range strings.Split(paksText, "\n") {
-		pakUrl := strings.TrimSpace(pak)
-		if pakUrl != "" {
-			out = append(out, pakUrl)
+		pakURL := strings.TrimSpace(pak)
+		if pakURL != "" {
+			out = append(out, pakURL)
 		}
 	}
 

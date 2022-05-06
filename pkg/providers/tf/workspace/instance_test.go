@@ -25,9 +25,9 @@ func ExampleModuleInstance_MarshalDefinition() {
 
 	outputs := []string{"output1", "output2"}
 
-	defnJson, err := instance.MarshalDefinition(outputs)
+	defnJSON, err := instance.MarshalDefinition(outputs)
 	fmt.Println(err)
-	fmt.Printf("%s\n", string(defnJson))
+	fmt.Printf("%s\n", string(defnJSON))
 
 	// Output: <nil>
 	// {"module":{"instance":{"foo":"bar","source":"./foo-module"}},"output":{"output1":{"value":"${module.instance.output1}"},"output2":{"value":"${module.instance.output2}"}}}
@@ -40,9 +40,9 @@ func ExampleModuleInstance_MarshalDefinition_emptyOutputs() {
 		Configuration: map[string]interface{}{"foo": "bar"},
 	}
 
-	defnJson, err := instance.MarshalDefinition([]string{})
+	defnJSON, err := instance.MarshalDefinition([]string{})
 	fmt.Println(err)
-	fmt.Printf("%s\n", string(defnJson))
+	fmt.Printf("%s\n", string(defnJSON))
 
 	// Output: <nil>
 	// {"module":{"instance":{"foo":"bar","source":"./foo-module"}}}

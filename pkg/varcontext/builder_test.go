@@ -121,41 +121,41 @@ func TestContextBuilder(t *testing.T) {
 			ErrContains: `couldn't compute the value for "a"`,
 		},
 
-		// MergeJsonObject
-		"MergeJsonObject blank message": {
-			Builder:  Builder().MergeJsonObject(json.RawMessage{}),
+		// MergeJSONObject
+		"MergeJSONObject blank message": {
+			Builder:  Builder().MergeJSONObject(json.RawMessage{}),
 			Expected: map[string]interface{}{},
 		},
-		"MergeJsonObject valid message": {
-			Builder:  Builder().MergeJsonObject(json.RawMessage(`{"a":"a"}`)),
+		"MergeJSONObject valid message": {
+			Builder:  Builder().MergeJSONObject(json.RawMessage(`{"a":"a"}`)),
 			Expected: map[string]interface{}{"a": "a"},
 		},
-		"MergeJsonObject invalid message": {
-			Builder:     Builder().MergeJsonObject(json.RawMessage(`{{{}}}`)),
+		"MergeJSONObject invalid message": {
+			Builder:     Builder().MergeJSONObject(json.RawMessage(`{{{}}}`)),
 			ErrContains: "invalid character '{'",
 		},
-		"MergeJsonObject merge multiple": {
-			Builder:  Builder().MergeJsonObject(json.RawMessage(`{"foo":"bar"}`)).MergeJsonObject(json.RawMessage(`{"baz":"quz"}`)),
+		"MergeJSONObject merge multiple": {
+			Builder:  Builder().MergeJSONObject(json.RawMessage(`{"foo":"bar"}`)).MergeJSONObject(json.RawMessage(`{"baz":"quz"}`)),
 			Expected: map[string]interface{}{"foo": "bar", "baz": "quz"},
 		},
-		"MergeJsonObject duplicate keys at top level": {
-			Builder:  Builder().MergeJsonObject(json.RawMessage(`{"foo":"bar","baz":"bar"}`)).MergeJsonObject(json.RawMessage(`{"baz":"quz"}`)),
+		"MergeJSONObject duplicate keys at top level": {
+			Builder:  Builder().MergeJSONObject(json.RawMessage(`{"foo":"bar","baz":"bar"}`)).MergeJSONObject(json.RawMessage(`{"baz":"quz"}`)),
 			Expected: map[string]interface{}{"foo": "bar", "baz": "quz"},
 		},
-		"MergeJsonObject only merges top level key/values": {
-			Builder:  Builder().MergeJsonObject(json.RawMessage(`{"foo":{"bar":"baz","quz":"buz"}}`)).MergeJsonObject(json.RawMessage(`{"foo":{"bar":"quz"}}`)),
+		"MergeJSONObject only merges top level key/values": {
+			Builder:  Builder().MergeJSONObject(json.RawMessage(`{"foo":{"bar":"baz","quz":"buz"}}`)).MergeJSONObject(json.RawMessage(`{"foo":{"bar":"quz"}}`)),
 			Expected: map[string]interface{}{"foo": map[string]interface{}{"bar": "quz"}},
 		},
-		"MergeJsonObject merge first empty object": {
-			Builder:  Builder().MergeJsonObject(json.RawMessage(`{}`)).MergeJsonObject(json.RawMessage(`{"baz":"quz"}`)),
+		"MergeJSONObject merge first empty object": {
+			Builder:  Builder().MergeJSONObject(json.RawMessage(`{}`)).MergeJSONObject(json.RawMessage(`{"baz":"quz"}`)),
 			Expected: map[string]interface{}{"baz": "quz"},
 		},
-		"MergeJsonObject merge second empty object": {
-			Builder:  Builder().MergeJsonObject(json.RawMessage(`{"baz":"quz"}`)).MergeJsonObject(json.RawMessage(`{}`)),
+		"MergeJSONObject merge second empty object": {
+			Builder:  Builder().MergeJSONObject(json.RawMessage(`{"baz":"quz"}`)).MergeJSONObject(json.RawMessage(`{}`)),
 			Expected: map[string]interface{}{"baz": "quz"},
 		},
-		"MergeJsonObject merge JSON non-object": {
-			Builder:     Builder().MergeJsonObject(json.RawMessage(`{"baz":"quz"}`)).MergeJsonObject(json.RawMessage(`true`)),
+		"MergeJSONObject merge JSON non-object": {
+			Builder:     Builder().MergeJSONObject(json.RawMessage(`{"baz":"quz"}`)).MergeJSONObject(json.RawMessage(`true`)),
 			ErrContains: "json: cannot unmarshal bool into Go value of type map[string]interface {}",
 		},
 

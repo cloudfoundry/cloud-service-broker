@@ -35,7 +35,7 @@ import (
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 //counterfeiter:generate . JobRunner
 type JobRunner interface {
-	StageJob(jobId string, workspace *workspace.TerraformWorkspace) error
+	StageJob(jobID string, workspace *workspace.TerraformWorkspace) error
 	Import(ctx context.Context, id string, importResources []ImportResource) error
 	Create(ctx context.Context, id string) error
 	Update(ctx context.Context, id string, templateVars map[string]interface{}) error
@@ -103,19 +103,19 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 		return models.ServiceInstanceDetails{}, fmt.Errorf("cannot update to subsume plan\n\nFor OpsMan Tile users see documentation here: https://via.vmw.com/ENs4\n\nFor Open Source users deployed via 'cf push' see documentation here:  https://via.vmw.com/ENw4")
 	}
 
-	tfId := provisionContext.GetString("tf_id")
+	tfID := provisionContext.GetString("tf_id")
 	if err := provisionContext.Error(); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, provisionContext, tfId); err != nil {
+	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, provisionContext, tfID); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	err := provider.jobRunner.Update(ctx, tfId, provisionContext.ToMap())
+	err := provider.jobRunner.Update(ctx, tfID, provisionContext.ToMap())
 
 	return models.ServiceInstanceDetails{
-		OperationId:   tfId,
+		OperationId:   tfID,
 		OperationType: models.UpdateOperationType,
 	}, err
 }
@@ -126,16 +126,16 @@ func (provider *terraformProvider) Bind(ctx context.Context, bindContext *varcon
 		"context": bindContext.ToMap(),
 	})
 
-	tfId, err := provider.create(ctx, bindContext, provider.serviceDefinition.BindSettings)
+	tfID, err := provider.create(ctx, bindContext, provider.serviceDefinition.BindSettings)
 	if err != nil {
 		return nil, fmt.Errorf("error from provider bind: %w", err)
 	}
 
-	if err := provider.jobRunner.Wait(ctx, tfId); err != nil {
+	if err := provider.jobRunner.Wait(ctx, tfID); err != nil {
 		return nil, fmt.Errorf("error from job runner: %w", err)
 	}
 
-	return provider.jobRunner.Outputs(ctx, tfId, workspace.DefaultInstanceName)
+	return provider.jobRunner.Outputs(ctx, tfID, workspace.DefaultInstanceName)
 }
 
 func (provider *terraformProvider) importCreate(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
@@ -174,84 +174,84 @@ func (provider *terraformProvider) importCreate(ctx context.Context, vars *varco
 		return "", fmt.Errorf("must provide values for all import parameters: %s", importFields)
 	}
 
-	tfId := vars.GetString("tf_id")
+	tfID := vars.GetString("tf_id")
 	if err := vars.Error(); err != nil {
 		return "", err
 	}
 
 	workspace, err := workspace.NewWorkspace(varsMap, "", action.Templates, parameterMappings, action.ImportParametersToDelete, addParams)
 	if err != nil {
-		return tfId, err
+		return tfID, err
 	}
 
-	if err := provider.jobRunner.StageJob(tfId, workspace); err != nil {
+	if err := provider.jobRunner.StageJob(tfID, workspace); err != nil {
 		provider.logger.Error("terraform provider create failed", err)
-		return tfId, err
+		return tfID, err
 	}
 
-	return tfId, provider.jobRunner.Import(ctx, tfId, importParams)
+	return tfID, provider.jobRunner.Import(ctx, tfID, importParams)
 }
 
 func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
-	tfId := vars.GetString("tf_id")
+	tfID := vars.GetString("tf_id")
 	if err := vars.Error(); err != nil {
 		return "", err
 	}
 
 	workspace, err := workspace.NewWorkspace(vars.ToMap(), action.Template, action.Templates, []workspace.ParameterMapping{}, []string{}, []workspace.ParameterMapping{})
 	if err != nil {
-		return tfId, fmt.Errorf("error creating workspace: %w", err)
+		return tfID, fmt.Errorf("error creating workspace: %w", err)
 	}
 
 	// if err = workspace.Validate(); err != nil {
-	// 	return tfId, err
+	// 	return tfID, err
 	// }
 
-	if err := provider.jobRunner.StageJob(tfId, workspace); err != nil {
+	if err := provider.jobRunner.StageJob(tfID, workspace); err != nil {
 		provider.logger.Error("terraform provider create failed", err)
-		return tfId, fmt.Errorf("terraform provider create failed: %w", err)
+		return tfID, fmt.Errorf("terraform provider create failed: %w", err)
 	}
 
-	return tfId, provider.jobRunner.Create(ctx, tfId)
+	return tfID, provider.jobRunner.Create(ctx, tfID)
 }
 
 // Unbind performs a terraform destroy on the binding.
 func (provider *terraformProvider) Unbind(ctx context.Context, instanceGUID, bindingID string, vc *varcontext.VarContext) error {
-	tfId := generateTfId(instanceGUID, bindingID)
+	tfID := generateTfId(instanceGUID, bindingID)
 	provider.logger.Debug("terraform-unbind", correlation.ID(ctx), lager.Data{
 		"instance": instanceGUID,
 		"binding":  bindingID,
-		"tfId":     tfId,
+		"tfId":     tfID,
 	})
 
-	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.BindSettings, vc, tfId); err != nil {
+	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.BindSettings, vc, tfID); err != nil {
 		return err
 	}
 
-	if err := provider.jobRunner.Destroy(ctx, tfId, vc.ToMap()); err != nil {
+	if err := provider.jobRunner.Destroy(ctx, tfID, vc.ToMap()); err != nil {
 		return err
 	}
 
-	return provider.jobRunner.Wait(ctx, tfId)
+	return provider.jobRunner.Wait(ctx, tfID)
 }
 
 // Deprovision performs a terraform destroy on the instance.
-func (provider *terraformProvider) Deprovision(ctx context.Context, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error) {
+func (provider *terraformProvider) Deprovision(ctx context.Context, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationID *string, err error) {
 	provider.logger.Debug("terraform-deprovision", correlation.ID(ctx), lager.Data{
 		"instance": instanceGUID,
 	})
 
-	tfId := generateTfId(instanceGUID, "")
+	tfID := generateTfId(instanceGUID, "")
 
-	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, vc, tfId); err != nil {
+	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, vc, tfID); err != nil {
 		return nil, err
 	}
 
-	if err := provider.jobRunner.Destroy(ctx, tfId, vc.ToMap()); err != nil {
+	if err := provider.jobRunner.Destroy(ctx, tfID, vc.ToMap()); err != nil {
 		return nil, err
 	}
 
-	return &tfId, nil
+	return &tfID, nil
 }
 
 // PollInstance returns the instance status of the backing job.
@@ -274,9 +274,9 @@ func (provider *terraformProvider) DeprovisionsAsync() bool {
 // on broker version changes.
 // Return a nil error if you choose not to implement this function.
 func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, guid string) (storage.JSONObject, error) {
-	tfId := generateTfId(guid, "")
+	tfID := generateTfId(guid, "")
 
-	outs, err := provider.jobRunner.Outputs(ctx, tfId, workspace.DefaultInstanceName)
+	outs, err := provider.jobRunner.Outputs(ctx, tfID, workspace.DefaultInstanceName)
 	if err != nil {
 		return nil, err
 	}

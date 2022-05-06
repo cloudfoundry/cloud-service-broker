@@ -83,14 +83,14 @@ type TfJobRunner struct {
 
 // StageJob stages a job to be executed. Before the workspace is saved to the
 // database, the modules and inputs are validated by Terraform.
-func (runner *TfJobRunner) StageJob(jobId string, workspace *workspace.TerraformWorkspace) error {
-	deployment := storage.TerraformDeployment{ID: jobId}
-	exists, err := runner.store.ExistsTerraformDeployment(jobId)
+func (runner *TfJobRunner) StageJob(jobID string, workspace *workspace.TerraformWorkspace) error {
+	deployment := storage.TerraformDeployment{ID: jobID}
+	exists, err := runner.store.ExistsTerraformDeployment(jobID)
 	switch {
 	case err != nil:
 		return err
 	case exists:
-		deployment, err = runner.store.GetTerraformDeployment(jobId)
+		deployment, err = runner.store.GetTerraformDeployment(jobID)
 		if err != nil {
 			return err
 		}
