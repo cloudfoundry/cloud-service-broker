@@ -32,9 +32,10 @@ PKG="github.com/cloudfoundry/cloud-service-broker"
 .PHONY: deps-go-binary
 deps-go-binary:
 ifeq ($(SKIP_GO_VERSION_CHECK),)
-	echo "Expect: $(GO-VER)" && \
-		echo "Actual: $$($(GO) version)" && \
-	 	$(GO) version | grep $(GO-VER) > /dev/null
+	@@if [ "$$($(GO) version | awk '{print $$3}')" != "${GO-VER}" ]; then \
+		echo "Go version does not match: expected: ${GO-VER}, got $$($(GO) version | awk '{print $$3}')"; \
+		exit 1; \
+	fi
 endif
 
 ###### Help ###################################################################
