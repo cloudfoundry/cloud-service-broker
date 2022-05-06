@@ -91,8 +91,8 @@ var _ = Describe("Provider", func() {
 
 				result, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "fakeInstanceGUID", inputVariables)
 
-				_, actualTfId := fakeJobRunner.ShowArgsForCall(0)
-				Expect(actualTfId).To(Equal("tf:fakeInstanceGUID:"))
+				_, actualTfID := fakeJobRunner.ShowArgsForCall(0)
+				Expect(actualTfID).To(Equal("tf:fakeInstanceGUID:"))
 				Expect(err).NotTo(HaveOccurred())
 				Expect(result).To(Equal(map[string]interface{}{"field_to_replace": "subsume-value"}))
 			})

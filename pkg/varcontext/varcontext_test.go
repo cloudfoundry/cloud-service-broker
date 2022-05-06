@@ -198,7 +198,7 @@ func TestVarContext_ToJson(t *testing.T) {
 	}}
 	expected := vc.ToMap()
 
-	serialized, _ := vc.ToJson()
+	serialized, _ := vc.ToJSON()
 	actual := make(map[string]interface{})
 	json.Unmarshal(serialized, &actual)
 

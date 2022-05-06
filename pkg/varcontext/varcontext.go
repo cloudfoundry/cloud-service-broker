@@ -97,8 +97,8 @@ func (vc *VarContext) ToMap() map[string]interface{} {
 	return output
 }
 
-// ToJson gets the underlying JSON representation of the variable context.
-func (vc *VarContext) ToJson() (json.RawMessage, error) {
+// ToJSON gets the underlying JSON representation of the variable context.
+func (vc *VarContext) ToJSON() (json.RawMessage, error) {
 	return json.Marshal(vc.ToMap())
 }
 
