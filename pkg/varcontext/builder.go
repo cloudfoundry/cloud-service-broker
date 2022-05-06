@@ -175,10 +175,10 @@ func (builder *ContextBuilder) MergeMap(data map[string]interface{}) *ContextBui
 	return builder
 }
 
-// MergeJsonObject converts the raw message to a map[string]interface{} and
+// MergeJSONObject converts the raw message to a map[string]interface{} and
 // merges the values into the context. Blank RawMessages are treated like
 // empty objects.
-func (builder *ContextBuilder) MergeJsonObject(data json.RawMessage) *ContextBuilder {
+func (builder *ContextBuilder) MergeJSONObject(data json.RawMessage) *ContextBuilder {
 	if len(data) == 0 {
 		return builder
 	}
@@ -197,7 +197,7 @@ func (builder *ContextBuilder) MergeStruct(data interface{}) *ContextBuilder {
 	if jo, err := json.Marshal(data); err != nil {
 		builder.errors = multierror.Append(builder.errors, err)
 	} else {
-		builder.MergeJsonObject(jo)
+		builder.MergeJSONObject(jo)
 	}
 
 	return builder
