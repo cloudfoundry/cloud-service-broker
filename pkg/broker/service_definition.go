@@ -78,15 +78,15 @@ func (svc *ServiceDefinition) Validate() (errs *validation.FieldError) {
 	)
 
 	if svc.ImageUrl != "" {
-		errs = errs.Also(validation.ErrIfNotURL(svc.ImageUrl, "ImageUrl"))
+		errs = errs.Also(validation.ErrIfNotURL(svc.ImageUrl, "ImageURL"))
 	}
 
 	if svc.DocumentationUrl != "" {
-		errs = errs.Also(validation.ErrIfNotURL(svc.DocumentationUrl, "DocumentationUrl"))
+		errs = errs.Also(validation.ErrIfNotURL(svc.DocumentationUrl, "DocumentationURL"))
 	}
 
 	if svc.SupportUrl != "" {
-		errs = errs.Also(validation.ErrIfNotURL(svc.SupportUrl, "SupportUrl"))
+		errs = errs.Also(validation.ErrIfNotURL(svc.SupportUrl, "SupportURL"))
 	}
 
 	for i, v := range svc.ProvisionInputVariables {

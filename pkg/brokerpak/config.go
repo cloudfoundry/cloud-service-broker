@@ -48,8 +48,8 @@ func init() {
 
 // BrokerpakSourceConfig represents a single configuration of a brokerpak.
 type BrokerpakSourceConfig struct {
-	// BrokerpakUri holds the URI for loading the Brokerpak.
-	BrokerpakUri string `json:"uri"`
+	// BrokerpakURI holds the URI for loading the Brokerpak.
+	BrokerpakURI string `json:"uri"`
 	// ServicePrefix holds an optional prefix that will be prepended to every service name.
 	ServicePrefix string `json:"service_prefix"`
 	// ExcludedServices holds a newline delimited list of service UUIDs that will be excluded at registration time.
@@ -65,7 +65,7 @@ var _ validation.Validatable = (*BrokerpakSourceConfig)(nil)
 // Validate implements validation.Validatable.
 func (b *BrokerpakSourceConfig) Validate() (errs *validation.FieldError) {
 
-	errs = errs.Also(validation.ErrIfBlank(b.BrokerpakUri, "uri"))
+	errs = errs.Also(validation.ErrIfBlank(b.BrokerpakURI, "uri"))
 
 	if b.ServicePrefix != "" {
 		errs = errs.Also(validation.ErrIfNotOSBName(b.ServicePrefix, "service_prefix"))
@@ -89,7 +89,7 @@ func (b *BrokerpakSourceConfig) SetExcludedServices(services []string) {
 // NewBrokerpakSourceConfigFromPath creates a new BrokerpakSourceConfig from a path.
 func NewBrokerpakSourceConfigFromPath(path string) BrokerpakSourceConfig {
 	return BrokerpakSourceConfig{
-		BrokerpakUri: path,
+		BrokerpakURI: path,
 		Config:       "{}",
 	}
 }

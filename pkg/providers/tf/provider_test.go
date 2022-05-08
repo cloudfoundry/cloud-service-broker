@@ -30,7 +30,7 @@ var _ = Describe("Provider", func() {
 						Plans: []tf.TfServiceDefinitionV1Plan{
 							{
 								Name: "default-plan",
-								Id:   defaultPlanGUID,
+								ID:   defaultPlanGUID,
 							},
 						},
 					},
@@ -70,7 +70,7 @@ var _ = Describe("Provider", func() {
 						Plans: []tf.TfServiceDefinitionV1Plan{
 							{
 								Name: "subsume-plan",
-								Id:   subsumePlanGUID,
+								ID:   subsumePlanGUID,
 								Properties: map[string]interface{}{
 									"subsume": true,
 								},

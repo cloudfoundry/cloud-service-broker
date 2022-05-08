@@ -128,7 +128,7 @@ func runExamples(workers int, client *Client, examples []CompleteServiceExample)
 type CompleteServiceExample struct {
 	broker.ServiceExample `json:",inline"`
 	ServiceName           string                 `json:"service_name"`
-	ServiceId             string                 `json:"service_id"`
+	ServiceID             string                 `json:"service_id"`
 	ExpectedOutput        map[string]interface{} `json:"expected_output"`
 }
 
@@ -141,7 +141,7 @@ func GetExamplesForAService(service *broker.ServiceDefinition) ([]CompleteServic
 
 		var completeServiceExample = CompleteServiceExample{
 			ServiceExample: example,
-			ServiceId:      serviceCatalogEntry.ID,
+			ServiceID:      serviceCatalogEntry.ID,
 			ServiceName:    service.Name,
 			ExpectedOutput: broker.CreateJsonSchema(service.BindOutputVariables),
 		}
@@ -267,10 +267,10 @@ func newExampleExecutor(logger *exampleLogger, id string, client *Client, servic
 
 	return &exampleExecutor{
 		Name:       fmt.Sprintf("%s/%s", serviceExample.ServiceName, serviceExample.ServiceExample.Name),
-		ServiceId:  serviceExample.ServiceId,
-		PlanId:     serviceExample.ServiceExample.PlanId,
-		InstanceId: uuid.New(),
-		BindingId:  uuid.New(),
+		ServiceID:  serviceExample.ServiceID,
+		PlanID:     serviceExample.ServiceExample.PlanID,
+		InstanceID: uuid.New(),
+		BindingID:  uuid.New(),
 
 		ProvisionParams: provisionParams,
 		BindParams:      bindParams,
@@ -283,10 +283,10 @@ func newExampleExecutor(logger *exampleLogger, id string, client *Client, servic
 type exampleExecutor struct {
 	Name string
 
-	ServiceId  string
-	PlanId     string
-	InstanceId string
-	BindingId  string
+	ServiceID  string
+	PlanID     string
+	InstanceID string
+	BindingID  string
 
 	ProvisionParams json.RawMessage
 	BindParams      json.RawMessage
@@ -297,14 +297,14 @@ type exampleExecutor struct {
 
 // Provision attempts to create a service instance from the example.
 // Multiple calls to provision will attempt to create a resource with the same
-// ServiceId and details.
+// ServiceID and details.
 // If the response is an async result, Provision will attempt to wait until
 // the Provision is complete.
 func (ee *exampleExecutor) Provision() error {
 	requestID := uuid.New()
 	ee.logger.Printf("Provisioning %s (id: %s)\n", ee.Name, requestID)
 
-	resp := ee.client.Provision(ee.InstanceId, ee.ServiceId, ee.PlanId, requestID, ee.ProvisionParams)
+	resp := ee.client.Provision(ee.InstanceID, ee.ServiceID, ee.PlanID, requestID, ee.ProvisionParams)
 
 	ee.logger.Println(resp.String())
 	if resp.InError() {
@@ -326,7 +326,7 @@ func (ee *exampleExecutor) pollUntilFinished() error {
 		requestID := uuid.New()
 		ee.logger.Printf("Polling for async job (id: %s)\n", requestID)
 
-		resp := ee.client.LastOperation(ee.InstanceId, requestID)
+		resp := ee.client.LastOperation(ee.InstanceID, requestID)
 		if resp.InError() {
 			return false, resp.Error
 		}
@@ -346,11 +346,11 @@ func (ee *exampleExecutor) pollUntilFinished() error {
 		eq := state == string(brokerapi.Succeeded)
 
 		if state == string(brokerapi.Failed) {
-			ee.logger.Printf("Last operation for %q was %q: %s\n", ee.InstanceId, state, responseBody["description"])
+			ee.logger.Printf("Last operation for %q was %q: %s\n", ee.InstanceID, state, responseBody["description"])
 			return false, fmt.Errorf(responseBody["description"])
 		}
 
-		ee.logger.Printf("Last operation for %q was %q\n", ee.InstanceId, state)
+		ee.logger.Printf("Last operation for %q was %q\n", ee.InstanceID, state)
 		return !eq, nil
 	})
 }
@@ -359,7 +359,7 @@ func (ee *exampleExecutor) pollUntilFinished() error {
 func (ee *exampleExecutor) Deprovision() error {
 	requestID := uuid.New()
 	ee.logger.Printf("Deprovisioning %s (id: %s)\n", ee.Name, requestID)
-	resp := ee.client.Deprovision(ee.InstanceId, ee.ServiceId, ee.PlanId, requestID)
+	resp := ee.client.Deprovision(ee.InstanceID, ee.ServiceID, ee.PlanID, requestID)
 
 	ee.logger.Println(resp.String())
 	if resp.InError() {
@@ -381,7 +381,7 @@ func (ee *exampleExecutor) Unbind() error {
 	return retry(15*time.Minute, 15*time.Second, func() (bool, error) {
 		requestID := uuid.New()
 		ee.logger.Printf("Unbinding %s (id: %s)\n", ee.Name, requestID)
-		resp := ee.client.Unbind(ee.InstanceId, ee.BindingId, ee.ServiceId, ee.PlanId, requestID)
+		resp := ee.client.Unbind(ee.InstanceID, ee.BindingID, ee.ServiceID, ee.PlanID, requestID)
 
 		ee.logger.Println(resp.String())
 		if resp.InError() {
@@ -402,7 +402,7 @@ func (ee *exampleExecutor) Unbind() error {
 func (ee *exampleExecutor) Bind() (json.RawMessage, error) {
 	requestID := uuid.New()
 	ee.logger.Printf("Binding %s (id: %s)\n", ee.Name, requestID)
-	resp := ee.client.Bind(ee.InstanceId, ee.BindingId, ee.ServiceId, ee.PlanId, requestID, ee.BindParams)
+	resp := ee.client.Bind(ee.InstanceID, ee.BindingID, ee.ServiceID, ee.PlanID, requestID, ee.BindParams)
 
 	ee.logger.Println(resp.String())
 	if resp.InError() {
@@ -421,9 +421,9 @@ func (ee *exampleExecutor) Bind() (json.RawMessage, error) {
 func (ee *exampleExecutor) LogTestInfo(logger *exampleLogger) {
 	logger.Printf("Running Example: %s\n", ee.Name)
 
-	ips := fmt.Sprintf("--instanceid %q --planid %q --serviceid %q", ee.InstanceId, ee.PlanId, ee.ServiceId)
+	ips := fmt.Sprintf("--instanceid %q --planid %q --serviceid %q", ee.InstanceID, ee.PlanID, ee.ServiceID)
 	logger.Printf("cloud-service-broker client provision %s --params %q\n", ips, ee.ProvisionParams)
-	logger.Printf("cloud-service-broker client bind %s --bindingid %q --params %q\n", ips, ee.BindingId, ee.BindParams)
-	logger.Printf("cloud-service-broker client unbind %s --bindingid %q\n", ips, ee.BindingId)
+	logger.Printf("cloud-service-broker client bind %s --bindingid %q --params %q\n", ips, ee.BindingID, ee.BindParams)
+	logger.Printf("cloud-service-broker client unbind %s --bindingid %q\n", ips, ee.BindingID)
 	logger.Printf("cloud-service-broker client deprovision %s\n", ips)
 }

@@ -40,16 +40,16 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 	return TfServiceDefinitionV1{
 		Version:          1,
 		Name:             "example-service",
-		Id:               "00000000-0000-0000-0000-000000000000",
+		ID:               "00000000-0000-0000-0000-000000000000",
 		Description:      "a longer service description",
 		DisplayName:      "Example Service",
-		ImageUrl:         "https://example.com/icon.jpg",
-		DocumentationUrl: "https://example.com",
-		SupportUrl:       "https://example.com/support.html",
+		ImageURL:         "https://example.com/icon.jpg",
+		DocumentationURL: "https://example.com",
+		SupportURL:       "https://example.com/support.html",
 		Tags:             []string{"gcp", "example", "service"},
 		Plans: []TfServiceDefinitionV1Plan{
 			{
-				Id:          "00000000-0000-0000-0000-000000000001",
+				ID:          "00000000-0000-0000-0000-000000000001",
 				Name:        "example-email-plan",
 				DisplayName: "example.com email builder",
 				Description: "Builds emails for example.com.",
@@ -131,7 +131,7 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 			{
 				Name:            "Example",
 				Description:     "Examples are used for documenting your service AND as integration tests.",
-				PlanId:          "00000000-0000-0000-0000-000000000001",
+				PlanID:          "00000000-0000-0000-0000-000000000001",
 				ProvisionParams: map[string]interface{}{"username": "my-account"},
 				BindParams:      map[string]interface{}{},
 			},
@@ -143,12 +143,12 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 type TfServiceDefinitionV1 struct {
 	Version           int                         `yaml:"version"`
 	Name              string                      `yaml:"name"`
-	Id                string                      `yaml:"id"`
+	ID                string                      `yaml:"id"`
 	Description       string                      `yaml:"description"`
 	DisplayName       string                      `yaml:"display_name"`
-	ImageUrl          string                      `yaml:"image_url"`
-	DocumentationUrl  string                      `yaml:"documentation_url"`
-	SupportUrl        string                      `yaml:"support_url"`
+	ImageURL          string                      `yaml:"image_url"`
+	DocumentationURL  string                      `yaml:"documentation_url"`
+	SupportURL        string                      `yaml:"support_url"`
 	Tags              []string                    `yaml:"tags,flow"`
 	Plans             []TfServiceDefinitionV1Plan `yaml:"plans"`
 	ProvisionSettings TfServiceDefinitionV1Action `yaml:"provision"`
@@ -172,12 +172,12 @@ func (tfb *TfServiceDefinitionV1) Validate() (errs *validation.FieldError) {
 
 	errs = errs.Also(
 		validation.ErrIfBlank(tfb.Name, "name"),
-		validation.ErrIfNotUUID(tfb.Id, "id"),
+		validation.ErrIfNotUUID(tfb.ID, "id"),
 		validation.ErrIfBlank(tfb.Description, "description"),
 		validation.ErrIfBlank(tfb.DisplayName, "display_name"),
-		validation.ErrIfNotURL(tfb.ImageUrl, "image_url"),
-		validation.ErrIfNotURL(tfb.DocumentationUrl, "documentation_url"),
-		validation.ErrIfNotURL(tfb.SupportUrl, "support_url"),
+		validation.ErrIfNotURL(tfb.ImageURL, "image_url"),
+		validation.ErrIfNotURL(tfb.DocumentationURL, "documentation_url"),
+		validation.ErrIfNotURL(tfb.SupportURL, "support_url"),
 	)
 
 	names := make(map[string]struct{})
@@ -186,7 +186,7 @@ func (tfb *TfServiceDefinitionV1) Validate() (errs *validation.FieldError) {
 		errs = errs.Also(
 			v.Validate().ViaFieldIndex("plans", i),
 			validation.ErrIfDuplicate(v.Name, "Name", names).ViaFieldIndex("plans", i),
-			validation.ErrIfDuplicate(v.Id, "Id", ids).ViaFieldIndex("plans", i),
+			validation.ErrIfDuplicate(v.ID, "Id", ids).ViaFieldIndex("plans", i),
 		)
 	}
 
@@ -266,15 +266,15 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesCont
 
 	constDefn := *tfb
 	return &broker.ServiceDefinition{
-		Id:               tfb.Id,
+		Id:               tfb.ID,
 		Name:             tfb.Name,
 		Description:      tfb.Description,
 		Bindable:         true,
 		PlanUpdateable:   tfb.PlanUpdateable,
 		DisplayName:      tfb.DisplayName,
-		DocumentationUrl: tfb.DocumentationUrl,
-		SupportUrl:       tfb.SupportUrl,
-		ImageUrl:         tfb.ImageUrl,
+		DocumentationUrl: tfb.DocumentationURL,
+		SupportUrl:       tfb.SupportURL,
+		ImageUrl:         tfb.ImageURL,
 		Tags:             tfb.Tags,
 		Plans:            rawPlans,
 
@@ -301,7 +301,7 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesCont
 // that can be converted into an OSB compatible plan.
 type TfServiceDefinitionV1Plan struct {
 	Name               string                 `yaml:"name"`
-	Id                 string                 `yaml:"id"`
+	ID                 string                 `yaml:"id"`
 	Description        string                 `yaml:"description"`
 	DisplayName        string                 `yaml:"display_name"`
 	Bullets            []string               `yaml:"bullets,omitempty"`
@@ -317,7 +317,7 @@ var _ validation.Validatable = (*TfServiceDefinitionV1Plan)(nil)
 func (plan *TfServiceDefinitionV1Plan) Validate() (errs *validation.FieldError) {
 	return errs.Also(
 		validation.ErrIfBlank(plan.Name, "name"),
-		validation.ErrIfNotUUID(plan.Id, "id"),
+		validation.ErrIfNotUUID(plan.ID, "id"),
 		validation.ErrIfBlank(plan.Description, "description"),
 		validation.ErrIfBlank(plan.DisplayName, "display_name"),
 	)
@@ -326,7 +326,7 @@ func (plan *TfServiceDefinitionV1Plan) Validate() (errs *validation.FieldError) 
 // ToPlan converts this plan definition to a broker.ServicePlan.
 func (plan *TfServiceDefinitionV1Plan) ToPlan() broker.ServicePlan {
 	masterPlan := domain.ServicePlan{
-		ID:          plan.Id,
+		ID:          plan.ID,
 		Description: plan.Description,
 		Name:        plan.Name,
 		Free:        domain.FreeValue(plan.Free),
@@ -514,11 +514,11 @@ func (action *TfServiceDefinitionV1Action) validateTemplateOutputs() (errs *vali
 	return nil
 }
 
-// generateTfId creates a unique id for a given provision/bind combination that
+// generateTfID creates a unique id for a given provision/bind combination that
 // will be consistent across calls. This ID will be used in LastOperation polls
 // as well as to uniquely identify the workspace.
-func generateTfId(instanceId, bindingId string) string {
-	return fmt.Sprintf("tf:%s:%s", instanceId, bindingId)
+func generateTfID(instanceID, bindingID string) string {
+	return fmt.Sprintf("tf:%s:%s", instanceID, bindingID)
 }
 
 // ImportParameterMapping mapping for tf variable to service parameter
@@ -541,11 +541,11 @@ func (tfb TfCatalogDefinitionV1) Validate() (errs *validation.FieldError) {
 		errs = errs.Also(
 			service.Validate().ViaFieldIndex("services", i),
 			validation.ErrIfDuplicate(service.Name, "Name", names).ViaFieldIndex("services", i),
-			validation.ErrIfDuplicate(service.Id, "Id", serviceIDs).ViaFieldIndex("services", i),
+			validation.ErrIfDuplicate(service.ID, "Id", serviceIDs).ViaFieldIndex("services", i),
 		)
 
 		for j, plan := range service.Plans {
-			errs = errs.Also(validation.ErrIfDuplicate(plan.Id, "Id", planIDs)).ViaFieldIndex("plans", j).ViaFieldIndex("services", i)
+			errs = errs.Also(validation.ErrIfDuplicate(plan.ID, "Id", planIDs)).ViaFieldIndex("plans", j).ViaFieldIndex("services", i)
 		}
 	}
 
