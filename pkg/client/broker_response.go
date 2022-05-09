@@ -28,7 +28,7 @@ type BrokerResponse struct {
 	// so DO NOT remove or rename fields unless strictly necessary.
 	// You MAY add new fields.
 	Error        error           `json:"error,omitempty"`
-	Url          string          `json:"url,omitempty"`
+	URL          string          `json:"url,omitempty"`
 	Method       string          `json:"http_method,omitempty"`
 	StatusCode   int             `json:"status_code,omitempty"`
 	ResponseBody json.RawMessage `json:"response,omitempty"`
@@ -45,7 +45,7 @@ func (br *BrokerResponse) UpdateRequest(req *http.Request) {
 		return
 	}
 
-	br.Url = req.URL.String()
+	br.URL = req.URL.String()
 	br.Method = req.Method
 }
 
@@ -70,8 +70,8 @@ func (br *BrokerResponse) InError() bool {
 
 func (br *BrokerResponse) String() string {
 	if br.InError() {
-		return fmt.Sprintf("%s %s -> %d, Error: %q)", br.Method, br.Url, br.StatusCode, br.Error)
+		return fmt.Sprintf("%s %s -> %d, Error: %q)", br.Method, br.URL, br.StatusCode, br.Error)
 	}
 
-	return fmt.Sprintf("%s %s -> %d, %q", br.Method, br.Url, br.StatusCode, br.ResponseBody)
+	return fmt.Sprintf("%s %s -> %d, %q", br.Method, br.URL, br.StatusCode, br.ResponseBody)
 }

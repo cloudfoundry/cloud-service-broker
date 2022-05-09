@@ -184,7 +184,7 @@ func TestRegistryFromLocalBrokerpak(t *testing.T) {
 		t.Fatalf("Expected %d services but got %d", 1, len(registry))
 	}
 
-	svc, err := registry.GetServiceById("00000000-0000-0000-0000-000000000000")
+	svc, err := registry.GetServiceByID("00000000-0000-0000-0000-000000000000")
 	if err != nil {
 		t.Fatal(err)
 	}

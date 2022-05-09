@@ -32,9 +32,9 @@ var _ = Describe("Database Encryption", func() {
 		serviceOfferingGUID       = "76c5725c-b246-11eb-871f-ffc97563fbd0"
 		servicePlanGUID           = "8b52a460-b246-11eb-a8f5-d349948e2480"
 		serviceInstanceFKQuery    = "service_instance_id = ?"
-		serviceBindingIdQuery     = "service_binding_id = ?"
-		serviceInstanceIdQuery    = "id = ?"
-		tfWorkspaceIdQuery        = "id = ?"
+		serviceBindingIDQuery     = "service_binding_id = ?"
+		serviceInstanceIDQuery    = "id = ?"
+		tfWorkspaceIDQuery        = "id = ?"
 		passwordMetadataQuery     = "label = ?"
 	)
 
@@ -57,19 +57,19 @@ var _ = Describe("Database Encryption", func() {
 
 	persistedServiceInstanceDetails := func(serviceInstanceGUID string) []byte {
 		record := models.ServiceInstanceDetails{}
-		findRecord(&record, serviceInstanceIdQuery, serviceInstanceGUID)
+		findRecord(&record, serviceInstanceIDQuery, serviceInstanceGUID)
 		return record.OtherDetails
 	}
 
 	persistedServiceInstanceTerraformWorkspace := func(serviceInstanceGUID string) []byte {
 		record := models.TerraformDeployment{}
-		findRecord(&record, tfWorkspaceIdQuery, fmt.Sprintf("tf:%s:", serviceInstanceGUID))
+		findRecord(&record, tfWorkspaceIDQuery, fmt.Sprintf("tf:%s:", serviceInstanceGUID))
 		return record.Workspace
 	}
 
 	persistedBindRequestDetails := func(serviceBindingGUID string) []byte {
 		record := models.BindRequestDetails{}
-		findRecord(&record, serviceBindingIdQuery, serviceBindingGUID)
+		findRecord(&record, serviceBindingIDQuery, serviceBindingGUID)
 		return record.RequestDetails
 	}
 
@@ -81,7 +81,7 @@ var _ = Describe("Database Encryption", func() {
 
 	persistedServiceBindingTerraformWorkspace := func(serviceInstanceGUID, serviceBindingGUID string) []byte {
 		record := models.TerraformDeployment{}
-		findRecord(&record, tfWorkspaceIdQuery, fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, serviceBindingGUID))
+		findRecord(&record, tfWorkspaceIDQuery, fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, serviceBindingGUID))
 		return record.Workspace
 	}
 
@@ -111,13 +111,13 @@ var _ = Describe("Database Encryption", func() {
 
 	expectBindRequestDetailsToNotExist := func(serviceBindingGUID string) {
 		var count int64
-		Expect(testHelper.DBConn().Model(&models.BindRequestDetails{}).Where(serviceBindingIdQuery, serviceBindingGUID).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(testHelper.DBConn().Model(&models.BindRequestDetails{}).Where(serviceBindingIDQuery, serviceBindingGUID).Count(&count).Error).NotTo(HaveOccurred())
 		Expect(count).To(BeZero())
 	}
 
 	expectServiceInstanceDetailsToNotExist := func(serviceInstanceGUID string) {
 		var count int64
-		Expect(testHelper.DBConn().Model(&models.ServiceInstanceDetails{}).Where(serviceInstanceIdQuery, serviceInstanceGUID).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(testHelper.DBConn().Model(&models.ServiceInstanceDetails{}).Where(serviceInstanceIDQuery, serviceInstanceGUID).Count(&count).Error).NotTo(HaveOccurred())
 		Expect(count).To(BeZero())
 	}
 
@@ -568,7 +568,7 @@ var _ = Describe("Database Encryption", func() {
 
 				By("corrupting the DB")
 				record := models.ServiceInstanceDetails{}
-				findRecord(&record, serviceInstanceIdQuery, serviceInstanceGUID2)
+				findRecord(&record, serviceInstanceIDQuery, serviceInstanceGUID2)
 				recordToRecover := record
 				record.OtherDetails = []byte("something-that-cannot-be-decrypted")
 				Expect(testHelper.DBConn().Save(&record).Error).NotTo(HaveOccurred())

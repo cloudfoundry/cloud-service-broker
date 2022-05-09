@@ -149,7 +149,7 @@ func finfo(pack string, out io.Writer) error {
 		w := cmdTabWriter(out)
 		fmt.Fprintln(w, "ID\tNAME\tDESCRIPTION\tPLANS")
 		for _, svc := range services {
-			fmt.Fprintf(w, "%s\t%s\t%s\t%d\n", svc.Id, svc.Name, svc.Description, len(svc.Plans))
+			fmt.Fprintf(w, "%s\t%s\t%s\t%d\n", svc.ID, svc.Name, svc.Description, len(svc.Plans))
 		}
 		w.Flush()
 		fmt.Println()
