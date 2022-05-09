@@ -68,7 +68,7 @@ var _ = Describe("upgrade terraform before deprovision", func() {
 				Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.12.21"))
 
 				By("updating the brokerpak and restarting the broker")
-				session.Terminate()
+				session.Terminate().Wait()
 				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
 
 				session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
@@ -105,7 +105,7 @@ var _ = Describe("upgrade terraform before deprovision", func() {
 				Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.12.21"))
 
 				By("updating the brokerpak and restarting the broker")
-				session.Terminate()
+				session.Terminate().Wait()
 				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
 
 				session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=false")

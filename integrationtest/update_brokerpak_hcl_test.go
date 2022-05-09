@@ -152,7 +152,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 	}
 
 	pushUpdatedBrokerpak := func(updatesEnabled bool) {
-		session.Terminate()
+		session.Terminate().Wait()
 		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", updatedBrokerpak)
 		session = startBroker(updatesEnabled)
 	}
