@@ -217,7 +217,7 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 
 // Unbind performs a terraform destroy on the binding.
 func (provider *terraformProvider) Unbind(ctx context.Context, instanceGUID, bindingID string, vc *varcontext.VarContext) error {
-	tfID := generateTfId(instanceGUID, bindingID)
+	tfID := generateTfID(instanceGUID, bindingID)
 	provider.logger.Debug("terraform-unbind", correlation.ID(ctx), lager.Data{
 		"instance": instanceGUID,
 		"binding":  bindingID,
@@ -241,7 +241,7 @@ func (provider *terraformProvider) Deprovision(ctx context.Context, instanceGUID
 		"instance": instanceGUID,
 	})
 
-	tfID := generateTfId(instanceGUID, "")
+	tfID := generateTfID(instanceGUID, "")
 
 	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, vc, tfID); err != nil {
 		return nil, err
@@ -256,7 +256,7 @@ func (provider *terraformProvider) Deprovision(ctx context.Context, instanceGUID
 
 // PollInstance returns the instance status of the backing job.
 func (provider *terraformProvider) PollInstance(ctx context.Context, instanceGUID string) (bool, string, error) {
-	return provider.jobRunner.Status(ctx, generateTfId(instanceGUID, ""))
+	return provider.jobRunner.Status(ctx, generateTfID(instanceGUID, ""))
 }
 
 // ProvisionsAsync is always true for Terraformprovider.
@@ -274,7 +274,7 @@ func (provider *terraformProvider) DeprovisionsAsync() bool {
 // on broker version changes.
 // Return a nil error if you choose not to implement this function.
 func (provider *terraformProvider) GetTerraformOutputs(ctx context.Context, guid string) (storage.JSONObject, error) {
-	tfID := generateTfId(guid, "")
+	tfID := generateTfID(guid, "")
 
 	outs, err := provider.jobRunner.Outputs(ctx, tfID, workspace.DefaultInstanceName)
 	if err != nil {
@@ -296,7 +296,7 @@ func (provider *terraformProvider) GetImportedProperties(ctx context.Context, pl
 		return map[string]interface{}{}, nil
 	}
 
-	tfHCL, err := provider.jobRunner.Show(ctx, generateTfId(instanceGUID, ""))
+	tfHCL, err := provider.jobRunner.Show(ctx, generateTfID(instanceGUID, ""))
 	if err != nil {
 		return map[string]interface{}{}, err
 	}
@@ -319,7 +319,7 @@ func (provider *terraformProvider) getVarsToReplace(inputVariables []broker.Brok
 
 func (provider *terraformProvider) isSubsumePlan(planGUID string) bool {
 	for _, plan := range provider.serviceDefinition.Plans {
-		if plan.Id == planGUID {
+		if plan.ID == planGUID {
 			if _, ok := plan.Properties["subsume"]; !ok {
 				return true
 			}

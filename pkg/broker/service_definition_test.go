@@ -36,7 +36,7 @@ var _ = Describe("ServiceDefinition", func() {
 			Expect(err.Error()).To(Equal("field must match '^[a-zA-Z0-9-\\.]+$': Name"))
 		})
 
-		It("should fail when ImageUrl is not a URL", func() {
+		It("should fail when ImageURL is not a URL", func() {
 			definition := broker.ServiceDefinition{
 				Id:       "55ad8194-0431-11ec-948a-63ff62e94b14",
 				Name:     "test-offering",
@@ -45,10 +45,10 @@ var _ = Describe("ServiceDefinition", func() {
 
 			err := definition.Validate()
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("field must be a URL: ImageUrl"))
+			Expect(err.Error()).To(Equal("field must be a URL: ImageURL"))
 		})
 
-		It("should fail when DocumentationUrl is not a URL", func() {
+		It("should fail when DocumentationURL is not a URL", func() {
 			definition := broker.ServiceDefinition{
 				Id:               "55ad8194-0431-11ec-948a-63ff62e94b14",
 				Name:             "test-offering",
@@ -57,10 +57,10 @@ var _ = Describe("ServiceDefinition", func() {
 
 			err := definition.Validate()
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("field must be a URL: DocumentationUrl"))
+			Expect(err.Error()).To(Equal("field must be a URL: DocumentationURL"))
 		})
 
-		It("should fail when SupportUrl is not a URL", func() {
+		It("should fail when SupportURL is not a URL", func() {
 			definition := broker.ServiceDefinition{
 				Id:         "55ad8194-0431-11ec-948a-63ff62e94b14",
 				Name:       "test-offering",
@@ -69,7 +69,7 @@ var _ = Describe("ServiceDefinition", func() {
 
 			err := definition.Validate()
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("field must be a URL: SupportUrl"))
+			Expect(err.Error()).To(Equal("field must be a URL: SupportURL"))
 		})
 
 		It("should fail when ProvisionInputVariables is not a valid", func() {

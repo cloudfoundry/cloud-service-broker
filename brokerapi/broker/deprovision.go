@@ -71,12 +71,12 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return response, err
 	}
 
-	operationId, err := serviceProvider.Deprovision(ctx, instance.GUID, details, vars)
+	operationID, err := serviceProvider.Deprovision(ctx, instance.GUID, details, vars)
 	if err != nil {
 		return response, err
 	}
 
-	if operationId == nil {
+	if operationID == nil {
 		// soft-delete instance details from the db if this is a synchronous operation
 		// if it's an async operation we can't delete from the db until we're sure delete succeeded, so this is
 		// handled internally to LastOperation
@@ -90,10 +90,10 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 	}
 
 	response.IsAsync = true
-	response.OperationData = *operationId
+	response.OperationData = *operationID
 
 	instance.OperationType = models.DeprovisionOperationType
-	instance.OperationGUID = *operationId
+	instance.OperationGUID = *operationID
 	if err := broker.store.StoreServiceInstanceDetails(instance); err != nil {
 		return response, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance will remain visible in cf. Contact your operator for cleanup", err)
 	}

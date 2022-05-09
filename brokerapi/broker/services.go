@@ -25,8 +25,8 @@ func (broker *ServiceBroker) Services(ctx context.Context) ([]domain.Service, er
 	return svcs, nil
 }
 
-func (broker *ServiceBroker) getDefinitionAndProvider(serviceId string) (*broker.ServiceDefinition, broker.ServiceProvider, error) {
-	defn, err := broker.registry.GetServiceById(serviceId)
+func (broker *ServiceBroker) getDefinitionAndProvider(serviceID string) (*broker.ServiceDefinition, broker.ServiceProvider, error) {
+	defn, err := broker.registry.GetServiceByID(serviceID)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -25,7 +25,7 @@ import (
 
 var _ = Describe("Bind", func() {
 	const (
-		appGuid    = "test-app-guid"
+		appGUID    = "test-app-guid"
 		orgID      = "test-org-id"
 		spaceID    = "test-space-id"
 		planID     = "test-plan-id"
@@ -116,7 +116,7 @@ var _ = Describe("Bind", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		bindDetails = domain.BindDetails{
-			AppGUID:       appGuid,
+			AppGUID:       appGUID,
 			PlanID:        planID,
 			ServiceID:     serviceID,
 			RawParameters: json.RawMessage(`{"bind_field_1":"bind_value_1"}`),

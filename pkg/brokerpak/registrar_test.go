@@ -64,7 +64,7 @@ func TestNewRegistrar(t *testing.T) {
 func TestRegistrar_toDefinitions(t *testing.T) {
 	fakeDefn := func(name, id string) tf.TfServiceDefinitionV1 {
 		ex := tf.NewExampleTfServiceDefinition()
-		ex.Id = id
+		ex.ID = id
 		ex.Name = "service-" + name
 
 		return ex

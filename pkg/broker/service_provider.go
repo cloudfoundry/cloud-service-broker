@@ -53,7 +53,7 @@ type ServiceProvider interface {
 	// Deprovision deprovisions the service.
 	// If the deprovision is asynchronous (results in a long-running job), then operationId is returned.
 	// If no error and no operationId are returned, then the deprovision is expected to have been completed successfully.
-	Deprovision(ctx context.Context, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationId *string, err error)
+	Deprovision(ctx context.Context, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationID *string, err error)
 	PollInstance(ctx context.Context, instanceGUID string) (bool, string, error)
 	ProvisionsAsync() bool
 	DeprovisionsAsync() bool

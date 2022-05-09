@@ -135,9 +135,9 @@ func (brokerRegistry BrokerRegistry) GetAllServices() []*ServiceDefinition {
 	return out
 }
 
-// GetServiceById returns the service with the given ID, if it does not exist
+// GetServiceByID returns the service with the given ID, if it does not exist
 // or one of the services has a parse error then an error is returned.
-func (brokerRegistry BrokerRegistry) GetServiceById(id string) (*ServiceDefinition, error) {
+func (brokerRegistry BrokerRegistry) GetServiceByID(id string) (*ServiceDefinition, error) {
 	for _, svc := range brokerRegistry {
 		if svc.Id == id {
 			return svc, nil

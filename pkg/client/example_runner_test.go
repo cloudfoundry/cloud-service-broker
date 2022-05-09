@@ -16,11 +16,11 @@ func ExampleCompleteServiceExample_jsonSpec() {
 			ServiceExample: broker.ServiceExample{
 				Name:            "Basic Configuration",
 				Description:     "Creates an account with the permission `clouddebugger.agent`.",
-				PlanId:          "10866183-a775-49e8-96e3-4e7a901e4a79",
+				PlanID:          "10866183-a775-49e8-96e3-4e7a901e4a79",
 				ProvisionParams: map[string]interface{}{},
 				BindParams:      map[string]interface{}{}},
 			ServiceName: "google-stackdriver-debugger",
-			ServiceId:   "83837945-1547-41e0-b661-ea31d76eed11",
+			ServiceID:   "83837945-1547-41e0-b661-ea31d76eed11",
 			ExpectedOutput: broker.CreateJsonSchema([]broker.BrokerVariable{
 				{
 					Required:  true,
@@ -70,7 +70,7 @@ func TestGetExamplesForAService(t *testing.T) {
 					{
 						Name:            "Basic Configuration",
 						Description:     "Creates an account with the permission `clouddebugger.agent`.",
-						PlanId:          "10866183-a775-49e8-96e3-4e7a901e4a79",
+						PlanID:          "10866183-a775-49e8-96e3-4e7a901e4a79",
 						ProvisionParams: map[string]interface{}{},
 						BindParams:      map[string]interface{}{},
 						BindCanFail:     true,
@@ -82,13 +82,13 @@ func TestGetExamplesForAService(t *testing.T) {
 					ServiceExample: broker.ServiceExample{
 						Name:            "Basic Configuration",
 						Description:     "Creates an account with the permission `clouddebugger.agent`.",
-						PlanId:          "10866183-a775-49e8-96e3-4e7a901e4a79",
+						PlanID:          "10866183-a775-49e8-96e3-4e7a901e4a79",
 						ProvisionParams: map[string]interface{}{},
 						BindParams:      map[string]interface{}{},
 						BindCanFail:     true,
 					},
 					ServiceName: "google-stackdriver-debugger",
-					ServiceId:   "83837945-1547-41e0-b661-ea31d76eed11",
+					ServiceID:   "83837945-1547-41e0-b661-ea31d76eed11",
 					ExpectedOutput: broker.CreateJsonSchema([]broker.BrokerVariable{
 						{
 							Required:  true,
@@ -123,14 +123,14 @@ func TestGetExamplesForAService(t *testing.T) {
 					{
 						Name:            "Developer",
 						Description:     "Creates a Dataflow user and grants it permission to create, drain and cancel jobs.",
-						PlanId:          "8e956dd6-8c0f-470c-9a11-065537d81872",
+						PlanID:          "8e956dd6-8c0f-470c-9a11-065537d81872",
 						ProvisionParams: map[string]interface{}{},
 						BindParams:      map[string]interface{}{},
 					},
 					{
 						Name:            "Viewer",
 						Description:     "Creates a Dataflow user and grants it permission to create, drain and cancel jobs.",
-						PlanId:          "8e956dd6-8c0f-470c-9a11-065537d81872",
+						PlanID:          "8e956dd6-8c0f-470c-9a11-065537d81872",
 						ProvisionParams: map[string]interface{}{},
 						BindParams:      map[string]interface{}{"role": "dataflow.viewer"},
 					},
@@ -141,13 +141,13 @@ func TestGetExamplesForAService(t *testing.T) {
 					ServiceExample: broker.ServiceExample{
 						Name:            "Developer",
 						Description:     "Creates a Dataflow user and grants it permission to create, drain and cancel jobs.",
-						PlanId:          "8e956dd6-8c0f-470c-9a11-065537d81872",
+						PlanID:          "8e956dd6-8c0f-470c-9a11-065537d81872",
 						ProvisionParams: map[string]interface{}{},
 						BindParams:      map[string]interface{}{},
 						BindCanFail:     false,
 					},
 					ServiceName: "google-dataflow",
-					ServiceId:   "3e897eb3-9062-4966-bd4f-85bda0f73b3d",
+					ServiceID:   "3e897eb3-9062-4966-bd4f-85bda0f73b3d",
 					ExpectedOutput: broker.CreateJsonSchema([]broker.BrokerVariable{
 						{
 							Required:  true,
@@ -167,13 +167,13 @@ func TestGetExamplesForAService(t *testing.T) {
 					ServiceExample: broker.ServiceExample{
 						Name:            "Viewer",
 						Description:     "Creates a Dataflow user and grants it permission to create, drain and cancel jobs.",
-						PlanId:          "8e956dd6-8c0f-470c-9a11-065537d81872",
+						PlanID:          "8e956dd6-8c0f-470c-9a11-065537d81872",
 						ProvisionParams: map[string]interface{}{},
 						BindParams:      map[string]interface{}{"role": "dataflow.viewer"},
 						BindCanFail:     false,
 					},
 					ServiceName: "google-dataflow",
-					ServiceId:   "3e897eb3-9062-4966-bd4f-85bda0f73b3d",
+					ServiceID:   "3e897eb3-9062-4966-bd4f-85bda0f73b3d",
 					ExpectedOutput: broker.CreateJsonSchema([]broker.BrokerVariable{
 						{
 							Required:  true,

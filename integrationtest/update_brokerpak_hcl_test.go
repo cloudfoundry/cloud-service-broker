@@ -32,7 +32,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 
 		serviceOfferingGUID = "76c5725c-b246-11eb-871f-ffc97563fbd0"
 		servicePlanGUID     = "8b52a460-b246-11eb-a8f5-d349948e2480"
-		tfWorkspaceIdQuery  = "id = ?"
+		tfWorkspaceIDQuery  = "id = ?"
 		initialBrokerpak    = "brokerpak-with-fake-provider"
 		updatedBrokerpak    = "brokerpak-with-fake-provider-updated"
 	)
@@ -50,7 +50,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 
 	persistedTerraformWorkspace := func(serviceInstanceGUID, serviceBindingGUID string) *workspace.TerraformWorkspace {
 		record := models.TerraformDeployment{}
-		findRecord(&record, tfWorkspaceIdQuery, fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, serviceBindingGUID))
+		findRecord(&record, tfWorkspaceIDQuery, fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, serviceBindingGUID))
 		ws, _ := workspace.DeserializeWorkspace(record.Workspace)
 		return ws
 	}

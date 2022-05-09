@@ -62,7 +62,7 @@ func generateServiceDocumentation(svc *broker.ServiceDefinition) string {
 		"exampleCommands": func(example broker.ServiceExample) string {
 			planName := "unknown-plan"
 			for _, plan := range catalog.Plans {
-				if plan.ID == example.PlanId {
+				if plan.ID == example.PlanID {
 					planName = plan.Name
 				}
 			}
@@ -137,7 +137,7 @@ or disabled by the broker administrator.
 
 
 {{ $example.Description }}
-Uses plan: {{ code $example.PlanId }}.
+Uses plan: {{ code $example.PlanID }}.
 
 **Provision**
 

@@ -48,15 +48,15 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 	return r.walk(func(name string, pak BrokerpakSourceConfig, vc *varcontext.VarContext) error {
 		registerLogger.Info("registering", lager.Data{
 			"name":              name,
-			"location":          pak.BrokerpakUri,
+			"location":          pak.BrokerpakURI,
 			"notes":             pak.Notes,
 			"excluded-services": pak.ExcludedServicesSlice(),
 			"prefix":            pak.ServicePrefix,
 		})
 
-		brokerPak, err := reader.DownloadAndOpenBrokerpak(pak.BrokerpakUri)
+		brokerPak, err := reader.DownloadAndOpenBrokerpak(pak.BrokerpakURI)
 		if err != nil {
-			return fmt.Errorf("couldn't open brokerpak: %q: %v", pak.BrokerpakUri, err)
+			return fmt.Errorf("couldn't open brokerpak: %q: %v", pak.BrokerpakURI, err)
 		}
 		defer brokerPak.Close()
 
@@ -107,7 +107,7 @@ func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config Broke
 
 	toIgnore := utils.NewStringSet(config.ExcludedServicesSlice()...)
 	for _, svc := range services {
-		if toIgnore.Contains(svc.Id) {
+		if toIgnore.Contains(svc.ID) {
 			continue
 		}
 
