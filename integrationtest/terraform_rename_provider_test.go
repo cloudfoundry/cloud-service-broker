@@ -41,7 +41,7 @@ var _ = Describe("Terraform", func() {
 		Eventually(pollLastOperation(testHelper, serviceInstanceGUID), time.Minute*2, lastOperationPollingFrequency).ShouldNot(Equal(domain.InProgress))
 		Expect(pollLastOperation(testHelper, serviceInstanceGUID)()).To(Equal(domain.Succeeded))
 
-		session.Terminate()
+		session.Terminate().Wait()
 
 		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-0.13-with-renamed-provider")
 		session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true", "BROKERPAK_UPDATES_ENABLED=true")
@@ -66,7 +66,7 @@ var _ = Describe("Terraform", func() {
 		Eventually(pollLastOperation(testHelper, serviceInstanceGUID), time.Minute*2, lastOperationPollingFrequency).ShouldNot(Equal(domain.InProgress))
 		Expect(pollLastOperation(testHelper, serviceInstanceGUID)()).To(Equal(domain.Succeeded))
 
-		session.Terminate()
+		session.Terminate().Wait()
 
 		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-0.13-with-renamed-provider")
 		session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true", "BROKERPAK_UPDATES_ENABLED=true")
@@ -95,7 +95,7 @@ var _ = Describe("Terraform", func() {
 		Expect(bindingResponse.Error).NotTo(HaveOccurred())
 		Expect(bindingResponse.StatusCode).To(Equal(http.StatusCreated))
 
-		session.Terminate()
+		session.Terminate().Wait()
 
 		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-0.13-with-renamed-provider")
 		session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true", "BROKERPAK_UPDATES_ENABLED=true")

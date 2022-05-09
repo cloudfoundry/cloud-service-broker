@@ -343,7 +343,7 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(bePlaintextBindingTerraformState)
 
 			By("restarting the broker with a password")
-			session.Terminate()
+			session.Terminate().Wait()
 			const encryptionPasswords = `[{"primary":true,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`
 			session = startBroker(true, encryptionPasswords)
 			Expect(session.Out).To(SatisfyAll(
@@ -363,7 +363,7 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("restarting the broker with the same password")
-			session.Terminate()
+			session.Terminate().Wait()
 			session = startBroker(true, encryptionPasswords)
 			Expect(string(session.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
 			Expect(session.Out).To(Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-password"}}`))
@@ -404,7 +404,7 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("restarting the broker with encryption turned off")
-			session.Terminate()
+			session.Terminate().Wait()
 			encryptionPasswords = `[{"primary":false,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`
 			session = startBroker(false, encryptionPasswords)
 			Expect(session.Out).To(SatisfyAll(
@@ -424,7 +424,7 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(bePlaintextBindingTerraformState)
 
 			By("restarting the broker with encryption turned off again")
-			session.Terminate()
+			session.Terminate().Wait()
 			session = startBroker(false, "")
 			Expect(string(session.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
 			Expect(session.Out).To(Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"none"}}`))
@@ -469,7 +469,7 @@ var _ = Describe("Database Encryption", func() {
 			firstEncryptionPersistedServiceBindingTerraformWorkspace := persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)
 
 			By("restarting the broker with a different primary password")
-			session.Terminate()
+			session.Terminate().Wait()
 			firstEncryptionPassword = `{"primary":false,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 			const secondEncryptionPassword = `{"primary":true,"label":"my-second-password","password":{"secret":"verysecretcoolpassword"}}`
 			encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
@@ -500,7 +500,7 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingTerraformWorkspace))
 
 			By("restarting the broker with the new password only")
-			session.Terminate()
+			session.Terminate().Wait()
 			session = startBroker(true, fmt.Sprintf("[%s]", secondEncryptionPassword))
 			Expect(string(session.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
 			Expect(session.Out).To(Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`))
@@ -528,7 +528,7 @@ var _ = Describe("Database Encryption", func() {
 				))
 
 				By("restarting the broker with a different primary password and without the initial password")
-				session.Terminate()
+				session.Terminate().Wait()
 				const secondEncryptionPassword = `{"primary":true,"label":"my-second-password","password":{"secret":"verysecretcoolpassword"}}`
 				encryptionPasswords = fmt.Sprintf("[%s]", secondEncryptionPassword)
 				session = startBrokerSession(true, encryptionPasswords)
@@ -574,7 +574,7 @@ var _ = Describe("Database Encryption", func() {
 				Expect(testHelper.DBConn().Save(&record).Error).NotTo(HaveOccurred())
 
 				By("restarting the broker with a different primary password")
-				session.Terminate()
+				session.Terminate().Wait()
 				firstEncryptionPassword = `{"primary":false,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 				const secondEncryptionPassword = `{"primary":true,"label":"my-second-password","password":{"secret":"verysecretcoolpassword"}}`
 				encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
@@ -639,7 +639,7 @@ var _ = Describe("Database Encryption", func() {
 			By("registering the password")
 			const encryptionPasswords = `[{"label":"obsolete","password":{"secret":"supersecretcoolpassword"}}]`
 			session = startBroker(false, encryptionPasswords)
-			session.Terminate()
+			session.Terminate().Wait()
 
 			var receiver models.PasswordMetadata
 			Expect(testHelper.DBConn().Where("label=?", "obsolete").First(&receiver).Error).NotTo(HaveOccurred())
