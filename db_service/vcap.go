@@ -101,7 +101,7 @@ func ParseVcapServices(vcapServicesData string) (VcapService, error) {
 	}
 
 	for _, vcapArray := range vcapMap {
-		vcapService, err := findMySqlTag(vcapArray, "mysql")
+		vcapService, err := findMySQLTag(vcapArray, "mysql")
 		if err != nil {
 			return VcapService{}, fmt.Errorf("error finding MySQL tag: %s", err)
 		}
@@ -122,7 +122,7 @@ func contains(arr []string, key string) bool {
 }
 
 // return the index of the VcapService with a tag of "mysql" in the list of VcapServices, fail if we find more or fewer than 1
-func findMySqlTag(vcapServices []VcapService, key string) (VcapService, error) {
+func findMySQLTag(vcapServices []VcapService, key string) (VcapService, error) {
 	index := -1
 	count := 0
 	for i, vcapService := range vcapServices {

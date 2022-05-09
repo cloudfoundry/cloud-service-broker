@@ -21,7 +21,7 @@ func ExampleCompleteServiceExample_jsonSpec() {
 				BindParams:      map[string]interface{}{}},
 			ServiceName: "google-stackdriver-debugger",
 			ServiceID:   "83837945-1547-41e0-b661-ea31d76eed11",
-			ExpectedOutput: broker.CreateJsonSchema([]broker.BrokerVariable{
+			ExpectedOutput: broker.CreateJSONSchema([]broker.BrokerVariable{
 				{
 					Required:  true,
 					FieldName: "Email",
@@ -49,14 +49,14 @@ func TestGetExamplesForAService(t *testing.T) {
 	}{
 		"service with no examples": {
 			ServiceDefinition: &broker.ServiceDefinition{
-				Id: "TestService",
+				ID: "TestService",
 			},
 			ExpectedResponse: []CompleteServiceExample(nil),
 			ExpectedError:    nil,
 		},
 		"google-stackdriver-debugger": {
 			ServiceDefinition: &broker.ServiceDefinition{
-				Id:   "83837945-1547-41e0-b661-ea31d76eed11",
+				ID:   "83837945-1547-41e0-b661-ea31d76eed11",
 				Name: "google-stackdriver-debugger",
 				BindOutputVariables: []broker.BrokerVariable{
 					{
@@ -89,7 +89,7 @@ func TestGetExamplesForAService(t *testing.T) {
 					},
 					ServiceName: "google-stackdriver-debugger",
 					ServiceID:   "83837945-1547-41e0-b661-ea31d76eed11",
-					ExpectedOutput: broker.CreateJsonSchema([]broker.BrokerVariable{
+					ExpectedOutput: broker.CreateJSONSchema([]broker.BrokerVariable{
 						{
 							Required:  true,
 							FieldName: "Email",
@@ -103,7 +103,7 @@ func TestGetExamplesForAService(t *testing.T) {
 		},
 		"google-dataflow": {
 			ServiceDefinition: &broker.ServiceDefinition{
-				Id:   "3e897eb3-9062-4966-bd4f-85bda0f73b3d",
+				ID:   "3e897eb3-9062-4966-bd4f-85bda0f73b3d",
 				Name: "google-dataflow",
 				BindOutputVariables: []broker.BrokerVariable{
 					{
@@ -148,7 +148,7 @@ func TestGetExamplesForAService(t *testing.T) {
 					},
 					ServiceName: "google-dataflow",
 					ServiceID:   "3e897eb3-9062-4966-bd4f-85bda0f73b3d",
-					ExpectedOutput: broker.CreateJsonSchema([]broker.BrokerVariable{
+					ExpectedOutput: broker.CreateJSONSchema([]broker.BrokerVariable{
 						{
 							Required:  true,
 							FieldName: "Email",
@@ -174,7 +174,7 @@ func TestGetExamplesForAService(t *testing.T) {
 					},
 					ServiceName: "google-dataflow",
 					ServiceID:   "3e897eb3-9062-4966-bd4f-85bda0f73b3d",
-					ExpectedOutput: broker.CreateJsonSchema([]broker.BrokerVariable{
+					ExpectedOutput: broker.CreateJSONSchema([]broker.BrokerVariable{
 						{
 							Required:  true,
 							FieldName: "Email",

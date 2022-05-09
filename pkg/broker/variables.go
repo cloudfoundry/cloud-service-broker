@@ -30,13 +30,13 @@ import (
 )
 
 const (
-	JsonTypeString  JsonType = "string"
-	JsonTypeNumeric JsonType = "number"
-	JsonTypeInteger JsonType = "integer"
-	JsonTypeBoolean JsonType = "boolean"
+	JSONTypeString  JSONType = "string"
+	JSONTypeNumeric JSONType = "number"
+	JSONTypeInteger JSONType = "integer"
+	JSONTypeBoolean JSONType = "boolean"
 )
 
-type JsonType string
+type JSONType string
 
 type BrokerVariable struct {
 	// Is this variable required?
@@ -44,7 +44,7 @@ type BrokerVariable struct {
 	// The name of the JSON field this variable serializes/deserializes to
 	FieldName string `yaml:"field_name"`
 	// The JSONSchema type of the field
-	Type JsonType `yaml:"type"`
+	Type JSONType `yaml:"type"`
 	// Human readable info about the field.
 	Details string `yaml:"details"`
 	// The default value of the field.
@@ -178,7 +178,7 @@ func ApplyDefaults(parameters map[string]interface{}, variables []BrokerVariable
 }
 
 func ValidateVariables(parameters map[string]interface{}, variables []BrokerVariable) error {
-	schema := CreateJsonSchema(variables)
+	schema := CreateJSONSchema(variables)
 	return ValidateVariablesAgainstSchema(parameters, schema)
 }
 
@@ -206,8 +206,8 @@ func ValidateVariablesAgainstSchema(parameters map[string]interface{}, schema ma
 	return allErrors
 }
 
-// CreateJsonSchema outputs a JSONSchema given a list of BrokerVariables
-func CreateJsonSchema(schemaVariables []BrokerVariable) map[string]interface{} {
+// CreateJSONSchema outputs a JSONSchema given a list of BrokerVariables
+func CreateJSONSchema(schemaVariables []BrokerVariable) map[string]interface{} {
 	required := utils.NewStringSet()
 	properties := make(map[string]interface{})
 

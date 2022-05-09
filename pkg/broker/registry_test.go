@@ -19,7 +19,7 @@ var _ = Describe("Registry", func() {
 		var serviceDef ServiceDefinition
 		BeforeEach(func() {
 			serviceDef = ServiceDefinition{
-				Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
+				ID:   "b9e4332e-b42b-4680-bda5-ea1506797474",
 				Name: "test-service",
 				Plans: []ServicePlan{
 					{
@@ -37,7 +37,7 @@ var _ = Describe("Registry", func() {
 		It("fails when the service offering is already registered", func() {
 			registry := BrokerRegistry{
 				"test-service": &ServiceDefinition{
-					Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
+					ID:   "b9e4332e-b42b-4680-bda5-ea1506797474",
 					Name: "test-service",
 				},
 			}
@@ -59,7 +59,7 @@ var _ = Describe("Registry", func() {
 				Expect(len(registry["test-service"].Plans)).To(Equal(2))
 			})
 
-			It("errors when user defined plans have duplicate plan Id", func() {
+			It("errors when user defined plans have duplicate plan ID", func() {
 				const userProvidedPlan = `[{"name": "user-plan","id":"e1d11f65-da66-46ad-977c-6d56513baf43"}]`
 				viper.Set("service.test-service.plans", userProvidedPlan)
 
@@ -69,7 +69,7 @@ var _ = Describe("Registry", func() {
 				Expect(err).To(MatchError(`error validating service "test-service", duplicated value, must be unique: e1d11f65-da66-46ad-977c-6d56513baf43: Plans[1].Id`))
 			})
 
-			It("errors when user defined plans have duplicate name Id", func() {
+			It("errors when user defined plans have duplicate name ID", func() {
 				const userProvidedPlan = `[{"name": "Builtin!","id":"8b52a460-b246-11eb-a8f5-d349948e2480"}]`
 				viper.Set("service.test-service.plans", userProvidedPlan)
 
@@ -85,7 +85,7 @@ var _ = Describe("Registry", func() {
 				registry := make(BrokerRegistry)
 
 				err := registry.Register(&ServiceDefinition{
-					Id:        "b9e4332e-b42b-4680-bda5-ea1506797474",
+					ID:        "b9e4332e-b42b-4680-bda5-ea1506797474",
 					Name:      "test-service",
 					Plans:     []ServicePlan{},
 					IsBuiltin: true,
@@ -100,29 +100,29 @@ var _ = Describe("Registry", func() {
 			const duplicateID = "b9e4332e-b42b-4680-bda5-ea1506797474"
 			registry := BrokerRegistry{
 				"test-service-1": &ServiceDefinition{
-					Id:   duplicateID,
+					ID:   duplicateID,
 					Name: "test-service-1",
 				},
 				"test-service-2": &ServiceDefinition{
-					Id:   duplicateID,
+					ID:   duplicateID,
 					Name: "test-service-2",
 				},
 			}
 
 			err := registry.Validate()
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal(fmt.Sprintf("duplicated value, must be unique: %s: services[1].Id", duplicateID)))
+			Expect(err.Error()).To(Equal(fmt.Sprintf("duplicated value, must be unique: %s: services[1].ID", duplicateID)))
 		})
 
 		It("should fail when same service name is used in two different services", func() {
 			duplicateName := "test-service"
 			registry := BrokerRegistry{
 				"test-service-1": &ServiceDefinition{
-					Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
+					ID:   "b9e4332e-b42b-4680-bda5-ea1506797474",
 					Name: duplicateName,
 				},
 				"test-service-2": &ServiceDefinition{
-					Id:   "1324f91e-04cd-11ec-94ab-579a8238e388",
+					ID:   "1324f91e-04cd-11ec-94ab-579a8238e388",
 					Name: duplicateName,
 				},
 			}
@@ -136,7 +136,7 @@ var _ = Describe("Registry", func() {
 			const duplicateID = "e1d11f65-da66-46ad-977c-6d56513baf43"
 			registry := BrokerRegistry{
 				"test-service-1": &ServiceDefinition{
-					Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
+					ID:   "b9e4332e-b42b-4680-bda5-ea1506797474",
 					Name: "test-service-1",
 					Plans: []ServicePlan{
 						{
@@ -149,7 +149,7 @@ var _ = Describe("Registry", func() {
 					},
 				},
 				"test-service-2": &ServiceDefinition{
-					Id:   "c19eb6cc-04c5-11ec-ab31-3b165292c41b",
+					ID:   "c19eb6cc-04c5-11ec-ab31-3b165292c41b",
 					Name: "test-service-2",
 					Plans: []ServicePlan{
 						{
@@ -173,7 +173,7 @@ var _ = Describe("Registry", func() {
 		DescribeTable("should not show offering",
 			func(tag, property string) {
 				serviceDef := ServiceDefinition{
-					Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
+					ID:   "b9e4332e-b42b-4680-bda5-ea1506797474",
 					Name: "test-service",
 					Tags: []string{"gcp", tag},
 					Plans: []ServicePlan{
@@ -209,7 +209,7 @@ var _ = Describe("Registry", func() {
 		DescribeTable("should show offering",
 			func(tag, property string) {
 				serviceDef := ServiceDefinition{
-					Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
+					ID:   "b9e4332e-b42b-4680-bda5-ea1506797474",
 					Name: "test-service",
 					Tags: []string{"gcp", tag},
 					Plans: []ServicePlan{
@@ -245,7 +245,7 @@ var _ = Describe("Registry", func() {
 		DescribeTable("should not show offering",
 			func(tag, property string) {
 				serviceDef := ServiceDefinition{
-					Id:   "b9e4332e-b42b-4680-bda5-ea1506797474",
+					ID:   "b9e4332e-b42b-4680-bda5-ea1506797474",
 					Name: "test-service",
 					Tags: []string{"gcp", tag},
 					Plans: []ServicePlan{

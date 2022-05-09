@@ -43,9 +43,9 @@ func TestBrokerVariable_ToSchema(t *testing.T) {
 			},
 		},
 		"type is copied": {
-			BrokerVariable{Type: JsonTypeString},
+			BrokerVariable{Type: JSONTypeString},
 			map[string]interface{}{
-				"type": JsonTypeString,
+				"type": JSONTypeString,
 			},
 		},
 		"default is copied": {
@@ -64,7 +64,7 @@ func TestBrokerVariable_ToSchema(t *testing.T) {
 			BrokerVariable{
 				FieldName: "full_test_field_name",
 				Default:   "some-value",
-				Type:      JsonTypeString,
+				Type:      JSONTypeString,
 				Details:   "more information",
 				Enum:      map[interface{}]string{"b": "description", "a": "description"},
 				Constraints: map[string]interface{}{
@@ -75,7 +75,7 @@ func TestBrokerVariable_ToSchema(t *testing.T) {
 			map[string]interface{}{
 				"title":        "Full Test Field Name",
 				"default":      "some-value",
-				"type":         JsonTypeString,
+				"type":         JSONTypeString,
 				"description":  "more information",
 				"enum":         []interface{}{"a", "b"},
 				"examples":     []string{"SAMPLEA", "SAMPLEB"},
@@ -124,7 +124,7 @@ func TestBrokerVariable_ValidateVariables(t *testing.T) {
 				{
 					Required:  true,
 					FieldName: "test",
-					Type:      JsonTypeInteger,
+					Type:      JSONTypeInteger,
 				},
 			},
 			Expected: nil,
@@ -137,7 +137,7 @@ func TestBrokerVariable_ValidateVariables(t *testing.T) {
 				{
 					Required:  true,
 					FieldName: "test",
-					Type:      JsonTypeInteger,
+					Type:      JSONTypeInteger,
 				},
 			},
 			Expected: errors.New("1 error(s) occurred: test: Invalid type. Expected: integer, given: string"),
@@ -150,7 +150,7 @@ func TestBrokerVariable_ValidateVariables(t *testing.T) {
 				{
 					Required:  true,
 					FieldName: "test",
-					Type:      JsonTypeInteger,
+					Type:      JSONTypeInteger,
 					Constraints: validation.NewConstraintBuilder().
 						Minimum(10).
 						Build(),
@@ -166,7 +166,7 @@ func TestBrokerVariable_ValidateVariables(t *testing.T) {
 				{
 					Required:  true,
 					FieldName: "test",
-					Type:      JsonTypeString,
+					Type:      JSONTypeString,
 					Enum: map[interface{}]string{
 						"one":      "it's either this one",
 						"theother": "or this one",
@@ -181,7 +181,7 @@ func TestBrokerVariable_ValidateVariables(t *testing.T) {
 				{
 					Required:  true,
 					FieldName: "test",
-					Type:      JsonTypeString,
+					Type:      JSONTypeString,
 					Enum: map[interface{}]string{
 						"one":      "it's either this one",
 						"theother": "or this one",
@@ -231,7 +231,7 @@ func TestBrokerVariable_Validate(t *testing.T) {
 			Variable: BrokerVariable{
 				FieldName:   "test",
 				Details:     "test variable",
-				Type:        JsonTypeInteger,
+				Type:        JSONTypeInteger,
 				TFAttribute: "type.name.attribute",
 			},
 			Expected: nil,
@@ -255,7 +255,7 @@ func TestBrokerVariable_Validate(t *testing.T) {
 			Variable: BrokerVariable{
 				FieldName:   "test",
 				Details:     "test variable",
-				Type:        JsonTypeInteger,
+				Type:        JSONTypeInteger,
 				TFAttribute: "thisisnot.validtfattribute",
 			},
 			Expected: errors.New("field must match '^([-a-zA-Z0-9_-]*\\.[-a-zA-Z0-9_-]*){2}': tf_attribute"),
@@ -298,7 +298,7 @@ func TestBrokerVariable_ApplyDefaults(t *testing.T) {
 			Variables: []BrokerVariable{
 				{
 					FieldName: "test",
-					Type:      JsonTypeInteger,
+					Type:      JSONTypeInteger,
 					Default:   123,
 				},
 			},
@@ -313,7 +313,7 @@ func TestBrokerVariable_ApplyDefaults(t *testing.T) {
 			Variables: []BrokerVariable{
 				{
 					FieldName: "test",
-					Type:      JsonTypeInteger,
+					Type:      JSONTypeInteger,
 					Default:   456,
 				},
 			},

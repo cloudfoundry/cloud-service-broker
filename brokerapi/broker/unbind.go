@@ -27,7 +27,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return domain.UnbindSpec{}, err
 	}
 
-	plan, err := serviceDefinition.GetPlanById(details.PlanID)
+	plan, err := serviceDefinition.GetPlanByID(details.PlanID)
 	if err != nil {
 		return domain.UnbindSpec{}, err
 	}

@@ -87,7 +87,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 				PlanInputs: []broker.BrokerVariable{
 					{
 						FieldName: "resourceGroup",
-						Type:      broker.JsonTypeString,
+						Type:      broker.JSONTypeString,
 						Details:   "The resource group name",
 						Required:  true,
 					},
@@ -96,7 +96,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 				Outputs: []broker.BrokerVariable{
 					{
 						FieldName: "username",
-						Type:      broker.JsonTypeString,
+						Type:      broker.JSONTypeString,
 						Details:   "The administrator username",
 						Required:  true,
 					},
