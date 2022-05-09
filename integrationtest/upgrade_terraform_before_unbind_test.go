@@ -128,7 +128,7 @@ var _ = Describe("upgrade terraform before unbind", func() {
 				Expect(deleteBindResponse.StatusCode).To(Equal(http.StatusInternalServerError))
 
 				By("observing that the destroy failed due to mismatched TF versions")
-				Expect(session).To(gbytes.Say("apply attempted with a newer version of terraform than the state"))
+				Eventually(session).WithTimeout(10 * time.Second).Should(gbytes.Say("apply attempted with a newer version of terraform than the state"))
 
 			})
 		})
