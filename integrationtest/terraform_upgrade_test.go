@@ -72,7 +72,7 @@ var _ = Describe("Terraform Upgrade", func() {
 			Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.13.7"))
 
 			By("updating the brokerpak and restarting the broker")
-			session.Terminate()
+			session.Terminate().Wait()
 			testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
 
 			session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
@@ -103,7 +103,7 @@ var _ = Describe("Terraform Upgrade", func() {
 			Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.13.7"))
 
 			By("updating the brokerpak and restarting the broker")
-			session.Terminate()
+			session.Terminate().Wait()
 			testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
 			session = testHelper.StartBroker()
 
