@@ -1,7 +1,7 @@
 package passwordcombiner_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/gcmencryptor"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/passwordcombiner"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/passwordparser"
