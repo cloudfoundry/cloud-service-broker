@@ -34,9 +34,9 @@ type ServiceBindingCredentialsV1 struct {
 
 	OtherDetails string `gorm:"type:text"`
 
-	ServiceId         string
-	ServiceInstanceId string
-	BindingId         string
+	ServiceID         string
+	ServiceInstanceID string
+	BindingID         string
 }
 
 // TableName returns a consistent table name for
@@ -53,9 +53,9 @@ type ServiceBindingCredentialsV2 struct {
 
 	OtherDetails []byte `gorm:"type:blob"`
 
-	ServiceId         string
-	ServiceInstanceId string
-	BindingId         string
+	ServiceID         string
+	ServiceInstanceID string
+	BindingID         string
 }
 
 // TableName returns a consistent table name for
@@ -74,13 +74,13 @@ type ServiceInstanceDetailsV1 struct {
 
 	Name         string
 	Location     string
-	Url          string
+	URL          string
 	OtherDetails string `gorm:"type:text"`
 
-	ServiceId        string
-	PlanId           string
-	SpaceGuid        string
-	OrganizationGuid string
+	ServiceID        string
+	PlanID           string
+	SpaceGUID        string
+	OrganizationGUID string
 }
 
 // TableName returns a consistent table name for
@@ -99,24 +99,24 @@ type ServiceInstanceDetailsV2 struct {
 
 	Name         string
 	Location     string
-	Url          string
+	URL          string
 	OtherDetails string `gorm:"type:text"`
 
-	ServiceId        string
-	PlanId           string
-	SpaceGuid        string
-	OrganizationGuid string
+	ServiceID        string
+	PlanID           string
+	SpaceGUID        string
+	OrganizationGUID string
 
 	// OperationType holds a string corresponding to what kind of operation
-	// OperationId is referencing. The object is "locked" for editing if
+	// OperationID is referencing. The object is "locked" for editing if
 	// an operation is pending.
 	OperationType string
 
-	// OperationId holds a string referencing an operation specific to a broker.
+	// OperationID holds a string referencing an operation specific to a broker.
 	// Operations in GCP all have a unique ID.
-	// The OperationId will be cleared after a successful operation.
+	// The OperationID will be cleared after a successful operation.
 	// This string MAY be sent to users and MUST NOT leak confidential information.
-	OperationId string `gorm:"type:varchar(1024)"`
+	OperationID string `gorm:"type:varchar(1024)"`
 }
 
 // TableName returns a consistent table name for
@@ -135,24 +135,24 @@ type ServiceInstanceDetailsV3 struct {
 
 	Name         string
 	Location     string
-	Url          string
+	URL          string
 	OtherDetails []byte `gorm:"type:blob"`
 
-	ServiceId        string
-	PlanId           string
-	SpaceGuid        string
-	OrganizationGuid string
+	ServiceID        string
+	PlanID           string
+	SpaceGUID        string
+	OrganizationGUID string
 
 	// OperationType holds a string corresponding to what kind of operation
-	// OperationId is referencing. The object is "locked" for editing if
+	// OperationID is referencing. The object is "locked" for editing if
 	// an operation is pending.
 	OperationType string
 
-	// OperationId holds a string referencing an operation specific to a broker.
+	// OperationID holds a string referencing an operation specific to a broker.
 	// Operations in GCP all have a unique ID.
-	// The OperationId will be cleared after a successful operation.
+	// The OperationID will be cleared after a successful operation.
 	// This string MAY be sent to users and MUST NOT leak confidential information.
-	OperationId string `gorm:"type:varchar(1024)"`
+	OperationID string `gorm:"type:varchar(1024)"`
 }
 
 // TableName returns a consistent table name for
@@ -167,7 +167,7 @@ func (ServiceInstanceDetailsV3) TableName() string {
 type ProvisionRequestDetailsV1 struct {
 	gorm.Model
 
-	ServiceInstanceId string `gorm:"uniqueIndex"`
+	ServiceInstanceID string `gorm:"uniqueIndex"`
 	// is a json.Marshal of models.ProvisionDetails
 	RequestDetails string
 }
@@ -184,7 +184,7 @@ func (ProvisionRequestDetailsV1) TableName() string {
 type ProvisionRequestDetailsV2 struct {
 	gorm.Model
 
-	ServiceInstanceId string
+	ServiceInstanceID string
 
 	// is a json.Marshal of models.ProvisionDetails
 	RequestDetails string `gorm:"type:text"`
@@ -202,7 +202,7 @@ func (ProvisionRequestDetailsV2) TableName() string {
 type ProvisionRequestDetailsV3 struct {
 	gorm.Model
 
-	ServiceInstanceId string
+	ServiceInstanceID string
 
 	// is a json.Marshal of models.ProvisionDetails
 	RequestDetails []byte `gorm:"type:blob"`
@@ -220,8 +220,8 @@ func (ProvisionRequestDetailsV3) TableName() string {
 type BindRequestDetailsV1 struct {
 	gorm.Model
 
-	ServiceBindingId  string `gorm:"unique"`
-	ServiceInstanceId string
+	ServiceBindingID  string `gorm:"unique"`
+	ServiceInstanceID string
 
 	// is a json.Marshal of models.BindDetails
 	RequestDetails []byte `gorm:"type:blob"`
@@ -239,7 +239,7 @@ func (BindRequestDetailsV1) TableName() string {
 type MigrationV1 struct {
 	gorm.Model
 
-	MigrationId int `gorm:"type:int(10)"`
+	MigrationID int `gorm:"type:int(10)"`
 }
 
 // TableName returns a consistent table name for gorm so
@@ -261,11 +261,11 @@ type CloudOperationV1 struct {
 	ErrorMessage  string `gorm:"type:text"`
 	InsertTime    string
 	StartTime     string
-	TargetId      string
+	TargetID      string
 	TargetLink    string
 
-	ServiceId         string
-	ServiceInstanceId string
+	ServiceID         string
+	ServiceInstanceID string
 }
 
 // TableName returns a consistent table name for gorm so
@@ -284,7 +284,7 @@ type PlanDetailsV1 struct {
 	UpdatedAt time.Time
 	DeletedAt *time.Time
 
-	ServiceId string
+	ServiceID string
 	Name      string
 	Features  string `gorm:"type:text"`
 }

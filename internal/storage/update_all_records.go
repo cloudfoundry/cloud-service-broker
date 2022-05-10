@@ -30,12 +30,12 @@ func (s *Storage) updateAllServiceBindingCredentials() error {
 		for i := range serviceBindingCredentialsBatch {
 			data, err := s.decodeBytes(serviceBindingCredentialsBatch[i].OtherDetails)
 			if err != nil {
-				return fmt.Errorf("decode error for %q: %w", serviceBindingCredentialsBatch[i].BindingId, err)
+				return fmt.Errorf("decode error for %q: %w", serviceBindingCredentialsBatch[i].BindingID, err)
 			}
 
 			serviceBindingCredentialsBatch[i].OtherDetails, err = s.encodeBytes(data)
 			if err != nil {
-				return fmt.Errorf("encode error for %q: %w", serviceBindingCredentialsBatch[i].BindingId, err)
+				return fmt.Errorf("encode error for %q: %w", serviceBindingCredentialsBatch[i].BindingID, err)
 			}
 		}
 
@@ -54,12 +54,12 @@ func (s *Storage) updateAllBindRequestDetails() error {
 		for i := range bindRequestDetailsBatch {
 			data, err := s.decodeBytes(bindRequestDetailsBatch[i].RequestDetails)
 			if err != nil {
-				return fmt.Errorf("decode error for %q: %w", bindRequestDetailsBatch[i].ServiceBindingId, err)
+				return fmt.Errorf("decode error for %q: %w", bindRequestDetailsBatch[i].ServiceBindingID, err)
 			}
 
 			bindRequestDetailsBatch[i].RequestDetails, err = s.encodeBytes(data)
 			if err != nil {
-				return fmt.Errorf("encode error for %q: %w", bindRequestDetailsBatch[i].ServiceBindingId, err)
+				return fmt.Errorf("encode error for %q: %w", bindRequestDetailsBatch[i].ServiceBindingID, err)
 			}
 		}
 
@@ -78,12 +78,12 @@ func (s *Storage) updateAllProvisionRequestDetails() error {
 		for i := range provisionRequestDetailsBatch {
 			data, err := s.decodeBytes(provisionRequestDetailsBatch[i].RequestDetails)
 			if err != nil {
-				return fmt.Errorf("decode error for %q: %w", provisionRequestDetailsBatch[i].ServiceInstanceId, err)
+				return fmt.Errorf("decode error for %q: %w", provisionRequestDetailsBatch[i].ServiceInstanceID, err)
 			}
 
 			provisionRequestDetailsBatch[i].RequestDetails, err = s.encodeBytes(data)
 			if err != nil {
-				return fmt.Errorf("encode error for %q: %w", provisionRequestDetailsBatch[i].ServiceInstanceId, err)
+				return fmt.Errorf("encode error for %q: %w", provisionRequestDetailsBatch[i].ServiceInstanceID, err)
 			}
 		}
 

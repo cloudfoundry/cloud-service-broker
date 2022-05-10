@@ -25,8 +25,8 @@ var _ = Describe("BindRequestDetails", func() {
 
 			var receiver models.BindRequestDetails
 			Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
-			Expect(receiver.ServiceInstanceId).To(Equal(serviceInstanceID))
-			Expect(receiver.ServiceBindingId).To(Equal(serviceBindingID))
+			Expect(receiver.ServiceInstanceID).To(Equal(serviceInstanceID))
+			Expect(receiver.ServiceBindingID).To(Equal(serviceBindingID))
 			Expect(receiver.RequestDetails).To(Equal([]byte(`{"encrypted":{"foo":"bar"}}`)))
 		})
 
@@ -58,7 +58,7 @@ var _ = Describe("BindRequestDetails", func() {
 		When("details for the binding already exist in the database", func() {
 			BeforeEach(func() {
 				Expect(db.Create(&models.BindRequestDetails{
-					ServiceBindingId: serviceBindingID,
+					ServiceBindingID: serviceBindingID,
 					RequestDetails:   []byte(`{"foo":"bar"}`),
 				}).Error).NotTo(HaveOccurred())
 			})
@@ -156,17 +156,17 @@ var _ = Describe("BindRequestDetails", func() {
 func addFakeBindRequestDetails() {
 	Expect(db.Create(&models.BindRequestDetails{
 		RequestDetails:    []byte(`{"foo":"bar"}`),
-		ServiceBindingId:  "fake-binding-id",
-		ServiceInstanceId: "fake-instance-id",
+		ServiceBindingID:  "fake-binding-id",
+		ServiceInstanceID: "fake-instance-id",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.BindRequestDetails{
 		RequestDetails:    []byte(`{"foo":"baz","bar":"quz"}`),
-		ServiceBindingId:  "fake-other-binding-id",
-		ServiceInstanceId: "fake-other-instance-id",
+		ServiceBindingID:  "fake-other-binding-id",
+		ServiceInstanceID: "fake-other-instance-id",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.BindRequestDetails{
 		RequestDetails:    []byte(`{"foo":"boz"}`),
-		ServiceBindingId:  "fake-yet-another-binding-id",
-		ServiceInstanceId: "fake-yet-another-instance-id",
+		ServiceBindingID:  "fake-yet-another-binding-id",
+		ServiceInstanceID: "fake-yet-another-instance-id",
 	}).Error).NotTo(HaveOccurred())
 }

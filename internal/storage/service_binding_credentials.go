@@ -21,9 +21,9 @@ func (s *Storage) CreateServiceBindingCredentials(binding ServiceBindingCredenti
 
 	m := models.ServiceBindingCredentials{
 		OtherDetails:      encodedCreds,
-		ServiceId:         binding.ServiceGUID,
-		ServiceInstanceId: binding.ServiceInstanceGUID,
-		BindingId:         binding.BindingGUID,
+		ServiceID:         binding.ServiceGUID,
+		ServiceInstanceID: binding.ServiceInstanceGUID,
+		BindingID:         binding.BindingGUID,
 	}
 
 	if err := s.db.Create(&m).Error; err != nil {
@@ -53,9 +53,9 @@ func (s *Storage) GetServiceBindingCredentials(bindingID, serviceInstanceID stri
 	}
 
 	return ServiceBindingCredentials{
-		ServiceGUID:         receiver.ServiceId,
-		ServiceInstanceGUID: receiver.ServiceInstanceId,
-		BindingGUID:         receiver.BindingId,
+		ServiceGUID:         receiver.ServiceID,
+		ServiceInstanceGUID: receiver.ServiceInstanceID,
+		BindingGUID:         receiver.BindingID,
 		Credentials:         decoded,
 	}, nil
 }

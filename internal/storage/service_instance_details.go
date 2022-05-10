@@ -33,14 +33,14 @@ func (s *Storage) StoreServiceInstanceDetails(d ServiceInstanceDetails) error {
 
 	m.Name = d.Name
 	m.Location = d.Location
-	m.Url = d.URL
+	m.URL = d.URL
 	m.OtherDetails = encoded
-	m.ServiceId = d.ServiceGUID
-	m.PlanId = d.PlanGUID
-	m.SpaceGuid = d.SpaceGUID
-	m.OrganizationGuid = d.OrganizationGUID
+	m.ServiceID = d.ServiceGUID
+	m.PlanID = d.PlanGUID
+	m.SpaceGUID = d.SpaceGUID
+	m.OrganizationGUID = d.OrganizationGUID
 	m.OperationType = d.OperationType
-	m.OperationId = d.OperationGUID
+	m.OperationID = d.OperationGUID
 
 	switch m.ID {
 	case "":
@@ -88,14 +88,14 @@ func (s *Storage) GetServiceInstanceDetails(guid string) (ServiceInstanceDetails
 		GUID:             guid,
 		Name:             receiver.Name,
 		Location:         receiver.Location,
-		URL:              receiver.Url,
+		URL:              receiver.URL,
 		Outputs:          decoded,
-		ServiceGUID:      receiver.ServiceId,
-		PlanGUID:         receiver.PlanId,
-		SpaceGUID:        receiver.SpaceGuid,
-		OrganizationGUID: receiver.OrganizationGuid,
+		ServiceGUID:      receiver.ServiceID,
+		PlanGUID:         receiver.PlanID,
+		SpaceGUID:        receiver.SpaceGUID,
+		OrganizationGUID: receiver.OrganizationGUID,
 		OperationType:    receiver.OperationType,
-		OperationGUID:    receiver.OperationId,
+		OperationGUID:    receiver.OperationID,
 	}, nil
 }
 
