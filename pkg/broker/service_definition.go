@@ -39,13 +39,13 @@ const GlobalProvisionDefaults = "provision.defaults"
 // ServiceDefinition holds the necessary details to describe an OSB service and
 // provision it.
 type ServiceDefinition struct {
-	Id               string
+	ID               string
 	Name             string
 	Description      string
 	DisplayName      string
-	ImageUrl         string
-	DocumentationUrl string
-	SupportUrl       string
+	ImageURL         string
+	DocumentationURL string
+	SupportURL       string
 	Tags             []string
 	Bindable         bool
 	PlanUpdateable   bool
@@ -73,20 +73,20 @@ var _ validation.Validatable = (*ServiceDefinition)(nil)
 // Validate implements validation.Validatable.
 func (svc *ServiceDefinition) Validate() (errs *validation.FieldError) {
 	errs = errs.Also(
-		validation.ErrIfNotUUID(svc.Id, "Id"),
+		validation.ErrIfNotUUID(svc.ID, "ID"),
 		validation.ErrIfNotOSBName(svc.Name, "Name"),
 	)
 
-	if svc.ImageUrl != "" {
-		errs = errs.Also(validation.ErrIfNotURL(svc.ImageUrl, "ImageURL"))
+	if svc.ImageURL != "" {
+		errs = errs.Also(validation.ErrIfNotURL(svc.ImageURL, "ImageURL"))
 	}
 
-	if svc.DocumentationUrl != "" {
-		errs = errs.Also(validation.ErrIfNotURL(svc.DocumentationUrl, "DocumentationURL"))
+	if svc.DocumentationURL != "" {
+		errs = errs.Also(validation.ErrIfNotURL(svc.DocumentationURL, "DocumentationURL"))
 	}
 
-	if svc.SupportUrl != "" {
-		errs = errs.Also(validation.ErrIfNotURL(svc.SupportUrl, "SupportURL"))
+	if svc.SupportURL != "" {
+		errs = errs.Also(validation.ErrIfNotURL(svc.SupportURL, "SupportURL"))
 	}
 
 	for i, v := range svc.ProvisionInputVariables {
@@ -202,16 +202,16 @@ func (svc *ServiceDefinition) TileUserDefinedPlansVariable() string {
 func (svc *ServiceDefinition) CatalogEntry() *Service {
 	sd := &Service{
 		Service: domain.Service{
-			ID:          svc.Id,
+			ID:          svc.ID,
 			Name:        svc.Name,
 			Description: svc.Description,
 			Metadata: &domain.ServiceMetadata{
 				DisplayName:     svc.DisplayName,
 				LongDescription: svc.Description,
 
-				DocumentationUrl: svc.DocumentationUrl,
-				ImageUrl:         svc.ImageUrl,
-				SupportUrl:       svc.SupportUrl,
+				DocumentationUrl: svc.DocumentationURL,
+				ImageUrl:         svc.ImageURL,
+				SupportUrl:       svc.SupportURL,
 			},
 			Tags:          svc.Tags,
 			Bindable:      svc.Bindable,
@@ -235,27 +235,27 @@ func (svc *ServiceDefinition) createSchemas() *domain.ServiceSchemas {
 	return &domain.ServiceSchemas{
 		Instance: domain.ServiceInstanceSchema{
 			Create: domain.Schema{
-				Parameters: CreateJsonSchema(svc.ProvisionInputVariables),
+				Parameters: CreateJSONSchema(svc.ProvisionInputVariables),
 			},
 		},
 		Binding: domain.ServiceBindingSchema{
 			Create: domain.Schema{
-				Parameters: CreateJsonSchema(svc.BindInputVariables),
+				Parameters: CreateJSONSchema(svc.BindInputVariables),
 			},
 		},
 	}
 }
 
-// GetPlanById finds a plan in this service by its UUID.
-func (svc *ServiceDefinition) GetPlanById(planId string) (*ServicePlan, error) {
+// GetPlanByID finds a plan in this service by its UUID.
+func (svc *ServiceDefinition) GetPlanByID(planID string) (*ServicePlan, error) {
 	catalogEntry := svc.CatalogEntry()
 	for _, plan := range catalogEntry.Plans {
-		if plan.ID == planId {
+		if plan.ID == planID {
 			return &plan, nil
 		}
 	}
 
-	return nil, fmt.Errorf("plan ID %q could not be found", planId)
+	return nil, fmt.Errorf("plan ID %q could not be found", planID)
 }
 
 // UserDefinedPlans extracts user defined plans from the environment, failing if
@@ -425,15 +425,15 @@ func (svc *ServiceDefinition) ProvisionVariables(instanceID string, details para
 	return svc.variables(constants, details.RequestParams, plan)
 }
 
-func (svc *ServiceDefinition) UpdateVariables(instanceId string, details paramparser.UpdateDetails, mergedUserProvidedParameters map[string]interface{}, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) UpdateVariables(instanceID string, details paramparser.UpdateDetails, mergedUserProvidedParameters map[string]interface{}, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
 	constants := map[string]interface{}{
 		"request.plan_id":     details.PlanID,
 		"request.service_id":  details.ServiceID,
-		"request.instance_id": instanceId,
+		"request.instance_id": instanceID,
 		"request.default_labels": map[string]string{
 			"pcf-organization-guid": utils.InvalidLabelChars.ReplaceAllString(details.PreviousOrgID, "_"),
 			"pcf-space-guid":        utils.InvalidLabelChars.ReplaceAllString(details.PreviousSpaceID, "_"),
-			"pcf-instance-id":       utils.InvalidLabelChars.ReplaceAllString(instanceId, "_"),
+			"pcf-instance-id":       utils.InvalidLabelChars.ReplaceAllString(instanceID, "_"),
 		},
 		"request.context": details.RequestContext,
 		"request.x_broker_api_originating_identity": originatingIdentity,

@@ -65,7 +65,7 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 			PlanInputs: []broker.BrokerVariable{
 				{
 					FieldName: "domain",
-					Type:      broker.JsonTypeString,
+					Type:      broker.JSONTypeString,
 					Details:   "The domain name",
 					Required:  true,
 				},
@@ -73,7 +73,7 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 			UserInputs: []broker.BrokerVariable{
 				{
 					FieldName: "username",
-					Type:      broker.JsonTypeString,
+					Type:      broker.JSONTypeString,
 					Details:   "The username to create",
 					Required:  true,
 				},
@@ -86,7 +86,7 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 			Outputs: []broker.BrokerVariable{
 				{
 					FieldName: "email",
-					Type:      broker.JsonTypeString,
+					Type:      broker.JSONTypeString,
 					Details:   "The combined email address",
 					Required:  true,
 				},
@@ -96,7 +96,7 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 			PlanInputs: []broker.BrokerVariable{
 				{
 					FieldName: "password_special_chars",
-					Type:      broker.JsonTypeString,
+					Type:      broker.JSONTypeString,
 					Details:   "Supply your own list of special characters to use for string generation.",
 					Required:  true,
 				},
@@ -121,7 +121,7 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 			Outputs: []broker.BrokerVariable{
 				{
 					FieldName: "uri",
-					Type:      broker.JsonTypeString,
+					Type:      broker.JSONTypeString,
 					Details:   "The uri to use to connect to this service",
 					Required:  true,
 				},
@@ -186,7 +186,7 @@ func (tfb *TfServiceDefinitionV1) Validate() (errs *validation.FieldError) {
 		errs = errs.Also(
 			v.Validate().ViaFieldIndex("plans", i),
 			validation.ErrIfDuplicate(v.Name, "Name", names).ViaFieldIndex("plans", i),
-			validation.ErrIfDuplicate(v.ID, "Id", ids).ViaFieldIndex("plans", i),
+			validation.ErrIfDuplicate(v.ID, "ID", ids).ViaFieldIndex("plans", i),
 		)
 	}
 
@@ -266,15 +266,15 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesCont
 
 	constDefn := *tfb
 	return &broker.ServiceDefinition{
-		Id:               tfb.ID,
+		ID:               tfb.ID,
 		Name:             tfb.Name,
 		Description:      tfb.Description,
 		Bindable:         true,
 		PlanUpdateable:   tfb.PlanUpdateable,
 		DisplayName:      tfb.DisplayName,
-		DocumentationUrl: tfb.DocumentationURL,
-		SupportUrl:       tfb.SupportURL,
-		ImageUrl:         tfb.ImageURL,
+		DocumentationURL: tfb.DocumentationURL,
+		SupportURL:       tfb.SupportURL,
+		ImageURL:         tfb.ImageURL,
 		Tags:             tfb.Tags,
 		Plans:            rawPlans,
 
@@ -541,11 +541,11 @@ func (tfb TfCatalogDefinitionV1) Validate() (errs *validation.FieldError) {
 		errs = errs.Also(
 			service.Validate().ViaFieldIndex("services", i),
 			validation.ErrIfDuplicate(service.Name, "Name", names).ViaFieldIndex("services", i),
-			validation.ErrIfDuplicate(service.ID, "Id", serviceIDs).ViaFieldIndex("services", i),
+			validation.ErrIfDuplicate(service.ID, "ID", serviceIDs).ViaFieldIndex("services", i),
 		)
 
 		for j, plan := range service.Plans {
-			errs = errs.Also(validation.ErrIfDuplicate(plan.ID, "Id", planIDs)).ViaFieldIndex("plans", j).ViaFieldIndex("services", i)
+			errs = errs.Also(validation.ErrIfDuplicate(plan.ID, "ID", planIDs)).ViaFieldIndex("plans", j).ViaFieldIndex("services", i)
 		}
 	}
 

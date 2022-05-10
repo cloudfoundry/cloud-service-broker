@@ -70,7 +70,7 @@ var _ = Describe("Unbind", func() {
 		brokerConfig = &broker.BrokerConfig{
 			Registry: pkgBroker.BrokerRegistry{
 				"test-service": &pkgBroker.ServiceDefinition{
-					Id:   offeringID,
+					ID:   offeringID,
 					Name: "test-service",
 					Plans: []pkgBroker.ServicePlan{
 						{

@@ -21,7 +21,7 @@ var _ = Describe("Services", func() {
 		brokerConfig := &broker.BrokerConfig{
 			Registry: pkgBroker.BrokerRegistry{
 				"first-service": &pkgBroker.ServiceDefinition{
-					Id:   "first-service-id",
+					ID:   "first-service-id",
 					Name: "first-service",
 					Plans: []pkgBroker.ServicePlan{
 						{
@@ -39,7 +39,7 @@ var _ = Describe("Services", func() {
 					},
 				},
 				"second-service": &pkgBroker.ServiceDefinition{
-					Id:   "second-service-id",
+					ID:   "second-service-id",
 					Name: "second-service",
 					Plans: []pkgBroker.ServicePlan{
 						{

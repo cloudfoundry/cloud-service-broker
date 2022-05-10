@@ -48,10 +48,10 @@ func (instance *TestInstance) Start(logger io.Writer, config []string) error {
 	}
 	instance.serverSession = start
 
-	return waitForHttpServer("http://localhost:" + instance.port)
+	return waitForHTTPServer("http://localhost:" + instance.port)
 }
 
-func waitForHttpServer(s string) error {
+func waitForHTTPServer(s string) error {
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 4
 	retryClient.RetryWaitMin = time.Millisecond * 200
@@ -69,27 +69,27 @@ func (instance *TestInstance) Provision(serviceName string, planName string, par
 	return instanceID, instance.pollLastOperation("service_instances/"+instanceID+"/last_operation", resp.OperationData)
 }
 
-func (instance *TestInstance) Update(instanceGuid string, serviceName string, planName string, params map[string]interface{}) error {
-	resp, err := instance.update(instanceGuid, serviceName, planName, params)
+func (instance *TestInstance) Update(instanceGUID string, serviceName string, planName string, params map[string]interface{}) error {
+	resp, err := instance.update(instanceGUID, serviceName, planName, params)
 
 	if err != nil {
 		return err
 	}
 
-	return instance.pollLastOperation("service_instances/"+instanceGuid+"/last_operation", resp.OperationData)
+	return instance.pollLastOperation("service_instances/"+instanceGUID+"/last_operation", resp.OperationData)
 }
 
 func (instance *TestInstance) provision(serviceName string, planName string, params map[string]interface{}) (string, *apiresponses.ProvisioningResponse, error) {
-	instanceId := uuid.New().String()
+	instanceID := uuid.New().String()
 
 	catalog, err := instance.Catalog()
 	if err != nil {
 		return "", nil, err
 	}
-	serviceGuid, planGuid := FindServicePlanGUIDs(catalog, serviceName, planName)
+	serviceGUID, planGUID := FindServicePlanGUIDs(catalog, serviceName, planName)
 	details := domain.ProvisionDetails{
-		ServiceID: serviceGuid,
-		PlanID:    planGuid,
+		ServiceID: serviceGUID,
+		PlanID:    planGUID,
 	}
 	if params != nil {
 		data, err := json.Marshal(&params)
@@ -102,7 +102,7 @@ func (instance *TestInstance) provision(serviceName string, planName string, par
 	if err != nil {
 		return "", nil, err
 	}
-	body, status, err := instance.httpInvokeBroker("service_instances/"+instanceId+"?accepts_incomplete=true", "PUT", bytes.NewBuffer(data))
+	body, status, err := instance.httpInvokeBroker("service_instances/"+instanceID+"?accepts_incomplete=true", "PUT", bytes.NewBuffer(data))
 	if err != nil {
 		return "", nil, err
 	}
@@ -112,18 +112,18 @@ func (instance *TestInstance) provision(serviceName string, planName string, par
 
 	response := apiresponses.ProvisioningResponse{}
 
-	return instanceId, &response, json.Unmarshal(body, &response)
+	return instanceID, &response, json.Unmarshal(body, &response)
 }
 
-func (instance *TestInstance) update(instanceId, serviceName, planName string, params map[string]interface{}) (*apiresponses.UpdateResponse, error) {
+func (instance *TestInstance) update(instanceID, serviceName, planName string, params map[string]interface{}) (*apiresponses.UpdateResponse, error) {
 	catalog, err := instance.Catalog()
 	if err != nil {
 		return nil, err
 	}
-	serviceGuid, planGuid := FindServicePlanGUIDs(catalog, serviceName, planName)
+	serviceGUID, planGUID := FindServicePlanGUIDs(catalog, serviceName, planName)
 	details := domain.UpdateDetails{
-		ServiceID: serviceGuid,
-		PlanID:    planGuid,
+		ServiceID: serviceGUID,
+		PlanID:    planGUID,
 	}
 	if params != nil {
 		data, err := json.Marshal(&params)
@@ -136,7 +136,7 @@ func (instance *TestInstance) update(instanceId, serviceName, planName string, p
 	if err != nil {
 		return nil, err
 	}
-	body, status, err := instance.httpInvokeBroker("service_instances/"+instanceId+"?accepts_incomplete=true", "PATCH", bytes.NewBuffer(data))
+	body, status, err := instance.httpInvokeBroker("service_instances/"+instanceID+"?accepts_incomplete=true", "PATCH", bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
@@ -179,16 +179,16 @@ func (instance *TestInstance) pollLastOperation(pollingURL string, lastOperation
 }
 
 func (instance *TestInstance) Catalog() (*apiresponses.CatalogResponse, error) {
-	catalogJson, status, err := instance.httpInvokeBroker("catalog", "GET", nil)
+	catalogJSON, status, err := instance.httpInvokeBroker("catalog", "GET", nil)
 	if err != nil {
 		return nil, err
 	}
 	if status != http.StatusOK {
-		return nil, fmt.Errorf("request failed: status %d: body %s", status, catalogJson)
+		return nil, fmt.Errorf("request failed: status %d: body %s", status, catalogJSON)
 	}
 
 	resp := &apiresponses.CatalogResponse{}
-	return resp, json.Unmarshal(catalogJson, resp)
+	return resp, json.Unmarshal(catalogJSON, resp)
 }
 
 func (instance *TestInstance) httpInvokeBroker(subpath string, method string, body io.Reader) ([]byte, int, error) {
@@ -219,9 +219,9 @@ func (instance *TestInstance) Bind(serviceName, planName, instanceID string, par
 	if err != nil {
 		return nil, err
 	}
-	serviceGuid, planGuid := FindServicePlanGUIDs(catalog, serviceName, planName)
+	serviceGUID, planGUID := FindServicePlanGUIDs(catalog, serviceName, planName)
 
-	bindingResult, err := instance.bind(serviceGuid, planGuid, params, instanceID)
+	bindingResult, err := instance.bind(serviceGUID, planGUID, params, instanceID)
 	if err != nil {
 		return nil, err
 	}
@@ -229,10 +229,10 @@ func (instance *TestInstance) Bind(serviceName, planName, instanceID string, par
 	return bindingResult, nil
 }
 
-func (instance *TestInstance) bind(serviceGuid, planGuid string, params map[string]interface{}, instanceID string) (map[string]interface{}, error) {
+func (instance *TestInstance) bind(serviceGUID, planGUID string, params map[string]interface{}, instanceID string) (map[string]interface{}, error) {
 	bindDetails := domain.BindDetails{
-		ServiceID: serviceGuid,
-		PlanID:    planGuid,
+		ServiceID: serviceGUID,
+		PlanID:    planGUID,
 	}
 
 	if params != nil {

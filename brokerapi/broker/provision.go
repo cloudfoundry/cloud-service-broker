@@ -55,7 +55,7 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	}
 
 	// verify the service exists and the plan exists
-	plan, err := brokerService.GetPlanById(parsedDetails.PlanID)
+	plan, err := brokerService.GetPlanByID(parsedDetails.PlanID)
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}

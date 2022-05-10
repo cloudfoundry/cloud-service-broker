@@ -11,25 +11,25 @@ import (
 var _ = Describe("ServiceDefinition", func() {
 	Describe("Validate", func() {
 		Context("validate ID", func() {
-			It("should fail when Id is missing", func() {
+			It("should fail when ID is missing", func() {
 				definition := broker.ServiceDefinition{Name: "test"}
 
 				err := definition.Validate()
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("field must be a UUID: Id"))
+				Expect(err.Error()).To(Equal("field must be a UUID: ID"))
 			})
 
-			It("should fail when Id is not valid", func() {
-				definition := broker.ServiceDefinition{Id: "test", Name: "test-name"}
+			It("should fail when ID is not valid", func() {
+				definition := broker.ServiceDefinition{ID: "test", Name: "test-name"}
 
 				err := definition.Validate()
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("field must be a UUID: Id"))
+				Expect(err.Error()).To(Equal("field must be a UUID: ID"))
 			})
 		})
 
 		It("should fail when Name is missing", func() {
-			definition := broker.ServiceDefinition{Id: "55ad8194-0431-11ec-948a-63ff62e94b14"}
+			definition := broker.ServiceDefinition{ID: "55ad8194-0431-11ec-948a-63ff62e94b14"}
 
 			err := definition.Validate()
 			Expect(err).To(HaveOccurred())
@@ -38,9 +38,9 @@ var _ = Describe("ServiceDefinition", func() {
 
 		It("should fail when ImageURL is not a URL", func() {
 			definition := broker.ServiceDefinition{
-				Id:       "55ad8194-0431-11ec-948a-63ff62e94b14",
+				ID:       "55ad8194-0431-11ec-948a-63ff62e94b14",
 				Name:     "test-offering",
-				ImageUrl: "some-non-url",
+				ImageURL: "some-non-url",
 			}
 
 			err := definition.Validate()
@@ -50,9 +50,9 @@ var _ = Describe("ServiceDefinition", func() {
 
 		It("should fail when DocumentationURL is not a URL", func() {
 			definition := broker.ServiceDefinition{
-				Id:               "55ad8194-0431-11ec-948a-63ff62e94b14",
+				ID:               "55ad8194-0431-11ec-948a-63ff62e94b14",
 				Name:             "test-offering",
-				DocumentationUrl: "some-non-url",
+				DocumentationURL: "some-non-url",
 			}
 
 			err := definition.Validate()
@@ -62,9 +62,9 @@ var _ = Describe("ServiceDefinition", func() {
 
 		It("should fail when SupportURL is not a URL", func() {
 			definition := broker.ServiceDefinition{
-				Id:         "55ad8194-0431-11ec-948a-63ff62e94b14",
+				ID:         "55ad8194-0431-11ec-948a-63ff62e94b14",
 				Name:       "test-offering",
-				SupportUrl: "some-non-url",
+				SupportURL: "some-non-url",
 			}
 
 			err := definition.Validate()
@@ -74,7 +74,7 @@ var _ = Describe("ServiceDefinition", func() {
 
 		It("should fail when ProvisionInputVariables is not a valid", func() {
 			definition := broker.ServiceDefinition{
-				Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+				ID:   "55ad8194-0431-11ec-948a-63ff62e94b14",
 				Name: "test-offering",
 				ProvisionInputVariables: []broker.BrokerVariable{
 					{
@@ -90,7 +90,7 @@ var _ = Describe("ServiceDefinition", func() {
 
 		It("should fail when ProvisionComputedVariables is not a valid", func() {
 			definition := broker.ServiceDefinition{
-				Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+				ID:   "55ad8194-0431-11ec-948a-63ff62e94b14",
 				Name: "test-offering",
 				ProvisionComputedVariables: []varcontext.DefaultVariable{
 					{
@@ -106,7 +106,7 @@ var _ = Describe("ServiceDefinition", func() {
 
 		It("should fail when BindInputVariables is not a valid", func() {
 			definition := broker.ServiceDefinition{
-				Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+				ID:   "55ad8194-0431-11ec-948a-63ff62e94b14",
 				Name: "test-offering",
 				BindInputVariables: []broker.BrokerVariable{
 					{
@@ -122,7 +122,7 @@ var _ = Describe("ServiceDefinition", func() {
 
 		It("should fail when PlanVariables is not a valid", func() {
 			definition := broker.ServiceDefinition{
-				Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+				ID:   "55ad8194-0431-11ec-948a-63ff62e94b14",
 				Name: "test-offering",
 				PlanVariables: []broker.BrokerVariable{
 					{
@@ -139,7 +139,7 @@ var _ = Describe("ServiceDefinition", func() {
 		Context("validate plans", func() {
 			It("should fail when plan is missing name", func() {
 				definition := broker.ServiceDefinition{
-					Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+					ID:   "55ad8194-0431-11ec-948a-63ff62e94b14",
 					Name: "test-offering",
 					Plans: []broker.ServicePlan{
 						{
@@ -157,7 +157,7 @@ var _ = Describe("ServiceDefinition", func() {
 
 			It("should fail when plan is missing id", func() {
 				definition := broker.ServiceDefinition{
-					Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+					ID:   "55ad8194-0431-11ec-948a-63ff62e94b14",
 					Name: "test-offering",
 					Plans: []broker.ServicePlan{
 						{
@@ -170,13 +170,13 @@ var _ = Describe("ServiceDefinition", func() {
 
 				err := definition.Validate()
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("field must be a UUID: Plans[0].Id"))
+				Expect(err.Error()).To(Equal("field must be a UUID: Plans[0].ID"))
 			})
 
 			Context("plan duplication", func() {
 				It("should fail when plan id is duplicated across the offering", func() {
 					definition := broker.ServiceDefinition{
-						Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+						ID:   "55ad8194-0431-11ec-948a-63ff62e94b14",
 						Name: "test-offering",
 						Plans: []broker.ServicePlan{
 							{
@@ -201,7 +201,7 @@ var _ = Describe("ServiceDefinition", func() {
 
 				It("should fail when plan name is duplicated across the offering", func() {
 					definition := broker.ServiceDefinition{
-						Id:   "55ad8194-0431-11ec-948a-63ff62e94b14",
+						ID:   "55ad8194-0431-11ec-948a-63ff62e94b14",
 						Name: "test-offering",
 						Plans: []broker.ServicePlan{
 							{

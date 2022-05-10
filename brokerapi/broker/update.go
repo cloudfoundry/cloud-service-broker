@@ -51,7 +51,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	// verify the service exists and the plan exists
-	plan, err := brokerService.GetPlanById(parsedDetails.PlanID)
+	plan, err := brokerService.GetPlanByID(parsedDetails.PlanID)
 	if err != nil {
 		return response, err
 	}

@@ -57,7 +57,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	}
 
 	// verify the service exists and the plan exists
-	plan, err := serviceDefinition.GetPlanById(parsedDetails.PlanID)
+	plan, err := serviceDefinition.GetPlanByID(parsedDetails.PlanID)
 	if err != nil {
 		return domain.Binding{}, fmt.Errorf("error getting service plan: %w", err)
 	}

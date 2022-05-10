@@ -33,7 +33,7 @@ var _ = Describe("Brokerpaks", func() {
 			session.Wait(10 * time.Minute)
 
 			Expect(session.ExitCode()).NotTo(BeZero())
-			Expect(session.Err).To(Say("duplicated value, must be unique: 8b52a460-b246-11eb-a8f5-d349948e2480: services\\[1\\].plans\\[1\\].Id\n"))
+			Expect(session.Err).To(Say("duplicated value, must be unique: 8b52a460-b246-11eb-a8f5-d349948e2480: services\\[1\\].plans\\[1\\].ID\n"))
 		})
 	})
 
