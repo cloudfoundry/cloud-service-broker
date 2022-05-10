@@ -26,11 +26,11 @@ import (
 )
 
 var (
-	serviceId      string
-	planId         string
-	instanceId     string
-	bindingId      string
-	parametersJson string
+	serviceID      string
+	planID         string
+	instanceID     string
+	bindingID      string
+	parametersJSON string
 
 	serviceName     string
 	exampleName     string
@@ -89,27 +89,27 @@ user-defined plans.
 	})
 
 	provisionCmd := newClientCommand("provision", "Provision a service", func(client *client.Client) *client.BrokerResponse {
-		return client.Provision(instanceId, serviceId, planId, uuid.New(), json.RawMessage(parametersJson))
+		return client.Provision(instanceID, serviceID, planID, uuid.New(), json.RawMessage(parametersJSON))
 	})
 
 	deprovisionCmd := newClientCommand("deprovision", "Deprovision a service", func(client *client.Client) *client.BrokerResponse {
-		return client.Deprovision(instanceId, serviceId, planId, uuid.New())
+		return client.Deprovision(instanceID, serviceID, planID, uuid.New())
 	})
 
 	bindCmd := newClientCommand("bind", "Bind to a service", func(client *client.Client) *client.BrokerResponse {
-		return client.Bind(instanceId, bindingId, serviceId, planId, uuid.New(), json.RawMessage(parametersJson))
+		return client.Bind(instanceID, bindingID, serviceID, planID, uuid.New(), json.RawMessage(parametersJSON))
 	})
 
 	unbindCmd := newClientCommand("unbind", "Unbind a service", func(client *client.Client) *client.BrokerResponse {
-		return client.Unbind(instanceId, bindingId, serviceId, planId, uuid.New())
+		return client.Unbind(instanceID, bindingID, serviceID, planID, uuid.New())
 	})
 
 	lastCmd := newClientCommand("last", "Get the status of the last operation", func(client *client.Client) *client.BrokerResponse {
-		return client.LastOperation(instanceId, uuid.New())
+		return client.LastOperation(instanceID, uuid.New())
 	})
 
 	updateCmd := newClientCommand("update", "Update the instance details", func(client *client.Client) *client.BrokerResponse {
-		return client.Update(instanceId, serviceId, planId, uuid.New(), json.RawMessage(parametersJson))
+		return client.Update(instanceID, serviceID, planID, uuid.New(), json.RawMessage(parametersJSON))
 	})
 
 	examplesCmd := &cobra.Command{
@@ -157,13 +157,13 @@ user-defined plans.
 		}
 	}
 
-	bindFlag(&instanceId, "instanceid", "id of the service instance to operate on (user defined)", provisionCmd, deprovisionCmd, bindCmd, unbindCmd, lastCmd, updateCmd)
-	bindFlag(&serviceId, "serviceid", "GUID of the service instanceid references (see catalog)", provisionCmd, deprovisionCmd, bindCmd, unbindCmd, updateCmd)
-	bindFlag(&planId, "planid", "GUID of the service instanceid references (see catalog entry for the associated serviceid)", provisionCmd, deprovisionCmd, bindCmd, unbindCmd, updateCmd)
-	bindFlag(&bindingId, "bindingid", "GUID of the binding to work on (user defined)", bindCmd, unbindCmd)
+	bindFlag(&instanceID, "instanceid", "id of the service instance to operate on (user defined)", provisionCmd, deprovisionCmd, bindCmd, unbindCmd, lastCmd, updateCmd)
+	bindFlag(&serviceID, "serviceid", "GUID of the service instanceid references (see catalog)", provisionCmd, deprovisionCmd, bindCmd, unbindCmd, updateCmd)
+	bindFlag(&planID, "planid", "GUID of the service instanceid references (see catalog entry for the associated serviceid)", provisionCmd, deprovisionCmd, bindCmd, unbindCmd, updateCmd)
+	bindFlag(&bindingID, "bindingid", "GUID of the binding to work on (user defined)", bindCmd, unbindCmd)
 
 	for _, sc := range []*cobra.Command{provisionCmd, bindCmd, updateCmd} {
-		sc.Flags().StringVarP(&parametersJson, "params", "", "{}", "JSON string of user-defined parameters to pass to the request")
+		sc.Flags().StringVarP(&parametersJSON, "params", "", "{}", "JSON string of user-defined parameters to pass to the request")
 	}
 
 	runExamplesCmd.Flags().StringVarP(&serviceName, "service-name", "", "", "name of the service to run tests for")

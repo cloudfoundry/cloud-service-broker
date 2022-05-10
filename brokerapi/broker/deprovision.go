@@ -43,7 +43,7 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 	}
 
 	// verify the service exists and the plan exists
-	plan, err := brokerService.GetPlanById(details.PlanID)
+	plan, err := brokerService.GetPlanByID(details.PlanID)
 	if err != nil {
 		return response, err
 	}

@@ -68,7 +68,7 @@ type ServicePlan struct {
 func (sp *ServicePlan) Validate() (errs *validation.FieldError) {
 	return errs.Also(
 		validation.ErrIfBlank(sp.Name, "Name"),
-		validation.ErrIfNotUUID(sp.ID, "Id"),
+		validation.ErrIfNotUUID(sp.ID, "ID"),
 	)
 }
 

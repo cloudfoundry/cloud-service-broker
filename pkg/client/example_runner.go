@@ -143,7 +143,7 @@ func GetExamplesForAService(service *broker.ServiceDefinition) ([]CompleteServic
 			ServiceExample: example,
 			ServiceID:      serviceCatalogEntry.ID,
 			ServiceName:    service.Name,
-			ExpectedOutput: broker.CreateJsonSchema(service.BindOutputVariables),
+			ExpectedOutput: broker.CreateJSONSchema(service.BindOutputVariables),
 		}
 
 		examples = append(examples, completeServiceExample)

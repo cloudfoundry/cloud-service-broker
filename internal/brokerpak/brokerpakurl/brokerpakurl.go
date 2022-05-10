@@ -10,7 +10,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 )
 
-const HashicorpUrlTemplate = "https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip"
+const HashicorpURLTemplate = "https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip"
 
 func URL(name, version, urlTemplate string, plat platform.Platform) string {
 	replacer := strings.NewReplacer("${name}", name, "${version}", version, "${os}", plat.Os, "${arch}", plat.Arch)
@@ -18,7 +18,7 @@ func URL(name, version, urlTemplate string, plat platform.Platform) string {
 
 	switch {
 	case urlTemplate == "":
-		url = HashicorpUrlTemplate
+		url = HashicorpURLTemplate
 	case isURL(urlTemplate):
 		url = urlTemplate
 	default:

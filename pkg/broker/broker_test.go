@@ -32,7 +32,7 @@ import (
 
 func ExampleServiceDefinition_UserDefinedPlansProperty() {
 	service := ServiceDefinition{
-		Id:   "00000000-0000-0000-0000-000000000000",
+		ID:   "00000000-0000-0000-0000-000000000000",
 		Name: "left-handed-smoke-sifter",
 	}
 
@@ -43,7 +43,7 @@ func ExampleServiceDefinition_UserDefinedPlansProperty() {
 
 func ExampleServiceDefinition_IsRoleWhitelistEnabled() {
 	service := ServiceDefinition{
-		Id:                   "00000000-0000-0000-0000-000000000000",
+		ID:                   "00000000-0000-0000-0000-000000000000",
 		Name:                 "left-handed-smoke-sifter",
 		DefaultRoleWhitelist: []string{"a", "b", "c"},
 	}
@@ -58,7 +58,7 @@ func ExampleServiceDefinition_IsRoleWhitelistEnabled() {
 
 func ExampleServiceDefinition_TileUserDefinedPlansVariable() {
 	service := ServiceDefinition{
-		Id:   "00000000-0000-0000-0000-000000000000",
+		ID:   "00000000-0000-0000-0000-000000000000",
 		Name: "google-spanner",
 	}
 
@@ -67,19 +67,19 @@ func ExampleServiceDefinition_TileUserDefinedPlansVariable() {
 	// Output: SPANNER_CUSTOM_PLANS
 }
 
-func ExampleServiceDefinition_GetPlanById() {
+func ExampleServiceDefinition_GetPlanByID() {
 	service := ServiceDefinition{
-		Id:   "00000000-0000-0000-0000-000000000000",
+		ID:   "00000000-0000-0000-0000-000000000000",
 		Name: "left-handed-smoke-sifter",
 		Plans: []ServicePlan{
 			{ServicePlan: domain.ServicePlan{ID: "test-plan", Name: "Builtin!"}},
 		},
 	}
 
-	plan, err := service.GetPlanById("test-plan")
+	plan, err := service.GetPlanByID("test-plan")
 	fmt.Printf("test-plan: %q %v\n", plan.Name, err)
 
-	_, err = service.GetPlanById("missing-plan")
+	_, err = service.GetPlanByID("missing-plan")
 	fmt.Printf("missing-plan: %s\n", err)
 
 	// Output: test-plan: "Builtin!" <nil>
@@ -156,13 +156,13 @@ func TestServiceDefinition_UserDefinedPlans(t *testing.T) {
 	}
 
 	service := ServiceDefinition{
-		Id:   "abcd-efgh-ijkl",
+		ID:   "abcd-efgh-ijkl",
 		Name: "left-handed-smoke-sifter",
 		PlanVariables: []BrokerVariable{
 			{
 				Required:  true,
 				FieldName: "instances",
-				Type:      JsonTypeString,
+				Type:      JSONTypeString,
 			},
 		},
 	}
@@ -221,7 +221,7 @@ func TestServiceDefinition_CatalogEntry(t *testing.T) {
 	}
 
 	service := ServiceDefinition{
-		Id:   "00000000-0000-0000-0000-000000000000",
+		ID:   "00000000-0000-0000-0000-000000000000",
 		Name: "left-handed-smoke-sifter",
 	}
 
@@ -251,16 +251,16 @@ func TestServiceDefinition_CatalogEntry(t *testing.T) {
 
 func ExampleServiceDefinition_CatalogEntry() {
 	service := ServiceDefinition{
-		Id:   "00000000-0000-0000-0000-000000000000",
+		ID:   "00000000-0000-0000-0000-000000000000",
 		Name: "left-handed-smoke-sifter",
 		Plans: []ServicePlan{
 			{ServicePlan: domain.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
 		},
 		ProvisionInputVariables: []BrokerVariable{
-			{FieldName: "location", Type: JsonTypeString, Default: "us"},
+			{FieldName: "location", Type: JSONTypeString, Default: "us"},
 		},
 		BindInputVariables: []BrokerVariable{
-			{FieldName: "name", Type: JsonTypeString, Default: "name"},
+			{FieldName: "name", Type: JSONTypeString, Default: "name"},
 		},
 	}
 
@@ -284,7 +284,7 @@ func ExampleServiceDefinition_CatalogEntry() {
 
 func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 	service := ServiceDefinition{
-		Id:   "00000000-0000-0000-0000-000000000000",
+		ID:   "00000000-0000-0000-0000-000000000000",
 		Name: "left-handed-smoke-sifter",
 		Plans: []ServicePlan{
 			{ServicePlan: domain.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
@@ -292,12 +292,12 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 		ProvisionInputVariables: []BrokerVariable{
 			{
 				FieldName: "location",
-				Type:      JsonTypeString,
+				Type:      JSONTypeString,
 				Default:   "us", // 7
 			},
 			{
 				FieldName: "name",
-				Type:      JsonTypeString,
+				Type:      JSONTypeString,
 				Default:   "name-${location}", // 7
 				Constraints: validation.NewConstraintBuilder().
 					MaxLength(30).
@@ -538,7 +538,7 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 
 func TestServiceDefinition_UpdateVariables(t *testing.T) {
 	service := ServiceDefinition{
-		Id:   "00000000-0000-0000-0000-000000000000",
+		ID:   "00000000-0000-0000-0000-000000000000",
 		Name: "left-handed-smoke-sifter",
 		Plans: []ServicePlan{
 			{ServicePlan: domain.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
@@ -546,12 +546,12 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 		ProvisionInputVariables: []BrokerVariable{
 			{
 				FieldName: "location",
-				Type:      JsonTypeString,
+				Type:      JSONTypeString,
 				Default:   "us", // 7
 			},
 			{
 				FieldName: "name",
-				Type:      JsonTypeString,
+				Type:      JSONTypeString,
 				Default:   "name-${location}", // 7
 				Constraints: validation.NewConstraintBuilder().
 					MaxLength(30).
@@ -807,7 +807,7 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 
 func TestServiceDefinition_BindVariables(t *testing.T) {
 	service := ServiceDefinition{
-		Id:   "00000000-0000-0000-0000-000000000000",
+		ID:   "00000000-0000-0000-0000-000000000000",
 		Name: "left-handed-smoke-sifter",
 		Plans: []ServicePlan{
 			{
@@ -823,12 +823,12 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 		BindInputVariables: []BrokerVariable{
 			{
 				FieldName: "location",
-				Type:      JsonTypeString,
+				Type:      JSONTypeString,
 				Default:   "us",
 			},
 			{
 				FieldName: "name",
-				Type:      JsonTypeString,
+				Type:      JSONTypeString,
 				Default:   "name-${location}",
 				Constraints: validation.NewConstraintBuilder().
 					MaxLength(30).
@@ -1030,16 +1030,16 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 
 func TestServiceDefinition_createSchemas(t *testing.T) {
 	service := ServiceDefinition{
-		Id:   "00000000-0000-0000-0000-000000000000",
+		ID:   "00000000-0000-0000-0000-000000000000",
 		Name: "left-handed-smoke-sifter",
 		Plans: []ServicePlan{
 			{ServicePlan: domain.ServicePlan{ID: "builtin-plan", Name: "Builtin!"}},
 		},
 		ProvisionInputVariables: []BrokerVariable{
-			{FieldName: "location", Type: JsonTypeString, Default: "us"},
+			{FieldName: "location", Type: JSONTypeString, Default: "us"},
 		},
 		BindInputVariables: []BrokerVariable{
-			{FieldName: "name", Type: JsonTypeString, Default: "name"},
+			{FieldName: "name", Type: JSONTypeString, Default: "name"},
 		},
 	}
 
@@ -1054,7 +1054,7 @@ func TestServiceDefinition_createSchemas(t *testing.T) {
 		t.Error("instance create params were nil, expected a schema")
 	}
 
-	expectedCreateParams := CreateJsonSchema(service.ProvisionInputVariables)
+	expectedCreateParams := CreateJSONSchema(service.ProvisionInputVariables)
 	if !reflect.DeepEqual(instanceCreate.Parameters, expectedCreateParams) {
 		t.Errorf("expected create params to be: %v got %v", expectedCreateParams, instanceCreate.Parameters)
 	}
@@ -1071,7 +1071,7 @@ func TestServiceDefinition_createSchemas(t *testing.T) {
 		t.Error("bind create params were not nil, expected a schema")
 	}
 
-	expectedBindCreateParams := CreateJsonSchema(service.BindInputVariables)
+	expectedBindCreateParams := CreateJSONSchema(service.BindInputVariables)
 	if !reflect.DeepEqual(bindCreate.Parameters, expectedBindCreateParams) {
 		t.Errorf("expected create params to be: %v got %v", expectedBindCreateParams, bindCreate.Parameters)
 	}

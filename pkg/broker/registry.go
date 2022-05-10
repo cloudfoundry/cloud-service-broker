@@ -76,7 +76,7 @@ func (brokerRegistry BrokerRegistry) Validate() (errs *validation.FieldError) {
 	planIDs := make(map[string]struct{})
 	for i, s := range services {
 		errs = errs.Also(
-			validation.ErrIfDuplicate(s.Id, "Id", serviceIDs).ViaFieldIndex("services", i),
+			validation.ErrIfDuplicate(s.ID, "ID", serviceIDs).ViaFieldIndex("services", i),
 			validation.ErrIfDuplicate(s.Name, "Name", serviceNames).ViaFieldIndex("services", i),
 		)
 
@@ -139,7 +139,7 @@ func (brokerRegistry BrokerRegistry) GetAllServices() []*ServiceDefinition {
 // or one of the services has a parse error then an error is returned.
 func (brokerRegistry BrokerRegistry) GetServiceByID(id string) (*ServiceDefinition, error) {
 	for _, svc := range brokerRegistry {
-		if svc.Id == id {
+		if svc.ID == id {
 			return svc, nil
 		}
 	}
