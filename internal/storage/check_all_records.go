@@ -34,7 +34,7 @@ func (s *Storage) checkAllServiceBindingCredentials() (errs *multierror.Error) {
 		for i := range serviceBindingCredentialsBatch {
 			_, err := s.decodeJSONObject(serviceBindingCredentialsBatch[i].OtherDetails)
 			if err != nil {
-				errs = multierror.Append(fmt.Errorf("decode error for service binding credential %q: %w", serviceBindingCredentialsBatch[i].BindingId, err), errs)
+				errs = multierror.Append(fmt.Errorf("decode error for service binding credential %q: %w", serviceBindingCredentialsBatch[i].BindingID, err), errs)
 			}
 		}
 
@@ -53,7 +53,7 @@ func (s *Storage) checkAllBindRequestDetails() (errs *multierror.Error) {
 		for i := range bindRequestDetailsBatch {
 			_, err := s.decodeJSONObject(bindRequestDetailsBatch[i].RequestDetails)
 			if err != nil {
-				errs = multierror.Append(fmt.Errorf("decode error for binding request details %q: %w", bindRequestDetailsBatch[i].ServiceBindingId, err), errs)
+				errs = multierror.Append(fmt.Errorf("decode error for binding request details %q: %w", bindRequestDetailsBatch[i].ServiceBindingID, err), errs)
 			}
 		}
 
@@ -72,7 +72,7 @@ func (s *Storage) checkAllProvisionRequestDetails() (errs *multierror.Error) {
 		for i := range provisionRequestDetailsBatch {
 			_, err := s.decodeJSONObject(provisionRequestDetailsBatch[i].RequestDetails)
 			if err != nil {
-				errs = multierror.Append(fmt.Errorf("decode error for provision request details %q: %w", provisionRequestDetailsBatch[i].ServiceInstanceId, err), errs)
+				errs = multierror.Append(fmt.Errorf("decode error for provision request details %q: %w", provisionRequestDetailsBatch[i].ServiceInstanceID, err), errs)
 			}
 		}
 

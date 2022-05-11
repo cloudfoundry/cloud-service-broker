@@ -107,7 +107,7 @@ func TestRunMigrations_Failures(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if err := db.Save(&models.Migration{MigrationId: tc.LastMigration}).Error; err != nil {
+			if err := db.Save(&models.Migration{MigrationID: tc.LastMigration}).Error; err != nil {
 				t.Fatal(err)
 			}
 
@@ -141,7 +141,7 @@ func TestRunMigrations(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			lastMigrationNumber := storedMigrations[0].MigrationId
+			lastMigrationNumber := storedMigrations[0].MigrationID
 			if lastMigrationNumber != numMigrations-1 {
 				t.Errorf("expected lastMigrationNumber to be %d, got %d", numMigrations-1, lastMigrationNumber)
 			}

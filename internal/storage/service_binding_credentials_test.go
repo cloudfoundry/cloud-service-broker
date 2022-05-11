@@ -25,9 +25,9 @@ var _ = Describe("ServiceBindingCredentials", func() {
 			Expect(err).NotTo(HaveOccurred())
 			var receiver models.ServiceBindingCredentials
 			Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
-			Expect(receiver.ServiceId).To(Equal("fake-service-id"))
-			Expect(receiver.ServiceInstanceId).To(Equal("fake-instance-id"))
-			Expect(receiver.BindingId).To(Equal("fake-binding-id"))
+			Expect(receiver.ServiceID).To(Equal("fake-service-id"))
+			Expect(receiver.ServiceInstanceID).To(Equal("fake-instance-id"))
+			Expect(receiver.BindingID).To(Equal("fake-binding-id"))
 			Expect(receiver.OtherDetails).To(MatchJSON(`{
 				"encrypted":{
 					"fake-cred-1": "fake-val-1",
@@ -132,20 +132,20 @@ var _ = Describe("ServiceBindingCredentials", func() {
 func addFakeServiceCredentialBindings() {
 	Expect(db.Create(&models.ServiceBindingCredentials{
 		OtherDetails:      []byte(`{"foo":"bar"}`),
-		ServiceId:         "fake-other-service-id",
-		ServiceInstanceId: "fake-instance-id",
-		BindingId:         "fake-other-binding-id",
+		ServiceID:         "fake-other-service-id",
+		ServiceInstanceID: "fake-instance-id",
+		BindingID:         "fake-other-binding-id",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.ServiceBindingCredentials{
 		OtherDetails:      []byte(`{"foo":"baz","bar":"quz"}`),
-		ServiceId:         "fake-service-id",
-		ServiceInstanceId: "fake-instance-id",
-		BindingId:         "fake-binding-id",
+		ServiceID:         "fake-service-id",
+		ServiceInstanceID: "fake-instance-id",
+		BindingID:         "fake-binding-id",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.ServiceBindingCredentials{
 		OtherDetails:      []byte(`{"foo":"boz"}`),
-		ServiceId:         "fake-other-service-id",
-		ServiceInstanceId: "fake-other-instance-id",
-		BindingId:         "fake-binding-id",
+		ServiceID:         "fake-other-service-id",
+		ServiceInstanceID: "fake-other-instance-id",
+		BindingID:         "fake-binding-id",
 	}).Error).NotTo(HaveOccurred())
 }

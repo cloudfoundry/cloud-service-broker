@@ -145,7 +145,7 @@ var _ = Describe("Update", func() {
 			BeforeEach(func() {
 				fakeServiceProvider.UpdateReturns(models.ServiceInstanceDetails{
 					OperationType: models.UpdateOperationType,
-					OperationId:   updateOperationID,
+					OperationID:   updateOperationID,
 				}, nil)
 			})
 
@@ -181,7 +181,7 @@ var _ = Describe("Update", func() {
 			BeforeEach(func() {
 				fakeServiceProvider.UpdateReturns(models.ServiceInstanceDetails{
 					OperationType: models.UpdateOperationType,
-					OperationId:   updateOperationID,
+					OperationID:   updateOperationID,
 				}, nil)
 
 				updateDetails = domain.UpdateDetails{
@@ -224,7 +224,7 @@ var _ = Describe("Update", func() {
 			BeforeEach(func() {
 				fakeServiceProvider.UpdateReturns(models.ServiceInstanceDetails{
 					OperationType: models.UpdateOperationType,
-					OperationId:   updateOperationID,
+					OperationID:   updateOperationID,
 				}, nil)
 
 				updateDetails = domain.UpdateDetails{

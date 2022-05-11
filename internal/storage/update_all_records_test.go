@@ -71,9 +71,9 @@ var _ = Describe("UpdateAllRecords", func() {
 				BeforeEach(func() {
 					Expect(db.Create(&models.ServiceBindingCredentials{
 						OtherDetails:      []byte(`cannot-be-decrypted`),
-						ServiceId:         "fake-other-service-id",
-						ServiceInstanceId: "fake-instance-id",
-						BindingId:         "fake-bad-binding-id",
+						ServiceID:         "fake-other-service-id",
+						ServiceInstanceID: "fake-instance-id",
+						BindingID:         "fake-bad-binding-id",
 					}).Error).NotTo(HaveOccurred())
 				})
 
@@ -86,9 +86,9 @@ var _ = Describe("UpdateAllRecords", func() {
 				BeforeEach(func() {
 					Expect(db.Create(&models.ServiceBindingCredentials{
 						OtherDetails:      []byte(`"cannot-be-encrypted"`),
-						ServiceId:         "fake-other-service-id",
-						ServiceInstanceId: "fake-instance-id",
-						BindingId:         "fake-bad-binding-id",
+						ServiceID:         "fake-other-service-id",
+						ServiceInstanceID: "fake-instance-id",
+						BindingID:         "fake-bad-binding-id",
 					}).Error).NotTo(HaveOccurred())
 				})
 
@@ -103,8 +103,8 @@ var _ = Describe("UpdateAllRecords", func() {
 				BeforeEach(func() {
 					Expect(db.Create(&models.BindRequestDetails{
 						RequestDetails:    []byte(`cannot-be-decrypted`),
-						ServiceBindingId:  "fake-bad-binding-id",
-						ServiceInstanceId: "fake-instance-id",
+						ServiceBindingID:  "fake-bad-binding-id",
+						ServiceInstanceID: "fake-instance-id",
 					}).Error).NotTo(HaveOccurred())
 				})
 
@@ -117,8 +117,8 @@ var _ = Describe("UpdateAllRecords", func() {
 				BeforeEach(func() {
 					Expect(db.Create(&models.BindRequestDetails{
 						RequestDetails:    []byte(`cannot-be-encrypted`),
-						ServiceBindingId:  "fake-bad-binding-id",
-						ServiceInstanceId: "fake-instance-id",
+						ServiceBindingID:  "fake-bad-binding-id",
+						ServiceInstanceID: "fake-instance-id",
 					}).Error).NotTo(HaveOccurred())
 				})
 
@@ -133,7 +133,7 @@ var _ = Describe("UpdateAllRecords", func() {
 				BeforeEach(func() {
 					Expect(db.Create(&models.ProvisionRequestDetails{
 						RequestDetails:    []byte(`cannot-be-decrypted`),
-						ServiceInstanceId: "fake-bad-instance-id",
+						ServiceInstanceID: "fake-bad-instance-id",
 					}).Error).NotTo(HaveOccurred())
 				})
 
@@ -146,7 +146,7 @@ var _ = Describe("UpdateAllRecords", func() {
 				BeforeEach(func() {
 					Expect(db.Create(&models.ProvisionRequestDetails{
 						RequestDetails:    []byte(`cannot-be-encrypted`),
-						ServiceInstanceId: "fake-bad-instance-id",
+						ServiceInstanceID: "fake-bad-instance-id",
 					}).Error).NotTo(HaveOccurred())
 				})
 

@@ -24,38 +24,38 @@ var _ = Describe("CheckAllRecords", func() {
 		BeforeEach(func() {
 			Expect(db.Create(&models.ServiceBindingCredentials{
 				OtherDetails:      []byte(`binding-not-json-2`),
-				ServiceId:         "fake-other-service-id",
-				ServiceInstanceId: "fake-bad-instance-id",
-				BindingId:         "fake-bad-binding-id-1",
+				ServiceID:         "fake-other-service-id",
+				ServiceInstanceID: "fake-bad-instance-id",
+				BindingID:         "fake-bad-binding-id-1",
 			}).Error).NotTo(HaveOccurred())
 
 			Expect(db.Create(&models.ServiceBindingCredentials{
 				OtherDetails:      []byte(`cannot-be-decrypted`),
-				ServiceId:         "fake-other-service-id",
-				ServiceInstanceId: "fake-bad-instance-id",
-				BindingId:         "fake-bad-binding-id-2",
+				ServiceID:         "fake-other-service-id",
+				ServiceInstanceID: "fake-bad-instance-id",
+				BindingID:         "fake-bad-binding-id-2",
 			}).Error).NotTo(HaveOccurred())
 
 			Expect(db.Create(&models.ProvisionRequestDetails{
 				RequestDetails:    []byte(`cannot-be-decrypted`),
-				ServiceInstanceId: "fake-bad-instance-id-1",
+				ServiceInstanceID: "fake-bad-instance-id-1",
 			}).Error).NotTo(HaveOccurred())
 
 			Expect(db.Create(&models.ProvisionRequestDetails{
 				RequestDetails:    []byte(`request-details-not-json`),
-				ServiceInstanceId: "fake-bad-instance-id-2",
+				ServiceInstanceID: "fake-bad-instance-id-2",
 			}).Error).NotTo(HaveOccurred())
 
 			Expect(db.Create(&models.BindRequestDetails{
 				RequestDetails:    []byte(`cannot-be-decrypted`),
-				ServiceBindingId:  "fake-bad-binding-id-1",
-				ServiceInstanceId: "fake-bad-instance-id",
+				ServiceBindingID:  "fake-bad-binding-id-1",
+				ServiceInstanceID: "fake-bad-instance-id",
 			}).Error).NotTo(HaveOccurred())
 
 			Expect(db.Create(&models.BindRequestDetails{
 				RequestDetails:    []byte(`request-details-not-json`),
-				ServiceBindingId:  "fake-bad-binding-id-2",
-				ServiceInstanceId: "fake-bad-instance-id",
+				ServiceBindingID:  "fake-bad-binding-id-2",
+				ServiceInstanceID: "fake-bad-instance-id",
 			}).Error).NotTo(HaveOccurred())
 
 			Expect(db.Create(&models.ServiceInstanceDetails{

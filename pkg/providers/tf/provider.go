@@ -115,7 +115,7 @@ func (provider *terraformProvider) Update(ctx context.Context, provisionContext 
 	err := provider.jobRunner.Update(ctx, tfID, provisionContext.ToMap())
 
 	return models.ServiceInstanceDetails{
-		OperationId:   tfID,
+		OperationID:   tfID,
 		OperationType: models.UpdateOperationType,
 	}, err
 }

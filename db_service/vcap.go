@@ -58,7 +58,7 @@ func SetDatabaseCredentials(vcapService VcapService) error {
 	}
 
 	// Set up database credentials using environment variables
-	viper.Set(dbTypeProp, DbTypeMysql)
+	viper.Set(dbTypeProp, DBTypeMySQL)
 	viper.Set(dbHostProp, coalesce(vcapService.Credentials["host"], vcapService.Credentials["hostname"]))
 	viper.Set(dbUserProp, coalesce(u.User.Username(), vcapService.Credentials["Username"], vcapService.Credentials["username"]))
 	if pw, _ := u.User.Password(); pw != "" {

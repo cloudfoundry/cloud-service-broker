@@ -32,14 +32,14 @@ var _ = Describe("ServiceInstanceDetails", func() {
 			Expect(receiver.ID).To(Equal("fake-guid"))
 			Expect(receiver.Name).To(Equal("fake-name"))
 			Expect(receiver.Location).To(Equal("fake-location"))
-			Expect(receiver.Url).To(Equal("fake-url"))
+			Expect(receiver.URL).To(Equal("fake-url"))
 			Expect(receiver.OtherDetails).To(Equal([]byte(`{"encrypted":{"foo":"bar"}}`)))
-			Expect(receiver.ServiceId).To(Equal("fake-service-guid"))
-			Expect(receiver.PlanId).To(Equal("fake-plan-guid"))
-			Expect(receiver.SpaceGuid).To(Equal("fake-space-guid"))
-			Expect(receiver.OrganizationGuid).To(Equal("fake-org-guid"))
+			Expect(receiver.ServiceID).To(Equal("fake-service-guid"))
+			Expect(receiver.PlanID).To(Equal("fake-plan-guid"))
+			Expect(receiver.SpaceGUID).To(Equal("fake-space-guid"))
+			Expect(receiver.OrganizationGUID).To(Equal("fake-org-guid"))
 			Expect(receiver.OperationType).To(Equal("fake-operation-type"))
-			Expect(receiver.OperationId).To(Equal("fake-operation-guid"))
+			Expect(receiver.OperationID).To(Equal("fake-operation-guid"))
 		})
 
 		When("encoding fails", func() {
@@ -77,14 +77,14 @@ var _ = Describe("ServiceInstanceDetails", func() {
 				Expect(receiver.ID).To(Equal("fake-id-1"))
 				Expect(receiver.Name).To(Equal("fake-name"))
 				Expect(receiver.Location).To(Equal("fake-location"))
-				Expect(receiver.Url).To(Equal("fake-url"))
+				Expect(receiver.URL).To(Equal("fake-url"))
 				Expect(receiver.OtherDetails).To(Equal([]byte(`{"encrypted":{"foo":"bar"}}`)))
-				Expect(receiver.ServiceId).To(Equal("fake-service-guid"))
-				Expect(receiver.PlanId).To(Equal("fake-plan-guid"))
-				Expect(receiver.SpaceGuid).To(Equal("fake-space-guid"))
-				Expect(receiver.OrganizationGuid).To(Equal("fake-org-guid"))
+				Expect(receiver.ServiceID).To(Equal("fake-service-guid"))
+				Expect(receiver.PlanID).To(Equal("fake-plan-guid"))
+				Expect(receiver.SpaceGUID).To(Equal("fake-space-guid"))
+				Expect(receiver.OrganizationGUID).To(Equal("fake-org-guid"))
 				Expect(receiver.OperationType).To(Equal("fake-operation-type"))
-				Expect(receiver.OperationId).To(Equal("fake-operation-guid"))
+				Expect(receiver.OperationID).To(Equal("fake-operation-guid"))
 			})
 		})
 	})
@@ -179,39 +179,39 @@ func addFakeServiceInstanceDetails() {
 		ID:               "fake-id-1",
 		Name:             "fake-name-1",
 		Location:         "fake-location-1",
-		Url:              "fake-url-1",
+		URL:              "fake-url-1",
 		OtherDetails:     []byte(`{"foo":"bar-1"}`),
-		ServiceId:        "fake-service-id-1",
-		PlanId:           "fake-plan-id-1",
-		SpaceGuid:        "fake-space-guid-1",
-		OrganizationGuid: "fake-org-guid-1",
+		ServiceID:        "fake-service-id-1",
+		PlanID:           "fake-plan-id-1",
+		SpaceGUID:        "fake-space-guid-1",
+		OrganizationGUID: "fake-org-guid-1",
 		OperationType:    "fake-operation-type-1",
-		OperationId:      "fake-operation-id-1",
+		OperationID:      "fake-operation-id-1",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.ServiceInstanceDetails{
 		ID:               "fake-id-2",
 		Name:             "fake-name-2",
 		Location:         "fake-location-2",
-		Url:              "fake-url-2",
+		URL:              "fake-url-2",
 		OtherDetails:     []byte(`{"foo":"bar-2"}`),
-		ServiceId:        "fake-service-id-2",
-		PlanId:           "fake-plan-id-2",
-		SpaceGuid:        "fake-space-guid-2",
-		OrganizationGuid: "fake-org-guid-2",
+		ServiceID:        "fake-service-id-2",
+		PlanID:           "fake-plan-id-2",
+		SpaceGUID:        "fake-space-guid-2",
+		OrganizationGUID: "fake-org-guid-2",
 		OperationType:    "fake-operation-type-2",
-		OperationId:      "fake-operation-id-2",
+		OperationID:      "fake-operation-id-2",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.ServiceInstanceDetails{
 		ID:               "fake-id-3",
 		Name:             "fake-name-3",
 		Location:         "fake-location-3",
-		Url:              "fake-url-3",
+		URL:              "fake-url-3",
 		OtherDetails:     []byte(`{"foo":"bar-3"}`),
-		ServiceId:        "fake-service-id-3",
-		PlanId:           "fake-plan-id-3",
-		SpaceGuid:        "fake-space-guid-3",
-		OrganizationGuid: "fake-org-guid-3",
+		ServiceID:        "fake-service-id-3",
+		PlanID:           "fake-plan-id-3",
+		SpaceGUID:        "fake-space-guid-3",
+		OrganizationGUID: "fake-org-guid-3",
 		OperationType:    "fake-operation-type-3",
-		OperationId:      "fake-operation-id-3",
+		OperationID:      "fake-operation-id-3",
 	}).Error).NotTo(HaveOccurred())
 }

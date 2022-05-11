@@ -29,8 +29,8 @@ func (s *Storage) StoreBindRequestDetails(bindRequestDetails BindRequestDetails)
 	switch len(receiver) {
 	case 0:
 		m := models.BindRequestDetails{
-			ServiceInstanceId: bindRequestDetails.ServiceInstanceGUID,
-			ServiceBindingId:  bindRequestDetails.ServiceBindingGUID,
+			ServiceInstanceID: bindRequestDetails.ServiceInstanceGUID,
+			ServiceBindingID:  bindRequestDetails.ServiceBindingGUID,
 			RequestDetails:    encoded,
 		}
 		if err := s.db.Create(&m).Error; err != nil {
