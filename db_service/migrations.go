@@ -135,7 +135,7 @@ func RunMigrations(db *gorm.DB) error {
 		if err := db.Order("migration_id desc").Find(&storedMigrations).Error; err != nil {
 			return fmt.Errorf("error getting last migration id even though migration table exists: %s", err)
 		}
-		lastMigrationNumber = storedMigrations[0].MigrationId
+		lastMigrationNumber = storedMigrations[0].MigrationID
 	}
 
 	if err := ValidateLastMigration(lastMigrationNumber); err != nil {
@@ -152,7 +152,7 @@ func RunMigrations(db *gorm.DB) error {
 			return err
 		} else {
 			newMigration := models.Migration{
-				MigrationId: i,
+				MigrationID: i,
 			}
 			if err := db.Save(&newMigration).Error; err != nil {
 				tx.Rollback()

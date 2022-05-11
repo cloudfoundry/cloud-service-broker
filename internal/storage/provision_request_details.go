@@ -19,7 +19,7 @@ func (s *Storage) StoreProvisionRequestDetails(serviceInstanceID string, details
 	switch len(receiver) {
 	case 0:
 		m := models.ProvisionRequestDetails{
-			ServiceInstanceId: serviceInstanceID,
+			ServiceInstanceID: serviceInstanceID,
 			RequestDetails:    encoded,
 		}
 		if err := s.db.Create(&m).Error; err != nil {

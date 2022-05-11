@@ -30,7 +30,7 @@ var once sync.Once
 func New(logger lager.Logger) *gorm.DB {
 	var db *gorm.DB
 	once.Do(func() {
-		db = SetupDb(logger)
+		db = SetupDB(logger)
 		if err := RunMigrations(db); err != nil {
 			panic(fmt.Sprintf("Error migrating database: %s", err.Error()))
 		}

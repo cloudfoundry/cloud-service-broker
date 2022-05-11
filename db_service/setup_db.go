@@ -44,8 +44,8 @@ const (
 	dbTypeProp          = "db.type"
 	dbPathProp          = "db.path"
 
-	DbTypeMysql   = "mysql"
-	DbTypeSqlite3 = "sqlite3"
+	DBTypeMySQL   = "mysql"
+	DBTypeSQLite3 = "sqlite3"
 )
 
 func init() {
@@ -67,13 +67,13 @@ func init() {
 	viper.SetDefault(dbNameProp, "servicebroker")
 
 	viper.BindEnv(dbTypeProp, "DB_TYPE")
-	viper.SetDefault(dbTypeProp, DbTypeMysql)
+	viper.SetDefault(dbTypeProp, DBTypeMySQL)
 
 	viper.BindEnv(dbPathProp, "DB_PATH")
 }
 
-// SetupDb pulls db credentials from the environment, connects to the db, and returns the db connection
-func SetupDb(logger lager.Logger) *gorm.DB {
+// SetupDB pulls db credentials from the environment, connects to the db, and returns the db connection
+func SetupDB(logger lager.Logger) *gorm.DB {
 	dbType := viper.GetString(dbTypeProp)
 	var db *gorm.DB
 	var err error
@@ -85,9 +85,9 @@ func SetupDb(logger lager.Logger) *gorm.DB {
 	default:
 		logger.Error("Database Setup", fmt.Errorf("invalid database type %q, valid types are: sqlite3 and mysql", dbType))
 		os.Exit(1)
-	case DbTypeMysql:
-		db, err = setupMysqlDb(logger)
-	case DbTypeSqlite3:
+	case DBTypeMySQL:
+		db, err = setupMySQLDB(logger)
+	case DBTypeSQLite3:
 		db, err = setupSqlite3Db(logger)
 	}
 
@@ -109,7 +109,7 @@ func setupSqlite3Db(logger lager.Logger) (*gorm.DB, error) {
 	return gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 }
 
-func setupMysqlDb(logger lager.Logger) (*gorm.DB, error) {
+func setupMySQLDB(logger lager.Logger) (*gorm.DB, error) {
 	// connect to database
 	dbHost := viper.GetString(dbHostProp)
 	dbUsername := viper.GetString(dbUserProp)
@@ -122,7 +122,7 @@ func setupMysqlDb(logger lager.Logger) (*gorm.DB, error) {
 	dbPort := viper.GetString(dbPortProp)
 	dbName := viper.GetString(dbNameProp)
 
-	tlsStr, err := generateTlsStringFromEnv()
+	tlsStr, err := generateTLSStringFromEnv()
 	if err != nil {
 		return nil, fmt.Errorf("error generating TLS string from env: %s", err)
 	}
@@ -142,7 +142,7 @@ func setupMysqlDb(logger lager.Logger) (*gorm.DB, error) {
 	}), &gorm.Config{})
 }
 
-func generateTlsStringFromEnv() (string, error) {
+func generateTLSStringFromEnv() (string, error) {
 	caCert := viper.GetString(caCertProp)
 	clientCertStr := viper.GetString(clientCertProp)
 	clientKeyStr := viper.GetString(clientKeyProp)

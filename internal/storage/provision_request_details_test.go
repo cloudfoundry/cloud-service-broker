@@ -17,7 +17,7 @@ var _ = Describe("ProvisionRequestDetails", func() {
 
 			var receiver models.ProvisionRequestDetails
 			Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
-			Expect(receiver.ServiceInstanceId).To(Equal("fake-instance-id"))
+			Expect(receiver.ServiceInstanceID).To(Equal("fake-instance-id"))
 			Expect(receiver.RequestDetails).To(Equal([]byte(`{"encrypted":{"foo":"bar"}}`)))
 		})
 
@@ -33,7 +33,7 @@ var _ = Describe("ProvisionRequestDetails", func() {
 		When("details for the instance already exist in the database", func() {
 			BeforeEach(func() {
 				Expect(db.Create(&models.ProvisionRequestDetails{
-					ServiceInstanceId: "fake-instance-id",
+					ServiceInstanceID: "fake-instance-id",
 					RequestDetails:    []byte(`{"foo":"bar"}`),
 				}).Error).NotTo(HaveOccurred())
 			})
@@ -45,7 +45,7 @@ var _ = Describe("ProvisionRequestDetails", func() {
 				var receiver []models.ProvisionRequestDetails
 				Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
 				Expect(receiver).To(HaveLen(1))
-				Expect(receiver[0].ServiceInstanceId).To(Equal("fake-instance-id"))
+				Expect(receiver[0].ServiceInstanceID).To(Equal("fake-instance-id"))
 				Expect(receiver[0].RequestDetails).To(Equal([]byte(`{"encrypted":{"foo":"qux"}}`)))
 			})
 		})
@@ -129,14 +129,14 @@ var _ = Describe("ProvisionRequestDetails", func() {
 func addFakeProvisionRequestDetails() {
 	Expect(db.Create(&models.ProvisionRequestDetails{
 		RequestDetails:    []byte(`{"foo":"bar"}`),
-		ServiceInstanceId: "fake-instance-id",
+		ServiceInstanceID: "fake-instance-id",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.ProvisionRequestDetails{
 		RequestDetails:    []byte(`{"foo":"baz","bar":"quz"}`),
-		ServiceInstanceId: "fake-other-instance-id",
+		ServiceInstanceID: "fake-other-instance-id",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.ProvisionRequestDetails{
 		RequestDetails:    []byte(`{"foo":"boz"}`),
-		ServiceInstanceId: "fake-yet-another-instance-id",
+		ServiceInstanceID: "fake-yet-another-instance-id",
 	}).Error).NotTo(HaveOccurred())
 }

@@ -116,7 +116,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 
 	response.IsAsync = shouldProvisionAsync
 	response.DashboardURL = ""
-	response.OperationData = newInstanceDetails.OperationId
+	response.OperationData = newInstanceDetails.OperationID
 
 	return response, nil
 }
