@@ -195,7 +195,7 @@ func (instance *TestInstance) httpInvokeBroker(subpath string, method string, bo
 	client := &http.Client{
 		Timeout: time.Second * 0,
 	}
-	req, err := http.NewRequest(method, instance.BrokerUrl(subpath), body)
+	req, err := http.NewRequest(method, instance.BrokerURL(subpath), body)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -210,8 +210,15 @@ func (instance *TestInstance) httpInvokeBroker(subpath string, method string, bo
 	return contents, response.StatusCode, err
 }
 
-func (instance *TestInstance) BrokerUrl(subPath string) string {
+func (instance *TestInstance) BrokerURL(subPath string) string {
 	return fmt.Sprintf("http://localhost:%s/v2/%s", instance.port, subPath)
+}
+
+// BrokerUrl returns the URL of the broker. Use BrokerURL instead.
+// Deprecated: due to name that does not conform to Go initialisms:  https://github.com/golang/go/wiki/CodeReviewComments#initialisms
+//lint:ignore ST1003 to maintain backwards compatability
+func (instance *TestInstance) BrokerUrl(subPath string) string {
+	return instance.BrokerURL(subPath)
 }
 
 func (instance *TestInstance) Bind(serviceName, planName, instanceID string, params map[string]interface{}) (map[string]interface{}, error) {
