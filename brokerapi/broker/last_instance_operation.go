@@ -33,11 +33,6 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 		return domain.LastOperation{}, err
 	}
 
-	isAsyncService := serviceProvider.ProvisionsAsync() || serviceProvider.DeprovisionsAsync()
-	if !isAsyncService {
-		return domain.LastOperation{}, apiresponses.ErrAsyncRequired
-	}
-
 	lastOperationType := instance.OperationType
 
 	done, message, err := serviceProvider.PollInstance(ctx, instance.GUID)

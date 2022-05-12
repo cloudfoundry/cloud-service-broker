@@ -61,8 +61,7 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	}
 
 	// verify async provisioning is allowed if it is required
-	shouldProvisionAsync := serviceProvider.ProvisionsAsync()
-	if shouldProvisionAsync && !clientSupportsAsync {
+	if !clientSupportsAsync {
 		return domain.ProvisionedServiceSpec{}, apiresponses.ErrAsyncRequired
 	}
 
@@ -104,5 +103,5 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
 	}
 
-	return domain.ProvisionedServiceSpec{IsAsync: shouldProvisionAsync, DashboardURL: "", OperationData: instanceDetails.OperationGUID}, nil
+	return domain.ProvisionedServiceSpec{IsAsync: true, DashboardURL: "", OperationData: instanceDetails.OperationGUID}, nil
 }

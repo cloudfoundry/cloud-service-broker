@@ -44,7 +44,6 @@ var _ = Describe("Update", func() {
 
 	BeforeEach(func() {
 		fakeServiceProvider = &pkgBrokerFakes.FakeServiceProvider{}
-		fakeServiceProvider.ProvisionsAsyncReturns(true)
 
 		providerBuilder := func(logger lager.Logger, store pkgBroker.ServiceProviderStorage) pkgBroker.ServiceProvider {
 			return fakeServiceProvider

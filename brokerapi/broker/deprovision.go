@@ -48,8 +48,7 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return response, err
 	}
 
-	// if async deprovisioning isn't allowed but this service needs it, throw an error
-	if serviceProvider.DeprovisionsAsync() && !clientSupportsAsync {
+	if !clientSupportsAsync {
 		return response, apiresponses.ErrAsyncRequired
 	}
 
