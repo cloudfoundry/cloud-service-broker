@@ -90,7 +90,7 @@ When you're creating a new service for the broker you're designing for three sep
 
 * The users, developers who will use your service to provision things they work with day-to-day.
 * The operators, the people who are responsible for approving services and plans for developers to use.
-* Yourself, the person who has to maintain the service, strike the right balance of power between the operators and users, and make sure and make sure the new plans/services work as intended.
+* Yourself, the person who has to maintain the service, strike the right balance of power between the operators and users, and make sure the new plans/services work as intended.
 
 The following sections contain guidelines to help you out.
 
@@ -108,7 +108,7 @@ For example, a Cloud Storage bucket can be configured to have a retention policy
 It would be a good idea to break those features into multiple distinct services:
 
 * One for hosting a static website with settings for URL, index/error pages, and CNAME.
-* Another the other for general storage that has retention policies.
+* Another for general storage that has retention policies.
 * A third that also provisions a Pub/Sub queue and acts as a staging area for data.
 
 Breaking things down like this makes it easier to figure out what variables you need to expose, what risks they entail and what kind of plans you'll want:
