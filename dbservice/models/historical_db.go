@@ -25,7 +25,7 @@ import (
 //
 // If you need to change a model you MUST make a copy here and update the
 // reference to the new model in db.go and add a migration path in the
-// db_service package.
+// dbservice package.
 
 // ServiceBindingCredentialsV1 holds credentials returned to the users after
 // binding to a service.

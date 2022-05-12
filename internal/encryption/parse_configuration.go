@@ -3,7 +3,7 @@ package encryption
 import (
 	"errors"
 
-	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/compoundencryptor"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/noopencryptor"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/passwordcombiner"

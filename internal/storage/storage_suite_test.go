@@ -9,7 +9,7 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage/storagefakes"
 
-	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"gorm.io/driver/sqlite"
 
 	"gorm.io/gorm"
