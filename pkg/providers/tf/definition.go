@@ -156,8 +156,6 @@ type TfServiceDefinitionV1 struct {
 	Examples          []broker.ServiceExample     `yaml:"examples"`
 	PlanUpdateable    bool                        `yaml:"plan_updateable"`
 
-	// Internal SHOULD be set to true for Google maintained services.
-	Internal        bool `yaml:"-"`
 	RequiredEnvVars []string
 }
 
