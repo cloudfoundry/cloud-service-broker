@@ -49,19 +49,19 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 		return domain.ProvisionedServiceSpec{}, ErrInvalidUserInput
 	}
 
-	brokerService, serviceHelper, err := broker.getDefinitionAndProvider(parsedDetails.ServiceID)
+	serviceDefinition, serviceProvider, err := broker.getDefinitionAndProvider(parsedDetails.ServiceID)
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
 
 	// verify the service exists and the plan exists
-	plan, err := brokerService.GetPlanByID(parsedDetails.PlanID)
+	plan, err := serviceDefinition.GetPlanByID(parsedDetails.PlanID)
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
 
 	// verify async provisioning is allowed if it is required
-	shouldProvisionAsync := serviceHelper.ProvisionsAsync()
+	shouldProvisionAsync := serviceProvider.ProvisionsAsync()
 	if shouldProvisionAsync && !clientSupportsAsync {
 		return domain.ProvisionedServiceSpec{}, apiresponses.ErrAsyncRequired
 	}
@@ -69,21 +69,21 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	// Give the user a better error message if they give us a bad request
 	if err := validateProvisionParameters(
 		parsedDetails.RequestParams,
-		brokerService.ProvisionInputVariables,
-		brokerService.ImportInputVariables,
+		serviceDefinition.ProvisionInputVariables,
+		serviceDefinition.ImportInputVariables,
 		plan); err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
 
 	// validate parameters meet the service's schema and merge the user vars with
 	// the plan's
-	vars, err := brokerService.ProvisionVariables(instanceID, parsedDetails, *plan, request.DecodeOriginatingIdentityHeader(ctx))
+	vars, err := serviceDefinition.ProvisionVariables(instanceID, parsedDetails, *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
 
 	// get instance details
-	instanceDetails, err := serviceHelper.Provision(ctx, vars)
+	instanceDetails, err := serviceProvider.Provision(ctx, vars)
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
