@@ -30,7 +30,6 @@ var _ = Describe("Registry", func() {
 						},
 					},
 				},
-				IsBuiltin: true,
 			}
 		})
 
@@ -85,10 +84,9 @@ var _ = Describe("Registry", func() {
 				registry := make(BrokerRegistry)
 
 				err := registry.Register(&ServiceDefinition{
-					ID:        "b9e4332e-b42b-4680-bda5-ea1506797474",
-					Name:      "test-service",
-					Plans:     []ServicePlan{},
-					IsBuiltin: true,
+					ID:    "b9e4332e-b42b-4680-bda5-ea1506797474",
+					Name:  "test-service",
+					Plans: []ServicePlan{},
 				})
 				Expect(err).To(MatchError(`service "test-service" has no plans defined; at least one plan must be specified in the service definition or via the environment variable "GSB_SERVICE_TEST_SERVICE_PLANS" or "TEST_SERVICE_CUSTOM_PLANS"`))
 			})
@@ -185,11 +183,9 @@ var _ = Describe("Registry", func() {
 							},
 						},
 					},
-					IsBuiltin: true,
 				}
 
 				viper.Set(property, false)
-				viper.Set("compatibility.enable-builtin-services", true)
 
 				registry := BrokerRegistry{}
 				err := registry.Register(&serviceDef)
@@ -199,11 +195,11 @@ var _ = Describe("Registry", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(BeEmpty())
 			},
-			Entry("when preview are disabled and build-ins are enabled", "preview", "compatibility.enable-preview-services"),
-			Entry("when unmaintained are disabled and build-ins are enabled", "unmaintained", "compatibility.enable-unmaintained-services"),
-			Entry("when eol are disabled and build-ins are enabled", "eol", "compatibility.enable-eol-services"),
-			Entry("when beta are disabled and build-ins are enabled", "beta", "compatibility.enable-gcp-beta-services"),
-			Entry("when deprecated are disabled and build-ins are enabled", "deprecated", "compatibility.enable-gcp-deprecated-services"),
+			Entry("when preview are disabled", "preview", "compatibility.enable-preview-services"),
+			Entry("when unmaintained are disabled", "unmaintained", "compatibility.enable-unmaintained-services"),
+			Entry("when eol are disabled", "eol", "compatibility.enable-eol-services"),
+			Entry("when beta are disabled", "beta", "compatibility.enable-gcp-beta-services"),
+			Entry("when deprecated are disabled", "deprecated", "compatibility.enable-gcp-deprecated-services"),
 		)
 
 		DescribeTable("should show offering",
@@ -221,11 +217,9 @@ var _ = Describe("Registry", func() {
 							},
 						},
 					},
-					IsBuiltin: true,
 				}
 
 				viper.Set(property, true)
-				viper.Set("compatibility.enable-builtin-services", true)
 
 				registry := BrokerRegistry{}
 				err := registry.Register(&serviceDef)
@@ -235,47 +229,11 @@ var _ = Describe("Registry", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(result).To(HaveLen(1))
 			},
-			Entry("when preview are enabled and build-ins are enabled", "preview", "compatibility.enable-preview-services"),
-			Entry("when unmaintained are enabled and build-ins are enabled", "unmaintained", "compatibility.enable-unmaintained-services"),
-			Entry("when eol are enabled and build-ins are enabled", "eol", "compatibility.enable-eol-services"),
-			Entry("when beta are enabled and build-ins are enabled", "beta", "compatibility.enable-beta-services"),
-			Entry("when deprecated are enabled and build-ins are enabled", "deprecated", "compatibility.enable-gcp-deprecated-services"),
-		)
-
-		DescribeTable("should not show offering",
-			func(tag, property string) {
-				serviceDef := ServiceDefinition{
-					ID:   "b9e4332e-b42b-4680-bda5-ea1506797474",
-					Name: "test-service",
-					Tags: []string{"gcp", tag},
-					Plans: []ServicePlan{
-						{
-							ServicePlan: domain.ServicePlan{
-								ID:          "e1d11f65-da66-46ad-977c-6d56513baf43",
-								Name:        "Builtin!",
-								Description: "Standard storage class",
-							},
-						},
-					},
-					IsBuiltin: true,
-				}
-
-				viper.Set(property, true)
-				viper.Set("compatibility.enable-builtin-services", false)
-
-				registry := BrokerRegistry{}
-				err := registry.Register(&serviceDef)
-				Expect(err).ToNot(HaveOccurred())
-
-				result, err := registry.GetEnabledServices()
-				Expect(err).ToNot(HaveOccurred())
-				Expect(result).To(BeEmpty())
-			},
-			Entry("when preview are enabled and build-ins are disabled", "preview", "compatibility.enable-preview-services"),
-			Entry("when unmaintained are enabled and build-ins are disabled", "unmaintained", "compatibility.enable-unmaintained-services"),
-			Entry("when eol are enabled and build-ins are disabled", "eol", "compatibility.enable-eol-services"),
-			Entry("when beta are enabled and build-ins are disabled", "beta", "compatibility.enable-gcp-beta-services"),
-			Entry("when deprecated are enabled and build-ins are disabled", "deprecated", "compatibility.enable-gcp-deprecated-services"),
+			Entry("when preview are enabled", "preview", "compatibility.enable-preview-services"),
+			Entry("when unmaintained are enabled", "unmaintained", "compatibility.enable-unmaintained-services"),
+			Entry("when eol are enabled", "eol", "compatibility.enable-eol-services"),
+			Entry("when beta are enabled", "beta", "compatibility.enable-beta-services"),
+			Entry("when deprecated are enabled", "deprecated", "compatibility.enable-gcp-deprecated-services"),
 		)
 	})
 })
