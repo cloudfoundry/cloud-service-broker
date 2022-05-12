@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/utils/request"

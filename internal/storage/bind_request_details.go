@@ -3,7 +3,7 @@ package storage
 import (
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 )
 
 type BindRequestDetails struct {

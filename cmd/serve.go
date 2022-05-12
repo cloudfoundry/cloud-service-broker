@@ -22,7 +22,7 @@ import (
 
 	"code.cloudfoundry.org/lager"
 	osbapiBroker "github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
-	"github.com/cloudfoundry/cloud-service-broker/db_service"
+	"github.com/cloudfoundry/cloud-service-broker/dbservice"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption"
 	"github.com/cloudfoundry/cloud-service-broker/internal/infohandler"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -81,7 +81,7 @@ func init() {
 func serve() {
 	logger := utils.NewLogger("cloud-service-broker")
 	logger.Info("starting", lager.Data{"version": utils.Version})
-	db := db_service.New(logger)
+	db := dbservice.New(logger)
 	encryptor := setupDBEncryption(db, logger)
 
 	// init broker

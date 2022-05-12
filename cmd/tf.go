@@ -22,6 +22,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/cloudfoundry/cloud-service-broker/dbservice"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
@@ -29,8 +30,7 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 
-	"github.com/cloudfoundry/cloud-service-broker/db_service"
-	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/spf13/cobra"
@@ -47,7 +47,7 @@ func init() {
 		Long:  `Interact with the Terraform backend`,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
 			logger := utils.NewLogger("tf")
-			db = db_service.New(logger)
+			db = dbservice.New(logger)
 			encryptor := setupDBEncryption(db, logger)
 			store := storage.New(db, encryptor)
 			jobRunner = tf.NewTfJobRunner(store, executor.TFBinariesContext{}, workspace.NewWorkspaceFactory(), invoker.NewTerraformInvokerFactory(executor.NewExecutorFactory("", nil, nil), "", map[string]string{}))

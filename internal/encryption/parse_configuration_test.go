@@ -1,7 +1,7 @@
 package encryption_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/compoundencryptor"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/gcmencryptor"

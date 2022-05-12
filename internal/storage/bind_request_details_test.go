@@ -5,7 +5,7 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 
-	"github.com/cloudfoundry/cloud-service-broker/db_service/models"
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
