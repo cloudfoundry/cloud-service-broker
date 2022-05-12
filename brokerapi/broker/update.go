@@ -40,7 +40,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return response, fmt.Errorf("database error getting existing instance: %s", err)
 	}
 
-	brokerService, serviceHelper, err := broker.getDefinitionAndProvider(instance.ServiceGUID)
+	serviceDefinition, serviceProvider, err := broker.getDefinitionAndProvider(instance.ServiceGUID)
 	if err != nil {
 		return response, err
 	}
@@ -51,23 +51,23 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	// verify the service exists and the plan exists
-	plan, err := brokerService.GetPlanByID(parsedDetails.PlanID)
+	plan, err := serviceDefinition.GetPlanByID(parsedDetails.PlanID)
 	if err != nil {
 		return response, err
 	}
 
 	// verify async provisioning is allowed if it is required
-	shouldProvisionAsync := serviceHelper.ProvisionsAsync()
+	shouldProvisionAsync := serviceProvider.ProvisionsAsync()
 	if shouldProvisionAsync && !asyncAllowed {
 		return response, apiresponses.ErrAsyncRequired
 	}
 
 	// Give the user a better error message if they give us a bad request
-	if err := validateProvisionParameters(parsedDetails.RequestParams, brokerService.ProvisionInputVariables, nil, plan); err != nil {
+	if err := validateProvisionParameters(parsedDetails.RequestParams, serviceDefinition.ProvisionInputVariables, nil, plan); err != nil {
 		return domain.UpdateServiceSpec{}, err
 	}
 
-	allowUpdate, err := brokerService.AllowedUpdate(parsedDetails.RequestParams)
+	allowUpdate, err := serviceDefinition.AllowedUpdate(parsedDetails.RequestParams)
 	if err != nil {
 		return response, err
 	}
@@ -80,7 +80,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return response, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
 	}
 
-	importedParams, err := serviceHelper.GetImportedProperties(ctx, instance.PlanGUID, instance.GUID, brokerService.ProvisionInputVariables)
+	importedParams, err := serviceProvider.GetImportedProperties(ctx, instance.PlanGUID, instance.GUID, serviceDefinition.ProvisionInputVariables)
 	if err != nil {
 		return response, fmt.Errorf("error retrieving subsume parameters for %q: %w", instanceID, err)
 	}
@@ -90,13 +90,13 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return response, fmt.Errorf("error merging update and provision details: %w", err)
 	}
 
-	vars, err := brokerService.UpdateVariables(instanceID, parsedDetails, mergedDetails, *plan, request.DecodeOriginatingIdentityHeader(ctx))
+	vars, err := serviceDefinition.UpdateVariables(instanceID, parsedDetails, mergedDetails, *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
 		return response, err
 	}
 
 	// get instance details
-	newInstanceDetails, err := serviceHelper.Update(ctx, vars)
+	newInstanceDetails, err := serviceProvider.Update(ctx, vars)
 	if err != nil {
 		return domain.UpdateServiceSpec{}, err
 	}
