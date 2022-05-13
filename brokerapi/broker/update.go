@@ -57,8 +57,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	// verify async provisioning is allowed if it is required
-	shouldProvisionAsync := serviceProvider.ProvisionsAsync()
-	if shouldProvisionAsync && !asyncAllowed {
+	if !asyncAllowed {
 		return response, apiresponses.ErrAsyncRequired
 	}
 
@@ -114,7 +113,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return domain.UpdateServiceSpec{}, fmt.Errorf("error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
 	}
 
-	response.IsAsync = shouldProvisionAsync
+	response.IsAsync = true
 	response.DashboardURL = ""
 	response.OperationData = newInstanceDetails.OperationID
 

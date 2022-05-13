@@ -40,8 +40,6 @@ var _ = Describe("LastInstanceOperation", func() {
 
 	BeforeEach(func() {
 		fakeServiceProvider = &pkgBrokerFakes.FakeServiceProvider{}
-		fakeServiceProvider.ProvisionsAsyncReturns(true)
-		fakeServiceProvider.DeprovisionsAsyncReturns(true)
 		expectedTFOutput = storage.JSONObject{"output": "value"}
 		fakeServiceProvider.GetTerraformOutputsReturns(expectedTFOutput, nil)
 		fakeServiceProvider.PollInstanceReturns(true, "operation complete", nil)
@@ -222,20 +220,6 @@ var _ = Describe("LastInstanceOperation", func() {
 			Expect(fakeStorage.StoreServiceInstanceDetailsCallCount()).To(Equal(0))
 			Expect(fakeStorage.DeleteProvisionRequestDetailsCallCount()).To(Equal(0))
 			Expect(fakeStorage.DeleteProvisionRequestDetailsCallCount()).To(Equal(0))
-		})
-	})
-
-	Describe("sync operations", func() {
-		When("async provision and deprovision is not supported", func() {
-			BeforeEach(func() {
-				fakeServiceProvider.ProvisionsAsyncReturns(false)
-				fakeServiceProvider.DeprovisionsAsyncReturns(false)
-			})
-
-			It("should error", func() {
-				_, err := serviceBroker.LastOperation(context.TODO(), instanceID, pollDetails)
-				Expect(err).To(MatchError("This service plan requires client support for asynchronous service operations."))
-			})
 		})
 	})
 

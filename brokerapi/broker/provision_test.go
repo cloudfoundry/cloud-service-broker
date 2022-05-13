@@ -44,7 +44,6 @@ var _ = Describe("Provision", func() {
 
 	BeforeEach(func() {
 		fakeServiceProvider = &pkgBrokerFakes.FakeServiceProvider{}
-		fakeServiceProvider.ProvisionsAsyncReturns(true)
 		fakeServiceProvider.ProvisionReturns(storage.ServiceInstanceDetails{
 			OperationType: models.ProvisionOperationType,
 			OperationGUID: operationID,

@@ -259,16 +259,6 @@ func (provider *terraformProvider) PollInstance(ctx context.Context, instanceGUI
 	return provider.jobRunner.Status(ctx, generateTfID(instanceGUID, ""))
 }
 
-// ProvisionsAsync is always true for Terraformprovider.
-func (provider *terraformProvider) ProvisionsAsync() bool {
-	return true
-}
-
-// DeprovisionsAsync is always true for Terraformprovider.
-func (provider *terraformProvider) DeprovisionsAsync() bool {
-	return true
-}
-
 // UpdateInstanceDetails updates the ServiceInstanceDetails with the most recent state from GCP.
 // This function is optional, but will be called after async provisions, updates, and possibly
 // on broker version changes.

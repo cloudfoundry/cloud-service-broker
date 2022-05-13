@@ -39,7 +39,6 @@ var _ = Describe("Deprovision", func() {
 
 	BeforeEach(func() {
 		fakeServiceProvider = &pkgBrokerFakes.FakeServiceProvider{}
-		fakeServiceProvider.DeprovisionsAsyncReturns(true)
 		operationID = "test-operation-id"
 		fakeServiceProvider.DeprovisionReturns(&operationID, nil)
 
