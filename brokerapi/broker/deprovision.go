@@ -23,6 +23,10 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		"details":            details,
 	})
 
+	if !clientSupportsAsync {
+		return response, apiresponses.ErrAsyncRequired
+	}
+
 	// make sure that instance actually exists
 	exists, err := broker.store.ExistsServiceInstanceDetails(instanceID)
 	switch {
@@ -46,10 +50,6 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 	plan, err := serviceDefinition.GetPlanByID(details.PlanID)
 	if err != nil {
 		return response, err
-	}
-
-	if !clientSupportsAsync {
-		return response, apiresponses.ErrAsyncRequired
 	}
 
 	parameters, err := broker.store.GetProvisionRequestDetails(instanceID)
