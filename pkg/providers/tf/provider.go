@@ -26,7 +26,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/builtin/base"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
@@ -57,12 +56,24 @@ func NewTerraformProvider(jobRunner JobRunner, logger lager.Logger, serviceDefin
 }
 
 type terraformProvider struct {
-	base.MergedInstanceCredsMixin
-
 	logger            lager.Logger
 	jobRunner         JobRunner
 	serviceDefinition TfServiceDefinitionV1
 	store             broker.ServiceProviderStorage
+}
+
+// BuildInstanceCredentials combines the bind credentials with the connection
+// information in the instance details to get a full set of connection details.
+func (provider *terraformProvider) BuildInstanceCredentials(ctx context.Context, credentials map[string]interface{}, outputs storage.JSONObject) (*domain.Binding, error) {
+	vc, err := varcontext.Builder().
+		MergeMap(outputs).
+		MergeMap(credentials).
+		Build()
+	if err != nil {
+		return nil, err
+	}
+
+	return &domain.Binding{Credentials: vc.ToMap()}, nil
 }
 
 // Provision creates the necessary resources that an instance of this service
