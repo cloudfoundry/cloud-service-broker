@@ -58,16 +58,6 @@ type FakeServiceProvider struct {
 		result1 *string
 		result2 error
 	}
-	DeprovisionsAsyncStub        func() bool
-	deprovisionsAsyncMutex       sync.RWMutex
-	deprovisionsAsyncArgsForCall []struct {
-	}
-	deprovisionsAsyncReturns struct {
-		result1 bool
-	}
-	deprovisionsAsyncReturnsOnCall map[int]struct {
-		result1 bool
-	}
 	GetImportedPropertiesStub        func(context.Context, string, string, []broker.BrokerVariable) (map[string]interface{}, error)
 	getImportedPropertiesMutex       sync.RWMutex
 	getImportedPropertiesArgsForCall []struct {
@@ -127,16 +117,6 @@ type FakeServiceProvider struct {
 	provisionReturnsOnCall map[int]struct {
 		result1 storage.ServiceInstanceDetails
 		result2 error
-	}
-	ProvisionsAsyncStub        func() bool
-	provisionsAsyncMutex       sync.RWMutex
-	provisionsAsyncArgsForCall []struct {
-	}
-	provisionsAsyncReturns struct {
-		result1 bool
-	}
-	provisionsAsyncReturnsOnCall map[int]struct {
-		result1 bool
 	}
 	UnbindStub        func(context.Context, string, string, *varcontext.VarContext) error
 	unbindMutex       sync.RWMutex
@@ -366,59 +346,6 @@ func (fake *FakeServiceProvider) DeprovisionReturnsOnCall(i int, result1 *string
 		result1 *string
 		result2 error
 	}{result1, result2}
-}
-
-func (fake *FakeServiceProvider) DeprovisionsAsync() bool {
-	fake.deprovisionsAsyncMutex.Lock()
-	ret, specificReturn := fake.deprovisionsAsyncReturnsOnCall[len(fake.deprovisionsAsyncArgsForCall)]
-	fake.deprovisionsAsyncArgsForCall = append(fake.deprovisionsAsyncArgsForCall, struct {
-	}{})
-	stub := fake.DeprovisionsAsyncStub
-	fakeReturns := fake.deprovisionsAsyncReturns
-	fake.recordInvocation("DeprovisionsAsync", []interface{}{})
-	fake.deprovisionsAsyncMutex.Unlock()
-	if stub != nil {
-		return stub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeServiceProvider) DeprovisionsAsyncCallCount() int {
-	fake.deprovisionsAsyncMutex.RLock()
-	defer fake.deprovisionsAsyncMutex.RUnlock()
-	return len(fake.deprovisionsAsyncArgsForCall)
-}
-
-func (fake *FakeServiceProvider) DeprovisionsAsyncCalls(stub func() bool) {
-	fake.deprovisionsAsyncMutex.Lock()
-	defer fake.deprovisionsAsyncMutex.Unlock()
-	fake.DeprovisionsAsyncStub = stub
-}
-
-func (fake *FakeServiceProvider) DeprovisionsAsyncReturns(result1 bool) {
-	fake.deprovisionsAsyncMutex.Lock()
-	defer fake.deprovisionsAsyncMutex.Unlock()
-	fake.DeprovisionsAsyncStub = nil
-	fake.deprovisionsAsyncReturns = struct {
-		result1 bool
-	}{result1}
-}
-
-func (fake *FakeServiceProvider) DeprovisionsAsyncReturnsOnCall(i int, result1 bool) {
-	fake.deprovisionsAsyncMutex.Lock()
-	defer fake.deprovisionsAsyncMutex.Unlock()
-	fake.DeprovisionsAsyncStub = nil
-	if fake.deprovisionsAsyncReturnsOnCall == nil {
-		fake.deprovisionsAsyncReturnsOnCall = make(map[int]struct {
-			result1 bool
-		})
-	}
-	fake.deprovisionsAsyncReturnsOnCall[i] = struct {
-		result1 bool
-	}{result1}
 }
 
 func (fake *FakeServiceProvider) GetImportedProperties(arg1 context.Context, arg2 string, arg3 string, arg4 []broker.BrokerVariable) (map[string]interface{}, error) {
@@ -691,59 +618,6 @@ func (fake *FakeServiceProvider) ProvisionReturnsOnCall(i int, result1 storage.S
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) ProvisionsAsync() bool {
-	fake.provisionsAsyncMutex.Lock()
-	ret, specificReturn := fake.provisionsAsyncReturnsOnCall[len(fake.provisionsAsyncArgsForCall)]
-	fake.provisionsAsyncArgsForCall = append(fake.provisionsAsyncArgsForCall, struct {
-	}{})
-	stub := fake.ProvisionsAsyncStub
-	fakeReturns := fake.provisionsAsyncReturns
-	fake.recordInvocation("ProvisionsAsync", []interface{}{})
-	fake.provisionsAsyncMutex.Unlock()
-	if stub != nil {
-		return stub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeServiceProvider) ProvisionsAsyncCallCount() int {
-	fake.provisionsAsyncMutex.RLock()
-	defer fake.provisionsAsyncMutex.RUnlock()
-	return len(fake.provisionsAsyncArgsForCall)
-}
-
-func (fake *FakeServiceProvider) ProvisionsAsyncCalls(stub func() bool) {
-	fake.provisionsAsyncMutex.Lock()
-	defer fake.provisionsAsyncMutex.Unlock()
-	fake.ProvisionsAsyncStub = stub
-}
-
-func (fake *FakeServiceProvider) ProvisionsAsyncReturns(result1 bool) {
-	fake.provisionsAsyncMutex.Lock()
-	defer fake.provisionsAsyncMutex.Unlock()
-	fake.ProvisionsAsyncStub = nil
-	fake.provisionsAsyncReturns = struct {
-		result1 bool
-	}{result1}
-}
-
-func (fake *FakeServiceProvider) ProvisionsAsyncReturnsOnCall(i int, result1 bool) {
-	fake.provisionsAsyncMutex.Lock()
-	defer fake.provisionsAsyncMutex.Unlock()
-	fake.ProvisionsAsyncStub = nil
-	if fake.provisionsAsyncReturnsOnCall == nil {
-		fake.provisionsAsyncReturnsOnCall = make(map[int]struct {
-			result1 bool
-		})
-	}
-	fake.provisionsAsyncReturnsOnCall[i] = struct {
-		result1 bool
-	}{result1}
-}
-
 func (fake *FakeServiceProvider) Unbind(arg1 context.Context, arg2 string, arg3 string, arg4 *varcontext.VarContext) error {
 	fake.unbindMutex.Lock()
 	ret, specificReturn := fake.unbindReturnsOnCall[len(fake.unbindArgsForCall)]
@@ -882,8 +756,6 @@ func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	defer fake.buildInstanceCredentialsMutex.RUnlock()
 	fake.deprovisionMutex.RLock()
 	defer fake.deprovisionMutex.RUnlock()
-	fake.deprovisionsAsyncMutex.RLock()
-	defer fake.deprovisionsAsyncMutex.RUnlock()
 	fake.getImportedPropertiesMutex.RLock()
 	defer fake.getImportedPropertiesMutex.RUnlock()
 	fake.getTerraformOutputsMutex.RLock()
@@ -892,8 +764,6 @@ func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	defer fake.pollInstanceMutex.RUnlock()
 	fake.provisionMutex.RLock()
 	defer fake.provisionMutex.RUnlock()
-	fake.provisionsAsyncMutex.RLock()
-	defer fake.provisionsAsyncMutex.RUnlock()
 	fake.unbindMutex.RLock()
 	defer fake.unbindMutex.RUnlock()
 	fake.updateMutex.RLock()
