@@ -24,7 +24,7 @@ require (
 	github.com/pivotal-cf/brokerapi/v8 v8.2.1
 	github.com/robertkrimen/otto v0.0.0-20210614181706-373ff5438452
 	github.com/russross/blackfriday/v2 v2.1.0
-	github.com/spf13/cast v1.4.1
+	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.11.0
 	github.com/xeipuuv/gojsonschema v1.2.0
@@ -72,7 +72,6 @@ require (
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
 	github.com/keybase/go-ps v0.0.0-20190827175125-91aafc93ba19 // indirect
 	github.com/klauspost/compress v1.11.2 // indirect
-	github.com/kr/pretty v0.3.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-sqlite3 v1.14.12 // indirect
