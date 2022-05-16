@@ -79,9 +79,9 @@ func (dv *DefaultVariable) Validate() (errs *validation.FieldError) {
 	)
 }
 
-// MergeDefaults gets the default values from the given BrokerVariables and
-// if they're a string, it tries to evaluet it in the built up context.
-func (builder *ContextBuilder) MergeDefaults(brokerVariables []DefaultVariable) *ContextBuilder {
+// MergeDefaultWithEval gets the default values from the given BrokerVariables and
+// if they're a string, it tries to evaluate it in the built up context.
+func (builder *ContextBuilder) MergeDefaultWithEval(brokerVariables []DefaultVariable) *ContextBuilder {
 	for _, v := range brokerVariables {
 		if v.Default == nil {
 			continue

@@ -361,23 +361,24 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 	return out
 }
 
-// ProvisionVariables gets the variable resolution context for a provision request.
-// Variables have a very specific resolution order, and this function populates the context to preserve that.
-// The variable resolution order is the following:
+// variables is used by ProvisionVariables and UpdateVariables
+// to get the variables and values to pass to Terraform. The output is a map where
+// the keys are all the variables that Terraform is expecting, and the values are their values.
+// Variables have a very specific resolution order. Lower number are overwritten by higher numbers
+// except where noted.
 //
-// 1. Variables defined in your `computed_variables` JSON list.
-// 2. Variables defined by the selected service plan in its `service_properties` map.
-// 3. Variables overridden in the plan's `provision_overrides` map.
-// 4. User defined variables (in `update_input_variables`)
-// 5. User defined variables (in `provision_input_variables` or `bind_input_variables`)
-// 6. Operator default variables loaded from the environment.
-// 7. Global operator default variables loaded from the environment.
-// 8. Default variables (in `provision_input_variables` or `bind_input_variables`).
+// 1. Global defaults: key/value pairs set in JSON in Viper `provision.defaults`
+// 2. Service defaults: key/value pairs set in JSON in Viper `service.<service>.provision.defaults`
+// 3. Request parameters: key/value pairs passed in the provision/update request, typically
+//    with the "-c" parameter of the "cf" command
+// 4. Provision overrides: from the Plan definition "provision_overrides"
+// 5. Default values: from the Service definition YAML "user_inputs", only if the value has not been set above.
+// 6. Plan properties: from the Plan definition key "properties"
+// 7. Computed values: from Service definition YAML "computed_inputs", only if the value has not been set above.
 //
-// Loading into the map occurs slightly differently.
-// Default variables and computed_variables get executed by interpolation.
-// User defined variables are not to prevent side-channel attacks.
-// Default variables may reference user provided variables.
+// Default values and Computed values are interpolated in HIL (see pkg/varcontext/interpolation.Eval()),
+// but others are not to prevent side-channel attacks.
+// Default values may reference user-provided variables.
 // For example, to create a default database name based on a user-provided instance name.
 // Therefore, they get executed conditionally if a user-provided variable does not exist.
 // Computed variables get executed either unconditionally or conditionally for greater flexibility.
@@ -394,15 +395,14 @@ func (svc *ServiceDefinition) variables(
 	if err != nil {
 		return nil, err
 	}
-	builder := varcontext.Builder().
-		SetEvalConstants(constants).
-		MergeMap(globalDefaults).
-		MergeMap(provisionDefaultOverrides).
-		MergeMap(userProvidedParameters).
-		MergeMap(plan.ProvisionOverrides).
-		MergeDefaults(svc.provisionDefaults()).
-		MergeMap(plan.GetServiceProperties()).
-		MergeDefaults(svc.ProvisionComputedVariables)
+	builder := varcontext.Builder().SetEvalConstants(constants).
+		MergeMap(globalDefaults).                            // Viper: provision.defaults
+		MergeMap(provisionDefaultOverrides).                 // Viper: service.<service>.provision.defaults
+		MergeMap(userProvidedParameters).                    // OSBAPI request parameters
+		MergeMap(plan.ProvisionOverrides).                   // "provision_overrides" from the Plan
+		MergeDefaultWithEval(svc.provisionDefaults()).       // default values for "user_inputs" in Service definition
+		MergeMap(plan.GetServiceProperties()).               // "properties" from the Plan
+		MergeDefaultWithEval(svc.ProvisionComputedVariables) // "computed_variables" from the Service definition
 
 	return buildAndValidate(builder, svc.ProvisionInputVariables)
 }
@@ -480,8 +480,8 @@ func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDeta
 		MergeMap(svc.BindDefaultOverrides()).
 		MergeMap(details.RequestParams).
 		MergeMap(plan.BindOverrides).
-		MergeDefaults(svc.bindDefaults()).
-		MergeDefaults(svc.BindComputedVariables)
+		MergeDefaultWithEval(svc.bindDefaults()).
+		MergeDefaultWithEval(svc.BindComputedVariables)
 
 	return buildAndValidate(builder, svc.BindInputVariables)
 }
