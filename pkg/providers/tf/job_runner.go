@@ -81,32 +81,6 @@ type TfJobRunner struct {
 	invoker.TerraformInvokerBuilder
 }
 
-// StageJob stages a job to be executed. Before the workspace is saved to the
-// database, the modules and inputs are validated by Terraform.
-func (runner *TfJobRunner) StageJob(jobID string, workspace *workspace.TerraformWorkspace) error {
-	deployment := storage.TerraformDeployment{ID: jobID}
-	exists, err := runner.store.ExistsTerraformDeployment(jobID)
-	switch {
-	case err != nil:
-		return err
-	case exists:
-		deployment, err = runner.store.GetTerraformDeployment(jobID)
-		if err != nil {
-			return err
-		}
-	}
-
-	workspaceString, err := workspace.Serialize()
-	if err != nil {
-		return err
-	}
-
-	deployment.Workspace = []byte(workspaceString)
-	deployment.LastOperationType = "validation"
-
-	return runner.store.StoreTerraformDeployment(deployment)
-}
-
 func (runner *TfJobRunner) markJobStarted(deployment storage.TerraformDeployment, operationType string) error {
 	// update the deployment info
 	deployment.LastOperationType = operationType
