@@ -53,7 +53,7 @@ func createStandardLibrary() map[string]ast.Function {
 	}
 }
 
-// hilFuncEnv returns value of a given enironment variable
+// hilFuncConfig looks up a Viper config value
 func hilFuncConfig() ast.Function {
 	return ast.Function{
 		ArgTypes:   []ast.Type{ast.TypeString},
@@ -67,7 +67,7 @@ func hilFuncConfig() ast.Function {
 	}
 }
 
-// hilFuncEnv returns value of a given enironment variable
+// hilFuncEnv returns value of a given environment variable
 func hilFuncEnv() ast.Function {
 	return ast.Function{
 		ArgTypes:   []ast.Type{ast.TypeString},

@@ -51,63 +51,63 @@ func TestContextBuilder(t *testing.T) {
 			Expected: map[string]interface{}{"a": "aaa"},
 		},
 
-		// MergeDefaults
-		"MergeDefaults no defaults": {
-			Builder:  Builder().MergeDefaults([]DefaultVariable{{Name: "foo"}}),
+		// MergeDefaultWithEval
+		"MergeDefaultWithEval no defaults": {
+			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "foo"}}),
 			Expected: map[string]interface{}{},
 		},
-		"MergeDefaults non-string": {
-			Builder:  Builder().MergeDefaults([]DefaultVariable{{Name: "h2g2", Default: 42}}),
+		"MergeDefaultWithEval non-string": {
+			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "h2g2", Default: 42}}),
 			Expected: map[string]interface{}{"h2g2": 42},
 		},
-		"MergeDefaults basic-string": {
-			Builder:  Builder().MergeDefaults([]DefaultVariable{{Name: "a", Default: "no-template"}}),
+		"MergeDefaultWithEval basic-string": {
+			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "a", Default: "no-template"}}),
 			Expected: map[string]interface{}{"a": "no-template"},
 		},
-		"MergeDefaults template string": {
-			Builder:  Builder().MergeDefaults([]DefaultVariable{{Name: "a", Default: "a"}, {Name: "b", Default: "${a}"}}),
+		"MergeDefaultWithEval template string": {
+			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "a", Default: "a"}, {Name: "b", Default: "${a}"}}),
 			Expected: map[string]interface{}{"a": "a", "b": "a"},
 		},
-		"MergeDefaults no-overwrite": {
-			Builder:  Builder().MergeDefaults([]DefaultVariable{{Name: "a", Default: "a"}, {Name: "a", Default: "b", Overwrite: false}}),
+		"MergeDefaultWithEval no-overwrite": {
+			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "a", Default: "a"}, {Name: "a", Default: "b", Overwrite: false}}),
 			Expected: map[string]interface{}{"a": "a"},
 		},
-		"MergeDefaults overwrite": {
-			Builder:  Builder().MergeDefaults([]DefaultVariable{{Name: "a", Default: "a"}, {Name: "a", Default: "b", Overwrite: true}}),
+		"MergeDefaultWithEval overwrite": {
+			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "a", Default: "a"}, {Name: "a", Default: "b", Overwrite: true}}),
 			Expected: map[string]interface{}{"a": "b"},
 		},
 
-		"MergeDefaults object": {
-			Builder:  Builder().MergeDefaults([]DefaultVariable{{Name: "o", Default: `{"foo": "bar"}`, Type: "object"}}),
+		"MergeDefaultWithEval object": {
+			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "o", Default: `{"foo": "bar"}`, Type: "object"}}),
 			Expected: map[string]interface{}{"o": map[string]interface{}{"foo": "bar"}},
 		},
 
-		"MergeDefaults boolean": {
-			Builder:  Builder().MergeDefaults([]DefaultVariable{{Name: "b", Default: `true`, Type: "boolean"}}),
+		"MergeDefaultWithEval boolean": {
+			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "b", Default: `true`, Type: "boolean"}}),
 			Expected: map[string]interface{}{"b": true},
 		},
-		"MergeDefaults array": {
-			Builder:  Builder().MergeDefaults([]DefaultVariable{{Name: "a", Default: `["a","b","c","d"]`, Type: "array"}}),
+		"MergeDefaultWithEval array": {
+			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "a", Default: `["a","b","c","d"]`, Type: "array"}}),
 			Expected: map[string]interface{}{"a": []interface{}{"a", "b", "c", "d"}},
 		},
-		"MergeDefaults number": {
-			Builder:  Builder().MergeDefaults([]DefaultVariable{{Name: "n", Default: `1.234`, Type: "number"}}),
+		"MergeDefaultWithEval number": {
+			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "n", Default: `1.234`, Type: "number"}}),
 			Expected: map[string]interface{}{"n": 1.234},
 		},
-		"MergeDefaults integer": {
-			Builder:  Builder().MergeDefaults([]DefaultVariable{{Name: "i", Default: `1234`, Type: "integer"}}),
+		"MergeDefaultWithEval integer": {
+			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "i", Default: `1234`, Type: "integer"}}),
 			Expected: map[string]interface{}{"i": 1234},
 		},
-		"MergeDefaults string": {
-			Builder:  Builder().MergeDefaults([]DefaultVariable{{Name: "s", Default: `1234`, Type: "string"}}),
+		"MergeDefaultWithEval string": {
+			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "s", Default: `1234`, Type: "string"}}),
 			Expected: map[string]interface{}{"s": "1234"},
 		},
-		"MergeDefaults blank type": {
-			Builder:  Builder().MergeDefaults([]DefaultVariable{{Name: "s", Default: `1234`, Type: ""}}),
+		"MergeDefaultWithEval blank type": {
+			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "s", Default: `1234`, Type: ""}}),
 			Expected: map[string]interface{}{"s": "1234"},
 		},
-		"MergeDefaults bad type": {
-			Builder:     Builder().MergeDefaults([]DefaultVariable{{Name: "s", Default: `1234`, Type: "class"}}),
+		"MergeDefaultWithEval bad type": {
+			Builder:     Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "s", Default: `1234`, Type: "class"}}),
 			ErrContains: "couldn't cast 1234 to class, unknown type",
 		},
 
