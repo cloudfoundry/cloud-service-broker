@@ -34,7 +34,6 @@ import (
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 //counterfeiter:generate . JobRunner
 type JobRunner interface {
-	StageJob(jobID string, workspace *workspace.TerraformWorkspace) error
 	Import(ctx context.Context, id string, importResources []ImportResource) error
 	Create(ctx context.Context, id string) error
 	Update(ctx context.Context, id string, templateVars map[string]interface{}) error
@@ -195,7 +194,7 @@ func (provider *terraformProvider) importCreate(ctx context.Context, vars *varco
 		return tfID, err
 	}
 
-	if err := provider.jobRunner.StageJob(tfID, workspace); err != nil {
+	if err := provider.storeDeployment(tfID, workspace); err != nil {
 		provider.logger.Error("terraform provider create failed", err)
 		return tfID, err
 	}
@@ -218,12 +217,38 @@ func (provider *terraformProvider) create(ctx context.Context, vars *varcontext.
 	// 	return tfID, err
 	// }
 
-	if err := provider.jobRunner.StageJob(tfID, workspace); err != nil {
+	if err := provider.storeDeployment(tfID, workspace); err != nil {
 		provider.logger.Error("terraform provider create failed", err)
 		return tfID, fmt.Errorf("terraform provider create failed: %w", err)
 	}
 
 	return tfID, provider.jobRunner.Create(ctx, tfID)
+}
+
+// storeDeployment stages a job to be executed. Before the workspace is saved to the
+// database, the modules and inputs are validated by Terraform.
+func (provider *terraformProvider) storeDeployment(jobID string, workspace *workspace.TerraformWorkspace) error {
+	deployment := storage.TerraformDeployment{ID: jobID}
+	exists, err := provider.store.ExistsTerraformDeployment(jobID)
+	switch {
+	case err != nil:
+		return err
+	case exists:
+		deployment, err = provider.store.GetTerraformDeployment(jobID)
+		if err != nil {
+			return err
+		}
+	}
+
+	workspaceString, err := workspace.Serialize()
+	if err != nil {
+		return err
+	}
+
+	deployment.Workspace = []byte(workspaceString)
+	deployment.LastOperationType = "validation"
+
+	return provider.store.StoreTerraformDeployment(deployment)
 }
 
 // Unbind performs a terraform destroy on the binding.
