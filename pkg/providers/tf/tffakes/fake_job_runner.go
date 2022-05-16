@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 )
 
 type FakeJobRunner struct {
@@ -76,18 +75,6 @@ type FakeJobRunner struct {
 	showReturnsOnCall map[int]struct {
 		result1 string
 		result2 error
-	}
-	StageJobStub        func(string, *workspace.TerraformWorkspace) error
-	stageJobMutex       sync.RWMutex
-	stageJobArgsForCall []struct {
-		arg1 string
-		arg2 *workspace.TerraformWorkspace
-	}
-	stageJobReturns struct {
-		result1 error
-	}
-	stageJobReturnsOnCall map[int]struct {
-		result1 error
 	}
 	StatusStub        func(context.Context, string) (bool, string, error)
 	statusMutex       sync.RWMutex
@@ -458,68 +445,6 @@ func (fake *FakeJobRunner) ShowReturnsOnCall(i int, result1 string, result2 erro
 	}{result1, result2}
 }
 
-func (fake *FakeJobRunner) StageJob(arg1 string, arg2 *workspace.TerraformWorkspace) error {
-	fake.stageJobMutex.Lock()
-	ret, specificReturn := fake.stageJobReturnsOnCall[len(fake.stageJobArgsForCall)]
-	fake.stageJobArgsForCall = append(fake.stageJobArgsForCall, struct {
-		arg1 string
-		arg2 *workspace.TerraformWorkspace
-	}{arg1, arg2})
-	stub := fake.StageJobStub
-	fakeReturns := fake.stageJobReturns
-	fake.recordInvocation("StageJob", []interface{}{arg1, arg2})
-	fake.stageJobMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeJobRunner) StageJobCallCount() int {
-	fake.stageJobMutex.RLock()
-	defer fake.stageJobMutex.RUnlock()
-	return len(fake.stageJobArgsForCall)
-}
-
-func (fake *FakeJobRunner) StageJobCalls(stub func(string, *workspace.TerraformWorkspace) error) {
-	fake.stageJobMutex.Lock()
-	defer fake.stageJobMutex.Unlock()
-	fake.StageJobStub = stub
-}
-
-func (fake *FakeJobRunner) StageJobArgsForCall(i int) (string, *workspace.TerraformWorkspace) {
-	fake.stageJobMutex.RLock()
-	defer fake.stageJobMutex.RUnlock()
-	argsForCall := fake.stageJobArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeJobRunner) StageJobReturns(result1 error) {
-	fake.stageJobMutex.Lock()
-	defer fake.stageJobMutex.Unlock()
-	fake.StageJobStub = nil
-	fake.stageJobReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeJobRunner) StageJobReturnsOnCall(i int, result1 error) {
-	fake.stageJobMutex.Lock()
-	defer fake.stageJobMutex.Unlock()
-	fake.StageJobStub = nil
-	if fake.stageJobReturnsOnCall == nil {
-		fake.stageJobReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.stageJobReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *FakeJobRunner) Status(arg1 context.Context, arg2 string) (bool, string, error) {
 	fake.statusMutex.Lock()
 	ret, specificReturn := fake.statusReturnsOnCall[len(fake.statusArgsForCall)]
@@ -726,8 +651,6 @@ func (fake *FakeJobRunner) Invocations() map[string][][]interface{} {
 	defer fake.outputsMutex.RUnlock()
 	fake.showMutex.RLock()
 	defer fake.showMutex.RUnlock()
-	fake.stageJobMutex.RLock()
-	defer fake.stageJobMutex.RUnlock()
 	fake.statusMutex.RLock()
 	defer fake.statusMutex.RUnlock()
 	fake.updateMutex.RLock()
