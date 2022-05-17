@@ -28,6 +28,7 @@ var (
 	terraformIdentifierRegex    = regexp.MustCompile(`^[a-z_]*$`)
 	terraformAttributePathRegex = regexp.MustCompile(`^([-a-zA-Z0-9_-]*\.[-a-zA-Z0-9_-]*){2}`)
 	jsonSchemaTypeRegex         = regexp.MustCompile(`^(|object|boolean|array|number|string|integer)$`)
+	jsonSchemaConstraintRegex   = regexp.MustCompile(`^(|examples|const|multipleOf|minimum|maximum|exclusiveMaximum|exclusiveMinimum|maxLength|minLength|pattern|maxItems|minItems|maxProperties|minProperties|propertyNames)$`)
 	uuidRegex                   = regexp.MustCompile(`^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$`)
 )
 
@@ -83,6 +84,12 @@ func ErrIfNotOSBName(value, field string) *FieldError {
 // schema type.
 func ErrIfNotJSONSchemaType(value, field string) *FieldError {
 	return ErrIfNotMatch(value, jsonSchemaTypeRegex, field)
+}
+
+// ErrIfNotJSONSchemaConstraint returns an error if the value is not a valid JSON
+// schema validation entry.
+func ErrIfNotJSONSchemaConstraint(value, field string) *FieldError {
+	return ErrIfNotMatch(value, jsonSchemaConstraintRegex, field)
 }
 
 // ErrIfNotTerraformAttributePath returns an error if the value is not a valid
