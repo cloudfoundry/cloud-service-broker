@@ -35,14 +35,6 @@ func ExampleErrIfNotJSONSchemaType() {
 	// Bad: field must match '^(|object|boolean|array|number|string|integer)$': my-field
 }
 
-func ExampleErrIfNotJSONSchemaConstraint() {
-	fmt.Println("Good is nil:", ErrIfNotJSONSchemaConstraint("minimum", "my-field") == nil)
-	fmt.Println("Bad:", ErrIfNotJSONSchemaConstraint("str", "my-field"))
-
-	// Output: Good is nil: true
-	// Bad: field must match '^(|examples|const|multipleOf|minimum|maximum|exclusiveMaximum|exclusiveMinimum|maxLength|minLength|pattern|maxItems|minItems|maxProperties|minProperties|propertyNames)$': my-field
-}
-
 func ExampleErrIfNotHCL() {
 	fmt.Println("Good HCL is nil:", ErrIfNotHCL(`provider "google" {
 		credentials = "${file("account.json")}"
