@@ -25,10 +25,8 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/dbservice"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
@@ -50,7 +48,7 @@ func init() {
 			db = dbservice.New(logger)
 			encryptor := setupDBEncryption(db, logger)
 			store := storage.New(db, encryptor)
-			jobRunner = tf.NewTfJobRunner(store, executor.TFBinariesContext{}, workspace.NewWorkspaceFactory(), invoker.NewTerraformInvokerFactory(executor.NewExecutorFactory("", nil, nil), "", map[string]string{}))
+			jobRunner = tf.NewTfJobRunner(store, executor.TFBinariesContext{}, invoker.NewTerraformInvokerFactory(executor.NewExecutorFactory("", nil, nil), "", map[string]string{}))
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
@@ -71,11 +69,8 @@ func init() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			ws, err := workspace.DeserializeWorkspace(deployment.Workspace)
-			if err != nil {
-				fmt.Printf("Error: %s\n", err.Error())
-				log.Fatal(err)
-			}
+			ws := deployment.TFWorkspace()
+
 			onlyState, err := cmd.Flags().GetBool("only-state")
 			if err != nil {
 				fmt.Printf("Error: %s\n", err.Error())

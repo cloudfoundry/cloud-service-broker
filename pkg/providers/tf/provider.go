@@ -240,12 +240,7 @@ func (provider *terraformProvider) storeDeployment(jobID string, workspace *work
 		}
 	}
 
-	workspaceString, err := workspace.Serialize()
-	if err != nil {
-		return err
-	}
-
-	deployment.Workspace = []byte(workspaceString)
+	deployment.Workspace = workspace
 	deployment.LastOperationType = "validation"
 
 	return provider.store.StoreTerraformDeployment(deployment)

@@ -3,19 +3,25 @@ package storage
 import (
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 )
 
 type TerraformDeployment struct {
 	ID                   string
-	Workspace            []byte
+	Workspace            workspace.Workspace
 	LastOperationType    string
 	LastOperationState   string
 	LastOperationMessage string
 }
 
+func (deployment *TerraformDeployment) TFWorkspace() *workspace.TerraformWorkspace {
+	return deployment.Workspace.(*workspace.TerraformWorkspace)
+}
+
 func (s *Storage) StoreTerraformDeployment(t TerraformDeployment) error {
-	encoded, err := s.encodeBytes(t.Workspace)
+	encoded, err := s.encodeJSON(t.Workspace)
 	if err != nil {
 		return fmt.Errorf("error encoding workspace: %w", err)
 	}
@@ -59,17 +65,17 @@ func (s *Storage) GetTerraformDeployment(id string) (TerraformDeployment, error)
 		return TerraformDeployment{}, fmt.Errorf("error finding terraform deployment: %w", err)
 	}
 
-	decoded, err := s.decodeBytes(receiver.Workspace)
+	tfWorkspace := workspace.TerraformWorkspace{}
+	err = s.decodeJSON(receiver.Workspace, &tfWorkspace)
 	if err != nil {
 		return TerraformDeployment{}, fmt.Errorf("error decoding workspace %q: %w", id, err)
 	}
-
 	return TerraformDeployment{
 		ID:                   id,
-		Workspace:            decoded,
 		LastOperationType:    receiver.LastOperationType,
 		LastOperationState:   receiver.LastOperationState,
 		LastOperationMessage: receiver.LastOperationMessage,
+		Workspace:            &tfWorkspace,
 	}, nil
 }
 
