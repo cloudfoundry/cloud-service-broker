@@ -53,12 +53,10 @@ func init() {
 // NewTfJobRunner constructs a new JobRunner for the given project.
 func NewTfJobRunner(store broker.ServiceProviderStorage,
 	tfBinContext executor.TFBinariesContext,
-	workspaceFactory workspace.WorkspaceBuilder,
 	invokerBuilder invoker.TerraformInvokerBuilder) *TfJobRunner {
 	return &TfJobRunner{
 		store:                   store,
 		tfBinContext:            tfBinContext,
-		WorkspaceBuilder:        workspaceFactory,
 		TerraformInvokerBuilder: invokerBuilder,
 	}
 }
@@ -77,7 +75,6 @@ type TfJobRunner struct {
 	// executor holds a custom executor that will be called when commands are run.
 	store        broker.ServiceProviderStorage
 	tfBinContext executor.TFBinariesContext
-	workspace.WorkspaceBuilder
 	invoker.TerraformInvokerBuilder
 }
 
@@ -108,11 +105,6 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 		return err
 	}
 
-	workspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
-	if err != nil {
-		return err
-	}
-
 	if err := runner.markJobStarted(deployment, models.ProvisionOperationType); err != nil {
 		return err
 	}
@@ -125,9 +117,10 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 			resources[resource.TfResource] = resource.IaaSResource
 		}
 
+		workspace := deployment.TFWorkspace()
 		if err := invoker.Import(ctx, workspace, resources); err != nil {
 			logger.Error("Import Failed", err)
-			runner.operationFinished(err, workspace, deployment)
+			runner.operationFinished(err, deployment)
 			return
 		}
 		mainTf, err := invoker.Show(ctx, workspace)
@@ -154,7 +147,7 @@ func (runner *TfJobRunner) Import(ctx context.Context, id string, importResource
 				}
 			}
 		}
-		runner.operationFinished(err, workspace, deployment)
+		runner.operationFinished(err, deployment)
 	}()
 
 	return nil
@@ -185,18 +178,13 @@ func (runner *TfJobRunner) Create(ctx context.Context, id string) error {
 		return fmt.Errorf("error getting TF deployment: %w", err)
 	}
 
-	workspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
-	if err != nil {
-		return fmt.Errorf("error hydrating workspace: %w", err)
-	}
-
 	if err := runner.markJobStarted(deployment, models.ProvisionOperationType); err != nil {
 		return fmt.Errorf("error marking job started: %w", err)
 	}
 
 	go func() {
-		err := runner.DefaultInvoker().Apply(ctx, workspace)
-		runner.operationFinished(err, workspace, deployment)
+		err := runner.DefaultInvoker().Apply(ctx, deployment.Workspace)
+		runner.operationFinished(err, deployment)
 	}()
 
 	return nil
@@ -208,10 +196,7 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 		return err
 	}
 
-	workspace, err := runner.CreateWorkspace(deployment)
-	if err != nil {
-		return err
-	}
+	workspace := deployment.Workspace
 
 	if err := runner.markJobStarted(deployment, models.UpdateOperationType); err != nil {
 		return err
@@ -220,18 +205,18 @@ func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars m
 	go func() {
 		err = runner.performTerraformUpgrade(ctx, workspace)
 		if err != nil {
-			runner.operationFinished(err, workspace, deployment)
+			runner.operationFinished(err, deployment)
 			return
 		}
 
 		err = workspace.UpdateInstanceConfiguration(templateVars)
 		if err != nil {
-			runner.operationFinished(err, workspace, deployment)
+			runner.operationFinished(err, deployment)
 			return
 		}
 
 		err = runner.DefaultInvoker().Apply(ctx, workspace)
-		runner.operationFinished(err, workspace, deployment)
+		runner.operationFinished(err, deployment)
 	}()
 
 	return nil
@@ -272,10 +257,7 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 		return err
 	}
 
-	workspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
-	if err != nil {
-		return err
-	}
+	workspace := deployment.TFWorkspace()
 
 	inputList, err := workspace.Modules[0].Inputs()
 	if err != nil {
@@ -296,12 +278,12 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 	go func() {
 		err = runner.performTerraformUpgrade(ctx, workspace)
 		if err != nil {
-			runner.operationFinished(err, workspace, deployment)
+			runner.operationFinished(err, deployment)
 			return
 		}
 
 		err = runner.DefaultInvoker().Destroy(ctx, workspace)
-		runner.operationFinished(err, workspace, deployment)
+		runner.operationFinished(err, deployment)
 	}()
 
 	return nil
@@ -309,8 +291,9 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 
 // operationFinished closes out the state of the background job so clients that
 // are polling can get the results.
-func (runner *TfJobRunner) operationFinished(err error, workspace workspace.Workspace, deployment storage.TerraformDeployment) error {
+func (runner *TfJobRunner) operationFinished(err error, deployment storage.TerraformDeployment) error {
 	// we shouldn't update the status on update when updating the HCL, as the status comes either from the provision call or a previous update
+	workspace := deployment.Workspace
 	if err == nil {
 		lastOperationMessage := ""
 		// maybe do if deployment.LastOperationType != "validation" so we don't do the status update on staging a job.
@@ -327,14 +310,6 @@ func (runner *TfJobRunner) operationFinished(err error, workspace workspace.Work
 		deployment.LastOperationState = Failed
 		deployment.LastOperationMessage = err.Error()
 	}
-
-	workspaceString, err := workspace.Serialize()
-	if err != nil {
-		deployment.LastOperationState = Failed
-		deployment.LastOperationMessage = fmt.Sprintf("couldn't serialize workspace, contact your operator for cleanup: %s", err.Error())
-	}
-
-	deployment.Workspace = []byte(workspaceString)
 
 	return runner.store.StoreTerraformDeployment(deployment)
 }
@@ -365,12 +340,7 @@ func (runner *TfJobRunner) Outputs(ctx context.Context, id, instanceName string)
 		return nil, fmt.Errorf("error getting TF deployment: %w", err)
 	}
 
-	ws, err := workspace.DeserializeWorkspace(deployment.Workspace)
-	if err != nil {
-		return nil, fmt.Errorf("error deserializing workspace: %w", err)
-	}
-
-	return ws.Outputs(instanceName)
+	return deployment.Workspace.Outputs(instanceName)
 }
 
 // Wait waits for an operation to complete, polling its status once per second.
@@ -396,10 +366,5 @@ func (runner *TfJobRunner) Show(ctx context.Context, id string) (string, error) 
 		return "", err
 	}
 
-	workspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
-	if err != nil {
-		return "", err
-	}
-
-	return runner.DefaultInvoker().Show(ctx, workspace)
+	return runner.DefaultInvoker().Show(ctx, deployment.Workspace)
 }
