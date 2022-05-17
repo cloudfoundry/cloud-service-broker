@@ -3,6 +3,7 @@ package tf_test
 import (
 	"context"
 	"errors"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
@@ -24,7 +25,7 @@ var _ = Describe("Provider", func() {
 				storage := new(brokerfakes.FakeServiceProviderStorage)
 
 				tfProvider := tf.NewTerraformProvider(
-					tf.NewTfJobRunner(storage, executor.TFBinariesContext{}, workspace.NewWorkspaceFactory(), nil),
+					executor.TFBinariesContext{}, workspace.NewWorkspaceFactory(), nil,
 					utils.NewLogger("test"),
 					tf.TfServiceDefinitionV1{
 						Plans: []tf.TfServiceDefinitionV1Plan{
@@ -53,18 +54,27 @@ var _ = Describe("Provider", func() {
 
 		When("instance was subsumed", func() {
 			var (
-				tfProvider      broker.ServiceProvider
-				fakeJobRunner   *tffakes.FakeJobRunner
-				subsumePlanGUID string
+				tfProvider         broker.ServiceProvider
+				subsumePlanGUID    string
+				fakeInvokerBuilder *tffakes.FakeTerraformInvokerBuilder
+				fakeInvoker        *tffakes.FakeTerraformInvoker
+				fakeStore          *brokerfakes.FakeServiceProviderStorage
+				fakeWorkspaceJSON  = `{}`
 			)
 
 			BeforeEach(func() {
+				fakeStore = new(brokerfakes.FakeServiceProviderStorage)
+				fakeInvoker = new(tffakes.FakeTerraformInvoker)
+				fakeInvokerBuilder = new(tffakes.FakeTerraformInvokerBuilder)
+
 				subsumePlanGUID = "6526a7be-8504-11ec-b558-276c48808143"
-				fakeJobRunner = new(tffakes.FakeJobRunner)
-				fakeJobRunner.ShowReturns("# azurerm_mssql_database.azure_sql_db:\nresource \"azurerm_mssql_database\" \"azure_sql_db\" {\nsubsume-key = \"subsume-value\"\n}\nOutputs:\nname = \"test-name\"", nil)
+				fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeInvoker)
+				fakeInvoker.ShowReturns("# azurerm_mssql_database.azure_sql_db:\nresource \"azurerm_mssql_database\" \"azure_sql_db\" {\nsubsume-key = \"subsume-value\"\n}\nOutputs:\nname = \"test-name\"", nil)
 
 				tfProvider = tf.NewTerraformProvider(
-					fakeJobRunner,
+					executor.TFBinariesContext{},
+					nil,
+					fakeInvokerBuilder,
 					utils.NewLogger("test"),
 					tf.TfServiceDefinitionV1{
 						Plans: []tf.TfServiceDefinitionV1Plan{
@@ -77,11 +87,13 @@ var _ = Describe("Provider", func() {
 							},
 						},
 					},
-					new(brokerfakes.FakeServiceProviderStorage),
+					fakeStore,
 				)
 			})
 
 			It("should return subsumed variables", func() {
+				fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{Workspace: []byte(fakeWorkspaceJSON)}, nil)
+
 				inputVariables := []broker.BrokerVariable{
 					{
 						FieldName:   "field_to_replace",
@@ -91,7 +103,7 @@ var _ = Describe("Provider", func() {
 
 				result, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "fakeInstanceGUID", inputVariables)
 
-				_, actualTfID := fakeJobRunner.ShowArgsForCall(0)
+				actualTfID := fakeStore.GetTerraformDeploymentArgsForCall(0)
 				Expect(actualTfID).To(Equal("tf:fakeInstanceGUID:"))
 				Expect(err).NotTo(HaveOccurred())
 				Expect(result).To(Equal(map[string]interface{}{"field_to_replace": "subsume-value"}))
@@ -108,11 +120,13 @@ var _ = Describe("Provider", func() {
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(result).To(BeEmpty())
-				Expect(fakeJobRunner.ShowCallCount()).To(BeZero())
+				Expect(fakeStore.GetTerraformDeploymentCallCount()).To(BeZero())
+				Expect(fakeInvoker.ShowCallCount()).To(BeZero())
 			})
 
 			It("returns error when tf show fails", func() {
-				fakeJobRunner.ShowReturns("", errors.New("tf show failed"))
+				fakeInvoker.ShowReturns("", errors.New("tf show failed"))
+				fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{Workspace: []byte(fakeWorkspaceJSON)}, nil)
 
 				inputVariables := []broker.BrokerVariable{
 					{

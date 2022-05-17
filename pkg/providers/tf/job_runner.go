@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
@@ -32,9 +31,6 @@ import (
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )
 
 const (
@@ -50,44 +46,13 @@ func init() {
 	viper.SetDefault(TfUpgradeEnabled, false)
 }
 
-// NewTfJobRunner constructs a new JobRunner for the given project.
-func NewTfJobRunner(store broker.ServiceProviderStorage,
-	tfBinContext executor.TFBinariesContext,
-	workspaceFactory workspace.WorkspaceBuilder,
-	invokerBuilder invoker.TerraformInvokerBuilder) *TfJobRunner {
-	return &TfJobRunner{
-		store:                   store,
-		tfBinContext:            tfBinContext,
-		WorkspaceBuilder:        workspaceFactory,
-		TerraformInvokerBuilder: invokerBuilder,
-	}
-}
-
-// TfJobRunner is responsible for executing terraform jobs in the background and
-// providing a way to log and access the state of those background tasks.
-//
-// Jobs are given an ID and a workspace to operate in, and then the TfJobRunner
-// is told which Terraform commands to execute on the given job.
-// The TfJobRunner executes those commands in the background and keeps track of
-// their state in a database table which gets updated once the task is completed.
-//
-// The TfJobRunner keeps track of the workspace and the Terraform state file so
-// subsequent commands will operate on the same structure.
-type TfJobRunner struct {
-	// executor holds a custom executor that will be called when commands are run.
-	store        broker.ServiceProviderStorage
-	tfBinContext executor.TFBinariesContext
-	workspace.WorkspaceBuilder
-	invoker.TerraformInvokerBuilder
-}
-
-func (runner *TfJobRunner) markJobStarted(deployment storage.TerraformDeployment, operationType string) error {
+func (provider *TerraformProvider) markJobStarted(deployment storage.TerraformDeployment, operationType string) error {
 	// update the deployment info
 	deployment.LastOperationType = operationType
 	deployment.LastOperationState = InProgress
 	deployment.LastOperationMessage = ""
 
-	if err := runner.store.StoreTerraformDeployment(deployment); err != nil {
+	if err := provider.store.StoreTerraformDeployment(deployment); err != nil {
 		return err
 	}
 
@@ -100,67 +65,7 @@ type ImportResource struct {
 	IaaSResource string
 }
 
-// Import runs `terraform import` and `terraform apply` on the given workspace in the background.
-// The status of the job can be found by polling the Status function.
-func (runner *TfJobRunner) Import(ctx context.Context, id string, importResources []ImportResource) error {
-	deployment, err := runner.store.GetTerraformDeployment(id)
-	if err != nil {
-		return err
-	}
-
-	workspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
-	if err != nil {
-		return err
-	}
-
-	if err := runner.markJobStarted(deployment, models.ProvisionOperationType); err != nil {
-		return err
-	}
-	invoker := runner.DefaultInvoker()
-
-	go func() {
-		logger := utils.NewLogger("Import").WithData(correlation.ID(ctx))
-		resources := make(map[string]string)
-		for _, resource := range importResources {
-			resources[resource.TfResource] = resource.IaaSResource
-		}
-
-		if err := invoker.Import(ctx, workspace, resources); err != nil {
-			logger.Error("Import Failed", err)
-			runner.operationFinished(err, workspace, deployment)
-			return
-		}
-		mainTf, err := invoker.Show(ctx, workspace)
-		if err == nil {
-			var tf string
-			var parameterVals map[string]string
-			tf, parameterVals, err = workspace.Transformer.ReplaceParametersInTf(workspace.Transformer.AddParametersInTf(workspace.Transformer.CleanTf(mainTf)))
-			if err == nil {
-				for pn, pv := range parameterVals {
-					workspace.Instances[0].Configuration[pn] = pv
-				}
-				workspace.Modules[0].Definitions["main"] = tf
-
-				logger.Info("new workspace", lager.Data{
-					"workspace": workspace,
-					"tf":        tf,
-				})
-
-				err = runner.terraformPlanToCheckNoResourcesDeleted(invoker, ctx, workspace, logger)
-				if err != nil {
-					logger.Error("plan failed", err)
-				} else {
-					err = invoker.Apply(ctx, workspace)
-				}
-			}
-		}
-		runner.operationFinished(err, workspace, deployment)
-	}()
-
-	return nil
-}
-
-func (runner *TfJobRunner) terraformPlanToCheckNoResourcesDeleted(invoker invoker.TerraformInvoker, ctx context.Context, workspace *workspace.TerraformWorkspace, logger lager.Logger) error {
+func (provider *TerraformProvider) terraformPlanToCheckNoResourcesDeleted(invoker invoker.TerraformInvoker, ctx context.Context, workspace *workspace.TerraformWorkspace, logger lager.Logger) error {
 	planOutput, err := invoker.Plan(ctx, workspace)
 	if err != nil {
 		return err
@@ -169,95 +74,35 @@ func (runner *TfJobRunner) terraformPlanToCheckNoResourcesDeleted(invoker invoke
 	return err
 }
 
-func (runner *TfJobRunner) DefaultInvoker() invoker.TerraformInvoker {
-	return runner.VersionedInvoker(runner.tfBinContext.DefaultTfVersion)
+func (provider *TerraformProvider) DefaultInvoker() invoker.TerraformInvoker {
+	return provider.VersionedInvoker(provider.tfBinContext.DefaultTfVersion)
 }
 
-func (runner *TfJobRunner) VersionedInvoker(version *version.Version) invoker.TerraformInvoker {
-	return runner.VersionedTerraformInvoker(version)
+func (provider *TerraformProvider) VersionedInvoker(version *version.Version) invoker.TerraformInvoker {
+	return provider.VersionedTerraformInvoker(version)
 }
 
-// Create runs `terraform apply` on the given workspace in the background.
-// The status of the job can be found by polling the Status function.
-func (runner *TfJobRunner) Create(ctx context.Context, id string) error {
-	deployment, err := runner.store.GetTerraformDeployment(id)
-	if err != nil {
-		return fmt.Errorf("error getting TF deployment: %w", err)
-	}
-
-	workspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
-	if err != nil {
-		return fmt.Errorf("error hydrating workspace: %w", err)
-	}
-
-	if err := runner.markJobStarted(deployment, models.ProvisionOperationType); err != nil {
-		return fmt.Errorf("error marking job started: %w", err)
-	}
-
-	go func() {
-		err := runner.DefaultInvoker().Apply(ctx, workspace)
-		runner.operationFinished(err, workspace, deployment)
-	}()
-
-	return nil
-}
-
-func (runner *TfJobRunner) Update(ctx context.Context, id string, templateVars map[string]interface{}) error {
-	deployment, err := runner.store.GetTerraformDeployment(id)
-	if err != nil {
-		return err
-	}
-
-	workspace, err := runner.CreateWorkspace(deployment)
-	if err != nil {
-		return err
-	}
-
-	if err := runner.markJobStarted(deployment, models.UpdateOperationType); err != nil {
-		return err
-	}
-
-	go func() {
-		err = runner.performTerraformUpgrade(ctx, workspace)
-		if err != nil {
-			runner.operationFinished(err, workspace, deployment)
-			return
-		}
-
-		err = workspace.UpdateInstanceConfiguration(templateVars)
-		if err != nil {
-			runner.operationFinished(err, workspace, deployment)
-			return
-		}
-
-		err = runner.DefaultInvoker().Apply(ctx, workspace)
-		runner.operationFinished(err, workspace, deployment)
-	}()
-
-	return nil
-}
-
-func (runner *TfJobRunner) performTerraformUpgrade(ctx context.Context, workspace workspace.Workspace) error {
+func (provider *TerraformProvider) performTerraformUpgrade(ctx context.Context, workspace workspace.Workspace) error {
 	currentTfVersion, err := workspace.StateVersion()
 	if err != nil {
 		return err
 	}
 
 	if viper.GetBool(TfUpgradeEnabled) {
-		if currentTfVersion.LessThan(runner.tfBinContext.DefaultTfVersion) {
-			if runner.tfBinContext.TfUpgradePath == nil || len(runner.tfBinContext.TfUpgradePath) == 0 {
+		if currentTfVersion.LessThan(provider.tfBinContext.DefaultTfVersion) {
+			if provider.tfBinContext.TfUpgradePath == nil || len(provider.tfBinContext.TfUpgradePath) == 0 {
 				return errors.New("terraform version mismatch and no upgrade path specified")
 			}
-			for _, targetTfVersion := range runner.tfBinContext.TfUpgradePath {
+			for _, targetTfVersion := range provider.tfBinContext.TfUpgradePath {
 				if currentTfVersion.LessThan(targetTfVersion) {
-					err = runner.VersionedInvoker(targetTfVersion).Apply(ctx, workspace)
+					err = provider.VersionedInvoker(targetTfVersion).Apply(ctx, workspace)
 					if err != nil {
 						return err
 					}
 				}
 			}
 		}
-	} else if currentTfVersion.LessThan(runner.tfBinContext.DefaultTfVersion) {
+	} else if currentTfVersion.LessThan(provider.tfBinContext.DefaultTfVersion) {
 		return errors.New("apply attempted with a newer version of terraform than the state")
 	}
 
@@ -266,8 +111,8 @@ func (runner *TfJobRunner) performTerraformUpgrade(ctx context.Context, workspac
 
 // Destroy runs `terraform destroy` on the given workspace in the background.
 // The status of the job can be found by polling the Status function.
-func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars map[string]interface{}) error {
-	deployment, err := runner.store.GetTerraformDeployment(id)
+func (provider *TerraformProvider) Destroy(ctx context.Context, id string, templateVars map[string]interface{}) error {
+	deployment, err := provider.store.GetTerraformDeployment(id)
 	if err != nil {
 		return err
 	}
@@ -289,19 +134,19 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 
 	workspace.Instances[0].Configuration = limitedConfig
 
-	if err := runner.markJobStarted(deployment, models.DeprovisionOperationType); err != nil {
+	if err := provider.markJobStarted(deployment, models.DeprovisionOperationType); err != nil {
 		return err
 	}
 
 	go func() {
-		err = runner.performTerraformUpgrade(ctx, workspace)
+		err = provider.performTerraformUpgrade(ctx, workspace)
 		if err != nil {
-			runner.operationFinished(err, workspace, deployment)
+			provider.operationFinished(err, workspace, deployment)
 			return
 		}
 
-		err = runner.DefaultInvoker().Destroy(ctx, workspace)
-		runner.operationFinished(err, workspace, deployment)
+		err = provider.DefaultInvoker().Destroy(ctx, workspace)
+		provider.operationFinished(err, workspace, deployment)
 	}()
 
 	return nil
@@ -309,7 +154,7 @@ func (runner *TfJobRunner) Destroy(ctx context.Context, id string, templateVars 
 
 // operationFinished closes out the state of the background job so clients that
 // are polling can get the results.
-func (runner *TfJobRunner) operationFinished(err error, workspace workspace.Workspace, deployment storage.TerraformDeployment) error {
+func (provider *TerraformProvider) operationFinished(err error, workspace workspace.Workspace, deployment storage.TerraformDeployment) error {
 	// we shouldn't update the status on update when updating the HCL, as the status comes either from the provision call or a previous update
 	if err == nil {
 		lastOperationMessage := ""
@@ -336,14 +181,14 @@ func (runner *TfJobRunner) operationFinished(err error, workspace workspace.Work
 
 	deployment.Workspace = []byte(workspaceString)
 
-	return runner.store.StoreTerraformDeployment(deployment)
+	return provider.store.StoreTerraformDeployment(deployment)
 }
 
 // Status gets the status of the most recent job on the workspace.
 // If isDone is true, then the status of the operation will not change again.
 // if isDone is false, then the operation is ongoing.
-func (runner *TfJobRunner) Status(ctx context.Context, id string) (bool, string, error) {
-	deployment, err := runner.store.GetTerraformDeployment(id)
+func (provider *TerraformProvider) Status(ctx context.Context, id string) (bool, string, error) {
+	deployment, err := provider.store.GetTerraformDeployment(id)
 	if err != nil {
 		return true, "", err
 	}
@@ -359,8 +204,8 @@ func (runner *TfJobRunner) Status(ctx context.Context, id string) (bool, string,
 }
 
 // Outputs gets the output variables for the given module instance in the workspace.
-func (runner *TfJobRunner) Outputs(ctx context.Context, id, instanceName string) (map[string]interface{}, error) {
-	deployment, err := runner.store.GetTerraformDeployment(id)
+func (provider *TerraformProvider) Outputs(ctx context.Context, id, instanceName string) (map[string]interface{}, error) {
+	deployment, err := provider.store.GetTerraformDeployment(id)
 	if err != nil {
 		return nil, fmt.Errorf("error getting TF deployment: %w", err)
 	}
@@ -374,32 +219,17 @@ func (runner *TfJobRunner) Outputs(ctx context.Context, id, instanceName string)
 }
 
 // Wait waits for an operation to complete, polling its status once per second.
-func (runner *TfJobRunner) Wait(ctx context.Context, id string) error {
+func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
 
 		case <-time.After(1 * time.Second):
-			isDone, _, err := runner.Status(ctx, id)
+			isDone, _, err := provider.Status(ctx, id)
 			if isDone {
 				return err
 			}
 		}
 	}
-}
-
-// Show returns the output from terraform show command
-func (runner *TfJobRunner) Show(ctx context.Context, id string) (string, error) {
-	deployment, err := runner.store.GetTerraformDeployment(id)
-	if err != nil {
-		return "", err
-	}
-
-	workspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
-	if err != nil {
-		return "", err
-	}
-
-	return runner.DefaultInvoker().Show(ctx, workspace)
 }

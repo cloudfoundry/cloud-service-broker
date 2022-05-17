@@ -1,23 +1,18 @@
 package tf_test
 
 import (
-	"context"
 	"fmt"
-
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
-
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-
-	"github.com/hashicorp/go-version"
 	"github.com/spf13/viper"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/tffakes"
+	"github.com/hashicorp/go-version"
 
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("TfJobRunner", func() {

@@ -38,7 +38,7 @@ import (
 )
 
 func init() {
-	var jobRunner *tf.TfJobRunner
+	var jobRunner *tf.TerraformProvider
 	var db *gorm.DB
 
 	tfCmd := &cobra.Command{
@@ -50,7 +50,14 @@ func init() {
 			db = dbservice.New(logger)
 			encryptor := setupDBEncryption(db, logger)
 			store := storage.New(db, encryptor)
-			jobRunner = tf.NewTfJobRunner(store, executor.TFBinariesContext{}, workspace.NewWorkspaceFactory(), invoker.NewTerraformInvokerFactory(executor.NewExecutorFactory("", nil, nil), "", map[string]string{}))
+			jobRunner = tf.NewTerraformProvider(
+				executor.TFBinariesContext{},
+				workspace.NewWorkspaceFactory(),
+				invoker.NewTerraformInvokerFactory(executor.NewExecutorFactory("", nil, nil), "", map[string]string{}),
+				logger,
+				tf.TfServiceDefinitionV1{},
+				store,
+			)
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
