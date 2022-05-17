@@ -79,6 +79,15 @@ func (bv *BrokerVariable) Validate() (errs *validation.FieldError) {
 		)
 	}
 
+	if bv.Constraints != nil {
+		for k := range bv.Constraints {
+			errs = errs.Also(
+				validation.ErrIfNotJSONSchemaConstraint(k, "constraints"),
+			)
+		}
+
+	}
+
 	return errs.Also(
 		validation.ErrIfBlank(bv.FieldName, "field_name"),
 		validation.ErrIfNotJSONSchemaType(string(bv.Type), "type"),
