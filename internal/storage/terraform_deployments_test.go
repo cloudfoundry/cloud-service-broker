@@ -2,6 +2,10 @@ package storage_test
 
 import (
 	"errors"
+	"strings"
+
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage/storagefakes"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 
@@ -11,11 +15,38 @@ import (
 )
 
 var _ = Describe("TerraformDeployments", func() {
+
+	BeforeEach(func() {
+		By("overriding the default FakeEncryptor to not change the json on decryption")
+		encryptor = &storagefakes.FakeEncryptor{
+			DecryptStub: func(bytes []byte) ([]byte, error) {
+				if string(bytes) == `cannot-be-decrypted` {
+					return nil, errors.New("fake decryption error")
+				}
+				return bytes, nil
+			},
+			EncryptStub: func(bytes []byte) ([]byte, error) {
+				if strings.Contains(string(bytes), `cannot-be-encrypted`) {
+					return nil, errors.New("fake encryption error")
+				}
+				return []byte(`{"encrypted":` + string(bytes) + `}`), nil
+			},
+		}
+
+		store = storage.New(db, encryptor)
+	})
+
 	Describe("StoreTerraformDeployments", func() {
 		It("creates the right object in the database", func() {
 			err := store.StoreTerraformDeployment(storage.TerraformDeployment{
-				ID:                   "fake-id",
-				Workspace:            []byte("fake-workspace-stuff"),
+				ID: "fake-id",
+				Workspace: &workspace.TerraformWorkspace{
+					Modules: []workspace.ModuleDefinition{
+						{
+							Name: "first",
+						},
+					},
+				},
 				LastOperationType:    "create",
 				LastOperationState:   "succeeded",
 				LastOperationMessage: "yes!!",
@@ -25,7 +56,7 @@ var _ = Describe("TerraformDeployments", func() {
 			var receiver models.TerraformDeployment
 			Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
 			Expect(receiver.ID).To(Equal("fake-id"))
-			Expect(receiver.Workspace).To(Equal([]byte(`{"encrypted":fake-workspace-stuff}`)))
+			Expect(receiver.Workspace).To(Equal([]byte(`{"encrypted":{"modules":[{"Name":"first","Definition":"","Definitions":null}],"instances":null,"tfstate":null,"transform":{"parameter_mappings":null,"parameters_to_remove":null,"parameters_to_add":null}}}`)))
 			Expect(receiver.LastOperationType).To(Equal("create"))
 			Expect(receiver.LastOperationState).To(Equal("succeeded"))
 			Expect(receiver.LastOperationMessage).To(Equal("yes!!"))
@@ -47,8 +78,14 @@ var _ = Describe("TerraformDeployments", func() {
 
 			It("updates the existing record", func() {
 				err := store.StoreTerraformDeployment(storage.TerraformDeployment{
-					ID:                   "fake-id-2",
-					Workspace:            []byte("fake-workspace-details"),
+					ID: "fake-id-2",
+					Workspace: &workspace.TerraformWorkspace{
+						Modules: []workspace.ModuleDefinition{
+							{
+								Name: "first",
+							},
+						},
+					},
 					LastOperationType:    "create",
 					LastOperationState:   "succeeded",
 					LastOperationMessage: "yes!!",
@@ -58,7 +95,7 @@ var _ = Describe("TerraformDeployments", func() {
 				var receiver models.TerraformDeployment
 				Expect(db.Where(`id = "fake-id-2"`).Find(&receiver).Error).NotTo(HaveOccurred())
 				Expect(receiver.ID).To(Equal("fake-id-2"))
-				Expect(receiver.Workspace).To(Equal([]byte(`{"encrypted":fake-workspace-details}`)))
+				Expect(receiver.Workspace).To(Equal([]byte(`{"encrypted":{"modules":[{"Name":"first","Definition":"","Definitions":null}],"instances":null,"tfstate":null,"transform":{"parameter_mappings":null,"parameters_to_remove":null,"parameters_to_add":null}}}`)))
 				Expect(receiver.LastOperationType).To(Equal("create"))
 				Expect(receiver.LastOperationState).To(Equal("succeeded"))
 				Expect(receiver.LastOperationMessage).To(Equal("yes!!"))
@@ -76,7 +113,7 @@ var _ = Describe("TerraformDeployments", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(r.ID).To(Equal("fake-id-2"))
-			Expect(r.Workspace).To(Equal([]byte(`{"decrypted":{"workspace":"fake-2"}}`)))
+			Expect(r.Workspace).To(Equal(&workspace.TerraformWorkspace{Modules: []workspace.ModuleDefinition{{Name: "fake-2"}}}))
 			Expect(r.LastOperationType).To(Equal("update"))
 			Expect(r.LastOperationState).To(Equal("failed"))
 			Expect(r.LastOperationMessage).To(Equal("too bad"))
@@ -135,21 +172,21 @@ var _ = Describe("TerraformDeployments", func() {
 func addFakeTerraformDeployments() {
 	Expect(db.Create(&models.TerraformDeployment{
 		ID:                   "fake-id-1",
-		Workspace:            []byte(`{"workspace":"fake-1"}`),
+		Workspace:            []byte(`{"modules":[{"Name":"fake-1","Definition":"","Definitions":null}],"instances":null,"tfstate":null,"transform":{"parameter_mappings":null,"parameters_to_remove":null,"parameters_to_add":null}}`),
 		LastOperationType:    "create",
 		LastOperationState:   "succeeded",
 		LastOperationMessage: "amazing",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.TerraformDeployment{
 		ID:                   "fake-id-2",
-		Workspace:            []byte(`{"workspace":"fake-2"}`),
+		Workspace:            []byte(`{"modules":[{"Name":"fake-2","Definition":"","Definitions":null}],"instances":null,"tfstate":null,"transform":{"parameter_mappings":null,"parameters_to_remove":null,"parameters_to_add":null}}`),
 		LastOperationType:    "update",
 		LastOperationState:   "failed",
 		LastOperationMessage: "too bad",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.TerraformDeployment{
 		ID:                   "fake-id-3",
-		Workspace:            []byte(`{"workspace":"fake-3"}`),
+		Workspace:            []byte(`{"modules":[{"Name":"fake-3","Definition":"","Definitions":null}],"instances":null,"tfstate":null,"transform":{"parameter_mappings":null,"parameters_to_remove":null,"parameters_to_add":null}}`),
 		LastOperationType:    "update",
 		LastOperationState:   "succeeded",
 		LastOperationMessage: "great",

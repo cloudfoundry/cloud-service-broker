@@ -57,7 +57,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 		})
 
 		By("creating a fake provisioned service instance", func() {
-			workspace := workspace.TerraformWorkspace{
+			workspace := &workspace.TerraformWorkspace{
 				Modules: []workspace.ModuleDefinition{{
 					Name:       "fake module name",
 					Definition: "fake definition",
@@ -70,12 +70,9 @@ var _ = Describe("WorkspaceUpdater", func() {
 				State:       []byte(terraformState),
 			}
 
-			ws, err := workspace.Serialize()
-			Expect(err).NotTo(HaveOccurred())
-
 			store.GetTerraformDeploymentReturns(storage.TerraformDeployment{
 				ID:                   id,
-				Workspace:            []byte(ws),
+				Workspace:            workspace,
 				LastOperationType:    lastOperationType,
 				LastOperationState:   lastOperationState,
 				LastOperationMessage: lastOperationMessage,
@@ -127,7 +124,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 			Expect(actualTerraformDeployment.LastOperationMessage).To(Equal("fake operation message"))
 
 			By("checking that the modules and instances are updated, but the state remains the same")
-			expectedWorkspace := workspace.TerraformWorkspace{
+			expectedWorkspace := &workspace.TerraformWorkspace{
 				Modules: []workspace.ModuleDefinition{{
 					Name:       "brokertemplate",
 					Definition: template,
@@ -146,9 +143,7 @@ var _ = Describe("WorkspaceUpdater", func() {
 				},
 				State: []byte(terraformState),
 			}
-			ew, err := expectedWorkspace.Serialize()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(actualTerraformDeployment.Workspace).To(MatchJSON(ew))
+			Expect(actualTerraformDeployment.Workspace).To(Equal(expectedWorkspace))
 		})
 
 		When("getting deployment fails", func() {
@@ -159,20 +154,6 @@ var _ = Describe("WorkspaceUpdater", func() {
 			It("returns the error", func() {
 				err := tf.UpdateWorkspaceHCL(store, updatedProvisionSettings, vc, id)
 				Expect(err).To(MatchError("boom"))
-			})
-		})
-
-		When("deserialising workspace fails", func() {
-			BeforeEach(func() {
-				store.GetTerraformDeploymentReturns(storage.TerraformDeployment{
-					ID:        id,
-					Workspace: []byte("not json"),
-				}, nil)
-			})
-
-			It("returns an error", func() {
-				err := tf.UpdateWorkspaceHCL(store, updatedProvisionSettings, vc, id)
-				Expect(err).To(MatchError(`invalid character 'o' in literal null (expecting 'u')`))
 			})
 		})
 

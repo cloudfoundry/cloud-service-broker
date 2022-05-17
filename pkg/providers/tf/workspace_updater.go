@@ -27,7 +27,7 @@ func UpdateWorkspaceHCL(store broker.ServiceProviderStorage, action TfServiceDef
 		return err
 	}
 
-	currentWorkspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
+	currentWorkspace := deployment.TFWorkspace()
 	if err != nil {
 		return err
 	}
@@ -39,12 +39,7 @@ func UpdateWorkspaceHCL(store broker.ServiceProviderStorage, action TfServiceDef
 
 	workspace.State = currentWorkspace.State
 
-	workspaceString, err := workspace.Serialize()
-	if err != nil {
-		return err
-	}
-
-	deployment.Workspace = []byte(workspaceString)
+	deployment.Workspace = workspace
 	if err := store.StoreTerraformDeployment(deployment); err != nil {
 		return fmt.Errorf("terraform provider create failed: %w", err)
 	}

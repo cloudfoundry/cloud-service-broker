@@ -4,12 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/tffakes"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	. "github.com/onsi/ginkgo/v2"
@@ -24,7 +22,7 @@ var _ = Describe("Provider", func() {
 				storage := new(brokerfakes.FakeServiceProviderStorage)
 
 				tfProvider := tf.NewTerraformProvider(
-					tf.NewTfJobRunner(storage, executor.TFBinariesContext{}, workspace.NewWorkspaceFactory(), nil),
+					tf.NewTfJobRunner(storage, executor.TFBinariesContext{}, nil),
 					utils.NewLogger("test"),
 					tf.TfServiceDefinitionV1{
 						Plans: []tf.TfServiceDefinitionV1Plan{
