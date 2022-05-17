@@ -35,7 +35,6 @@ import (
 // NewTerraformProvider creates a new ServiceProvider backed by Terraform module definitions for provision and bind.
 func NewTerraformProvider(
 	tfBinContext executor.TFBinariesContext,
-	workspaceFactory workspace.WorkspaceBuilder,
 	invokerBuilder invoker.TerraformInvokerBuilder,
 	logger lager.Logger,
 	serviceDefinition TfServiceDefinitionV1,
@@ -43,7 +42,6 @@ func NewTerraformProvider(
 ) *TerraformProvider {
 	return &TerraformProvider{
 		tfBinContext:            tfBinContext,
-		WorkspaceBuilder:        workspaceFactory,
 		TerraformInvokerBuilder: invokerBuilder,
 		serviceDefinition:       serviceDefinition,
 		logger:                  logger.Session("terraform-" + serviceDefinition.Name),
@@ -53,7 +51,6 @@ func NewTerraformProvider(
 
 type TerraformProvider struct {
 	tfBinContext executor.TFBinariesContext
-	workspace.WorkspaceBuilder
 	invoker.TerraformInvokerBuilder
 	logger            lager.Logger
 	serviceDefinition TfServiceDefinitionV1
@@ -110,12 +107,7 @@ func (provider *TerraformProvider) createAndSaveDeployment(jobID string, workspa
 		}
 	}
 
-	workspaceString, err := workspace.Serialize()
-	if err != nil {
-		return deployment, err
-	}
-
-	deployment.Workspace = []byte(workspaceString)
+	deployment.Workspace = workspace
 	deployment.LastOperationType = "validation"
 
 	return deployment, provider.store.StoreTerraformDeployment(deployment)
@@ -197,12 +189,7 @@ func (provider *TerraformProvider) GetImportedProperties(ctx context.Context, pl
 		return nil, err
 	}
 
-	workspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
-	if err != nil {
-		return nil, err
-	}
-
-	tfHCL, err := provider.DefaultInvoker().Show(ctx, workspace)
+	tfHCL, err := provider.DefaultInvoker().Show(ctx, deployment.Workspace)
 	if err != nil {
 		return map[string]interface{}{}, err
 	}

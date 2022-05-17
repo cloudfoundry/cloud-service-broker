@@ -32,10 +32,7 @@ func (provider *TerraformProvider) Update(ctx context.Context, provisionContext 
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	workspace, err := provider.CreateWorkspace(deployment)
-	if err != nil {
-		return models.ServiceInstanceDetails{}, err
-	}
+	workspace := deployment.TFWorkspace()
 
 	if err := provider.markJobStarted(deployment, models.UpdateOperationType); err != nil {
 		return models.ServiceInstanceDetails{}, err
@@ -44,18 +41,18 @@ func (provider *TerraformProvider) Update(ctx context.Context, provisionContext 
 	go func() {
 		err = provider.performTerraformUpgrade(ctx, workspace)
 		if err != nil {
-			provider.operationFinished(err, workspace, deployment)
+			provider.operationFinished(err, deployment)
 			return
 		}
 
 		err = workspace.UpdateInstanceConfiguration(provisionContext.ToMap())
 		if err != nil {
-			provider.operationFinished(err, workspace, deployment)
+			provider.operationFinished(err, deployment)
 			return
 		}
 
 		err = provider.DefaultInvoker().Apply(ctx, workspace)
-		provider.operationFinished(err, workspace, deployment)
+		provider.operationFinished(err, deployment)
 	}()
 
 	return models.ServiceInstanceDetails{

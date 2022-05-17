@@ -13,7 +13,7 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
-var _ = FDescribe("Terraform 0.13", func() {
+var _ = Describe("Terraform 0.13", func() {
 	var (
 		testHelper *helper.TestHelper
 		session    *Session

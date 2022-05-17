@@ -61,7 +61,7 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 
 	go func() {
 		err := provider.DefaultInvoker().Apply(ctx, workspace)
-		provider.operationFinished(err, workspace, deployment)
+		provider.operationFinished(err, deployment)
 	}()
 
 	return tfID, nil
@@ -133,7 +133,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 
 		if err := invoker.Import(ctx, workspace, resources); err != nil {
 			logger.Error("Import Failed", err)
-			provider.operationFinished(err, workspace, deployment)
+			provider.operationFinished(err, deployment)
 			return
 		}
 		mainTf, err := invoker.Show(ctx, workspace)
@@ -160,7 +160,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 				}
 			}
 		}
-		provider.operationFinished(err, workspace, deployment)
+		provider.operationFinished(err, deployment)
 	}()
 
 	return tfID, nil

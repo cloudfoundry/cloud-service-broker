@@ -117,10 +117,7 @@ func (provider *TerraformProvider) Destroy(ctx context.Context, id string, templ
 		return err
 	}
 
-	workspace, err := workspace.DeserializeWorkspace(deployment.Workspace)
-	if err != nil {
-		return err
-	}
+	workspace := deployment.TFWorkspace()
 
 	inputList, err := workspace.Modules[0].Inputs()
 	if err != nil {
@@ -141,12 +138,12 @@ func (provider *TerraformProvider) Destroy(ctx context.Context, id string, templ
 	go func() {
 		err = provider.performTerraformUpgrade(ctx, workspace)
 		if err != nil {
-			provider.operationFinished(err, workspace, deployment)
+			provider.operationFinished(err, deployment)
 			return
 		}
 
 		err = provider.DefaultInvoker().Destroy(ctx, workspace)
-		provider.operationFinished(err, workspace, deployment)
+		provider.operationFinished(err, deployment)
 	}()
 
 	return nil
@@ -154,8 +151,9 @@ func (provider *TerraformProvider) Destroy(ctx context.Context, id string, templ
 
 // operationFinished closes out the state of the background job so clients that
 // are polling can get the results.
-func (provider *TerraformProvider) operationFinished(err error, workspace workspace.Workspace, deployment storage.TerraformDeployment) error {
+func (provider *TerraformProvider) operationFinished(err error, deployment storage.TerraformDeployment) error {
 	// we shouldn't update the status on update when updating the HCL, as the status comes either from the provision call or a previous update
+	workspace := deployment.Workspace
 	if err == nil {
 		lastOperationMessage := ""
 		// maybe do if deployment.LastOperationType != "validation" so we don't do the status update on staging a job.
@@ -172,14 +170,6 @@ func (provider *TerraformProvider) operationFinished(err error, workspace worksp
 		deployment.LastOperationState = Failed
 		deployment.LastOperationMessage = err.Error()
 	}
-
-	workspaceString, err := workspace.Serialize()
-	if err != nil {
-		deployment.LastOperationState = Failed
-		deployment.LastOperationMessage = fmt.Sprintf("couldn't serialize workspace, contact your operator for cleanup: %s", err.Error())
-	}
-
-	deployment.Workspace = []byte(workspaceString)
 
 	return provider.store.StoreTerraformDeployment(deployment)
 }
@@ -210,12 +200,7 @@ func (provider *TerraformProvider) Outputs(ctx context.Context, id, instanceName
 		return nil, fmt.Errorf("error getting TF deployment: %w", err)
 	}
 
-	ws, err := workspace.DeserializeWorkspace(deployment.Workspace)
-	if err != nil {
-		return nil, fmt.Errorf("error deserializing workspace: %w", err)
-	}
-
-	return ws.Outputs(instanceName)
+	return deployment.Workspace.Outputs(instanceName)
 }
 
 // Wait waits for an operation to complete, polling its status once per second.
