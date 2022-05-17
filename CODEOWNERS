@@ -1,0 +1,4 @@
+# approvers for the cloud-service-broker project are the ones who can approve and merge PRs according
+# to cloudfoundry org.
+# See https://github.com/cloudfoundry/community/blob/main/toc/ROLES.md#role-summary for more information.
+@cloudfoundry/cloud-service-broker
