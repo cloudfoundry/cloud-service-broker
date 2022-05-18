@@ -16,6 +16,7 @@ package tf
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -257,6 +258,22 @@ func (provider *TerraformProvider) operationFinished(err error, deployment stora
 	return provider.store.StoreTerraformDeployment(deployment)
 }
 
+func (provider *TerraformProvider) status(deploymentID string) (bool, string, error) {
+	deployment, err := provider.store.GetTerraformDeployment(deploymentID)
+	if err != nil {
+		return true, "", err
+	}
+
+	switch deployment.LastOperationState {
+	case Succeeded:
+		return true, deployment.LastOperationMessage, nil
+	case Failed:
+		return true, deployment.LastOperationMessage, errors.New(deployment.LastOperationMessage)
+	default:
+		return false, deployment.LastOperationMessage, nil
+	}
+}
+
 // Wait waits for an operation to complete, polling its status once per second.
 func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 	for {
@@ -265,7 +282,7 @@ func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 			return nil
 
 		case <-time.After(1 * time.Second):
-			isDone, _, err := provider.PollInstance(ctx, id)
+			isDone, _, err := provider.status(id)
 			if isDone {
 				return err
 			}

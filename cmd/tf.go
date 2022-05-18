@@ -50,7 +50,6 @@ func init() {
 			store := storage.New(db, encryptor)
 			terraformProvider = tf.NewTerraformProvider(
 				executor.TFBinariesContext{},
-
 				invoker.NewTerraformInvokerFactory(executor.NewExecutorFactory("", nil, nil), "", map[string]string{}),
 				logger,
 				tf.TfServiceDefinitionV1{},

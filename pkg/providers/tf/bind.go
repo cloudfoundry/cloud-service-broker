@@ -22,7 +22,7 @@ func (provider *TerraformProvider) Bind(ctx context.Context, bindContext *varcon
 	}
 
 	if err := provider.Wait(ctx, tfID); err != nil {
-		return nil, fmt.Errorf("error from job runner: %w", err)
+		return nil, fmt.Errorf("error waiting for result: %w", err)
 	}
 
 	return provider.Outputs(ctx, tfID, workspace.DefaultInstanceName)
