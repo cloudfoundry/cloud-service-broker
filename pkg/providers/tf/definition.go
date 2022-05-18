@@ -238,7 +238,7 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesCont
 
 	var rawPlans []broker.ServicePlan
 	for _, plan := range tfb.Plans {
-		rawPlans = append(rawPlans, plan.ToPlan(tfBinContext))
+		rawPlans = append(rawPlans, plan.ToPlan(tfBinContext.DefaultTfVersion.String()))
 	}
 
 	// Bindings get special computed properties because the broker didn't
@@ -334,7 +334,7 @@ func (plan *TfServiceDefinitionV1Plan) Validate() (errs *validation.FieldError) 
 }
 
 // ToPlan converts this plan definition to a broker.ServicePlan.
-func (plan *TfServiceDefinitionV1Plan) ToPlan(tfBinContext executor.TFBinariesContext) broker.ServicePlan {
+func (plan *TfServiceDefinitionV1Plan) ToPlan(tfVersion string) broker.ServicePlan {
 	masterPlan := domain.ServicePlan{
 		ID:          plan.ID,
 		Description: plan.Description,
@@ -348,8 +348,8 @@ func (plan *TfServiceDefinitionV1Plan) ToPlan(tfBinContext executor.TFBinariesCo
 
 	if viper.GetBool(TfUpgradeEnabled) {
 		masterPlan.MaintenanceInfo = &domain.MaintenanceInfo{
-			Version:     tfBinContext.DefaultTfVersion.String(),
-			Description: fmt.Sprintf(`This upgrade provides support for Terraform version: %s. The upgrade operation will take a while. The instance and all associated bindings will be upgraded.`, tfBinContext.DefaultTfVersion.String()),
+			Version:     tfVersion,
+			Description: fmt.Sprintf(`This upgrade provides support for Terraform version: %s. The upgrade operation will take a while. The instance and all associated bindings will be upgraded.`, tfVersion),
 		}
 	}
 
