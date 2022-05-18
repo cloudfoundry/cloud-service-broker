@@ -98,7 +98,7 @@ var _ = Describe("Definition", func() {
 				}
 			})
 
-			It("returns a broker service plan with maintenance info version matching default TF version", func() {
+			It("returns a broker service plan with nil maintenance info", func() {
 				servicePlan := plan.ToPlan(exec)
 
 				Expect(servicePlan.ServicePlan.ID).To(Equal("test-id"))
