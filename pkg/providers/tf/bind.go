@@ -1,9 +1,10 @@
 package tf
 
 import (
-	"code.cloudfoundry.org/lager"
 	"context"
 	"fmt"
+
+	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
