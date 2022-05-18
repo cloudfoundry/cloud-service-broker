@@ -125,13 +125,13 @@ var _ = Describe("Update", func() {
 		Expect(fakeWorkspace.UpdateInstanceConfigurationArgsForCall(0)).To(Equal(templateVars))
 	})
 
-	It("updates the last operation on success, with the status from terraform", func() {
+	It("updates the last operation on success, with the Status from terraform", func() {
 		deployment.Workspace = fakeWorkspace
 		fakeStore.GetTerraformDeploymentReturns(deployment, nil)
 		tfVersion := "1.1"
 		fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
-		fakeWorkspace.OutputsReturns(map[string]interface{}{"status": "status from terraform"}, nil)
+		fakeWorkspace.OutputsReturns(map[string]interface{}{"Status": "Status from terraform"}, nil)
 
 		runner := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
 		_, err := runner.Update(context.TODO(), varContext)
@@ -139,7 +139,7 @@ var _ = Describe("Update", func() {
 		Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
 		Expect(lastStoredLastOperation(fakeStore)()).To(Equal(tf.Succeeded))
 
-		Expect(lastStoredDeployment(fakeStore)().LastOperationMessage).To(Equal("status from terraform"))
+		Expect(lastStoredDeployment(fakeStore)().LastOperationMessage).To(Equal("Status from terraform"))
 	})
 
 	It("return the error in last operation, if terraform apply fails", func() {

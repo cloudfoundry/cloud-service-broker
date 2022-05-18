@@ -34,7 +34,7 @@ var _ = Describe("Provider", func() {
 							},
 						},
 					},
-					storage,
+					tf.NewDeploymentManager(storage),
 				)
 
 				inputVariables := []broker.BrokerVariable{

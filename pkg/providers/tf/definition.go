@@ -290,7 +290,7 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesCont
 		Examples:              tfb.Examples,
 		ProviderBuilder: func(logger lager.Logger, store broker.ServiceProviderStorage) broker.ServiceProvider {
 			executorFactory := executor.NewExecutorFactory(tfBinContext.Dir, tfBinContext.Params, envVars)
-			return NewTerraformProvider(tfBinContext, invoker.NewTerraformInvokerFactory(executorFactory, tfBinContext.Dir, tfBinContext.ProviderReplacements), logger, constDefn, store)
+			return NewTerraformProvider(tfBinContext, invoker.NewTerraformInvokerFactory(executorFactory, tfBinContext.Dir, tfBinContext.ProviderReplacements), logger, constDefn, NewDeploymentManager(store))
 		},
 	}, nil
 }
@@ -515,7 +515,7 @@ func (action *TfServiceDefinitionV1Action) validateTemplateOutputs() (errs *vali
 		}
 	}
 
-	if !definedOutputs.Equals(utils.NewStringSet(tfOut...).Minus(utils.NewStringSet("status"))) {
+	if !definedOutputs.Equals(utils.NewStringSet(tfOut...).Minus(utils.NewStringSet("Status"))) {
 		return &validation.FieldError{
 			Message: fmt.Sprintf("template outputs %v must match declared outputs %v", tfOut, definedOutputs),
 		}

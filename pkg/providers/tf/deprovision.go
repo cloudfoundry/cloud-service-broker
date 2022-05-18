@@ -17,7 +17,7 @@ func (provider *TerraformProvider) Deprovision(ctx context.Context, instanceGUID
 
 	tfID := generateTfID(instanceGUID, "")
 
-	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, vc, tfID); err != nil {
+	if err := provider.UpdateWorkspaceHCL(provider.serviceDefinition.ProvisionSettings, vc, tfID); err != nil {
 		return nil, err
 	}
 
