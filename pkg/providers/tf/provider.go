@@ -171,10 +171,6 @@ func (provider *TerraformProvider) createAndSaveDeployment(jobID string, workspa
 	return deployment, provider.store.StoreTerraformDeployment(deployment)
 }
 
-// UpdateInstanceDetails updates the ServiceInstanceDetails with the most recent state from GCP.
-// This function is optional, but will be called after async provisions, updates, and possibly
-// on broker version changes.
-// Return a nil error if you choose not to implement this function.
 func (provider *TerraformProvider) GetTerraformOutputs(ctx context.Context, guid string) (storage.JSONObject, error) {
 	tfID := generateTfID(guid, "")
 
