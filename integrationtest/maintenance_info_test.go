@@ -33,7 +33,7 @@ var _ = Describe("MaintenanceInfo", func() {
 				catalogResponse := testHelper.Client().Catalog(requestID())
 
 				Expect(catalogResponse.Error).NotTo(HaveOccurred())
-				Expect(string(catalogResponse.ResponseBody)).To(ContainSubstring(`"maintenance_info":{"version":"0.13.7","description":"This upgrade provides support for Terraform version: 0.13.7. The upgrade operation will take a while and all instances and bindings will be updated."}`))
+				Expect(string(catalogResponse.ResponseBody)).To(ContainSubstring(`"maintenance_info":{"version":"0.13.7","description":"This upgrade provides support for Terraform version: 0.13.7. The upgrade operation will take a while. The instance and all associated bindings will be upgraded."}`))
 
 			})
 		})
@@ -47,7 +47,7 @@ var _ = Describe("MaintenanceInfo", func() {
 				catalogResponse := testHelper.Client().Catalog(requestID())
 
 				Expect(catalogResponse.Error).NotTo(HaveOccurred())
-				Expect(string(catalogResponse.ResponseBody)).To(ContainSubstring(`"maintenance_info":{}`))
+				Expect(string(catalogResponse.ResponseBody)).ToNot(ContainSubstring(`"maintenance_info"`))
 			})
 		})
 

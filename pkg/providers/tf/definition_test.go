@@ -44,7 +44,7 @@ var _ = Describe("Definition", func() {
 					DisplayName: "test-display-name",
 					Bullets:     []string{"test-bullet"},
 				}))
-				Expect(servicePlan.ServicePlan.MaintenanceInfo).To(Equal(&domain.MaintenanceInfo{}))
+				Expect(servicePlan.ServicePlan.MaintenanceInfo).To(BeNil())
 				Expect(servicePlan.ServiceProperties).To(Equal(map[string]interface{}{"test-property-key": "test-property-value"}))
 				Expect(servicePlan.ProvisionOverrides).To(BeNil())
 				Expect(servicePlan.BindOverrides).To(BeNil())
@@ -69,7 +69,7 @@ var _ = Describe("Definition", func() {
 			It("returns a broker service plan with maintenance info version matching default TF version", func() {
 				expectedMaintenanceInfo := domain.MaintenanceInfo{
 					Version:     "1.0.0",
-					Description: "This upgrade provides support for Terraform version: 1.0.0. The upgrade operation will take a while and all instances and bindings will be updated.",
+					Description: "This upgrade provides support for Terraform version: 1.0.0. The upgrade operation will take a while. The instance and all associated bindings will be upgraded.",
 				}
 
 				servicePlan := plan.ToPlan(exec)
@@ -109,7 +109,7 @@ var _ = Describe("Definition", func() {
 					DisplayName: "test-display-name",
 					Bullets:     []string{"test-bullet"},
 				}))
-				Expect(servicePlan.ServicePlan.MaintenanceInfo).To(Equal(&domain.MaintenanceInfo{}))
+				Expect(servicePlan.ServicePlan.MaintenanceInfo).To(BeNil())
 				Expect(servicePlan.ServiceProperties).To(Equal(map[string]interface{}{"test-property-key": "test-property-value"}))
 				Expect(servicePlan.ProvisionOverrides).To(BeNil())
 				Expect(servicePlan.BindOverrides).To(BeNil())
