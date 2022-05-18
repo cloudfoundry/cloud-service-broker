@@ -1,6 +1,8 @@
 package storage_test
 
 import (
+	"errors"
+
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -9,6 +11,14 @@ import (
 var _ = Describe("CheckAllRecords", func() {
 
 	BeforeEach(func() {
+		encryptor.DecryptStub = func(bytes []byte) ([]byte, error) {
+			if string(bytes) == `cannot-be-decrypted` {
+				return nil, errors.New("fake decryption error")
+			}
+
+			return bytes, nil
+		}
+
 		addFakeServiceCredentialBindings()
 		addFakeProvisionRequestDetails()
 		addFakeBindRequestDetails()
@@ -83,6 +93,14 @@ var _ = Describe("CheckAllRecords", func() {
 				LastOperationState:   "succeeded",
 				LastOperationMessage: "amazing",
 			}).Error).NotTo(HaveOccurred())
+
+			Expect(db.Create(&models.TerraformDeployment{
+				ID:                   "fake-bad-id-3",
+				Workspace:            []byte(`{"tfstate":42}`),
+				LastOperationType:    "create",
+				LastOperationState:   "succeeded",
+				LastOperationMessage: "amazing",
+			}).Error).NotTo(HaveOccurred())
 		})
 
 		It("returns all errors", func() {
@@ -97,6 +115,7 @@ var _ = Describe("CheckAllRecords", func() {
 				ContainSubstring(`decode error for service instance details "fake-bad-instance-id-2": decryption error: fake decryption error`),
 				ContainSubstring(`decode error for terraform deployment "fake-bad-id-1": decryption error: fake decryption error`),
 				ContainSubstring(`decode error for terraform deployment "fake-bad-id-2": JSON parse error: invalid character 'w' looking for beginning of value`),
+				ContainSubstring(`decode error for terraform deployment "fake-bad-id-3": JSON parse error: json: cannot unmarshal number into Go struct field TerraformWorkspace.tfstate of type []uint8`),
 			)))
 		})
 	})

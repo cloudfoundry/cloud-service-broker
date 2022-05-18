@@ -65,9 +65,8 @@ func (s *Storage) GetTerraformDeployment(id string) (TerraformDeployment, error)
 		return TerraformDeployment{}, fmt.Errorf("error finding terraform deployment: %w", err)
 	}
 
-	tfWorkspace := workspace.TerraformWorkspace{}
-	err = s.decodeJSON(receiver.Workspace, &tfWorkspace)
-	if err != nil {
+	var tfWorkspace workspace.TerraformWorkspace
+	if err = s.decodeJSON(receiver.Workspace, &tfWorkspace); err != nil {
 		return TerraformDeployment{}, fmt.Errorf("error decoding workspace %q: %w", id, err)
 	}
 	return TerraformDeployment{

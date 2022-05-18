@@ -3,9 +3,9 @@ package storage
 import (
 	"fmt"
 
-	"github.com/hashicorp/go-multierror"
-
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+	"github.com/hashicorp/go-multierror"
 	"gorm.io/gorm"
 )
 
@@ -32,8 +32,7 @@ func (s *Storage) checkAllServiceBindingCredentials() (errs *multierror.Error) {
 	var serviceBindingCredentialsBatch []models.ServiceBindingCredentials
 	result := s.db.FindInBatches(&serviceBindingCredentialsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range serviceBindingCredentialsBatch {
-			_, err := s.decodeJSONObject(serviceBindingCredentialsBatch[i].OtherDetails)
-			if err != nil {
+			if _, err := s.decodeJSONObject(serviceBindingCredentialsBatch[i].OtherDetails); err != nil {
 				errs = multierror.Append(fmt.Errorf("decode error for service binding credential %q: %w", serviceBindingCredentialsBatch[i].BindingID, err), errs)
 			}
 		}
@@ -51,8 +50,7 @@ func (s *Storage) checkAllBindRequestDetails() (errs *multierror.Error) {
 	var bindRequestDetailsBatch []models.BindRequestDetails
 	result := s.db.FindInBatches(&bindRequestDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range bindRequestDetailsBatch {
-			_, err := s.decodeJSONObject(bindRequestDetailsBatch[i].RequestDetails)
-			if err != nil {
+			if _, err := s.decodeJSONObject(bindRequestDetailsBatch[i].RequestDetails); err != nil {
 				errs = multierror.Append(fmt.Errorf("decode error for binding request details %q: %w", bindRequestDetailsBatch[i].ServiceBindingID, err), errs)
 			}
 		}
@@ -70,8 +68,7 @@ func (s *Storage) checkAllProvisionRequestDetails() (errs *multierror.Error) {
 	var provisionRequestDetailsBatch []models.ProvisionRequestDetails
 	result := s.db.FindInBatches(&provisionRequestDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range provisionRequestDetailsBatch {
-			_, err := s.decodeJSONObject(provisionRequestDetailsBatch[i].RequestDetails)
-			if err != nil {
+			if _, err := s.decodeJSONObject(provisionRequestDetailsBatch[i].RequestDetails); err != nil {
 				errs = multierror.Append(fmt.Errorf("decode error for provision request details %q: %w", provisionRequestDetailsBatch[i].ServiceInstanceID, err), errs)
 			}
 		}
@@ -89,8 +86,7 @@ func (s *Storage) checkAllServiceInstanceDetails() (errs *multierror.Error) {
 	var serviceInstanceDetailsBatch []models.ServiceInstanceDetails
 	result := s.db.FindInBatches(&serviceInstanceDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range serviceInstanceDetailsBatch {
-			_, err := s.decodeJSONObject(serviceInstanceDetailsBatch[i].OtherDetails)
-			if err != nil {
+			if _, err := s.decodeJSONObject(serviceInstanceDetailsBatch[i].OtherDetails); err != nil {
 				errs = multierror.Append(fmt.Errorf("decode error for service instance details %q: %w", serviceInstanceDetailsBatch[i].ID, err), errs)
 			}
 		}
@@ -108,8 +104,8 @@ func (s *Storage) checkAllTerraformDeployments() (errs *multierror.Error) {
 	var terraformDeploymentBatch []models.TerraformDeployment
 	result := s.db.FindInBatches(&terraformDeploymentBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range terraformDeploymentBatch {
-			_, err := s.decodeJSONObject(terraformDeploymentBatch[i].Workspace)
-			if err != nil {
+			var tfWorkspace workspace.TerraformWorkspace
+			if err := s.decodeJSON(terraformDeploymentBatch[i].Workspace, &tfWorkspace); err != nil {
 				errs = multierror.Append(fmt.Errorf("decode error for terraform deployment %q: %w", terraformDeploymentBatch[i].ID, err), errs)
 			}
 		}
