@@ -295,6 +295,18 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesCont
 	}, nil
 }
 
+func (tfb *TfServiceDefinitionV1) IsSubsumePlan(planGUID string) bool {
+	for _, plan := range tfb.Plans {
+		if plan.ID == planGUID {
+			if _, ok := plan.Properties["subsume"]; !ok {
+				return true
+			}
+			break
+		}
+	}
+	return false
+}
+
 // TfServiceDefinitionV1Plan represents a service plan in a human-friendly format
 // that can be converted into an OSB compatible plan.
 type TfServiceDefinitionV1Plan struct {

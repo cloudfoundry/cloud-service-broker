@@ -185,7 +185,7 @@ func (provider *TerraformProvider) GetTerraformOutputs(ctx context.Context, guid
 func (provider *TerraformProvider) GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []broker.BrokerVariable) (map[string]interface{}, error) {
 	provider.logger.Debug("getImportedProperties", correlation.ID(ctx), lager.Data{})
 
-	if provider.isSubsumePlan(planGUID) {
+	if provider.serviceDefinition.IsSubsumePlan(planGUID) {
 		return map[string]interface{}{}, nil
 	}
 
@@ -218,18 +218,6 @@ func (provider *TerraformProvider) getVarsToReplace(inputVariables []broker.Brok
 		}
 	}
 	return varsToReplace
-}
-
-func (provider *TerraformProvider) isSubsumePlan(planGUID string) bool {
-	for _, plan := range provider.serviceDefinition.Plans {
-		if plan.ID == planGUID {
-			if _, ok := plan.Properties["subsume"]; !ok {
-				return true
-			}
-			break
-		}
-	}
-	return false
 }
 
 func (provider *TerraformProvider) markJobStarted(deployment storage.TerraformDeployment, operationType string) error {
