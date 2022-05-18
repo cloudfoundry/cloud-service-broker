@@ -16,7 +16,6 @@ package tf
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -152,25 +151,6 @@ func (provider *TerraformProvider) Destroy(ctx context.Context, id string, templ
 	return nil
 }
 
-func (provider *TerraformProvider) createAndSaveDeployment(jobID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error) {
-	deployment := storage.TerraformDeployment{ID: jobID}
-	exists, err := provider.store.ExistsTerraformDeployment(jobID)
-	switch {
-	case err != nil:
-		return deployment, err
-	case exists:
-		deployment, err = provider.store.GetTerraformDeployment(jobID)
-		if err != nil {
-			return deployment, err
-		}
-	}
-
-	deployment.Workspace = workspace
-	deployment.LastOperationType = "validation"
-
-	return deployment, provider.store.StoreTerraformDeployment(deployment)
-}
-
 func (provider *TerraformProvider) GetTerraformOutputs(ctx context.Context, guid string) (storage.JSONObject, error) {
 	tfID := generateTfID(guid, "")
 
@@ -220,6 +200,25 @@ func (provider *TerraformProvider) getVarsToReplace(inputVariables []broker.Brok
 	return varsToReplace
 }
 
+func (provider *TerraformProvider) createAndSaveDeployment(jobID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error) {
+	deployment := storage.TerraformDeployment{ID: jobID}
+	exists, err := provider.store.ExistsTerraformDeployment(jobID)
+	switch {
+	case err != nil:
+		return deployment, err
+	case exists:
+		deployment, err = provider.store.GetTerraformDeployment(jobID)
+		if err != nil {
+			return deployment, err
+		}
+	}
+
+	deployment.Workspace = workspace
+	deployment.LastOperationType = "validation"
+
+	return deployment, provider.store.StoreTerraformDeployment(deployment)
+}
+
 func (provider *TerraformProvider) markJobStarted(deployment storage.TerraformDeployment, operationType string) error {
 	// update the deployment info
 	deployment.LastOperationType = operationType
@@ -258,25 +257,6 @@ func (provider *TerraformProvider) operationFinished(err error, deployment stora
 	return provider.store.StoreTerraformDeployment(deployment)
 }
 
-// Status gets the status of the most recent job on the workspace.
-// If isDone is true, then the status of the operation will not change again.
-// if isDone is false, then the operation is ongoing.
-func (provider *TerraformProvider) Status(ctx context.Context, id string) (bool, string, error) {
-	deployment, err := provider.store.GetTerraformDeployment(id)
-	if err != nil {
-		return true, "", err
-	}
-
-	switch deployment.LastOperationState {
-	case Succeeded:
-		return true, deployment.LastOperationMessage, nil
-	case Failed:
-		return true, deployment.LastOperationMessage, errors.New(deployment.LastOperationMessage)
-	default:
-		return false, deployment.LastOperationMessage, nil
-	}
-}
-
 // Wait waits for an operation to complete, polling its status once per second.
 func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 	for {
@@ -285,7 +265,7 @@ func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 			return nil
 
 		case <-time.After(1 * time.Second):
-			isDone, _, err := provider.Status(ctx, id)
+			isDone, _, err := provider.PollInstance(ctx, id)
 			if isDone {
 				return err
 			}
