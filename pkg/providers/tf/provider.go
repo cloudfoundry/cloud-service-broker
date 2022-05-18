@@ -35,7 +35,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 const (
@@ -82,20 +81,6 @@ func (provider *TerraformProvider) DefaultInvoker() invoker.TerraformInvoker {
 
 func (provider *TerraformProvider) VersionedInvoker(version *version.Version) invoker.TerraformInvoker {
 	return provider.VersionedTerraformInvoker(version)
-}
-
-// BuildInstanceCredentials combines the bind credentials with the connection
-// information in the instance details to get a full set of connection details.
-func (provider *TerraformProvider) BuildInstanceCredentials(ctx context.Context, credentials map[string]interface{}, outputs storage.JSONObject) (*domain.Binding, error) {
-	vc, err := varcontext.Builder().
-		MergeMap(outputs).
-		MergeMap(credentials).
-		Build()
-	if err != nil {
-		return nil, err
-	}
-
-	return &domain.Binding{Credentials: vc.ToMap()}, nil
 }
 
 func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
