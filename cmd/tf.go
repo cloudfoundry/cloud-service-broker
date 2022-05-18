@@ -36,7 +36,7 @@ import (
 )
 
 func init() {
-	var jobRunner *tf.TfJobRunner
+	var terraformProvider *tf.TerraformProvider
 	var db *gorm.DB
 
 	tfCmd := &cobra.Command{
@@ -48,7 +48,13 @@ func init() {
 			db = dbservice.New(logger)
 			encryptor := setupDBEncryption(db, logger)
 			store := storage.New(db, encryptor)
-			jobRunner = tf.NewTfJobRunner(store, executor.TFBinariesContext{}, invoker.NewTerraformInvokerFactory(executor.NewExecutorFactory("", nil, nil), "", map[string]string{}))
+			terraformProvider = tf.NewTerraformProvider(
+				executor.TFBinariesContext{},
+				invoker.NewTerraformInvokerFactory(executor.NewExecutorFactory("", nil, nil), "", map[string]string{}),
+				logger,
+				tf.TfServiceDefinitionV1{},
+				store,
+			)
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
@@ -91,7 +97,7 @@ func init() {
 		Use:   "wait",
 		Short: "wait for a Terraform job",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := jobRunner.Wait(context.Background(), args[0])
+			err := terraformProvider.Wait(context.Background(), args[0])
 			if err != nil {
 				log.Fatal(err)
 			}
