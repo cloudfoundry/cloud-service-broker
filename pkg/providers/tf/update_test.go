@@ -1,28 +1,33 @@
 package tf_test
 
 import (
+	"context"
 	"fmt"
+	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/tffakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/hashicorp/go-version"
+	. "github.com/onsi/ginkgo/v2"
 	"github.com/spf13/viper"
 
-	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
-	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("TfJobRunner", func() {
 	var (
-		fakeStore          *brokerfakes.FakeStorage
-		fakeWorkspace      *tffakes.FakeWorkspace
-		deploymentID       string
-		deployment         storage.TerraformDeployment
-		genericError       = fmt.Errorf("genericError")
-		fakeInvokerBuilder *tffakes.FakeTerraformInvokerBuilder
-		fakeDefaultInvoker *tffakes.FakeTerraformInvoker
+		fakeStore             *brokerfakes.FakeStorage
+		fakeWorkspace         *tffakes.FakeWorkspace
+		deploymentID          string
+		deployment            storage.TerraformDeployment
+		genericError          = fmt.Errorf("genericError")
+		fakeInvokerBuilder    *tffakes.FakeTerraformInvokerBuilder
+		fakeDefaultInvoker    *tffakes.FakeTerraformInvoker
+		fakeLogger            = utils.NewLogger("test")
+		fakeServiceDefinition = tf.TfServiceDefinitionV1{}
 	)
 	BeforeEach(func() {
 		fakeStore = &brokerfakes.FakeStorage{}
@@ -40,14 +45,15 @@ var _ = Describe("TfJobRunner", func() {
 	Describe("Update", func() {
 		It("fails, when deployment can't be found", func() {
 			fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, genericError)
-			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{}, fakeInvokerBuilder)
-			Expect(runner.Update(context.TODO(), deploymentID, nil)).To(MatchError(genericError))
+			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
+
+			Expect(provider.Update(context.TODO(), deploymentID, nil)).To(MatchError(genericError))
 		})
 
 		It("fails, when store cant be updated", func() {
 			fakeStore.GetTerraformDeploymentReturns(deployment, nil)
 			fakeStore.StoreTerraformDeploymentReturns(genericError)
-			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{}, fakeInvokerBuilder)
+			runner := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
 			Expect(runner.Update(context.TODO(), deploymentID, nil)).To(MatchError(genericError))
 		})
 
@@ -56,7 +62,7 @@ var _ = Describe("TfJobRunner", func() {
 			fakeStore.GetTerraformDeploymentReturns(deployment, nil)
 			fakeWorkspace.StateVersionReturns(nil, genericError)
 
-			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{}, fakeInvokerBuilder)
+			runner := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
 			Expect(runner.Update(context.TODO(), deploymentID, nil)).To(Succeed())
 			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
 
@@ -71,7 +77,7 @@ var _ = Describe("TfJobRunner", func() {
 			fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 			fakeWorkspace.UpdateInstanceConfigurationReturns(genericError)
 
-			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder)
+			runner := tf.NewTerraformProvider(fakeStore, executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder)
 			Expect(runner.Update(context.TODO(), deploymentID, nil)).To(Succeed())
 			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
 
@@ -86,7 +92,7 @@ var _ = Describe("TfJobRunner", func() {
 			fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 
-			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder)
+			runner := tf.NewTerraformProvider(fakeStore, executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder)
 			templateVars := map[string]interface{}{"var": "value"}
 
 			Expect(runner.Update(context.TODO(), deploymentID, templateVars)).To(Succeed())
@@ -105,7 +111,7 @@ var _ = Describe("TfJobRunner", func() {
 			fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 			fakeWorkspace.OutputsReturns(map[string]interface{}{"status": "status from terraform"}, nil)
 
-			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder)
+			runner := tf.NewTerraformProvider(fakeStore, executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder)
 
 			Expect(runner.Update(context.TODO(), deploymentID, nil)).To(Succeed())
 			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
@@ -122,7 +128,7 @@ var _ = Describe("TfJobRunner", func() {
 			fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 			fakeDefaultInvoker.ApplyReturns(genericError)
 
-			runner := tf.NewTfJobRunner(fakeStore, executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder)
+			runner := tf.NewTerraformProvider(fakeStore, executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder)
 
 			Expect(runner.Update(context.TODO(), deploymentID, nil)).To(Succeed())
 			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
@@ -155,7 +161,7 @@ var _ = Describe("TfJobRunner", func() {
 				fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
 				fakeWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "moduleName"}})
 
-				runner := tf.NewTfJobRunner(fakeStore, tfBinContext, fakeInvokerBuilder)
+				runner := tf.NewTerraformProvider(fakeStore, tfBinContext, fakeInvokerBuilder)
 				runner.Update(context.TODO(), deploymentID, nil)
 
 				Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
@@ -184,7 +190,7 @@ var _ = Describe("TfJobRunner", func() {
 				fakeStore.GetTerraformDeploymentReturns(deployment, nil)
 				fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
 
-				runner := tf.NewTfJobRunner(fakeStore, tfBinContext, fakeInvokerBuilder)
+				runner := tf.NewTerraformProvider(fakeStore, tfBinContext, fakeInvokerBuilder)
 				runner.Update(context.TODO(), deploymentID, nil)
 
 				Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
@@ -207,7 +213,7 @@ var _ = Describe("TfJobRunner", func() {
 
 				fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
 
-				runner := tf.NewTfJobRunner(fakeStore, tfBinContext, fakeInvokerBuilder)
+				runner := tf.NewTerraformProvider(fakeStore, tfBinContext, fakeInvokerBuilder)
 				runner.Update(context.TODO(), deploymentID, nil)
 
 				Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
@@ -226,7 +232,7 @@ var _ = Describe("TfJobRunner", func() {
 
 				var templateVars map[string]interface{}
 
-				runner := tf.NewTfJobRunner(fakeStore, tfBinContext, fakeInvokerBuilder)
+				runner := tf.NewTerraformProvider(fakeStore, tfBinContext, fakeInvokerBuilder)
 				runner.Update(context.TODO(), deploymentID, templateVars)
 
 				Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
@@ -238,17 +244,18 @@ var _ = Describe("TfJobRunner", func() {
 				Expect(workspace).To(Equal(fakeWorkspace))
 			})
 		})
-
 	})
+},
+)
 
-})
-
-func getWorkspace(invoker *tffakes.FakeTerraformInvoker, pos int) workspace.Workspace {
-	_, workspace := invoker.ApplyArgsForCall(pos)
-	return workspace
+func getWorkspace(invoker *tffakes.FakeTerraformInvoker, pos
+int) workspace.Workspace{
+_, workspace, := invoker.ApplyArgsForCall(pos)
+return workspace
 }
 
-func lastStoredDeployment(fakeStore *brokerfakes.FakeStorage) func() storage.TerraformDeployment {
+func lastStoredDeployment(fakeStore *brokerfakes.FakeStorage)
+func () storage.TerraformDeployment {
 	return func() storage.TerraformDeployment {
 		callCount := fakeStore.StoreTerraformDeploymentCallCount()
 		if callCount == 0 {
@@ -258,12 +265,14 @@ func lastStoredDeployment(fakeStore *brokerfakes.FakeStorage) func() storage.Ter
 		}
 	}
 }
-func lastStoredLastOperation(fakeStore *brokerfakes.FakeStorage) func() string {
+func lastStoredLastOperation(fakeStore *brokerfakes.FakeStorage)
+func () string {
 	return func() string {
 		return lastStoredDeployment(fakeStore)().LastOperationState
 	}
 }
 
-func newVersion(v string) *version.Version {
-	return version.Must(version.NewVersion(v))
+func newVersion(v
+string) *version.Version{
+return version.Must(version.NewVersion(v))
 }
