@@ -290,9 +290,21 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesCont
 		Examples:              tfb.Examples,
 		ProviderBuilder: func(logger lager.Logger, store broker.ServiceProviderStorage) broker.ServiceProvider {
 			executorFactory := executor.NewExecutorFactory(tfBinContext.Dir, tfBinContext.Params, envVars)
-			return NewTerraformProvider(NewTfJobRunner(store, tfBinContext, invoker.NewTerraformInvokerFactory(executorFactory, tfBinContext.Dir, tfBinContext.ProviderReplacements)), logger, constDefn, store)
+			return NewTerraformProvider(tfBinContext, invoker.NewTerraformInvokerFactory(executorFactory, tfBinContext.Dir, tfBinContext.ProviderReplacements), logger, constDefn, store)
 		},
 	}, nil
+}
+
+func (tfb *TfServiceDefinitionV1) IsSubsumePlan(planGUID string) bool {
+	for _, plan := range tfb.Plans {
+		if plan.ID == planGUID {
+			if _, ok := plan.Properties["subsume"]; !ok {
+				return true
+			}
+			break
+		}
+	}
+	return false
 }
 
 // TfServiceDefinitionV1Plan represents a service plan in a human-friendly format
