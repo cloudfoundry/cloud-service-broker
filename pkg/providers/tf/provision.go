@@ -6,12 +6,21 @@ import (
 	"fmt"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )
 
+// ImportResource represents TF resource to IaaS resource ID mapping for import
+type ImportResource struct {
+	TfResource   string
+	IaaSResource string
+}
+
+// Provision creates the necessary resources that an instance of this service
+// needs to operate.
 func (provider *TerraformProvider) Provision(ctx context.Context, provisionContext *varcontext.VarContext) (storage.ServiceInstanceDetails, error) {
 	provider.logger.Debug("terraform-provision", correlation.ID(ctx), lager.Data{
 		"context": provisionContext.ToMap(),
@@ -36,35 +45,6 @@ func (provider *TerraformProvider) Provision(ctx context.Context, provisionConte
 		OperationGUID: tfID,
 		OperationType: models.ProvisionOperationType,
 	}, nil
-}
-
-func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
-	tfID := vars.GetString("tf_id")
-	if err := vars.Error(); err != nil {
-		return "", err
-	}
-
-	workspace, err := workspace.NewWorkspace(vars.ToMap(), action.Template, action.Templates, []workspace.ParameterMapping{}, []string{}, []workspace.ParameterMapping{})
-	if err != nil {
-		return tfID, fmt.Errorf("error creating workspace: %w", err)
-	}
-
-	deployment, err := provider.createAndSaveDeployment(tfID, workspace)
-	if err != nil {
-		provider.logger.Error("terraform provider create failed", err)
-		return tfID, fmt.Errorf("terraform provider create failed: %w", err)
-	}
-
-	if err := provider.markJobStarted(deployment, models.ProvisionOperationType); err != nil {
-		return tfID, fmt.Errorf("error marking job started: %w", err)
-	}
-
-	go func() {
-		err := provider.DefaultInvoker().Apply(ctx, workspace)
-		provider.operationFinished(err, deployment)
-	}()
-
-	return tfID, nil
 }
 
 func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
@@ -164,4 +144,13 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 	}()
 
 	return tfID, nil
+}
+
+func (provider *TerraformProvider) terraformPlanToCheckNoResourcesDeleted(invoker invoker.TerraformInvoker, ctx context.Context, workspace *workspace.TerraformWorkspace, logger lager.Logger) error {
+	planOutput, err := invoker.Plan(ctx, workspace)
+	if err != nil {
+		return err
+	}
+	err = CheckTerraformPlanOutput(logger, planOutput)
+	return err
 }

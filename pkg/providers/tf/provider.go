@@ -16,9 +16,14 @@ package tf
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
+	"github.com/hashicorp/go-version"
+	"github.com/spf13/viper"
+	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 
@@ -31,6 +36,19 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
+
+const (
+	InProgress = "in progress"
+	Succeeded  = "succeeded"
+	Failed     = "failed"
+
+	TfUpgradeEnabled = "brokerpak.terraform.upgrades.enabled"
+)
+
+func init() {
+	viper.BindEnv(TfUpgradeEnabled, "TERRAFORM_UPGRADES_ENABLED")
+	viper.SetDefault(TfUpgradeEnabled, false)
+}
 
 // NewTerraformProvider creates a new ServiceProvider backed by Terraform module definitions for provision and bind.
 func NewTerraformProvider(
@@ -57,6 +75,14 @@ type TerraformProvider struct {
 	store             broker.ServiceProviderStorage
 }
 
+func (provider *TerraformProvider) DefaultInvoker() invoker.TerraformInvoker {
+	return provider.VersionedInvoker(provider.tfBinContext.DefaultTfVersion)
+}
+
+func (provider *TerraformProvider) VersionedInvoker(version *version.Version) invoker.TerraformInvoker {
+	return provider.VersionedTerraformInvoker(version)
+}
+
 // BuildInstanceCredentials combines the bind credentials with the connection
 // information in the instance details to get a full set of connection details.
 func (provider *TerraformProvider) BuildInstanceCredentials(ctx context.Context, credentials map[string]interface{}, outputs storage.JSONObject) (*domain.Binding, error) {
@@ -71,27 +97,73 @@ func (provider *TerraformProvider) BuildInstanceCredentials(ctx context.Context,
 	return &domain.Binding{Credentials: vc.ToMap()}, nil
 }
 
-// Provision creates the necessary resources that an instance of this service
-// needs to operate.
+func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
+	tfID := vars.GetString("tf_id")
+	if err := vars.Error(); err != nil {
+		return "", err
+	}
 
-// Update makes necessary updates to resources so they match new desired configuration
-
-// Bind creates a new backing Terraform job and executes it, waiting on the result.
-func (provider *TerraformProvider) Bind(ctx context.Context, bindContext *varcontext.VarContext) (map[string]interface{}, error) {
-	provider.logger.Debug("terraform-bind", correlation.ID(ctx), lager.Data{
-		"context": bindContext.ToMap(),
-	})
-
-	tfID, err := provider.create(ctx, bindContext, provider.serviceDefinition.BindSettings)
+	workspace, err := workspace.NewWorkspace(vars.ToMap(), action.Template, action.Templates, []workspace.ParameterMapping{}, []string{}, []workspace.ParameterMapping{})
 	if err != nil {
-		return nil, fmt.Errorf("error from provider bind: %w", err)
+		return tfID, fmt.Errorf("error creating workspace: %w", err)
 	}
 
-	if err := provider.Wait(ctx, tfID); err != nil {
-		return nil, fmt.Errorf("error from job runner: %w", err)
+	deployment, err := provider.createAndSaveDeployment(tfID, workspace)
+	if err != nil {
+		provider.logger.Error("terraform provider create failed", err)
+		return tfID, fmt.Errorf("terraform provider create failed: %w", err)
 	}
 
-	return provider.Outputs(ctx, tfID, workspace.DefaultInstanceName)
+	if err := provider.markJobStarted(deployment, models.ProvisionOperationType); err != nil {
+		return tfID, fmt.Errorf("error marking job started: %w", err)
+	}
+
+	go func() {
+		err := provider.DefaultInvoker().Apply(ctx, workspace)
+		provider.operationFinished(err, deployment)
+	}()
+
+	return tfID, nil
+}
+
+// Destroy runs `terraform destroy` on the given workspace in the background.
+// The status of the job can be found by polling the Status function.
+func (provider *TerraformProvider) Destroy(ctx context.Context, id string, templateVars map[string]interface{}) error {
+	deployment, err := provider.store.GetTerraformDeployment(id)
+	if err != nil {
+		return err
+	}
+
+	workspace := deployment.TFWorkspace()
+
+	inputList, err := workspace.Modules[0].Inputs()
+	if err != nil {
+		return err
+	}
+
+	limitedConfig := make(map[string]interface{})
+	for _, name := range inputList {
+		limitedConfig[name] = templateVars[name]
+	}
+
+	workspace.Instances[0].Configuration = limitedConfig
+
+	if err := provider.markJobStarted(deployment, models.DeprovisionOperationType); err != nil {
+		return err
+	}
+
+	go func() {
+		err = provider.performTerraformUpgrade(ctx, workspace)
+		if err != nil {
+			provider.operationFinished(err, deployment)
+			return
+		}
+
+		err = provider.DefaultInvoker().Destroy(ctx, workspace)
+		provider.operationFinished(err, deployment)
+	}()
+
+	return nil
 }
 
 func (provider *TerraformProvider) createAndSaveDeployment(jobID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error) {
@@ -111,50 +183,6 @@ func (provider *TerraformProvider) createAndSaveDeployment(jobID string, workspa
 	deployment.LastOperationType = "validation"
 
 	return deployment, provider.store.StoreTerraformDeployment(deployment)
-}
-
-// Unbind performs a terraform destroy on the binding.
-func (provider *TerraformProvider) Unbind(ctx context.Context, instanceGUID, bindingID string, vc *varcontext.VarContext) error {
-	tfID := generateTfID(instanceGUID, bindingID)
-	provider.logger.Debug("terraform-unbind", correlation.ID(ctx), lager.Data{
-		"instance": instanceGUID,
-		"binding":  bindingID,
-		"tfId":     tfID,
-	})
-
-	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.BindSettings, vc, tfID); err != nil {
-		return err
-	}
-
-	if err := provider.Destroy(ctx, tfID, vc.ToMap()); err != nil {
-		return err
-	}
-
-	return provider.Wait(ctx, tfID)
-}
-
-// Deprovision performs a terraform destroy on the instance.
-func (provider *TerraformProvider) Deprovision(ctx context.Context, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationID *string, err error) {
-	provider.logger.Debug("terraform-deprovision", correlation.ID(ctx), lager.Data{
-		"instance": instanceGUID,
-	})
-
-	tfID := generateTfID(instanceGUID, "")
-
-	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, vc, tfID); err != nil {
-		return nil, err
-	}
-
-	if err := provider.Destroy(ctx, tfID, vc.ToMap()); err != nil {
-		return nil, err
-	}
-
-	return &tfID, nil
-}
-
-// PollInstance returns the instance status of the backing job.
-func (provider *TerraformProvider) PollInstance(ctx context.Context, instanceGUID string) (bool, string, error) {
-	return provider.Status(ctx, generateTfID(instanceGUID, ""))
 }
 
 // UpdateInstanceDetails updates the ServiceInstanceDetails with the most recent state from GCP.
@@ -220,4 +248,87 @@ func (provider *TerraformProvider) isSubsumePlan(planGUID string) bool {
 		}
 	}
 	return false
+}
+
+func (provider *TerraformProvider) markJobStarted(deployment storage.TerraformDeployment, operationType string) error {
+	// update the deployment info
+	deployment.LastOperationType = operationType
+	deployment.LastOperationState = InProgress
+	deployment.LastOperationMessage = ""
+
+	if err := provider.store.StoreTerraformDeployment(deployment); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// operationFinished closes out the state of the background job so clients that
+// are polling can get the results.
+func (provider *TerraformProvider) operationFinished(err error, deployment storage.TerraformDeployment) error {
+	// we shouldn't update the status on update when updating the HCL, as the status comes either from the provision call or a previous update
+	workspace := deployment.Workspace
+	if err == nil {
+		lastOperationMessage := ""
+		// maybe do if deployment.LastOperationType != "validation" so we don't do the status update on staging a job.
+		// previously we would only stage a job on provision so state would be empty and the outputs would be null.
+		outputs, err := workspace.Outputs(workspace.ModuleInstances()[0].InstanceName)
+		if err == nil {
+			if status, ok := outputs["status"]; ok {
+				lastOperationMessage = fmt.Sprintf("%v", status)
+			}
+		}
+		deployment.LastOperationState = Succeeded
+		deployment.LastOperationMessage = lastOperationMessage
+	} else {
+		deployment.LastOperationState = Failed
+		deployment.LastOperationMessage = err.Error()
+	}
+
+	return provider.store.StoreTerraformDeployment(deployment)
+}
+
+// Status gets the status of the most recent job on the workspace.
+// If isDone is true, then the status of the operation will not change again.
+// if isDone is false, then the operation is ongoing.
+func (provider *TerraformProvider) Status(ctx context.Context, id string) (bool, string, error) {
+	deployment, err := provider.store.GetTerraformDeployment(id)
+	if err != nil {
+		return true, "", err
+	}
+
+	switch deployment.LastOperationState {
+	case Succeeded:
+		return true, deployment.LastOperationMessage, nil
+	case Failed:
+		return true, deployment.LastOperationMessage, errors.New(deployment.LastOperationMessage)
+	default:
+		return false, deployment.LastOperationMessage, nil
+	}
+}
+
+// Wait waits for an operation to complete, polling its status once per second.
+func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+
+		case <-time.After(1 * time.Second):
+			isDone, _, err := provider.Status(ctx, id)
+			if isDone {
+				return err
+			}
+		}
+	}
+}
+
+// Outputs gets the output variables for the given module instance in the workspace.
+func (provider *TerraformProvider) Outputs(ctx context.Context, id, instanceName string) (map[string]interface{}, error) {
+	deployment, err := provider.store.GetTerraformDeployment(id)
+	if err != nil {
+		return nil, fmt.Errorf("error getting TF deployment: %w", err)
+	}
+
+	return deployment.Workspace.Outputs(instanceName)
 }
