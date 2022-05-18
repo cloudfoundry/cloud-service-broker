@@ -45,21 +45,17 @@ type ServiceProvider interface {
 	// This may include creating service accounts, granting permissions, and adding users to services e.g. a SQL database user.
 	// It stores information necessary to access the service _and_ delete the binding in the returned map.
 	Bind(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error)
-	// BuildInstanceCredentials combines the bindRecord with any additional
-	// info from the instance to create credentials for the binding.
-	BuildInstanceCredentials(ctx context.Context, credentials map[string]interface{}, outputs storage.JSONObject) (*domain.Binding, error)
+
 	// Unbind deprovisions the resources created with Bind.
 	Unbind(ctx context.Context, instanceGUID, bindingID string, vc *varcontext.VarContext) error
+
 	// Deprovision deprovisions the service.
 	// If the deprovision is asynchronous (results in a long-running job), then operationId is returned.
 	// If no error and no operationId are returned, then the deprovision is expected to have been completed successfully.
 	Deprovision(ctx context.Context, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationID *string, err error)
+
 	PollInstance(ctx context.Context, instanceGUID string) (bool, string, error)
 
-	// UpdateInstanceDetails updates the ServiceInstanceDetails with the most recent state from GCP.
-	// This function is optional, but will be called after async provisions, updates, and possibly
-	// on broker version changes.
-	// Return a nil error if you choose not to implement this function.
 	GetTerraformOutputs(ctx context.Context, guid string) (storage.JSONObject, error)
 }
 

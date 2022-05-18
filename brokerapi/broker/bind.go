@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -102,7 +104,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 		return domain.Binding{}, fmt.Errorf("error saving bind request details to database: %s. Unbind operations will not be able to complete", err)
 	}
 
-	binding, err := serviceProvider.BuildInstanceCredentials(ctx, newCreds.Credentials, instanceRecord.Outputs)
+	binding, err := buildInstanceCredentials(newCreds.Credentials, instanceRecord.Outputs)
 	if err != nil {
 		return domain.Binding{}, fmt.Errorf("error building credentials: %w", err)
 	}
@@ -139,4 +141,18 @@ func validateBindParameters(params map[string]interface{}, validUserInputFields 
 		return validateDefinedParams(params, validUserInputFields, nil)
 	}
 	return nil
+}
+
+// BuildInstanceCredentials combines the bind credentials with the connection
+// information in the instance details to get a full set of connection details.
+func buildInstanceCredentials(credentials map[string]interface{}, outputs storage.JSONObject) (*domain.Binding, error) {
+	vc, err := varcontext.Builder().
+		MergeMap(outputs).
+		MergeMap(credentials).
+		Build()
+	if err != nil {
+		return nil, err
+	}
+
+	return &domain.Binding{Credentials: vc.ToMap()}, nil
 }

@@ -27,21 +27,6 @@ type FakeServiceProvider struct {
 		result1 map[string]interface{}
 		result2 error
 	}
-	BuildInstanceCredentialsStub        func(context.Context, map[string]interface{}, storage.JSONObject) (*domain.Binding, error)
-	buildInstanceCredentialsMutex       sync.RWMutex
-	buildInstanceCredentialsArgsForCall []struct {
-		arg1 context.Context
-		arg2 map[string]interface{}
-		arg3 storage.JSONObject
-	}
-	buildInstanceCredentialsReturns struct {
-		result1 *domain.Binding
-		result2 error
-	}
-	buildInstanceCredentialsReturnsOnCall map[int]struct {
-		result1 *domain.Binding
-		result2 error
-	}
 	DeprovisionStub        func(context.Context, string, domain.DeprovisionDetails, *varcontext.VarContext) (*string, error)
 	deprovisionMutex       sync.RWMutex
 	deprovisionArgsForCall []struct {
@@ -211,72 +196,6 @@ func (fake *FakeServiceProvider) BindReturnsOnCall(i int, result1 map[string]int
 	}
 	fake.bindReturnsOnCall[i] = struct {
 		result1 map[string]interface{}
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeServiceProvider) BuildInstanceCredentials(arg1 context.Context, arg2 map[string]interface{}, arg3 storage.JSONObject) (*domain.Binding, error) {
-	fake.buildInstanceCredentialsMutex.Lock()
-	ret, specificReturn := fake.buildInstanceCredentialsReturnsOnCall[len(fake.buildInstanceCredentialsArgsForCall)]
-	fake.buildInstanceCredentialsArgsForCall = append(fake.buildInstanceCredentialsArgsForCall, struct {
-		arg1 context.Context
-		arg2 map[string]interface{}
-		arg3 storage.JSONObject
-	}{arg1, arg2, arg3})
-	stub := fake.BuildInstanceCredentialsStub
-	fakeReturns := fake.buildInstanceCredentialsReturns
-	fake.recordInvocation("BuildInstanceCredentials", []interface{}{arg1, arg2, arg3})
-	fake.buildInstanceCredentialsMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2, arg3)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeServiceProvider) BuildInstanceCredentialsCallCount() int {
-	fake.buildInstanceCredentialsMutex.RLock()
-	defer fake.buildInstanceCredentialsMutex.RUnlock()
-	return len(fake.buildInstanceCredentialsArgsForCall)
-}
-
-func (fake *FakeServiceProvider) BuildInstanceCredentialsCalls(stub func(context.Context, map[string]interface{}, storage.JSONObject) (*domain.Binding, error)) {
-	fake.buildInstanceCredentialsMutex.Lock()
-	defer fake.buildInstanceCredentialsMutex.Unlock()
-	fake.BuildInstanceCredentialsStub = stub
-}
-
-func (fake *FakeServiceProvider) BuildInstanceCredentialsArgsForCall(i int) (context.Context, map[string]interface{}, storage.JSONObject) {
-	fake.buildInstanceCredentialsMutex.RLock()
-	defer fake.buildInstanceCredentialsMutex.RUnlock()
-	argsForCall := fake.buildInstanceCredentialsArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
-}
-
-func (fake *FakeServiceProvider) BuildInstanceCredentialsReturns(result1 *domain.Binding, result2 error) {
-	fake.buildInstanceCredentialsMutex.Lock()
-	defer fake.buildInstanceCredentialsMutex.Unlock()
-	fake.BuildInstanceCredentialsStub = nil
-	fake.buildInstanceCredentialsReturns = struct {
-		result1 *domain.Binding
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeServiceProvider) BuildInstanceCredentialsReturnsOnCall(i int, result1 *domain.Binding, result2 error) {
-	fake.buildInstanceCredentialsMutex.Lock()
-	defer fake.buildInstanceCredentialsMutex.Unlock()
-	fake.BuildInstanceCredentialsStub = nil
-	if fake.buildInstanceCredentialsReturnsOnCall == nil {
-		fake.buildInstanceCredentialsReturnsOnCall = make(map[int]struct {
-			result1 *domain.Binding
-			result2 error
-		})
-	}
-	fake.buildInstanceCredentialsReturnsOnCall[i] = struct {
-		result1 *domain.Binding
 		result2 error
 	}{result1, result2}
 }
@@ -752,8 +671,6 @@ func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.bindMutex.RLock()
 	defer fake.bindMutex.RUnlock()
-	fake.buildInstanceCredentialsMutex.RLock()
-	defer fake.buildInstanceCredentialsMutex.RUnlock()
 	fake.deprovisionMutex.RLock()
 	defer fake.deprovisionMutex.RUnlock()
 	fake.getImportedPropertiesMutex.RLock()

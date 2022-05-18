@@ -51,11 +51,6 @@ var _ = Describe("Bind", func() {
 		fakeServiceProvider.BindReturns(map[string]interface{}{
 			"fakeOutput": "fakeValue",
 		}, nil)
-		fakeServiceProvider.BuildInstanceCredentialsReturns(&domain.Binding{
-			IsAsync:       false,
-			AlreadyExists: false,
-			Credentials:   "fake-credentials",
-		}, nil)
 
 		fakeStorage = &brokerfakes.FakeStorage{}
 		fakeStorage.ExistsServiceBindingCredentialsReturns(false, nil)
@@ -67,6 +62,7 @@ var _ = Describe("Bind", func() {
 			OrganizationGUID: orgID,
 			OperationType:    models.ProvisionOperationType,
 			OperationGUID:    "provision-operation-GUID",
+			Outputs:          map[string]interface{}{"fakeInstanceOutput": "fakeInstanceValue"},
 		}, nil)
 
 		fakeCredStore = &credstorefakes.FakeCredStore{}
@@ -175,7 +171,7 @@ var _ = Describe("Bind", func() {
 				Expect(response).To(Equal(domain.Binding{
 					IsAsync:       false,
 					AlreadyExists: false,
-					Credentials:   "fake-credentials",
+					Credentials:   map[string]interface{}{"fakeInstanceOutput": "fakeInstanceValue", "fakeOutput": "fakeValue"},
 				}))
 
 				Expect(fakeCredStore.PutCallCount()).To(Equal(0))
@@ -342,20 +338,6 @@ var _ = Describe("Bind", func() {
 				_, err := serviceBroker.Bind(context.TODO(), instanceID, bindingID, bindDetails, false)
 
 				Expect(err).To(MatchError(fmt.Sprintf(`error saving bind request details to database: %s. Unbind operations will not be able to complete`, saveBindRequestError)))
-			})
-		})
-
-		When("fails to create instance credentials", func() {
-			const credentialError = "credential-error"
-
-			BeforeEach(func() {
-				fakeServiceProvider.BuildInstanceCredentialsReturns(nil, fmt.Errorf(credentialError))
-			})
-
-			It("should error", func() {
-				_, err := serviceBroker.Bind(context.TODO(), instanceID, bindingID, bindDetails, false)
-
-				Expect(err).To(MatchError(fmt.Sprintf(`error building credentials: %s`, credentialError)))
 			})
 		})
 

@@ -7,14 +7,14 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor/executorfakes"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/tffakes"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace/workspacefakes"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Context("TerraformDefaultInvoker", func() {
 	var fakeExecutor *executorfakes.FakeTerraformExecutor
-	var fakeWorkspace *tffakes.FakeWorkspace
+	var fakeWorkspace *workspacefakes.FakeWorkspace
 	var invokerUnderTest invoker.TerraformInvoker
 	var expectedContext = context.TODO()
 	var pluginDirectory = "plugindir"
@@ -24,7 +24,7 @@ var _ = Context("TerraformDefaultInvoker", func() {
 
 	BeforeEach(func() {
 		fakeExecutor = &executorfakes.FakeTerraformExecutor{}
-		fakeWorkspace = &tffakes.FakeWorkspace{}
+		fakeWorkspace = &workspacefakes.FakeWorkspace{}
 		invokerUnderTest = invoker.NewTerraformDefaultInvoker(fakeExecutor, pluginDirectory, providerRenames)
 	})
 
