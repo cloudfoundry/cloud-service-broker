@@ -63,8 +63,6 @@ func (d *DeploymentManager) MarkOperationStarted(deployment storage.TerraformDep
 func (d *DeploymentManager) MarkOperationFinished(deployment storage.TerraformDeployment, err error) error {
 	if err == nil {
 		lastOperationMessage := ""
-		// maybe do if deployment.LastOperationType != "validation" so we don't do the status update on staging a job.
-		// previously we would only stage a job on provision so state would be empty and the outputs would be null.
 		workspace := deployment.Workspace
 		outputs, err := workspace.Outputs(workspace.ModuleInstances()[0].InstanceName)
 		if err == nil {
