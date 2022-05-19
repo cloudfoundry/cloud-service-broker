@@ -21,6 +21,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/hashicorp/go-version"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 
@@ -113,7 +115,7 @@ func TestRegistrar_toDefinitions(t *testing.T) {
 	for tn, tc := range goodCases {
 		t.Run(tn, func(t *testing.T) {
 			r := NewRegistrar(nil)
-			defns, err := r.toDefinitions(tc.Services, tc.Config, executor.TFBinariesContext{})
+			defns, err := r.toDefinitions(tc.Services, tc.Config, executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("0.0.0"))})
 			if err != nil {
 				t.Fatalf("Expected no error, got: %v", err)
 			}

@@ -1,6 +1,12 @@
 package integrationtest_test
 
 import (
+	"encoding/json"
+
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+
+	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
+
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -31,10 +37,17 @@ var _ = Describe("MaintenanceInfo", func() {
 
 			It("should match the default Terraform version", func() {
 				catalogResponse := testHelper.Client().Catalog(requestID())
-
 				Expect(catalogResponse.Error).NotTo(HaveOccurred())
-				Expect(string(catalogResponse.ResponseBody)).To(ContainSubstring(`"maintenance_info":{"version":"0.13.7","description":"This upgrade provides support for Terraform version: 0.13.7. The upgrade operation will take a while. The instance and all associated bindings will be upgraded."}`))
 
+				var catServices apiresponses.CatalogResponse
+				err := json.Unmarshal(catalogResponse.ResponseBody, &catServices)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(catServices.Services[0].Plans[0].MaintenanceInfo).To(Equal(&domain.MaintenanceInfo{
+					Public:      nil,
+					Private:     "",
+					Version:     "0.13.7",
+					Description: "This upgrade provides support for Terraform version: 0.13.7. The upgrade operation will take a while. The instance and all associated bindings will be upgraded.",
+				}))
 			})
 		})
 
