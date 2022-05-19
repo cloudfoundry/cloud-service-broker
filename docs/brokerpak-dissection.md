@@ -155,7 +155,7 @@ This section defines all the binaries and terraform providers that will be bundl
 |-------|-------|
 | name  | name of artifact|
 | version | version of artifact |
-| source | URL for source code archive of artifact |
+| source | URL for source code archive of artifact, which can optionally be included in the brokerpak. |
 | url_template | non-standard location to copy artifact from (default: *https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip*)|
 
 ### Environment Config Mapping

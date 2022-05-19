@@ -96,7 +96,8 @@ dependencies, services it provides, and the contents.
 		},
 	})
 
-	pakCmd.AddCommand(&cobra.Command{
+	const includeSourceFlag = "include-source"
+	buildCmd := &cobra.Command{
 		Use:   "build [path/to/pack/directory]",
 		Short: "bundle up the service definition files and Terraform resources into a brokerpak",
 		Args:  cobra.MaximumNArgs(1),
@@ -106,7 +107,12 @@ dependencies, services it provides, and the contents.
 				directory = args[0]
 			}
 
-			pakPath, err := brokerpak.Pack(directory, viper.GetString(pakCachePath))
+			includeSource, err := cmd.Flags().GetBool(includeSourceFlag)
+			if err != nil {
+				log.Fatalf("error while obtaining the %q flag: %s", includeSourceFlag, err)
+			}
+
+			pakPath, err := brokerpak.Pack(directory, viper.GetString(pakCachePath), includeSource)
 			if err != nil {
 				log.Fatalf("error while packing %q: %v", directory, err)
 			}
@@ -117,7 +123,9 @@ dependencies, services it provides, and the contents.
 				fmt.Printf("created: %v\n", pakPath)
 			}
 		},
-	})
+	}
+	buildCmd.Flags().BoolP(includeSourceFlag, "s", false, "include source in the brokerpak")
+	pakCmd.AddCommand(buildCmd)
 
 	pakCmd.AddCommand(&cobra.Command{
 		Use:   "info [pack.brokerpak]",
@@ -179,7 +187,7 @@ dependencies, services it provides, and the contents.
 			}
 
 			// Edit the manifest to point to our local server
-			packname, err := brokerpak.Pack(td, "")
+			packname, err := brokerpak.Pack(td, "", false)
 			defer os.Remove(packname)
 			if err != nil {
 				log.Fatalf("couldn't pack brokerpak: %v", err)
