@@ -101,7 +101,7 @@ type TFStateValue struct {
 	Value interface{}
 }
 
-func (p TerraformMock) ReturnTFState(values []TFStateValue) error {
+func (p TerraformMock) SetTFState(values []TFStateValue) error {
 	var outputs = make(map[string]struct {
 		Type  string      `json:"type"`
 		Value interface{} `json:"value"`
