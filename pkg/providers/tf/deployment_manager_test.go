@@ -14,6 +14,96 @@ import (
 )
 
 var _ = Describe("DeploymentManager", func() {
+	Describe("CreateAndSaveDeployment", func() {
+		var (
+			fakeStore         brokerfakes.FakeServiceProviderStorage
+			deploymentManager *tf.DeploymentManager
+			ws                *workspace.TerraformWorkspace
+			deploymentID      string
+		)
+
+		BeforeEach(func() {
+			fakeStore = brokerfakes.FakeServiceProviderStorage{}
+			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+			ws = &workspace.TerraformWorkspace{
+				Modules: []workspace.ModuleDefinition{{
+					Name:       "fake module name",
+					Definition: "fake definition",
+				}},
+			}
+			deploymentID = "tf:instance:binding"
+		})
+
+		It("stores a new deployment", func() {
+			actualDeployment, err := deploymentManager.CreateAndSaveDeployment(deploymentID, ws)
+
+			By("checking the deployment object is correct")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(actualDeployment.ID).To(Equal(deploymentID))
+			Expect(actualDeployment.Workspace).To(Equal(ws))
+			Expect(actualDeployment.LastOperationType).To(Equal("validation"))
+			Expect(actualDeployment.LastOperationState).To(BeEmpty())
+			Expect(actualDeployment.LastOperationMessage).To(BeEmpty())
+
+			By("validating a call to store was made")
+			Expect(fakeStore.StoreTerraformDeploymentCallCount()).To(Equal(1))
+			storedDeployment := fakeStore.StoreTerraformDeploymentArgsForCall(0)
+			Expect(storedDeployment).To(Equal(actualDeployment))
+		})
+
+		When("deployment exists", func() {
+			var existingDeployment storage.TerraformDeployment
+			BeforeEach(func() {
+				existingDeployment = storage.TerraformDeployment{
+					ID: deploymentID,
+					Workspace: &workspace.TerraformWorkspace{
+						Modules: []workspace.ModuleDefinition{{
+							Name: "existing module",
+						}},
+					},
+					LastOperationType:    "provision",
+					LastOperationState:   "in progress",
+					LastOperationMessage: "test",
+				}
+				fakeStore.ExistsTerraformDeploymentReturns(true, nil)
+				fakeStore.GetTerraformDeploymentReturns(existingDeployment, nil)
+			})
+
+			It("updates workspace if deployment exists", func() {
+				actualDeployment, err := deploymentManager.CreateAndSaveDeployment(deploymentID, ws)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(actualDeployment.ID).To(Equal(deploymentID))
+				Expect(actualDeployment.Workspace).To(Equal(ws))
+				Expect(actualDeployment.LastOperationType).To(Equal("validation"))
+				Expect(actualDeployment.LastOperationState).To(Equal("in progress"))
+				Expect(actualDeployment.LastOperationMessage).To(Equal("test"))
+
+				By("validating a call to store was made")
+				Expect(fakeStore.StoreTerraformDeploymentCallCount()).To(Equal(1))
+				storedDeployment := fakeStore.StoreTerraformDeploymentArgsForCall(0)
+				Expect(storedDeployment).To(Equal(actualDeployment))
+			})
+		})
+
+		It("fails, when checking if deployment exists fails", func() {
+			fakeStore.ExistsTerraformDeploymentReturns(true, errors.New("failed to check"))
+
+			_, err := deploymentManager.CreateAndSaveDeployment(deploymentID, ws)
+
+			Expect(err).To(MatchError("failed to check"))
+		})
+
+		It("fails, when getting deployment fails", func() {
+			fakeStore.ExistsTerraformDeploymentReturns(true, nil)
+			fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New("failed to get deployment"))
+
+			_, err := deploymentManager.CreateAndSaveDeployment(deploymentID, ws)
+
+			Expect(err).To(MatchError("failed to get deployment"))
+		})
+
+	})
 
 	Describe("UpdateWorkspaceHCL", func() {
 		const (
