@@ -17,7 +17,7 @@ func (provider *TerraformProvider) Unbind(ctx context.Context, instanceGUID, bin
 		"tfId":     tfID,
 	})
 
-	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.BindSettings, vc, tfID); err != nil {
+	if err := provider.UpdateWorkspaceHCL(tfID, provider.serviceDefinition.BindSettings, vc.ToMap()); err != nil {
 		return err
 	}
 

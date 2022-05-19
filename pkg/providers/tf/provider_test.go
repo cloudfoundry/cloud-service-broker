@@ -34,7 +34,7 @@ var _ = Describe("Provider", func() {
 							},
 						},
 					},
-					storage,
+					tf.NewDeploymentManager(storage),
 				)
 
 				inputVariables := []broker.BrokerVariable{
@@ -53,15 +53,15 @@ var _ = Describe("Provider", func() {
 
 		When("instance was subsumed", func() {
 			var (
-				tfProvider         broker.ServiceProvider
-				subsumePlanGUID    string
-				fakeInvokerBuilder *tffakes.FakeTerraformInvokerBuilder
-				fakeInvoker        *tffakes.FakeTerraformInvoker
-				fakeStore          *brokerfakes.FakeServiceProviderStorage
+				tfProvider            broker.ServiceProvider
+				subsumePlanGUID       string
+				fakeInvokerBuilder    *tffakes.FakeTerraformInvokerBuilder
+				fakeInvoker           *tffakes.FakeTerraformInvoker
+				fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface
 			)
 
 			BeforeEach(func() {
-				fakeStore = new(brokerfakes.FakeServiceProviderStorage)
+				fakeDeploymentManager = new(tffakes.FakeDeploymentManagerInterface)
 				fakeInvoker = new(tffakes.FakeTerraformInvoker)
 				fakeInvokerBuilder = new(tffakes.FakeTerraformInvokerBuilder)
 
@@ -84,12 +84,12 @@ var _ = Describe("Provider", func() {
 							},
 						},
 					},
-					fakeStore,
+					fakeDeploymentManager,
 				)
 			})
 
 			It("should return subsumed variables", func() {
-				fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, nil)
+				fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, nil)
 
 				inputVariables := []broker.BrokerVariable{
 					{
@@ -100,7 +100,7 @@ var _ = Describe("Provider", func() {
 
 				result, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "fakeInstanceGUID", inputVariables)
 
-				actualTfID := fakeStore.GetTerraformDeploymentArgsForCall(0)
+				actualTfID := fakeDeploymentManager.GetTerraformDeploymentArgsForCall(0)
 				Expect(actualTfID).To(Equal("tf:fakeInstanceGUID:"))
 				Expect(err).NotTo(HaveOccurred())
 				Expect(result).To(Equal(map[string]interface{}{"field_to_replace": "subsume-value"}))
@@ -117,13 +117,13 @@ var _ = Describe("Provider", func() {
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(result).To(BeEmpty())
-				Expect(fakeStore.GetTerraformDeploymentCallCount()).To(BeZero())
+				Expect(fakeDeploymentManager.GetTerraformDeploymentCallCount()).To(BeZero())
 				Expect(fakeInvoker.ShowCallCount()).To(BeZero())
 			})
 
 			It("returns error when tf show fails", func() {
 				fakeInvoker.ShowReturns("", errors.New("tf show failed"))
-				fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, nil)
+				fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, nil)
 
 				inputVariables := []broker.BrokerVariable{
 					{
