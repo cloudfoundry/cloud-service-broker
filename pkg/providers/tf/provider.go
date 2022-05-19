@@ -74,12 +74,14 @@ type TerraformProvider struct {
 	DeploymentManagerInterface
 }
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate . DeploymentManagerInterface
 type DeploymentManagerInterface interface {
 	GetTerraformDeployment(id string) (storage.TerraformDeployment, error)
 	CreateAndSaveDeployment(jobID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error)
-	MarkJobStarted(deployment storage.TerraformDeployment, operationType string) error
-	OperationFinished(err error, deployment storage.TerraformDeployment) error
-	Status(deploymentID string) (bool, string, error)
+	MarkOperationStarted(deployment storage.TerraformDeployment, operationType string) error
+	MarkOperationFinished(deployment storage.TerraformDeployment, err error) error
+	OperationStatus(deploymentID string) (bool, string, error)
 	UpdateWorkspaceHCL(TfServiceDefinitionV1Action, *varcontext.VarContext, string) error
 }
 
@@ -108,13 +110,13 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 		return tfID, fmt.Errorf("terraform provider create failed: %w", err)
 	}
 
-	if err := provider.MarkJobStarted(deployment, models.ProvisionOperationType); err != nil {
+	if err := provider.MarkOperationStarted(deployment, models.ProvisionOperationType); err != nil {
 		return tfID, fmt.Errorf("error marking job started: %w", err)
 	}
 
 	go func() {
 		err := provider.DefaultInvoker().Apply(ctx, workspace)
-		provider.OperationFinished(err, deployment)
+		provider.MarkOperationFinished(deployment, err)
 	}()
 
 	return tfID, nil
@@ -142,19 +144,19 @@ func (provider *TerraformProvider) Destroy(ctx context.Context, id string, templ
 
 	workspace.Instances[0].Configuration = limitedConfig
 
-	if err := provider.MarkJobStarted(deployment, models.DeprovisionOperationType); err != nil {
+	if err := provider.MarkOperationStarted(deployment, models.DeprovisionOperationType); err != nil {
 		return err
 	}
 
 	go func() {
 		err = provider.performTerraformUpgrade(ctx, workspace)
 		if err != nil {
-			provider.OperationFinished(err, deployment)
+			provider.MarkOperationFinished(deployment, err)
 			return
 		}
 
 		err = provider.DefaultInvoker().Destroy(ctx, workspace)
-		provider.OperationFinished(err, deployment)
+		provider.MarkOperationFinished(deployment, err)
 	}()
 
 	return nil
@@ -217,7 +219,7 @@ func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 			return nil
 
 		case <-time.After(1 * time.Second):
-			isDone, _, err := provider.Status(id)
+			isDone, _, err := provider.OperationStatus(id)
 			if isDone {
 				return err
 			}

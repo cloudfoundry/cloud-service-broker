@@ -49,7 +49,7 @@ func (d *DeploymentManager) CreateAndSaveDeployment(jobID string, workspace *wor
 	return deployment, d.store.StoreTerraformDeployment(deployment)
 }
 
-func (d *DeploymentManager) MarkJobStarted(deployment storage.TerraformDeployment, operationType string) error {
+func (d *DeploymentManager) MarkOperationStarted(deployment storage.TerraformDeployment, operationType string) error {
 	// update the deployment info
 	deployment.LastOperationType = operationType
 	deployment.LastOperationState = InProgress
@@ -62,9 +62,7 @@ func (d *DeploymentManager) MarkJobStarted(deployment storage.TerraformDeploymen
 	return nil
 }
 
-// OperationFinished closes out the state of the background job so clients that
-// are polling can get the results.
-func (d *DeploymentManager) OperationFinished(err error, deployment storage.TerraformDeployment) error {
+func (d *DeploymentManager) MarkOperationFinished(deployment storage.TerraformDeployment, err error) error {
 	// we shouldn't update the Status on update when updating the HCL, as the Status comes either from the provision call or a previous update
 	workspace := deployment.Workspace
 	if err == nil {
@@ -87,7 +85,7 @@ func (d *DeploymentManager) OperationFinished(err error, deployment storage.Terr
 	return d.store.StoreTerraformDeployment(deployment)
 }
 
-func (d *DeploymentManager) Status(deploymentID string) (bool, string, error) {
+func (d *DeploymentManager) OperationStatus(deploymentID string) (bool, string, error) {
 	deployment, err := d.store.GetTerraformDeployment(deploymentID)
 	if err != nil {
 		return true, "", err
@@ -101,10 +99,6 @@ func (d *DeploymentManager) Status(deploymentID string) (bool, string, error) {
 	default:
 		return false, deployment.LastOperationMessage, nil
 	}
-}
-
-func (d *DeploymentManager) GetTerraformDeployment(id string) (storage.TerraformDeployment, error) {
-	return d.store.GetTerraformDeployment(id)
 }
 
 func (d *DeploymentManager) UpdateWorkspaceHCL(action TfServiceDefinitionV1Action, operationContext *varcontext.VarContext, tfID string) error {
@@ -134,4 +128,8 @@ func (d *DeploymentManager) UpdateWorkspaceHCL(action TfServiceDefinitionV1Actio
 	}
 
 	return nil
+}
+
+func (d *DeploymentManager) GetTerraformDeployment(id string) (storage.TerraformDeployment, error) {
+	return d.store.GetTerraformDeployment(id)
 }

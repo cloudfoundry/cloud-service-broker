@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
@@ -22,7 +21,7 @@ import (
 
 var _ = Describe("Update", func() {
 	var (
-		fakeStore             *brokerfakes.FakeStorage
+		fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface
 		fakeWorkspace         *workspacefakes.FakeWorkspace
 		deploymentID          string
 		deployment            storage.TerraformDeployment
@@ -36,7 +35,7 @@ var _ = Describe("Update", func() {
 	)
 
 	BeforeEach(func() {
-		fakeStore = &brokerfakes.FakeStorage{}
+		fakeDeploymentManager = &tffakes.FakeDeploymentManagerInterface{}
 		fakeWorkspace = &workspacefakes.FakeWorkspace{}
 		fakeWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "moduleName"}})
 		fakeInvokerBuilder = &tffakes.FakeTerraformInvokerBuilder{}
@@ -59,17 +58,17 @@ var _ = Describe("Update", func() {
 	})
 
 	It("fails, when deployment can't be found", func() {
-		fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, genericError)
-		provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
+		fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, genericError)
+		provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
 		_, err := provider.Update(context.TODO(), varContext)
 		Expect(err).To(MatchError(genericError))
 	})
 
-	It("fails, when store cant be updated", func() {
-		fakeStore.GetTerraformDeploymentReturns(deployment, nil)
-		fakeStore.StoreTerraformDeploymentReturns(genericError)
-		runner := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
+	It("fails, when job cannot be marked as started", func() {
+		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
+		fakeDeploymentManager.MarkOperationStartedReturns(genericError)
+		runner := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
 		_, err := runner.Update(context.TODO(), varContext)
 
@@ -78,84 +77,80 @@ var _ = Describe("Update", func() {
 
 	It("fails, when cant get version from state", func() {
 		deployment.Workspace = fakeWorkspace
-		fakeStore.GetTerraformDeploymentReturns(deployment, nil)
+		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		fakeWorkspace.StateVersionReturns(nil, genericError)
 
-		runner := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
+		runner := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 		_, err := runner.Update(context.TODO(), varContext)
 		Expect(err).NotTo(HaveOccurred())
-		Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
 
-		Expect(lastStoredLastOperation(fakeStore)()).To(Equal(tf.Failed))
-		Expect(lastStoredDeployment(fakeStore)().LastOperationMessage).To(ContainSubstring(genericError.Error()))
+		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
+		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(genericError))
 	})
 
 	It("fails, when cant update instance configuration", func() {
 		deployment.Workspace = fakeWorkspace
-		fakeStore.GetTerraformDeploymentReturns(deployment, nil)
+		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		tfVersion := "1.1"
 		fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 		fakeWorkspace.UpdateInstanceConfigurationReturns(genericError)
 
-		runner := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
+		runner := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
 		_, err := runner.Update(context.TODO(), varContext)
 		Expect(err).NotTo(HaveOccurred())
-		Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
 
-		Expect(lastStoredLastOperation(fakeStore)()).To(Equal(tf.Failed))
-		Expect(lastStoredDeployment(fakeStore)().LastOperationMessage).To(ContainSubstring(genericError.Error()))
+		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
+		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(genericError))
 	})
 
 	It("updates templates before applying", func() {
 		deployment.Workspace = fakeWorkspace
-		fakeStore.GetTerraformDeploymentReturns(deployment, nil)
+		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		tfVersion := "1.1"
 		fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 
-		runner := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
+		runner := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
 		_, err := runner.Update(context.TODO(), varContext)
 		Expect(err).NotTo(HaveOccurred())
-		Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
-		Expect(lastStoredLastOperation(fakeStore)()).To(Equal(tf.Succeeded))
+		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
+		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
 
 		Expect(fakeWorkspace.UpdateInstanceConfigurationCallCount()).To(Equal(1))
 		Expect(fakeWorkspace.UpdateInstanceConfigurationArgsForCall(0)).To(Equal(templateVars))
 	})
 
-	It("updates the last operation on success, with the Status from terraform", func() {
+	It("updates the last operation on success", func() {
 		deployment.Workspace = fakeWorkspace
-		fakeStore.GetTerraformDeploymentReturns(deployment, nil)
+		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		tfVersion := "1.1"
 		fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 		fakeWorkspace.OutputsReturns(map[string]interface{}{"Status": "Status from terraform"}, nil)
 
-		runner := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
+		runner := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 		_, err := runner.Update(context.TODO(), varContext)
 		Expect(err).To(Succeed())
-		Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
-		Expect(lastStoredLastOperation(fakeStore)()).To(Equal(tf.Succeeded))
-
-		Expect(lastStoredDeployment(fakeStore)().LastOperationMessage).To(Equal("Status from terraform"))
+		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
+		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
 	})
 
 	It("return the error in last operation, if terraform apply fails", func() {
 		deployment.Workspace = fakeWorkspace
-		fakeStore.GetTerraformDeploymentReturns(deployment, nil)
+		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		tfVersion := "1.1"
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 		fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 		fakeDefaultInvoker.ApplyReturns(genericError)
 
-		runner := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
+		runner := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 		_, err := runner.Update(context.TODO(), varContext)
 		Expect(err).To(Succeed())
-		Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
-		Expect(lastStoredLastOperation(fakeStore)()).To(Equal(tf.Failed))
-		Expect(lastStoredDeployment(fakeStore)().LastOperationMessage).To(ContainSubstring(genericError.Error()))
+
+		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
+		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(genericError))
 	})
 
 	Context("when tfUpgrades are enabled", func() {
@@ -175,7 +170,7 @@ var _ = Describe("Update", func() {
 			fakeInvoker2 := &tffakes.FakeTerraformInvoker{}
 
 			deployment.Workspace = fakeWorkspace
-			fakeStore.GetTerraformDeploymentReturns(deployment, nil)
+			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(0, fakeInvoker1)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(1, fakeInvoker2)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(2, fakeDefaultInvoker)
@@ -183,12 +178,12 @@ var _ = Describe("Update", func() {
 			fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
 			fakeWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "moduleName"}})
 
-			runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
+			runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 			_, err := runner.Update(context.TODO(), varContext)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
-			Expect(lastStoredLastOperation(fakeStore)()).To(Equal(tf.Succeeded))
+			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
+			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
 
 			Expect(fakeInvoker1.ApplyCallCount()).To(Equal(1))
 			Expect(getWorkspace(fakeInvoker1, 0)).To(Equal(fakeWorkspace))
@@ -210,16 +205,14 @@ var _ = Describe("Update", func() {
 				DefaultTfVersion: newVersion("0.1.0"),
 			}
 			deployment.Workspace = fakeWorkspace
-			fakeStore.GetTerraformDeploymentReturns(deployment, nil)
+			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 			fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
 
-			runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
+			runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
 			_, err := runner.Update(context.TODO(), varContext)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
-			Expect(lastStoredLastOperation(fakeStore)()).To(Equal(tf.Failed))
 			Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(0))
 		})
 	})
@@ -234,17 +227,15 @@ var _ = Describe("Update", func() {
 				DefaultTfVersion: newVersion("0.1.0"),
 			}
 			deployment.Workspace = fakeWorkspace
-			fakeStore.GetTerraformDeploymentReturns(deployment, nil)
+			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 
 			fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
 
-			runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
+			runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
 			_, err := runner.Update(context.TODO(), varContext)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
-			Expect(lastStoredLastOperation(fakeStore)()).To(Equal(tf.Failed))
 			Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(0))
 		})
 
@@ -253,18 +244,17 @@ var _ = Describe("Update", func() {
 				DefaultTfVersion: newVersion("0.1.0"),
 			}
 			deployment.Workspace = fakeWorkspace
-			fakeStore.GetTerraformDeploymentReturns(deployment, nil)
+			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(0, fakeDefaultInvoker)
 			fakeWorkspace.StateVersionReturns(newVersion("0.1.0"), nil)
 
-			runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeStore)
+			runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
 			_, err := runner.Update(context.TODO(), varContext)
 			Expect(err).NotTo(HaveOccurred())
 
-			Eventually(lastStoredLastOperation(fakeStore)).Should(Or(Equal(tf.Succeeded), Equal(tf.Failed)))
-
-			Expect(lastStoredLastOperation(fakeStore)()).To(Equal(tf.Succeeded))
+			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
+			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
 
 			Expect(fakeDefaultInvoker.ApplyCallCount()).To(Equal(1))
 			_, workspace := fakeDefaultInvoker.ApplyArgsForCall(0)
@@ -274,24 +264,32 @@ var _ = Describe("Update", func() {
 },
 )
 
+func operationWasFinishedWithError(fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface) func() error {
+	return func() error {
+		_, err := lastOperationMarkedFinished(fakeDeploymentManager)
+		return err
+	}
+
+}
+
 func getWorkspace(invoker *tffakes.FakeTerraformInvoker, pos int) workspace.Workspace {
 	_, workspace := invoker.ApplyArgsForCall(pos)
 	return workspace
 }
 
-func lastStoredDeployment(fakeStore *brokerfakes.FakeStorage) func() storage.TerraformDeployment {
+func operationWasFinishedForDeployment(fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface) func() storage.TerraformDeployment {
 	return func() storage.TerraformDeployment {
-		callCount := fakeStore.StoreTerraformDeploymentCallCount()
-		if callCount == 0 {
-			return storage.TerraformDeployment{}
-		} else {
-			return fakeStore.StoreTerraformDeploymentArgsForCall(callCount - 1)
-		}
+		deployment, _ := lastOperationMarkedFinished(fakeDeploymentManager)
+		return deployment
 	}
 }
-func lastStoredLastOperation(fakeStore *brokerfakes.FakeStorage) func() string {
-	return func() string {
-		return lastStoredDeployment(fakeStore)().LastOperationState
+
+func lastOperationMarkedFinished(fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface) (storage.TerraformDeployment, error) {
+	callCount := fakeDeploymentManager.MarkOperationFinishedCallCount()
+	if callCount == 0 {
+		return storage.TerraformDeployment{}, nil
+	} else {
+		return fakeDeploymentManager.MarkOperationFinishedArgsForCall(callCount - 1)
 	}
 }
 

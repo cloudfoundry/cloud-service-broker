@@ -100,7 +100,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 		return tfID, err
 	}
 
-	if err := provider.MarkJobStarted(deployment, models.ProvisionOperationType); err != nil {
+	if err := provider.MarkOperationStarted(deployment, models.ProvisionOperationType); err != nil {
 		return tfID, err
 	}
 	invoker := provider.DefaultInvoker()
@@ -114,7 +114,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 
 		if err := invoker.Import(ctx, workspace, resources); err != nil {
 			logger.Error("Import Failed", err)
-			provider.OperationFinished(err, deployment)
+			provider.MarkOperationFinished(deployment, err)
 			return
 		}
 		mainTf, err := invoker.Show(ctx, workspace)
@@ -141,7 +141,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 				}
 			}
 		}
-		provider.OperationFinished(err, deployment)
+		provider.MarkOperationFinished(deployment, err)
 	}()
 
 	return tfID, nil
