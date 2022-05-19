@@ -123,7 +123,7 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 }
 
 // Destroy runs `terraform destroy` on the given workspace in the background.
-// The Status of the job can be found by polling the Status function.
+// The status of the job can be found by polling the OperationsStatus function.
 func (provider *TerraformProvider) Destroy(ctx context.Context, id string, templateVars map[string]interface{}) error {
 	deployment, err := provider.GetTerraformDeployment(id)
 	if err != nil {
@@ -211,7 +211,7 @@ func (provider *TerraformProvider) getVarsToReplace(inputVariables []broker.Brok
 	return varsToReplace
 }
 
-// Wait waits for an operation to complete, polling its Status once per second.
+// Wait waits for an operation to complete, polling its OperationStatus once per second.
 func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 	for {
 		select {

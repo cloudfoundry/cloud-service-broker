@@ -128,7 +128,7 @@ var _ = Describe("Update", func() {
 		tfVersion := "1.1"
 		fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
-		fakeWorkspace.OutputsReturns(map[string]interface{}{"Status": "Status from terraform"}, nil)
+		fakeWorkspace.OutputsReturns(map[string]interface{}{"status": "status from terraform"}, nil)
 
 		runner := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 		_, err := runner.Update(context.TODO(), varContext)
