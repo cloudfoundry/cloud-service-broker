@@ -38,7 +38,7 @@ var _ = Describe("DeploymentManager", func() {
 			actualDeployment, err := deploymentManager.CreateAndSaveDeployment(deploymentID, ws)
 
 			By("checking the deployment object is correct")
-			Expect(err).ToNot(HaveOccurred())
+			Expect(err).NotTo(HaveOccurred())
 			Expect(actualDeployment.ID).To(Equal(deploymentID))
 			Expect(actualDeployment.Workspace).To(Equal(ws))
 			Expect(actualDeployment.LastOperationType).To(Equal("validation"))
@@ -72,7 +72,7 @@ var _ = Describe("DeploymentManager", func() {
 			It("updates workspace if deployment exists", func() {
 				actualDeployment, err := deploymentManager.CreateAndSaveDeployment(deploymentID, ws)
 
-				Expect(err).ToNot(HaveOccurred())
+				Expect(err).NotTo(HaveOccurred())
 				Expect(actualDeployment.ID).To(Equal(deploymentID))
 				Expect(actualDeployment.Workspace).To(Equal(ws))
 				Expect(actualDeployment.LastOperationType).To(Equal("validation"))
@@ -103,6 +103,44 @@ var _ = Describe("DeploymentManager", func() {
 			Expect(err).To(MatchError("failed to get deployment"))
 		})
 
+	})
+
+	Describe("MarkOperationStarted", func() {
+		var (
+			fakeStore         brokerfakes.FakeServiceProviderStorage
+			deploymentManager *tf.DeploymentManager
+			deployment        storage.TerraformDeployment
+		)
+
+		BeforeEach(func() {
+			fakeStore = brokerfakes.FakeServiceProviderStorage{}
+			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+			deployment = storage.TerraformDeployment{
+				ID:                "tf:instance:binding",
+				LastOperationType: "validation",
+			}
+		})
+
+		It("updates last operation to in progress", func() {
+			err := deploymentManager.MarkOperationStarted(deployment, "provision")
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(fakeStore.StoreTerraformDeploymentCallCount()).To(Equal(1))
+			storedDeployment := fakeStore.StoreTerraformDeploymentArgsForCall(0)
+
+			Expect(storedDeployment.ID).To(Equal("tf:instance:binding"))
+			Expect(storedDeployment.LastOperationType).To(Equal("provision"))
+			Expect(storedDeployment.LastOperationState).To(Equal("in progress"))
+			Expect(storedDeployment.LastOperationMessage).To(Equal(""))
+		})
+
+		It("fails, when storing deployment fails", func() {
+			fakeStore.StoreTerraformDeploymentReturns(errors.New("couldn't store deployment"))
+
+			err := deploymentManager.MarkOperationStarted(deployment, "provision")
+
+			Expect(err).To(MatchError("couldn't store deployment"))
+		})
 	})
 
 	Describe("UpdateWorkspaceHCL", func() {
