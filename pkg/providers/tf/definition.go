@@ -515,7 +515,7 @@ func (action *TfServiceDefinitionV1Action) validateTemplateOutputs() (errs *vali
 		}
 	}
 
-	if !definedOutputs.Equals(utils.NewStringSet(tfOut...).Minus(utils.NewStringSet("Status"))) {
+	if !definedOutputs.Equals(utils.NewStringSet(tfOut...).Minus(utils.NewStringSet("status"))) {
 		return &validation.FieldError{
 			Message: fmt.Sprintf("template outputs %v must match declared outputs %v", tfOut, definedOutputs),
 		}
