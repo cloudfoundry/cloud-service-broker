@@ -28,36 +28,36 @@ func (provider *TerraformProvider) Update(ctx context.Context, provisionContext 
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	if err := UpdateWorkspaceHCL(provider.store, provider.serviceDefinition.ProvisionSettings, provisionContext, tfID); err != nil {
+	if err := provider.UpdateWorkspaceHCL(tfID, provider.serviceDefinition.ProvisionSettings, provisionContext.ToMap()); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	deployment, err := provider.store.GetTerraformDeployment(tfID)
+	deployment, err := provider.GetTerraformDeployment(tfID)
 	if err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
 	workspace := deployment.Workspace
 
-	if err := provider.markJobStarted(deployment, models.UpdateOperationType); err != nil {
+	if err := provider.MarkOperationStarted(deployment, models.UpdateOperationType); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
 	go func() {
 		err = provider.performTerraformUpgrade(ctx, workspace)
 		if err != nil {
-			provider.operationFinished(err, deployment)
+			provider.MarkOperationFinished(deployment, err)
 			return
 		}
 
 		err = workspace.UpdateInstanceConfiguration(provisionContext.ToMap())
 		if err != nil {
-			provider.operationFinished(err, deployment)
+			provider.MarkOperationFinished(deployment, err)
 			return
 		}
 
 		err = provider.DefaultInvoker().Apply(ctx, workspace)
-		provider.operationFinished(err, deployment)
+		provider.MarkOperationFinished(deployment, err)
 	}()
 
 	return models.ServiceInstanceDetails{
