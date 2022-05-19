@@ -16,7 +16,6 @@ package tf
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -56,14 +55,14 @@ func NewTerraformProvider(
 	invokerBuilder invoker.TerraformInvokerBuilder,
 	logger lager.Logger,
 	serviceDefinition TfServiceDefinitionV1,
-	store broker.ServiceProviderStorage,
+	deploymentManager DeploymentManagerInterface,
 ) *TerraformProvider {
 	return &TerraformProvider{
-		tfBinContext:            tfBinContext,
-		TerraformInvokerBuilder: invokerBuilder,
-		serviceDefinition:       serviceDefinition,
-		logger:                  logger.Session("terraform-" + serviceDefinition.Name),
-		store:                   store,
+		tfBinContext:               tfBinContext,
+		TerraformInvokerBuilder:    invokerBuilder,
+		serviceDefinition:          serviceDefinition,
+		logger:                     logger.Session("terraform-" + serviceDefinition.Name),
+		DeploymentManagerInterface: deploymentManager,
 	}
 }
 
@@ -72,7 +71,7 @@ type TerraformProvider struct {
 	invoker.TerraformInvokerBuilder
 	logger            lager.Logger
 	serviceDefinition TfServiceDefinitionV1
-	store             broker.ServiceProviderStorage
+	DeploymentManagerInterface
 }
 
 func (provider *TerraformProvider) DefaultInvoker() invoker.TerraformInvoker {
@@ -94,28 +93,28 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 		return tfID, fmt.Errorf("error creating workspace: %w", err)
 	}
 
-	deployment, err := provider.createAndSaveDeployment(tfID, workspace)
+	deployment, err := provider.CreateAndSaveDeployment(tfID, workspace)
 	if err != nil {
 		provider.logger.Error("terraform provider create failed", err)
 		return tfID, fmt.Errorf("terraform provider create failed: %w", err)
 	}
 
-	if err := provider.markJobStarted(deployment, models.ProvisionOperationType); err != nil {
+	if err := provider.MarkOperationStarted(deployment, models.ProvisionOperationType); err != nil {
 		return tfID, fmt.Errorf("error marking job started: %w", err)
 	}
 
 	go func() {
 		err := provider.DefaultInvoker().Apply(ctx, workspace)
-		provider.operationFinished(err, deployment)
+		provider.MarkOperationFinished(deployment, err)
 	}()
 
 	return tfID, nil
 }
 
 // Destroy runs `terraform destroy` on the given workspace in the background.
-// The status of the job can be found by polling the Status function.
+// The status of the job can be found by polling the OperationsStatus function.
 func (provider *TerraformProvider) Destroy(ctx context.Context, id string, templateVars map[string]interface{}) error {
-	deployment, err := provider.store.GetTerraformDeployment(id)
+	deployment, err := provider.GetTerraformDeployment(id)
 	if err != nil {
 		return err
 	}
@@ -134,33 +133,22 @@ func (provider *TerraformProvider) Destroy(ctx context.Context, id string, templ
 
 	workspace.Instances[0].Configuration = limitedConfig
 
-	if err := provider.markJobStarted(deployment, models.DeprovisionOperationType); err != nil {
+	if err := provider.MarkOperationStarted(deployment, models.DeprovisionOperationType); err != nil {
 		return err
 	}
 
 	go func() {
 		err = provider.performTerraformUpgrade(ctx, workspace)
 		if err != nil {
-			provider.operationFinished(err, deployment)
+			provider.MarkOperationFinished(deployment, err)
 			return
 		}
 
 		err = provider.DefaultInvoker().Destroy(ctx, workspace)
-		provider.operationFinished(err, deployment)
+		provider.MarkOperationFinished(deployment, err)
 	}()
 
 	return nil
-}
-
-func (provider *TerraformProvider) GetTerraformOutputs(ctx context.Context, guid string) (storage.JSONObject, error) {
-	tfID := generateTfID(guid, "")
-
-	outs, err := provider.Outputs(ctx, tfID, workspace.DefaultInstanceName)
-	if err != nil {
-		return nil, err
-	}
-
-	return outs, nil
 }
 
 func (provider *TerraformProvider) GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []broker.BrokerVariable) (map[string]interface{}, error) {
@@ -175,7 +163,7 @@ func (provider *TerraformProvider) GetImportedProperties(ctx context.Context, pl
 		return map[string]interface{}{}, nil
 	}
 
-	deployment, err := provider.store.GetTerraformDeployment(generateTfID(instanceGUID, ""))
+	deployment, err := provider.GetTerraformDeployment(generateTfID(instanceGUID, ""))
 	if err != nil {
 		return nil, err
 	}
@@ -201,80 +189,7 @@ func (provider *TerraformProvider) getVarsToReplace(inputVariables []broker.Brok
 	return varsToReplace
 }
 
-func (provider *TerraformProvider) createAndSaveDeployment(jobID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error) {
-	deployment := storage.TerraformDeployment{ID: jobID}
-	exists, err := provider.store.ExistsTerraformDeployment(jobID)
-	switch {
-	case err != nil:
-		return deployment, err
-	case exists:
-		deployment, err = provider.store.GetTerraformDeployment(jobID)
-		if err != nil {
-			return deployment, err
-		}
-	}
-
-	deployment.Workspace = workspace
-	deployment.LastOperationType = "validation"
-
-	return deployment, provider.store.StoreTerraformDeployment(deployment)
-}
-
-func (provider *TerraformProvider) markJobStarted(deployment storage.TerraformDeployment, operationType string) error {
-	// update the deployment info
-	deployment.LastOperationType = operationType
-	deployment.LastOperationState = InProgress
-	deployment.LastOperationMessage = ""
-
-	if err := provider.store.StoreTerraformDeployment(deployment); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// operationFinished closes out the state of the background job so clients that
-// are polling can get the results.
-func (provider *TerraformProvider) operationFinished(err error, deployment storage.TerraformDeployment) error {
-	// we shouldn't update the status on update when updating the HCL, as the status comes either from the provision call or a previous update
-	workspace := deployment.Workspace
-	if err == nil {
-		lastOperationMessage := ""
-		// maybe do if deployment.LastOperationType != "validation" so we don't do the status update on staging a job.
-		// previously we would only stage a job on provision so state would be empty and the outputs would be null.
-		outputs, err := workspace.Outputs(workspace.ModuleInstances()[0].InstanceName)
-		if err == nil {
-			if status, ok := outputs["status"]; ok {
-				lastOperationMessage = fmt.Sprintf("%v", status)
-			}
-		}
-		deployment.LastOperationState = Succeeded
-		deployment.LastOperationMessage = lastOperationMessage
-	} else {
-		deployment.LastOperationState = Failed
-		deployment.LastOperationMessage = err.Error()
-	}
-
-	return provider.store.StoreTerraformDeployment(deployment)
-}
-
-func (provider *TerraformProvider) status(deploymentID string) (bool, string, error) {
-	deployment, err := provider.store.GetTerraformDeployment(deploymentID)
-	if err != nil {
-		return true, "", err
-	}
-
-	switch deployment.LastOperationState {
-	case Succeeded:
-		return true, deployment.LastOperationMessage, nil
-	case Failed:
-		return true, deployment.LastOperationMessage, errors.New(deployment.LastOperationMessage)
-	default:
-		return false, deployment.LastOperationMessage, nil
-	}
-}
-
-// Wait waits for an operation to complete, polling its status once per second.
+// Wait waits for an operation to complete, polling its OperationStatus once per second.
 func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 	for {
 		select {
@@ -282,7 +197,7 @@ func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 			return nil
 
 		case <-time.After(1 * time.Second):
-			isDone, _, err := provider.status(id)
+			isDone, _, err := provider.OperationStatus(id)
 			if isDone {
 				return err
 			}
@@ -290,12 +205,13 @@ func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 	}
 }
 
-// Outputs gets the output variables for the given module instance in the workspace.
-func (provider *TerraformProvider) Outputs(ctx context.Context, id, instanceName string) (map[string]interface{}, error) {
-	deployment, err := provider.store.GetTerraformDeployment(id)
-	if err != nil {
-		return nil, fmt.Errorf("error getting TF deployment: %w", err)
-	}
-
-	return deployment.Workspace.Outputs(instanceName)
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate . DeploymentManagerInterface
+type DeploymentManagerInterface interface {
+	GetTerraformDeployment(id string) (storage.TerraformDeployment, error)
+	CreateAndSaveDeployment(deploymentID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error)
+	MarkOperationStarted(deployment storage.TerraformDeployment, operationType string) error
+	MarkOperationFinished(deployment storage.TerraformDeployment, err error) error
+	OperationStatus(deploymentID string) (bool, string, error)
+	UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]interface{}) error
 }
