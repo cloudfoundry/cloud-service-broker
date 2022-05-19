@@ -49,7 +49,6 @@ func (d *DeploymentManager) CreateAndSaveDeployment(deploymentID string, workspa
 }
 
 func (d *DeploymentManager) MarkOperationStarted(deployment storage.TerraformDeployment, operationType string) error {
-	// update the deployment info
 	deployment.LastOperationType = operationType
 	deployment.LastOperationState = InProgress
 	deployment.LastOperationMessage = ""

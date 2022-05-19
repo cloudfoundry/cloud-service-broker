@@ -221,6 +221,82 @@ var _ = Describe("DeploymentManager", func() {
 		})
 	})
 
+	Describe("OperationStatus", func() {
+		var (
+			fakeStore          brokerfakes.FakeServiceProviderStorage
+			deploymentManager  *tf.DeploymentManager
+			existingDeployment storage.TerraformDeployment
+		)
+
+		const existingDeploymentID = "tf:instance:binding"
+
+		BeforeEach(func() {
+			fakeStore = brokerfakes.FakeServiceProviderStorage{}
+			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+		})
+
+		When("last operation has succeeded", func() {
+			It("reports completion and last operation message", func() {
+				existingDeployment = storage.TerraformDeployment{
+					ID:                   existingDeploymentID,
+					LastOperationType:    "update",
+					LastOperationState:   "succeeded",
+					LastOperationMessage: "great update",
+				}
+				fakeStore.GetTerraformDeploymentReturns(existingDeployment, nil)
+
+				completed, lastOpMessage, err := deploymentManager.OperationStatus(existingDeploymentID)
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(completed).To(BeTrue())
+				Expect(lastOpMessage).To(Equal("great update"))
+			})
+		})
+
+		When("last operation has failed", func() {
+			It("reports completion and errors", func() {
+				existingDeployment = storage.TerraformDeployment{
+					ID:                   existingDeploymentID,
+					LastOperationType:    "update",
+					LastOperationState:   "failed",
+					LastOperationMessage: "not so great update",
+				}
+				fakeStore.GetTerraformDeploymentReturns(existingDeployment, nil)
+
+				completed, lastOpMessage, err := deploymentManager.OperationStatus(existingDeploymentID)
+
+				Expect(err).To(MatchError("not so great update"))
+				Expect(completed).To(BeTrue())
+				Expect(lastOpMessage).To(Equal("not so great update"))
+			})
+		})
+
+		When("last operation is in progress", func() {
+			It("reports in progress and last operation message", func() {
+				existingDeployment = storage.TerraformDeployment{
+					ID:                   existingDeploymentID,
+					LastOperationType:    "update",
+					LastOperationMessage: "still doing stuff",
+				}
+				fakeStore.GetTerraformDeploymentReturns(existingDeployment, nil)
+
+				completed, lastOpMessage, err := deploymentManager.OperationStatus(existingDeploymentID)
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(completed).To(BeFalse())
+				Expect(lastOpMessage).To(Equal("still doing stuff"))
+			})
+		})
+
+		It("fails, when it errors getting the deployment", func() {
+			fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New("cant get it now"))
+
+			_, _, err := deploymentManager.OperationStatus(existingDeploymentID)
+
+			Expect(err).To(MatchError("cant get it now"))
+		})
+	})
+
 	Describe("UpdateWorkspaceHCL", func() {
 		const (
 			id                   = "fake-id"
