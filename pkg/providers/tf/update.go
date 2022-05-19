@@ -28,7 +28,7 @@ func (provider *TerraformProvider) Update(ctx context.Context, provisionContext 
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	if err := provider.UpdateWorkspaceHCL(provider.serviceDefinition.ProvisionSettings, provisionContext, tfID); err != nil {
+	if err := provider.UpdateWorkspaceHCL(tfID, provider.serviceDefinition.ProvisionSettings, provisionContext.ToMap()); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 

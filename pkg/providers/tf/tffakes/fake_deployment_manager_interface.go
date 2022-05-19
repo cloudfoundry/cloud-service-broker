@@ -7,7 +7,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 )
 
 type FakeDeploymentManagerInterface struct {
@@ -77,12 +76,12 @@ type FakeDeploymentManagerInterface struct {
 		result2 string
 		result3 error
 	}
-	UpdateWorkspaceHCLStub        func(tf.TfServiceDefinitionV1Action, *varcontext.VarContext, string) error
+	UpdateWorkspaceHCLStub        func(string, tf.TfServiceDefinitionV1Action, map[string]interface{}) error
 	updateWorkspaceHCLMutex       sync.RWMutex
 	updateWorkspaceHCLArgsForCall []struct {
-		arg1 tf.TfServiceDefinitionV1Action
-		arg2 *varcontext.VarContext
-		arg3 string
+		arg1 string
+		arg2 tf.TfServiceDefinitionV1Action
+		arg3 map[string]interface{}
 	}
 	updateWorkspaceHCLReturns struct {
 		result1 error
@@ -414,13 +413,13 @@ func (fake *FakeDeploymentManagerInterface) OperationStatusReturnsOnCall(i int, 
 	}{result1, result2, result3}
 }
 
-func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCL(arg1 tf.TfServiceDefinitionV1Action, arg2 *varcontext.VarContext, arg3 string) error {
+func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCL(arg1 string, arg2 tf.TfServiceDefinitionV1Action, arg3 map[string]interface{}) error {
 	fake.updateWorkspaceHCLMutex.Lock()
 	ret, specificReturn := fake.updateWorkspaceHCLReturnsOnCall[len(fake.updateWorkspaceHCLArgsForCall)]
 	fake.updateWorkspaceHCLArgsForCall = append(fake.updateWorkspaceHCLArgsForCall, struct {
-		arg1 tf.TfServiceDefinitionV1Action
-		arg2 *varcontext.VarContext
-		arg3 string
+		arg1 string
+		arg2 tf.TfServiceDefinitionV1Action
+		arg3 map[string]interface{}
 	}{arg1, arg2, arg3})
 	stub := fake.UpdateWorkspaceHCLStub
 	fakeReturns := fake.updateWorkspaceHCLReturns
@@ -441,13 +440,13 @@ func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCLCallCount() int {
 	return len(fake.updateWorkspaceHCLArgsForCall)
 }
 
-func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCLCalls(stub func(tf.TfServiceDefinitionV1Action, *varcontext.VarContext, string) error) {
+func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCLCalls(stub func(string, tf.TfServiceDefinitionV1Action, map[string]interface{}) error) {
 	fake.updateWorkspaceHCLMutex.Lock()
 	defer fake.updateWorkspaceHCLMutex.Unlock()
 	fake.UpdateWorkspaceHCLStub = stub
 }
 
-func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCLArgsForCall(i int) (tf.TfServiceDefinitionV1Action, *varcontext.VarContext, string) {
+func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCLArgsForCall(i int) (string, tf.TfServiceDefinitionV1Action, map[string]interface{}) {
 	fake.updateWorkspaceHCLMutex.RLock()
 	defer fake.updateWorkspaceHCLMutex.RUnlock()
 	argsForCall := fake.updateWorkspaceHCLArgsForCall[i]

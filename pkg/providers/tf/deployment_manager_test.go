@@ -8,7 +8,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/viper"
@@ -43,7 +42,7 @@ var _ = Describe("DeploymentManager", func() {
 		)
 
 		var (
-			vc                       *varcontext.VarContext
+			templateVars             map[string]interface{}
 			store                    *brokerfakes.FakeServiceProviderStorage
 			deploymentManager        *tf.DeploymentManager
 			updatedProvisionSettings tf.TfServiceDefinitionV1Action
@@ -54,9 +53,7 @@ var _ = Describe("DeploymentManager", func() {
 				viper.Reset()
 				store = &brokerfakes.FakeServiceProviderStorage{}
 				deploymentManager = tf.NewDeploymentManager(store)
-				var err error
-				vc, err = varcontext.Builder().Build()
-				Expect(err).NotTo(HaveOccurred())
+				templateVars = map[string]interface{}{}
 			})
 
 			By("creating a fake provisioned service instance", func() {
@@ -111,7 +108,7 @@ var _ = Describe("DeploymentManager", func() {
 			})
 
 			It("updates the modules but keeps the original state", func() {
-				err := deploymentManager.UpdateWorkspaceHCL(updatedProvisionSettings, vc, id)
+				err := deploymentManager.UpdateWorkspaceHCL(id, updatedProvisionSettings, templateVars)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("checking that the right deployment is retrieved")
@@ -155,7 +152,7 @@ var _ = Describe("DeploymentManager", func() {
 				})
 
 				It("returns the error", func() {
-					err := deploymentManager.UpdateWorkspaceHCL(updatedProvisionSettings, vc, id)
+					err := deploymentManager.UpdateWorkspaceHCL(id, updatedProvisionSettings, templateVars)
 					Expect(err).To(MatchError("boom"))
 				})
 			})
@@ -169,7 +166,7 @@ var _ = Describe("DeploymentManager", func() {
 				}
 				`,
 					}
-					err := deploymentManager.UpdateWorkspaceHCL(jammedOperationSettings, vc, id)
+					err := deploymentManager.UpdateWorkspaceHCL(id, jammedOperationSettings, templateVars)
 					Expect(err).To(MatchError(ContainSubstring("Invalid expression")))
 				})
 			})
@@ -180,7 +177,7 @@ var _ = Describe("DeploymentManager", func() {
 				})
 
 				It("returns the error", func() {
-					err := deploymentManager.UpdateWorkspaceHCL(updatedProvisionSettings, vc, id)
+					err := deploymentManager.UpdateWorkspaceHCL(id, updatedProvisionSettings, templateVars)
 					Expect(err).To(MatchError("terraform provider create failed: fake error"))
 				})
 			})
@@ -188,7 +185,7 @@ var _ = Describe("DeploymentManager", func() {
 
 		When("brokerpak updates disabled", func() {
 			It("does not update the store", func() {
-				err := deploymentManager.UpdateWorkspaceHCL(updatedProvisionSettings, vc, id)
+				err := deploymentManager.UpdateWorkspaceHCL(id, updatedProvisionSettings, templateVars)
 				Expect(err).NotTo(HaveOccurred())
 
 				Expect(store.StoreTerraformDeploymentCallCount()).To(BeZero())

@@ -78,11 +78,11 @@ type TerraformProvider struct {
 //counterfeiter:generate . DeploymentManagerInterface
 type DeploymentManagerInterface interface {
 	GetTerraformDeployment(id string) (storage.TerraformDeployment, error)
-	CreateAndSaveDeployment(jobID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error)
+	CreateAndSaveDeployment(deploymentID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error)
 	MarkOperationStarted(deployment storage.TerraformDeployment, operationType string) error
 	MarkOperationFinished(deployment storage.TerraformDeployment, err error) error
 	OperationStatus(deploymentID string) (bool, string, error)
-	UpdateWorkspaceHCL(TfServiceDefinitionV1Action, *varcontext.VarContext, string) error
+	UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]interface{}) error
 }
 
 func (provider *TerraformProvider) DefaultInvoker() invoker.TerraformInvoker {

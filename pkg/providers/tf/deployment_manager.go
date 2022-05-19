@@ -7,7 +7,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/spf13/viper"
 )
 
@@ -30,14 +29,14 @@ func init() {
 	viper.SetDefault(dynamicHCLEnabled, false)
 }
 
-func (d *DeploymentManager) CreateAndSaveDeployment(jobID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error) {
-	deployment := storage.TerraformDeployment{ID: jobID}
-	exists, err := d.store.ExistsTerraformDeployment(jobID)
+func (d *DeploymentManager) CreateAndSaveDeployment(deploymentID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error) {
+	deployment := storage.TerraformDeployment{ID: deploymentID}
+	exists, err := d.store.ExistsTerraformDeployment(deploymentID)
 	switch {
 	case err != nil:
 		return deployment, err
 	case exists:
-		deployment, err = d.store.GetTerraformDeployment(jobID)
+		deployment, err = d.store.GetTerraformDeployment(deploymentID)
 		if err != nil {
 			return deployment, err
 		}
@@ -101,11 +100,11 @@ func (d *DeploymentManager) OperationStatus(deploymentID string) (bool, string, 
 	}
 }
 
-func (d *DeploymentManager) UpdateWorkspaceHCL(action TfServiceDefinitionV1Action, operationContext *varcontext.VarContext, tfID string) error {
+func (d *DeploymentManager) UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]interface{}) error {
 	if !viper.GetBool(dynamicHCLEnabled) {
 		return nil
 	}
-	deployment, err := d.store.GetTerraformDeployment(tfID)
+	deployment, err := d.store.GetTerraformDeployment(deploymentID)
 	if err != nil {
 		return err
 	}
@@ -115,7 +114,7 @@ func (d *DeploymentManager) UpdateWorkspaceHCL(action TfServiceDefinitionV1Actio
 		return err
 	}
 
-	workspace, err := workspace.NewWorkspace(operationContext.ToMap(), action.Template, action.Templates, []workspace.ParameterMapping{}, []string{}, []workspace.ParameterMapping{})
+	workspace, err := workspace.NewWorkspace(templateVars, serviceDefinitionAction.Template, serviceDefinitionAction.Templates, []workspace.ParameterMapping{}, []string{}, []workspace.ParameterMapping{})
 	if err != nil {
 		return err
 	}
