@@ -53,7 +53,7 @@ func init() {
 				invoker.NewTerraformInvokerFactory(executor.NewExecutorFactory("", nil, nil), "", map[string]string{}),
 				logger,
 				tf.TfServiceDefinitionV1{},
-				store,
+				tf.NewDeploymentManager(store),
 			)
 			return nil
 		},
