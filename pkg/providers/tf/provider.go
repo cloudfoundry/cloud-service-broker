@@ -74,17 +74,6 @@ type TerraformProvider struct {
 	DeploymentManagerInterface
 }
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
-//counterfeiter:generate . DeploymentManagerInterface
-type DeploymentManagerInterface interface {
-	GetTerraformDeployment(id string) (storage.TerraformDeployment, error)
-	CreateAndSaveDeployment(deploymentID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error)
-	MarkOperationStarted(deployment storage.TerraformDeployment, operationType string) error
-	MarkOperationFinished(deployment storage.TerraformDeployment, err error) error
-	OperationStatus(deploymentID string) (bool, string, error)
-	UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]interface{}) error
-}
-
 func (provider *TerraformProvider) DefaultInvoker() invoker.TerraformInvoker {
 	return provider.VersionedInvoker(provider.tfBinContext.DefaultTfVersion)
 }
@@ -162,17 +151,6 @@ func (provider *TerraformProvider) Destroy(ctx context.Context, id string, templ
 	return nil
 }
 
-func (provider *TerraformProvider) GetTerraformOutputs(ctx context.Context, guid string) (storage.JSONObject, error) {
-	tfID := generateTfID(guid, "")
-
-	outs, err := provider.Outputs(ctx, tfID, workspace.DefaultInstanceName)
-	if err != nil {
-		return nil, err
-	}
-
-	return outs, nil
-}
-
 func (provider *TerraformProvider) GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []broker.BrokerVariable) (map[string]interface{}, error) {
 	provider.logger.Debug("getImportedProperties", correlation.ID(ctx), lager.Data{})
 
@@ -227,12 +205,13 @@ func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 	}
 }
 
-// Outputs gets the output variables for the given module instance in the workspace.
-func (provider *TerraformProvider) Outputs(ctx context.Context, id, instanceName string) (map[string]interface{}, error) {
-	deployment, err := provider.GetTerraformDeployment(id)
-	if err != nil {
-		return nil, fmt.Errorf("error getting TF deployment: %w", err)
-	}
-
-	return deployment.Workspace.Outputs(instanceName)
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate . DeploymentManagerInterface
+type DeploymentManagerInterface interface {
+	GetTerraformDeployment(id string) (storage.TerraformDeployment, error)
+	CreateAndSaveDeployment(deploymentID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error)
+	MarkOperationStarted(deployment storage.TerraformDeployment, operationType string) error
+	MarkOperationFinished(deployment storage.TerraformDeployment, err error) error
+	OperationStatus(deploymentID string) (bool, string, error)
+	UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]interface{}) error
 }

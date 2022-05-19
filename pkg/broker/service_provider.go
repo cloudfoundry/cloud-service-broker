@@ -56,7 +56,7 @@ type ServiceProvider interface {
 
 	PollInstance(ctx context.Context, instanceGUID string) (bool, string, error)
 
-	GetTerraformOutputs(ctx context.Context, guid string) (storage.JSONObject, error)
+	GetTerraformOutputs(ctx context.Context, instanceGUID string) (storage.JSONObject, error)
 }
 
 //counterfeiter:generate . ServiceProviderStorage
