@@ -95,7 +95,7 @@ func fakeBrokerpak() (string, error) {
 		}
 	}
 
-	return Pack(dir, "")
+	return Pack(dir, "", true)
 }
 
 func ExampleValidate() {

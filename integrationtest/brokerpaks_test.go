@@ -71,7 +71,6 @@ var _ = Describe("Brokerpaks", func() {
 					"bin/linux/amd64/0.13.4/terraform",
 					"bin/linux/amd64/cloud-service-broker.linux",
 					"bin/linux/amd64/extrafile.sh",
-					"src/terraform.zip",
 				}
 				for _, p := range paths {
 					Expect(path.Join(extractedPath, p)).To(BeAnExistingFile())

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
@@ -155,9 +156,39 @@ var _ = Describe("reader", func() {
 			})
 		})
 	})
+
+	Describe("including source", func() {
+		It("does not include source by default", func() {
+			pk := fakeBrokerpak(withProvider("", "terraform-provider-fake", "1.2.3", "x1"))
+
+			reader, err := zippy.Open(pk)
+			Expect(err).NotTo(HaveOccurred())
+			output := GinkgoT().TempDir()
+			reader.ExtractDirectory("", output)
+
+			Expect(filepath.Join(output, "src")).NotTo(BeAnExistingFile())
+		})
+
+		It("can include the source", func() {
+			pk := fakeBrokerpak(withSource(), withProvider("", "terraform-provider-fake", "1.2.3", "x1"))
+
+			reader, err := zippy.Open(pk)
+			Expect(err).NotTo(HaveOccurred())
+			output := GinkgoT().TempDir()
+			reader.ExtractDirectory("", output)
+
+			Expect(filepath.Join(output, "src", "terraform-provider-fake.zip")).To(BeAnExistingFile())
+		})
+	})
 })
 
-type option func(dir string, m *manifest.Manifest)
+type config struct {
+	manifest      *manifest.Manifest
+	dir           string
+	includeSource bool
+}
+
+type option func(c *config)
 
 func fakeBrokerpak(opts ...option) string {
 	dir := GinkgoT().TempDir()
@@ -180,8 +211,12 @@ func fakeBrokerpak(opts ...option) string {
 		EnvConfigMapping: map[string]string{"ENV_VAR": "env.var"},
 	}
 
+	c := config{
+		manifest: m,
+		dir:      dir,
+	}
 	for _, o := range opts {
-		o(dir, m)
+		o(&c)
 	}
 
 	Expect(stream.Copy(stream.FromYaml(m), stream.ToFile(dir, "manifest.yml"))).NotTo(HaveOccurred())
@@ -191,16 +226,16 @@ func fakeBrokerpak(opts ...option) string {
 	}
 
 	packName := path.Join(GinkgoT().TempDir(), "fake.brokerpak")
-	Expect(packer.Pack(m, dir, packName, "")).NotTo(HaveOccurred())
+	Expect(packer.Pack(m, dir, packName, "", c.includeSource)).NotTo(HaveOccurred())
 	return packName
 }
 
 func withTerraform(tfVersion string) option {
-	return func(dir string, m *manifest.Manifest) {
-		fakeFile := filepath.Join(dir, tfVersion, "terraform")
+	return func(c *config) {
+		fakeFile := filepath.Join(c.dir, tfVersion, "terraform")
 		Expect(stream.Copy(stream.FromString(tfVersion), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
-		m.TerraformVersions = append(m.TerraformVersions, manifest.TerraformVersion{
+		c.manifest.TerraformVersions = append(c.manifest.TerraformVersions, manifest.TerraformVersion{
 			Version:     version.Must(version.NewVersion(tfVersion)),
 			Source:      fakeFile,
 			URLTemplate: fakeFile,
@@ -209,11 +244,11 @@ func withTerraform(tfVersion string) option {
 }
 
 func withDefaultTerraform(tfVersion string) option {
-	return func(dir string, m *manifest.Manifest) {
-		fakeFile := filepath.Join(dir, tfVersion, "terraform")
+	return func(c *config) {
+		fakeFile := filepath.Join(c.dir, tfVersion, "terraform")
 		Expect(stream.Copy(stream.FromString(tfVersion), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
-		m.TerraformVersions = append(m.TerraformVersions, manifest.TerraformVersion{
+		c.manifest.TerraformVersions = append(c.manifest.TerraformVersions, manifest.TerraformVersion{
 			Version:     version.Must(version.NewVersion(tfVersion)),
 			Default:     true,
 			Source:      fakeFile,
@@ -223,11 +258,11 @@ func withDefaultTerraform(tfVersion string) option {
 }
 
 func withProvider(provider, name, providerVersion, suffix string) option {
-	return func(dir string, m *manifest.Manifest) {
-		fakeFile := filepath.Join(dir, fmt.Sprintf("%s_v%s_%s", name, providerVersion, suffix))
+	return func(c *config) {
+		fakeFile := filepath.Join(c.dir, fmt.Sprintf("%s_v%s_%s", name, providerVersion, suffix))
 		Expect(stream.Copy(stream.FromString("dummy-file"), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
-		m.TerraformProviders = append(m.TerraformProviders, manifest.TerraformProvider{
+		c.manifest.TerraformProviders = append(c.manifest.TerraformProviders, manifest.TerraformProvider{
 			Name:        name,
 			Version:     version.Must(version.NewVersion(providerVersion)),
 			Provider:    tfproviderfqn.Must(name, provider),
@@ -238,15 +273,21 @@ func withProvider(provider, name, providerVersion, suffix string) option {
 }
 
 func withMissingProvider(name, providerVersion string) option {
-	return func(dir string, m *manifest.Manifest) {
-		fakeFile := filepath.Join(dir, "file-name-does-not-match")
+	return func(c *config) {
+		fakeFile := filepath.Join(c.dir, "file-name-does-not-match")
 		Expect(stream.Copy(stream.FromString("dummy-file"), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
-		m.TerraformProviders = append(m.TerraformProviders, manifest.TerraformProvider{
+		c.manifest.TerraformProviders = append(c.manifest.TerraformProviders, manifest.TerraformProvider{
 			Name:        name,
 			Version:     version.Must(version.NewVersion(providerVersion)),
 			Source:      fakeFile,
 			URLTemplate: fakeFile,
 		})
+	}
+}
+
+func withSource() option {
+	return func(c *config) {
+		c.includeSource = true
 	}
 }

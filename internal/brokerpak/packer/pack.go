@@ -22,7 +22,7 @@ import (
 
 const manifestName = "manifest.yml"
 
-func Pack(m *manifest.Manifest, base, dest, cachePath string) error {
+func Pack(m *manifest.Manifest, base, dest, cachePath string, includeSource bool) error {
 	// NOTE: we use "log" rather than Lager because this is used by the CLI and
 	// needs to be human-readable rather than JSON.
 	switch base {
@@ -39,9 +39,11 @@ func Pack(m *manifest.Manifest, base, dest, cachePath string) error {
 	defer os.RemoveAll(dir) // clean up
 	log.Println("Using temp directory:", dir)
 
-	log.Println("Packing sources...")
-	if err := packSources(m, dir, cachePath); err != nil {
-		return err
+	if includeSource {
+		log.Println("Packing sources...")
+		if err := packSources(m, dir, cachePath); err != nil {
+			return err
+		}
 	}
 
 	log.Println("Packing binaries...")
