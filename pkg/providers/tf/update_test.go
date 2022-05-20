@@ -84,7 +84,7 @@ var _ = Describe("Update", func() {
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
 			_, err = provider.Update(context.TODO(), varContext)
-			Expect(err).To(MatchError("1 error(s) occurred: missing value for key \"tf_id\""))
+			Expect(err).To(MatchError(`1 error(s) occurred: missing value for key "tf_id"`))
 		})
 	})
 
