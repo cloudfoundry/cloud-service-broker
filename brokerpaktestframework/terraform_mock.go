@@ -101,7 +101,8 @@ type TFStateValue struct {
 	Value interface{}
 }
 
-func (p TerraformMock) ReturnTFState(values []TFStateValue) error {
+// SetTFState set the Terraform State in a JSON file.
+func (p TerraformMock) SetTFState(values []TFStateValue) error {
 	var outputs = make(map[string]struct {
 		Type  string      `json:"type"`
 		Value interface{} `json:"value"`
@@ -119,4 +120,12 @@ func (p TerraformMock) ReturnTFState(values []TFStateValue) error {
 	return p.setTFStateFile(workspace.Tfstate{
 		Version: 4,
 		Outputs: outputs})
+}
+
+// ReturnTFState set the Terraform State in a JSON file.
+// Deprecated: due to the introduction of a new name that provides a more accurate meaning.
+// We use parallel change to not break backwards compatibility.
+// To set the Terraform State use the TerraformMock.SetTFState method.
+func (p TerraformMock) ReturnTFState(values []TFStateValue) error {
+	return p.SetTFState(values)
 }
