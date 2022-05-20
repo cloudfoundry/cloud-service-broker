@@ -3,6 +3,8 @@ package tf_test
 import (
 	"errors"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace/workspacefakes"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
@@ -14,6 +16,286 @@ import (
 )
 
 var _ = Describe("DeploymentManager", func() {
+	Describe("CreateAndSaveDeployment", func() {
+		var (
+			fakeStore         brokerfakes.FakeServiceProviderStorage
+			deploymentManager *tf.DeploymentManager
+			ws                *workspace.TerraformWorkspace
+			deploymentID      string
+		)
+
+		BeforeEach(func() {
+			fakeStore = brokerfakes.FakeServiceProviderStorage{}
+			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+			ws = &workspace.TerraformWorkspace{
+				Modules: []workspace.ModuleDefinition{{
+					Name:       "fake module name",
+					Definition: "fake definition",
+				}},
+			}
+			deploymentID = "tf:instance:binding"
+		})
+
+		It("stores a new deployment", func() {
+			actualDeployment, err := deploymentManager.CreateAndSaveDeployment(deploymentID, ws)
+
+			By("checking the deployment object is correct")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(actualDeployment.ID).To(Equal(deploymentID))
+			Expect(actualDeployment.Workspace).To(Equal(ws))
+			Expect(actualDeployment.LastOperationType).To(Equal("validation"))
+			Expect(actualDeployment.LastOperationState).To(BeEmpty())
+			Expect(actualDeployment.LastOperationMessage).To(BeEmpty())
+
+			By("validating a call to store was made")
+			Expect(fakeStore.StoreTerraformDeploymentCallCount()).To(Equal(1))
+			storedDeployment := fakeStore.StoreTerraformDeploymentArgsForCall(0)
+			Expect(storedDeployment).To(Equal(actualDeployment))
+		})
+
+		When("deployment exists", func() {
+			var existingDeployment storage.TerraformDeployment
+			BeforeEach(func() {
+				existingDeployment = storage.TerraformDeployment{
+					ID: deploymentID,
+					Workspace: &workspace.TerraformWorkspace{
+						Modules: []workspace.ModuleDefinition{{
+							Name: "existing module",
+						}},
+					},
+					LastOperationType:    "provision",
+					LastOperationState:   "in progress",
+					LastOperationMessage: "test",
+				}
+				fakeStore.ExistsTerraformDeploymentReturns(true, nil)
+				fakeStore.GetTerraformDeploymentReturns(existingDeployment, nil)
+			})
+
+			It("updates workspace if deployment exists", func() {
+				actualDeployment, err := deploymentManager.CreateAndSaveDeployment(deploymentID, ws)
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(actualDeployment.ID).To(Equal(deploymentID))
+				Expect(actualDeployment.Workspace).To(Equal(ws))
+				Expect(actualDeployment.LastOperationType).To(Equal("validation"))
+				Expect(actualDeployment.LastOperationState).To(Equal("in progress"))
+				Expect(actualDeployment.LastOperationMessage).To(Equal("test"))
+
+				By("validating a call to store was made")
+				Expect(fakeStore.StoreTerraformDeploymentCallCount()).To(Equal(1))
+				storedDeployment := fakeStore.StoreTerraformDeploymentArgsForCall(0)
+				Expect(storedDeployment).To(Equal(actualDeployment))
+			})
+		})
+
+		It("fails, when checking if deployment exists fails", func() {
+			fakeStore.ExistsTerraformDeploymentReturns(true, errors.New("failed to check"))
+
+			_, err := deploymentManager.CreateAndSaveDeployment(deploymentID, ws)
+
+			Expect(err).To(MatchError("failed to check"))
+		})
+
+		It("fails, when getting deployment fails", func() {
+			fakeStore.ExistsTerraformDeploymentReturns(true, nil)
+			fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New("failed to get deployment"))
+
+			_, err := deploymentManager.CreateAndSaveDeployment(deploymentID, ws)
+
+			Expect(err).To(MatchError("failed to get deployment"))
+		})
+
+	})
+
+	Describe("MarkOperationStarted", func() {
+		var (
+			fakeStore          brokerfakes.FakeServiceProviderStorage
+			deploymentManager  *tf.DeploymentManager
+			existingDeployment storage.TerraformDeployment
+		)
+
+		BeforeEach(func() {
+			fakeStore = brokerfakes.FakeServiceProviderStorage{}
+			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+			existingDeployment = storage.TerraformDeployment{
+				ID: "tf:instance:binding",
+				Workspace: &workspace.TerraformWorkspace{
+					Modules: []workspace.ModuleDefinition{{
+						Name: "existing module",
+					}},
+				},
+				LastOperationType: "validation",
+			}
+		})
+
+		It("updates last operation to in progress", func() {
+			err := deploymentManager.MarkOperationStarted(existingDeployment, "provision")
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(fakeStore.StoreTerraformDeploymentCallCount()).To(Equal(1))
+			storedDeployment := fakeStore.StoreTerraformDeploymentArgsForCall(0)
+
+			Expect(storedDeployment.ID).To(Equal(existingDeployment.ID))
+			Expect(storedDeployment.Workspace).To(Equal(existingDeployment.Workspace))
+			Expect(storedDeployment.LastOperationType).To(Equal("provision"))
+			Expect(storedDeployment.LastOperationState).To(Equal("in progress"))
+			Expect(storedDeployment.LastOperationMessage).To(Equal(""))
+		})
+
+		It("fails, when storing deployment fails", func() {
+			fakeStore.StoreTerraformDeploymentReturns(errors.New("couldn't store deployment"))
+
+			err := deploymentManager.MarkOperationStarted(existingDeployment, "provision")
+
+			Expect(err).To(MatchError("couldn't store deployment"))
+		})
+	})
+
+	Describe("MarkOperationFinished", func() {
+		var (
+			fakeStore          brokerfakes.FakeServiceProviderStorage
+			deploymentManager  *tf.DeploymentManager
+			existingDeployment storage.TerraformDeployment
+			fakeWorkspace      *workspacefakes.FakeWorkspace
+		)
+
+		BeforeEach(func() {
+			fakeWorkspace = &workspacefakes.FakeWorkspace{}
+			fakeWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{InstanceName: "test-name"}})
+			fakeWorkspace.OutputsReturns(map[string]interface{}{}, nil)
+			existingDeployment = storage.TerraformDeployment{
+				ID:                   "deploymentID",
+				Workspace:            fakeWorkspace,
+				LastOperationType:    "provision",
+				LastOperationState:   "in progress",
+				LastOperationMessage: "test",
+			}
+			fakeStore = brokerfakes.FakeServiceProviderStorage{}
+			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+		})
+
+		When("operation finished successfully", func() {
+			It("sets operation state to succeeded", func() {
+				err := deploymentManager.MarkOperationFinished(existingDeployment, nil)
+
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakeStore.StoreTerraformDeploymentCallCount()).To(Equal(1))
+				storedDeployment := fakeStore.StoreTerraformDeploymentArgsForCall(0)
+				Expect(storedDeployment.ID).To(Equal(existingDeployment.ID))
+				Expect(storedDeployment.Workspace).To(Equal(existingDeployment.Workspace))
+				Expect(storedDeployment.LastOperationType).To(Equal(existingDeployment.LastOperationType))
+				Expect(storedDeployment.LastOperationState).To(Equal("succeeded"))
+				Expect(storedDeployment.LastOperationMessage).To(BeEmpty())
+			})
+
+			It("sets the last operation message from the TF output status", func() {
+				fakeWorkspace.OutputsReturns(map[string]interface{}{"status": "apply completed successfully"}, nil)
+
+				err := deploymentManager.MarkOperationFinished(existingDeployment, nil)
+
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakeStore.StoreTerraformDeploymentCallCount()).To(Equal(1))
+				storedDeployment := fakeStore.StoreTerraformDeploymentArgsForCall(0)
+				Expect(storedDeployment.LastOperationState).To(Equal("succeeded"))
+				Expect(storedDeployment.LastOperationMessage).To(Equal("apply completed successfully"))
+			})
+		})
+
+		When("operation finished with an error", func() {
+			It("sets operation state to failed and stores the error", func() {
+				err := deploymentManager.MarkOperationFinished(existingDeployment, errors.New("operation failed dramatically"))
+
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(fakeStore.StoreTerraformDeploymentCallCount()).To(Equal(1))
+				storedDeployment := fakeStore.StoreTerraformDeploymentArgsForCall(0)
+				Expect(storedDeployment.ID).To(Equal(existingDeployment.ID))
+				Expect(storedDeployment.Workspace).To(Equal(existingDeployment.Workspace))
+				Expect(storedDeployment.LastOperationType).To(Equal(existingDeployment.LastOperationType))
+				Expect(storedDeployment.LastOperationState).To(Equal("failed"))
+				Expect(storedDeployment.LastOperationMessage).To(Equal("operation failed dramatically"))
+
+			})
+		})
+	})
+
+	Describe("OperationStatus", func() {
+		var (
+			fakeStore          brokerfakes.FakeServiceProviderStorage
+			deploymentManager  *tf.DeploymentManager
+			existingDeployment storage.TerraformDeployment
+		)
+
+		const existingDeploymentID = "tf:instance:binding"
+
+		BeforeEach(func() {
+			fakeStore = brokerfakes.FakeServiceProviderStorage{}
+			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+		})
+
+		When("last operation has succeeded", func() {
+			It("reports completion and last operation message", func() {
+				existingDeployment = storage.TerraformDeployment{
+					ID:                   existingDeploymentID,
+					LastOperationType:    "update",
+					LastOperationState:   "succeeded",
+					LastOperationMessage: "great update",
+				}
+				fakeStore.GetTerraformDeploymentReturns(existingDeployment, nil)
+
+				completed, lastOpMessage, err := deploymentManager.OperationStatus(existingDeploymentID)
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(completed).To(BeTrue())
+				Expect(lastOpMessage).To(Equal("great update"))
+			})
+		})
+
+		When("last operation has failed", func() {
+			It("reports completion and errors", func() {
+				existingDeployment = storage.TerraformDeployment{
+					ID:                   existingDeploymentID,
+					LastOperationType:    "update",
+					LastOperationState:   "failed",
+					LastOperationMessage: "not so great update",
+				}
+				fakeStore.GetTerraformDeploymentReturns(existingDeployment, nil)
+
+				completed, lastOpMessage, err := deploymentManager.OperationStatus(existingDeploymentID)
+
+				Expect(err).To(MatchError("not so great update"))
+				Expect(completed).To(BeTrue())
+				Expect(lastOpMessage).To(Equal("not so great update"))
+			})
+		})
+
+		When("last operation is in progress", func() {
+			It("reports in progress and last operation message", func() {
+				existingDeployment = storage.TerraformDeployment{
+					ID:                   existingDeploymentID,
+					LastOperationType:    "update",
+					LastOperationMessage: "still doing stuff",
+				}
+				fakeStore.GetTerraformDeploymentReturns(existingDeployment, nil)
+
+				completed, lastOpMessage, err := deploymentManager.OperationStatus(existingDeploymentID)
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(completed).To(BeFalse())
+				Expect(lastOpMessage).To(Equal("still doing stuff"))
+			})
+		})
+
+		It("fails, when it errors getting the deployment", func() {
+			fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New("cant get it now"))
+
+			_, _, err := deploymentManager.OperationStatus(existingDeploymentID)
+
+			Expect(err).To(MatchError("cant get it now"))
+		})
+	})
 
 	Describe("UpdateWorkspaceHCL", func() {
 		const (
@@ -190,6 +472,42 @@ var _ = Describe("DeploymentManager", func() {
 
 				Expect(store.StoreTerraformDeploymentCallCount()).To(BeZero())
 			})
+		})
+	})
+
+	Describe("GetTerraformDeployment", func() {
+		var (
+			fakeStore          brokerfakes.FakeServiceProviderStorage
+			deploymentManager  *tf.DeploymentManager
+			existingDeployment storage.TerraformDeployment
+		)
+
+		const existingDeploymentID = "tf:instance:binding"
+
+		BeforeEach(func() {
+			fakeStore = brokerfakes.FakeServiceProviderStorage{}
+			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+			existingDeployment = storage.TerraformDeployment{
+				ID:                existingDeploymentID,
+				LastOperationType: "validation",
+			}
+		})
+
+		It("get the terraform deployment", func() {
+			fakeStore.GetTerraformDeploymentReturns(existingDeployment, nil)
+
+			deployment, err := deploymentManager.GetTerraformDeployment(existingDeploymentID)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(deployment).To(Equal(existingDeployment))
+		})
+
+		It("fails, when getting terraform deployment fails", func() {
+			fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New("cant get it now"))
+
+			_, err := deploymentManager.GetTerraformDeployment(existingDeploymentID)
+
+			Expect(err).To(MatchError("cant get it now"))
 		})
 	})
 })
