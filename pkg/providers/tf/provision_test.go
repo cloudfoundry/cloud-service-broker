@@ -148,7 +148,7 @@ var _ = Describe("Provision", func() {
 			Expect(err).To(MatchError("error marking job started: couldnt do this now"))
 		})
 
-		FIt("return the error in last operation, if terraform apply fails", func() {
+		It("return the error in last operation, if terraform apply fails", func() {
 			fakeDeploymentManager.CreateAndSaveDeploymentReturns(deployment, nil)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 			fakeDefaultInvoker.ApplyReturns(errors.New("some TF issue happened"))
