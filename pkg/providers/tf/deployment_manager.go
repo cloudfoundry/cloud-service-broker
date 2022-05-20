@@ -49,7 +49,6 @@ func (d *DeploymentManager) CreateAndSaveDeployment(deploymentID string, workspa
 }
 
 func (d *DeploymentManager) MarkOperationStarted(deployment storage.TerraformDeployment, operationType string) error {
-	// update the deployment info
 	deployment.LastOperationType = operationType
 	deployment.LastOperationState = InProgress
 	deployment.LastOperationMessage = ""
@@ -62,12 +61,9 @@ func (d *DeploymentManager) MarkOperationStarted(deployment storage.TerraformDep
 }
 
 func (d *DeploymentManager) MarkOperationFinished(deployment storage.TerraformDeployment, err error) error {
-	// we shouldn't update the status on update when updating the HCL, as the status comes either from the provision call or a previous update
-	workspace := deployment.Workspace
 	if err == nil {
 		lastOperationMessage := ""
-		// maybe do if deployment.LastOperationType != "validation" so we don't do the status update on staging a job.
-		// previously we would only stage a job on provision so state would be empty and the outputs would be null.
+		workspace := deployment.Workspace
 		outputs, err := workspace.Outputs(workspace.ModuleInstances()[0].InstanceName)
 		if err == nil {
 			if status, ok := outputs["status"]; ok {
@@ -129,6 +125,6 @@ func (d *DeploymentManager) UpdateWorkspaceHCL(deploymentID string, serviceDefin
 	return nil
 }
 
-func (d *DeploymentManager) GetTerraformDeployment(id string) (storage.TerraformDeployment, error) {
-	return d.store.GetTerraformDeployment(id)
+func (d *DeploymentManager) GetTerraformDeployment(deploymentID string) (storage.TerraformDeployment, error) {
+	return d.store.GetTerraformDeployment(deploymentID)
 }
