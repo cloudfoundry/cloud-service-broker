@@ -113,8 +113,8 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 
 // Destroy runs `terraform destroy` on the given workspace in the background.
 // The status of the job can be found by polling the OperationsStatus function.
-func (provider *TerraformProvider) Destroy(ctx context.Context, id string, templateVars map[string]interface{}) error {
-	deployment, err := provider.GetTerraformDeployment(id)
+func (provider *TerraformProvider) Destroy(ctx context.Context, deploymentID string, templateVars map[string]interface{}) error {
+	deployment, err := provider.GetTerraformDeployment(deploymentID)
 	if err != nil {
 		return err
 	}
@@ -208,7 +208,7 @@ func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 //counterfeiter:generate . DeploymentManagerInterface
 type DeploymentManagerInterface interface {
-	GetTerraformDeployment(id string) (storage.TerraformDeployment, error)
+	GetTerraformDeployment(deploymentID string) (storage.TerraformDeployment, error)
 	CreateAndSaveDeployment(deploymentID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error)
 	MarkOperationStarted(deployment storage.TerraformDeployment, operationType string) error
 	MarkOperationFinished(deployment storage.TerraformDeployment, err error) error
