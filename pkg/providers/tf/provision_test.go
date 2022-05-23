@@ -384,21 +384,3 @@ var _ = Describe("Provision", func() {
 		})
 	})
 })
-
-func importCallCount(fakeDefaultInvoker *tffakes.FakeTerraformInvoker) func() int {
-	return func() int {
-		return fakeDefaultInvoker.ImportCallCount()
-	}
-}
-
-func showCallCount(fakeDefaultInvoker *tffakes.FakeTerraformInvoker) func() int {
-	return func() int {
-		return fakeDefaultInvoker.ShowCallCount()
-	}
-}
-
-func planCallCount(fakeDefaultInvoker *tffakes.FakeTerraformInvoker) func() int {
-	return func() int {
-		return fakeDefaultInvoker.PlanCallCount()
-	}
-}
