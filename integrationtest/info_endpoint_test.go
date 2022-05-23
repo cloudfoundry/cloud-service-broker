@@ -6,16 +6,14 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudfoundry/cloud-service-broker/utils"
-
-	"github.com/onsi/gomega/gexec"
-
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("Info", func() {
+var _ = Describe("Info Endpoint", func() {
 	var (
 		testHelper *helper.TestHelper
 		session    *gexec.Session
@@ -23,13 +21,12 @@ var _ = Describe("Info", func() {
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-for-catalog-test")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "info-endpoint")
 		session = testHelper.StartBroker()
 	})
 
 	AfterEach(func() {
 		session.Terminate()
-		testHelper.Restore()
 	})
 
 	It("responds to the info endpoint", func() {

@@ -19,13 +19,12 @@ var _ = Describe("Subsume", func() {
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-for-subsume-cancel")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "subsume")
 		session = testHelper.StartBroker()
 	})
 
 	AfterEach(func() {
 		session.Terminate()
-		testHelper.Restore()
 	})
 
 	It("can subsume a resource", func() {

@@ -20,6 +20,12 @@ func New(csb string) *TestHelper {
 	err = os.Chdir(tmpDir)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
+	ginkgo.DeferCleanup(func() {
+		fmt.Fprintf(ginkgo.GinkgoWriter, "switching back to: %s\n", original)
+		err := os.Chdir(original)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	})
+
 	return &TestHelper{
 		Dir:          tmpDir,
 		databaseFile: path.Join(tmpDir, "databaseFile.dat"),
