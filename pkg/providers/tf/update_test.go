@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
@@ -57,51 +59,99 @@ var _ = Describe("Update", func() {
 		viper.Reset()
 	})
 
-	It("fails, when deployment can't be found", func() {
-		fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, genericError)
-		provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+	When("update called on subsume plan", func() {
+		It("fails", func() {
+			varContext, err := varcontext.Builder().MergeMap(map[string]interface{}{"tf_id": "567c6af0-d68a-11ec-a5b6-367dda7ea869", "var": "value", "subsume": true}).Build()
+			Expect(err).NotTo(HaveOccurred())
+			fakeServiceDefinition.ProvisionSettings.PlanInputs = []broker.BrokerVariable{
+				{
+					FieldName: "subsume",
+				},
+			}
 
-		_, err := provider.Update(context.TODO(), varContext)
-		Expect(err).To(MatchError(genericError))
+			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+
+			_, err = provider.Update(context.TODO(), varContext)
+			Expect(err).To(MatchError("cannot update to subsume plan\n\nFor OpsMan Tile users see documentation here: https://via.vmw.com/ENs4\n\nFor Open Source users deployed via 'cf push' see documentation here:  https://via.vmw.com/ENw4"))
+		})
 	})
 
-	It("fails, when job cannot be marked as started", func() {
-		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
-		fakeDeploymentManager.MarkOperationStartedReturns(genericError)
-		runner := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+	When("there is an error in provision context", func() {
+		It("fails", func() {
+			varContext, err := varcontext.Builder().MergeMap(map[string]interface{}{}).Build()
+			Expect(err).NotTo(HaveOccurred())
 
-		_, err := runner.Update(context.TODO(), varContext)
+			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-		Expect(err).To(MatchError(genericError))
+			_, err = provider.Update(context.TODO(), varContext)
+			Expect(err).To(MatchError(`1 error(s) occurred: missing value for key "tf_id"`))
+		})
 	})
 
-	It("fails, when cant get version from state", func() {
-		deployment.Workspace = fakeWorkspace
-		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
-		fakeWorkspace.StateVersionReturns(nil, genericError)
+	When("unable to update workspace HCL", func() {
+		It("fails", func() {
+			fakeDeploymentManager.UpdateWorkspaceHCLReturns(genericError)
 
-		runner := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
-		_, err := runner.Update(context.TODO(), varContext)
-		Expect(err).NotTo(HaveOccurred())
+			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
-		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(genericError))
+			_, err := provider.Update(context.TODO(), varContext)
+			Expect(err).To(MatchError(genericError))
+		})
 	})
 
-	It("fails, when cant update instance configuration", func() {
-		deployment.Workspace = fakeWorkspace
-		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
-		tfVersion := "1.1"
-		fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
-		fakeWorkspace.UpdateInstanceConfigurationReturns(genericError)
+	When("deployment can't be found", func() {
+		It("fails", func() {
+			fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, genericError)
+			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-		runner := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+			_, err := provider.Update(context.TODO(), varContext)
+			Expect(err).To(MatchError(genericError))
+		})
+	})
 
-		_, err := runner.Update(context.TODO(), varContext)
-		Expect(err).NotTo(HaveOccurred())
+	When("job can't be marked as started", func() {
+		It("fails", func() {
+			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
+			fakeDeploymentManager.MarkOperationStartedReturns(genericError)
+			runner := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
-		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(genericError))
+			_, err := runner.Update(context.TODO(), varContext)
+
+			Expect(err).To(MatchError(genericError))
+		})
+	})
+
+	When("can't get terraform version from state", func() {
+		It("fails", func() {
+			deployment.Workspace = fakeWorkspace
+			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
+			fakeWorkspace.StateVersionReturns(nil, genericError)
+
+			runner := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+			_, err := runner.Update(context.TODO(), varContext)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
+			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(genericError))
+		})
+	})
+
+	When("unable to update instance configuration", func() {
+		It("fails", func() {
+			deployment.Workspace = fakeWorkspace
+			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
+			tfVersion := "1.1"
+			fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
+			fakeWorkspace.UpdateInstanceConfigurationReturns(genericError)
+
+			runner := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+
+			_, err := runner.Update(context.TODO(), varContext)
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
+			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(genericError))
+		})
 	})
 
 	It("updates templates before applying", func() {
@@ -137,7 +187,7 @@ var _ = Describe("Update", func() {
 		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
 	})
 
-	It("return the error in last operation, if terraform apply fails", func() {
+	It("returns the error in last operation, if terraform apply fails", func() {
 		deployment.Workspace = fakeWorkspace
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		tfVersion := "1.1"
