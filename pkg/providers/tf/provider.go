@@ -27,13 +27,9 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/hclparser"
-
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
-	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )
 
 const (
@@ -111,9 +107,7 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 	return tfID, nil
 }
 
-// Destroy runs `terraform destroy` on the given workspace in the background.
-// The status of the job can be found by polling the OperationsStatus function.
-func (provider *TerraformProvider) Destroy(ctx context.Context, deploymentID string, templateVars map[string]interface{}) error {
+func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID string, templateVars map[string]interface{}) error {
 	deployment, err := provider.GetTerraformDeployment(deploymentID)
 	if err != nil {
 		return err
@@ -151,45 +145,6 @@ func (provider *TerraformProvider) Destroy(ctx context.Context, deploymentID str
 	return nil
 }
 
-func (provider *TerraformProvider) GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []broker.BrokerVariable) (map[string]interface{}, error) {
-	provider.logger.Debug("getImportedProperties", correlation.ID(ctx), lager.Data{})
-
-	if provider.serviceDefinition.IsSubsumePlan(planGUID) {
-		return map[string]interface{}{}, nil
-	}
-
-	varsToReplace := provider.getVarsToReplace(inputVariables)
-	if len(varsToReplace) == 0 {
-		return map[string]interface{}{}, nil
-	}
-
-	deployment, err := provider.GetTerraformDeployment(generateTfID(instanceGUID, ""))
-	if err != nil {
-		return nil, err
-	}
-
-	tfHCL, err := provider.DefaultInvoker().Show(ctx, deployment.Workspace)
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-
-	return hclparser.GetParameters(tfHCL, varsToReplace)
-}
-
-func (provider *TerraformProvider) getVarsToReplace(inputVariables []broker.BrokerVariable) []hclparser.ExtractVariable {
-	var varsToReplace []hclparser.ExtractVariable
-	for _, vars := range inputVariables {
-		if vars.TFAttribute != "" {
-			varsToReplace = append(varsToReplace, hclparser.ExtractVariable{
-				FieldToRead:  vars.TFAttribute,
-				FieldToWrite: vars.FieldName,
-			})
-		}
-	}
-	return varsToReplace
-}
-
-// Wait waits for an operation to complete, polling its OperationStatus once per second.
 func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 	for {
 		select {

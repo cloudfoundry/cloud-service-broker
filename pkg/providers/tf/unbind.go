@@ -21,7 +21,7 @@ func (provider *TerraformProvider) Unbind(ctx context.Context, instanceGUID, bin
 		return err
 	}
 
-	if err := provider.Destroy(ctx, tfID, vc.ToMap()); err != nil {
+	if err := provider.destroy(ctx, tfID, vc.ToMap()); err != nil {
 		return err
 	}
 

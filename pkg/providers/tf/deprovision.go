@@ -21,7 +21,7 @@ func (provider *TerraformProvider) Deprovision(ctx context.Context, instanceGUID
 		return nil, err
 	}
 
-	if err := provider.Destroy(ctx, tfID, vc.ToMap()); err != nil {
+	if err := provider.destroy(ctx, tfID, vc.ToMap()); err != nil {
 		return nil, err
 	}
 
