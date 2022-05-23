@@ -4,15 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
@@ -30,7 +27,7 @@ var _ = Describe("Terraform Upgrade", func() {
 	})
 
 	AfterEach(func() {
-		session.Terminate()
+		session.Terminate().Wait()
 		testHelper.Restore()
 	})
 
@@ -47,29 +44,14 @@ var _ = Describe("Terraform Upgrade", func() {
 		Expect(json.Unmarshal(workspaceReceiver.State, &stateReceiver)).NotTo(HaveOccurred())
 		return stateReceiver.Version
 	}
-	pollLastOperation := func(serviceInstanceGUID string) func() domain.LastOperationState {
-		return func() domain.LastOperationState {
-			lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
-			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
-			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
-			var receiver domain.LastOperation
-			err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
-			Expect(err).NotTo(HaveOccurred())
-			return receiver.State
-		}
-	}
+
 	Context("TF Upgrades are enabled", func() {
 		It("runs 'terraform apply' at each version in the upgrade path", func() {
 			By("provisioning a service instance at 0.13")
 			const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
 			const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
-			serviceInstanceGUID := uuid.New()
-			provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
-			Expect(provisionResponse.Error).NotTo(HaveOccurred())
-			Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
-
-			Eventually(pollLastOperation(serviceInstanceGUID), time.Minute*2, time.Second*10).Should(Equal(domain.Succeeded))
-			Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.13.7"))
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.13.7"))
 
 			By("updating the brokerpak and restarting the broker")
 			session.Terminate().Wait()
@@ -78,14 +60,10 @@ var _ = Describe("Terraform Upgrade", func() {
 			session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
 
 			By("running 'cf update-service'")
-			updateResponse := testHelper.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
-			Expect(updateResponse.Error).NotTo(HaveOccurred())
-			Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
-
-			Eventually(pollLastOperation(serviceInstanceGUID), time.Minute*2, time.Second*10).Should(Equal(domain.Succeeded))
+			testHelper.UpdateService(serviceInstance)
 
 			By("observing that the TF state file has been updated to the latest version")
-			Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("1.1.6"))
+			Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("1.1.6"))
 		})
 	})
 
@@ -94,29 +72,22 @@ var _ = Describe("Terraform Upgrade", func() {
 			By("provisioning a service instance at 0.13")
 			const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
 			const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
-			serviceInstanceGUID := uuid.New()
-			provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
-			Expect(provisionResponse.Error).NotTo(HaveOccurred())
-			Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
-
-			Eventually(pollLastOperation(serviceInstanceGUID), time.Minute*2, time.Second*10).Should(Equal(domain.Succeeded))
-			Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.13.7"))
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.13.7"))
 
 			By("updating the brokerpak and restarting the broker")
 			session.Terminate().Wait()
 			testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
 			session = testHelper.StartBroker()
 
-			By("running 'cf update-service'")
-			updateResponse := testHelper.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
+			By("seeing 'cf update-service' fail")
+			updateResponse := testHelper.Client().Update(serviceInstance.GUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
 			Expect(updateResponse.Error).NotTo(HaveOccurred())
 			Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
-
-			Eventually(pollLastOperation(serviceInstanceGUID), time.Minute*2, time.Second*10).Should(Equal(domain.Failed))
+			Expect(testHelper.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Failed))
 
 			By("observing that the TF version remains the same in the state file")
-			Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.13.7"))
+			Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.13.7"))
 		})
 	})
-
 })

@@ -1,9 +1,7 @@
 package integrationtest_test
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
@@ -12,8 +10,6 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	"github.com/pborman/uuid"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 var _ = Describe("Database Encryption", func() {
@@ -121,53 +117,6 @@ var _ = Describe("Database Encryption", func() {
 		Expect(count).To(BeZero())
 	}
 
-	createBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
-		bindResponse := testHelper.Client().Bind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(bindParams))
-		Expect(bindResponse.Error).NotTo(HaveOccurred())
-		Expect(bindResponse.StatusCode).To(Equal(http.StatusCreated))
-	}
-
-	deleteBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
-		unbindResponse := testHelper.Client().Unbind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID())
-		Expect(unbindResponse.Error).NotTo(HaveOccurred())
-		Expect(unbindResponse.StatusCode).To(Equal(http.StatusOK))
-	}
-
-	waitForAsyncRequest := func(serviceInstanceGUID string) {
-		Eventually(func() bool {
-			lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
-			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
-			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
-			var receiver domain.LastOperation
-			err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(receiver.State).NotTo(Equal("failed"))
-			return receiver.State == "succeeded"
-		}, time.Minute*2, time.Second*10).Should(BeTrue())
-	}
-
-	updateServiceInstance := func(serviceInstanceGUID string) {
-		updateResponse := testHelper.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateParams))
-		Expect(updateResponse.Error).NotTo(HaveOccurred())
-		Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
-		waitForAsyncRequest(serviceInstanceGUID)
-	}
-
-	provisionServiceInstance := func(serviceInstanceGUID string) {
-		provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(provisionParams))
-		ExpectWithOffset(1, provisionResponse.Error).NotTo(HaveOccurred())
-		ExpectWithOffset(1, provisionResponse.StatusCode).To(Equal(http.StatusAccepted), string(provisionResponse.ResponseBody))
-
-		waitForAsyncRequest(serviceInstanceGUID)
-	}
-
-	deprovisionServiceInstance := func(serviceInstanceGUID string) {
-		deprovisionResponse := testHelper.Client().Deprovision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID())
-		Expect(deprovisionResponse.Error).NotTo(HaveOccurred())
-		Expect(deprovisionResponse.StatusCode).To(Equal(http.StatusAccepted))
-		waitForAsyncRequest(serviceInstanceGUID)
-	}
-
 	startBrokerSession := func(encryptionEnabled bool, encryptionPasswords string) *Session {
 		return testHelper.StartBrokerSession(
 			fmt.Sprintf("ENCRYPTION_ENABLED=%t", encryptionEnabled),
@@ -215,51 +164,44 @@ var _ = Describe("Database Encryption", func() {
 	})
 
 	When("encryption is turned off", func() {
-		var (
-			serviceInstanceGUID string
-			serviceBindingGUID  string
-		)
-
 		BeforeEach(func() {
-			serviceInstanceGUID = uuid.New()
-			serviceBindingGUID = uuid.New()
-
 			session = startBroker(false, "")
-			provisionServiceInstance(serviceInstanceGUID)
 		})
 
 		It("stores sensitive fields in plaintext", func() {
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+
 			By("checking the provision fields")
-			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).To(bePlaintextProvisionParams)
-			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).To(bePlaintextProvisionOutput)
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).To(bePlaintextInstanceTerraformState)
+			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).To(bePlaintextProvisionParams)
+			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).To(bePlaintextProvisionOutput)
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).To(bePlaintextInstanceTerraformState)
 
 			By("checking the binding fields")
-			createBinding(serviceInstanceGUID, serviceBindingGUID)
+			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance, bindParams)
 			Expect(persistedBindRequestDetails(serviceBindingGUID)).To(bePlaintextBindParams)
-			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).To(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(haveAnyPlaintextBindingTerraformState)
+			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).To(bePlaintextBindingDetails)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).To(haveAnyPlaintextBindingTerraformState)
 
 			By("checking how update persists service instance fields")
-			updateServiceInstance(serviceInstanceGUID)
-			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).To(bePlaintextMergedParams)
-			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).To(Equal([]byte(updateOutput)))
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).To(SatisfyAll(
+			testHelper.UpdateService(serviceInstance, updateParams)
+			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).To(bePlaintextMergedParams)
+			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).To(Equal([]byte(updateOutput)))
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).To(SatisfyAll(
 				ContainSubstring(provisionOutputStateValue),
 				ContainSubstring(updateOutputStateValue),
 				ContainSubstring(tfStateKey),
 			))
 
 			By("checking the binding fields after unbind")
-			deleteBinding(serviceInstanceGUID, serviceBindingGUID)
-			expectServiceBindingDetailsToNotExist(serviceInstanceGUID)
+			testHelper.DeleteBinding(serviceInstance, serviceBindingGUID)
+			expectServiceBindingDetailsToNotExist(serviceInstance.GUID)
 			expectBindRequestDetailsToNotExist(serviceBindingGUID)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(haveAnyPlaintextBindingTerraformState)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).To(haveAnyPlaintextBindingTerraformState)
 
 			By("checking the service instance fields after deprovision")
-			deprovisionServiceInstance(serviceInstanceGUID)
-			expectServiceInstanceDetailsToNotExist(serviceInstanceGUID)
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).To(SatisfyAll(
+			testHelper.Deprovision(serviceInstance)
+			expectServiceInstanceDetailsToNotExist(serviceInstance.GUID)
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).To(SatisfyAll(
 				ContainSubstring(provisionOutputStateValue),
 				ContainSubstring(updateOutputStateValue),
 				ContainSubstring(tfStateKey),
@@ -268,52 +210,44 @@ var _ = Describe("Database Encryption", func() {
 	})
 
 	When("encryption is turned on", func() {
-		var (
-			serviceInstanceGUID string
-			serviceBindingGUID  string
-		)
-
 		BeforeEach(func() {
-			serviceInstanceGUID = uuid.New()
-			serviceBindingGUID = uuid.New()
-
 			const encryptionPasswords = `[{"primary":true,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`
 			session = startBroker(true, encryptionPasswords)
-			provisionServiceInstance(serviceInstanceGUID)
 		})
 
 		It("encrypts sensitive fields", func() {
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
 			By("checking the provision fields")
-			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionParams)
-			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionOutput)
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(haveAnyPlaintextServiceTerraformState)
+			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionParams)
+			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionOutput)
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(haveAnyPlaintextServiceTerraformState)
 
 			By("checking the binding fields")
-			createBinding(serviceInstanceGUID, serviceBindingGUID)
+			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance, bindParams)
 			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(bePlaintextBindParams)
-			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
+			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(bePlaintextBindingDetails)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("checking how update persists service instance fields")
-			updateServiceInstance(serviceInstanceGUID)
-			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).NotTo(Equal(mergedParams))
-			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(Equal(updateOutput))
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(SatisfyAny(
+			testHelper.UpdateService(serviceInstance, updateParams)
+			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(Equal(mergedParams))
+			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(Equal(updateOutput))
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(SatisfyAny(
 				ContainSubstring(provisionOutputStateValue),
 				ContainSubstring(updateOutputStateValue),
 				ContainSubstring(tfStateKey),
 			))
 
 			By("checking the binding fields after unbind")
-			deleteBinding(serviceInstanceGUID, serviceBindingGUID)
-			expectServiceBindingDetailsToNotExist(serviceInstanceGUID)
+			testHelper.DeleteBinding(serviceInstance, serviceBindingGUID)
+			expectServiceBindingDetailsToNotExist(serviceInstance.GUID)
 			expectBindRequestDetailsToNotExist(serviceBindingGUID)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("ckecking the service instance fields after deprovision")
-			deprovisionServiceInstance(serviceInstanceGUID)
-			expectServiceInstanceDetailsToNotExist(serviceInstanceGUID)
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(SatisfyAny(
+			testHelper.Deprovision(serviceInstance)
+			expectServiceInstanceDetailsToNotExist(serviceInstance.GUID)
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(SatisfyAny(
 				ContainSubstring(provisionOutputStateValue),
 				ContainSubstring(updateOutputStateValue),
 				ContainSubstring(tfStateKey),
@@ -329,18 +263,16 @@ var _ = Describe("Database Encryption", func() {
 			Expect(session).To(Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"none"}}`))
 
 			By("creating a service instance and checking fields are stored in plain text")
-			serviceInstanceGUID := uuid.New()
-			provisionServiceInstance(serviceInstanceGUID)
-			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).To(bePlaintextProvisionParams)
-			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).To(bePlaintextProvisionOutput)
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).To(bePlaintextInstanceTerraformState)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).To(bePlaintextProvisionParams)
+			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).To(bePlaintextProvisionOutput)
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).To(bePlaintextInstanceTerraformState)
 
 			By("creating a binding and checking the fields are stored in plain text")
-			serviceBindingGUID := uuid.New()
-			createBinding(serviceInstanceGUID, serviceBindingGUID)
+			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance, bindParams)
 			Expect(persistedBindRequestDetails(serviceBindingGUID)).To(bePlaintextBindParams)
-			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).To(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(bePlaintextBindingTerraformState)
+			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).To(bePlaintextBindingDetails)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).To(bePlaintextBindingTerraformState)
 
 			By("restarting the broker with a password")
 			session.Terminate().Wait()
@@ -355,12 +287,12 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedPasswordMetadata("my-password").Primary).To(BeTrue())
 
 			By("checking that the previous data is now encrypted")
-			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionParams)
-			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionOutput)
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(haveAnyPlaintextServiceTerraformState)
+			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionParams)
+			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionOutput)
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(haveAnyPlaintextServiceTerraformState)
 			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(bePlaintextBindParams)
-			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
+			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(bePlaintextBindingDetails)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("restarting the broker with the same password")
 			session.Terminate().Wait()
@@ -372,10 +304,10 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedPasswordMetadata("my-password").Primary).To(BeTrue())
 
 			By("unbinding")
-			deleteBinding(serviceInstanceGUID, serviceBindingGUID)
+			testHelper.DeleteBinding(serviceInstance, serviceBindingGUID)
 
 			By("deprovisioning")
-			deprovisionServiceInstance(serviceInstanceGUID)
+			testHelper.Deprovision(serviceInstance)
 		})
 	})
 
@@ -390,18 +322,16 @@ var _ = Describe("Database Encryption", func() {
 			))
 
 			By("creating a service instance and checking fields are stored encrypted")
-			serviceInstanceGUID := uuid.New()
-			provisionServiceInstance(serviceInstanceGUID)
-			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionParams)
-			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionOutput)
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(haveAnyPlaintextServiceTerraformState)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionParams)
+			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionOutput)
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(haveAnyPlaintextServiceTerraformState)
 
 			By("creating a binding and checking the fields are stored encrypted")
-			serviceBindingGUID := uuid.New()
-			createBinding(serviceInstanceGUID, serviceBindingGUID)
+			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance, bindParams)
 			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(bePlaintextBindParams)
-			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
+			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(bePlaintextBindingDetails)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("restarting the broker with encryption turned off")
 			session.Terminate().Wait()
@@ -416,12 +346,12 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedPasswordMetadata("my-password").Primary).To(BeFalse())
 
 			By("checking that the previous data is now decrypted")
-			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).To(bePlaintextProvisionParams)
-			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).To(bePlaintextProvisionOutput)
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).To(bePlaintextInstanceTerraformState)
+			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).To(bePlaintextProvisionParams)
+			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).To(bePlaintextProvisionOutput)
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).To(bePlaintextInstanceTerraformState)
 			Expect(persistedBindRequestDetails(serviceBindingGUID)).To(bePlaintextBindParams)
-			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).To(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).To(bePlaintextBindingTerraformState)
+			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).To(bePlaintextBindingDetails)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).To(bePlaintextBindingTerraformState)
 
 			By("restarting the broker with encryption turned off again")
 			session.Terminate().Wait()
@@ -433,10 +363,10 @@ var _ = Describe("Database Encryption", func() {
 			expectNoPasswordMetadataToExist()
 
 			By("unbinding")
-			deleteBinding(serviceInstanceGUID, serviceBindingGUID)
+			testHelper.DeleteBinding(serviceInstance, serviceBindingGUID)
 
 			By("deprovisioning")
-			deprovisionServiceInstance(serviceInstanceGUID)
+			testHelper.Deprovision(serviceInstance)
 		})
 	})
 
@@ -455,18 +385,16 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedPasswordMetadata("my-first-password").Primary).To(BeTrue())
 
 			By("creating a service instance and checking fields are stored encrypted")
-			serviceInstanceGUID := uuid.New()
-			provisionServiceInstance(serviceInstanceGUID)
-			firstEncryptionPersistedRequestDetails := persistedProvisionRequestDetails(serviceInstanceGUID)
-			firstEncryptionPersistedServiceInstanceDetails := persistedServiceInstanceDetails(serviceInstanceGUID)
-			firstEncryptionpersistedServiceInstanceTerraformWorkspace := persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+			firstEncryptionPersistedRequestDetails := persistedProvisionRequestDetails(serviceInstance.GUID)
+			firstEncryptionPersistedServiceInstanceDetails := persistedServiceInstanceDetails(serviceInstance.GUID)
+			firstEncryptionpersistedServiceInstanceTerraformWorkspace := persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)
 
 			By("creating a binding and checking the fields are stored in plain text")
-			serviceBindingGUID := uuid.New()
-			createBinding(serviceInstanceGUID, serviceBindingGUID)
+			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance, bindParams)
 			firstEncryptionPersistedServiceBindingParams := persistedBindRequestDetails(serviceBindingGUID)
-			firstEncryptionPersistedServiceBindingDetails := persistedServiceBindingDetails(serviceInstanceGUID)
-			firstEncryptionPersistedServiceBindingTerraformWorkspace := persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)
+			firstEncryptionPersistedServiceBindingDetails := persistedServiceBindingDetails(serviceInstance.GUID)
+			firstEncryptionPersistedServiceBindingTerraformWorkspace := persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)
 
 			By("restarting the broker with a different primary password")
 			session.Terminate().Wait()
@@ -484,20 +412,20 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedPasswordMetadata("my-second-password").Primary).To(BeTrue())
 
 			By("checking that the previous data is still encrypted")
-			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionParams)
-			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(bePlaintextProvisionOutput)
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(haveAnyPlaintextServiceTerraformState)
+			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionParams)
+			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionOutput)
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(haveAnyPlaintextServiceTerraformState)
 			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(bePlaintextBindParams)
-			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
+			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(bePlaintextBindingDetails)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("checking that the previous data is encrypted differently")
-			Expect(persistedProvisionRequestDetails(serviceInstanceGUID)).NotTo(Equal(firstEncryptionPersistedRequestDetails))
-			Expect(persistedServiceInstanceDetails(serviceInstanceGUID)).NotTo(Equal(firstEncryptionPersistedServiceInstanceDetails))
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstanceGUID)).NotTo(Equal(firstEncryptionpersistedServiceInstanceTerraformWorkspace))
+			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(Equal(firstEncryptionPersistedRequestDetails))
+			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(Equal(firstEncryptionPersistedServiceInstanceDetails))
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(Equal(firstEncryptionpersistedServiceInstanceTerraformWorkspace))
 			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingParams))
-			Expect(persistedServiceBindingDetails(serviceInstanceGUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingDetails))
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstanceGUID, serviceBindingGUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingTerraformWorkspace))
+			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingDetails))
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingTerraformWorkspace))
 
 			By("restarting the broker with the new password only")
 			session.Terminate().Wait()
@@ -510,10 +438,10 @@ var _ = Describe("Database Encryption", func() {
 			expectPasswordMetadataToNotExist("my-first-password")
 
 			By("unbinding")
-			deleteBinding(serviceInstanceGUID, serviceBindingGUID)
+			testHelper.DeleteBinding(serviceInstance, serviceBindingGUID)
 
 			By("deprovisioning")
-			deprovisionServiceInstance(serviceInstanceGUID)
+			testHelper.Deprovision(serviceInstance)
 		})
 
 		When("previous password is not provided", func() {
@@ -560,15 +488,11 @@ var _ = Describe("Database Encryption", func() {
 				))
 
 				By("creating a service instance and checking fields are stored encrypted")
-				serviceInstanceGUID1 := uuid.New()
-				provisionServiceInstance(serviceInstanceGUID1)
-
-				serviceInstanceGUID2 := uuid.New()
-				provisionServiceInstance(serviceInstanceGUID2)
+				serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
 
 				By("corrupting the DB")
-				record := models.ServiceInstanceDetails{}
-				findRecord(&record, serviceInstanceIDQuery, serviceInstanceGUID2)
+				var record models.ServiceInstanceDetails
+				findRecord(&record, serviceInstanceIDQuery, serviceInstance.GUID)
 				recordToRecover := record
 				record.OtherDetails = []byte("something-that-cannot-be-decrypted")
 				Expect(testHelper.DBConn().Save(&record).Error).NotTo(HaveOccurred())
