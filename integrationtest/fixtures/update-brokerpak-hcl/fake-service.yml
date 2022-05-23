@@ -1,0 +1,45 @@
+version: 1
+name: fake-service
+id: 76c5725c-b246-11eb-871f-ffc97563fbd0
+description: description
+display_name: Fake
+image_url: https://example.com/icon.jpg
+documentation_url: https://example.com
+support_url: https://example.com/support.html
+plans:
+- name: first
+  id: 8b52a460-b246-11eb-a8f5-d349948e2480
+  description: First plan
+  display_name: First
+provision:
+  template_refs:
+    main: fake-provision.tf
+  user_inputs:
+    - field_name: provision_input
+      type: string
+      details: allowed param during provision
+    - field_name: update_input
+      type: string
+      details: to modify during update
+  outputs:
+    - field_name: provision_output
+      type: string
+      details: provision output
+    - field_name: update_output
+      type: string
+      details: update output
+bind:
+  template_refs:
+    main: fake-bind.tf
+  user_inputs:
+    - field_name: bind_input
+      type: string
+      details: allowed param during bind
+  computed_inputs:
+    - name: provision_output
+      type: string
+      default: ${instance.details["provision_output"]}
+  outputs:
+    - field_name: bind_output
+      type: string
+      details: bind output

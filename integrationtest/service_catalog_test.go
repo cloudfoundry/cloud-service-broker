@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("Catalog", func() {
+var _ = Describe("Service Catalog", func() {
 	const userProvidedPlan = `[{"name": "user-plan","id":"8b52a460-b246-11eb-a8f5-d349948e2480"}]`
 
 	var (
@@ -20,11 +20,7 @@ var _ = Describe("Catalog", func() {
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-for-catalog-test")
-	})
-
-	AfterEach(func() {
-		testHelper.Restore()
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "service-catalog")
 	})
 
 	When("a service offering has duplicate plan IDs", func() {
