@@ -158,7 +158,9 @@ file and a service definition file. The CSB can create examples of these files b
 
 First we will define the manifest. The snippet below defines the Terraform version, and also the versions
 of the Terraform providers. These must match the versions in `versions.tf`. It also defines the mapping
-between environment variables and config keys.
+between environment variables and config keys. If you're intested in reading more about what the fields
+mean, refer to the
+[Brokerpak Specification.](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/brokerpak-specification.md#manifest)
 ```yaml
 packversion: 1
 name: mysql-brokerpak
@@ -195,6 +197,14 @@ This file also defines the mapping between parameters and Terraform variables. P
 in the plan, or defined by the user. They can also be templated: you can see in the below example that
 the instance name is templated from the Cloud Foundry instance ID. This makes it easier to identify
 which resource in AWS corresponds to which Cloud Foundry instance.
+
+If you're intested in reading more about how services are specified, refer to the
+[Brokerpak Specification.](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/brokerpak-specification.md#services)
+
+Some variables have a default value that is specified in an interpolation language called HIL,
+for example `csb-mysql-${request.instance_id}`.
+For more information about HIL, refer to the
+[Brokerpak Specification.](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/brokerpak-specification.md#expression-language-reference)
 ```yaml
 version: 1
 name: aws-mysql-tutorial
