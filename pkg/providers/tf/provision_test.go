@@ -95,11 +95,9 @@ var _ = Describe("Provision", func() {
 			Expect(actualOperationType).To(Equal("provision"))
 
 			By("checking TF apply has been called")
-			Expect(fakeDefaultInvoker.ApplyCallCount()).To(Equal(1))
-			Expect(fakeDeploymentManager.MarkOperationFinishedCallCount()).To(Equal(1))
-			actualDeployment, err = fakeDeploymentManager.MarkOperationFinishedArgsForCall(0)
-			Expect(actualDeployment).To(Equal(deployment))
-			Expect(err).NotTo(HaveOccurred())
+			Eventually(applyCallCount(fakeDefaultInvoker)).Should(Equal(1))
+			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
+			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
 		})
 
 		It("fails, when tfID is not provided", func() {
@@ -163,3 +161,9 @@ var _ = Describe("Provision", func() {
 		})
 	})
 })
+
+func applyCallCount(fakeDefaultInvoker *tffakes.FakeTerraformInvoker) func() int {
+	return func() int {
+		return fakeDefaultInvoker.ApplyCallCount()
+	}
+}
