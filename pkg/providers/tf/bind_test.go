@@ -10,7 +10,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/tffakes"
@@ -52,20 +51,11 @@ var _ = Describe("Bind", func() {
 
 		fakeServiceDefinition = tf.TfServiceDefinitionV1{
 			BindSettings: tf.TfServiceDefinitionV1Action{
-				PlanInputs: []broker.BrokerVariable{
-					{
-						FieldName: "bind",
-					},
-				},
-				Outputs: []broker.BrokerVariable{
-					{
-						FieldName: "bind-output",
-					},
-				},
 				Template:  template,
 				Templates: map[string]string{"first": template},
 			},
 		}
+
 		fakeDeploymentManager = &tffakes.FakeDeploymentManagerInterface{}
 		fakeDefaultInvoker = &tffakes.FakeTerraformInvoker{}
 

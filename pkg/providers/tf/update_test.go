@@ -311,5 +311,4 @@ var _ = Describe("Update", func() {
 			Expect(workspace).To(Equal(fakeWorkspace))
 		})
 	})
-},
-)
+})
