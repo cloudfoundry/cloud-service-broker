@@ -354,12 +354,6 @@ var _ = Describe("Provision", func() {
 	})
 })
 
-func applyCallCount(fakeDefaultInvoker *tffakes.FakeTerraformInvoker) func() int {
-	return func() int {
-		return fakeDefaultInvoker.ApplyCallCount()
-	}
-}
-
 func importCallCount(fakeDefaultInvoker *tffakes.FakeTerraformInvoker) func() int {
 	return func() int {
 		return fakeDefaultInvoker.ImportCallCount()
