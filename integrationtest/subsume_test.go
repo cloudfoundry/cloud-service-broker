@@ -1,9 +1,7 @@
 package integrationtest_test
 
 import (
-	"encoding/json"
 	"net/http"
-	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
 	. "github.com/onsi/ginkgo/v2"
@@ -33,21 +31,7 @@ var _ = Describe("Subsume", func() {
 	It("can subsume a resource", func() {
 		const serviceOfferingGUID = "547cad88-fa93-11eb-9f44-97feefe52547"
 		const servicePlanGUID = "59624c68-fa93-11eb-9081-e79b0e1ab5ae"
-		serviceInstanceGUID := uuid.New()
-		provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(`{"value":"a97fd57a-fa94-11eb-8256-930255607a99"}`))
-		Expect(provisionResponse.Error).NotTo(HaveOccurred())
-		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted), string(provisionResponse.ResponseBody))
-
-		Eventually(func() bool {
-			lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
-			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
-			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
-			var receiver domain.LastOperation
-			err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(receiver.State).NotTo(Equal("failed"))
-			return receiver.State == "succeeded"
-		}, time.Minute*2, time.Second*10).Should(BeTrue())
+		testHelper.Provision(serviceOfferingGUID, servicePlanGUID, `{"value":"a97fd57a-fa94-11eb-8256-930255607a99"}`)
 	})
 
 	It("cancels a subsume operation when a resource would be deleted", func() {
@@ -58,17 +42,7 @@ var _ = Describe("Subsume", func() {
 		provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(`{"value":"thisisnotrandomatall"}`))
 		Expect(provisionResponse.Error).NotTo(HaveOccurred())
 		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted), string(provisionResponse.ResponseBody))
-
-		var receiver domain.LastOperation
-		Eventually(func() bool {
-			lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
-			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
-			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
-			err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(receiver.State).NotTo(Equal("succeeded"))
-			return receiver.State == "failed"
-		}, time.Minute*2, time.Second*10).Should(BeTrue())
-		Expect(receiver.Description).To(Equal("terraform plan shows that resources would be destroyed - cancelling subsume"))
+		Expect(testHelper.LastOperationFinalState(serviceInstanceGUID)).To(Equal(domain.Failed))
+		Expect(testHelper.LastOperation(serviceInstanceGUID).Description).To(Equal("terraform plan shows that resources would be destroyed - cancelling subsume"))
 	})
 })

@@ -1,10 +1,7 @@
 package integrationtest_test
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
-	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 
@@ -13,8 +10,6 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-	"github.com/pborman/uuid"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 var _ = Describe("Update Brokerpak HCL", func() {
@@ -55,53 +50,6 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		return ws
 	}
 
-	createBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
-		bindResponse := testHelper.Client().Bind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(bindParams))
-		Expect(bindResponse.Error).NotTo(HaveOccurred())
-		Expect(bindResponse.StatusCode).To(Equal(http.StatusCreated))
-	}
-
-	deleteBinding := func(serviceInstanceGUID, serviceBindingGUID string) {
-		unbindResponse := testHelper.Client().Unbind(serviceInstanceGUID, serviceBindingGUID, serviceOfferingGUID, servicePlanGUID, requestID())
-		Expect(unbindResponse.Error).NotTo(HaveOccurred())
-		Expect(unbindResponse.StatusCode).To(Equal(http.StatusOK))
-	}
-
-	waitForAsyncRequest := func(serviceInstanceGUID string) {
-		Eventually(func() bool {
-			lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
-			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
-			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
-			var receiver domain.LastOperation
-			err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(receiver.State).NotTo(Equal("failed"))
-			return receiver.State == "succeeded"
-		}, time.Minute*2, time.Second*10).Should(BeTrue())
-	}
-
-	updateServiceInstance := func(serviceInstanceGUID, updateParams string) {
-		updateResponse := testHelper.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateParams))
-		Expect(updateResponse.Error).NotTo(HaveOccurred())
-		Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
-		waitForAsyncRequest(serviceInstanceGUID)
-	}
-
-	provisionServiceInstance := func(serviceInstanceGUID string) {
-		provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(provisionParams))
-		ExpectWithOffset(1, provisionResponse.Error).NotTo(HaveOccurred())
-		ExpectWithOffset(1, provisionResponse.StatusCode).To(Equal(http.StatusAccepted), string(provisionResponse.ResponseBody))
-
-		waitForAsyncRequest(serviceInstanceGUID)
-	}
-
-	deprovisionServiceInstance := func(serviceInstanceGUID string) {
-		deprovisionResponse := testHelper.Client().Deprovision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID())
-		Expect(deprovisionResponse.Error).NotTo(HaveOccurred())
-		Expect(deprovisionResponse.StatusCode).To(Equal(http.StatusAccepted))
-		waitForAsyncRequest(serviceInstanceGUID)
-	}
-
 	beInitialTerraformHCL := SatisfyAll(
 		ContainSubstring(initialOutputHCL),
 		Not(ContainSubstring(updatedOutputHCL)),
@@ -119,7 +67,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 
 	haveInitialBindingOutputs := ContainSubstring(bindingOutputStateKey)
 
-	haveEmtpyState := SatisfyAll(
+	haveEmptyState := SatisfyAll(
 		ContainSubstring(`"outputs": {}`),
 		ContainSubstring(`"resources": []`),
 	)
@@ -169,115 +117,106 @@ var _ = Describe("Update Brokerpak HCL", func() {
 	})
 
 	When("brokerpak updates are disabled", func() {
-		var (
-			serviceInstanceGUID string
-			serviceBindingGUID  string
-		)
-
 		BeforeEach(func() {
-			serviceInstanceGUID = uuid.New()
-			serviceBindingGUID = uuid.New()
-
 			session = startBroker(false)
-			provisionServiceInstance(serviceInstanceGUID)
 		})
 
 		It("uses the original HCL for service instances operations", func() {
-			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beInitialTerraformHCL)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(false)
 
-			updateServiceInstance(serviceInstanceGUID, updateParams)
+			testHelper.UpdateService(serviceInstance, updateParams)
 
-			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beInitialTerraformHCL)
-			Expect(persistedTerraformState(serviceInstanceGUID, "")).To(haveInitialOutputs)
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
+			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveInitialOutputs)
 
-			deprovisionServiceInstance(serviceInstanceGUID)
-			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beInitialTerraformHCL)
-			Expect(persistedTerraformState(serviceInstanceGUID, "")).To(haveEmtpyState)
+			testHelper.Deprovision(serviceInstance)
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
+			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveEmptyState)
 		})
 
 		It("uses the original HCL for binding operations", func() {
-			createBinding(serviceInstanceGUID, serviceBindingGUID)
-			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, serviceBindingGUID)).To(beInitialBindingTerraformHCL)
-			Expect(persistedTerraformState(serviceInstanceGUID, serviceBindingGUID)).To(haveInitialBindingOutputs)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance)
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBindingGUID)).To(beInitialBindingTerraformHCL)
+			Expect(persistedTerraformState(serviceInstance.GUID, serviceBindingGUID)).To(haveInitialBindingOutputs)
 
 			pushUpdatedBrokerpak(false)
 
-			deleteBinding(serviceInstanceGUID, serviceBindingGUID)
+			testHelper.DeleteBinding(serviceInstance, serviceBindingGUID)
 
-			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, serviceBindingGUID)).To(beInitialBindingTerraformHCL)
-			Expect(persistedTerraformState(serviceInstanceGUID, serviceBindingGUID)).To(haveEmtpyState)
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBindingGUID)).To(beInitialBindingTerraformHCL)
+			Expect(persistedTerraformState(serviceInstance.GUID, serviceBindingGUID)).To(haveEmptyState)
 		})
 
 		It("ignores extra parameters added in the update", func() {
-			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beInitialTerraformHCL)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(false)
 
-			updateServiceInstance(serviceInstanceGUID, `{"update_input":"update output value","extra_input":"foo"}`)
+			testHelper.UpdateService(serviceInstance, `{"update_input":"update output value","extra_input":"foo"}`)
 
-			Expect(persistedTerraformState(serviceInstanceGUID, "")).To(haveInitialOutputs)
+			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveInitialOutputs)
 		})
 	})
 
 	When("brokerpak updates are enabled", func() {
-		var (
-			serviceInstanceGUID string
-			serviceBindingGUID  string
-		)
-
 		BeforeEach(func() {
-			serviceInstanceGUID = uuid.New()
-			serviceBindingGUID = uuid.New()
-
 			session = startBroker(true)
-			provisionServiceInstance(serviceInstanceGUID)
 		})
 
 		It("uses the updated HCL for an update", func() {
-			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beInitialTerraformHCL)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(true)
 
-			updateServiceInstance(serviceInstanceGUID, updateParams)
+			testHelper.UpdateService(serviceInstance, updateParams)
 
-			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beUpdatedTerraformHCL)
-			Expect(persistedTerraformState(serviceInstanceGUID, "")).To(haveUpdatedOutputs)
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beUpdatedTerraformHCL)
+			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveUpdatedOutputs)
 		})
 
 		It("uses the updated HCL for a deprovision", func() {
-			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beInitialTerraformHCL)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(true)
 
-			deprovisionServiceInstance(serviceInstanceGUID)
+			testHelper.Deprovision(serviceInstance)
 
-			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beUpdatedTerraformHCL)
-			Expect(persistedTerraformState(serviceInstanceGUID, "")).To(haveEmtpyState)
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beUpdatedTerraformHCL)
+			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveEmptyState)
 		})
 
 		It("uses the updated HCL for unbind", func() {
-			createBinding(serviceInstanceGUID, serviceBindingGUID)
-			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, serviceBindingGUID)).To(beInitialBindingTerraformHCL)
-			Expect(persistedTerraformState(serviceInstanceGUID, serviceBindingGUID)).To(haveInitialBindingOutputs)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance)
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBindingGUID)).To(beInitialBindingTerraformHCL)
+			Expect(persistedTerraformState(serviceInstance.GUID, serviceBindingGUID)).To(haveInitialBindingOutputs)
 
 			pushUpdatedBrokerpak(true)
 
-			deleteBinding(serviceInstanceGUID, serviceBindingGUID)
+			testHelper.DeleteBinding(serviceInstance, serviceBindingGUID)
 
-			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, serviceBindingGUID)).To(beUpdatedBindingTerraformHCL)
-			Expect(persistedTerraformState(serviceInstanceGUID, serviceBindingGUID)).To(haveEmtpyState)
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBindingGUID)).To(beUpdatedBindingTerraformHCL)
+			Expect(persistedTerraformState(serviceInstance.GUID, serviceBindingGUID)).To(haveEmptyState)
 		})
 
 		It("uses extra parameters added in the update", func() {
-			Expect(persistedTerraformModuleDefinition(serviceInstanceGUID, "")).To(beInitialTerraformHCL)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(true)
 
-			updateServiceInstance(serviceInstanceGUID, `{"update_input":"update output value","extra_input":" and extra parameter"}`)
+			testHelper.UpdateService(serviceInstance, `{"update_input":"update output value","extra_input":" and extra parameter"}`)
 
-			Expect(persistedTerraformState(serviceInstanceGUID, "")).To(ContainSubstring(`"value": "update output value and extra parameter"`))
+			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(ContainSubstring(`"value": "update output value and extra parameter"`))
 		})
 	})
 })

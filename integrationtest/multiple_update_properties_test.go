@@ -1,16 +1,10 @@
 package integrationtest_test
 
 import (
-	"encoding/json"
-	"net/http"
-	"time"
-
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-	"github.com/pborman/uuid"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 var _ = Describe("Multiple Updates to Properties", func() {
@@ -20,9 +14,8 @@ var _ = Describe("Multiple Updates to Properties", func() {
 	)
 
 	var (
-		testHelper          *helper.TestHelper
-		session             *Session
-		serviceInstanceGUID string
+		testHelper *helper.TestHelper
+		session    *Session
 	)
 
 	BeforeEach(func() {
@@ -36,57 +29,31 @@ var _ = Describe("Multiple Updates to Properties", func() {
 		testHelper.Restore()
 	})
 
-	checkBindingOutput := func(expected string) {
-		bindResponse := testHelper.Client().Bind(serviceInstanceGUID, uuid.New(), serviceOfferingGUID, servicePlanGUID, requestID(), nil)
-		ExpectWithOffset(1, bindResponse.Error).NotTo(HaveOccurred())
-		ExpectWithOffset(1, string(bindResponse.ResponseBody)).To(ContainSubstring(expected))
-	}
-
-	waitForCompletion := func() {
-		Eventually(func() bool {
-			lastOperationResponse := testHelper.Client().LastOperation(serviceInstanceGUID, requestID())
-			Expect(lastOperationResponse.Error).NotTo(HaveOccurred())
-			Expect(lastOperationResponse.StatusCode).To(Equal(http.StatusOK))
-			var receiver domain.LastOperation
-			err := json.Unmarshal(lastOperationResponse.ResponseBody, &receiver)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(receiver.State).NotTo(Equal("failed"))
-			return receiver.State == "succeeded"
-		}, time.Minute*2, time.Second*10).Should(BeTrue())
-	}
-
 	// This test was added for issue https://www.pivotaltracker.com/story/show/178213626 where a parameter that was
 	// updated would be reverted to the default value in subsequent updates
 	It("persists updated parameters in subsequent updates", func() {
 		By("provisioning with parameters")
 		const provisionParams = `{"alpha_input":"foo","beta_input":"bar"}`
-		serviceInstanceGUID = uuid.New()
-		provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(provisionParams))
-		Expect(provisionResponse.Error).NotTo(HaveOccurred())
-		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
-		waitForCompletion()
+		serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
 
 		By("checking that the parameter values are in a binding")
-		checkBindingOutput(`"bind_output":"foo;bar"`)
+		_, bindingOutput := testHelper.CreateBinding(serviceInstance)
+		Expect(bindingOutput).To(ContainSubstring(`"bind_output":"foo;bar"`))
 
 		By("updating a parameter")
 		const updateOneParams = `{"beta_input":"baz"}`
-		updateOneResponse := testHelper.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateOneParams))
-		Expect(updateOneResponse.Error).NotTo(HaveOccurred())
-		Expect(updateOneResponse.StatusCode).To(Equal(http.StatusAccepted))
-		waitForCompletion()
+		testHelper.UpdateService(serviceInstance, updateOneParams)
 
 		By("checking the value is updated in a binding")
-		checkBindingOutput(`"bind_output":"foo;baz"`)
+		_, bindingOutput = testHelper.CreateBinding(serviceInstance)
+		Expect(bindingOutput).To(ContainSubstring(`"bind_output":"foo;baz"`))
 
 		By("updating another parameter")
 		const updateTwoParams = `{"alpha_input":"quz"}`
-		updateTwoResponse := testHelper.Client().Update(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(updateTwoParams))
-		Expect(updateTwoResponse.Error).NotTo(HaveOccurred())
-		Expect(updateTwoResponse.StatusCode).To(Equal(http.StatusAccepted))
-		waitForCompletion()
+		testHelper.UpdateService(serviceInstance, updateTwoParams)
 
 		By("checking that both parameters remain updated in a binding")
-		checkBindingOutput(`"bind_output":"quz;baz"`)
+		_, bindingOutput = testHelper.CreateBinding(serviceInstance)
+		Expect(bindingOutput).To(ContainSubstring(`"bind_output":"quz;baz"`))
 	})
 })
