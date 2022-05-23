@@ -4,19 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
-
-	"github.com/onsi/gomega/gbytes"
-
-	"github.com/pborman/uuid"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 var _ = Describe("upgrade terraform before deprovision", func() {
@@ -58,14 +53,8 @@ var _ = Describe("upgrade terraform before deprovision", func() {
 		Describe("service instance created with Terraform 0.12", func() {
 			It("upgrades the terraform to latest before deleting", func() {
 				By("provisioning a service instance at 0.12")
-				serviceInstanceGUID := uuid.New()
-				provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
-				Expect(provisionResponse.Error).NotTo(HaveOccurred())
-				Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
-
-				Eventually(pollLastOperation(testHelper, serviceInstanceGUID), time.Minute*2, lastOperationPollingFrequency).ShouldNot(Equal(domain.InProgress))
-				Expect(pollLastOperation(testHelper, serviceInstanceGUID)()).To(Equal(domain.Succeeded))
-				Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.12.21"))
+				serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))
 
 				By("updating the brokerpak and restarting the broker")
 				session.Terminate().Wait()
@@ -74,19 +63,13 @@ var _ = Describe("upgrade terraform before deprovision", func() {
 				session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
 
 				By("deleting the service instance")
-				deleteBindResponse := testHelper.Client().Deprovision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID())
-
-				Expect(deleteBindResponse.Error).NotTo(HaveOccurred())
-				Expect(deleteBindResponse.StatusCode).To(Equal(http.StatusAccepted))
-
-				Eventually(pollLastOperation(testHelper, serviceInstanceGUID), time.Minute*2, time.Second*10).Should(Equal(domain.Succeeded))
+				testHelper.Deprovision(serviceInstance)
 
 				By("observing that the TF version has been updated to latest before destroy")
 				Expect(session).To(gbytes.Say("versions/0.13.7/terraform\",\"apply\""))
 				Expect(session).To(gbytes.Say("versions/0.14.9/terraform\",\"apply\""))
 				Expect(session).To(gbytes.Say("versions/1.0.10/terraform\",\"apply\""))
 				Expect(session).To(gbytes.Say("versions/1.1.6/terraform\",\"apply\""))
-
 			})
 		})
 	})
@@ -95,14 +78,8 @@ var _ = Describe("upgrade terraform before deprovision", func() {
 		Describe("existing service created with Terraform 0.12", func() {
 			It("fails to delete service", func() {
 				By("provisioning a service instance at 0.12")
-				serviceInstanceGUID := uuid.New()
-				provisionResponse := testHelper.Client().Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
-				Expect(provisionResponse.Error).NotTo(HaveOccurred())
-				Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted))
-
-				Eventually(pollLastOperation(testHelper, serviceInstanceGUID), time.Minute*2, lastOperationPollingFrequency).ShouldNot(Equal(domain.InProgress))
-				Expect(pollLastOperation(testHelper, serviceInstanceGUID)()).To(Equal(domain.Succeeded))
-				Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.12.21"))
+				serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))
 
 				By("updating the brokerpak and restarting the broker")
 				session.Terminate().Wait()
@@ -111,16 +88,12 @@ var _ = Describe("upgrade terraform before deprovision", func() {
 				session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=false")
 
 				By("deleting the service instance")
-				deleteBindResponse := testHelper.Client().Deprovision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, requestID())
-
+				deleteBindResponse := testHelper.Client().Deprovision(serviceInstance.GUID, serviceOfferingGUID, servicePlanGUID, requestID())
 				Expect(deleteBindResponse.Error).NotTo(HaveOccurred())
 				Expect(deleteBindResponse.StatusCode).To(Equal(http.StatusAccepted))
-
-				Eventually(pollLastOperation(testHelper, serviceInstanceGUID), time.Minute*2, time.Second*10).Should(Equal(domain.Failed))
-				Expect(terraformStateVersion(serviceInstanceGUID)).To(Equal("0.12.21"))
-
+				Expect(testHelper.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Failed))
+				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))
 			})
 		})
 	})
-
 })
