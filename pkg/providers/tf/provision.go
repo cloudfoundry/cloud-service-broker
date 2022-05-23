@@ -111,25 +111,24 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 		invoker := provider.DefaultInvoker()
 		if err := invoker.Import(ctx, workspace, resources); err != nil {
 			logger.Error("tf import failed", err)
-			provider.MarkOperationFinished(deployment, fmt.Errorf("tf import failed: %w", err))
+			provider.MarkOperationFinished(deployment, err)
 			return
 		}
 
 		mainTf, err := invoker.Show(ctx, workspace)
 		if err != nil {
 			logger.Error("tf show failed", err)
-			provider.MarkOperationFinished(deployment, fmt.Errorf("tf show failed: %w", err))
+			provider.MarkOperationFinished(deployment, err)
 		}
 
-		err = createTFMainDefinition(workspace, mainTf, deployment, logger)
-		if err != nil {
+		if err := createTFMainDefinition(workspace, mainTf, logger); err != nil {
 			logger.Error("Failed to create TF definition", err)
 			provider.MarkOperationFinished(deployment, err)
 		}
 
 		err = provider.terraformPlanToCheckNoResourcesDeleted(invoker, ctx, workspace, logger)
 		if err != nil {
-			logger.Error("plan failed", err)
+			logger.Error("validating plan failed", err)
 		} else {
 			err = invoker.Apply(ctx, workspace)
 		}
@@ -140,7 +139,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 	return tfID, nil
 }
 
-func createTFMainDefinition(workspace *workspace.TerraformWorkspace, mainTf string, deployment storage.TerraformDeployment, logger lager.Logger) error {
+func createTFMainDefinition(workspace *workspace.TerraformWorkspace, mainTf string, logger lager.Logger) error {
 	var tf string
 	var parameterVals map[string]string
 	tf, parameterVals, err := workspace.Transformer.ReplaceParametersInTf(workspace.Transformer.AddParametersInTf(workspace.Transformer.CleanTf(mainTf)))

@@ -334,7 +334,7 @@ var _ = Describe("Provision", func() {
 			By("checking TF import has been called")
 			Eventually(importCallCount(fakeDefaultInvoker)).Should(Equal(1))
 			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
-			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("tf import failed: some TF import issue happened"))
+			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("some TF import issue happened"))
 		})
 
 		It("return the error in last operation, if terraform show fails", func() {
@@ -349,7 +349,38 @@ var _ = Describe("Provision", func() {
 			By("checking TF show has been called")
 			Eventually(showCallCount(fakeDefaultInvoker)).Should(Equal(1))
 			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
-			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("tf show failed: some TF show issue happened"))
+			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("some TF show issue happened"))
+		})
+
+		It("return the error in last operation, if terraform plan fails", func() {
+			fakeDeploymentManager.CreateAndSaveDeploymentReturns(deployment, nil)
+			fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
+			fakeDefaultInvoker.PlanReturns(executor.ExecutionOutput{}, errors.New("some TF plan issue happened"))
+			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+
+			_, err := provider.Provision(context.TODO(), provisionContext)
+			Expect(err).NotTo(HaveOccurred())
+
+			By("checking TF plan has been called")
+			Eventually(planCallCount(fakeDefaultInvoker)).Should(Equal(1))
+			Eventually(applyCallCount(fakeDefaultInvoker)).Should(Equal(0))
+			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
+			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("some TF plan issue happened"))
+		})
+
+		It("return the error in last operation, if terraform apply fails", func() {
+			fakeDeploymentManager.CreateAndSaveDeploymentReturns(deployment, nil)
+			fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
+			fakeDefaultInvoker.ApplyReturns(errors.New("some TF apply issue happened"))
+			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+
+			_, err := provider.Provision(context.TODO(), provisionContext)
+			Expect(err).NotTo(HaveOccurred())
+
+			By("checking TF apply has been called")
+			Eventually(applyCallCount(fakeDefaultInvoker)).Should(Equal(1))
+			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
+			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("some TF apply issue happened"))
 		})
 	})
 })
