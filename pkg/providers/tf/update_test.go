@@ -311,8 +311,7 @@ var _ = Describe("Update", func() {
 			Expect(workspace).To(Equal(fakeWorkspace))
 		})
 	})
-},
-)
+})
 
 func getWorkspace(invoker *tffakes.FakeTerraformInvoker, pos int) workspace.Workspace {
 	_, workspace := invoker.ApplyArgsForCall(pos)
