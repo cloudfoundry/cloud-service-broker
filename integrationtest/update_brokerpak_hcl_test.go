@@ -3,10 +3,9 @@ package integrationtest_test
 import (
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -28,8 +27,8 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		serviceOfferingGUID = "76c5725c-b246-11eb-871f-ffc97563fbd0"
 		servicePlanGUID     = "8b52a460-b246-11eb-a8f5-d349948e2480"
 		tfWorkspaceIDQuery  = "id = ?"
-		initialBrokerpak    = "brokerpak-with-fake-provider"
-		updatedBrokerpak    = "brokerpak-with-fake-provider-updated"
+		initialBrokerpak    = "update-brokerpak-hcl"
+		updatedBrokerpak    = "update-brokerpak-hcl-updated"
 	)
 
 	var (
@@ -113,7 +112,6 @@ var _ = Describe("Update Brokerpak HCL", func() {
 
 	AfterEach(func() {
 		session.Terminate()
-		testHelper.Restore()
 	})
 
 	When("brokerpak updates are disabled", func() {
@@ -122,7 +120,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		})
 
 		It("uses the original HCL for service instances operations", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(false)
@@ -138,7 +136,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		})
 
 		It("uses the original HCL for binding operations", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
 			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance)
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBindingGUID)).To(beInitialBindingTerraformHCL)
 			Expect(persistedTerraformState(serviceInstance.GUID, serviceBindingGUID)).To(haveInitialBindingOutputs)
@@ -152,7 +150,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		})
 
 		It("ignores extra parameters added in the update", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(false)
@@ -169,7 +167,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		})
 
 		It("uses the updated HCL for an update", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(true)
@@ -181,7 +179,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		})
 
 		It("uses the updated HCL for a deprovision", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
 
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
@@ -194,8 +192,8 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		})
 
 		It("uses the updated HCL for unbind", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
-			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance, bindParams)
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBindingGUID)).To(beInitialBindingTerraformHCL)
 			Expect(persistedTerraformState(serviceInstance.GUID, serviceBindingGUID)).To(haveInitialBindingOutputs)
 
@@ -208,7 +206,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		})
 
 		It("uses extra parameters added in the update", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
 
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 

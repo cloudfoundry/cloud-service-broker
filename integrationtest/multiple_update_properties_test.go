@@ -20,13 +20,12 @@ var _ = Describe("Multiple Updates to Properties", func() {
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-for-multiple-updates")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "multiple-update-properties")
 		session = testHelper.StartBroker()
 	})
 
 	AfterEach(func() {
 		session.Terminate()
-		testHelper.Restore()
 	})
 
 	// This test was added for issue https://www.pivotaltracker.com/story/show/178213626 where a parameter that was

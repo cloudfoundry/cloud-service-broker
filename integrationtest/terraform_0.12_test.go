@@ -14,14 +14,13 @@ var _ = Describe("Terraform 0.12", func() {
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-0.12")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-0.12")
 
 		session = testHelper.StartBroker()
 	})
 
 	AfterEach(func() {
 		session.Terminate()
-		testHelper.Restore()
 	})
 
 	It("can provision using this Terraform version", func() {

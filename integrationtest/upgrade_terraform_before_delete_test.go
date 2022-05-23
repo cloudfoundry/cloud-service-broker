@@ -14,7 +14,7 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
-var _ = Describe("upgrade terraform before deprovision", func() {
+var _ = Describe("upgrade terraform before delete", func() {
 	const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
 	const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
 
@@ -25,14 +25,13 @@ var _ = Describe("upgrade terraform before deprovision", func() {
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-0.12")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "upgrade-terraform-before-delete")
 
 		session = testHelper.StartBroker()
 	})
 
 	AfterEach(func() {
 		session.Terminate()
-		testHelper.Restore()
 	})
 
 	terraformStateVersion := func(serviceInstanceGUID string) string {
@@ -58,7 +57,7 @@ var _ = Describe("upgrade terraform before deprovision", func() {
 
 				By("updating the brokerpak and restarting the broker")
 				session.Terminate().Wait()
-				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
+				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "upgrade-terraform-before-delete-updated")
 
 				session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
 
@@ -83,7 +82,7 @@ var _ = Describe("upgrade terraform before deprovision", func() {
 
 				By("updating the brokerpak and restarting the broker")
 				session.Terminate().Wait()
-				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
+				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "upgrade-terraform-before-delete-updated")
 
 				session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=false")
 

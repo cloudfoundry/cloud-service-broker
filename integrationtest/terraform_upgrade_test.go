@@ -21,14 +21,13 @@ var _ = Describe("Terraform Upgrade", func() {
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-0.13")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-upgrade")
 
 		session = testHelper.StartBroker()
 	})
 
 	AfterEach(func() {
 		session.Terminate().Wait()
-		testHelper.Restore()
 	})
 
 	terraformStateVersion := func(serviceInstanceGUID string) string {
@@ -55,7 +54,7 @@ var _ = Describe("Terraform Upgrade", func() {
 
 			By("updating the brokerpak and restarting the broker")
 			session.Terminate().Wait()
-			testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
+			testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-upgrade-updated")
 
 			session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
 
@@ -77,7 +76,7 @@ var _ = Describe("Terraform Upgrade", func() {
 
 			By("updating the brokerpak and restarting the broker")
 			session.Terminate().Wait()
-			testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
+			testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-upgrade-updated")
 			session = testHelper.StartBroker()
 
 			By("seeing 'cf update-service' fail")

@@ -16,6 +16,6 @@ func (h *TestHelper) BuildBrokerpakCommand(paths ...string) *exec.Cmd {
 
 func (h *TestHelper) BuildBrokerpak(paths ...string) {
 	session, err := gexec.Start(h.BuildBrokerpakCommand(paths...), ginkgo.GinkgoWriter, ginkgo.GinkgoWriter)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	gomega.Eventually(session, 10*time.Minute).Should(gexec.Exit(0))
+	gomega.Expect(err).WithOffset(1).NotTo(gomega.HaveOccurred())
+	gomega.Eventually(session, 10*time.Minute).WithOffset(1).Should(gexec.Exit(0))
 }

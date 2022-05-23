@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("Terraform", func() {
+var _ = Describe("Terraform Rename Provider", func() {
 	var (
 		testHelper *helper.TestHelper
 		session    *Session
@@ -14,13 +14,12 @@ var _ = Describe("Terraform", func() {
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-0.13")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-rename-provider")
 		session = testHelper.StartBroker()
 	})
 
 	AfterEach(func() {
 		session.Terminate()
-		testHelper.Restore()
 	})
 
 	It("can provision when provider is renamed", func() {
@@ -29,7 +28,7 @@ var _ = Describe("Terraform", func() {
 		serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
 
 		session.Terminate().Wait()
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-0.13-with-renamed-provider")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-rename-provider")
 		session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true", "BROKERPAK_UPDATES_ENABLED=true")
 
 		By("running 'cf update-service'")
@@ -42,7 +41,7 @@ var _ = Describe("Terraform", func() {
 		serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
 		session.Terminate().Wait()
 
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-0.13-with-renamed-provider")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-rename-provider")
 		session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true", "BROKERPAK_UPDATES_ENABLED=true")
 
 		By("running 'cf delete-service'")
@@ -58,7 +57,7 @@ var _ = Describe("Terraform", func() {
 
 		session.Terminate().Wait()
 
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-0.13-with-renamed-provider")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-rename-provider")
 		session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true", "BROKERPAK_UPDATES_ENABLED=true")
 
 		By("running 'cf delete-binding'")

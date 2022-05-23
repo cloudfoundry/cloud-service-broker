@@ -3,17 +3,15 @@ package integrationtest_test
 import (
 	"encoding/json"
 
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-
-	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
-
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 )
 
-var _ = Describe("MaintenanceInfo", func() {
+var _ = Describe("Maintenance Info", func() {
 	var (
 		testHelper *helper.TestHelper
 		session    *Session
@@ -21,12 +19,11 @@ var _ = Describe("MaintenanceInfo", func() {
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-mi")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "maintenance-info")
 	})
 
 	AfterEach(func() {
 		session.Terminate()
-		testHelper.Restore()
 	})
 
 	Context("Maintenance info", func() {
