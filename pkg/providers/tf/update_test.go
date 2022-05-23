@@ -314,17 +314,16 @@ var _ = Describe("Update", func() {
 },
 )
 
+func getWorkspace(invoker *tffakes.FakeTerraformInvoker, pos int) workspace.Workspace {
+	_, workspace := invoker.ApplyArgsForCall(pos)
+	return workspace
+}
+
 func operationWasFinishedWithError(fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface) func() error {
 	return func() error {
 		_, err := lastOperationMarkedFinished(fakeDeploymentManager)
 		return err
 	}
-
-}
-
-func getWorkspace(invoker *tffakes.FakeTerraformInvoker, pos int) workspace.Workspace {
-	_, workspace := invoker.ApplyArgsForCall(pos)
-	return workspace
 }
 
 func operationWasFinishedForDeployment(fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface) func() storage.TerraformDeployment {
