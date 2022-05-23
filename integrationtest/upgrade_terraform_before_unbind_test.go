@@ -25,14 +25,13 @@ var _ = Describe("upgrade terraform before unbind", func() {
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-0.12")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "upgrade-terraform-before-unbind")
 
 		session = testHelper.StartBroker()
 	})
 
 	AfterEach(func() {
 		session.Terminate()
-		testHelper.Restore()
 	})
 
 	terraformStateVersion := func(serviceInstanceGUID string) string {
@@ -61,7 +60,7 @@ var _ = Describe("upgrade terraform before unbind", func() {
 
 				By("updating the brokerpak and restarting the broker")
 				session.Terminate().Wait()
-				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
+				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "upgrade-terraform-before-unbind-updated")
 
 				session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
 
@@ -89,7 +88,7 @@ var _ = Describe("upgrade terraform before unbind", func() {
 
 				By("updating the brokerpak and restarting the broker")
 				session.Terminate().Wait()
-				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
+				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "upgrade-terraform-before-unbind-updated")
 
 				session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=false")
 

@@ -155,12 +155,11 @@ var _ = Describe("Database Encryption", func() {
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-with-fake-provider")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "database-encryption")
 	})
 
 	AfterEach(func() {
 		session.Terminate()
-		testHelper.Restore()
 	})
 
 	When("encryption is turned off", func() {
