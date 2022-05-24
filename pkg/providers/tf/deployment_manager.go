@@ -43,7 +43,6 @@ func (d *DeploymentManager) CreateAndSaveDeployment(deploymentID string, workspa
 	}
 
 	deployment.Workspace = workspace
-	deployment.LastOperationType = "validation"
 
 	return deployment, d.store.StoreTerraformDeployment(deployment)
 }
