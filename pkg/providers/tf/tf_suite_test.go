@@ -23,6 +23,12 @@ func applyCallCount(fakeDefaultInvoker *tffakes.FakeTerraformInvoker) func() int
 	}
 }
 
+func destroyCallCount(fakeDefaultInvoker *tffakes.FakeTerraformInvoker) func() int {
+	return func() int {
+		return fakeDefaultInvoker.DestroyCallCount()
+	}
+}
+
 func getWorkspace(invoker *tffakes.FakeTerraformInvoker, pos int) workspace.Workspace {
 	_, workspace := invoker.ApplyArgsForCall(pos)
 	return workspace
