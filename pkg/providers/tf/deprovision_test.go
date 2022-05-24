@@ -89,7 +89,7 @@ var _ = Describe("Deprovision", func() {
 		By("Checking that deprovision is marked as started")
 		Expect(fakeDeploymentManager.MarkOperationStartedCallCount()).To(Equal(1))
 		actualDeployment, actualOperationType := fakeDeploymentManager.MarkOperationStartedArgsForCall(0)
-		Expect(actualDeployment).To(Equal(deployment))
+		Expect(actualDeployment).To(Equal(&deployment))
 		Expect(actualOperationType).To(Equal("deprovision"))
 
 		By("checking TF apply has been called")
