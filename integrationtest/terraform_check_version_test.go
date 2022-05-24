@@ -52,7 +52,7 @@ var _ = Describe("Terraform check version", func() {
 
 	lastOperationMessage := func(serviceInstanceGUID string) string {
 		var tfDeploymentReceiver models.TerraformDeployment
-		Expect(testHelper.DBConn().Where("id = ?", fmt.Sprintf("%s", serviceInstanceGUID)).First(&tfDeploymentReceiver).Error).NotTo(HaveOccurred())
+		Expect(testHelper.DBConn().Where("id = ?", serviceInstanceGUID).First(&tfDeploymentReceiver).Error).NotTo(HaveOccurred())
 		return tfDeploymentReceiver.LastOperationMessage
 	}
 
