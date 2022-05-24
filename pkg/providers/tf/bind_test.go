@@ -95,7 +95,7 @@ var _ = Describe("Bind", func() {
 			By("checking that provision is marked as started")
 			Expect(fakeDeploymentManager.MarkOperationStartedCallCount()).To(Equal(1))
 			actualDeployment, actualOperationType := fakeDeploymentManager.MarkOperationStartedArgsForCall(0)
-			Expect(actualDeployment).To(Equal(deployment))
+			Expect(actualDeployment).To(Equal(&deployment))
 			Expect(actualOperationType).To(Equal("bind"))
 
 			By("checking TF apply has been called")

@@ -79,7 +79,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 		return tfID, fmt.Errorf("terraform provider create failed: %w", err)
 	}
 
-	if err := provider.MarkOperationStarted(deployment, models.ProvisionOperationType); err != nil {
+	if err := provider.MarkOperationStarted(&deployment, models.ProvisionOperationType); err != nil {
 		return tfID, fmt.Errorf("error marking job started: %w", err)
 	}
 
@@ -110,7 +110,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 				if err := invoker.Apply(ctx, workspace); err != nil {
 					return err
 				}
-				provider.MarkOperationFinished(deployment, nil)
+				provider.MarkOperationFinished(&deployment, nil)
 				return nil
 			},
 		}
@@ -118,7 +118,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 		for _, step := range steps {
 			if err := step(); err != nil {
 				logger.Error("operation failed", err)
-				provider.MarkOperationFinished(deployment, err)
+				provider.MarkOperationFinished(&deployment, err)
 				break
 			}
 		}

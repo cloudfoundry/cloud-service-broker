@@ -94,13 +94,13 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 		return tfID, fmt.Errorf("terraform provider create failed: %w", err)
 	}
 
-	if err := provider.MarkOperationStarted(deployment, operationType); err != nil {
+	if err := provider.MarkOperationStarted(&deployment, operationType); err != nil {
 		return tfID, fmt.Errorf("error marking job started: %w", err)
 	}
 
 	go func() {
 		err := provider.DefaultInvoker().Apply(ctx, workspace)
-		provider.MarkOperationFinished(deployment, err)
+		provider.MarkOperationFinished(&deployment, err)
 	}()
 
 	return tfID, nil
@@ -126,19 +126,19 @@ func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID str
 
 	workspace.Instances[0].Configuration = limitedConfig
 
-	if err := provider.MarkOperationStarted(deployment, operationType); err != nil {
+	if err := provider.MarkOperationStarted(&deployment, operationType); err != nil {
 		return err
 	}
 
 	go func() {
 		err = provider.performTerraformUpgrade(ctx, workspace)
 		if err != nil {
-			provider.MarkOperationFinished(deployment, err)
+			provider.MarkOperationFinished(&deployment, err)
 			return
 		}
 
 		err = provider.DefaultInvoker().Destroy(ctx, workspace)
-		provider.MarkOperationFinished(deployment, err)
+		provider.MarkOperationFinished(&deployment, err)
 	}()
 
 	return nil
@@ -164,8 +164,8 @@ func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 type DeploymentManagerInterface interface {
 	GetTerraformDeployment(deploymentID string) (storage.TerraformDeployment, error)
 	CreateAndSaveDeployment(deploymentID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error)
-	MarkOperationStarted(deployment storage.TerraformDeployment, operationType string) error
-	MarkOperationFinished(deployment storage.TerraformDeployment, err error) error
+	MarkOperationStarted(deployment *storage.TerraformDeployment, operationType string) error
+	MarkOperationFinished(deployment *storage.TerraformDeployment, err error) error
 	OperationStatus(deploymentID string) (bool, string, error)
 	UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]interface{}) error
 }

@@ -48,19 +48,19 @@ func (d *DeploymentManager) CreateAndSaveDeployment(deploymentID string, workspa
 	return deployment, d.store.StoreTerraformDeployment(deployment)
 }
 
-func (d *DeploymentManager) MarkOperationStarted(deployment storage.TerraformDeployment, operationType string) error {
+func (d *DeploymentManager) MarkOperationStarted(deployment *storage.TerraformDeployment, operationType string) error {
 	deployment.LastOperationType = operationType
 	deployment.LastOperationState = InProgress
 	deployment.LastOperationMessage = ""
 
-	if err := d.store.StoreTerraformDeployment(deployment); err != nil {
+	if err := d.store.StoreTerraformDeployment(*deployment); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (d *DeploymentManager) MarkOperationFinished(deployment storage.TerraformDeployment, err error) error {
+func (d *DeploymentManager) MarkOperationFinished(deployment *storage.TerraformDeployment, err error) error {
 	if err == nil {
 		lastOperationMessage := ""
 		workspace := deployment.Workspace
@@ -77,7 +77,7 @@ func (d *DeploymentManager) MarkOperationFinished(deployment storage.TerraformDe
 		deployment.LastOperationMessage = err.Error()
 	}
 
-	return d.store.StoreTerraformDeployment(deployment)
+	return d.store.StoreTerraformDeployment(*deployment)
 }
 
 func (d *DeploymentManager) OperationStatus(deploymentID string) (bool, string, error) {

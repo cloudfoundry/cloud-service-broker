@@ -129,7 +129,7 @@ var _ = Describe("DeploymentManager", func() {
 		})
 
 		It("updates last operation to in progress", func() {
-			err := deploymentManager.MarkOperationStarted(existingDeployment, "provision")
+			err := deploymentManager.MarkOperationStarted(&existingDeployment, "provision")
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(fakeStore.StoreTerraformDeploymentCallCount()).To(Equal(1))
@@ -145,7 +145,7 @@ var _ = Describe("DeploymentManager", func() {
 		It("fails, when storing deployment fails", func() {
 			fakeStore.StoreTerraformDeploymentReturns(errors.New("couldn't store deployment"))
 
-			err := deploymentManager.MarkOperationStarted(existingDeployment, "provision")
+			err := deploymentManager.MarkOperationStarted(&existingDeployment, "provision")
 
 			Expect(err).To(MatchError("couldn't store deployment"))
 		})
@@ -176,7 +176,7 @@ var _ = Describe("DeploymentManager", func() {
 
 		When("operation finished successfully", func() {
 			It("sets operation state to succeeded", func() {
-				err := deploymentManager.MarkOperationFinished(existingDeployment, nil)
+				err := deploymentManager.MarkOperationFinished(&existingDeployment, nil)
 
 				Expect(err).NotTo(HaveOccurred())
 
@@ -192,7 +192,7 @@ var _ = Describe("DeploymentManager", func() {
 			It("sets the last operation message from the TF output status", func() {
 				fakeWorkspace.OutputsReturns(map[string]interface{}{"status": "apply completed successfully"}, nil)
 
-				err := deploymentManager.MarkOperationFinished(existingDeployment, nil)
+				err := deploymentManager.MarkOperationFinished(&existingDeployment, nil)
 
 				Expect(err).NotTo(HaveOccurred())
 
@@ -205,7 +205,7 @@ var _ = Describe("DeploymentManager", func() {
 
 		When("operation finished with an error", func() {
 			It("sets operation state to failed and stores the error", func() {
-				err := deploymentManager.MarkOperationFinished(existingDeployment, errors.New("operation failed dramatically"))
+				err := deploymentManager.MarkOperationFinished(&existingDeployment, errors.New("operation failed dramatically"))
 
 				Expect(err).NotTo(HaveOccurred())
 
