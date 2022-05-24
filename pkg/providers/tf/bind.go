@@ -25,5 +25,5 @@ func (provider *TerraformProvider) Bind(ctx context.Context, bindContext *varcon
 		return nil, fmt.Errorf("error waiting for result: %w", err)
 	}
 
-	return provider.Outputs(tfID, workspace.DefaultInstanceName)
+	return provider.outputs(tfID, workspace.DefaultInstanceName)
 }

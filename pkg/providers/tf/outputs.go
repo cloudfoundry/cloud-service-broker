@@ -11,7 +11,7 @@ import (
 func (provider *TerraformProvider) GetTerraformOutputs(ctx context.Context, instanceGUID string) (storage.JSONObject, error) {
 	tfID := generateTfID(instanceGUID, "")
 
-	outs, err := provider.Outputs(tfID, workspace.DefaultInstanceName)
+	outs, err := provider.outputs(tfID, workspace.DefaultInstanceName)
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +20,7 @@ func (provider *TerraformProvider) GetTerraformOutputs(ctx context.Context, inst
 }
 
 // Outputs gets the output variables for the given module instance in the workspace.
-func (provider *TerraformProvider) Outputs(deploymentID, instanceName string) (map[string]interface{}, error) {
+func (provider *TerraformProvider) outputs(deploymentID, instanceName string) (map[string]interface{}, error) {
 	deployment, err := provider.GetTerraformDeployment(deploymentID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting TF deployment: %w", err)
