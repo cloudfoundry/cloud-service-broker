@@ -5,7 +5,6 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/tffakes"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/hashicorp/go-version"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -45,11 +44,6 @@ func destroyCallCount(fakeDefaultInvoker *tffakes.FakeTerraformInvoker) func() i
 	return func() int {
 		return fakeDefaultInvoker.DestroyCallCount()
 	}
-}
-
-func getWorkspace(invoker *tffakes.FakeTerraformInvoker, pos int) workspace.Workspace {
-	_, workspace := invoker.ApplyArgsForCall(pos)
-	return workspace
 }
 
 func operationWasFinishedWithError(fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface) func() error {
