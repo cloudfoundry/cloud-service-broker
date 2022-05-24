@@ -43,7 +43,7 @@ var _ = Describe("DeploymentManager", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(actualDeployment.ID).To(Equal(deploymentID))
 			Expect(actualDeployment.Workspace).To(Equal(ws))
-			Expect(actualDeployment.LastOperationType).To(Equal("validation"))
+			Expect(actualDeployment.LastOperationType).To(BeEmpty())
 			Expect(actualDeployment.LastOperationState).To(BeEmpty())
 			Expect(actualDeployment.LastOperationMessage).To(BeEmpty())
 
@@ -77,7 +77,7 @@ var _ = Describe("DeploymentManager", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(actualDeployment.ID).To(Equal(deploymentID))
 				Expect(actualDeployment.Workspace).To(Equal(ws))
-				Expect(actualDeployment.LastOperationType).To(Equal("validation"))
+				Expect(actualDeployment.LastOperationType).To(Equal("provision"))
 				Expect(actualDeployment.LastOperationState).To(Equal("in progress"))
 				Expect(actualDeployment.LastOperationMessage).To(Equal("test"))
 
@@ -139,7 +139,7 @@ var _ = Describe("DeploymentManager", func() {
 			Expect(storedDeployment.Workspace).To(Equal(existingDeployment.Workspace))
 			Expect(storedDeployment.LastOperationType).To(Equal("provision"))
 			Expect(storedDeployment.LastOperationState).To(Equal("in progress"))
-			Expect(storedDeployment.LastOperationMessage).To(Equal(""))
+			Expect(storedDeployment.LastOperationMessage).To(Equal("provision in progress"))
 		})
 
 		It("fails, when storing deployment fails", func() {
@@ -186,7 +186,7 @@ var _ = Describe("DeploymentManager", func() {
 				Expect(storedDeployment.Workspace).To(Equal(existingDeployment.Workspace))
 				Expect(storedDeployment.LastOperationType).To(Equal(existingDeployment.LastOperationType))
 				Expect(storedDeployment.LastOperationState).To(Equal("succeeded"))
-				Expect(storedDeployment.LastOperationMessage).To(BeEmpty())
+				Expect(storedDeployment.LastOperationMessage).To(Equal("provision succeeded"))
 			})
 
 			It("sets the last operation message from the TF output status", func() {
@@ -199,7 +199,7 @@ var _ = Describe("DeploymentManager", func() {
 				Expect(fakeStore.StoreTerraformDeploymentCallCount()).To(Equal(1))
 				storedDeployment := fakeStore.StoreTerraformDeploymentArgsForCall(0)
 				Expect(storedDeployment.LastOperationState).To(Equal("succeeded"))
-				Expect(storedDeployment.LastOperationMessage).To(Equal("apply completed successfully"))
+				Expect(storedDeployment.LastOperationMessage).To(Equal("provision succeeded: apply completed successfully"))
 			})
 		})
 
@@ -215,8 +215,7 @@ var _ = Describe("DeploymentManager", func() {
 				Expect(storedDeployment.Workspace).To(Equal(existingDeployment.Workspace))
 				Expect(storedDeployment.LastOperationType).To(Equal(existingDeployment.LastOperationType))
 				Expect(storedDeployment.LastOperationState).To(Equal("failed"))
-				Expect(storedDeployment.LastOperationMessage).To(Equal("operation failed dramatically"))
-
+				Expect(storedDeployment.LastOperationMessage).To(Equal("provision failed: operation failed dramatically"))
 			})
 		})
 	})

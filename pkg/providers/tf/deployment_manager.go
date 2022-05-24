@@ -50,7 +50,7 @@ func (d *DeploymentManager) CreateAndSaveDeployment(deploymentID string, workspa
 func (d *DeploymentManager) MarkOperationStarted(deployment *storage.TerraformDeployment, operationType string) error {
 	deployment.LastOperationType = operationType
 	deployment.LastOperationState = InProgress
-	deployment.LastOperationMessage = ""
+	deployment.LastOperationMessage = fmt.Sprintf("%s %s", operationType, InProgress)
 
 	if err := d.store.StoreTerraformDeployment(*deployment); err != nil {
 		return err
@@ -61,19 +61,19 @@ func (d *DeploymentManager) MarkOperationStarted(deployment *storage.TerraformDe
 
 func (d *DeploymentManager) MarkOperationFinished(deployment *storage.TerraformDeployment, err error) error {
 	if err == nil {
-		lastOperationMessage := ""
+		lastOperationMessage := fmt.Sprintf("%s %s", deployment.LastOperationType, Succeeded)
 		workspace := deployment.Workspace
 		outputs, err := workspace.Outputs(workspace.ModuleInstances()[0].InstanceName)
 		if err == nil {
 			if status, ok := outputs["status"]; ok {
-				lastOperationMessage = fmt.Sprintf("%v", status)
+				lastOperationMessage = fmt.Sprintf("%s %s: %v", deployment.LastOperationType, Succeeded, status)
 			}
 		}
 		deployment.LastOperationState = Succeeded
 		deployment.LastOperationMessage = lastOperationMessage
 	} else {
 		deployment.LastOperationState = Failed
-		deployment.LastOperationMessage = err.Error()
+		deployment.LastOperationMessage = fmt.Errorf("%s %s: %w", deployment.LastOperationType, Failed, err).Error()
 	}
 
 	return d.store.StoreTerraformDeployment(*deployment)
