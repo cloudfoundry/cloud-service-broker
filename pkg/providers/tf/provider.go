@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
 	"github.com/hashicorp/go-version"
@@ -78,7 +77,7 @@ func (provider *TerraformProvider) VersionedInvoker(version *version.Version) in
 	return provider.VersionedTerraformInvoker(version)
 }
 
-func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
+func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action, operationType string) (string, error) {
 	tfID := vars.GetString("tf_id")
 	if err := vars.Error(); err != nil {
 		return "", err
@@ -95,7 +94,7 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 		return tfID, fmt.Errorf("terraform provider create failed: %w", err)
 	}
 
-	if err := provider.MarkOperationStarted(deployment, models.ProvisionOperationType); err != nil {
+	if err := provider.MarkOperationStarted(deployment, operationType); err != nil {
 		return tfID, fmt.Errorf("error marking job started: %w", err)
 	}
 
@@ -107,7 +106,7 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 	return tfID, nil
 }
 
-func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID string, templateVars map[string]interface{}) error {
+func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID string, templateVars map[string]interface{}, operationType string) error {
 	deployment, err := provider.GetTerraformDeployment(deploymentID)
 	if err != nil {
 		return err
@@ -127,7 +126,7 @@ func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID str
 
 	workspace.Instances[0].Configuration = limitedConfig
 
-	if err := provider.MarkOperationStarted(deployment, models.DeprovisionOperationType); err != nil {
+	if err := provider.MarkOperationStarted(deployment, operationType); err != nil {
 		return err
 	}
 

@@ -2,6 +2,7 @@ package tf
 
 import (
 	"context"
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
@@ -21,7 +22,7 @@ func (provider *TerraformProvider) Unbind(ctx context.Context, instanceGUID, bin
 		return err
 	}
 
-	if err := provider.destroy(ctx, tfID, vc.ToMap()); err != nil {
+	if err := provider.destroy(ctx, tfID, vc.ToMap(), models.UnbindOperationType); err != nil {
 		return err
 	}
 

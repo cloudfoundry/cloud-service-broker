@@ -2,6 +2,7 @@ package tf
 
 import (
 	"context"
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
@@ -21,7 +22,7 @@ func (provider *TerraformProvider) Deprovision(ctx context.Context, instanceGUID
 		return nil, err
 	}
 
-	if err := provider.destroy(ctx, tfID, vc.ToMap()); err != nil {
+	if err := provider.destroy(ctx, tfID, vc.ToMap(), models.DeprovisionOperationType); err != nil {
 		return nil, err
 	}
 

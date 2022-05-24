@@ -38,7 +38,7 @@ func (provider *TerraformProvider) Provision(ctx context.Context, provisionConte
 	case true:
 		tfID, err = provider.importCreate(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
 	default:
-		tfID, err = provider.create(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
+		tfID, err = provider.create(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings, models.ProvisionOperationType)
 	}
 	if err != nil {
 		return storage.ServiceInstanceDetails{}, err

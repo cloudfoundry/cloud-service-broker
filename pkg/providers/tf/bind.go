@@ -3,6 +3,7 @@ package tf
 import (
 	"context"
 	"fmt"
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
@@ -16,7 +17,7 @@ func (provider *TerraformProvider) Bind(ctx context.Context, bindContext *varcon
 		"context": bindContext.ToMap(),
 	})
 
-	tfID, err := provider.create(ctx, bindContext, provider.serviceDefinition.BindSettings)
+	tfID, err := provider.create(ctx, bindContext, provider.serviceDefinition.BindSettings, models.BindOperationType)
 	if err != nil {
 		return nil, fmt.Errorf("error from provider bind: %w", err)
 	}
