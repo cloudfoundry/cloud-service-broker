@@ -22,6 +22,8 @@ import (
 
 var _ = Describe("Deprovision", func() {
 	const instanceGUID = "cc57a89e-8f43-48e8-9e41-c7c99d331066"
+	const expectedError = "generic error"
+	expectedTFID := fmt.Sprintf("tf:%s:", instanceGUID)
 
 	var (
 		deployment            storage.TerraformDeployment
@@ -61,10 +63,11 @@ var _ = Describe("Deprovision", func() {
 		}
 	})
 
-	It("deletes the instance", func() {
-		expectedTFID := fmt.Sprintf("tf:%s:", instanceGUID)
-
+	JustBeforeEach(func() {
 		fakeDeploymentManager.UpdateWorkspaceHCLReturns(nil)
+	})
+
+	It("deletes the instance", func() {
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1"))}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
@@ -96,9 +99,7 @@ var _ = Describe("Deprovision", func() {
 
 	})
 
-	It("fails when unable to update the workspace HCL", func() {
-		const expectedError = "generic error"
-
+	It("fails, when unable to update the workspace HCL", func() {
 		fakeDeploymentManager.UpdateWorkspaceHCLReturns(fmt.Errorf(expectedError))
 
 		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1"))}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
@@ -109,17 +110,44 @@ var _ = Describe("Deprovision", func() {
 
 	})
 
-	It("fails when unable to update the workspace HCL", func() {
-		const expectedError = "generic error"
+	It("fails, when unable to get the Terraform deployment", func() {
+		fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, fmt.Errorf(expectedError))
 
-		fakeDeploymentManager.UpdateWorkspaceHCLReturns(fmt.Errorf(expectedError))
-
-		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1"))}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+		provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
 		actualOperationId, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
 		Expect(err).To(MatchError(expectedError))
 		Expect(actualOperationId).To(BeNil())
 
+	})
+
+	It("fails, when unable to mark operation as started", func() {
+		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
+		fakeDeploymentManager.MarkOperationStartedReturns(fmt.Errorf(expectedError))
+
+		provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+
+		actualOperationId, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+		Expect(err).To(MatchError(expectedError))
+		Expect(actualOperationId).To(BeNil())
+
+	})
+
+	It("returns the error in last operation if terraform destroy fails", func() {
+		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
+		fakeDeploymentManager.MarkOperationStartedReturns(nil)
+		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
+		fakeDefaultInvoker.DestroyReturns(fmt.Errorf(expectedError))
+
+		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1"))}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+
+		actualOperationId, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(actualOperationId).To(Equal(&expectedTFID))
+
+		By("checking last operation updated with error")
+		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
+		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(expectedError))
 	})
 
 })
