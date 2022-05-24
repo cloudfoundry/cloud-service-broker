@@ -14,7 +14,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace/workspacefakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo/v2"
 	"github.com/spf13/viper"
 
@@ -203,112 +202,42 @@ var _ = Describe("Update", func() {
 		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(genericError))
 	})
 
-	Context("when tfUpgrades are enabled", func() {
-		BeforeEach(func() {
-			viper.Set(tf.TfUpgradeEnabled, true)
-		})
-		It("runs apply with all tf versions in the upgrade path", func() {
-			tfBinContext := executor.TFBinariesContext{
-				DefaultTfVersion: newVersion("0.1.0"),
-				TfUpgradePath: []*version.Version{
-					newVersion("0.0.1"),
-					newVersion("0.0.2"),
-					newVersion("0.1.0"),
-				},
-			}
-			fakeInvoker1 := &tffakes.FakeTerraformInvoker{}
-			fakeInvoker2 := &tffakes.FakeTerraformInvoker{}
+	It("fails the update, if the version of statefile does not match the default tf version", func() {
+		tfBinContext := executor.TFBinariesContext{
+			DefaultTfVersion: newVersion("0.1.0"),
+		}
+		deployment.Workspace = fakeWorkspace
+		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 
-			deployment.Workspace = fakeWorkspace
-			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
-			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(0, fakeInvoker1)
-			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(1, fakeInvoker2)
-			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(2, fakeDefaultInvoker)
+		fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
 
-			fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
-			fakeWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "moduleName"}})
+		runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
-			_, err := runner.Update(context.TODO(), varContext)
-			Expect(err).NotTo(HaveOccurred())
+		_, err := runner.Update(context.TODO(), varContext)
+		Expect(err).NotTo(HaveOccurred())
 
-			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
-			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
-
-			Expect(fakeInvoker1.ApplyCallCount()).To(Equal(1))
-			Expect(getWorkspace(fakeInvoker1, 0)).To(Equal(fakeWorkspace))
-
-			Expect(fakeInvoker2.ApplyCallCount()).To(Equal(1))
-			Expect(getWorkspace(fakeInvoker2, 0)).To(Equal(fakeWorkspace))
-
-			Expect(fakeDefaultInvoker.ApplyCallCount()).To(Equal(1))
-			Expect(getWorkspace(fakeDefaultInvoker, 0)).To(Equal(fakeWorkspace))
-
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(3))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(0)).To(Equal(newVersion("0.0.2")))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(1)).To(Equal(newVersion("0.1.0")))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(2)).To(Equal(newVersion("0.1.0")))
-		})
-
-		It("fails the update, if the version of statefile does not match the default tf version, and no upgrade path is specified", func() {
-			tfBinContext := executor.TFBinariesContext{
-				DefaultTfVersion: newVersion("0.1.0"),
-			}
-			deployment.Workspace = fakeWorkspace
-			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
-			fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
-
-			runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
-
-			_, err := runner.Update(context.TODO(), varContext)
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(0))
-		})
+		Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(0))
 	})
 
-	Context("when tfUpgrades are disabled", func() {
-		BeforeEach(func() {
-			viper.Set(tf.TfUpgradeEnabled, false)
-		})
+	It("succeeds if default tf version matches instance", func() {
+		tfBinContext := executor.TFBinariesContext{
+			DefaultTfVersion: newVersion("0.1.0"),
+		}
+		deployment.Workspace = fakeWorkspace
+		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
+		fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(0, fakeDefaultInvoker)
+		fakeWorkspace.StateVersionReturns(newVersion("0.1.0"), nil)
 
-		It("fails the update, if the version of statefile does not match the default tf version", func() {
-			tfBinContext := executor.TFBinariesContext{
-				DefaultTfVersion: newVersion("0.1.0"),
-			}
-			deployment.Workspace = fakeWorkspace
-			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
+		runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
+		_, err := runner.Update(context.TODO(), varContext)
+		Expect(err).NotTo(HaveOccurred())
 
-			runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
+		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
 
-			_, err := runner.Update(context.TODO(), varContext)
-			Expect(err).NotTo(HaveOccurred())
-
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(0))
-		})
-
-		It("performs the update, default tf version matches instance", func() {
-			tfBinContext := executor.TFBinariesContext{
-				DefaultTfVersion: newVersion("0.1.0"),
-			}
-			deployment.Workspace = fakeWorkspace
-			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
-			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(0, fakeDefaultInvoker)
-			fakeWorkspace.StateVersionReturns(newVersion("0.1.0"), nil)
-
-			runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
-
-			_, err := runner.Update(context.TODO(), varContext)
-			Expect(err).NotTo(HaveOccurred())
-
-			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
-			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
-
-			Expect(fakeDefaultInvoker.ApplyCallCount()).To(Equal(1))
-			_, workspace := fakeDefaultInvoker.ApplyArgsForCall(0)
-			Expect(workspace).To(Equal(fakeWorkspace))
-		})
+		Expect(fakeDefaultInvoker.ApplyCallCount()).To(Equal(1))
+		_, workspace := fakeDefaultInvoker.ApplyArgsForCall(0)
+		Expect(workspace).To(Equal(fakeWorkspace))
 	})
 })
