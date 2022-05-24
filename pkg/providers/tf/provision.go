@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -50,38 +52,9 @@ func (provider *TerraformProvider) Provision(ctx context.Context, provisionConte
 
 func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
 	varsMap := vars.ToMap()
-
-	var parameterMappings, addParams []workspace.ParameterMapping
-
-	for _, importParameterMapping := range action.ImportParameterMappings {
-		parameterMappings = append(parameterMappings, workspace.ParameterMapping{
-			TfVariable:    importParameterMapping.TfVariable,
-			ParameterName: importParameterMapping.ParameterName,
-		})
-	}
-
-	for _, addParam := range action.ImportParametersToAdd {
-		addParams = append(addParams, workspace.ParameterMapping{
-			TfVariable:    addParam.TfVariable,
-			ParameterName: addParam.ParameterName,
-		})
-	}
-
-	var importParams []ImportResource
-
-	for _, importParam := range action.ImportVariables {
-		if param, ok := varsMap[importParam.Name]; ok {
-			importParams = append(importParams, ImportResource{TfResource: importParam.TfResource, IaaSResource: fmt.Sprintf("%v", param)})
-		}
-	}
-
-	if len(importParams) != len(action.ImportVariables) {
-		importFields := action.ImportVariables[0].Name
-		for i := 1; i < len(action.ImportVariables); i++ {
-			importFields = fmt.Sprintf("%s, %s", importFields, action.ImportVariables[i].Name)
-		}
-
-		return "", fmt.Errorf("must provide values for all import parameters: %s", importFields)
+	importParams, err := validateImportParams(action.ImportVariables, varsMap)
+	if err != nil {
+		return "", err
 	}
 
 	tfID := vars.GetString("tf_id")
@@ -89,21 +62,26 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 		return "", err
 	}
 
-	workspace, err := workspace.NewWorkspace(varsMap, "", action.Templates, parameterMappings, action.ImportParametersToDelete, addParams)
+	workspace, err := workspace.NewWorkspace(
+		varsMap,
+		"",
+		action.Templates,
+		evaluateParameterMappings(action.ImportParameterMappings),
+		action.ImportParametersToDelete,
+		evaluateParametersToAdd(action.ImportParametersToAdd))
 	if err != nil {
-		return tfID, err
+		return tfID, fmt.Errorf("error creating workspace: %w", err)
 	}
 
 	deployment, err := provider.CreateAndSaveDeployment(tfID, workspace)
 	if err != nil {
 		provider.logger.Error("terraform provider create failed", err)
-		return tfID, err
+		return tfID, fmt.Errorf("terraform provider create failed: %w", err)
 	}
 
 	if err := provider.MarkOperationStarted(deployment, models.ProvisionOperationType); err != nil {
-		return tfID, err
+		return tfID, fmt.Errorf("error marking job started: %w", err)
 	}
-	invoker := provider.DefaultInvoker()
 
 	go func() {
 		logger := utils.NewLogger("Import").WithData(correlation.ID(ctx))
@@ -112,39 +90,104 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 			resources[resource.TfResource] = resource.IaaSResource
 		}
 
-		if err := invoker.Import(ctx, workspace, resources); err != nil {
-			logger.Error("Import Failed", err)
-			provider.MarkOperationFinished(deployment, err)
-			return
+		invoker := provider.DefaultInvoker()
+		var mainTf string
+		steps := []func() error{
+			func() (errs error) {
+				return invoker.Import(ctx, workspace, resources)
+			},
+			func() (errs error) {
+				mainTf, err = invoker.Show(ctx, workspace)
+				return err
+			},
+			func() (errs error) {
+				return createTFMainDefinition(workspace, mainTf, logger)
+			},
+			func() (errs error) {
+				return provider.terraformPlanToCheckNoResourcesDeleted(invoker, ctx, workspace, logger)
+			},
+			func() (errs error) {
+				if err := invoker.Apply(ctx, workspace); err != nil {
+					return err
+				}
+				provider.MarkOperationFinished(deployment, nil)
+				return nil
+			},
 		}
-		mainTf, err := invoker.Show(ctx, workspace)
-		if err == nil {
-			var tf string
-			var parameterVals map[string]string
-			tf, parameterVals, err = workspace.Transformer.ReplaceParametersInTf(workspace.Transformer.AddParametersInTf(workspace.Transformer.CleanTf(mainTf)))
-			if err == nil {
-				for pn, pv := range parameterVals {
-					workspace.Instances[0].Configuration[pn] = pv
-				}
-				workspace.Modules[0].Definitions["main"] = tf
 
-				logger.Info("new workspace", lager.Data{
-					"workspace": workspace,
-					"tf":        tf,
-				})
-
-				err = provider.terraformPlanToCheckNoResourcesDeleted(invoker, ctx, workspace, logger)
-				if err != nil {
-					logger.Error("plan failed", err)
-				} else {
-					err = invoker.Apply(ctx, workspace)
-				}
+		for _, step := range steps {
+			if err := step(); err != nil {
+				logger.Error("operation failed", err)
+				provider.MarkOperationFinished(deployment, err)
+				break
 			}
 		}
-		provider.MarkOperationFinished(deployment, err)
 	}()
 
 	return tfID, nil
+}
+
+func validateImportParams(importVariables []broker.ImportVariable, varsMap map[string]interface{}) ([]ImportResource, error) {
+	var importParams []ImportResource
+	for _, importParam := range importVariables {
+		if param, ok := varsMap[importParam.Name]; ok {
+			importParams = append(importParams, ImportResource{TfResource: importParam.TfResource, IaaSResource: fmt.Sprintf("%v", param)})
+		}
+	}
+
+	if len(importParams) != len(importVariables) {
+		importFields := importVariables[0].Name
+		for i := 1; i < len(importVariables); i++ {
+			importFields = fmt.Sprintf("%s, %s", importFields, importVariables[i].Name)
+		}
+
+		return nil, fmt.Errorf("must provide values for all import parameters: %s", importFields)
+	}
+
+	return importParams, nil
+}
+
+func evaluateParameterMappings(importParameterMappings []ImportParameterMapping) []workspace.ParameterMapping {
+	var parameterMappings []workspace.ParameterMapping
+	for _, importParameterMapping := range importParameterMappings {
+		parameterMappings = append(parameterMappings, workspace.ParameterMapping{
+			TfVariable:    importParameterMapping.TfVariable,
+			ParameterName: importParameterMapping.ParameterName,
+		})
+	}
+	return parameterMappings
+}
+
+func evaluateParametersToAdd(importParametersToAdd []ImportParameterMapping) []workspace.ParameterMapping {
+	var addParams []workspace.ParameterMapping
+	for _, addParam := range importParametersToAdd {
+		addParams = append(addParams, workspace.ParameterMapping{
+			TfVariable:    addParam.TfVariable,
+			ParameterName: addParam.ParameterName,
+		})
+	}
+	return addParams
+}
+
+func createTFMainDefinition(workspace *workspace.TerraformWorkspace, mainTf string, logger lager.Logger) error {
+	var tf string
+	var parameterVals map[string]string
+	tf, parameterVals, err := workspace.Transformer.ReplaceParametersInTf(workspace.Transformer.AddParametersInTf(workspace.Transformer.CleanTf(mainTf)))
+	if err != nil {
+		return err
+	}
+
+	for pn, pv := range parameterVals {
+		workspace.Instances[0].Configuration[pn] = pv
+	}
+	workspace.Modules[0].Definitions["main"] = tf
+
+	logger.Info("new workspace", lager.Data{
+		"workspace": workspace,
+		"tf":        tf,
+	})
+
+	return nil
 }
 
 func (provider *TerraformProvider) terraformPlanToCheckNoResourcesDeleted(invoker invoker.TerraformInvoker, ctx context.Context, workspace *workspace.TerraformWorkspace, logger lager.Logger) error {
