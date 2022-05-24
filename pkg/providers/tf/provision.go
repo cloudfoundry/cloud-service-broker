@@ -117,6 +117,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 
 		for _, step := range steps {
 			if err := step(); err != nil {
+				logger.Error("operation failed", err)
 				provider.MarkOperationFinished(deployment, err)
 				break
 			}
