@@ -38,6 +38,12 @@ func showCallCount(fakeDefaultInvoker *tffakes.FakeTerraformInvoker) func() int 
 func planCallCount(fakeDefaultInvoker *tffakes.FakeTerraformInvoker) func() int {
 	return func() int {
 		return fakeDefaultInvoker.PlanCallCount()
+  }
+}
+
+func destroyCallCount(fakeDefaultInvoker *tffakes.FakeTerraformInvoker) func() int {
+	return func() int {
+		return fakeDefaultInvoker.DestroyCallCount()
 	}
 }
 
