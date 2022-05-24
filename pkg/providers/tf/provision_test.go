@@ -88,7 +88,7 @@ var _ = Describe("Provision", func() {
 			By("checking that provision is marked as started")
 			Expect(fakeDeploymentManager.MarkOperationStartedCallCount()).To(Equal(1))
 			actualDeployment, actualOperationType := fakeDeploymentManager.MarkOperationStartedArgsForCall(0)
-			Expect(actualDeployment).To(Equal(deployment))
+			Expect(actualDeployment).To(Equal(&deployment))
 			Expect(actualOperationType).To(Equal("provision"))
 
 			By("checking TF apply has been called")
@@ -227,7 +227,7 @@ var _ = Describe("Provision", func() {
 			By("checking that provision is marked as started")
 			Expect(fakeDeploymentManager.MarkOperationStartedCallCount()).To(Equal(1))
 			actualDeployment, actualOperationType := fakeDeploymentManager.MarkOperationStartedArgsForCall(0)
-			Expect(actualDeployment).To(Equal(deployment))
+			Expect(actualDeployment).To(Equal(&deployment))
 			Expect(actualOperationType).To(Equal("provision"))
 
 			By("checking TF import has been called")

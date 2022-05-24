@@ -62,14 +62,14 @@ func operationWasFinishedWithError(fakeDeploymentManager *tffakes.FakeDeployment
 func operationWasFinishedForDeployment(fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface) func() storage.TerraformDeployment {
 	return func() storage.TerraformDeployment {
 		deployment, _ := lastOperationMarkedFinished(fakeDeploymentManager)
-		return deployment
+		return *deployment
 	}
 }
 
-func lastOperationMarkedFinished(fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface) (storage.TerraformDeployment, error) {
+func lastOperationMarkedFinished(fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface) (*storage.TerraformDeployment, error) {
 	callCount := fakeDeploymentManager.MarkOperationFinishedCallCount()
 	if callCount == 0 {
-		return storage.TerraformDeployment{}, nil
+		return &storage.TerraformDeployment{}, nil
 	} else {
 		return fakeDeploymentManager.MarkOperationFinishedArgsForCall(callCount - 1)
 	}

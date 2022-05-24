@@ -39,25 +39,25 @@ func (provider *TerraformProvider) Update(ctx context.Context, provisionContext 
 
 	workspace := deployment.Workspace
 
-	if err := provider.MarkOperationStarted(deployment, models.UpdateOperationType); err != nil {
+	if err := provider.MarkOperationStarted(&deployment, models.UpdateOperationType); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
 	go func() {
 		err = provider.performTerraformUpgrade(ctx, workspace)
 		if err != nil {
-			provider.MarkOperationFinished(deployment, err)
+			provider.MarkOperationFinished(&deployment, err)
 			return
 		}
 
 		err = workspace.UpdateInstanceConfiguration(provisionContext.ToMap())
 		if err != nil {
-			provider.MarkOperationFinished(deployment, err)
+			provider.MarkOperationFinished(&deployment, err)
 			return
 		}
 
 		err = provider.DefaultInvoker().Apply(ctx, workspace)
-		provider.MarkOperationFinished(deployment, err)
+		provider.MarkOperationFinished(&deployment, err)
 	}()
 
 	return models.ServiceInstanceDetails{

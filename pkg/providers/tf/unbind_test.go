@@ -98,8 +98,8 @@ var _ = Describe("Unbind", func() {
 		By("Checking that deprovision is marked as started")
 		Expect(fakeDeploymentManager.MarkOperationStartedCallCount()).To(Equal(1))
 		actualDeployment, actualOperationType := fakeDeploymentManager.MarkOperationStartedArgsForCall(0)
-		Expect(actualDeployment).To(Equal(deployment))
-		Expect(actualOperationType).To(Equal("deprovision"))
+		Expect(actualDeployment).To(Equal(&deployment))
+		Expect(actualOperationType).To(Equal("unbind"))
 
 		By("checking TF destroy has been called")
 		Eventually(destroyCallCount(fakeDefaultInvoker)).Should(Equal(1))

@@ -43,41 +43,40 @@ func (d *DeploymentManager) CreateAndSaveDeployment(deploymentID string, workspa
 	}
 
 	deployment.Workspace = workspace
-	deployment.LastOperationType = "validation"
 
 	return deployment, d.store.StoreTerraformDeployment(deployment)
 }
 
-func (d *DeploymentManager) MarkOperationStarted(deployment storage.TerraformDeployment, operationType string) error {
+func (d *DeploymentManager) MarkOperationStarted(deployment *storage.TerraformDeployment, operationType string) error {
 	deployment.LastOperationType = operationType
 	deployment.LastOperationState = InProgress
-	deployment.LastOperationMessage = ""
+	deployment.LastOperationMessage = fmt.Sprintf("%s %s", operationType, InProgress)
 
-	if err := d.store.StoreTerraformDeployment(deployment); err != nil {
+	if err := d.store.StoreTerraformDeployment(*deployment); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (d *DeploymentManager) MarkOperationFinished(deployment storage.TerraformDeployment, err error) error {
+func (d *DeploymentManager) MarkOperationFinished(deployment *storage.TerraformDeployment, err error) error {
 	if err == nil {
-		lastOperationMessage := ""
+		lastOperationMessage := fmt.Sprintf("%s %s", deployment.LastOperationType, Succeeded)
 		workspace := deployment.Workspace
 		outputs, err := workspace.Outputs(workspace.ModuleInstances()[0].InstanceName)
 		if err == nil {
 			if status, ok := outputs["status"]; ok {
-				lastOperationMessage = fmt.Sprintf("%v", status)
+				lastOperationMessage = fmt.Sprintf("%s %s: %v", deployment.LastOperationType, Succeeded, status)
 			}
 		}
 		deployment.LastOperationState = Succeeded
 		deployment.LastOperationMessage = lastOperationMessage
 	} else {
 		deployment.LastOperationState = Failed
-		deployment.LastOperationMessage = err.Error()
+		deployment.LastOperationMessage = fmt.Errorf("%s %s: %w", deployment.LastOperationType, Failed, err).Error()
 	}
 
-	return d.store.StoreTerraformDeployment(deployment)
+	return d.store.StoreTerraformDeployment(*deployment)
 }
 
 func (d *DeploymentManager) OperationStatus(deploymentID string) (bool, string, error) {
