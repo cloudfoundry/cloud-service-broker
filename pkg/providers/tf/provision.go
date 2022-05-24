@@ -109,33 +109,36 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 		}
 
 		invoker := provider.DefaultInvoker()
-		if err := invoker.Import(ctx, workspace, resources); err != nil {
-			logger.Error("tf import failed", err)
-			provider.MarkOperationFinished(deployment, err)
-			return
+		mainTf := ""
+		steps := []func() error{
+			func() (errs error) {
+				return invoker.Import(ctx, workspace, resources)
+			},
+			func() (errs error) {
+				mainTf, err = invoker.Show(ctx, workspace)
+				return err
+			},
+			func() (errs error) {
+				return createTFMainDefinition(workspace, mainTf, logger)
+			},
+			func() (errs error) {
+				return provider.terraformPlanToCheckNoResourcesDeleted(invoker, ctx, workspace, logger)
+			},
+			func() (errs error) {
+				if err := invoker.Apply(ctx, workspace); err != nil {
+					return err
+				}
+				provider.MarkOperationFinished(deployment, err)
+				return
+			},
 		}
 
-		mainTf, err := invoker.Show(ctx, workspace)
-		if err != nil {
-			logger.Error("tf show failed", err)
-			provider.MarkOperationFinished(deployment, err)
-			return
+		for _, p := range steps {
+			if err := p(); err != nil {
+				provider.MarkOperationFinished(deployment, err)
+				break
+			}
 		}
-
-		if err := createTFMainDefinition(workspace, mainTf, logger); err != nil {
-			logger.Error("Failed to create TF definition", err)
-			provider.MarkOperationFinished(deployment, err)
-			return
-		}
-
-		err = provider.terraformPlanToCheckNoResourcesDeleted(invoker, ctx, workspace, logger)
-		if err != nil {
-			logger.Error("validating plan failed", err)
-		} else {
-			err = invoker.Apply(ctx, workspace)
-		}
-
-		provider.MarkOperationFinished(deployment, err)
 	}()
 
 	return tfID, nil

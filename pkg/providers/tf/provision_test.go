@@ -333,6 +333,9 @@ var _ = Describe("Provision", func() {
 
 			By("checking TF import has been called")
 			Eventually(importCallCount(fakeDefaultInvoker)).Should(Equal(1))
+			Eventually(showCallCount(fakeDefaultInvoker)).Should(Equal(0))
+			Eventually(planCallCount(fakeDefaultInvoker)).Should(Equal(0))
+			Eventually(applyCallCount(fakeDefaultInvoker)).Should(Equal(0))
 			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
 			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("some TF import issue happened"))
 		})
@@ -348,6 +351,8 @@ var _ = Describe("Provision", func() {
 
 			By("checking TF show has been called")
 			Eventually(showCallCount(fakeDefaultInvoker)).Should(Equal(1))
+			Eventually(planCallCount(fakeDefaultInvoker)).Should(Equal(0))
+			Eventually(applyCallCount(fakeDefaultInvoker)).Should(Equal(0))
 			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
 			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("some TF show issue happened"))
 		})
