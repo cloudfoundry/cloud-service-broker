@@ -49,36 +49,10 @@ func (provider *TerraformProvider) Provision(ctx context.Context, provisionConte
 }
 
 func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
-	var parameterMappings, addParams []workspace.ParameterMapping
-	for _, importParameterMapping := range action.ImportParameterMappings {
-		parameterMappings = append(parameterMappings, workspace.ParameterMapping{
-			TfVariable:    importParameterMapping.TfVariable,
-			ParameterName: importParameterMapping.ParameterName,
-		})
-	}
-
-	for _, addParam := range action.ImportParametersToAdd {
-		addParams = append(addParams, workspace.ParameterMapping{
-			TfVariable:    addParam.TfVariable,
-			ParameterName: addParam.ParameterName,
-		})
-	}
-
-	var importParams []ImportResource
 	varsMap := vars.ToMap()
-	for _, importParam := range action.ImportVariables {
-		if param, ok := varsMap[importParam.Name]; ok {
-			importParams = append(importParams, ImportResource{TfResource: importParam.TfResource, IaaSResource: fmt.Sprintf("%v", param)})
-		}
-	}
-
-	if len(importParams) != len(action.ImportVariables) {
-		importFields := action.ImportVariables[0].Name
-		for i := 1; i < len(action.ImportVariables); i++ {
-			importFields = fmt.Sprintf("%s, %s", importFields, action.ImportVariables[i].Name)
-		}
-
-		return "", fmt.Errorf("must provide values for all import parameters: %s", importFields)
+	importParams, err := validateImportParams(action, varsMap)
+	if err != nil {
+		return "", err
 	}
 
 	tfID := vars.GetString("tf_id")
@@ -86,7 +60,13 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 		return "", err
 	}
 
-	workspace, err := workspace.NewWorkspace(varsMap, "", action.Templates, parameterMappings, action.ImportParametersToDelete, addParams)
+	workspace, err := workspace.NewWorkspace(
+		varsMap,
+		"",
+		action.Templates,
+		evaluateParameterMappings(action),
+		action.ImportParametersToDelete,
+		evaluateParametersToAdd(action))
 	if err != nil {
 		return tfID, fmt.Errorf("error creating workspace: %w", err)
 	}
@@ -109,7 +89,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 		}
 
 		invoker := provider.DefaultInvoker()
-		mainTf := ""
+		var mainTf string
 		steps := []func() error{
 			func() (errs error) {
 				return invoker.Import(ctx, workspace, resources)
@@ -128,13 +108,13 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 				if err := invoker.Apply(ctx, workspace); err != nil {
 					return err
 				}
-				provider.MarkOperationFinished(deployment, err)
-				return
+				provider.MarkOperationFinished(deployment, nil)
+				return nil
 			},
 		}
 
-		for _, p := range steps {
-			if err := p(); err != nil {
+		for _, step := range steps {
+			if err := step(); err != nil {
 				provider.MarkOperationFinished(deployment, err)
 				break
 			}
@@ -142,6 +122,48 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 	}()
 
 	return tfID, nil
+}
+
+func validateImportParams(action TfServiceDefinitionV1Action, varsMap map[string]interface{}) ([]ImportResource, error) {
+	var importParams []ImportResource
+	for _, importParam := range action.ImportVariables {
+		if param, ok := varsMap[importParam.Name]; ok {
+			importParams = append(importParams, ImportResource{TfResource: importParam.TfResource, IaaSResource: fmt.Sprintf("%v", param)})
+		}
+	}
+
+	if len(importParams) != len(action.ImportVariables) {
+		importFields := action.ImportVariables[0].Name
+		for i := 1; i < len(action.ImportVariables); i++ {
+			importFields = fmt.Sprintf("%s, %s", importFields, action.ImportVariables[i].Name)
+		}
+
+		return nil, fmt.Errorf("must provide values for all import parameters: %s", importFields)
+	}
+
+	return importParams, nil
+}
+
+func evaluateParameterMappings(action TfServiceDefinitionV1Action) []workspace.ParameterMapping {
+	var parameterMappings []workspace.ParameterMapping
+	for _, importParameterMapping := range action.ImportParameterMappings {
+		parameterMappings = append(parameterMappings, workspace.ParameterMapping{
+			TfVariable:    importParameterMapping.TfVariable,
+			ParameterName: importParameterMapping.ParameterName,
+		})
+	}
+	return parameterMappings
+}
+
+func evaluateParametersToAdd(action TfServiceDefinitionV1Action) []workspace.ParameterMapping {
+	var addParams []workspace.ParameterMapping
+	for _, addParam := range action.ImportParametersToAdd {
+		addParams = append(addParams, workspace.ParameterMapping{
+			TfVariable:    addParam.TfVariable,
+			ParameterName: addParam.ParameterName,
+		})
+	}
+	return addParams
 }
 
 func createTFMainDefinition(workspace *workspace.TerraformWorkspace, mainTf string, logger lager.Logger) error {
