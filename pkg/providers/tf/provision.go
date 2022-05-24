@@ -119,11 +119,13 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 		if err != nil {
 			logger.Error("tf show failed", err)
 			provider.MarkOperationFinished(deployment, err)
+			return
 		}
 
 		if err := createTFMainDefinition(workspace, mainTf, logger); err != nil {
 			logger.Error("Failed to create TF definition", err)
 			provider.MarkOperationFinished(deployment, err)
+			return
 		}
 
 		err = provider.terraformPlanToCheckNoResourcesDeleted(invoker, ctx, workspace, logger)
