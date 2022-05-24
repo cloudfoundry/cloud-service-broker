@@ -101,11 +101,10 @@ var _ = Describe("Unbind", func() {
 		Expect(actualDeployment).To(Equal(deployment))
 		Expect(actualOperationType).To(Equal("deprovision"))
 
-		By("checking TF apply has been called")
+		By("checking TF destroy has been called")
 		Eventually(destroyCallCount(fakeDefaultInvoker)).Should(Equal(1))
 		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
 		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
-
 	})
 
 	It("fails, when unable to update the workspace HCL", func() {
