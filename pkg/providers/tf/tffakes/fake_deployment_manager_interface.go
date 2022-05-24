@@ -37,10 +37,10 @@ type FakeDeploymentManagerInterface struct {
 		result1 storage.TerraformDeployment
 		result2 error
 	}
-	MarkOperationFinishedStub        func(storage.TerraformDeployment, error) error
+	MarkOperationFinishedStub        func(*storage.TerraformDeployment, error) error
 	markOperationFinishedMutex       sync.RWMutex
 	markOperationFinishedArgsForCall []struct {
-		arg1 storage.TerraformDeployment
+		arg1 *storage.TerraformDeployment
 		arg2 error
 	}
 	markOperationFinishedReturns struct {
@@ -49,10 +49,10 @@ type FakeDeploymentManagerInterface struct {
 	markOperationFinishedReturnsOnCall map[int]struct {
 		result1 error
 	}
-	MarkOperationStartedStub        func(storage.TerraformDeployment, string) error
+	MarkOperationStartedStub        func(*storage.TerraformDeployment, string) error
 	markOperationStartedMutex       sync.RWMutex
 	markOperationStartedArgsForCall []struct {
-		arg1 storage.TerraformDeployment
+		arg1 *storage.TerraformDeployment
 		arg2 string
 	}
 	markOperationStartedReturns struct {
@@ -222,11 +222,11 @@ func (fake *FakeDeploymentManagerInterface) GetTerraformDeploymentReturnsOnCall(
 	}{result1, result2}
 }
 
-func (fake *FakeDeploymentManagerInterface) MarkOperationFinished(arg1 storage.TerraformDeployment, arg2 error) error {
+func (fake *FakeDeploymentManagerInterface) MarkOperationFinished(arg1 *storage.TerraformDeployment, arg2 error) error {
 	fake.markOperationFinishedMutex.Lock()
 	ret, specificReturn := fake.markOperationFinishedReturnsOnCall[len(fake.markOperationFinishedArgsForCall)]
 	fake.markOperationFinishedArgsForCall = append(fake.markOperationFinishedArgsForCall, struct {
-		arg1 storage.TerraformDeployment
+		arg1 *storage.TerraformDeployment
 		arg2 error
 	}{arg1, arg2})
 	stub := fake.MarkOperationFinishedStub
@@ -248,13 +248,13 @@ func (fake *FakeDeploymentManagerInterface) MarkOperationFinishedCallCount() int
 	return len(fake.markOperationFinishedArgsForCall)
 }
 
-func (fake *FakeDeploymentManagerInterface) MarkOperationFinishedCalls(stub func(storage.TerraformDeployment, error) error) {
+func (fake *FakeDeploymentManagerInterface) MarkOperationFinishedCalls(stub func(*storage.TerraformDeployment, error) error) {
 	fake.markOperationFinishedMutex.Lock()
 	defer fake.markOperationFinishedMutex.Unlock()
 	fake.MarkOperationFinishedStub = stub
 }
 
-func (fake *FakeDeploymentManagerInterface) MarkOperationFinishedArgsForCall(i int) (storage.TerraformDeployment, error) {
+func (fake *FakeDeploymentManagerInterface) MarkOperationFinishedArgsForCall(i int) (*storage.TerraformDeployment, error) {
 	fake.markOperationFinishedMutex.RLock()
 	defer fake.markOperationFinishedMutex.RUnlock()
 	argsForCall := fake.markOperationFinishedArgsForCall[i]
@@ -284,11 +284,11 @@ func (fake *FakeDeploymentManagerInterface) MarkOperationFinishedReturnsOnCall(i
 	}{result1}
 }
 
-func (fake *FakeDeploymentManagerInterface) MarkOperationStarted(arg1 storage.TerraformDeployment, arg2 string) error {
+func (fake *FakeDeploymentManagerInterface) MarkOperationStarted(arg1 *storage.TerraformDeployment, arg2 string) error {
 	fake.markOperationStartedMutex.Lock()
 	ret, specificReturn := fake.markOperationStartedReturnsOnCall[len(fake.markOperationStartedArgsForCall)]
 	fake.markOperationStartedArgsForCall = append(fake.markOperationStartedArgsForCall, struct {
-		arg1 storage.TerraformDeployment
+		arg1 *storage.TerraformDeployment
 		arg2 string
 	}{arg1, arg2})
 	stub := fake.MarkOperationStartedStub
@@ -310,13 +310,13 @@ func (fake *FakeDeploymentManagerInterface) MarkOperationStartedCallCount() int 
 	return len(fake.markOperationStartedArgsForCall)
 }
 
-func (fake *FakeDeploymentManagerInterface) MarkOperationStartedCalls(stub func(storage.TerraformDeployment, string) error) {
+func (fake *FakeDeploymentManagerInterface) MarkOperationStartedCalls(stub func(*storage.TerraformDeployment, string) error) {
 	fake.markOperationStartedMutex.Lock()
 	defer fake.markOperationStartedMutex.Unlock()
 	fake.MarkOperationStartedStub = stub
 }
 
-func (fake *FakeDeploymentManagerInterface) MarkOperationStartedArgsForCall(i int) (storage.TerraformDeployment, string) {
+func (fake *FakeDeploymentManagerInterface) MarkOperationStartedArgsForCall(i int) (*storage.TerraformDeployment, string) {
 	fake.markOperationStartedMutex.RLock()
 	defer fake.markOperationStartedMutex.RUnlock()
 	argsForCall := fake.markOperationStartedArgsForCall[i]
