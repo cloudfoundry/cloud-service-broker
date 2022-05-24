@@ -16,7 +16,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Provider", func() {
+var _ = Describe("Import", func() {
 	Describe("GetImportedProperties", func() {
 		When("instance was not subsumed", func() {
 			It("should not return variables or error", func() {
