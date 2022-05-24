@@ -311,37 +311,4 @@ var _ = Describe("Update", func() {
 			Expect(workspace).To(Equal(fakeWorkspace))
 		})
 	})
-},
-)
-
-func getWorkspace(invoker *tffakes.FakeTerraformInvoker, pos int) workspace.Workspace {
-	_, workspace := invoker.ApplyArgsForCall(pos)
-	return workspace
-}
-
-func operationWasFinishedWithError(fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface) func() error {
-	return func() error {
-		_, err := lastOperationMarkedFinished(fakeDeploymentManager)
-		return err
-	}
-}
-
-func operationWasFinishedForDeployment(fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface) func() storage.TerraformDeployment {
-	return func() storage.TerraformDeployment {
-		deployment, _ := lastOperationMarkedFinished(fakeDeploymentManager)
-		return deployment
-	}
-}
-
-func lastOperationMarkedFinished(fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface) (storage.TerraformDeployment, error) {
-	callCount := fakeDeploymentManager.MarkOperationFinishedCallCount()
-	if callCount == 0 {
-		return storage.TerraformDeployment{}, nil
-	} else {
-		return fakeDeploymentManager.MarkOperationFinishedArgsForCall(callCount - 1)
-	}
-}
-
-func newVersion(v string) *version.Version {
-	return version.Must(version.NewVersion(v))
-}
+})

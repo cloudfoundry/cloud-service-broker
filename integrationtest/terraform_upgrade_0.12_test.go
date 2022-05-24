@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -25,14 +24,13 @@ var _ = Describe("Terraform 0.12 Upgrade", func() {
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-0.12")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-upgrade-0.12")
 
 		session = testHelper.StartBroker()
 	})
 
 	AfterEach(func() {
 		session.Terminate()
-		testHelper.Restore()
 	})
 
 	terraformStateVersion := func(serviceInstanceGUID string) string {
@@ -57,7 +55,7 @@ var _ = Describe("Terraform 0.12 Upgrade", func() {
 
 			By("updating the brokerpak and restarting the broker")
 			session.Terminate().Wait()
-			testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
+			testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-upgrade-0.12-updated")
 
 			session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
 
@@ -77,7 +75,7 @@ var _ = Describe("Terraform 0.12 Upgrade", func() {
 
 			By("updating the brokerpak and restarting the broker")
 			session.Terminate().Wait()
-			testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "brokerpak-terraform-upgrade")
+			testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-upgrade")
 			session = testHelper.StartBroker()
 
 			By("running 'cf update-service'")

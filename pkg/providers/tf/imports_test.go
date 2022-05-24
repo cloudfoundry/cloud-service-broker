@@ -7,7 +7,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/tffakes"
@@ -16,13 +15,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Provider", func() {
+var _ = Describe("Import", func() {
 	Describe("GetImportedProperties", func() {
 		When("instance was not subsumed", func() {
 			It("should not return variables or error", func() {
 				defaultPlanGUID := "6526a7be-8504-11ec-b558-276c48808143"
-				storage := new(brokerfakes.FakeServiceProviderStorage)
-
 				tfProvider := tf.NewTerraformProvider(
 					executor.TFBinariesContext{}, nil,
 					utils.NewLogger("test"),
@@ -34,7 +31,7 @@ var _ = Describe("Provider", func() {
 							},
 						},
 					},
-					tf.NewDeploymentManager(storage),
+					&tffakes.FakeDeploymentManagerInterface{},
 				)
 
 				inputVariables := []broker.BrokerVariable{

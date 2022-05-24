@@ -1,0 +1,14 @@
+version: 1
+name: beta-service
+id: 07c73bbc-0415-11ec-a776-8fef39f516e9
+description: description
+display_name: Beta Service
+image_url: https://example.com/icon.jpg
+documentation_url: https://example.com
+support_url: https://example.com/support.html
+plans:
+- name: beta
+  id: 0fa954aa-0415-11ec-8d4e-cbf03543feea
+  description: Beta plan
+  display_name: Beta
+

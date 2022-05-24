@@ -13,21 +13,17 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("Brokerpaks", func() {
+var _ = Describe("Brokerpak Build", func() {
 	var testHelper *helper.TestHelper
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
 	})
 
-	AfterEach(func() {
-		testHelper.Restore()
-	})
-
 	When("duplicate plan IDs", func() {
 		It("fails to build", func() {
 			testLab := helper.New(csb)
-			command := testLab.BuildBrokerpakCommand(testHelper.OriginalDir, "fixtures", "brokerpak-with-duplicate-plan-id")
+			command := testLab.BuildBrokerpakCommand(testHelper.OriginalDir, "fixtures", "brokerpak-build-duplicate-plan-id")
 			session, err := Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).NotTo(HaveOccurred())
 			session.Wait(10 * time.Minute)
@@ -46,7 +42,7 @@ var _ = Describe("Brokerpaks", func() {
 
 			brokerpakPath := path.Join(testLab.Dir, "fake-brokerpak-0.1.0.brokerpak")
 			By("building the brokerpak", func() {
-				command := testLab.BuildBrokerpakCommand(testHelper.OriginalDir, "fixtures", "brokerpak-file-inclusion")
+				command := testLab.BuildBrokerpakCommand(testHelper.OriginalDir, "fixtures", "brokerpak-build-file-inclusion")
 				session, err := Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).NotTo(HaveOccurred())
 				session.Wait(10 * time.Minute)
