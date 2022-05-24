@@ -72,9 +72,9 @@ var _ = Describe("Deprovision", func() {
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1"))}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-		actualOperationId, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(actualOperationId).To(Equal(&expectedTFID))
+		Expect(actualOperationID).To(Equal(&expectedTFID))
 
 		By("Checking the HCL was updated with correct parameters")
 		actualGUID, actualProvisionSettings, actualContext := fakeDeploymentManager.UpdateWorkspaceHCLArgsForCall(0)
