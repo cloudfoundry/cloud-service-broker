@@ -67,7 +67,7 @@ var _ = Describe("Deprovision", func() {
 		fakeDeploymentManager.UpdateWorkspaceHCLReturns(nil)
 	})
 
-	It("deletes the instance", func() {
+	It("triggers instance destroy", func() {
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1"))}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
@@ -96,7 +96,6 @@ var _ = Describe("Deprovision", func() {
 		Eventually(destroyCallCount(fakeDefaultInvoker)).Should(Equal(1))
 		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
 		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
-
 	})
 
 	It("fails, when unable to update the workspace HCL", func() {
@@ -107,7 +106,6 @@ var _ = Describe("Deprovision", func() {
 		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
 		Expect(err).To(MatchError(expectedError))
 		Expect(actualOperationID).To(BeNil())
-
 	})
 
 	It("fails, when unable to get the Terraform deployment", func() {
@@ -118,7 +116,6 @@ var _ = Describe("Deprovision", func() {
 		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
 		Expect(err).To(MatchError(expectedError))
 		Expect(actualOperationID).To(BeNil())
-
 	})
 
 	It("fails, when unable to mark operation as started", func() {
@@ -130,7 +127,6 @@ var _ = Describe("Deprovision", func() {
 		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
 		Expect(err).To(MatchError(expectedError))
 		Expect(actualOperationID).To(BeNil())
-
 	})
 
 	It("returns the error in last operation if terraform destroy fails", func() {
@@ -149,5 +145,4 @@ var _ = Describe("Deprovision", func() {
 		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
 		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(expectedError))
 	})
-
 })
