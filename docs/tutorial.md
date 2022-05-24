@@ -8,6 +8,13 @@ The Cloud Service Broker should arguably be called the Terraform Broker. It is a
 Terraform to create things in the cloud. To write a Brokerpak, you therefore need to have a working knowledge
 of Terraform.
 
+## Before you Start
+In order to complete this tutorial, you will need:
+- Access to a Cloud Foundry environment
+- Access to AWS including a secret access ID and key
+- A MySQL instance accessible from a Cloud Foundry app, to act as the state store
+- A development environment with the ability to create files and run commands
+
 ## Provisioning and Binding
 
 In CloudFoundry, services have a lifecycle. This is specified in the Open Service Broker API. There are two phases:
