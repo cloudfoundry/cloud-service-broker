@@ -114,6 +114,10 @@ func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID str
 
 	workspace := deployment.TFWorkspace()
 
+	if err := workspace.RemovePreventDestroy(); err != nil {
+		return err
+	}
+
 	inputList, err := workspace.Modules[0].Inputs()
 	if err != nil {
 		return err
