@@ -160,7 +160,7 @@ func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 	}
 }
 
-func (provider *TerraformProvider) checkTerraformVersion(ctx context.Context, workspace workspace.Workspace) error {
+func (provider *TerraformProvider) checkTerraformVersion(workspace workspace.Workspace) error {
 	currentTfVersion, err := workspace.StateVersion()
 	if err != nil {
 		return err
