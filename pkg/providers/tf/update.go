@@ -41,12 +41,6 @@ func (provider *TerraformProvider) Update(ctx context.Context, provisionContext 
 	}
 
 	go func() {
-		err = provider.checkTerraformVersion(ctx, workspace)
-		if err != nil {
-			provider.MarkOperationFinished(&deployment, err)
-			return
-		}
-
 		err = workspace.UpdateInstanceConfiguration(provisionContext.ToMap())
 		if err != nil {
 			provider.MarkOperationFinished(&deployment, err)

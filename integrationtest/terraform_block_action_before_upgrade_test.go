@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/onsi/gomega/gbytes"
+	"github.com/pborman/uuid"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
@@ -50,13 +49,7 @@ var _ = Describe("Terraform check version", func() {
 		return stateReceiver.Version
 	}
 
-	lastOperationMessage := func(serviceInstanceGUID string) string {
-		var tfDeploymentReceiver models.TerraformDeployment
-		Expect(testHelper.DBConn().Where("id = ?", serviceInstanceGUID).First(&tfDeploymentReceiver).Error).NotTo(HaveOccurred())
-		return tfDeploymentReceiver.LastOperationMessage
-	}
-
-	Describe("Update", func() {
+	Describe("Bind", func() {
 		When("Default Terraform version greater than instance", func() {
 			It("returns an error", func() {
 				By("provisioning a service instance at 0.12")
@@ -66,20 +59,17 @@ var _ = Describe("Terraform check version", func() {
 				By("updating the brokerpak and restarting the broker")
 				session.Terminate().Wait()
 				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-check-version-updated")
+
 				session = testHelper.StartBroker()
 
-				By("running 'cf update-service'")
-				updateResponse := testHelper.Client().Update(serviceInstance.GUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
-				Expect(updateResponse.Error).NotTo(HaveOccurred())
-				Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
-				Expect(testHelper.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Failed))
-
-				By("observing that the TF version remains the same in the state file")
+				By("creating a binding")
+				bindResponse := testHelper.Client().Bind(serviceInstance.GUID, uuid.New(), serviceInstance.ServiceOfferingGUID, serviceInstance.ServicePlanGUID, uuid.New(), []byte(""))
+				Expect(bindResponse.Error).NotTo(HaveOccurred())
+				Expect(bindResponse.StatusCode).To(Equal(http.StatusInternalServerError))
+				Expect(bindResponse.ResponseBody).To(ContainSubstring("apply attempted with a newer version of terraform than the state"))
+				Expect(testHelper.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Succeeded))
 				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))
 
-				By("observing that the destroy failed due to mismatched TF versions")
-				Expect(testHelper.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Failed))
-				Eventually(lastOperationMessage("tf:" + serviceInstance.GUID + ":")).WithTimeout(10 * time.Second).Should(Equal("apply attempted with a newer version of terraform than the state"))
 			})
 		})
 	})
@@ -101,12 +91,12 @@ var _ = Describe("Terraform check version", func() {
 				session = testHelper.StartBroker()
 
 				By("deleting the instance binding")
-				deleteBindResponse := testHelper.Client().Unbind(serviceInstance.GUID, bindGUID, serviceOfferingGUID, servicePlanGUID, requestID())
-				Expect(deleteBindResponse.StatusCode).To(Equal(http.StatusInternalServerError))
-
-				By("observing that the destroy failed due to mismatched TF versions")
-				Eventually(session).WithTimeout(10 * time.Second).Should(gbytes.Say("apply attempted with a newer version of terraform than the state"))
-				Eventually(lastOperationMessage("tf:" + serviceInstance.GUID + ":" + bindGUID)).WithTimeout(10 * time.Second).Should(Equal("apply attempted with a newer version of terraform than the state"))
+				unBindResponse := testHelper.Client().Unbind(serviceInstance.GUID, bindGUID, serviceOfferingGUID, servicePlanGUID, requestID())
+				Expect(unBindResponse.Error).NotTo(HaveOccurred())
+				Expect(unBindResponse.StatusCode).To(Equal(http.StatusInternalServerError))
+				Expect(unBindResponse.ResponseBody).To(ContainSubstring("apply attempted with a newer version of terraform than the state"))
+				Expect(testHelper.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Succeeded))
+				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))
 			})
 		})
 	})
@@ -127,13 +117,10 @@ var _ = Describe("Terraform check version", func() {
 				By("deleting the service instance")
 				deleteBindResponse := testHelper.Client().Deprovision(serviceInstance.GUID, serviceOfferingGUID, servicePlanGUID, requestID())
 				Expect(deleteBindResponse.Error).NotTo(HaveOccurred())
-				Expect(deleteBindResponse.StatusCode).To(Equal(http.StatusAccepted))
-				Expect(testHelper.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Failed))
+				Expect(deleteBindResponse.StatusCode).To(Equal(http.StatusInternalServerError))
+				Expect(deleteBindResponse.ResponseBody).To(ContainSubstring("apply attempted with a newer version of terraform than the state"))
+				Expect(testHelper.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Succeeded))
 				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))
-
-				By("observing that the destroy failed due to mismatched TF versions")
-				Expect(testHelper.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Failed))
-				Eventually(lastOperationMessage("tf:" + serviceInstance.GUID + ":")).WithTimeout(10 * time.Second).Should(Equal("apply attempted with a newer version of terraform than the state"))
 			})
 		})
 	})

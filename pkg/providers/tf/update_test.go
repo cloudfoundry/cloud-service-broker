@@ -120,21 +120,6 @@ var _ = Describe("Update", func() {
 		})
 	})
 
-	When("can't get terraform version from state", func() {
-		It("fails", func() {
-			deployment.Workspace = fakeWorkspace
-			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
-			fakeWorkspace.StateVersionReturns(nil, genericError)
-
-			runner := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
-			_, err := runner.Update(context.TODO(), varContext)
-			Expect(err).NotTo(HaveOccurred())
-
-			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
-			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(genericError))
-		})
-	})
-
 	When("unable to update instance configuration", func() {
 		It("fails", func() {
 			deployment.Workspace = fakeWorkspace
@@ -217,27 +202,5 @@ var _ = Describe("Update", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(0))
-	})
-
-	It("succeeds if default tf version matches instance", func() {
-		tfBinContext := executor.TFBinariesContext{
-			DefaultTfVersion: newVersion("0.1.0"),
-		}
-		deployment.Workspace = fakeWorkspace
-		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
-		fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(0, fakeDefaultInvoker)
-		fakeWorkspace.StateVersionReturns(newVersion("0.1.0"), nil)
-
-		runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
-
-		_, err := runner.Update(context.TODO(), varContext)
-		Expect(err).NotTo(HaveOccurred())
-
-		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
-		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
-
-		Expect(fakeDefaultInvoker.ApplyCallCount()).To(Equal(1))
-		_, workspace := fakeDefaultInvoker.ApplyArgsForCall(0)
-		Expect(workspace).To(Equal(fakeWorkspace))
 	})
 })

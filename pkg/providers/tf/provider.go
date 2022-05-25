@@ -16,7 +16,6 @@ package tf
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -132,12 +131,6 @@ func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID str
 	}
 
 	go func() {
-		err = provider.checkTerraformVersion(ctx, workspace)
-		if err != nil {
-			provider.MarkOperationFinished(&deployment, err)
-			return
-		}
-
 		err = provider.DefaultInvoker().Destroy(ctx, workspace)
 		provider.MarkOperationFinished(&deployment, err)
 	}()
@@ -158,17 +151,6 @@ func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 			}
 		}
 	}
-}
-
-func (provider *TerraformProvider) checkTerraformVersion(workspace workspace.Workspace) error {
-	currentTfVersion, err := workspace.StateVersion()
-	if err != nil {
-		return err
-	}
-	if currentTfVersion.LessThan(provider.tfBinContext.DefaultTfVersion) {
-		return errors.New("apply attempted with a newer version of terraform than the state")
-	}
-	return nil
 }
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate

@@ -262,6 +262,15 @@ var _ = Describe("Bind", func() {
 			})
 		})
 
+		When("upgrade is available on instance", func() {
+			It("should error", func() {
+				fakeServiceProvider.CheckUpgradeAvailableReturns(fmt.Errorf("generic-error"))
+
+				_, err := serviceBroker.Bind(context.TODO(), instanceID, bindingID, bindDetails, false)
+				Expect(err).To(MatchError(`failed to bind: generic-error`))
+			})
+		})
+
 		When("error parsing bind details", func() {
 			BeforeEach(func() {
 				bindDetails.RawParameters = json.RawMessage(`sadfasdf`)
