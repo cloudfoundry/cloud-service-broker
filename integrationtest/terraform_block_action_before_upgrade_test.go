@@ -26,7 +26,7 @@ var _ = Describe("Terraform check version", func() {
 
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-check-version")
+		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-block-action-before-upgrade")
 
 		session = testHelper.StartBroker()
 	})
@@ -58,7 +58,7 @@ var _ = Describe("Terraform check version", func() {
 
 				By("updating the brokerpak and restarting the broker")
 				session.Terminate().Wait()
-				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-check-version-updated")
+				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-block-action-before-upgrade-updated")
 
 				session = testHelper.StartBroker()
 
@@ -86,7 +86,7 @@ var _ = Describe("Terraform check version", func() {
 
 				By("updating the brokerpak and restarting the broker")
 				session.Terminate().Wait()
-				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-check-version-updated")
+				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-block-action-before-upgrade-updated")
 
 				session = testHelper.StartBroker()
 
@@ -110,7 +110,7 @@ var _ = Describe("Terraform check version", func() {
 
 				By("updating the brokerpak and restarting the broker")
 				session.Terminate().Wait()
-				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-check-version-updated")
+				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-block-action-before-upgrade-updated")
 
 				session = testHelper.StartBroker()
 
