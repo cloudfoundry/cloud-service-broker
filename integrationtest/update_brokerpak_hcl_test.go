@@ -18,7 +18,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		updateParams                = `{"update_input": "update output value"}`
 		updateOutputStateKey        = `"update_output"`
 		updatedUpdateOutputStateKey = `"update_output_updated"`
-		updatedOutputHCL            = `output update_output_updated { value = "${var.update_input == null ? "empty" : var.update_input }${var.extra_input == null ? "empty" : var.extra_input}" }`
+		updatedOutputHCL            = `output update_output_updated { value = "${var.update_input == null ? "empty" : var.update_input}${var.extra_input == null ? "empty" : var.extra_input}" }`
 		initialOutputHCL            = `output update_output { value = "${var.update_input}" }`
 		initialBindingOutputHCL     = `bind_output { value = "${var.provision_output} and bind output value" }`
 		updatedBindingOutputHCL     = `bind_output_updated { value = "${var.provision_output} and bind output value" }`

@@ -517,3 +517,19 @@ There are three directories in the pak's root:
 * `src/` an unstructured directory that holds source code for the bundled binaries, this is for complying with 3rd party licenses.
 * `bin/` contains binaries under `bin/{os}/{arch}` sub-directories for each supported platform.
 * `definitions/` contain the service definition YAML files.
+
+## Terraform lifecycle meta-argument `prevent_destroy`
+Terraform supports a [lifecycle meta-argument called `prevent_destroy`](https://www.terraform.io/language/meta-arguments/lifecycle#prevent_destroy)
+that stops resources from being accidentally destroyed. For example:
+```hcl
+resource "database" "mydatabase" {
+  name = var.database_name
+  lifecycle {
+    prevent_destroy = true
+  }
+```
+It might be that changing the database name would cause the Terraform to delete the
+database and create a new one with the correct name. This can be prevented by adding
+the lifecycle meta-argument `prevent_destroy`. During the deletion of a service instance,
+Cloud Service Broker will set the `prevent_destroy` property to be `false` so that
+the service instance can be deleted.
