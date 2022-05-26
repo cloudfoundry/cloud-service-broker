@@ -2,6 +2,7 @@ package broker_test
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 
@@ -249,6 +250,19 @@ var _ = Describe("Deprovision", func() {
 
 			_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
 			Expect(err).To(MatchError(`plan ID "some-non-existent-plan" could not be found`))
+		})
+	})
+
+	When("upgrade is available on instance", func() {
+		It("should error", func() {
+			deprovisionDetails = domain.DeprovisionDetails{
+				ServiceID: offeringID,
+				PlanID:    "some-non-existent-plan",
+			}
+			fakeServiceProvider.CheckUpgradeAvailableReturns(fmt.Errorf("generic-error"))
+
+			_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
+			Expect(err).To(MatchError(`failed to delete: generic-error`))
 		})
 	})
 

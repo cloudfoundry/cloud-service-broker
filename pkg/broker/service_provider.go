@@ -57,6 +57,8 @@ type ServiceProvider interface {
 	PollInstance(ctx context.Context, instanceGUID string) (bool, string, error)
 
 	GetTerraformOutputs(ctx context.Context, instanceGUID string) (storage.JSONObject, error)
+
+	CheckUpgradeAvailable(deploymentGUID string) error
 }
 
 //counterfeiter:generate . ServiceProviderStorage
