@@ -3,6 +3,8 @@ package broker_test
 import (
 	"errors"
 
+	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 
 	"code.cloudfoundry.org/lager"
@@ -85,7 +87,7 @@ var _ = Describe("Deprovision", func() {
 		}, nil)
 
 		var err error
-		serviceBroker, err = broker.New(brokerConfig, utils.NewLogger("brokers-test"), fakeStorage)
+		serviceBroker, err = broker.New(brokerConfig, fakeStorage, decider.Decider{}, utils.NewLogger("brokers-test"))
 		Expect(err).ToNot(HaveOccurred())
 
 		deprovisionDetails = domain.DeprovisionDetails{

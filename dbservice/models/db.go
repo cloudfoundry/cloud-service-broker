@@ -22,6 +22,7 @@ const (
 	ProvisionOperationType   = "provision"
 	DeprovisionOperationType = "deprovision"
 	UpdateOperationType      = "update"
+	UpgradeOperationType     = "upgrade"
 	BindOperationType        = "bind"
 	UnbindOperationType      = "unbind"
 	ClearOperationType       = ""

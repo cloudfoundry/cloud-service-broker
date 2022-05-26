@@ -36,7 +36,10 @@ type ServiceProvider interface {
 	Provision(ctx context.Context, provisionContext *varcontext.VarContext) (storage.ServiceInstanceDetails, error)
 
 	// Update makes necessary updates to resources so they match new desired configuration
-	Update(ctx context.Context, provisionContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
+	Update(ctx context.Context, updateContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
+
+	// Upgrade makes necessary upgrades to resources so they match plan configuration
+	Upgrade(ctx context.Context, upgradeContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
 
 	// GetImportedProperties extracts properties that should have been saved as part of subsume operation
 	GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []BrokerVariable) (map[string]interface{}, error)

@@ -7,6 +7,7 @@ import (
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
+	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/pkg/broker"
@@ -31,7 +32,7 @@ var _ = Describe("Update", func() {
 		offeringID        = "test-service-id"
 		newPlanID         = "new-test-plan-id"
 		instanceID        = "test-instance-id"
-		updateOperationID = "test-operation-id"
+		updateOperationID = "update-operation-id"
 	)
 
 	var (
@@ -39,6 +40,7 @@ var _ = Describe("Update", func() {
 		updateDetails domain.UpdateDetails
 
 		fakeStorage         *brokerfakes.FakeStorage
+		fakeDecider         *brokerfakes.FakeDecider
 		fakeServiceProvider *pkgBrokerFakes.FakeServiceProvider
 	)
 
@@ -48,7 +50,6 @@ var _ = Describe("Update", func() {
 		providerBuilder := func(logger lager.Logger, store pkgBroker.ServiceProviderStorage) pkgBroker.ServiceProvider {
 			return fakeServiceProvider
 		}
-		planUpdatable := true
 		brokerConfig := &broker.BrokerConfig{
 			Registry: pkgBroker.BrokerRegistry{
 				"test-service": &pkgBroker.ServiceDefinition{
@@ -57,9 +58,11 @@ var _ = Describe("Update", func() {
 					Plans: []pkgBroker.ServicePlan{
 						{
 							ServicePlan: domain.ServicePlan{
-								ID:            originalPlanID,
-								Name:          "test-plan",
-								PlanUpdatable: &planUpdatable,
+								ID:   originalPlanID,
+								Name: "test-plan",
+								MaintenanceInfo: &domain.MaintenanceInfo{
+									Version: "2.0.0",
+								},
 							},
 							ServiceProperties: map[string]interface{}{
 								"plan-defined-key":       "plan-defined-value",
@@ -68,9 +71,11 @@ var _ = Describe("Update", func() {
 						},
 						{
 							ServicePlan: domain.ServicePlan{
-								ID:            newPlanID,
-								Name:          "new-test-plan",
-								PlanUpdatable: &planUpdatable,
+								ID:   newPlanID,
+								Name: "new-test-plan",
+								MaintenanceInfo: &domain.MaintenanceInfo{
+									Version: "2.0.0",
+								},
 							},
 							ServiceProperties: map[string]interface{}{
 								"new-plan-defined-key":       "plan-defined-value",
@@ -122,8 +127,11 @@ var _ = Describe("Update", func() {
 			OperationGUID:    "provision-operation-GUID",
 		}, nil)
 
+		fakeDecider = &brokerfakes.FakeDecider{}
+		fakeDecider.DecideOperationReturns(decider.Update, nil)
+
 		var err error
-		serviceBroker, err = broker.New(brokerConfig, utils.NewLogger("brokers-test"), fakeStorage)
+		serviceBroker, err = broker.New(brokerConfig, fakeStorage, fakeDecider, utils.NewLogger("brokers-test"))
 		Expect(err).ToNot(HaveOccurred())
 
 		updateDetails = domain.UpdateDetails{
@@ -139,7 +147,7 @@ var _ = Describe("Update", func() {
 		}
 	})
 
-	Describe("successful update", func() {
+	Describe("update", func() {
 		When("no plan or parameter changes are requested", func() {
 			BeforeEach(func() {
 				fakeServiceProvider.UpdateReturns(models.ServiceInstanceDetails{
@@ -264,9 +272,84 @@ var _ = Describe("Update", func() {
 				Expect(actualRequestVars).To(Equal(storage.JSONObject{"foo": "quz", "guz": "muz"}))
 			})
 		})
+
+		When("provider update errors", func() {
+			BeforeEach(func() {
+				fakeServiceProvider.UpdateReturns(models.ServiceInstanceDetails{}, errors.New("cannot update right now"))
+			})
+
+			It("should error and not update the provision variables", func() {
+				_, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
+				Expect(err).To(MatchError("cannot update right now"))
+
+				By("validate it does not update the provision requet details")
+				Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(0))
+			})
+		})
 	})
 
-	Describe("update variables", func() {
+	Describe("upgrade", func() {
+		var upgradeOperationID = "upgrade-operation-id"
+		BeforeEach(func() {
+			fakeDecider.DecideOperationReturns(decider.Upgrade, nil)
+			fakeServiceProvider.UpgradeReturns(models.ServiceInstanceDetails{
+				OperationType: models.UpgradeOperationType,
+				OperationID:   upgradeOperationID,
+			}, nil)
+		})
+
+		It("should trigger an upgrade", func() {
+			expectedHeader := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
+			newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, expectedHeader)
+
+			updateDetails = domain.UpdateDetails{
+				ServiceID: offeringID,
+				PlanID:    originalPlanID,
+				PreviousValues: domain.PreviousValues{
+					PlanID:          originalPlanID,
+					ServiceID:       offeringID,
+					OrgID:           orgID,
+					SpaceID:         spaceID,
+					MaintenanceInfo: nil,
+				},
+				RawContext: json.RawMessage(fmt.Sprintf(`{"organization_guid":%q, "space_guid": %q}`, orgID, spaceID)),
+				MaintenanceInfo: &domain.MaintenanceInfo{
+					Version: "2.0.0",
+				},
+			}
+
+			response, err := serviceBroker.Update(newContext, instanceID, updateDetails, true)
+			Expect(err).ToNot(HaveOccurred())
+
+			By("validating response")
+			Expect(response.IsAsync).To(BeTrue())
+			Expect(response.DashboardURL).To(BeEmpty())
+			Expect(response.OperationData).To(Equal(upgradeOperationID))
+
+			By("validating provider update has been called")
+			Expect(fakeServiceProvider.UpdateCallCount()).To(Equal(0))
+			Expect(fakeServiceProvider.UpgradeCallCount()).To(Equal(1))
+			actualContext, _ := fakeServiceProvider.UpgradeArgsForCall(0)
+			Expect(actualContext.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
+
+			By("validating SI details and provision parameters are not updated")
+			Expect(fakeStorage.StoreServiceInstanceDetailsCallCount()).To(Equal(0))
+			Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(0))
+		})
+
+		When("provider upgrade errors", func() {
+			BeforeEach(func() {
+				fakeServiceProvider.UpgradeReturns(models.ServiceInstanceDetails{}, errors.New("cannot upgrade right now"))
+			})
+
+			It("should error", func() {
+				_, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
+				Expect(err).To(MatchError("cannot upgrade right now"))
+			})
+		})
+	})
+
+	Describe("context variables", func() {
 		Describe("passing variables on provision and update", func() {
 			BeforeEach(func() {
 				fakeStorage.GetProvisionRequestDetailsReturns(map[string]interface{}{"foo": "bar", "baz": "quz"}, nil)
@@ -446,17 +529,15 @@ var _ = Describe("Update", func() {
 		})
 	})
 
-	When("provider update errors", func() {
+	When("neither update nor upgrade cannot be performed", func() {
 		BeforeEach(func() {
-			fakeServiceProvider.UpdateReturns(models.ServiceInstanceDetails{}, errors.New("cannot update right now"))
+			fakeDecider.DecideOperationReturns(decider.Failed, errors.New("some maintenance info mismatch"))
 		})
 
-		It("should error and not update the provision variables", func() {
+		It("should error", func() {
 			_, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
-			Expect(err).To(MatchError("cannot update right now"))
 
-			By("validate it does not update the provision requet details")
-			Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(0))
+			Expect(err).To(MatchError("error deciding update path: some maintenance info mismatch"))
 		})
 	})
 

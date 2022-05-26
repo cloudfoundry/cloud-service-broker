@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
+
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 
 	"code.cloudfoundry.org/lager"
@@ -108,7 +110,7 @@ var _ = Describe("Bind", func() {
 		}
 
 		var err error
-		serviceBroker, err = broker.New(brokerConfig, utils.NewLogger("bind-test-with-credstore"), fakeStorage)
+		serviceBroker, err = broker.New(brokerConfig, fakeStorage, decider.Decider{}, utils.NewLogger("bind-test-with-credstore"))
 		Expect(err).ToNot(HaveOccurred())
 
 		bindDetails = domain.BindDetails{
@@ -161,7 +163,7 @@ var _ = Describe("Bind", func() {
 			BeforeEach(func() {
 				brokerConfig.Credstore = nil
 				var err error
-				serviceBroker, err = broker.New(brokerConfig, utils.NewLogger("bind-test-no-credstore"), fakeStorage)
+				serviceBroker, err = broker.New(brokerConfig, fakeStorage, decider.Decider{}, utils.NewLogger("bind-test-no-credstore"))
 				Expect(err).ToNot(HaveOccurred())
 			})
 

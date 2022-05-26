@@ -502,13 +502,13 @@ func buildAndValidate(builder *varcontext.ContextBuilder, vars []BrokerVariable)
 	return vc, nil
 }
 
-func (svc *ServiceDefinition) AllowedUpdate(params map[string]interface{}) (bool, error) {
+func (svc *ServiceDefinition) AllowedUpdate(params map[string]interface{}) bool {
 	for _, param := range svc.ProvisionInputVariables {
 		if param.ProhibitUpdate {
 			if _, ok := params[param.FieldName]; ok {
-				return false, nil
+				return false
 			}
 		}
 	}
-	return true, nil
+	return true
 }

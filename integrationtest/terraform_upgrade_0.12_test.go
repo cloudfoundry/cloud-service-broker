@@ -60,7 +60,10 @@ var _ = Describe("Terraform 0.12 Upgrade", func() {
 			session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
 
 			By("running 'cf update-service'")
-			testHelper.UpdateService(serviceInstance)
+			newMI := domain.MaintenanceInfo{
+				Version: "1.1.6",
+			}
+			testHelper.UpdateServiceMI(serviceInstance, domain.PreviousValues{PlanID: servicePlanGUID}, newMI)
 
 			By("observing that the TF state file has been updated to the latest version")
 			Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("1.1.6"))
@@ -79,7 +82,7 @@ var _ = Describe("Terraform 0.12 Upgrade", func() {
 			session = testHelper.StartBroker()
 
 			By("running 'cf update-service'")
-			updateResponse := testHelper.Client().Update(serviceInstance.GUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
+			updateResponse := testHelper.Client().Update(serviceInstance.GUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil, domain.PreviousValues{}, nil)
 			Expect(updateResponse.Error).NotTo(HaveOccurred())
 			Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
 			Expect(testHelper.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Failed))

@@ -6,6 +6,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
@@ -19,7 +23,7 @@ var ErrNonUpdatableParameter = apiresponses.NewFailureResponse(errors.New("attem
 
 // Update a service instance plan.
 // This functionality is not implemented and will return an error indicating that plan changes are not supported.
-func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, details domain.UpdateDetails, asyncAllowed bool) (response domain.UpdateServiceSpec, err error) {
+func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, details domain.UpdateDetails, asyncAllowed bool) (domain.UpdateServiceSpec, error) {
 	broker.Logger.Info("Updating", correlation.ID(ctx), lager.Data{
 		"instance_id":        instanceID,
 		"accepts_incomplete": asyncAllowed,
@@ -30,19 +34,19 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	exists, err := broker.store.ExistsServiceInstanceDetails(instanceID)
 	switch {
 	case err != nil:
-		return response, fmt.Errorf("database error checking for existing instance: %s", err)
+		return domain.UpdateServiceSpec{}, fmt.Errorf("database error checking for existing instance: %s", err)
 	case !exists:
-		return response, apiresponses.ErrInstanceDoesNotExist
+		return domain.UpdateServiceSpec{}, apiresponses.ErrInstanceDoesNotExist
 	}
 
 	instance, err := broker.store.GetServiceInstanceDetails(instanceID)
 	if err != nil {
-		return response, fmt.Errorf("database error getting existing instance: %s", err)
+		return domain.UpdateServiceSpec{}, fmt.Errorf("database error getting existing instance: %s", err)
 	}
 
 	serviceDefinition, serviceProvider, err := broker.getDefinitionAndProvider(instance.ServiceGUID)
 	if err != nil {
-		return response, err
+		return domain.UpdateServiceSpec{}, err
 	}
 
 	parsedDetails, err := paramparser.ParseUpdateDetails(details)
@@ -53,49 +57,68 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	// verify the service exists and the plan exists
 	plan, err := serviceDefinition.GetPlanByID(parsedDetails.PlanID)
 	if err != nil {
-		return response, err
+		return domain.UpdateServiceSpec{}, err
 	}
 
 	// verify async provisioning is allowed if it is required
 	if !asyncAllowed {
-		return response, apiresponses.ErrAsyncRequired
+		return domain.UpdateServiceSpec{}, apiresponses.ErrAsyncRequired
 	}
 
 	// Give the user a better error message if they give us a bad request
 	if err := validateProvisionParameters(parsedDetails.RequestParams, serviceDefinition.ProvisionInputVariables, nil, plan); err != nil {
 		return domain.UpdateServiceSpec{}, err
 	}
-
-	allowUpdate, err := serviceDefinition.AllowedUpdate(parsedDetails.RequestParams)
-	if err != nil {
-		return response, err
-	}
-	if !allowUpdate {
-		return response, ErrNonUpdatableParameter
+	if !serviceDefinition.AllowedUpdate(parsedDetails.RequestParams) {
+		return domain.UpdateServiceSpec{}, ErrNonUpdatableParameter
 	}
 
 	provisionDetails, err := broker.store.GetProvisionRequestDetails(instanceID)
 	if err != nil {
-		return response, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
+		return domain.UpdateServiceSpec{}, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
 	}
 
 	importedParams, err := serviceProvider.GetImportedProperties(ctx, instance.PlanGUID, instance.GUID, serviceDefinition.ProvisionInputVariables)
 	if err != nil {
-		return response, fmt.Errorf("error retrieving subsume parameters for %q: %w", instanceID, err)
+		return domain.UpdateServiceSpec{}, fmt.Errorf("error retrieving subsume parameters for %q: %w", instanceID, err)
 	}
 
 	mergedDetails, err := mergeJSON(provisionDetails, parsedDetails.RequestParams, importedParams)
 	if err != nil {
-		return response, fmt.Errorf("error merging update and provision details: %w", err)
+		return domain.UpdateServiceSpec{}, fmt.Errorf("error merging update and provision details: %w", err)
 	}
 
 	vars, err := serviceDefinition.UpdateVariables(instanceID, parsedDetails, mergedDetails, *plan, request.DecodeOriginatingIdentityHeader(ctx))
 	if err != nil {
-		return response, err
+		return domain.UpdateServiceSpec{}, err
 	}
 
-	// get instance details
-	newInstanceDetails, err := serviceProvider.Update(ctx, vars)
+	operation, err := broker.decider.DecideOperation(serviceDefinition, details)
+	if err != nil {
+		return domain.UpdateServiceSpec{}, fmt.Errorf("error deciding update path: %w", err)
+	}
+
+	if operation == decider.Upgrade {
+		return broker.doUpgrade(ctx, serviceProvider, vars)
+	}
+
+	return broker.doUpdate(ctx, serviceProvider, instance, vars, parsedDetails, mergedDetails)
+}
+
+func (broker *ServiceBroker) doUpgrade(ctx context.Context, serviceProvider broker.ServiceProvider, vars *varcontext.VarContext) (domain.UpdateServiceSpec, error) {
+	instanceDetails, err := serviceProvider.Upgrade(ctx, vars)
+	if err != nil {
+		return domain.UpdateServiceSpec{}, err
+	}
+	return domain.UpdateServiceSpec{
+		IsAsync:       true,
+		DashboardURL:  "",
+		OperationData: instanceDetails.OperationID,
+	}, nil
+}
+
+func (broker *ServiceBroker) doUpdate(ctx context.Context, serviceProvider broker.ServiceProvider, instance storage.ServiceInstanceDetails, vars *varcontext.VarContext, parsedDetails paramparser.UpdateDetails, mergedDetails map[string]interface{}) (domain.UpdateServiceSpec, error) {
+	instanceDetails, err := serviceProvider.Update(ctx, vars)
 	if err != nil {
 		return domain.UpdateServiceSpec{}, err
 	}
@@ -109,15 +132,15 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	// save provision request details
-	if err = broker.store.StoreProvisionRequestDetails(instanceID, mergedDetails); err != nil {
+	if err = broker.store.StoreProvisionRequestDetails(instance.GUID, mergedDetails); err != nil {
 		return domain.UpdateServiceSpec{}, fmt.Errorf("error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
 	}
 
-	response.IsAsync = true
-	response.DashboardURL = ""
-	response.OperationData = newInstanceDetails.OperationID
-
-	return response, nil
+	return domain.UpdateServiceSpec{
+		IsAsync:       true,
+		DashboardURL:  "",
+		OperationData: instanceDetails.OperationID,
+	}, nil
 }
 
 func mergeJSON(previousParams, newParams, importParams map[string]interface{}) (map[string]interface{}, error) {

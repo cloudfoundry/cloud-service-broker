@@ -4,6 +4,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega/gexec"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 var _ = Describe("Terraform Rename Provider", func() {
@@ -32,7 +33,7 @@ var _ = Describe("Terraform Rename Provider", func() {
 		session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true", "BROKERPAK_UPDATES_ENABLED=true")
 
 		By("running 'cf update-service'")
-		testHelper.UpdateService(serviceInstance, `{"alpha_input":"quz"}`)
+		testHelper.UpdateServiceMI(serviceInstance, domain.PreviousValues{PlanID: servicePlanGUID}, domain.MaintenanceInfo{Version: "1.1.6"}, `{"alpha_input":"quz"}`)
 	})
 
 	It("can delete instance when provider is renamed", func() {

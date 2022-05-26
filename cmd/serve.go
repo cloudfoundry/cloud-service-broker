@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
+
 	"code.cloudfoundry.org/lager"
 	osbapiBroker "github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice"
@@ -90,7 +92,7 @@ func serve() {
 		logger.Fatal("Error initializing service broker config", err)
 	}
 	var serviceBroker domain.ServiceBroker
-	serviceBroker, err = osbapiBroker.New(cfg, logger, storage.New(db, encryptor))
+	serviceBroker, err = osbapiBroker.New(cfg, storage.New(db, encryptor), decider.Decider{}, logger)
 	if err != nil {
 		logger.Fatal("Error initializing service broker", err)
 	}
