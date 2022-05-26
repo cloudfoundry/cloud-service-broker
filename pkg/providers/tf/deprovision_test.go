@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/hashicorp/go-version"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -21,19 +22,22 @@ import (
 )
 
 var _ = Describe("Deprovision", func() {
-	const instanceGUID = "cc57a89e-8f43-48e8-9e41-c7c99d331066"
-	const expectedError = "generic error"
-	expectedTFID := fmt.Sprintf("tf:%s:", instanceGUID)
+	const (
+		instanceGUID  = "cc57a89e-8f43-48e8-9e41-c7c99d331066"
+		expectedError = "generic error"
+	)
 
 	var (
 		deployment            storage.TerraformDeployment
 		fakeInvokerBuilder    *tffakes.FakeTerraformInvokerBuilder
 		fakeDefaultInvoker    *tffakes.FakeTerraformInvoker
-		fakeLogger            = utils.NewLogger("test")
 		fakeServiceDefinition tf.TfServiceDefinitionV1
 		fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface
 		deprovisionContext    *varcontext.VarContext
-		templateVars          = map[string]interface{}{"tf_id": instanceGUID}
+		fakeWorkspace         *workspace.TerraformWorkspace
+		fakeLogger            = utils.NewLogger("test")
+		templateVars          = map[string]any{"tf_id": instanceGUID}
+		expectedTFID          = fmt.Sprintf("tf:%s:", instanceGUID)
 	)
 
 	BeforeEach(func() {
@@ -41,25 +45,35 @@ var _ = Describe("Deprovision", func() {
 		fakeInvokerBuilder = &tffakes.FakeTerraformInvokerBuilder{}
 		fakeDeploymentManager = &tffakes.FakeDeploymentManagerInterface{}
 		fakeDefaultInvoker = &tffakes.FakeTerraformInvoker{}
+		moduleDefinition := workspace.ModuleDefinition{
+			Name: "fake-cloud-storage",
+			Definition: `
+			    resource "fake_storage_bucket" "bucket" {
+			      name     = "${var.name}"
+			      storage_class = "${var.storage_class}"
+			    }`,
+			Definitions: map[string]string{"variables": `
+				    variable name {type = "string"}
+					variable storage_class {type = "string"}
+				`},
+		}
+		moduleInstance := workspace.ModuleInstance{
+			ModuleName:   "cloud_storage",
+			InstanceName: "fake-instance-name",
+		}
 
 		deprovisionContext, err = varcontext.Builder().MergeMap(templateVars).Build()
 		Expect(err).NotTo(HaveOccurred())
 
+		fakeWorkspace = &workspace.TerraformWorkspace{
+			Modules:   []workspace.ModuleDefinition{moduleDefinition},
+			Instances: []workspace.ModuleInstance{moduleInstance},
+			State:     newTfState(),
+		}
+
 		deployment = storage.TerraformDeployment{
-			ID: instanceGUID,
-			Workspace: &workspace.TerraformWorkspace{
-				Modules: []workspace.ModuleDefinition{
-					{
-						Name: "test-module-instance",
-					},
-				},
-				Instances: []workspace.ModuleInstance{
-					{
-						ModuleName: "test-module-instance",
-					},
-				},
-				State: []byte(`{"terraform_version":"1"}`),
-			},
+			ID:        instanceGUID,
+			Workspace: fakeWorkspace,
 		}
 	})
 
@@ -70,9 +84,17 @@ var _ = Describe("Deprovision", func() {
 	It("triggers instance destroy", func() {
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
-		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1"))}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+
+		provider := tf.NewTerraformProvider(
+			executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("0.12.20"))},
+			fakeInvokerBuilder,
+			fakeLogger,
+			fakeServiceDefinition,
+			fakeDeploymentManager,
+		)
 
 		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+
 		Expect(err).NotTo(HaveOccurred())
 		Expect(actualOperationID).To(Equal(&expectedTFID))
 
@@ -90,7 +112,7 @@ var _ = Describe("Deprovision", func() {
 		Expect(fakeDeploymentManager.MarkOperationStartedCallCount()).To(Equal(1))
 		actualDeployment, actualOperationType := fakeDeploymentManager.MarkOperationStartedArgsForCall(0)
 		Expect(actualDeployment).To(Equal(&deployment))
-		Expect(actualOperationType).To(Equal("deprovision"))
+		Expect(actualOperationType).To(Equal(models.DeprovisionOperationType))
 
 		By("checking TF apply has been called")
 		Eventually(destroyCallCount(fakeDefaultInvoker)).Should(Equal(1))
@@ -101,9 +123,16 @@ var _ = Describe("Deprovision", func() {
 	It("fails, when unable to update the workspace HCL", func() {
 		fakeDeploymentManager.UpdateWorkspaceHCLReturns(fmt.Errorf(expectedError))
 
-		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1"))}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+		provider := tf.NewTerraformProvider(
+			executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("0.12.20"))},
+			fakeInvokerBuilder,
+			fakeLogger,
+			fakeServiceDefinition,
+			fakeDeploymentManager,
+		)
 
 		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+
 		Expect(err).To(MatchError(expectedError))
 		Expect(actualOperationID).To(BeNil())
 	})
@@ -111,9 +140,16 @@ var _ = Describe("Deprovision", func() {
 	It("fails, when unable to get the Terraform deployment", func() {
 		fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, fmt.Errorf(expectedError))
 
-		provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+		provider := tf.NewTerraformProvider(
+			executor.TFBinariesContext{},
+			fakeInvokerBuilder,
+			fakeLogger,
+			fakeServiceDefinition,
+			fakeDeploymentManager,
+		)
 
 		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+
 		Expect(err).To(MatchError(expectedError))
 		Expect(actualOperationID).To(BeNil())
 	})
@@ -122,9 +158,16 @@ var _ = Describe("Deprovision", func() {
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		fakeDeploymentManager.MarkOperationStartedReturns(fmt.Errorf(expectedError))
 
-		provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+		provider := tf.NewTerraformProvider(
+			executor.TFBinariesContext{},
+			fakeInvokerBuilder,
+			fakeLogger,
+			fakeServiceDefinition,
+			fakeDeploymentManager,
+		)
 
 		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+
 		Expect(err).To(MatchError(expectedError))
 		Expect(actualOperationID).To(BeNil())
 	})
@@ -135,9 +178,16 @@ var _ = Describe("Deprovision", func() {
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 		fakeDefaultInvoker.DestroyReturns(fmt.Errorf(expectedError))
 
-		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1"))}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+		provider := tf.NewTerraformProvider(
+			executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("0.12.20"))},
+			fakeInvokerBuilder,
+			fakeLogger,
+			fakeServiceDefinition,
+			fakeDeploymentManager,
+		)
 
 		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+
 		Expect(err).NotTo(HaveOccurred())
 		Expect(actualOperationID).To(Equal(&expectedTFID))
 
@@ -145,4 +195,59 @@ var _ = Describe("Deprovision", func() {
 		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
 		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(expectedError))
 	})
+
+	It("return and error if a provision operation is in progress", func() {
+		deployment.LastOperationType = models.ProvisionOperationType
+		deployment.LastOperationState = tf.InProgress
+		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
+
+		provider := tf.NewTerraformProvider(
+			executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("0.12.20"))},
+			fakeInvokerBuilder,
+			fakeLogger,
+			fakeServiceDefinition,
+			fakeDeploymentManager,
+		)
+
+		_, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+
+		Expect(err).To(
+			MatchError("destroy operation not allowed - reason: provision in progress - tf ID: " + expectedTFID),
+		)
+		Expect(fakeDeploymentManager.MarkOperationStartedCallCount()).To(Equal(0))
+	})
 })
+
+func newTfState() []byte {
+	state := `{
+    "version": 4,
+    "terraform_version": "0.12.20",
+    "serial": 2,
+    "outputs": {
+        "hostname": {
+          "value": "brokertemplate.instance.hostname",
+          "type": "string"
+        }
+    },
+    "resources": [
+        {
+          "module": "module.instance",
+          "mode": "managed",
+          "type": "google_sql_database",
+          "name": "database",
+          "provider": "provider.google",
+          "instances": []
+        },
+        {
+          "module": "module.instance",
+          "mode": "managed",
+          "type": "google_sql_database_instance",
+          "name": "instance",
+          "provider": "provider.google",
+          "instances": []
+        }
+    ]
+  }`
+
+	return []byte(state)
+}

@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
 	"github.com/hashicorp/go-version"
@@ -110,6 +111,10 @@ func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID str
 	deployment, err := provider.GetTerraformDeployment(deploymentID)
 	if err != nil {
 		return err
+	}
+
+	if deployment.LastOperationType == models.ProvisionOperationType && deployment.LastOperationState == InProgress {
+		return fmt.Errorf("destroy operation not allowed - reason: provision in progress - tf ID: %s", deploymentID)
 	}
 
 	workspace := deployment.TFWorkspace()
