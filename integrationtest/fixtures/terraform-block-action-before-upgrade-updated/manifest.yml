@@ -13,22 +13,14 @@ terraform_binaries:
   version: 0.12.21
 - name: terraform
   version: 0.13.7
-- name: terraform
-  version: 0.14.9
-- name: terraform
-  version: 1.0.10
-- name: terraform
-  version: 1.1.6
   default: true
 - name: terraform-provider-random
   version: 3.1.0
+  source: https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip
 terraform_state_provider_replacements:
   registry.terraform.io/-/random: "registry.terraform.io/hashicorp/random"
 terraform_upgrade_path:
-- version: 0.12.21
-- version: 0.13.7
-- version: 0.14.9
-- version: 1.0.10
-- version: 1.1.6
+  - version: 0.12.21
+  - version: 0.13.7
 service_definitions:
 - fake-service.yml

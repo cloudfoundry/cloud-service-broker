@@ -43,6 +43,8 @@ type ServiceBroker struct {
 	store  Storage
 }
 
+type TFDeploymentGUID string
+
 // New creates a ServiceBroker.
 // Exactly one of ServiceBroker or error will be nil when returned.
 func New(cfg *BrokerConfig, logger lager.Logger, store Storage) (*ServiceBroker, error) {
@@ -109,4 +111,12 @@ func validateDefinedParams(params map[string]interface{}, validUserInputFields [
 
 	sort.Strings(invalidParams)
 	return fmt.Errorf("additional properties are not allowed: %s", strings.Join(invalidParams, ", "))
+}
+
+func generateTFInstanceID(instanceID string) string {
+	return "tf:" + instanceID + ":"
+}
+
+func generateTFBindingID(instanceID, bindingID string) string {
+	return "tf:" + instanceID + ":" + bindingID
 }

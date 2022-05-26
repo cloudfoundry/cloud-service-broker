@@ -135,12 +135,6 @@ func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID str
 	}
 
 	go func() {
-		err = provider.performTerraformUpgrade(ctx, workspace)
-		if err != nil {
-			provider.MarkOperationFinished(&deployment, err)
-			return
-		}
-
 		err = provider.DefaultInvoker().Destroy(ctx, workspace)
 		provider.MarkOperationFinished(&deployment, err)
 	}()

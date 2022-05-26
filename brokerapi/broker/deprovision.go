@@ -46,6 +46,11 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return response, err
 	}
 
+	err = serviceProvider.CheckUpgradeAvailable(generateTFInstanceID(instanceID))
+	if err != nil {
+		return response, fmt.Errorf("failed to delete: %s", err.Error())
+	}
+
 	// verify the service exists and the plan exists
 	plan, err := serviceDefinition.GetPlanByID(details.PlanID)
 	if err != nil {

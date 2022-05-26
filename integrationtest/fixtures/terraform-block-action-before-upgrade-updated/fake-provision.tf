@@ -11,3 +11,5 @@ resource "random_integer" "priority" {
   min = 1
   max = 100
 }
+
+variable alpha_input { type = string }
