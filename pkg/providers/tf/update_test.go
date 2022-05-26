@@ -186,21 +186,4 @@ var _ = Describe("Update", func() {
 		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
 		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(genericError))
 	})
-
-	It("fails the update, if the version of statefile does not match the default tf version", func() {
-		tfBinContext := executor.TFBinariesContext{
-			DefaultTfVersion: newVersion("0.1.0"),
-		}
-		deployment.Workspace = fakeWorkspace
-		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
-
-		fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
-
-		runner := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
-
-		_, err := runner.Update(context.TODO(), varContext)
-		Expect(err).NotTo(HaveOccurred())
-
-		Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(0))
-	})
 })
