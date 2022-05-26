@@ -58,7 +58,7 @@ var _ = Describe("CheckUpgradeAvailable", func() {
 			provider := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
 			err := provider.CheckUpgradeAvailable(tfInstanceID)
-			Expect(err).To(MatchError("apply attempted with a newer version of terraform than the state"))
+			Expect(err).To(MatchError("operation attempted with newer version of Terraform than current state, upgrade the service before retrying operation"))
 		})
 	})
 
