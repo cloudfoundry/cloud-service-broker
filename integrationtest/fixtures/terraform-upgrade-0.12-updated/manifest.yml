@@ -1,0 +1,34 @@
+packversion: 1
+name: fake-brokerpak
+version: 0.1.0
+metadata:
+  author: noone@nowhere.com
+platforms:
+- os: linux
+  arch: amd64
+- os: darwin
+  arch: amd64
+terraform_binaries:
+- name: terraform
+  version: 0.12.21
+- name: terraform
+  version: 0.13.7
+- name: terraform
+  version: 0.14.9
+- name: terraform
+  version: 1.0.10
+- name: terraform
+  version: 1.1.6
+  default: true
+- name: terraform-provider-random
+  version: 3.1.0
+terraform_state_provider_replacements:
+  registry.terraform.io/-/random: "registry.terraform.io/hashicorp/random"
+terraform_upgrade_path:
+- version: 0.12.21
+- version: 0.13.7
+- version: 0.14.9
+- version: 1.0.10
+- version: 1.1.6
+service_definitions:
+- fake-service.yml
