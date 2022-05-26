@@ -53,6 +53,11 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 		return domain.Binding{}, fmt.Errorf("error retrieving service definition: %w", err)
 	}
 
+	err = serviceProvider.CheckUpgradeAvailable(generateTFInstanceID(instanceID))
+	if err != nil {
+		return domain.Binding{}, fmt.Errorf("failed to bind: %s", err.Error())
+	}
+
 	parsedDetails, err := paramparser.ParseBindDetails(details)
 	if err != nil {
 		return domain.Binding{}, ErrInvalidUserInput

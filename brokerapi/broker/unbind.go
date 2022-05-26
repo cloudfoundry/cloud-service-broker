@@ -27,6 +27,11 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return domain.UnbindSpec{}, err
 	}
 
+	err = serviceProvider.CheckUpgradeAvailable(generateTFBindingID(instanceID, bindingID))
+	if err != nil {
+		return domain.UnbindSpec{}, fmt.Errorf("failed to unbind: %s", err.Error())
+	}
+
 	plan, err := serviceDefinition.GetPlanByID(details.PlanID)
 	if err != nil {
 		return domain.UnbindSpec{}, err

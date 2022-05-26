@@ -47,6 +47,8 @@ type ServiceBroker struct {
 	Logger  lager.Logger
 }
 
+type TFDeploymentGUID string
+
 // New creates a ServiceBroker.
 // Exactly one of ServiceBroker or error will be nil when returned.
 func New(cfg *BrokerConfig, store Storage, decider Decider, logger lager.Logger) (*ServiceBroker, error) {
@@ -116,8 +118,17 @@ func validateDefinedParams(params map[string]interface{}, validUserInputFields [
 	return fmt.Errorf("additional properties are not allowed: %s", strings.Join(invalidParams, ", "))
 }
 
+func generateTFInstanceID(instanceID string) string {
+	return "tf:" + instanceID + ":"
+}
+
+func generateTFBindingID(instanceID, bindingID string) string {
+	return "tf:" + instanceID + ":" + bindingID
+}
+
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 //counterfeiter:generate . Decider
 type Decider interface {
 	DecideOperation(serviceDefinition *broker.ServiceDefinition, details domain.UpdateDetails) (decider.Operation, error)
 }
+

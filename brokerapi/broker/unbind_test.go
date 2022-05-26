@@ -226,6 +226,15 @@ var _ = Describe("Unbind", func() {
 			})
 		})
 
+		When("upgrade is available on instance", func() {
+			It("should error", func() {
+				fakeServiceProvider.CheckUpgradeAvailableReturns(fmt.Errorf("generic-error"))
+
+				_, err := serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, false)
+				Expect(err).To(MatchError(`failed to unbind: generic-error`))
+			})
+		})
+
 		When("error validating the plan exists", func() {
 			const nonExistentPlan = "non-existent-plan"
 

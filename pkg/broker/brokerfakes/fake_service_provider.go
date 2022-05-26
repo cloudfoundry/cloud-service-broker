@@ -27,6 +27,17 @@ type FakeServiceProvider struct {
 		result1 map[string]interface{}
 		result2 error
 	}
+	CheckUpgradeAvailableStub        func(string) error
+	checkUpgradeAvailableMutex       sync.RWMutex
+	checkUpgradeAvailableArgsForCall []struct {
+		arg1 string
+	}
+	checkUpgradeAvailableReturns struct {
+		result1 error
+	}
+	checkUpgradeAvailableReturnsOnCall map[int]struct {
+		result1 error
+	}
 	DeprovisionStub        func(context.Context, string, domain.DeprovisionDetails, *varcontext.VarContext) (*string, error)
 	deprovisionMutex       sync.RWMutex
 	deprovisionArgsForCall []struct {
@@ -212,6 +223,67 @@ func (fake *FakeServiceProvider) BindReturnsOnCall(i int, result1 map[string]int
 		result1 map[string]interface{}
 		result2 error
 	}{result1, result2}
+}
+
+func (fake *FakeServiceProvider) CheckUpgradeAvailable(arg1 string) error {
+	fake.checkUpgradeAvailableMutex.Lock()
+	ret, specificReturn := fake.checkUpgradeAvailableReturnsOnCall[len(fake.checkUpgradeAvailableArgsForCall)]
+	fake.checkUpgradeAvailableArgsForCall = append(fake.checkUpgradeAvailableArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.CheckUpgradeAvailableStub
+	fakeReturns := fake.checkUpgradeAvailableReturns
+	fake.recordInvocation("CheckUpgradeAvailable", []interface{}{arg1})
+	fake.checkUpgradeAvailableMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeServiceProvider) CheckUpgradeAvailableCallCount() int {
+	fake.checkUpgradeAvailableMutex.RLock()
+	defer fake.checkUpgradeAvailableMutex.RUnlock()
+	return len(fake.checkUpgradeAvailableArgsForCall)
+}
+
+func (fake *FakeServiceProvider) CheckUpgradeAvailableCalls(stub func(string) error) {
+	fake.checkUpgradeAvailableMutex.Lock()
+	defer fake.checkUpgradeAvailableMutex.Unlock()
+	fake.CheckUpgradeAvailableStub = stub
+}
+
+func (fake *FakeServiceProvider) CheckUpgradeAvailableArgsForCall(i int) string {
+	fake.checkUpgradeAvailableMutex.RLock()
+	defer fake.checkUpgradeAvailableMutex.RUnlock()
+	argsForCall := fake.checkUpgradeAvailableArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeServiceProvider) CheckUpgradeAvailableReturns(result1 error) {
+	fake.checkUpgradeAvailableMutex.Lock()
+	defer fake.checkUpgradeAvailableMutex.Unlock()
+	fake.CheckUpgradeAvailableStub = nil
+	fake.checkUpgradeAvailableReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeServiceProvider) CheckUpgradeAvailableReturnsOnCall(i int, result1 error) {
+	fake.checkUpgradeAvailableMutex.Lock()
+	defer fake.checkUpgradeAvailableMutex.Unlock()
+	fake.CheckUpgradeAvailableStub = nil
+	if fake.checkUpgradeAvailableReturnsOnCall == nil {
+		fake.checkUpgradeAvailableReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.checkUpgradeAvailableReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 string, arg3 domain.DeprovisionDetails, arg4 *varcontext.VarContext) (*string, error) {
@@ -750,6 +822,8 @@ func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.bindMutex.RLock()
 	defer fake.bindMutex.RUnlock()
+	fake.checkUpgradeAvailableMutex.RLock()
+	defer fake.checkUpgradeAvailableMutex.RUnlock()
 	fake.deprovisionMutex.RLock()
 	defer fake.deprovisionMutex.RUnlock()
 	fake.getImportedPropertiesMutex.RLock()
