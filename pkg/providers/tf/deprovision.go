@@ -12,7 +12,7 @@ import (
 )
 
 // Deprovision performs a terraform destroy on the instance.
-func (provider *TerraformProvider) Deprovision(ctx context.Context, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationID *string, err error) {
+func (provider *TerraformProvider) Deprovision(ctx context.Context, instanceGUID string, _ domain.DeprovisionDetails, vc *varcontext.VarContext) (*string, error) {
 	provider.logger.Debug("terraform-deprovision", correlation.ID(ctx), lager.Data{
 		"instance": instanceGUID,
 	})
