@@ -131,4 +131,3 @@ func generateTFBindingID(instanceID, bindingID string) string {
 type Decider interface {
 	DecideOperation(serviceDefinition *broker.ServiceDefinition, details domain.UpdateDetails) (decider.Operation, error)
 }
-
