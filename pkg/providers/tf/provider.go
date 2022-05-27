@@ -113,8 +113,8 @@ func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID str
 		return err
 	}
 
-	if deployment.LastOperationType == models.ProvisionOperationType && deployment.LastOperationState == InProgress {
-		return fmt.Errorf("destroy operation not allowed - reason: provision in progress - tf ID: %s", deploymentID)
+	if err := provider.checkDestroyOperationConstraints(deployment, operationType); err != nil {
+		return err
 	}
 
 	workspace := deployment.TFWorkspace()
@@ -160,6 +160,23 @@ func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 			}
 		}
 	}
+}
+
+func (provider *TerraformProvider) checkDestroyOperationConstraints(d storage.TerraformDeployment, operationType string) error {
+	if operationType == models.UnbindOperationType {
+		return nil
+	}
+
+	if operationType != models.DeprovisionOperationType {
+		return fmt.Errorf("destroy operation not allowed with invalid operation type")
+	}
+
+	isProvisionOperationInProgress := d.LastOperationType == models.ProvisionOperationType && d.LastOperationState == InProgress
+	if isProvisionOperationInProgress {
+		return fmt.Errorf("destroy operation not allowed while provision is in progress")
+	}
+
+	return nil
 }
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate

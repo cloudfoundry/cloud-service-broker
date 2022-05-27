@@ -191,7 +191,7 @@ var _ = Describe("Deprovision", func() {
 		_, err := provider.Deprovision(context.TODO(), instanceGUID, deprovisionContext)
 
 		Expect(err).To(
-			MatchError("destroy operation not allowed - reason: provision in progress - tf ID: " + expectedTFID),
+			MatchError("destroy operation not allowed while provision is in progress"),
 		)
 		Expect(fakeDeploymentManager.MarkOperationStartedCallCount()).To(Equal(0))
 	})
