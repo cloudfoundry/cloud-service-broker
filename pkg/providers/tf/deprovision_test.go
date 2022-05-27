@@ -32,7 +32,6 @@ var _ = Describe("Deprovision", func() {
 		fakeServiceDefinition tf.TfServiceDefinitionV1
 		fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface
 		deprovisionContext    *varcontext.VarContext
-		fakeWorkspace         *workspace.TerraformWorkspace
 		fakeLogger            = utils.NewLogger("test")
 		templateVars          = map[string]any{"tf_id": instanceGUID}
 		expectedTFID          = fmt.Sprintf("tf:%s:", instanceGUID)
@@ -43,35 +42,17 @@ var _ = Describe("Deprovision", func() {
 		fakeInvokerBuilder = &tffakes.FakeTerraformInvokerBuilder{}
 		fakeDeploymentManager = &tffakes.FakeDeploymentManagerInterface{}
 		fakeDefaultInvoker = &tffakes.FakeTerraformInvoker{}
-		moduleDefinition := workspace.ModuleDefinition{
-			Name: "fake-cloud-storage",
-			Definition: `
-			    resource "fake_storage_bucket" "bucket" {
-			      name     = "${var.name}"
-			      storage_class = "${var.storage_class}"
-			    }`,
-			Definitions: map[string]string{"variables": `
-				    variable name {type = "string"}
-					variable storage_class {type = "string"}
-				`},
-		}
-		moduleInstance := workspace.ModuleInstance{
-			ModuleName:   "cloud_storage",
-			InstanceName: "fake-instance-name",
-		}
 
 		deprovisionContext, err = varcontext.Builder().MergeMap(templateVars).Build()
 		Expect(err).NotTo(HaveOccurred())
 
-		fakeWorkspace = &workspace.TerraformWorkspace{
-			Modules:   []workspace.ModuleDefinition{moduleDefinition},
-			Instances: []workspace.ModuleInstance{moduleInstance},
-			State:     newTfState(),
-		}
-
 		deployment = storage.TerraformDeployment{
-			ID:        instanceGUID,
-			Workspace: fakeWorkspace,
+			ID: instanceGUID,
+			Workspace: &workspace.TerraformWorkspace{
+				Modules:   []workspace.ModuleDefinition{{Name: "test-module-instance"}},
+				Instances: []workspace.ModuleInstance{{ModuleName: "test-module-instance"}},
+				State:     []byte(`{"terraform_version":"0.12.20"}`),
+			},
 		}
 	})
 
@@ -215,37 +196,3 @@ var _ = Describe("Deprovision", func() {
 		Expect(fakeDeploymentManager.MarkOperationStartedCallCount()).To(Equal(0))
 	})
 })
-
-func newTfState() []byte {
-	state := `{
-    "version": 4,
-    "terraform_version": "0.12.20",
-    "serial": 2,
-    "outputs": {
-        "hostname": {
-          "value": "brokertemplate.instance.hostname",
-          "type": "string"
-        }
-    },
-    "resources": [
-        {
-          "module": "module.instance",
-          "mode": "managed",
-          "type": "google_sql_database",
-          "name": "database",
-          "provider": "provider.google",
-          "instances": []
-        },
-        {
-          "module": "module.instance",
-          "mode": "managed",
-          "type": "google_sql_database_instance",
-          "name": "instance",
-          "provider": "provider.google",
-          "instances": []
-        }
-    ]
-  }`
-
-	return []byte(state)
-}
