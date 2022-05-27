@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/hashicorp/go-version"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -91,7 +90,7 @@ var _ = Describe("Deprovision", func() {
 		Expect(fakeDeploymentManager.MarkOperationStartedCallCount()).To(Equal(1))
 		actualDeployment, actualOperationType := fakeDeploymentManager.MarkOperationStartedArgsForCall(0)
 		Expect(actualDeployment).To(Equal(&deployment))
-		Expect(actualOperationType).To(Equal(models.DeprovisionOperationType))
+		Expect(actualOperationType).To(Equal("deprovision"))
 
 		By("checking TF apply has been called")
 		Eventually(destroyCallCount(fakeDefaultInvoker)).Should(Equal(1))
@@ -176,7 +175,7 @@ var _ = Describe("Deprovision", func() {
 	})
 
 	It("return and error if a provision operation is in progress", func() {
-		deployment.LastOperationType = models.ProvisionOperationType
+		deployment.LastOperationType = "provision"
 		deployment.LastOperationState = tf.InProgress
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 
