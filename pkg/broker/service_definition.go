@@ -260,7 +260,7 @@ func (svc *ServiceDefinition) GetPlanByID(planID string) (*ServicePlan, error) {
 
 // UserDefinedPlans extracts user defined plans from the environment, failing if
 // the plans were not valid JSON or were missing required properties/variables.
-func (svc *ServiceDefinition) UserDefinedPlans() ([]ServicePlan, error) {
+func (svc *ServiceDefinition) UserDefinedPlans(tfVersion string) ([]ServicePlan, error) {
 
 	// There's a mismatch between how plans are used internally and defined by
 	// the user and the tile. In the environment variables we parse an array of
@@ -307,6 +307,13 @@ func (svc *ServiceDefinition) UserDefinedPlans() ([]ServicePlan, error) {
 		// reading from a tile we need to move their GUID to an ID field
 		if plan.ID == "" {
 			plan.ID, _ = plan.ServiceProperties["guid"].(string)
+		}
+
+		if viper.GetBool("brokerpak.terraform.upgrades.enabled") {
+			plan.MaintenanceInfo = &domain.MaintenanceInfo{
+				Version:     tfVersion,
+				Description: fmt.Sprintf(`This upgrade provides support for Terraform version: %s. The upgrade operation will take a while. The instance and all associated bindings will be upgraded.`, tfVersion),
+			}
 		}
 
 		if err := svc.validatePlan(plan); err != nil {

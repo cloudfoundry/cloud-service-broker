@@ -175,7 +175,7 @@ func TestServiceDefinition_UserDefinedPlans(t *testing.T) {
 			viper.Set(service.UserDefinedPlansProperty(), tc.Value)
 			defer viper.Reset()
 
-			plans, err := service.UserDefinedPlans()
+			plans, err := service.UserDefinedPlans("")
 
 			// Check errors
 			hasErr := err != nil
@@ -230,7 +230,7 @@ func TestServiceDefinition_CatalogEntry(t *testing.T) {
 			viper.Set(service.UserDefinedPlansProperty(), tc.UserPlans)
 			defer viper.Reset()
 
-			plans, err := service.UserDefinedPlans()
+			plans, err := service.UserDefinedPlans("")
 			hasErr := err != nil
 			if hasErr != tc.ExpectError {
 				t.Errorf("Expected Error? %v, got error: %v", tc.ExpectError, err)

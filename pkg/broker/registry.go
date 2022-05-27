@@ -45,14 +45,14 @@ type BrokerRegistry map[string]*ServiceDefinition
 
 // Register registers a ServiceDefinition with the service registry that various commands
 // poll to create the catalog, documentation, etc.
-func (brokerRegistry BrokerRegistry) Register(service *ServiceDefinition) error {
+func (brokerRegistry BrokerRegistry) Register(service *ServiceDefinition, tfVersion string) error {
 	name := service.Name
 
 	if _, ok := brokerRegistry[name]; ok {
 		return fmt.Errorf("tried to register multiple instances of: %q", name)
 	}
 
-	userPlans, err := service.UserDefinedPlans()
+	userPlans, err := service.UserDefinedPlans(tfVersion)
 	if err != nil {
 		return fmt.Errorf("error getting user defined plans: %q, %s", name, err)
 	}

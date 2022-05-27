@@ -77,7 +77,7 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 		}
 
 		for _, defn := range defns {
-			err := registry.Register(defn)
+			err := registry.Register(defn, tfBinariesContext.DefaultTfVersion.String())
 			if err != nil {
 				return err
 			}

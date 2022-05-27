@@ -1,11 +1,15 @@
 package broker_test
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/spf13/viper"
 )
 
 var _ = Describe("ServiceDefinition", func() {
@@ -251,5 +255,149 @@ var _ = Describe("ServiceDefinition", func() {
 			Entry("prohibited", map[string]interface{}{"prohibited": "some_val"}, false),
 			Entry("empty", nil, true),
 		)
+	})
+
+	Describe("UserDefinedPlans", func() {
+
+		const (
+			fakePlanName        = "fakePlanName"
+			fakePlanID          = "fakePlanID"
+			fakePlanDescription = "fakePlanDescription"
+			fakePlanProperty    = "fakePlanProperty"
+			fakePlanGuid        = "6938cf33-0a12-4308-af4c-32134c645e87"
+			defaultTFVersion    = "1.0.0"
+		)
+
+		var (
+			fakeServicePlanConfig    string
+			fakeServicePlanTile      string
+			fakeServicePlanMissingID string
+			service                  broker.ServiceDefinition
+		)
+
+		BeforeEach(func() {
+			service = broker.ServiceDefinition{
+				Name: "fake-service",
+			}
+
+			fakeServicePlanConfig = fmt.Sprintf(`[{"name":"%s","id":"%s","description":"%s", "additional_property":"%s"}]`,
+				fakePlanName, fakePlanID, fakePlanDescription, fakePlanProperty)
+			fakeServicePlanTile = fmt.Sprintf(`{"%[1]s":{"name":"%[1]s","description":"%s","additional_property":"%s", "guid":"%s"}}`,
+				fakePlanName, fakePlanDescription, fakePlanProperty, fakePlanGuid)
+		})
+
+		AfterEach(func() {
+			viper.Reset()
+		})
+
+		When("plans are set in viper configuration", func() {
+			BeforeEach(func() {
+				viper.Set("service.fake-service.plans", fakeServicePlanConfig)
+			})
+
+			It("should return the service plan", func() {
+				actualPlans, err := service.UserDefinedPlans(defaultTFVersion)
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(actualPlans).To(HaveLen(1))
+				Expect(actualPlans[0].Name).To(Equal(fakePlanName))
+				Expect(actualPlans[0].ID).To(Equal(fakePlanID))
+				Expect(actualPlans[0].Description).To(Equal(fakePlanDescription))
+				Expect(actualPlans[0].ServiceProperties).To(Equal(map[string]interface{}{"additional_property": fakePlanProperty}))
+			})
+
+			When("an invalid plan is provided in configuration", func() {
+				BeforeEach(func() {
+					fakeServicePlanConfig = `{invalid-json`
+					viper.Set("service.fake-service.plans", fakeServicePlanConfig)
+				})
+
+				It("should return an error", func() {
+					_, err := service.UserDefinedPlans(defaultTFVersion)
+					Expect(err).To(MatchError("invalid character 'i' looking for beginning of object key string"))
+
+				})
+			})
+
+		})
+
+		When("plans are set as an environment variable", func() {
+			BeforeEach(func() {
+				os.Setenv(service.TileUserDefinedPlansVariable(), fakeServicePlanTile)
+			})
+
+			AfterEach(func() {
+				os.Unsetenv(service.TileUserDefinedPlansVariable())
+			})
+
+			It("should return the service plan", func() {
+				actualPlans, err := service.UserDefinedPlans(defaultTFVersion)
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(actualPlans).To(HaveLen(1))
+				Expect(actualPlans[0].Name).To(Equal(fakePlanName))
+				Expect(actualPlans[0].ID).To(Equal(fakePlanGuid))
+				Expect(actualPlans[0].Description).To(Equal(fakePlanDescription))
+				Expect(actualPlans[0].ServiceProperties).To(Equal(map[string]interface{}{"additional_property": fakePlanProperty, "guid": fakePlanGuid}))
+			})
+
+			When("an invalid plan is provided as an environment variable", func() {
+				BeforeEach(func() {
+					fakeServicePlanTile = `{invalid-json`
+					os.Setenv(service.TileUserDefinedPlansVariable(), fakeServicePlanTile)
+				})
+
+				It("should return an error", func() {
+					_, err := service.UserDefinedPlans(defaultTFVersion)
+					Expect(err).To(MatchError("invalid character 'i' looking for beginning of object key string"))
+
+				})
+			})
+
+		})
+
+		When("plan validation fails", func() {
+			BeforeEach(func() {
+				fakeServicePlanMissingID = fmt.Sprintf(`[{"name":"%s","description":"%s", "additional_property":"%s"}]`,
+					fakePlanName, fakePlanDescription, fakePlanProperty)
+				viper.Set("service.fake-service.plans", fakeServicePlanMissingID)
+			})
+
+			It("returns an error", func() {
+				_, err := service.UserDefinedPlans(defaultTFVersion)
+				Expect(err).To(MatchError("fake-service custom plan {ServicePlan:{ID: Name:fakePlanName Description:fakePlanDescription Free:<nil> Bindable:<nil> Metadata:<nil> Schemas:<nil> PlanUpdatable:<nil> MaximumPollingDuration:<nil> MaintenanceInfo:<nil>} ServiceProperties:map[additional_property:fakePlanProperty] ProvisionOverrides:map[] BindOverrides:map[]} is missing an id"))
+			})
+		})
+
+		When("TFUpgrades are enabled", func() {
+			BeforeEach(func() {
+				viper.Set("service.fake-service.plans", fakeServicePlanConfig)
+				viper.Set("brokerpak.terraform.upgrades.enabled", true)
+			})
+
+			It("returns a broker service plan with maintenance info version matching default TF version", func() {
+				actualPlans, err := service.UserDefinedPlans(defaultTFVersion)
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(actualPlans).To(HaveLen(1))
+				Expect(actualPlans[0].MaintenanceInfo).To(Equal(&domain.MaintenanceInfo{Version: defaultTFVersion, Description: "This upgrade provides support for Terraform version: 1.0.0. The upgrade operation will take a while. The instance and all associated bindings will be upgraded."}))
+			})
+
+		})
+
+		When("TFUpgrades are disabled", func() {
+			BeforeEach(func() {
+				viper.Set("service.fake-service.plans", fakeServicePlanConfig)
+			})
+
+			It("returns a broker service plan with nil maintenance info", func() {
+				actualPlans, err := service.UserDefinedPlans(defaultTFVersion)
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(actualPlans).To(HaveLen(1))
+				Expect(actualPlans[0].MaintenanceInfo).To(BeNil())
+			})
+		})
+
 	})
 })

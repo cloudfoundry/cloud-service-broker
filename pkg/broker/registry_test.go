@@ -42,7 +42,7 @@ var _ = Describe("Registry", func() {
 				},
 			}
 
-			err := registry.Register(&serviceDef)
+			err := registry.Register(&serviceDef, "")
 			Expect(err).To(MatchError(`tried to register multiple instances of: "test-service"`))
 		})
 
@@ -53,7 +53,7 @@ var _ = Describe("Registry", func() {
 
 				registry := BrokerRegistry{}
 
-				err := registry.Register(&serviceDef)
+				err := registry.Register(&serviceDef, "")
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(len(registry["test-service"].Plans)).To(Equal(2))
@@ -65,7 +65,7 @@ var _ = Describe("Registry", func() {
 
 				registry := BrokerRegistry{}
 
-				err := registry.Register(&serviceDef)
+				err := registry.Register(&serviceDef, "")
 				Expect(err).To(MatchError(`error validating service "test-service", duplicated value, must be unique: e1d11f65-da66-46ad-977c-6d56513baf43: Plans[1].Id`))
 			})
 
@@ -75,7 +75,7 @@ var _ = Describe("Registry", func() {
 
 				registry := BrokerRegistry{}
 
-				err := registry.Register(&serviceDef)
+				err := registry.Register(&serviceDef, "")
 				Expect(err).To(MatchError(`error validating service "test-service", duplicated value, must be unique: Builtin!: Plans[1].Name`))
 			})
 		})
@@ -89,7 +89,7 @@ var _ = Describe("Registry", func() {
 					Name:      "test-service",
 					Plans:     []ServicePlan{},
 					IsBuiltin: true,
-				})
+				}, "")
 				Expect(err).To(MatchError(`service "test-service" has no plans defined; at least one plan must be specified in the service definition or via the environment variable "GSB_SERVICE_TEST_SERVICE_PLANS" or "TEST_SERVICE_CUSTOM_PLANS"`))
 			})
 		})
@@ -192,7 +192,7 @@ var _ = Describe("Registry", func() {
 				viper.Set("compatibility.enable-builtin-services", true)
 
 				registry := BrokerRegistry{}
-				err := registry.Register(&serviceDef)
+				err := registry.Register(&serviceDef, "")
 				Expect(err).ToNot(HaveOccurred())
 
 				result, err := registry.GetEnabledServices()
@@ -228,7 +228,7 @@ var _ = Describe("Registry", func() {
 				viper.Set("compatibility.enable-builtin-services", true)
 
 				registry := BrokerRegistry{}
-				err := registry.Register(&serviceDef)
+				err := registry.Register(&serviceDef, "")
 				Expect(err).ToNot(HaveOccurred())
 
 				result, err := registry.GetEnabledServices()
@@ -264,7 +264,7 @@ var _ = Describe("Registry", func() {
 				viper.Set("compatibility.enable-builtin-services", false)
 
 				registry := BrokerRegistry{}
-				err := registry.Register(&serviceDef)
+				err := registry.Register(&serviceDef, "")
 				Expect(err).ToNot(HaveOccurred())
 
 				result, err := registry.GetEnabledServices()
