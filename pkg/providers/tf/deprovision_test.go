@@ -10,12 +10,10 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/tffakes"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -93,7 +91,7 @@ var _ = Describe("Deprovision", func() {
 			fakeDeploymentManager,
 		)
 
-		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, deprovisionContext)
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(actualOperationID).To(Equal(&expectedTFID))
@@ -131,7 +129,7 @@ var _ = Describe("Deprovision", func() {
 			fakeDeploymentManager,
 		)
 
-		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, deprovisionContext)
 
 		Expect(err).To(MatchError(expectedError))
 		Expect(actualOperationID).To(BeNil())
@@ -148,7 +146,7 @@ var _ = Describe("Deprovision", func() {
 			fakeDeploymentManager,
 		)
 
-		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, deprovisionContext)
 
 		Expect(err).To(MatchError(expectedError))
 		Expect(actualOperationID).To(BeNil())
@@ -166,7 +164,7 @@ var _ = Describe("Deprovision", func() {
 			fakeDeploymentManager,
 		)
 
-		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, deprovisionContext)
 
 		Expect(err).To(MatchError(expectedError))
 		Expect(actualOperationID).To(BeNil())
@@ -186,7 +184,7 @@ var _ = Describe("Deprovision", func() {
 			fakeDeploymentManager,
 		)
 
-		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+		actualOperationID, err := provider.Deprovision(context.TODO(), instanceGUID, deprovisionContext)
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(actualOperationID).To(Equal(&expectedTFID))
@@ -209,7 +207,7 @@ var _ = Describe("Deprovision", func() {
 			fakeDeploymentManager,
 		)
 
-		_, err := provider.Deprovision(context.TODO(), instanceGUID, domain.DeprovisionDetails{}, deprovisionContext)
+		_, err := provider.Deprovision(context.TODO(), instanceGUID, deprovisionContext)
 
 		Expect(err).To(
 			MatchError("destroy operation not allowed - reason: provision in progress - tf ID: " + expectedTFID),
