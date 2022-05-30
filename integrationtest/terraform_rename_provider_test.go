@@ -33,7 +33,7 @@ var _ = Describe("Terraform Rename Provider", func() {
 		session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true", "BROKERPAK_UPDATES_ENABLED=true")
 
 		By("running 'cf update-service'")
-		testHelper.UpdateServiceMI(serviceInstance, domain.PreviousValues{PlanID: servicePlanGUID}, domain.MaintenanceInfo{Version: "0.13.7"}, `{"alpha_input":"quz"}`)
+		testHelper.UpgradeService(serviceInstance, domain.PreviousValues{PlanID: servicePlanGUID}, domain.MaintenanceInfo{Version: "0.13.7"}, `{"alpha_input":"quz"}`)
 	})
 
 	It("can delete instance when provider is renamed", func() {

@@ -67,19 +67,16 @@ func requestParamsEmpty(details domain.UpdateDetails) bool {
 }
 
 func requestMaintenanceInfoValuesDiffer(details domain.UpdateDetails) bool {
-	if details.MaintenanceInfo == nil && details.PreviousValues.MaintenanceInfo != nil {
+	switch {
+	case details.MaintenanceInfo == nil && details.PreviousValues.MaintenanceInfo != nil:
 		return true
-	}
-
-	if details.MaintenanceInfo != nil && details.PreviousValues.MaintenanceInfo == nil {
+	case details.MaintenanceInfo != nil && details.PreviousValues.MaintenanceInfo == nil:
 		return true
-	}
-
-	if details.MaintenanceInfo == nil && details.PreviousValues.MaintenanceInfo == nil {
+	case details.MaintenanceInfo == nil && details.PreviousValues.MaintenanceInfo == nil:
 		return false
+	default:
+		return !details.MaintenanceInfo.Equals(*details.PreviousValues.MaintenanceInfo)
 	}
-
-	return !details.MaintenanceInfo.Equals(*details.PreviousValues.MaintenanceInfo)
 }
 
 func validateMaintenanceInfo(service *broker.ServiceDefinition, planID string, maintenanceInfo *domain.MaintenanceInfo) error {

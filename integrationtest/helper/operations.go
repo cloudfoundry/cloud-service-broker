@@ -46,7 +46,7 @@ func (h *TestHelper) UpdateService(s ServiceInstance, params ...any) {
 	gomega.Expect(h.LastOperationFinalState(s.GUID, 1)).WithOffset(offset).To(gomega.Equal(domain.Succeeded))
 }
 
-func (h *TestHelper) UpdateServiceMI(s ServiceInstance, previousValues domain.PreviousValues, newMaintenanceInfo domain.MaintenanceInfo, params ...any) {
+func (h *TestHelper) UpgradeService(s ServiceInstance, previousValues domain.PreviousValues, newMaintenanceInfo domain.MaintenanceInfo, params ...any) {
 	const offset = 1
 	updateResponse := h.Client().Update(s.GUID, s.ServiceOfferingGUID, s.ServicePlanGUID, uuid.New(), toJSONRawMessage(params, 2), previousValues, &newMaintenanceInfo)
 	gomega.Expect(updateResponse.Error).WithOffset(offset).NotTo(gomega.HaveOccurred())

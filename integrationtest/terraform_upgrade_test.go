@@ -62,7 +62,7 @@ var _ = Describe("Terraform Upgrade", func() {
 			newMI := domain.MaintenanceInfo{
 				Version: "1.1.6",
 			}
-			testHelper.UpdateServiceMI(serviceInstance, domain.PreviousValues{PlanID: servicePlanGUID}, newMI)
+			testHelper.UpgradeService(serviceInstance, domain.PreviousValues{PlanID: servicePlanGUID}, newMI)
 
 			By("observing that the TF state file has been updated to the latest version")
 			Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("1.1.6"))
