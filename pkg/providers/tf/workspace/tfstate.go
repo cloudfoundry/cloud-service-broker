@@ -39,8 +39,9 @@ func NewTfstate(stateFile []byte) (*Tfstate, error) {
 
 // Tfstate is a struct that can help us deserialize the tfstate JSON file.
 type Tfstate struct {
-	Version int `json:"version"`
-	Outputs map[string]struct {
+	Version          int    `json:"version"`
+	TerraformVersion string `json:"terraform_version"`
+	Outputs          map[string]struct {
 		Type  string      `json:"type"`
 		Value interface{} `json:"value"`
 	} `json:"outputs"`

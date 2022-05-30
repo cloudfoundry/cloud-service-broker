@@ -21,12 +21,13 @@ func NewTerraformMock() (TerraformMock, error) {
 	if err != nil {
 		return TerraformMock{}, err
 	}
-	return TerraformMock{Binary: build, invocationStore: dir}, nil
+	return TerraformMock{Binary: build, invocationStore: dir, Version: "1.1.4"}, nil
 }
 
 type TerraformMock struct {
 	Binary          string
 	invocationStore string
+	Version         string
 }
 
 func (p TerraformMock) ApplyInvocations() ([]TerraformInvocation, error) {
@@ -118,8 +119,9 @@ func (p TerraformMock) SetTFState(values []TFStateValue) error {
 	}
 
 	return p.setTFStateFile(workspace.Tfstate{
-		Version: 4,
-		Outputs: outputs})
+		Version:          4,
+		TerraformVersion: p.Version,
+		Outputs:          outputs})
 }
 
 // ReturnTFState set the Terraform State in a JSON file.
