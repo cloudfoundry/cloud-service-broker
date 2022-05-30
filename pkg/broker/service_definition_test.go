@@ -264,7 +264,7 @@ var _ = Describe("ServiceDefinition", func() {
 			fakePlanID          = "fakePlanID"
 			fakePlanDescription = "fakePlanDescription"
 			fakePlanProperty    = "fakePlanProperty"
-			fakePlanGuid        = "6938cf33-0a12-4308-af4c-32134c645e87"
+			fakePlanGUID        = "6938cf33-0a12-4308-af4c-32134c645e87"
 			defaultTFVersion    = "1.0.0"
 		)
 
@@ -283,7 +283,7 @@ var _ = Describe("ServiceDefinition", func() {
 			fakeServicePlanConfig = fmt.Sprintf(`[{"name":"%s","id":"%s","description":"%s", "additional_property":"%s"}]`,
 				fakePlanName, fakePlanID, fakePlanDescription, fakePlanProperty)
 			fakeServicePlanTile = fmt.Sprintf(`{"%[1]s":{"name":"%[1]s","description":"%s","additional_property":"%s", "guid":"%s"}}`,
-				fakePlanName, fakePlanDescription, fakePlanProperty, fakePlanGuid)
+				fakePlanName, fakePlanDescription, fakePlanProperty, fakePlanGUID)
 		})
 
 		AfterEach(func() {
@@ -336,9 +336,9 @@ var _ = Describe("ServiceDefinition", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(actualPlans).To(HaveLen(1))
 				Expect(actualPlans[0].Name).To(Equal(fakePlanName))
-				Expect(actualPlans[0].ID).To(Equal(fakePlanGuid))
+				Expect(actualPlans[0].ID).To(Equal(fakePlanGUID))
 				Expect(actualPlans[0].Description).To(Equal(fakePlanDescription))
-				Expect(actualPlans[0].ServiceProperties).To(Equal(map[string]interface{}{"additional_property": fakePlanProperty, "guid": fakePlanGuid}))
+				Expect(actualPlans[0].ServiceProperties).To(Equal(map[string]interface{}{"additional_property": fakePlanProperty, "guid": fakePlanGUID}))
 			})
 
 			When("an invalid plan is provided as an environment variable", func() {
