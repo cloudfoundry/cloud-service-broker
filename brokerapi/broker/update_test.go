@@ -282,8 +282,20 @@ var _ = Describe("Update", func() {
 				_, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
 				Expect(err).To(MatchError("cannot update right now"))
 
-				By("validate it does not update the provision requet details")
+				By("validate it does not update the provision request details")
 				Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(0))
+			})
+		})
+
+		When("an upgrade should have happened", func() {
+			It("fails", func() {
+				fakeServiceProvider.CheckUpgradeAvailableReturns(errors.New("cannot use this tf version"))
+
+				_, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
+				Expect(err).To(MatchError("terraform version check failed: cannot use this tf version"))
+
+				By("validate it does not update")
+				Expect(fakeServiceProvider.UpdateCallCount()).To(Equal(0))
 			})
 		})
 	})

@@ -84,8 +84,8 @@ var _ = Describe("Terraform 0.12 Upgrade", func() {
 			By("running 'cf update-service'")
 			updateResponse := testHelper.Client().Update(serviceInstance.GUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil, domain.PreviousValues{}, nil)
 			Expect(updateResponse.Error).NotTo(HaveOccurred())
-			Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
-			Expect(testHelper.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Failed))
+			Expect(updateResponse.StatusCode).To(Equal(http.StatusInternalServerError))
+			Expect(updateResponse.ResponseBody).To(ContainSubstring("terraform version check failed: operation attempted with newer version of Terraform than current state, upgrade the service before retrying operation"))
 
 			By("observing that the TF version remains the same in the state file")
 			Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))

@@ -17,9 +17,9 @@ type Decider struct{}
 type Operation int
 
 const (
-	Update Operation = iota
+	Failed Operation = iota
+	Update
 	Upgrade
-	Failed
 )
 
 const upgradeBeforeUpdateError = "service instance needs to be upgraded before updating"

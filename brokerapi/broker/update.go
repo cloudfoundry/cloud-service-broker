@@ -117,6 +117,11 @@ func (broker *ServiceBroker) doUpgrade(ctx context.Context, serviceProvider brok
 }
 
 func (broker *ServiceBroker) doUpdate(ctx context.Context, serviceProvider broker.ServiceProvider, instance storage.ServiceInstanceDetails, vars *varcontext.VarContext, parsedDetails paramparser.UpdateDetails, mergedDetails map[string]interface{}) (domain.UpdateServiceSpec, error) {
+	err := serviceProvider.CheckUpgradeAvailable(generateTFInstanceID(instance.GUID))
+	if err != nil {
+		return domain.UpdateServiceSpec{}, fmt.Errorf("terraform version check failed: %s", err.Error())
+	}
+
 	instanceDetails, err := serviceProvider.Update(ctx, vars)
 	if err != nil {
 		return domain.UpdateServiceSpec{}, err
