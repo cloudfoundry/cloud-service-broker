@@ -9,7 +9,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 type FakeServiceProvider struct {
@@ -38,13 +37,12 @@ type FakeServiceProvider struct {
 	checkUpgradeAvailableReturnsOnCall map[int]struct {
 		result1 error
 	}
-	DeprovisionStub        func(context.Context, string, domain.DeprovisionDetails, *varcontext.VarContext) (*string, error)
+	DeprovisionStub        func(context.Context, string, *varcontext.VarContext) (*string, error)
 	deprovisionMutex       sync.RWMutex
 	deprovisionArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
-		arg3 domain.DeprovisionDetails
-		arg4 *varcontext.VarContext
+		arg3 *varcontext.VarContext
 	}
 	deprovisionReturns struct {
 		result1 *string
@@ -272,21 +270,20 @@ func (fake *FakeServiceProvider) CheckUpgradeAvailableReturnsOnCall(i int, resul
 	}{result1}
 }
 
-func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 string, arg3 domain.DeprovisionDetails, arg4 *varcontext.VarContext) (*string, error) {
+func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 string, arg3 *varcontext.VarContext) (*string, error) {
 	fake.deprovisionMutex.Lock()
 	ret, specificReturn := fake.deprovisionReturnsOnCall[len(fake.deprovisionArgsForCall)]
 	fake.deprovisionArgsForCall = append(fake.deprovisionArgsForCall, struct {
 		arg1 context.Context
 		arg2 string
-		arg3 domain.DeprovisionDetails
-		arg4 *varcontext.VarContext
-	}{arg1, arg2, arg3, arg4})
+		arg3 *varcontext.VarContext
+	}{arg1, arg2, arg3})
 	stub := fake.DeprovisionStub
 	fakeReturns := fake.deprovisionReturns
-	fake.recordInvocation("Deprovision", []interface{}{arg1, arg2, arg3, arg4})
+	fake.recordInvocation("Deprovision", []interface{}{arg1, arg2, arg3})
 	fake.deprovisionMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3, arg4)
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -300,17 +297,17 @@ func (fake *FakeServiceProvider) DeprovisionCallCount() int {
 	return len(fake.deprovisionArgsForCall)
 }
 
-func (fake *FakeServiceProvider) DeprovisionCalls(stub func(context.Context, string, domain.DeprovisionDetails, *varcontext.VarContext) (*string, error)) {
+func (fake *FakeServiceProvider) DeprovisionCalls(stub func(context.Context, string, *varcontext.VarContext) (*string, error)) {
 	fake.deprovisionMutex.Lock()
 	defer fake.deprovisionMutex.Unlock()
 	fake.DeprovisionStub = stub
 }
 
-func (fake *FakeServiceProvider) DeprovisionArgsForCall(i int) (context.Context, string, domain.DeprovisionDetails, *varcontext.VarContext) {
+func (fake *FakeServiceProvider) DeprovisionArgsForCall(i int) (context.Context, string, *varcontext.VarContext) {
 	fake.deprovisionMutex.RLock()
 	defer fake.deprovisionMutex.RUnlock()
 	argsForCall := fake.deprovisionArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeServiceProvider) DeprovisionReturns(result1 *string, result2 error) {
