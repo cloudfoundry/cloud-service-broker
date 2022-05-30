@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"reflect"
 	"testing"
 
@@ -86,117 +85,6 @@ func ExampleServiceDefinition_GetPlanByID() {
 	// missing-plan: plan ID "missing-plan" could not be found
 }
 
-func TestServiceDefinition_UserDefinedPlans(t *testing.T) {
-	cases := map[string]struct {
-		Value       interface{}
-		TileValue   string
-		PlanIds     map[string]bool
-		ExpectError bool
-	}{
-		"default-no-plans": {
-			Value:       nil,
-			PlanIds:     map[string]bool{},
-			ExpectError: false,
-		},
-		"single-plan": {
-			Value:       `[{"id":"aaa","name":"aaa","instances":"3"}]`,
-			PlanIds:     map[string]bool{"aaa": true},
-			ExpectError: false,
-		},
-		"bad-json": {
-			Value:       `42`,
-			PlanIds:     map[string]bool{},
-			ExpectError: true,
-		},
-		"multiple-plans": {
-			Value:       `[{"id":"aaa","name":"aaa","instances":"3"},{"id":"bbb","name":"bbb","instances":"3"}]`,
-			PlanIds:     map[string]bool{"aaa": true, "bbb": true},
-			ExpectError: false,
-		},
-		"missing-name": {
-			Value:       `[{"id":"aaa","instances":"3"}]`,
-			PlanIds:     map[string]bool{},
-			ExpectError: true,
-		},
-		"missing-id": {
-			Value:       `[{"name":"aaa","instances":"3"}]`,
-			PlanIds:     map[string]bool{},
-			ExpectError: true,
-		},
-		"missing-instances": {
-			Value:       `[{"name":"aaa","id":"aaa"}]`,
-			PlanIds:     map[string]bool{},
-			ExpectError: true,
-		},
-		"tile environment variable": {
-			TileValue: `{
-				"plan-100":{
-					"description":"plan-100",
-					"display_name":"plan-100",
-					"guid":"495bf186-e1c2-4c7e-abc1-84b1a8634858",
-					"instances":"100",
-					"name":"plan-100",
-					"service":"4bc59b9a-8520-409f-85da-1c7552315863"
-				},
-				"custom-plan2":{
-					"description":"test",
-					"display_name":"asdf",
-					"guid":"938cfc91-bca3-4f9d-b384-1e4ad6f965ce",
-					"instances":"10",
-					"name":"custom-plan2",
-					"service":"4bc59b9a-8520-409f-85da-1c7552315863"
-				}
-			}`,
-			PlanIds: map[string]bool{
-				"495bf186-e1c2-4c7e-abc1-84b1a8634858": true,
-				"938cfc91-bca3-4f9d-b384-1e4ad6f965ce": true,
-			},
-			ExpectError: false,
-		},
-	}
-
-	service := ServiceDefinition{
-		ID:   "abcd-efgh-ijkl",
-		Name: "left-handed-smoke-sifter",
-		PlanVariables: []BrokerVariable{
-			{
-				Required:  true,
-				FieldName: "instances",
-				Type:      JSONTypeString,
-			},
-		},
-	}
-
-	for tn, tc := range cases {
-		t.Run(tn, func(t *testing.T) {
-			os.Setenv(service.TileUserDefinedPlansVariable(), tc.TileValue)
-			defer os.Unsetenv(service.TileUserDefinedPlansVariable())
-
-			viper.Set(service.UserDefinedPlansProperty(), tc.Value)
-			defer viper.Reset()
-
-			plans, err := service.UserDefinedPlans()
-
-			// Check errors
-			hasErr := err != nil
-			if hasErr != tc.ExpectError {
-				t.Fatalf("Expected Error? %v, got error: %v", tc.ExpectError, err)
-			}
-
-			// Check IDs
-			if len(plans) != len(tc.PlanIds) {
-				t.Errorf("Expected %d plans, but got %d (%v)", len(tc.PlanIds), len(plans), plans)
-			}
-
-			for _, plan := range plans {
-				if _, ok := tc.PlanIds[plan.ID]; !ok {
-					t.Errorf("Got unexpected plan id %s, expected %+v", plan.ID, tc.PlanIds)
-				}
-			}
-		})
-	}
-}
-
 func TestServiceDefinition_CatalogEntry(t *testing.T) {
 	cases := map[string]struct {
 		UserPlans   interface{}
@@ -230,7 +118,7 @@ func TestServiceDefinition_CatalogEntry(t *testing.T) {
 			viper.Set(service.UserDefinedPlansProperty(), tc.UserPlans)
 			defer viper.Reset()
 
-			plans, err := service.UserDefinedPlans()
+			plans, err := service.UserDefinedPlans(nil)
 			hasErr := err != nil
 			if hasErr != tc.ExpectError {
 				t.Errorf("Expected Error? %v, got error: %v", tc.ExpectError, err)

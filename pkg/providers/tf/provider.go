@@ -22,10 +22,8 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
-	"github.com/hashicorp/go-version"
-	"github.com/spf13/viper"
-
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+	"github.com/hashicorp/go-version"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -36,14 +34,7 @@ const (
 	InProgress = "in progress"
 	Succeeded  = "succeeded"
 	Failed     = "failed"
-
-	TfUpgradeEnabled = "brokerpak.terraform.upgrades.enabled"
 )
-
-func init() {
-	viper.BindEnv(TfUpgradeEnabled, "TERRAFORM_UPGRADES_ENABLED")
-	viper.SetDefault(TfUpgradeEnabled, false)
-}
 
 // NewTerraformProvider creates a new ServiceProvider backed by Terraform module definitions for provision and bind.
 func NewTerraformProvider(

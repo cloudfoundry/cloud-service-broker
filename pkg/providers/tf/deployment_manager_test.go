@@ -3,6 +3,8 @@ package tf_test
 import (
 	"errors"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace/workspacefakes"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -385,7 +387,7 @@ var _ = Describe("DeploymentManager", func() {
 
 		When("brokerpak updates enabled", func() {
 			BeforeEach(func() {
-				viper.Set("brokerpak.updates.enabled", true)
+				viper.Set(featureflags.DynamicHCLEnabled, true)
 			})
 
 			It("updates the modules but keeps the original state", func() {
