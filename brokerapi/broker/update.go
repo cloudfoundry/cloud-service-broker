@@ -94,15 +94,14 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	}
 
 	operation, err := broker.decider.DecideOperation(serviceDefinition, details)
-	if err != nil {
+	switch {
+	case err != nil:
 		return domain.UpdateServiceSpec{}, fmt.Errorf("error deciding update path: %w", err)
-	}
-
-	if operation == decider.Upgrade {
+	case operation == decider.Upgrade:
 		return broker.doUpgrade(ctx, serviceProvider, vars)
+	default:
+		return broker.doUpdate(ctx, serviceProvider, instance, vars, parsedDetails, mergedDetails)
 	}
-
-	return broker.doUpdate(ctx, serviceProvider, instance, vars, parsedDetails, mergedDetails)
 }
 
 func (broker *ServiceBroker) doUpgrade(ctx context.Context, serviceProvider broker.ServiceProvider, vars *varcontext.VarContext) (domain.UpdateServiceSpec, error) {
