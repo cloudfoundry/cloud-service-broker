@@ -22,14 +22,16 @@ const (
 	Failed
 )
 
+const upgradeBeforeUpdateError = "service instance needs to be upgraded before updating"
+
 var errInstanceMustBeUpgradedFirst = apiresponses.NewFailureResponseBuilder(
-	errors.New("service instance needs to be upgraded before updating"),
+	errors.New(upgradeBeforeUpdateError),
 	http.StatusUnprocessableEntity,
 	"previous-maintenance-info-check",
 ).Build()
 
 var errMaintenanceInfoNilInTheRequest = apiresponses.NewFailureResponseBuilder(
-	errors.New("maintenance info defined in broker service catalog, but not passed in request"),
+	errors.New(upgradeBeforeUpdateError+": maintenance info defined in broker service catalog, but not passed in request"),
 	http.StatusUnprocessableEntity,
 	"previous-maintenance-info-check",
 ).Build()
@@ -79,14 +81,14 @@ func requestMaintenanceInfoValuesDiffer(details domain.UpdateDetails) bool {
 	}
 }
 
-func validateMaintenanceInfo(service *broker.ServiceDefinition, planID string, maintenanceInfo *domain.MaintenanceInfo) error {
+func validateMaintenanceInfo(service *broker.ServiceDefinition, planID string, catalogMaintenanceInfo *domain.MaintenanceInfo) error {
 	planMaintenanceInfo, err := getMaintenanceInfoForPlan(service, planID)
 	if err != nil {
 		return err
 	}
 
-	if maintenanceInfoConflict(maintenanceInfo, planMaintenanceInfo) {
-		if maintenanceInfo == nil {
+	if maintenanceInfoConflict(catalogMaintenanceInfo, planMaintenanceInfo) {
+		if catalogMaintenanceInfo == nil {
 			return errMaintenanceInfoNilInTheRequest
 		}
 
@@ -102,10 +104,12 @@ func validateMaintenanceInfo(service *broker.ServiceDefinition, planID string, m
 
 func validatePreviousMaintenanceInfo(details domain.UpdateDetails, service *broker.ServiceDefinition) error {
 	if details.PreviousValues.MaintenanceInfo != nil {
-		if previousPlanMaintenanceInfo, err := getMaintenanceInfoForPlan(service, details.PreviousValues.PlanID); err == nil {
-			if maintenanceInfoConflict(details.PreviousValues.MaintenanceInfo, previousPlanMaintenanceInfo) {
-				return errInstanceMustBeUpgradedFirst
-			}
+		catalogPreviousPlanMaintenanceInfo, err := getMaintenanceInfoForPlan(service, details.PreviousValues.PlanID)
+		if err != nil {
+			return fmt.Errorf("service instance needs to be upgraded: %w. Contact the operator for assistance", err)
+		}
+		if maintenanceInfoConflict(details.PreviousValues.MaintenanceInfo, catalogPreviousPlanMaintenanceInfo) {
+			return errInstanceMustBeUpgradedFirst
 		}
 	}
 	return nil
