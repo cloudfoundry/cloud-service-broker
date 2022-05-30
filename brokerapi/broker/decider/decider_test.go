@@ -323,7 +323,7 @@ var _ = Describe("Decider", func() {
 						}
 
 						operation, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
-						Expect(err).To(MatchError("service instance needs to be upgraded: plan fake-plan-that-does-not-exist does not exist. Contact the operator for assistance."))
+						Expect(err).To(MatchError("service instance needs to be upgraded: plan fake-plan-that-does-not-exist does not exist. Contact the operator for assistance"))
 						Expect(operation).To(Equal(decider.Failed))
 					})
 				})
