@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"sort"
 
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/toggles"
@@ -45,14 +47,14 @@ type BrokerRegistry map[string]*ServiceDefinition
 
 // Register registers a ServiceDefinition with the service registry that various commands
 // poll to create the catalog, documentation, etc.
-func (brokerRegistry BrokerRegistry) Register(service *ServiceDefinition, tfVersion string) error {
+func (brokerRegistry BrokerRegistry) Register(service *ServiceDefinition, maintenanceInfo *domain.MaintenanceInfo) error {
 	name := service.Name
 
 	if _, ok := brokerRegistry[name]; ok {
 		return fmt.Errorf("tried to register multiple instances of: %q", name)
 	}
 
-	userPlans, err := service.UserDefinedPlans(tfVersion)
+	userPlans, err := service.UserDefinedPlans(maintenanceInfo)
 	if err != nil {
 		return fmt.Errorf("error getting user defined plans: %q, %s", name, err)
 	}

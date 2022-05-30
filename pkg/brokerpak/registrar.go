@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 
@@ -71,13 +73,21 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 			return err
 		}
 
-		defns, err := r.toDefinitions(services, pak, tfBinariesContext)
+		var maintenanceInfo *domain.MaintenanceInfo
+		if viper.GetBool("brokerpak.terraform.upgrades.enabled") {
+			maintenanceInfo = &domain.MaintenanceInfo{
+				Version:     tfBinariesContext.DefaultTfVersion.String(),
+				Description: fmt.Sprintf(`This upgrade provides support for Terraform version: %s. The upgrade operation will take a while. The instance and all associated bindings will be upgraded.`, tfBinariesContext.DefaultTfVersion.String()),
+			}
+		}
+
+		defns, err := r.toDefinitions(services, pak, tfBinariesContext, maintenanceInfo)
 		if err != nil {
 			return err
 		}
 
 		for _, defn := range defns {
-			err := registry.Register(defn, tfBinariesContext.DefaultTfVersion.String())
+			err := registry.Register(defn, maintenanceInfo)
 			if err != nil {
 				return err
 			}
@@ -102,7 +112,7 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 	})
 }
 
-func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config BrokerpakSourceConfig, tfBinariesContext executor.TFBinariesContext) ([]*broker.ServiceDefinition, error) {
+func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config BrokerpakSourceConfig, tfBinariesContext executor.TFBinariesContext, maintenanceInfo *domain.MaintenanceInfo) ([]*broker.ServiceDefinition, error) {
 	var out []*broker.ServiceDefinition
 
 	toIgnore := utils.NewStringSet(config.ExcludedServicesSlice()...)
@@ -113,7 +123,7 @@ func (Registrar) toDefinitions(services []tf.TfServiceDefinitionV1, config Broke
 
 		svc.Name = config.ServicePrefix + svc.Name
 
-		bs, err := svc.ToService(tfBinariesContext)
+		bs, err := svc.ToService(tfBinariesContext, maintenanceInfo)
 		if err != nil {
 			return nil, err
 		}

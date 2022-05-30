@@ -273,6 +273,7 @@ var _ = Describe("ServiceDefinition", func() {
 			fakeServicePlanTile      string
 			fakeServicePlanMissingID string
 			service                  broker.ServiceDefinition
+			maintenanceInfo          *domain.MaintenanceInfo
 		)
 
 		BeforeEach(func() {
@@ -296,7 +297,7 @@ var _ = Describe("ServiceDefinition", func() {
 			})
 
 			It("should return the service plan", func() {
-				actualPlans, err := service.UserDefinedPlans(defaultTFVersion)
+				actualPlans, err := service.UserDefinedPlans(maintenanceInfo)
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(actualPlans).To(HaveLen(1))
@@ -313,7 +314,7 @@ var _ = Describe("ServiceDefinition", func() {
 				})
 
 				It("should return an error", func() {
-					_, err := service.UserDefinedPlans(defaultTFVersion)
+					_, err := service.UserDefinedPlans(maintenanceInfo)
 					Expect(err).To(MatchError("invalid character 'i' looking for beginning of object key string"))
 
 				})
@@ -331,7 +332,7 @@ var _ = Describe("ServiceDefinition", func() {
 			})
 
 			It("should return the service plan", func() {
-				actualPlans, err := service.UserDefinedPlans(defaultTFVersion)
+				actualPlans, err := service.UserDefinedPlans(maintenanceInfo)
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(actualPlans).To(HaveLen(1))
@@ -348,7 +349,7 @@ var _ = Describe("ServiceDefinition", func() {
 				})
 
 				It("should return an error", func() {
-					_, err := service.UserDefinedPlans(defaultTFVersion)
+					_, err := service.UserDefinedPlans(maintenanceInfo)
 					Expect(err).To(MatchError("invalid character 'i' looking for beginning of object key string"))
 
 				})
@@ -364,40 +365,26 @@ var _ = Describe("ServiceDefinition", func() {
 			})
 
 			It("returns an error", func() {
-				_, err := service.UserDefinedPlans(defaultTFVersion)
+				_, err := service.UserDefinedPlans(maintenanceInfo)
 				Expect(err).To(MatchError("fake-service custom plan {ServicePlan:{ID: Name:fakePlanName Description:fakePlanDescription Free:<nil> Bindable:<nil> Metadata:<nil> Schemas:<nil> PlanUpdatable:<nil> MaximumPollingDuration:<nil> MaintenanceInfo:<nil>} ServiceProperties:map[additional_property:fakePlanProperty] ProvisionOverrides:map[] BindOverrides:map[]} is missing an id"))
 			})
 		})
 
-		When("TFUpgrades are enabled", func() {
+		When("maintenance info is not nil", func() {
 			BeforeEach(func() {
 				viper.Set("service.fake-service.plans", fakeServicePlanConfig)
-				viper.Set("brokerpak.terraform.upgrades.enabled", true)
+				maintenanceInfo = &domain.MaintenanceInfo{Version: defaultTFVersion, Description: "fake-description"}
+
 			})
 
 			It("returns a broker service plan with maintenance info version matching default TF version", func() {
-				actualPlans, err := service.UserDefinedPlans(defaultTFVersion)
+				actualPlans, err := service.UserDefinedPlans(maintenanceInfo)
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(actualPlans).To(HaveLen(1))
-				Expect(actualPlans[0].MaintenanceInfo).To(Equal(&domain.MaintenanceInfo{Version: defaultTFVersion, Description: "This upgrade provides support for Terraform version: 1.0.0. The upgrade operation will take a while. The instance and all associated bindings will be upgraded."}))
+				Expect(actualPlans[0].MaintenanceInfo).To(Equal(&domain.MaintenanceInfo{Version: defaultTFVersion, Description: "fake-description"}))
 			})
 
 		})
-
-		When("TFUpgrades are disabled", func() {
-			BeforeEach(func() {
-				viper.Set("service.fake-service.plans", fakeServicePlanConfig)
-			})
-
-			It("returns a broker service plan with nil maintenance info", func() {
-				actualPlans, err := service.UserDefinedPlans(defaultTFVersion)
-
-				Expect(err).NotTo(HaveOccurred())
-				Expect(actualPlans).To(HaveLen(1))
-				Expect(actualPlans[0].MaintenanceInfo).To(BeNil())
-			})
-		})
-
 	})
 })
