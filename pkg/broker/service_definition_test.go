@@ -3,6 +3,7 @@ package broker_test
 import (
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
@@ -360,6 +361,10 @@ var _ = Describe("ServiceDefinition", func() {
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(actualPlans).To(HaveLen(2))
+
+				sort.Slice(actualPlans, func(i, j int) bool {
+					return actualPlans[i].Name < actualPlans[j].Name
+				})
 				Expect(actualPlans[0].Name).To(Equal(fakePlanName))
 				Expect(actualPlans[0].ID).To(Equal(fakePlanGUID))
 				Expect(actualPlans[0].Description).To(Equal(fakePlanDescription))
