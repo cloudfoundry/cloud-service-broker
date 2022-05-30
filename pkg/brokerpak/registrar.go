@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
+
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
@@ -74,7 +76,7 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 		}
 
 		var maintenanceInfo *domain.MaintenanceInfo
-		if viper.GetBool("brokerpak.terraform.upgrades.enabled") {
+		if viper.GetBool(featureflags.TfUpgradeEnabled) {
 			maintenanceInfo = &domain.MaintenanceInfo{
 				Version:     tfBinariesContext.DefaultTfVersion.String(),
 				Description: fmt.Sprintf(`This upgrade provides support for Terraform version: %s. The upgrade operation will take a while. The instance and all associated bindings will be upgraded.`, tfBinariesContext.DefaultTfVersion.String()),

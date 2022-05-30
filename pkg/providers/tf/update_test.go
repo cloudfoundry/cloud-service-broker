@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -205,7 +207,7 @@ var _ = Describe("Update", func() {
 
 	Context("when tfUpgrades are enabled", func() {
 		BeforeEach(func() {
-			viper.Set(tf.TfUpgradeEnabled, true)
+			viper.Set(featureflags.TfUpgradeEnabled, true)
 		})
 		It("runs apply with all tf versions in the upgrade path", func() {
 			tfBinContext := executor.TFBinariesContext{
@@ -269,7 +271,7 @@ var _ = Describe("Update", func() {
 
 	Context("when tfUpgrades are disabled", func() {
 		BeforeEach(func() {
-			viper.Set(tf.TfUpgradeEnabled, false)
+			viper.Set(featureflags.TfUpgradeEnabled, false)
 		})
 
 		It("fails the update, if the version of statefile does not match the default tf version", func() {

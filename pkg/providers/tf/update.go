@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
@@ -72,7 +74,7 @@ func (provider *TerraformProvider) performTerraformUpgrade(ctx context.Context, 
 		return err
 	}
 
-	if viper.GetBool(TfUpgradeEnabled) {
+	if viper.GetBool(featureflags.TfUpgradeEnabled) {
 		if currentTfVersion.LessThan(provider.tfBinContext.DefaultTfVersion) {
 			if provider.tfBinContext.TfUpgradePath == nil || len(provider.tfBinContext.TfUpgradePath) == 0 {
 				return errors.New("terraform version mismatch and no upgrade path specified")
