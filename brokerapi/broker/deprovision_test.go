@@ -113,10 +113,9 @@ var _ = Describe("Deprovision", func() {
 
 			By("validating call to deprovision")
 			Expect(fakeServiceProvider.DeprovisionCallCount()).To(Equal(1))
-			actualCtx, instanceID, actualDetails, _ := fakeServiceProvider.DeprovisionArgsForCall(0)
+			actualCtx, instanceID, _ := fakeServiceProvider.DeprovisionArgsForCall(0)
 			Expect(actualCtx.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
 			Expect(instanceID).To(Equal(instanceToDeleteID))
-			Expect(actualDetails).To(Equal(deprovisionDetails))
 
 			By("validating SI details delete call")
 			Expect(fakeStorage.DeleteServiceInstanceDetailsCallCount()).To(Equal(1))
@@ -141,7 +140,7 @@ var _ = Describe("Deprovision", func() {
 
 					By("validating provider provision has been called with the right vars")
 					Expect(fakeServiceProvider.DeprovisionCallCount()).To(Equal(1))
-					_, _, _, actualVars := fakeServiceProvider.DeprovisionArgsForCall(0)
+					_, _, actualVars := fakeServiceProvider.DeprovisionArgsForCall(0)
 					Expect(actualVars.GetString("foo")).To(Equal("something"))
 					Expect(actualVars.GetString("import_field_1")).To(Equal("hello"))
 				})
@@ -157,7 +156,7 @@ var _ = Describe("Deprovision", func() {
 
 					By("validating provider provision has been called with the right vars")
 					Expect(fakeServiceProvider.DeprovisionCallCount()).To(Equal(1))
-					_, _, _, actualVars := fakeServiceProvider.DeprovisionArgsForCall(0)
+					_, _, actualVars := fakeServiceProvider.DeprovisionArgsForCall(0)
 
 					Expect(actualVars.GetString("copyOriginatingIdentity")).To(Equal(`{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`))
 					Expect(actualVars.GetString("labels")).To(Equal(`{"pcf-instance-id":"test-instance-id","pcf-organization-guid":"","pcf-space-guid":""}`))
@@ -170,7 +169,7 @@ var _ = Describe("Deprovision", func() {
 
 				By("validating provider provision has been called with the right vars")
 				Expect(fakeServiceProvider.DeprovisionCallCount()).To(Equal(1))
-				_, _, _, actualVars := fakeServiceProvider.DeprovisionArgsForCall(0)
+				_, _, actualVars := fakeServiceProvider.DeprovisionArgsForCall(0)
 				Expect(actualVars.GetString("plan-defined-key")).To(Equal("plan-defined-value"))
 				Expect(actualVars.GetString("other-plan-defined-key")).To(Equal("other-plan-defined-value"))
 			})
