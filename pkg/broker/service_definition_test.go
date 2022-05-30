@@ -281,15 +281,39 @@ var _ = Describe("ServiceDefinition", func() {
 				Name: "fake-service",
 			}
 
-			fakeServicePlanConfig = fmt.Sprintf(`[{"name":"%s","id":"%s","description":"%s", "additional_property":"%s"}]`,
+			fakeServicePlanConfig = fmt.Sprintf(`[{"name":"%[1]s","id":"%[2]s","description":"%[3]s", "additional_property":"%[4]s"},{"name":"second-%[1]s","id":"second-%[2]s","description":"second-%[3]s", "additional_property":"second-%[4]s"} ]`,
 				fakePlanName, fakePlanID, fakePlanDescription, fakePlanProperty)
-			fakeServicePlanTile = fmt.Sprintf(`{"%[1]s":{"name":"%[1]s","description":"%s","additional_property":"%s", "guid":"%s"}}`,
+			fakeServicePlanTile = fmt.Sprintf(`{"%[1]s":{"name":"%[1]s","description":"%[2]s","additional_property":"%[3]s", "guid":"%[4]s"},"second-%[1]s":{"name":"second-%[1]s","description":"second-%[2]s","additional_property":"second-%[3]s", "guid":"second-%[4]s"}}`,
 				fakePlanName, fakePlanDescription, fakePlanProperty, fakePlanGUID)
 		})
 
 		AfterEach(func() {
 			viper.Reset()
 		})
+
+		DescribeTable("invalid plans", func(plan interface{}, errorMessage string) {
+			service = broker.ServiceDefinition{
+				Name: "fake-service",
+				PlanVariables: []broker.BrokerVariable{
+					{
+						Required:  true,
+						FieldName: "required-field",
+						Type:      broker.JSONTypeString,
+					},
+				},
+			}
+
+			viper.Set(service.UserDefinedPlansProperty(), plan)
+			defer viper.Reset()
+
+			_, err := service.UserDefinedPlans(nil)
+			Expect(err.Error()).To(ContainSubstring(errorMessage))
+		},
+			Entry("not valid json", `{invalid-json`, "invalid character 'i' looking for beginning of object key string"),
+			Entry("missing name", `[{"id":"aaa","required-field":"present"}]`, "is missing a name"),
+			Entry("missing id", `[{"name":"aaa","required-field":"present"}]`, "is missing an id"),
+			Entry("missing required field", `[{"name":"aaa","id":"aaa"}]`, "is missing required property required-field"),
+		)
 
 		When("plans are set in viper configuration", func() {
 			BeforeEach(func() {
@@ -300,7 +324,7 @@ var _ = Describe("ServiceDefinition", func() {
 				actualPlans, err := service.UserDefinedPlans(maintenanceInfo)
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(actualPlans).To(HaveLen(1))
+				Expect(actualPlans).To(HaveLen(2))
 				Expect(actualPlans[0].Name).To(Equal(fakePlanName))
 				Expect(actualPlans[0].ID).To(Equal(fakePlanID))
 				Expect(actualPlans[0].Description).To(Equal(fakePlanDescription))
@@ -335,7 +359,7 @@ var _ = Describe("ServiceDefinition", func() {
 				actualPlans, err := service.UserDefinedPlans(maintenanceInfo)
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(actualPlans).To(HaveLen(1))
+				Expect(actualPlans).To(HaveLen(2))
 				Expect(actualPlans[0].Name).To(Equal(fakePlanName))
 				Expect(actualPlans[0].ID).To(Equal(fakePlanGUID))
 				Expect(actualPlans[0].Description).To(Equal(fakePlanDescription))
@@ -377,12 +401,13 @@ var _ = Describe("ServiceDefinition", func() {
 
 			})
 
-			It("returns a broker service plan with maintenance info version matching default TF version", func() {
+			It("returns a broker service plan with same maintenance info for all plans", func() {
 				actualPlans, err := service.UserDefinedPlans(maintenanceInfo)
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(actualPlans).To(HaveLen(1))
+				Expect(actualPlans).To(HaveLen(2))
 				Expect(actualPlans[0].MaintenanceInfo).To(Equal(&domain.MaintenanceInfo{Version: defaultTFVersion, Description: "fake-description"}))
+				Expect(actualPlans[1].MaintenanceInfo).To(Equal(&domain.MaintenanceInfo{Version: defaultTFVersion, Description: "fake-description"}))
 			})
 
 		})
