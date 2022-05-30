@@ -24,18 +24,6 @@ const (
 
 const upgradeBeforeUpdateError = "service instance needs to be upgraded before updating"
 
-var errInstanceMustBeUpgradedFirst = apiresponses.NewFailureResponseBuilder(
-	errors.New(upgradeBeforeUpdateError),
-	http.StatusUnprocessableEntity,
-	"previous-maintenance-info-check",
-).Build()
-
-var errMaintenanceInfoNilInTheRequest = apiresponses.NewFailureResponseBuilder(
-	errors.New(upgradeBeforeUpdateError+": maintenance info defined in broker service catalog, but not passed in request"),
-	http.StatusUnprocessableEntity,
-	"previous-maintenance-info-check",
-).Build()
-
 func (d Decider) DecideOperation(service *broker.ServiceDefinition, details domain.UpdateDetails) (Operation, error) {
 	if err := validateMaintenanceInfo(service, details.PlanID, details.MaintenanceInfo); err != nil {
 		return Failed, err
@@ -89,7 +77,7 @@ func validateMaintenanceInfo(service *broker.ServiceDefinition, planID string, c
 
 	if maintenanceInfoConflict(catalogMaintenanceInfo, planMaintenanceInfo) {
 		if catalogMaintenanceInfo == nil {
-			return errMaintenanceInfoNilInTheRequest
+			return errMaintenanceInfoNilInTheRequest()
 		}
 
 		if planMaintenanceInfo == nil {
@@ -109,7 +97,7 @@ func validatePreviousMaintenanceInfo(details domain.UpdateDetails, service *brok
 			return fmt.Errorf("service instance needs to be upgraded: %w. Contact the operator for assistance", err)
 		}
 		if maintenanceInfoConflict(details.PreviousValues.MaintenanceInfo, catalogPreviousPlanMaintenanceInfo) {
-			return errInstanceMustBeUpgradedFirst
+			return errInstanceMustBeUpgradedFirst()
 		}
 	}
 	return nil
@@ -141,4 +129,20 @@ func maintenanceInfoConflict(a, b *domain.MaintenanceInfo) bool {
 	}
 
 	return true
+}
+
+func errInstanceMustBeUpgradedFirst() *apiresponses.FailureResponse {
+	return apiresponses.NewFailureResponseBuilder(
+		errors.New(upgradeBeforeUpdateError),
+		http.StatusUnprocessableEntity,
+		"previous-maintenance-info-check",
+	).Build()
+}
+
+func errMaintenanceInfoNilInTheRequest() *apiresponses.FailureResponse {
+	return apiresponses.NewFailureResponseBuilder(
+		errors.New(upgradeBeforeUpdateError+": maintenance info defined in broker service catalog, but not passed in request"),
+		http.StatusUnprocessableEntity,
+		"previous-maintenance-info-check",
+	).Build()
 }
