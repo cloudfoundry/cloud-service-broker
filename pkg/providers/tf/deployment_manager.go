@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
@@ -18,15 +20,6 @@ func NewDeploymentManager(store broker.ServiceProviderStorage) *DeploymentManage
 	return &DeploymentManager{
 		store: store,
 	}
-}
-
-const (
-	dynamicHCLEnabled = "brokerpak.updates.enabled"
-)
-
-func init() {
-	viper.BindEnv(dynamicHCLEnabled, "BROKERPAK_UPDATES_ENABLED")
-	viper.SetDefault(dynamicHCLEnabled, false)
 }
 
 func (d *DeploymentManager) CreateAndSaveDeployment(deploymentID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error) {
@@ -96,7 +89,7 @@ func (d *DeploymentManager) OperationStatus(deploymentID string) (bool, string, 
 }
 
 func (d *DeploymentManager) UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]interface{}) error {
-	if !viper.GetBool(dynamicHCLEnabled) {
+	if !viper.GetBool(featureflags.DynamicHCLEnabled) {
 		return nil
 	}
 	deployment, err := d.store.GetTerraformDeployment(deploymentID)

@@ -115,7 +115,7 @@ func TestRegistrar_toDefinitions(t *testing.T) {
 	for tn, tc := range goodCases {
 		t.Run(tn, func(t *testing.T) {
 			r := NewRegistrar(nil)
-			defns, err := r.toDefinitions(tc.Services, tc.Config, executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("0.0.0"))})
+			defns, err := r.toDefinitions(tc.Services, tc.Config, executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("0.0.0"))}, nil)
 			if err != nil {
 				t.Fatalf("Expected no error, got: %v", err)
 			}
@@ -148,7 +148,7 @@ func TestRegistrar_toDefinitions(t *testing.T) {
 	for tn, tc := range badCases {
 		t.Run(tn, func(t *testing.T) {
 			r := NewRegistrar(nil)
-			defns, err := r.toDefinitions(tc.Services, tc.Config, executor.TFBinariesContext{})
+			defns, err := r.toDefinitions(tc.Services, tc.Config, executor.TFBinariesContext{}, nil)
 			if err == nil {
 				t.Fatal("Expected error, got: <nil>")
 			}

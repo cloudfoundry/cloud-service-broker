@@ -260,7 +260,7 @@ func (svc *ServiceDefinition) GetPlanByID(planID string) (*ServicePlan, error) {
 
 // UserDefinedPlans extracts user defined plans from the environment, failing if
 // the plans were not valid JSON or were missing required properties/variables.
-func (svc *ServiceDefinition) UserDefinedPlans() ([]ServicePlan, error) {
+func (svc *ServiceDefinition) UserDefinedPlans(maintenanceInfo *domain.MaintenanceInfo) ([]ServicePlan, error) {
 
 	// There's a mismatch between how plans are used internally and defined by
 	// the user and the tile. In the environment variables we parse an array of
@@ -308,6 +308,8 @@ func (svc *ServiceDefinition) UserDefinedPlans() ([]ServicePlan, error) {
 		if plan.ID == "" {
 			plan.ID, _ = plan.ServiceProperties["guid"].(string)
 		}
+
+		plan.MaintenanceInfo = maintenanceInfo
 
 		if err := svc.validatePlan(plan); err != nil {
 			return []ServicePlan{}, err

@@ -222,7 +222,7 @@ func (tfb *TfServiceDefinitionV1) loadTemplates() error {
 
 // ToService converts the flat TfServiceDefinitionV1 into a broker.ServiceDefinition
 // that the registry can use.
-func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesContext) (*broker.ServiceDefinition, error) {
+func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesContext, maintenanceInfo *domain.MaintenanceInfo) (*broker.ServiceDefinition, error) {
 	if err := tfb.loadTemplates(); err != nil {
 		return nil, err
 	}
@@ -238,7 +238,7 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesCont
 
 	var rawPlans []broker.ServicePlan
 	for _, plan := range tfb.Plans {
-		rawPlans = append(rawPlans, plan.ToPlan(tfBinContext.DefaultTfVersion.String()))
+		rawPlans = append(rawPlans, plan.ToPlan(maintenanceInfo))
 	}
 
 	// Bindings get special computed properties because the broker didn't
@@ -334,8 +334,8 @@ func (plan *TfServiceDefinitionV1Plan) Validate() (errs *validation.FieldError) 
 }
 
 // ToPlan converts this plan definition to a broker.ServicePlan.
-func (plan *TfServiceDefinitionV1Plan) ToPlan(tfVersion string) broker.ServicePlan {
-	masterPlan := domain.ServicePlan{
+func (plan *TfServiceDefinitionV1Plan) ToPlan(maintenanceInfo *domain.MaintenanceInfo) broker.ServicePlan {
+	servicePlan := domain.ServicePlan{
 		ID:          plan.ID,
 		Description: plan.Description,
 		Name:        plan.Name,
@@ -344,17 +344,11 @@ func (plan *TfServiceDefinitionV1Plan) ToPlan(tfVersion string) broker.ServicePl
 			Bullets:     plan.Bullets,
 			DisplayName: plan.DisplayName,
 		},
-	}
-
-	if viper.GetBool(TfUpgradeEnabled) {
-		masterPlan.MaintenanceInfo = &domain.MaintenanceInfo{
-			Version:     tfVersion,
-			Description: fmt.Sprintf(`This upgrade provides support for Terraform version: %s. The upgrade operation will take a while. The instance and all associated bindings will be upgraded.`, tfVersion),
-		}
+		MaintenanceInfo: maintenanceInfo,
 	}
 
 	return broker.ServicePlan{
-		ServicePlan:        masterPlan,
+		ServicePlan:        servicePlan,
 		ServiceProperties:  plan.Properties,
 		ProvisionOverrides: plan.ProvisionOverrides,
 		BindOverrides:      plan.BindOverrides,
