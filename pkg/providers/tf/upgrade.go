@@ -17,16 +17,16 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, upgradeContext *
 		"context": upgradeContext.ToMap(),
 	})
 
-	tfID := upgradeContext.GetString("tf_id")
+	instanceDeploymentID := upgradeContext.GetString("tf_id")
 	if err := upgradeContext.Error(); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	if err := provider.UpdateWorkspaceHCL(tfID, provider.serviceDefinition.ProvisionSettings, upgradeContext.ToMap()); err != nil {
+	if err := provider.UpdateWorkspaceHCL(instanceDeploymentID, provider.serviceDefinition.ProvisionSettings, upgradeContext.ToMap()); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	deployment, err := provider.GetTerraformDeployment(tfID)
+	deployment, err := provider.GetTerraformDeployment(instanceDeploymentID)
 	if err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
@@ -37,8 +37,56 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, upgradeContext *
 		return models.ServiceInstanceDetails{}, err
 	}
 
+	bindingDeployments, err := provider.GetBindingDeployments(instanceDeploymentID)
+
+	for _, bindingDeployment := range bindingDeployments {
+		var upgradeBindingContext *varcontext.VarContext
+
+		// getUpgradeContext
+		//instance, err := broker.store.GetServiceInstanceDetails(instanceID)
+		//if err != nil {
+		//	return fmt.Errorf("error retrieving service instance details: %s", err)
+		//}
+		//
+		//storedParams, err := broker.store.GetBindRequestDetails(binding.BindingID, instanceID)
+		//if err != nil {
+		//	return fmt.Errorf("error retrieving bind request details for %q: %w", instanceID, err)
+		//}
+		//
+		//parsedDetails := paramparser.BindDetails{
+		//	PlanID:        details.PlanID,
+		//	ServiceID:     details.ServiceID,
+		//	RequestParams: storedParams,
+		//}
+		//
+		//vars, err := brokerService.BindVariables(instance, binding.BindingID, parsedDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
+		//if err != nil {
+		//	return err
+		//}
+
+		if err := provider.UpdateWorkspaceHCL(bindingDeployment.ID, provider.serviceDefinition.ProvisionSettings, upgradeBindingContext.ToMap()); err != nil {
+			return models.ServiceInstanceDetails{}, err
+		}
+	}
+
+	bindingDeployments1, err := provider.GetBindingDeployments(instanceDeploymentID)
+
 	go func() {
 		err = provider.performTerraformUpgrade(ctx, workspace)
+		// TODO: upgrade all service bindings
+		if err != nil {
+			provider.MarkOperationFinished(&deployment, err)
+			return
+		}
+
+		for _, bindingDeployment := range bindingDeployments1 {
+			err = provider.performTerraformUpgrade(ctx, bindingDeployment.Workspace)
+			if err != nil {
+				provider.MarkOperationFinished(&deployment, err)
+				return
+			}
+		}
+
 		provider.MarkOperationFinished(&deployment, err)
 	}()
 

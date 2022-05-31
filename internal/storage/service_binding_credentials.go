@@ -60,6 +60,35 @@ func (s *Storage) GetServiceBindingCredentials(bindingID, serviceInstanceID stri
 	}, nil
 }
 
+func (s *Storage) GetAllServiceBindingCredentials(instanceID string) ([]ServiceBindingCredentials, error) {
+	var bindingCredentials []ServiceBindingCredentials
+	var receiver models.ServiceBindingCredentials
+
+	rows, err := s.db.Model(&receiver).Where("service_instance_id = ?", instanceID).Rows()
+	if err != nil {
+		return nil, fmt.Errorf("error finding service binding credentials: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		entry := models.ServiceBindingCredentials{}
+		s.db.ScanRows(rows, &entry)
+
+		decoded, err := s.decodeJSONObject(entry.OtherDetails)
+		if err != nil {
+			return []ServiceBindingCredentials{}, fmt.Errorf("error decoding binding credentials %q: %w", entry.BindingID, err)
+		}
+		bindingCredentials = append(bindingCredentials, ServiceBindingCredentials{
+			ServiceGUID:         entry.ServiceID,
+			ServiceInstanceGUID: entry.ServiceInstanceID,
+			BindingGUID:         entry.BindingID,
+			Credentials:         decoded,
+		})
+	}
+
+	return bindingCredentials, nil
+}
+
 func (s *Storage) ExistsServiceBindingCredentials(bindingID, serviceInstanceID string) (bool, error) {
 	var count int64
 	if err := s.db.Model(&models.ServiceBindingCredentials{}).Where("service_instance_id = ? AND binding_id = ?", serviceInstanceID, bindingID).Count(&count).Error; err != nil {

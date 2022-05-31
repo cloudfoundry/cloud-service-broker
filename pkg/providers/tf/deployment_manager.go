@@ -3,6 +3,7 @@ package tf
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
 
@@ -119,4 +120,24 @@ func (d *DeploymentManager) UpdateWorkspaceHCL(deploymentID string, serviceDefin
 
 func (d *DeploymentManager) GetTerraformDeployment(deploymentID string) (storage.TerraformDeployment, error) {
 	return d.store.GetTerraformDeployment(deploymentID)
+}
+
+func (d *DeploymentManager) GetBindingDeployments(deploymentID string) ([]storage.TerraformDeployment, error) {
+	// Get binding IDs
+	instanceID := strings.Split(deploymentID, ":")
+	bindingCredentials, err := d.store.GetAllServiceBindingCredentials(instanceID[1])
+	if err != nil {
+		return nil, err
+	}
+	// Get terraform deployments
+	var bindingDeployments []storage.TerraformDeployment
+	for _, binding := range bindingCredentials {
+		bindingDeployment, err := d.store.GetTerraformDeployment("tf:" + binding.ServiceInstanceGUID + ":" + binding.BindingGUID)
+		if err != nil {
+			return nil, err
+		}
+
+		bindingDeployments = append(bindingDeployments, bindingDeployment)
+	}
+	return bindingDeployments, nil
 }
