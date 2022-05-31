@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
+
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
@@ -95,7 +97,7 @@ var _ = Describe("Unbind", func() {
 		}
 
 		var err error
-		serviceBroker, err = broker.New(brokerConfig, utils.NewLogger("unbind-test-with-credstore"), fakeStorage)
+		serviceBroker, err = broker.New(brokerConfig, fakeStorage, decider.Decider{}, utils.NewLogger("unbind-test-with-credstore"))
 		Expect(err).ToNot(HaveOccurred())
 
 		unbindDetails = domain.UnbindDetails{
@@ -161,7 +163,7 @@ var _ = Describe("Unbind", func() {
 			BeforeEach(func() {
 				brokerConfig.Credstore = nil
 				var err error
-				serviceBroker, err = broker.New(brokerConfig, utils.NewLogger("unbind-test-no-credstore"), fakeStorage)
+				serviceBroker, err = broker.New(brokerConfig, fakeStorage, decider.Decider{}, utils.NewLogger("unbind-test-no-credstore"))
 				Expect(err).ToNot(HaveOccurred())
 			})
 
