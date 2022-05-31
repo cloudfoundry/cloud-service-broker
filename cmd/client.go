@@ -18,6 +18,8 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/server"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
@@ -109,7 +111,7 @@ user-defined plans.
 	})
 
 	updateCmd := newClientCommand("update", "Update the instance details", func(client *client.Client) *client.BrokerResponse {
-		return client.Update(instanceID, serviceID, planID, uuid.New(), json.RawMessage(parametersJSON))
+		return client.Update(instanceID, serviceID, planID, uuid.New(), json.RawMessage(parametersJSON), domain.PreviousValues{}, nil)
 	})
 
 	examplesCmd := &cobra.Command{

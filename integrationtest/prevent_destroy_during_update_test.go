@@ -35,7 +35,7 @@ var _ = Describe("Preventing destroy during update", Ordered, func() {
 	})
 
 	It("fails update when the resource would be deleted", func() {
-		testHelper.Client().Update(serviceInstance.GUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(`{"length":5}`))
+		testHelper.Client().Update(serviceInstance.GUID, serviceOfferingGUID, servicePlanGUID, requestID(), []byte(`{"length":5}`), domain.PreviousValues{}, nil)
 		Expect(testHelper.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Failed))
 		Expect(testHelper.LastOperation(serviceInstance.GUID).Description).To(ContainSubstring("Error: Instance cannot be destroyed"))
 	})

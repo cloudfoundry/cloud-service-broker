@@ -248,8 +248,7 @@ var _ = Describe("ServiceDefinition", func() {
 
 		DescribeTable("returns the correct result",
 			func(params map[string]interface{}, expected bool) {
-				actual, err := serviceDefinition.AllowedUpdate(params)
-				Expect(err).ToNot(HaveOccurred())
+				actual := serviceDefinition.AllowedUpdate(params)
 				Expect(actual).To(Equal(expected))
 			},
 			Entry("allowed", map[string]interface{}{"allowed": "some_val"}, true),
