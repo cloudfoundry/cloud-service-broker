@@ -11,6 +11,14 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )
 
+// TODO:
+// - Review tests for workspace
+// - Understand UpdateWorkspaceHCL
+// - Create binding upgrade context
+// - Refactor
+// - Add more test to integration test
+// - Test tfID split
+
 // Upgrade makes necessary updates to resources so they match plan configuration
 func (provider *TerraformProvider) Upgrade(ctx context.Context, upgradeContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
 	provider.logger.Debug("upgrade", correlation.ID(ctx), lager.Data{
@@ -38,10 +46,11 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, upgradeContext *
 	}
 
 	bindingDeployments, err := provider.GetBindingDeployments(instanceDeploymentID)
+	//if err != nil {
+	//	return models.ServiceInstanceDetails{}, err
+	//}
 
 	for _, bindingDeployment := range bindingDeployments {
-		var upgradeBindingContext *varcontext.VarContext
-
 		// getUpgradeContext
 		//instance, err := broker.store.GetServiceInstanceDetails(instanceID)
 		//if err != nil {
@@ -63,28 +72,32 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, upgradeContext *
 		//if err != nil {
 		//	return err
 		//}
-
-		if err := provider.UpdateWorkspaceHCL(bindingDeployment.ID, provider.serviceDefinition.ProvisionSettings, upgradeBindingContext.ToMap()); err != nil {
+		varContext, _ := varcontext.Builder().Build()
+		if err := provider.UpdateWorkspaceHCL(bindingDeployment.ID, provider.serviceDefinition.ProvisionSettings, varContext.ToMap()); err != nil {
 			return models.ServiceInstanceDetails{}, err
 		}
 	}
 
 	bindingDeployments1, err := provider.GetBindingDeployments(instanceDeploymentID)
+	//if err != nil {
+	//	return models.ServiceInstanceDetails{}, err
+	//}
 
 	go func() {
 		err = provider.performTerraformUpgrade(ctx, workspace)
-		// TODO: upgrade all service bindings
 		if err != nil {
 			provider.MarkOperationFinished(&deployment, err)
 			return
 		}
 
 		for _, bindingDeployment := range bindingDeployments1 {
-			err = provider.performTerraformUpgrade(ctx, bindingDeployment.Workspace)
-			if err != nil {
-				provider.MarkOperationFinished(&deployment, err)
-				return
-			}
+			bindingWorkspace := bindingDeployment.Workspace
+			err = provider.performTerraformUpgrade(ctx, bindingWorkspace)
+			provider.MarkOperationFinished(&bindingDeployment, err)
+			//if err != nil {
+			//	provider.MarkOperationFinished(&deployment, err)
+			//	return
+			//}
 		}
 
 		provider.MarkOperationFinished(&deployment, err)

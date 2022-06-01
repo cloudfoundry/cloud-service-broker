@@ -511,4 +511,76 @@ var _ = Describe("DeploymentManager", func() {
 			Expect(err).To(MatchError("cant get it now"))
 		})
 	})
+
+	Describe("GetBindingDeployments", func() {
+		var (
+			fakeStore         brokerfakes.FakeServiceProviderStorage
+			deploymentManager *tf.DeploymentManager
+		)
+
+		const existingInstanceDeploymentID = "tf:instance-guid:"
+
+		BeforeEach(func() {
+			fakeStore = brokerfakes.FakeServiceProviderStorage{}
+			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+		})
+
+		It("gets all binding deployments for a service instance", func() {
+			fakeStore.GetAllServiceBindingCredentialsReturns([]storage.ServiceBindingCredentials{
+				{
+					ServiceInstanceGUID: "instance-guid",
+					BindingGUID:         "first-binding-guid",
+				},
+				{
+					ServiceInstanceGUID: "instance-guid",
+					BindingGUID:         "second-binding-guid",
+				},
+			}, nil)
+			firstBindingDeployment := storage.TerraformDeployment{
+				ID: "tf:instance-guid:first-binding-guid",
+			}
+			secondBindingDeployment := storage.TerraformDeployment{
+				ID: "tf:instance-guid:second-binding-guid",
+			}
+			fakeStore.GetTerraformDeploymentReturnsOnCall(0, firstBindingDeployment, nil)
+			fakeStore.GetTerraformDeploymentReturnsOnCall(1, secondBindingDeployment, nil)
+
+			deployments, err := deploymentManager.GetBindingDeployments(existingInstanceDeploymentID)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(deployments)).To(Equal(2))
+			Expect(deployments[0]).To(Equal(firstBindingDeployment))
+			Expect(deployments[1]).To(Equal(secondBindingDeployment))
+
+			Expect(fakeStore.GetTerraformDeploymentCallCount()).To(Equal(2))
+			Expect(fakeStore.GetTerraformDeploymentArgsForCall(0)).To(Equal("tf:instance-guid:first-binding-guid"))
+			Expect(fakeStore.GetTerraformDeploymentArgsForCall(1)).To(Equal("tf:instance-guid:second-binding-guid"))
+		})
+
+		It("fails, when getting service bindings fails", func() {
+			fakeStore.GetAllServiceBindingCredentialsReturns([]storage.ServiceBindingCredentials{}, errors.New("cant get it now"))
+
+			_, err := deploymentManager.GetBindingDeployments(existingInstanceDeploymentID)
+
+			Expect(err).To(MatchError("cant get it now"))
+		})
+
+		It("fails, when getting a terraform deployment fails", func() {
+			fakeStore.GetAllServiceBindingCredentialsReturns([]storage.ServiceBindingCredentials{
+				{
+					ServiceInstanceGUID: "instance-guid",
+					BindingGUID:         "first-binding-guid",
+				},
+				{
+					ServiceInstanceGUID: "instance-guid",
+					BindingGUID:         "second-binding-guid",
+				},
+			}, nil)
+			fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New("cant get it now"))
+
+			_, err := deploymentManager.GetBindingDeployments(existingInstanceDeploymentID)
+
+			Expect(err).To(MatchError("cant get it now"))
+		})
+	})
 })

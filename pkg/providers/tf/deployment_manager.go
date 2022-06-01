@@ -123,18 +123,18 @@ func (d *DeploymentManager) GetTerraformDeployment(deploymentID string) (storage
 }
 
 func (d *DeploymentManager) GetBindingDeployments(deploymentID string) ([]storage.TerraformDeployment, error) {
-	// Get binding IDs
-	instanceID := strings.Split(deploymentID, ":")
-	bindingCredentials, err := d.store.GetAllServiceBindingCredentials(instanceID[1])
+	deploymentSplit := strings.Split(deploymentID, ":")
+	instanceID := deploymentSplit[1]
+	bindingCredentials, err := d.store.GetAllServiceBindingCredentials(instanceID)
 	if err != nil {
-		return nil, err
+		return []storage.TerraformDeployment{}, err
 	}
-	// Get terraform deployments
+
 	var bindingDeployments []storage.TerraformDeployment
 	for _, binding := range bindingCredentials {
 		bindingDeployment, err := d.store.GetTerraformDeployment("tf:" + binding.ServiceInstanceGUID + ":" + binding.BindingGUID)
 		if err != nil {
-			return nil, err
+			return []storage.TerraformDeployment{}, err
 		}
 
 		bindingDeployments = append(bindingDeployments, bindingDeployment)
