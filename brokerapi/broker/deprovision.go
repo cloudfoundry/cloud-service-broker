@@ -75,7 +75,7 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return response, err
 	}
 
-	operationID, err := serviceProvider.Deprovision(ctx, instance.GUID, vars)
+	operationID, err := serviceProvider.Deprovision(ctx, instance.GUID, details, vars)
 	if err != nil {
 		return response, err
 	}
