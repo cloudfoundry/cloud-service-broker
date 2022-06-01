@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
@@ -104,10 +103,6 @@ func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID str
 		return err
 	}
 
-	if err := provider.checkDestroyOperationConstraints(deployment, operationType); err != nil {
-		return err
-	}
-
 	workspace := deployment.TFWorkspace()
 
 	if err := workspace.RemovePreventDestroy(); err != nil {
@@ -151,23 +146,6 @@ func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 			}
 		}
 	}
-}
-
-func (provider *TerraformProvider) checkDestroyOperationConstraints(d storage.TerraformDeployment, operationType string) error {
-	if operationType == models.UnbindOperationType {
-		return nil
-	}
-
-	if operationType != models.DeprovisionOperationType {
-		return fmt.Errorf("destroy operation not allowed with invalid operation type")
-	}
-
-	isProvisionOperationInProgress := d.LastOperationType == models.ProvisionOperationType && d.LastOperationState == InProgress
-	if isProvisionOperationInProgress {
-		return fmt.Errorf("destroy operation not allowed while provision is in progress")
-	}
-
-	return nil
 }
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
