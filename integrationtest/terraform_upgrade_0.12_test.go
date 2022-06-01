@@ -84,8 +84,9 @@ var _ = Describe("Terraform 0.12 Upgrade", func() {
 			By("observing that the TF state file has been updated to the latest version")
 			Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("1.1.6"))
 		})
+
 		When("the instance has bindings", func() {
-			FIt("runs 'terraform apply' at each version in the upgrade path", func() {
+			It("runs 'terraform apply' at each version in the upgrade path", func() {
 				By("provisioning a service instance at 0.12")
 				serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
 				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))
@@ -104,6 +105,9 @@ var _ = Describe("Terraform 0.12 Upgrade", func() {
 				session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
 
 				By("running 'cf upgrade-service'")
+				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))
+				Expect(bindingTerraformStateVersion(serviceInstance.GUID, bindGUID)).To(Equal("0.12.21"))
+
 				newMI := domain.MaintenanceInfo{
 					Version: "1.1.6",
 				}
@@ -114,10 +118,8 @@ var _ = Describe("Terraform 0.12 Upgrade", func() {
 
 				By("observing that the binding TF state file has been updated to the latest version")
 				Expect(bindingTerraformStateVersion(serviceInstance.GUID, bindGUID)).To(Equal("1.1.6"))
-
 			})
 		})
-
 	})
 
 	Context("TF Upgrades are disabled", func() {

@@ -22,6 +22,19 @@ type FakeServiceProviderStorage struct {
 		result1 bool
 		result2 error
 	}
+	GetAllServiceBindingCredentialsStub        func(string) ([]storage.ServiceBindingCredentials, error)
+	getAllServiceBindingCredentialsMutex       sync.RWMutex
+	getAllServiceBindingCredentialsArgsForCall []struct {
+		arg1 string
+	}
+	getAllServiceBindingCredentialsReturns struct {
+		result1 []storage.ServiceBindingCredentials
+		result2 error
+	}
+	getAllServiceBindingCredentialsReturnsOnCall map[int]struct {
+		result1 []storage.ServiceBindingCredentials
+		result2 error
+	}
 	GetTerraformDeploymentStub        func(string) (storage.TerraformDeployment, error)
 	getTerraformDeploymentMutex       sync.RWMutex
 	getTerraformDeploymentArgsForCall []struct {
@@ -110,6 +123,70 @@ func (fake *FakeServiceProviderStorage) ExistsTerraformDeploymentReturnsOnCall(i
 	}
 	fake.existsTerraformDeploymentReturnsOnCall[i] = struct {
 		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeServiceProviderStorage) GetAllServiceBindingCredentials(arg1 string) ([]storage.ServiceBindingCredentials, error) {
+	fake.getAllServiceBindingCredentialsMutex.Lock()
+	ret, specificReturn := fake.getAllServiceBindingCredentialsReturnsOnCall[len(fake.getAllServiceBindingCredentialsArgsForCall)]
+	fake.getAllServiceBindingCredentialsArgsForCall = append(fake.getAllServiceBindingCredentialsArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.GetAllServiceBindingCredentialsStub
+	fakeReturns := fake.getAllServiceBindingCredentialsReturns
+	fake.recordInvocation("GetAllServiceBindingCredentials", []interface{}{arg1})
+	fake.getAllServiceBindingCredentialsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeServiceProviderStorage) GetAllServiceBindingCredentialsCallCount() int {
+	fake.getAllServiceBindingCredentialsMutex.RLock()
+	defer fake.getAllServiceBindingCredentialsMutex.RUnlock()
+	return len(fake.getAllServiceBindingCredentialsArgsForCall)
+}
+
+func (fake *FakeServiceProviderStorage) GetAllServiceBindingCredentialsCalls(stub func(string) ([]storage.ServiceBindingCredentials, error)) {
+	fake.getAllServiceBindingCredentialsMutex.Lock()
+	defer fake.getAllServiceBindingCredentialsMutex.Unlock()
+	fake.GetAllServiceBindingCredentialsStub = stub
+}
+
+func (fake *FakeServiceProviderStorage) GetAllServiceBindingCredentialsArgsForCall(i int) string {
+	fake.getAllServiceBindingCredentialsMutex.RLock()
+	defer fake.getAllServiceBindingCredentialsMutex.RUnlock()
+	argsForCall := fake.getAllServiceBindingCredentialsArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeServiceProviderStorage) GetAllServiceBindingCredentialsReturns(result1 []storage.ServiceBindingCredentials, result2 error) {
+	fake.getAllServiceBindingCredentialsMutex.Lock()
+	defer fake.getAllServiceBindingCredentialsMutex.Unlock()
+	fake.GetAllServiceBindingCredentialsStub = nil
+	fake.getAllServiceBindingCredentialsReturns = struct {
+		result1 []storage.ServiceBindingCredentials
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeServiceProviderStorage) GetAllServiceBindingCredentialsReturnsOnCall(i int, result1 []storage.ServiceBindingCredentials, result2 error) {
+	fake.getAllServiceBindingCredentialsMutex.Lock()
+	defer fake.getAllServiceBindingCredentialsMutex.Unlock()
+	fake.GetAllServiceBindingCredentialsStub = nil
+	if fake.getAllServiceBindingCredentialsReturnsOnCall == nil {
+		fake.getAllServiceBindingCredentialsReturnsOnCall = make(map[int]struct {
+			result1 []storage.ServiceBindingCredentials
+			result2 error
+		})
+	}
+	fake.getAllServiceBindingCredentialsReturnsOnCall[i] = struct {
+		result1 []storage.ServiceBindingCredentials
 		result2 error
 	}{result1, result2}
 }
@@ -244,6 +321,8 @@ func (fake *FakeServiceProviderStorage) Invocations() map[string][][]interface{}
 	defer fake.invocationsMutex.RUnlock()
 	fake.existsTerraformDeploymentMutex.RLock()
 	defer fake.existsTerraformDeploymentMutex.RUnlock()
+	fake.getAllServiceBindingCredentialsMutex.RLock()
+	defer fake.getAllServiceBindingCredentialsMutex.RUnlock()
 	fake.getTerraformDeploymentMutex.RLock()
 	defer fake.getTerraformDeploymentMutex.RUnlock()
 	fake.storeTerraformDeploymentMutex.RLock()
