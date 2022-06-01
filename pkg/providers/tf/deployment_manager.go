@@ -141,3 +141,18 @@ func (d *DeploymentManager) GetBindingDeployments(deploymentID string) ([]storag
 	}
 	return bindingDeployments, nil
 }
+
+func (d *DeploymentManager) GetBindingDeploymentIDs(deploymentID string) ([]string, error) {
+	deploymentSplit := strings.Split(deploymentID, ":")
+	instanceID := deploymentSplit[1]
+	bindingCredentials, err := d.store.GetAllServiceBindingCredentials(instanceID)
+	if err != nil {
+		return []string{}, err
+	}
+
+	var bindingDeploymentIDs []string
+	for _, binding := range bindingCredentials {
+		bindingDeploymentIDs = append(bindingDeploymentIDs, "tf:"+binding.ServiceInstanceGUID+":"+binding.BindingGUID)
+	}
+	return bindingDeploymentIDs, nil
+}

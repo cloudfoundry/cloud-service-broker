@@ -12,7 +12,6 @@ import (
 )
 
 // TODO:
-// - Review tests for workspace
 // - Understand UpdateWorkspaceHCL
 // - Create binding upgrade context
 // - Refactor
@@ -34,23 +33,21 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, upgradeContext *
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	deployment, err := provider.GetTerraformDeployment(instanceDeploymentID)
+	instanceDeployment, err := provider.GetTerraformDeployment(instanceDeploymentID)
 	if err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	workspace := deployment.Workspace
-
-	if err := provider.MarkOperationStarted(&deployment, models.UpgradeOperationType); err != nil {
+	if err := provider.MarkOperationStarted(&instanceDeployment, models.UpgradeOperationType); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	bindingDeployments, err := provider.GetBindingDeployments(instanceDeploymentID)
-	//if err != nil {
-	//	return models.ServiceInstanceDetails{}, err
-	//}
+	bindingDeploymentIDs, err := provider.GetBindingDeploymentIDs(instanceDeploymentID)
+	if err != nil {
+		return models.ServiceInstanceDetails{}, err
+	}
 
-	for _, bindingDeployment := range bindingDeployments {
+	for _, bindingDeploymentID := range bindingDeploymentIDs {
 		// getUpgradeContext
 		//instance, err := broker.store.GetServiceInstanceDetails(instanceID)
 		//if err != nil {
@@ -73,34 +70,33 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, upgradeContext *
 		//	return err
 		//}
 		varContext, _ := varcontext.Builder().Build()
-		if err := provider.UpdateWorkspaceHCL(bindingDeployment.ID, provider.serviceDefinition.ProvisionSettings, varContext.ToMap()); err != nil {
+		if err := provider.UpdateWorkspaceHCL(bindingDeploymentID, provider.serviceDefinition.ProvisionSettings, varContext.ToMap()); err != nil {
 			return models.ServiceInstanceDetails{}, err
 		}
 	}
 
 	bindingDeployments1, err := provider.GetBindingDeployments(instanceDeploymentID)
-	//if err != nil {
-	//	return models.ServiceInstanceDetails{}, err
-	//}
+	if err != nil {
+		return models.ServiceInstanceDetails{}, err
+	}
 
 	go func() {
-		err = provider.performTerraformUpgrade(ctx, workspace)
+		err = provider.performTerraformUpgrade(ctx, instanceDeployment.Workspace)
 		if err != nil {
-			provider.MarkOperationFinished(&deployment, err)
+			provider.MarkOperationFinished(&instanceDeployment, err)
 			return
 		}
 
 		for _, bindingDeployment := range bindingDeployments1 {
-			bindingWorkspace := bindingDeployment.Workspace
-			err = provider.performTerraformUpgrade(ctx, bindingWorkspace)
+			err = provider.performTerraformUpgrade(ctx, bindingDeployment.Workspace)
 			provider.MarkOperationFinished(&bindingDeployment, err)
 			//if err != nil {
-			//	provider.MarkOperationFinished(&deployment, err)
+			//	provider.MarkOperationFinished(&instanceDeployment, err)
 			//	return
 			//}
 		}
 
-		provider.MarkOperationFinished(&deployment, err)
+		provider.MarkOperationFinished(&instanceDeployment, err)
 	}()
 
 	return models.ServiceInstanceDetails{}, nil

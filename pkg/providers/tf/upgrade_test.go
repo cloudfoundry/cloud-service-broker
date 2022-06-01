@@ -2,6 +2,7 @@ package tf_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -240,7 +241,25 @@ var _ = Describe("Upgrade", func() {
 		Expect(fakeInvoker2.ApplyCallCount()).To(Equal(0))
 	})
 
-	When("can't get terraform version from state", func() {
+	It("fails, if getting bindings deployment IDs fails", func() {
+		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
+		fakeDeploymentManager.GetBindingDeploymentIDsReturns([]string{}, errors.New("error getting binding IDs"))
+
+		provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+		_, err := provider.Upgrade(context.TODO(), varContext)
+		Expect(err).To(MatchError("error getting binding IDs"))
+	})
+
+	It("fails, if getting bindings deployments fails", func() {
+		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
+		fakeDeploymentManager.GetBindingDeploymentsReturns([]storage.TerraformDeployment{}, errors.New("error getting bindings"))
+
+		provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+		_, err := provider.Upgrade(context.TODO(), varContext)
+		Expect(err).To(MatchError("error getting bindings"))
+	})
+
+	When("it fails to upgrade the instance", func() {
 		It("fails", func() {
 			deployment.Workspace = fakeWorkspace
 			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
