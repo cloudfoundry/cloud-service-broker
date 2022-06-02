@@ -21,7 +21,12 @@ func NewTerraformMock() (TerraformMock, error) {
 	if err != nil {
 		return TerraformMock{}, err
 	}
-	return TerraformMock{Binary: build, invocationStore: dir, Version: "1.1.4"}, nil
+
+	mock := TerraformMock{Binary: build, invocationStore: dir, Version: "1.1.4"}
+	if err := mock.InitState(); err != nil {
+		return mock, err
+	}
+	return mock, nil
 }
 
 type TerraformMock struct {
@@ -56,6 +61,13 @@ func (p TerraformMock) Invocations() ([]TerraformInvocation, error) {
 		invocations = append(invocations, TerraformInvocation{Type: parts[0], dir: path.Join(p.invocationStore, file.Name())})
 	}
 	return invocations, nil
+}
+
+func (p TerraformMock) InitState() error {
+	if err := p.SetTFState([]TFStateValue{}); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (p TerraformMock) Reset() error {
