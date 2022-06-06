@@ -17,11 +17,19 @@ func NewTerraformMock() (TerraformMock, error) {
 	if err != nil {
 		return TerraformMock{}, err
 	}
+
 	build, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker/brokerpaktestframework/mock-binary/terraform", "-ldflags", fmt.Sprintf("-X 'main.InvocationStore=%s'", dir))
 	if err != nil {
 		return TerraformMock{}, err
 	}
-	return TerraformMock{Binary: build, invocationStore: dir, Version: "1.1.4"}, nil
+
+	mock := TerraformMock{Binary: build, invocationStore: dir, Version: "1.1.4"}
+	err = mock.SetTFState([]TFStateValue{})
+	if err != nil {
+		return mock, err
+	}
+
+	return mock, nil
 }
 
 type TerraformMock struct {
