@@ -39,7 +39,7 @@ type ServiceProvider interface {
 	Update(ctx context.Context, updateContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
 
 	// Upgrade makes necessary upgrades to resources so they match plan configuration
-	Upgrade(ctx context.Context, upgradeContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
+	Upgrade(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts map[string]map[string]interface{}) (models.ServiceInstanceDetails, error)
 
 	// GetImportedProperties extracts properties that should have been saved as part of subsume operation
 	GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []BrokerVariable) (map[string]interface{}, error)

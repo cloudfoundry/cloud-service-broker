@@ -12,24 +12,25 @@ import (
 )
 
 // TODO:
-// - Understand UpdateWorkspaceHCL
 // - Create binding upgrade context
+// Make sure we always upgrade HCL when tf upgrade is enabled
 // - Refactor
 // - Add more test to integration test
 // - Test tfID split
+// - check where is the tf_id added to the varcontext for instacens and bindings
 
 // Upgrade makes necessary updates to resources so they match plan configuration
-func (provider *TerraformProvider) Upgrade(ctx context.Context, upgradeContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts map[string]map[string]interface{}) (models.ServiceInstanceDetails, error) {
 	provider.logger.Debug("upgrade", correlation.ID(ctx), lager.Data{
-		"context": upgradeContext.ToMap(),
+		"context": instanceContext.ToMap(),
 	})
 
-	instanceDeploymentID := upgradeContext.GetString("tf_id")
-	if err := upgradeContext.Error(); err != nil {
+	instanceDeploymentID := instanceContext.GetString("tf_id")
+	if err := instanceContext.Error(); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	if err := provider.UpdateWorkspaceHCL(instanceDeploymentID, provider.serviceDefinition.ProvisionSettings, upgradeContext.ToMap()); err != nil {
+	if err := provider.UpdateWorkspaceHCL(instanceDeploymentID, provider.serviceDefinition.ProvisionSettings, instanceContext.ToMap()); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
@@ -48,27 +49,6 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, upgradeContext *
 	}
 
 	for _, bindingDeploymentID := range bindingDeploymentIDs {
-		// getUpgradeContext
-		//instance, err := broker.store.GetServiceInstanceDetails(instanceID)
-		//if err != nil {
-		//	return fmt.Errorf("error retrieving service instance details: %s", err)
-		//}
-		//
-		//storedParams, err := broker.store.GetBindRequestDetails(binding.BindingID, instanceID)
-		//if err != nil {
-		//	return fmt.Errorf("error retrieving bind request details for %q: %w", instanceID, err)
-		//}
-		//
-		//parsedDetails := paramparser.BindDetails{
-		//	PlanID:        details.PlanID,
-		//	ServiceID:     details.ServiceID,
-		//	RequestParams: storedParams,
-		//}
-		//
-		//vars, err := brokerService.BindVariables(instance, binding.BindingID, parsedDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
-		//if err != nil {
-		//	return err
-		//}
 		varContext, _ := varcontext.Builder().Build()
 		if err := provider.UpdateWorkspaceHCL(bindingDeploymentID, provider.serviceDefinition.ProvisionSettings, varContext.ToMap()); err != nil {
 			return models.ServiceInstanceDetails{}, err
