@@ -142,9 +142,9 @@ var _ = Describe("Terraform 0.12 Upgrade", func() {
 	})
 })
 
-func terraformStateVersion(deploymentId string, testHelper *helper.TestHelper) string {
+func terraformStateVersion(deploymentID string, testHelper *helper.TestHelper) string {
 	var tfDeploymentReceiver models.TerraformDeployment
-	Expect(testHelper.DBConn().Where("id = ?", deploymentId).First(&tfDeploymentReceiver).Error).NotTo(HaveOccurred())
+	Expect(testHelper.DBConn().Where("id = ?", deploymentID).First(&tfDeploymentReceiver).Error).NotTo(HaveOccurred())
 	var workspaceReceiver struct {
 		State []byte `json:"tfstate"`
 	}
@@ -156,9 +156,9 @@ func terraformStateVersion(deploymentId string, testHelper *helper.TestHelper) s
 	return stateReceiver.Version
 }
 
-func terraformStateOutputValue(deploymentId string, testHelper *helper.TestHelper) int {
+func terraformStateOutputValue(deploymentID string, testHelper *helper.TestHelper) int {
 	var tfDeploymentReceiver models.TerraformDeployment
-	Expect(testHelper.DBConn().Where("id = ?", deploymentId).First(&tfDeploymentReceiver).Error).NotTo(HaveOccurred())
+	Expect(testHelper.DBConn().Where("id = ?", deploymentID).First(&tfDeploymentReceiver).Error).NotTo(HaveOccurred())
 	var workspaceReceiver struct {
 		State []byte `json:"tfstate"`
 	}
