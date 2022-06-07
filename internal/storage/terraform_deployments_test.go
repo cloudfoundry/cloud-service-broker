@@ -1,15 +1,16 @@
 package storage_test
 
 import (
+	"encoding/base64"
 	"errors"
+	"fmt"
 	"strings"
 
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage/storagefakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-
-	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
-
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -103,7 +104,7 @@ var _ = Describe("TerraformDeployments", func() {
 		})
 	})
 
-	Describe("GetTerraformDeployments", func() {
+	Describe("GetTerraformDeployment", func() {
 		BeforeEach(func() {
 			addFakeTerraformDeployments()
 		})
@@ -132,6 +133,43 @@ var _ = Describe("TerraformDeployments", func() {
 			It("returns an error", func() {
 				_, err := store.GetTerraformDeployment("not-there")
 				Expect(err).To(MatchError("could not find terraform deployment: not-there"))
+			})
+		})
+	})
+
+	Describe("GetAllTerraformDeployments", func() {
+		BeforeEach(func() {
+			addFakeTerraformDeployments()
+		})
+
+		It("reads all objects from the database", func() {
+			r, err := store.GetAllTerraformDeployments()
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(r).To(HaveLen(3))
+			Expect(r[0].ID).To(Equal("fake-id-1"))
+			Expect(r[0].LastOperationType).To(Equal("create"))
+			Expect(r[0].LastOperationState).To(Equal("succeeded"))
+			Expect(r[0].LastOperationMessage).To(Equal("amazing"))
+			Expect(r[0].StateVersion).To(Equal(version.Must(version.NewVersion("1.2.3"))))
+			Expect(r[1].ID).To(Equal("fake-id-2"))
+			Expect(r[1].LastOperationType).To(Equal("update"))
+			Expect(r[1].LastOperationState).To(Equal("failed"))
+			Expect(r[1].LastOperationMessage).To(Equal("too bad"))
+			Expect(r[1].StateVersion).To(BeNil())
+			Expect(r[2].ID).To(Equal("fake-id-3"))
+			Expect(r[2].LastOperationType).To(Equal("update"))
+			Expect(r[2].LastOperationState).To(Equal("succeeded"))
+			Expect(r[2].LastOperationMessage).To(Equal("great"))
+			Expect(r[2].StateVersion).To(Equal(version.Must(version.NewVersion("1.2.4"))))
+		})
+
+		When("decoding fails", func() {
+			It("returns an error", func() {
+				encryptor.DecryptReturns(nil, errors.New("bang"))
+
+				_, err := store.GetAllTerraformDeployments()
+				Expect(err).To(MatchError(`error reading terraform deployment batch: error decoding workspace "fake-id-1": decryption error: bang`))
 			})
 		})
 	})
@@ -170,25 +208,38 @@ var _ = Describe("TerraformDeployments", func() {
 })
 
 func addFakeTerraformDeployments() {
+
 	Expect(db.Create(&models.TerraformDeployment{
 		ID:                   "fake-id-1",
-		Workspace:            []byte(`{"modules":[{"Name":"fake-1","Definition":"","Definitions":null}],"instances":null,"tfstate":null,"transform":{"parameter_mappings":null,"parameters_to_remove":null,"parameters_to_add":null}}`),
+		Workspace:            fakeWorkspace("fake-1", "1.2.3"),
 		LastOperationType:    "create",
 		LastOperationState:   "succeeded",
 		LastOperationMessage: "amazing",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.TerraformDeployment{
 		ID:                   "fake-id-2",
-		Workspace:            []byte(`{"modules":[{"Name":"fake-2","Definition":"","Definitions":null}],"instances":null,"tfstate":null,"transform":{"parameter_mappings":null,"parameters_to_remove":null,"parameters_to_add":null}}`),
+		Workspace:            fakeWorkspace("fake-2", ""),
 		LastOperationType:    "update",
 		LastOperationState:   "failed",
 		LastOperationMessage: "too bad",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.TerraformDeployment{
 		ID:                   "fake-id-3",
-		Workspace:            []byte(`{"modules":[{"Name":"fake-3","Definition":"","Definitions":null}],"instances":null,"tfstate":null,"transform":{"parameter_mappings":null,"parameters_to_remove":null,"parameters_to_add":null}}`),
+		Workspace:            fakeWorkspace("fake-3", "1.2.4"),
 		LastOperationType:    "update",
 		LastOperationState:   "succeeded",
 		LastOperationMessage: "great",
 	}).Error).NotTo(HaveOccurred())
+}
+
+func fakeWorkspace(name, ver string) []byte {
+	state := "null"
+	if ver != "" {
+		state = fmt.Sprintf("%q", base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(`{"terraform_version":"%s"}`, ver))))
+	}
+	return []byte(fmt.Sprintf(`{"modules":[{"Name":"%s","Definition":"","Definitions":null}],"instances":null,"tfstate":%s,"transform":{"parameter_mappings":null,"parameters_to_remove":null,"parameters_to_add":null}}`, name, state))
+}
+
+func fakeEncryptedWorkspace(name, ver string) []byte {
+	return []byte(fmt.Sprintf(`{"encrypted":{"decrypted":%s}}`, fakeWorkspace(name, ver)))
 }

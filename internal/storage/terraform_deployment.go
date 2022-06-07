@@ -2,10 +2,12 @@ package storage
 
 import (
 	"fmt"
-
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+	"github.com/hashicorp/go-version"
+	"gorm.io/gorm"
 )
 
 type TerraformDeployment struct {
@@ -14,6 +16,15 @@ type TerraformDeployment struct {
 	LastOperationType    string
 	LastOperationState   string
 	LastOperationMessage string
+}
+
+type TerraformDeploymentListEntry struct {
+	ID                   string
+	LastOperationType    string
+	LastOperationState   string
+	LastOperationMessage string
+	StateVersion         *version.Version
+	UpdatedAt            time.Time
 }
 
 func (deployment *TerraformDeployment) TFWorkspace() *workspace.TerraformWorkspace {
@@ -76,6 +87,41 @@ func (s *Storage) GetTerraformDeployment(id string) (TerraformDeployment, error)
 		LastOperationMessage: receiver.LastOperationMessage,
 		Workspace:            &tfWorkspace,
 	}, nil
+}
+
+func (s *Storage) GetAllTerraformDeployments() ([]TerraformDeploymentListEntry, error) {
+	var result []TerraformDeploymentListEntry
+
+	var terraformDeploymentBatch []models.TerraformDeployment
+	status := s.db.FindInBatches(&terraformDeploymentBatch, 100, func(tx *gorm.DB, batchNumber int) error {
+		for i := range terraformDeploymentBatch {
+			var tfWorkspace workspace.TerraformWorkspace
+			if err := s.decodeJSON(terraformDeploymentBatch[i].Workspace, &tfWorkspace); err != nil {
+				return fmt.Errorf("error decoding workspace %q: %w", terraformDeploymentBatch[i].ID, err)
+			}
+
+			version, err := tfWorkspace.StateVersion()
+			if err != nil {
+				version = nil
+			}
+
+			result = append(result, TerraformDeploymentListEntry{
+				ID:                   terraformDeploymentBatch[i].ID,
+				LastOperationType:    terraformDeploymentBatch[i].LastOperationType,
+				LastOperationState:   terraformDeploymentBatch[i].LastOperationState,
+				LastOperationMessage: terraformDeploymentBatch[i].LastOperationMessage,
+				StateVersion:         version,
+				UpdatedAt:            terraformDeploymentBatch[i].UpdatedAt,
+			})
+		}
+
+		return tx.Save(&terraformDeploymentBatch).Error
+	})
+	if status.Error != nil {
+		return nil, fmt.Errorf("error reading terraform deployment batch: %w", status.Error)
+	}
+
+	return result, nil
 }
 
 func (s *Storage) ExistsTerraformDeployment(id string) (bool, error) {

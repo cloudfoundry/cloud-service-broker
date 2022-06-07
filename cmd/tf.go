@@ -23,21 +23,19 @@ import (
 	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
-
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
-
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/spf13/cobra"
-	"gorm.io/gorm"
 )
 
 func init() {
-	var terraformProvider *tf.TerraformProvider
-	var db *gorm.DB
+	var (
+		terraformProvider *tf.TerraformProvider
+		store             *storage.Storage
+	)
 
 	tfCmd := &cobra.Command{
 		Use:   "tf",
@@ -45,9 +43,9 @@ func init() {
 		Long:  `Interact with the Terraform backend`,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
 			logger := utils.NewLogger("tf")
-			db = dbservice.New(logger)
+			db := dbservice.New(logger)
 			encryptor := setupDBEncryption(db, logger)
-			store := storage.New(db, encryptor)
+			store = storage.New(db, encryptor)
 			terraformProvider = tf.NewTerraformProvider(
 				executor.TFBinariesContext{},
 				invoker.NewTerraformInvokerFactory(executor.NewExecutorFactory("", nil, nil), "", map[string]string{}),
@@ -68,9 +66,6 @@ func init() {
 		Use:   "dump",
 		Short: "dump a Terraform workspace",
 		Run: func(cmd *cobra.Command, args []string) {
-			logger := utils.NewLogger("cloud-service-broker")
-			encryptor := setupDBEncryption(db, logger)
-			store := storage.New(db, encryptor)
 			deployment, err := store.GetTerraformDeployment(args[0])
 			if err != nil {
 				log.Fatal(err)
@@ -108,13 +103,13 @@ func init() {
 		Use:   "list",
 		Short: "show the list of Terraform workspaces",
 		Run: func(cmd *cobra.Command, args []string) {
-			results := []models.TerraformDeployment{}
-			if err := db.Find(&results).Error; err != nil {
+			results, err := store.GetAllTerraformDeployments()
+			if err != nil {
 				log.Fatal(err)
 			}
 
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.StripEscape)
-			fmt.Fprintln(w, "ID\tLast Operation\tState\tLast Updated\tElapsed\tMessage")
+			fmt.Fprintln(w, "ID\tLast Operation\tState\tVersion\tLast Updated\tElapsed\tMessage")
 
 			for _, result := range results {
 				lastUpdate := result.UpdatedAt.Format(time.RFC822)
@@ -124,7 +119,7 @@ func init() {
 					elapsed = time.Since(result.UpdatedAt).Truncate(time.Second).String()
 				}
 
-				fmt.Fprintf(w, "%q\t%s\t%s\t%s\t%s\t%q\n", result.ID, result.LastOperationType, result.LastOperationState, lastUpdate, elapsed, result.LastOperationMessage)
+				fmt.Fprintf(w, "%q\t%s\t%s\t%s\t%s\t%s\t%q\n", result.ID, result.LastOperationType, result.LastOperationState, result.StateVersion, lastUpdate, elapsed, result.LastOperationMessage)
 			}
 			w.Flush()
 		},
