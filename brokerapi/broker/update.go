@@ -105,35 +105,11 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 }
 
 func (broker *ServiceBroker) doUpgrade(ctx context.Context, serviceDefinition *broker.ServiceDefinition, serviceProvider broker.ServiceProvider, instance storage.ServiceInstanceDetails, instanceVars *varcontext.VarContext, plan *broker.ServicePlan) (domain.UpdateServiceSpec, error) {
-	//// get existing service instance details
-	//instance, err := broker.store.GetServiceInstanceDetails(instanceID)
-	//if err != nil {
-	//	return domain.UnbindSpec{}, fmt.Errorf("error retrieving service instance details: %s", err)
-	//}
-	//
-	//storedParams, err := broker.store.GetBindRequestDetails(bindingID, instanceID)
-	//if err != nil {
-	//	return domain.UnbindSpec{}, fmt.Errorf("error retrieving bind request details for %q: %w", instanceID, err)
-	//}
-	//
-	//parsedDetails := paramparser.BindDetails{
-	//	PlanID:        details.PlanID,
-	//	ServiceID:     details.ServiceID,
-	//	RequestParams: storedParams,
-	//}
-	//
-	//vars, err := serviceDefinition.BindVariables(instance, bindingID, parsedDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
-	//if err != nil {
-	//	return domain.UnbindSpec{}, err
-	//}
-	//
-	//{"binding_id": vars_for_binding_id}
-	credentials, _ := broker.store.GetAllServiceBindingCredentials(instance.GUID)
-	bindingContexts := make(map[string]map[string]interface{})
-	for _, bindingCredential := range credentials {
-		vars, _ := serviceDefinition.BindVariables(instance, bindingCredential.BindingGUID, paramparser.BindDetails{}, plan, request.DecodeOriginatingIdentityHeader(ctx))
-		bindingContexts[bindingCredential.BindingGUID] = vars.ToMap()
+	bindingContexts, err := broker.createAllBindingContexts(ctx, serviceDefinition, instance, plan)
+	if err != nil {
+		return domain.UpdateServiceSpec{}, err
 	}
+
 	instanceDetails, err := serviceProvider.Upgrade(ctx, instanceVars, bindingContexts)
 	if err != nil {
 		return domain.UpdateServiceSpec{}, err
@@ -174,6 +150,33 @@ func (broker *ServiceBroker) doUpdate(ctx context.Context, serviceProvider broke
 		DashboardURL:  "",
 		OperationData: instanceDetails.OperationID,
 	}, nil
+}
+
+func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, serviceDefinition *broker.ServiceDefinition, instance storage.ServiceInstanceDetails, plan *broker.ServicePlan) (map[string]map[string]interface{}, error) {
+	bindingCredentials, err := broker.store.GetAllServiceBindingCredentials(instance.GUID)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving binding for instance %q: %w", instance.GUID, err)
+	}
+
+	bindingContexts := make(map[string]map[string]interface{})
+	for _, bindingCredential := range bindingCredentials {
+		storedParams, err := broker.store.GetBindRequestDetails(bindingCredential.BindingGUID, instance.GUID)
+		if err != nil {
+			return nil, fmt.Errorf("error retrieving bind request details for instance %q: %w", instance.GUID, err)
+		}
+
+		parsedDetails := paramparser.BindDetails{
+			PlanID:        instance.PlanGUID,
+			ServiceID:     instance.ServiceGUID,
+			RequestParams: storedParams,
+		}
+		vars, err := serviceDefinition.BindVariables(instance, bindingCredential.BindingGUID, parsedDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
+		if err != nil {
+			return nil, fmt.Errorf("error constructing bind variables for instance %q: %w", instance.GUID, err)
+		}
+		bindingContexts[bindingCredential.BindingGUID] = vars.ToMap()
+	}
+	return bindingContexts, nil
 }
 
 func mergeJSON(previousParams, newParams, importParams map[string]interface{}) (map[string]interface{}, error) {
