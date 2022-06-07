@@ -341,7 +341,7 @@ var _ = Describe("Update", func() {
 			By("validating provider update has been called")
 			Expect(fakeServiceProvider.UpdateCallCount()).To(Equal(0))
 			Expect(fakeServiceProvider.UpgradeCallCount()).To(Equal(1))
-			actualContext, _ := fakeServiceProvider.UpgradeArgsForCall(0)
+			actualContext, _, _ := fakeServiceProvider.UpgradeArgsForCall(0)
 			Expect(actualContext.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
 
 			By("validating SI details and provision parameters are not updated")
@@ -357,6 +357,58 @@ var _ = Describe("Update", func() {
 			It("should error", func() {
 				_, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
 				Expect(err).To(MatchError("cannot upgrade right now"))
+			})
+		})
+
+		Describe("passing variables on provision and binding", func() {
+			BeforeEach(func() {
+				fakeStorage.GetServiceInstanceDetailsReturns(storage.ServiceInstanceDetails{
+					GUID:        instanceID,
+					Outputs:     storage.JSONObject{"instance-provision-output": "admin-user-name"},
+					ServiceGUID: offeringID,
+					PlanGUID:    originalPlanID,
+				}, nil)
+
+				fakeStorage.GetAllServiceBindingCredentialsReturns([]storage.ServiceBindingCredentials{
+					{
+						ServiceGUID:         offeringID,
+						ServiceInstanceGUID: instanceID,
+						BindingGUID:         "firstBindingID",
+					},
+					{
+						ServiceGUID:         offeringID,
+						ServiceInstanceGUID: instanceID,
+						BindingGUID:         "secondBindingID",
+					},
+				}, nil)
+			})
+
+			FIt("should merge all variables", func() {
+				updateDetails = domain.UpdateDetails{
+					ServiceID:       offeringID,
+					PlanID:          originalPlanID,
+					MaintenanceInfo: nil,
+					PreviousValues: domain.PreviousValues{
+						PlanID:    originalPlanID,
+						ServiceID: offeringID,
+					},
+				}
+
+				_, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
+				Expect(err).ToNot(HaveOccurred())
+
+				By("validating provision variables are retrieved")
+				Expect(fakeStorage.GetServiceInstanceDetailsCallCount()).To(Equal(1))
+
+				By("validating provider update has been called")
+				Expect(fakeServiceProvider.UpgradeCallCount()).To(Equal(1))
+				_, instanceVars, bindingVars := fakeServiceProvider.UpgradeArgsForCall(0)
+				Expect(bindingVars["firstBindingID"]).To(Equal(map[string]interface{}{"instance.details": "something"})) // instance.details: map
+				Expect(instanceVars.GetString("foo")).To(Equal("quz"))
+				//By("validating provision details have been stored")
+				//Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(1))
+				//_, actualRequestVars := fakeStorage.StoreProvisionRequestDetailsArgsForCall(0)
+				//Expect(actualRequestVars).To(Equal(storage.JSONObject{"baz": "quz", "foo": "quz", "guz": "muz"}))
 			})
 		})
 	})
