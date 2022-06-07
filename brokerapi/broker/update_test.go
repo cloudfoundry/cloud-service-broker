@@ -111,6 +111,9 @@ var _ = Describe("Update", func() {
 						{Name: "copyOriginatingIdentity", Default: "${json.marshal(request.x_broker_api_originating_identity)}", Overwrite: true},
 					},
 					ProviderBuilder: providerBuilder,
+					BindComputedVariables: []varcontext.DefaultVariable{
+						{Name: "instance_output", Default: `${instance.details["instance-provision-output"]}`, Overwrite: true},
+					},
 				},
 			},
 		}
@@ -301,20 +304,11 @@ var _ = Describe("Update", func() {
 	})
 
 	Describe("upgrade", func() {
-		var upgradeOperationID = "upgrade-operation-id"
+		const upgradeOperationID = "upgrade-operation-id"
+		var upgradeDetails domain.UpdateDetails
+
 		BeforeEach(func() {
-			fakeDecider.DecideOperationReturns(decider.Upgrade, nil)
-			fakeServiceProvider.UpgradeReturns(models.ServiceInstanceDetails{
-				OperationType: models.UpgradeOperationType,
-				OperationID:   upgradeOperationID,
-			}, nil)
-		})
-
-		It("should trigger an upgrade", func() {
-			expectedHeader := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
-			newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, expectedHeader)
-
-			updateDetails = domain.UpdateDetails{
+			upgradeDetails = domain.UpdateDetails{
 				ServiceID: offeringID,
 				PlanID:    originalPlanID,
 				PreviousValues: domain.PreviousValues{
@@ -330,7 +324,18 @@ var _ = Describe("Update", func() {
 				},
 			}
 
-			response, err := serviceBroker.Update(newContext, instanceID, updateDetails, true)
+			fakeDecider.DecideOperationReturns(decider.Upgrade, nil)
+			fakeServiceProvider.UpgradeReturns(models.ServiceInstanceDetails{
+				OperationType: models.UpgradeOperationType,
+				OperationID:   upgradeOperationID,
+			}, nil)
+		})
+
+		It("should trigger an upgrade", func() {
+			expectedHeader := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
+			newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, expectedHeader)
+
+			response, err := serviceBroker.Update(newContext, instanceID, upgradeDetails, true)
 			Expect(err).ToNot(HaveOccurred())
 
 			By("validating response")
@@ -355,20 +360,13 @@ var _ = Describe("Update", func() {
 			})
 
 			It("should error", func() {
-				_, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
+				_, err := serviceBroker.Update(context.TODO(), instanceID, upgradeDetails, true)
 				Expect(err).To(MatchError("cannot upgrade right now"))
 			})
 		})
 
-		Describe("passing variables on provision and binding", func() {
+		When("the instance has bindings", func() {
 			BeforeEach(func() {
-				fakeStorage.GetServiceInstanceDetailsReturns(storage.ServiceInstanceDetails{
-					GUID:        instanceID,
-					Outputs:     storage.JSONObject{"instance-provision-output": "admin-user-name"},
-					ServiceGUID: offeringID,
-					PlanGUID:    originalPlanID,
-				}, nil)
-
 				fakeStorage.GetAllServiceBindingCredentialsReturns([]storage.ServiceBindingCredentials{
 					{
 						ServiceGUID:         offeringID,
@@ -381,20 +379,20 @@ var _ = Describe("Update", func() {
 						BindingGUID:         "secondBindingID",
 					},
 				}, nil)
+
+				fakeStorage.GetServiceInstanceDetailsReturns(storage.ServiceInstanceDetails{
+					GUID:        instanceID,
+					Outputs:     storage.JSONObject{"instance-provision-output": "admin-user-name"},
+					ServiceGUID: offeringID,
+					PlanGUID:    originalPlanID,
+				}, nil)
+
+				fakeStorage.GetBindRequestDetailsReturnsOnCall(0, storage.JSONObject{"first-binding-param": "first-binding-bar"}, nil)
+				fakeStorage.GetBindRequestDetailsReturnsOnCall(1, storage.JSONObject{"second-binding-param": "second-binding-bar"}, nil)
 			})
 
-			FIt("should merge all variables", func() {
-				updateDetails = domain.UpdateDetails{
-					ServiceID:       offeringID,
-					PlanID:          originalPlanID,
-					MaintenanceInfo: nil,
-					PreviousValues: domain.PreviousValues{
-						PlanID:    originalPlanID,
-						ServiceID: offeringID,
-					},
-				}
-
-				_, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
+			It("should populate the binding contexts with binding computed output and previous bind properties", func() {
+				_, err := serviceBroker.Update(context.TODO(), instanceID, upgradeDetails, true)
 				Expect(err).ToNot(HaveOccurred())
 
 				By("validating provision variables are retrieved")
@@ -402,18 +400,53 @@ var _ = Describe("Update", func() {
 
 				By("validating provider update has been called")
 				Expect(fakeServiceProvider.UpgradeCallCount()).To(Equal(1))
-				_, instanceVars, bindingVars := fakeServiceProvider.UpgradeArgsForCall(0)
-				Expect(bindingVars["firstBindingID"]).To(Equal(map[string]interface{}{"instance.details": "something"})) // instance.details: map
-				Expect(instanceVars.GetString("foo")).To(Equal("quz"))
-				//By("validating provision details have been stored")
-				//Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(1))
-				//_, actualRequestVars := fakeStorage.StoreProvisionRequestDetailsArgsForCall(0)
-				//Expect(actualRequestVars).To(Equal(storage.JSONObject{"baz": "quz", "foo": "quz", "guz": "muz"}))
+				_, _, bindingVars := fakeServiceProvider.UpgradeArgsForCall(0)
+				Expect(bindingVars["firstBindingID"]).To(Equal(map[string]interface{}{"instance_output": "admin-user-name", "first-binding-param": "first-binding-bar"}))
+				Expect(bindingVars["secondBindingID"]).To(Equal(map[string]interface{}{"instance_output": "admin-user-name", "second-binding-param": "second-binding-bar"}))
+			})
+
+			When("getting binding credentials fails", func() {
+				BeforeEach(func() {
+					fakeStorage.GetAllServiceBindingCredentialsReturns([]storage.ServiceBindingCredentials{}, errors.New("cant get bindings"))
+				})
+
+				It("should error", func() {
+					_, err := serviceBroker.Update(context.TODO(), instanceID, upgradeDetails, true)
+					Expect(err).To(MatchError(`error retrieving binding for instance "test-instance-id": cant get bindings`))
+				})
+			})
+
+			When("getting binding request details fails", func() {
+				BeforeEach(func() {
+					fakeStorage.GetBindRequestDetailsReturnsOnCall(1, storage.JSONObject{}, errors.New("cant get binding request details"))
+				})
+
+				It("should error", func() {
+					_, err := serviceBroker.Update(context.TODO(), instanceID, upgradeDetails, true)
+					Expect(err).To(MatchError(`error retrieving bind request details for instance "test-instance-id": cant get binding request details`))
+				})
+			})
+		})
+
+		Context("instance context variables", func() {
+			Describe("variables of previous provision or updates", func() {
+				It("should populate the instance context with variables of previous provision or updates", func() {
+					fakeStorage.GetProvisionRequestDetailsReturns(map[string]interface{}{"foo": "bar", "baz": "quz"}, nil)
+
+					_, err := serviceBroker.Update(context.TODO(), instanceID, upgradeDetails, true)
+					Expect(err).ToNot(HaveOccurred())
+
+					By("validating provider update has been called")
+					Expect(fakeServiceProvider.UpgradeCallCount()).To(Equal(1))
+					_, actualInstanceVars, _ := fakeServiceProvider.UpgradeArgsForCall(0)
+					Expect(actualInstanceVars.GetString("foo")).To(Equal("bar"))
+					Expect(actualInstanceVars.GetString("baz")).To(Equal("quz"))
+				})
 			})
 		})
 	})
 
-	Describe("context variables", func() {
+	Describe("instance context variables", func() {
 		Describe("passing variables on provision and update", func() {
 			BeforeEach(func() {
 				fakeStorage.GetProvisionRequestDetailsReturns(map[string]interface{}{"foo": "bar", "baz": "quz"}, nil)

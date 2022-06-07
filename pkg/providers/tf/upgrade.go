@@ -43,19 +43,14 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext 
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	bindingDeploymentIDs, err := provider.GetBindingDeploymentIDs(instanceDeploymentID)
-	if err != nil {
-		return models.ServiceInstanceDetails{}, err
-	}
-
-	for _, bindingDeploymentID := range bindingDeploymentIDs {
-		varContext, _ := varcontext.Builder().Build()
-		if err := provider.UpdateWorkspaceHCL(bindingDeploymentID, provider.serviceDefinition.ProvisionSettings, varContext.ToMap()); err != nil {
+	for bindingID, bindingContext := range bindingContexts {
+		bindingDeploymentID := instanceDeploymentID + bindingID
+		if err := provider.UpdateWorkspaceHCL(bindingDeploymentID, provider.serviceDefinition.BindSettings, bindingContext); err != nil {
 			return models.ServiceInstanceDetails{}, err
 		}
 	}
 
-	bindingDeployments1, err := provider.GetBindingDeployments(instanceDeploymentID)
+	bindingDeployments, err := provider.GetBindingDeployments(instanceDeploymentID)
 	if err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
@@ -67,7 +62,7 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext 
 			return
 		}
 
-		for _, bindingDeployment := range bindingDeployments1 {
+		for _, bindingDeployment := range bindingDeployments {
 			err = provider.performTerraformUpgrade(ctx, bindingDeployment.Workspace)
 			provider.MarkOperationFinished(&bindingDeployment, err)
 			//if err != nil {
