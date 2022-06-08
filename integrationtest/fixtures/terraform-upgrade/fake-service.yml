@@ -18,6 +18,10 @@ provision:
     - field_name: alpha_input
       type: string
       details: alpha input
+  outputs:
+      - field_name: provision_output
+        type: integer
+        details: provision output
 bind:
   template_refs:
     main: fake-provision.tf
@@ -25,4 +29,9 @@ bind:
     - field_name: alpha_input
       type: string
       details: alpha input
+  outputs:
+      - field_name: provision_output
+        type: integer
+        details: provision output
+
 
