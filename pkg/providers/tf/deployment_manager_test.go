@@ -466,7 +466,88 @@ var _ = Describe("DeploymentManager", func() {
 			})
 		})
 
-		When("brokerpak updates disabled", func() {
+		When("terraform upgrades enabled", func() {
+			BeforeEach(func() {
+				viper.Set(featureflags.TfUpgradeEnabled, true)
+			})
+
+			It("updates the modules but keeps the original state", func() {
+				err := deploymentManager.UpdateWorkspaceHCL(id, updatedProvisionSettings, templateVars)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("checking that the right deployment is retrieved")
+				Expect(store.GetTerraformDeploymentCallCount()).To(Equal(1))
+				Expect(store.GetTerraformDeploymentArgsForCall(0)).To(Equal(id))
+
+				By("checking that the updated deployment is stored")
+				Expect(store.StoreTerraformDeploymentCallCount()).To(Equal(1))
+				actualTerraformDeployment := store.StoreTerraformDeploymentArgsForCall(0)
+				Expect(actualTerraformDeployment.ID).To(Equal(id))
+				Expect(actualTerraformDeployment.LastOperationType).To(Equal("fake operation"))
+				Expect(actualTerraformDeployment.LastOperationState).To(Equal("fake operation state"))
+				Expect(actualTerraformDeployment.LastOperationMessage).To(Equal("fake operation message"))
+
+				By("checking that the modules and instances are updated, but the state remains the same")
+				expectedWorkspace := &workspace.TerraformWorkspace{
+					Modules: []workspace.ModuleDefinition{{
+						Name:       "brokertemplate",
+						Definition: template,
+					}},
+					Instances: []workspace.ModuleInstance{{
+						ModuleName:   "brokertemplate",
+						InstanceName: "instance",
+						Configuration: map[string]interface{}{
+							"resourceGroup": nil,
+						},
+					}},
+					Transformer: workspace.TfTransformer{
+						ParameterMappings:  []workspace.ParameterMapping{},
+						ParametersToRemove: []string{},
+						ParametersToAdd:    []workspace.ParameterMapping{},
+					},
+					State: []byte(terraformState),
+				}
+				Expect(actualTerraformDeployment.Workspace).To(Equal(expectedWorkspace))
+			})
+
+			When("getting deployment fails", func() {
+				BeforeEach(func() {
+					store.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New("boom"))
+				})
+
+				It("returns the error", func() {
+					err := deploymentManager.UpdateWorkspaceHCL(id, updatedProvisionSettings, templateVars)
+					Expect(err).To(MatchError("boom"))
+				})
+			})
+
+			When("cannot create a workspace", func() {
+				It("returns the error", func() {
+					jammedOperationSettings := tf.TfServiceDefinitionV1Action{
+						Template: `
+				resource "azurerm_mssql_database" "azure_sql_db" {
+				  name                = 
+				}
+				`,
+					}
+					err := deploymentManager.UpdateWorkspaceHCL(id, jammedOperationSettings, templateVars)
+					Expect(err).To(MatchError(ContainSubstring("Invalid expression")))
+				})
+			})
+
+			When("cannot save the deployment", func() {
+				BeforeEach(func() {
+					store.StoreTerraformDeploymentReturns(errors.New("fake error"))
+				})
+
+				It("returns the error", func() {
+					err := deploymentManager.UpdateWorkspaceHCL(id, updatedProvisionSettings, templateVars)
+					Expect(err).To(MatchError("terraform provider create failed: fake error"))
+				})
+			})
+		})
+
+		When("brokerpak updates and terraform upgrades disabled", func() {
 			It("does not update the store", func() {
 				err := deploymentManager.UpdateWorkspaceHCL(id, updatedProvisionSettings, templateVars)
 				Expect(err).NotTo(HaveOccurred())

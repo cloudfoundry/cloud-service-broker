@@ -12,7 +12,6 @@ import (
 )
 
 // TODO:
-// - Create binding upgrade context
 // Make sure we always upgrade HCL when tf upgrade is enabled
 // - Refactor
 // - Add more test to integration test
