@@ -142,12 +142,12 @@ type FakeServiceProvider struct {
 		result1 models.ServiceInstanceDetails
 		result2 error
 	}
-	UpgradeStub        func(context.Context, *varcontext.VarContext, map[string]map[string]interface{}) (models.ServiceInstanceDetails, error)
+	UpgradeStub        func(context.Context, *varcontext.VarContext, map[string]*varcontext.VarContext) (models.ServiceInstanceDetails, error)
 	upgradeMutex       sync.RWMutex
 	upgradeArgsForCall []struct {
 		arg1 context.Context
 		arg2 *varcontext.VarContext
-		arg3 map[string]map[string]interface{}
+		arg3 map[string]*varcontext.VarContext
 	}
 	upgradeReturns struct {
 		result1 models.ServiceInstanceDetails
@@ -753,13 +753,13 @@ func (fake *FakeServiceProvider) UpdateReturnsOnCall(i int, result1 models.Servi
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) Upgrade(arg1 context.Context, arg2 *varcontext.VarContext, arg3 map[string]map[string]interface{}) (models.ServiceInstanceDetails, error) {
+func (fake *FakeServiceProvider) Upgrade(arg1 context.Context, arg2 *varcontext.VarContext, arg3 map[string]*varcontext.VarContext) (models.ServiceInstanceDetails, error) {
 	fake.upgradeMutex.Lock()
 	ret, specificReturn := fake.upgradeReturnsOnCall[len(fake.upgradeArgsForCall)]
 	fake.upgradeArgsForCall = append(fake.upgradeArgsForCall, struct {
 		arg1 context.Context
 		arg2 *varcontext.VarContext
-		arg3 map[string]map[string]interface{}
+		arg3 map[string]*varcontext.VarContext
 	}{arg1, arg2, arg3})
 	stub := fake.UpgradeStub
 	fakeReturns := fake.upgradeReturns
@@ -780,13 +780,13 @@ func (fake *FakeServiceProvider) UpgradeCallCount() int {
 	return len(fake.upgradeArgsForCall)
 }
 
-func (fake *FakeServiceProvider) UpgradeCalls(stub func(context.Context, *varcontext.VarContext, map[string]map[string]interface{}) (models.ServiceInstanceDetails, error)) {
+func (fake *FakeServiceProvider) UpgradeCalls(stub func(context.Context, *varcontext.VarContext, map[string]*varcontext.VarContext) (models.ServiceInstanceDetails, error)) {
 	fake.upgradeMutex.Lock()
 	defer fake.upgradeMutex.Unlock()
 	fake.UpgradeStub = stub
 }
 
-func (fake *FakeServiceProvider) UpgradeArgsForCall(i int) (context.Context, *varcontext.VarContext, map[string]map[string]interface{}) {
+func (fake *FakeServiceProvider) UpgradeArgsForCall(i int) (context.Context, *varcontext.VarContext, map[string]*varcontext.VarContext) {
 	fake.upgradeMutex.RLock()
 	defer fake.upgradeMutex.RUnlock()
 	argsForCall := fake.upgradeArgsForCall[i]

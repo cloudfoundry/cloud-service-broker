@@ -12,14 +12,13 @@ import (
 )
 
 // TODO:
-// Make sure we always upgrade HCL when tf upgrade is enabled
 // - Refactor
 // - Add more test to integration test
 // - Test tfID split
 // - check where is the tf_id added to the varcontext for instacens and bindings
 
 // Upgrade makes necessary updates to resources so they match plan configuration
-func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts map[string]map[string]interface{}) (models.ServiceInstanceDetails, error) {
+func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts map[string]*varcontext.VarContext) (models.ServiceInstanceDetails, error) {
 	provider.logger.Debug("upgrade", correlation.ID(ctx), lager.Data{
 		"context": instanceContext.ToMap(),
 	})
@@ -44,7 +43,7 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext 
 
 	for bindingID, bindingContext := range bindingContexts {
 		bindingDeploymentID := instanceDeploymentID + bindingID
-		if err := provider.UpdateWorkspaceHCL(bindingDeploymentID, provider.serviceDefinition.BindSettings, bindingContext); err != nil {
+		if err := provider.UpdateWorkspaceHCL(bindingDeploymentID, provider.serviceDefinition.BindSettings, bindingContext.ToMap()); err != nil {
 			return models.ServiceInstanceDetails{}, err
 		}
 	}
