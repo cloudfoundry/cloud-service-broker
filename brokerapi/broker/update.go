@@ -152,13 +152,13 @@ func (broker *ServiceBroker) doUpdate(ctx context.Context, serviceProvider broke
 	}, nil
 }
 
-func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, serviceDefinition *broker.ServiceDefinition, instance storage.ServiceInstanceDetails, plan *broker.ServicePlan) (map[string]map[string]interface{}, error) {
+func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, serviceDefinition *broker.ServiceDefinition, instance storage.ServiceInstanceDetails, plan *broker.ServicePlan) (map[string]*varcontext.VarContext, error) {
 	bindingCredentials, err := broker.store.GetAllServiceBindingCredentials(instance.GUID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving binding for instance %q: %w", instance.GUID, err)
 	}
 
-	bindingContexts := make(map[string]map[string]interface{})
+	bindingContexts := make(map[string]*varcontext.VarContext)
 	for _, bindingCredential := range bindingCredentials {
 		storedParams, err := broker.store.GetBindRequestDetails(bindingCredential.BindingGUID, instance.GUID)
 		if err != nil {
@@ -174,7 +174,7 @@ func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, servi
 		if err != nil {
 			return nil, fmt.Errorf("error constructing bind variables for instance %q: %w", instance.GUID, err)
 		}
-		bindingContexts[bindingCredential.BindingGUID] = vars.ToMap()
+		bindingContexts[bindingCredential.BindingGUID] = vars
 	}
 	return bindingContexts, nil
 }

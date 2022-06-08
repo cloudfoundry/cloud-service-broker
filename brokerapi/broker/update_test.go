@@ -401,8 +401,10 @@ var _ = Describe("Update", func() {
 				By("validating provider update has been called")
 				Expect(fakeServiceProvider.UpgradeCallCount()).To(Equal(1))
 				_, _, bindingVars := fakeServiceProvider.UpgradeArgsForCall(0)
-				Expect(bindingVars["firstBindingID"]).To(Equal(map[string]interface{}{"instance_output": "admin-user-name", "first-binding-param": "first-binding-bar"}))
-				Expect(bindingVars["secondBindingID"]).To(Equal(map[string]interface{}{"instance_output": "admin-user-name", "second-binding-param": "second-binding-bar"}))
+				Expect(bindingVars["firstBindingID"].GetString("instance_output")).To(Equal("admin-user-name"))
+				Expect(bindingVars["firstBindingID"].GetString("first-binding-param")).To(Equal("first-binding-bar"))
+				Expect(bindingVars["secondBindingID"].GetString("instance_output")).To(Equal("admin-user-name"))
+				Expect(bindingVars["secondBindingID"].GetString("second-binding-param")).To(Equal("second-binding-bar"))
 			})
 
 			When("getting binding credentials fails", func() {

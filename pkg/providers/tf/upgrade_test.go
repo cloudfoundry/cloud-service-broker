@@ -128,12 +128,10 @@ var _ = Describe("Upgrade", func() {
 				firstBindingDeployment,
 				secondBindingDeployment,
 			}
-			firstBindingVarContext  = map[string]interface{}{"first-binding-var": "first-binding-value"}
-			secondBindingVarContext = map[string]interface{}{"second-binding-var": "second-binding-value"}
-			bindingsVarContexts     = map[string]map[string]interface{}{
-				firstBindingID:  firstBindingVarContext,
-				secondBindingID: secondBindingVarContext,
-			}
+			firstBindingVars    = map[string]interface{}{"first-binding-var": "first-binding-value"}
+			secondBindingVars   = map[string]interface{}{"second-binding-var": "second-binding-value"}
+			bindingsVarContexts map[string]*varcontext.VarContext
+
 			fakeInvoker1 = &tffakes.FakeTerraformInvoker{}
 			fakeInvoker2 = &tffakes.FakeTerraformInvoker{}
 			fakeInvoker3 = &tffakes.FakeTerraformInvoker{}
@@ -162,6 +160,17 @@ var _ = Describe("Upgrade", func() {
 
 			secondBindingWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
 			secondBindingWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "second-binding-moduleName"}})
+
+			var err error
+			firstBindingVarContext, err := varcontext.Builder().MergeMap(firstBindingVars).Build()
+			Expect(err).NotTo(HaveOccurred())
+			secondBindingVarContext, err := varcontext.Builder().MergeMap(secondBindingVars).Build()
+			Expect(err).NotTo(HaveOccurred())
+
+			bindingsVarContexts = map[string]*varcontext.VarContext{
+				firstBindingID:  firstBindingVarContext,
+				secondBindingID: secondBindingVarContext,
+			}
 		})
 
 		It("upgrades all the available bindings to latest version", func() {
@@ -228,12 +237,12 @@ var _ = Describe("Upgrade", func() {
 			actualFirstBindingDeploymentID, actualFirstBindingAction, actualFirstBindingUpgradeContext := fakeDeploymentManager.UpdateWorkspaceHCLArgsForCall(1)
 			Expect(actualFirstBindingDeploymentID).To(Equal(firstBindingDeployment.ID))
 			Expect(actualFirstBindingAction).To(Equal(bindAction))
-			Expect(actualFirstBindingUpgradeContext).To(Equal(firstBindingVarContext))
+			Expect(actualFirstBindingUpgradeContext).To(Equal(firstBindingVars))
 
 			actualSecondBindingDeploymentID, actualSecondBindingAction, actualSecondBindingUpgradeContext := fakeDeploymentManager.UpdateWorkspaceHCLArgsForCall(2)
 			Expect(actualSecondBindingDeploymentID).To(Equal(secondBindingDeployment.ID))
 			Expect(actualSecondBindingAction).To(Equal(bindAction))
-			Expect(actualSecondBindingUpgradeContext).To(Equal(secondBindingVarContext))
+			Expect(actualSecondBindingUpgradeContext).To(Equal(secondBindingVars))
 		})
 	})
 
