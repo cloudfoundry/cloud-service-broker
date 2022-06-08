@@ -15,7 +15,7 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
-var _ = FDescribe("Terraform 0.12 Upgrade", func() {
+var _ = Describe("Terraform 0.12 Upgrade", func() {
 	const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
 	const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
 
