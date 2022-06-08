@@ -3,7 +3,6 @@ package tf
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
 
@@ -123,16 +122,14 @@ func (d *DeploymentManager) GetTerraformDeployment(deploymentID string) (storage
 }
 
 func (d *DeploymentManager) GetBindingDeployments(deploymentID string) ([]storage.TerraformDeployment, error) {
-	deploymentSplit := strings.Split(deploymentID, ":")
-	instanceID := deploymentSplit[1]
-	bindingCredentials, err := d.store.GetAllServiceBindingCredentials(instanceID)
+	bindingCredentials, err := d.store.GetAllServiceBindingCredentials(getInstanceIDFromTfID(deploymentID))
 	if err != nil {
 		return []storage.TerraformDeployment{}, err
 	}
 
 	var bindingDeployments []storage.TerraformDeployment
 	for _, binding := range bindingCredentials {
-		bindingDeployment, err := d.store.GetTerraformDeployment("tf:" + binding.ServiceInstanceGUID + ":" + binding.BindingGUID)
+		bindingDeployment, err := d.store.GetTerraformDeployment(generateTfID(binding.ServiceInstanceGUID, binding.BindingGUID))
 		if err != nil {
 			return []storage.TerraformDeployment{}, err
 		}
