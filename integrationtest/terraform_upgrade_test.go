@@ -2,8 +2,9 @@ package integrationtest_test
 
 import (
 	"fmt"
-	"github.com/pborman/uuid"
 	"net/http"
+
+	"github.com/pborman/uuid"
 
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
 	. "github.com/onsi/ginkgo/v2"
