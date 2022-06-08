@@ -235,14 +235,14 @@ var _ = Describe("Upgrade", func() {
 			Expect(actualUpgradeContext).To(Equal(instanceTemplateVars))
 
 			actualFirstBindingDeploymentID, actualFirstBindingAction, actualFirstBindingUpgradeContext := fakeDeploymentManager.UpdateWorkspaceHCLArgsForCall(1)
-			Expect(actualFirstBindingDeploymentID).To(Equal(firstBindingDeployment.ID))
+			Expect(actualFirstBindingDeploymentID).To(BeElementOf([]string{firstBindingDeployment.ID, secondBindingDeployment.ID}))
 			Expect(actualFirstBindingAction).To(Equal(bindAction))
-			Expect(actualFirstBindingUpgradeContext).To(Equal(firstBindingVars))
+			Expect(actualFirstBindingUpgradeContext).To(BeElementOf([]map[string]interface{}{firstBindingVars, secondBindingVars}))
 
 			actualSecondBindingDeploymentID, actualSecondBindingAction, actualSecondBindingUpgradeContext := fakeDeploymentManager.UpdateWorkspaceHCLArgsForCall(2)
-			Expect(actualSecondBindingDeploymentID).To(Equal(secondBindingDeployment.ID))
+			Expect(actualSecondBindingDeploymentID).To(BeElementOf([]string{firstBindingDeployment.ID, secondBindingDeployment.ID}))
 			Expect(actualSecondBindingAction).To(Equal(bindAction))
-			Expect(actualSecondBindingUpgradeContext).To(Equal(secondBindingVars))
+			Expect(actualSecondBindingUpgradeContext).To(BeElementOf([]map[string]interface{}{firstBindingVars, secondBindingVars}))
 		})
 	})
 
