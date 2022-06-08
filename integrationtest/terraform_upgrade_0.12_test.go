@@ -15,7 +15,7 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
-var _ = Describe("Terraform 0.12 Upgrade", func() {
+var _ = FDescribe("Terraform 0.12 Upgrade", func() {
 	const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
 	const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
 
@@ -61,7 +61,7 @@ var _ = Describe("Terraform 0.12 Upgrade", func() {
 			session.Terminate().Wait()
 			testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-upgrade-0.12-updated")
 
-			session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true", "BROKERPAK_UPDATES_ENABLED=true")
+			session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
 
 			By("running 'cf update-service'")
 			newMI := domain.MaintenanceInfo{
@@ -85,7 +85,6 @@ var _ = Describe("Terraform 0.12 Upgrade", func() {
 				By("creating a service binding")
 				bindGUID := uuid.New()
 				bindResponse := testHelper.Client().Bind(serviceInstance.GUID, bindGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
-
 				Expect(bindResponse.Error).NotTo(HaveOccurred())
 				Expect(bindResponse.StatusCode).To(Equal(http.StatusCreated))
 
@@ -93,14 +92,15 @@ var _ = Describe("Terraform 0.12 Upgrade", func() {
 				session.Terminate().Wait()
 				testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-upgrade-0.12-updated")
 
-				session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true", "BROKERPAK_UPDATES_ENABLED=true")
+				session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
 
-				By("running 'cf upgrade-service'")
+				By("validating old state")
 				Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))
 				Expect(instanceTerraformStateOutputValue(serviceInstance.GUID)).To(BeElementOf(1, 2))
 				Expect(bindingTerraformStateVersion(serviceInstance.GUID, bindGUID)).To(Equal("0.12.21"))
 				Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, bindGUID)).To(BeElementOf(1, 2))
 
+				By("running 'cf upgrade-service'")
 				newMI := domain.MaintenanceInfo{
 					Version: "1.1.6",
 				}

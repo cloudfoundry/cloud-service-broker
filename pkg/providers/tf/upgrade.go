@@ -14,7 +14,6 @@ import (
 // TODO:
 // - Refactor
 // - Add more test to integration test
-// - Test tfID split
 // - check where is the tf_id added to the varcontext for instacens and bindings
 
 // Upgrade makes necessary updates to resources so they match plan configuration
