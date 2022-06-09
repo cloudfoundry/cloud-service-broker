@@ -8,6 +8,10 @@ terraform {
 }
 
 resource "random_integer" "priority" {
-  min = 1
-  max = 100
+  min = 3
+  max = 4
+}
+
+output "provision_output" {
+  value = random_integer.priority.result
 }

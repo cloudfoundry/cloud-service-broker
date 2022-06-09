@@ -177,7 +177,7 @@ var _ = Describe("Unbind", func() {
 		})
 
 		Describe("unbind variables", func() {
-			When("unbind variables are provided", func() {
+			When("variables were provided during bind", func() {
 				BeforeEach(func() {
 					fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{"foo": "bar"}, nil)
 				})

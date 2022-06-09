@@ -89,7 +89,7 @@ func (d *DeploymentManager) OperationStatus(deploymentID string) (bool, string, 
 }
 
 func (d *DeploymentManager) UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]interface{}) error {
-	if !viper.GetBool(featureflags.DynamicHCLEnabled) {
+	if !viper.GetBool(featureflags.DynamicHCLEnabled) && !viper.GetBool(featureflags.TfUpgradeEnabled) {
 		return nil
 	}
 	deployment, err := d.store.GetTerraformDeployment(deploymentID)
@@ -119,4 +119,23 @@ func (d *DeploymentManager) UpdateWorkspaceHCL(deploymentID string, serviceDefin
 
 func (d *DeploymentManager) GetTerraformDeployment(deploymentID string) (storage.TerraformDeployment, error) {
 	return d.store.GetTerraformDeployment(deploymentID)
+}
+
+func (d *DeploymentManager) GetBindingDeployments(deploymentID string) ([]storage.TerraformDeployment, error) {
+	instanceID := getInstanceIDFromTfID(deploymentID)
+	bindingIDs, err := d.store.GetServiceBindingIDsForServiceInstance(instanceID)
+	if err != nil {
+		return []storage.TerraformDeployment{}, err
+	}
+
+	var bindingDeployments []storage.TerraformDeployment
+	for _, bindingID := range bindingIDs {
+		bindingDeployment, err := d.store.GetTerraformDeployment(generateTfID(instanceID, bindingID))
+		if err != nil {
+			return []storage.TerraformDeployment{}, err
+		}
+
+		bindingDeployments = append(bindingDeployments, bindingDeployment)
+	}
+	return bindingDeployments, nil
 }

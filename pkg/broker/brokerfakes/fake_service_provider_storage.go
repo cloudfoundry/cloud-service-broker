@@ -22,6 +22,19 @@ type FakeServiceProviderStorage struct {
 		result1 bool
 		result2 error
 	}
+	GetServiceBindingsForServiceInstanceStub        func(string) ([]string, error)
+	getServiceBindingsForServiceInstanceMutex       sync.RWMutex
+	getServiceBindingsForServiceInstanceArgsForCall []struct {
+		arg1 string
+	}
+	getServiceBindingsForServiceInstanceReturns struct {
+		result1 []string
+		result2 error
+	}
+	getServiceBindingsForServiceInstanceReturnsOnCall map[int]struct {
+		result1 []string
+		result2 error
+	}
 	GetTerraformDeploymentStub        func(string) (storage.TerraformDeployment, error)
 	getTerraformDeploymentMutex       sync.RWMutex
 	getTerraformDeploymentArgsForCall []struct {
@@ -110,6 +123,70 @@ func (fake *FakeServiceProviderStorage) ExistsTerraformDeploymentReturnsOnCall(i
 	}
 	fake.existsTerraformDeploymentReturnsOnCall[i] = struct {
 		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeServiceProviderStorage) GetServiceBindingIDsForServiceInstance(arg1 string) ([]string, error) {
+	fake.getServiceBindingsForServiceInstanceMutex.Lock()
+	ret, specificReturn := fake.getServiceBindingsForServiceInstanceReturnsOnCall[len(fake.getServiceBindingsForServiceInstanceArgsForCall)]
+	fake.getServiceBindingsForServiceInstanceArgsForCall = append(fake.getServiceBindingsForServiceInstanceArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.GetServiceBindingsForServiceInstanceStub
+	fakeReturns := fake.getServiceBindingsForServiceInstanceReturns
+	fake.recordInvocation("GetServiceBindingIDsForServiceInstance", []interface{}{arg1})
+	fake.getServiceBindingsForServiceInstanceMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeServiceProviderStorage) GetServiceBindingsForServiceInstanceCallCount() int {
+	fake.getServiceBindingsForServiceInstanceMutex.RLock()
+	defer fake.getServiceBindingsForServiceInstanceMutex.RUnlock()
+	return len(fake.getServiceBindingsForServiceInstanceArgsForCall)
+}
+
+func (fake *FakeServiceProviderStorage) GetServiceBindingsForServiceInstanceCalls(stub func(string) ([]string, error)) {
+	fake.getServiceBindingsForServiceInstanceMutex.Lock()
+	defer fake.getServiceBindingsForServiceInstanceMutex.Unlock()
+	fake.GetServiceBindingsForServiceInstanceStub = stub
+}
+
+func (fake *FakeServiceProviderStorage) GetServiceBindingsForServiceInstanceArgsForCall(i int) string {
+	fake.getServiceBindingsForServiceInstanceMutex.RLock()
+	defer fake.getServiceBindingsForServiceInstanceMutex.RUnlock()
+	argsForCall := fake.getServiceBindingsForServiceInstanceArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeServiceProviderStorage) GetServiceBindingsForServiceInstanceReturns(result1 []string, result2 error) {
+	fake.getServiceBindingsForServiceInstanceMutex.Lock()
+	defer fake.getServiceBindingsForServiceInstanceMutex.Unlock()
+	fake.GetServiceBindingsForServiceInstanceStub = nil
+	fake.getServiceBindingsForServiceInstanceReturns = struct {
+		result1 []string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeServiceProviderStorage) GetServiceBindingsForServiceInstanceReturnsOnCall(i int, result1 []string, result2 error) {
+	fake.getServiceBindingsForServiceInstanceMutex.Lock()
+	defer fake.getServiceBindingsForServiceInstanceMutex.Unlock()
+	fake.GetServiceBindingsForServiceInstanceStub = nil
+	if fake.getServiceBindingsForServiceInstanceReturnsOnCall == nil {
+		fake.getServiceBindingsForServiceInstanceReturnsOnCall = make(map[int]struct {
+			result1 []string
+			result2 error
+		})
+	}
+	fake.getServiceBindingsForServiceInstanceReturnsOnCall[i] = struct {
+		result1 []string
 		result2 error
 	}{result1, result2}
 }
@@ -244,6 +321,8 @@ func (fake *FakeServiceProviderStorage) Invocations() map[string][][]interface{}
 	defer fake.invocationsMutex.RUnlock()
 	fake.existsTerraformDeploymentMutex.RLock()
 	defer fake.existsTerraformDeploymentMutex.RUnlock()
+	fake.getServiceBindingsForServiceInstanceMutex.RLock()
+	defer fake.getServiceBindingsForServiceInstanceMutex.RUnlock()
 	fake.getTerraformDeploymentMutex.RLock()
 	defer fake.getTerraformDeploymentMutex.RUnlock()
 	fake.storeTerraformDeploymentMutex.RLock()

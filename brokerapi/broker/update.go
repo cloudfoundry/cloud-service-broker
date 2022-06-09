@@ -98,14 +98,19 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	case err != nil:
 		return domain.UpdateServiceSpec{}, fmt.Errorf("error deciding update path: %w", err)
 	case operation == decider.Upgrade:
-		return broker.doUpgrade(ctx, serviceProvider, vars)
+		return broker.doUpgrade(ctx, serviceDefinition, serviceProvider, instance, vars, plan)
 	default:
 		return broker.doUpdate(ctx, serviceProvider, instance, vars, parsedDetails, mergedDetails)
 	}
 }
 
-func (broker *ServiceBroker) doUpgrade(ctx context.Context, serviceProvider broker.ServiceProvider, vars *varcontext.VarContext) (domain.UpdateServiceSpec, error) {
-	instanceDetails, err := serviceProvider.Upgrade(ctx, vars)
+func (broker *ServiceBroker) doUpgrade(ctx context.Context, serviceDefinition *broker.ServiceDefinition, serviceProvider broker.ServiceProvider, instance storage.ServiceInstanceDetails, instanceVars *varcontext.VarContext, plan *broker.ServicePlan) (domain.UpdateServiceSpec, error) {
+	bindingContexts, err := broker.createAllBindingContexts(ctx, serviceDefinition, instance, plan)
+	if err != nil {
+		return domain.UpdateServiceSpec{}, err
+	}
+
+	instanceDetails, err := serviceProvider.Upgrade(ctx, instanceVars, bindingContexts)
 	if err != nil {
 		return domain.UpdateServiceSpec{}, err
 	}
@@ -145,6 +150,33 @@ func (broker *ServiceBroker) doUpdate(ctx context.Context, serviceProvider broke
 		DashboardURL:  "",
 		OperationData: instanceDetails.OperationID,
 	}, nil
+}
+
+func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, serviceDefinition *broker.ServiceDefinition, instance storage.ServiceInstanceDetails, plan *broker.ServicePlan) ([]*varcontext.VarContext, error) {
+	bindingIDs, err := broker.store.GetServiceBindingIDsForServiceInstance(instance.GUID)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving binding for instance %q: %w", instance.GUID, err)
+	}
+
+	var bindingContexts []*varcontext.VarContext
+	for _, bindingID := range bindingIDs {
+		storedParams, err := broker.store.GetBindRequestDetails(bindingID, instance.GUID)
+		if err != nil {
+			return nil, fmt.Errorf("error retrieving bind request details for instance %q: %w", instance.GUID, err)
+		}
+
+		parsedDetails := paramparser.BindDetails{
+			PlanID:        instance.PlanGUID,
+			ServiceID:     instance.ServiceGUID,
+			RequestParams: storedParams,
+		}
+		vars, err := serviceDefinition.BindVariables(instance, bindingID, parsedDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
+		if err != nil {
+			return nil, fmt.Errorf("error constructing bind variables for instance %q: %w", instance.GUID, err)
+		}
+		bindingContexts = append(bindingContexts, vars)
+	}
+	return bindingContexts, nil
 }
 
 func mergeJSON(previousParams, newParams, importParams map[string]interface{}) (map[string]interface{}, error) {
