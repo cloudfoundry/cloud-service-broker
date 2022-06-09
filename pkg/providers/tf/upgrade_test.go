@@ -166,9 +166,9 @@ var _ = Describe("Upgrade", func() {
 			secondBindingVarContext, err := varcontext.Builder().MergeMap(secondBindingVars).Build()
 			Expect(err).NotTo(HaveOccurred())
 
-			bindingsVarContexts = map[string]*varcontext.VarContext{
-				firstBindingID:  firstBindingVarContext,
-				secondBindingID: secondBindingVarContext,
+			bindingsVarContexts = []*varcontext.VarContext{
+				firstBindingVarContext,
+				secondBindingVarContext,
 			}
 		})
 

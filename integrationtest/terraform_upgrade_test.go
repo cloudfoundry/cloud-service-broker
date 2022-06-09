@@ -78,11 +78,16 @@ var _ = Describe("Terraform Upgrade", func() {
 				serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
 				Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal("0.13.7"))
 
-				By("creating a service binding")
-				bindGUID := uuid.New()
-				bindResponse := testHelper.Client().Bind(serviceInstance.GUID, bindGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
-				Expect(bindResponse.Error).NotTo(HaveOccurred())
-				Expect(bindResponse.StatusCode).To(Equal(http.StatusCreated))
+				By("creating service bindings")
+				firstBindGUID := uuid.New()
+				firstBindResponse := testHelper.Client().Bind(serviceInstance.GUID, firstBindGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
+				Expect(firstBindResponse.Error).NotTo(HaveOccurred())
+				Expect(firstBindResponse.StatusCode).To(Equal(http.StatusCreated))
+
+				secondBindGUID := uuid.New()
+				secondBindResponse := testHelper.Client().Bind(serviceInstance.GUID, secondBindGUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil)
+				Expect(secondBindResponse.Error).NotTo(HaveOccurred())
+				Expect(secondBindResponse.StatusCode).To(Equal(http.StatusCreated))
 
 				By("updating the brokerpak and restarting the broker")
 				session.Terminate().Wait()
@@ -93,8 +98,10 @@ var _ = Describe("Terraform Upgrade", func() {
 				By("validating old state")
 				Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal("0.13.7"))
 				Expect(instanceTerraformStateOutputValue(serviceInstance.GUID)).To(BeElementOf(1, 2))
-				Expect(bindingTerraformStateVersion(serviceInstance.GUID, bindGUID)).To(Equal("0.13.7"))
-				Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, bindGUID)).To(BeElementOf(1, 2))
+				Expect(bindingTerraformStateVersion(serviceInstance.GUID, firstBindGUID)).To(Equal("0.13.7"))
+				Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, firstBindGUID)).To(BeElementOf(1, 2))
+				Expect(bindingTerraformStateVersion(serviceInstance.GUID, secondBindGUID)).To(Equal("0.13.7"))
+				Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, secondBindGUID)).To(BeElementOf(1, 2))
 
 				By("running 'cf update-service'")
 				newMI := domain.MaintenanceInfo{
@@ -108,9 +115,11 @@ var _ = Describe("Terraform Upgrade", func() {
 				Expect(instanceTerraformStateOutputValue(serviceInstance.GUID)).To(BeElementOf(3, 4))
 
 				By("observing that the binding TF state file has been updated to the latest version")
-				Expect(bindingTerraformStateVersion(serviceInstance.GUID, bindGUID)).To(Equal("1.1.6"))
+				Expect(bindingTerraformStateVersion(serviceInstance.GUID, firstBindGUID)).To(Equal("1.1.6"))
+				Expect(bindingTerraformStateVersion(serviceInstance.GUID, secondBindGUID)).To(Equal("1.1.6"))
 				By("observing that the binding TF state file has updated output value")
-				Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, bindGUID)).To(BeElementOf(3, 4))
+				Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, firstBindGUID)).To(BeElementOf(3, 4))
+				Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, secondBindGUID)).To(BeElementOf(3, 4))
 			})
 		})
 	})

@@ -55,7 +55,8 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext 
 			provider.MarkOperationFinished(&instanceDeployment, err)
 			return
 		}
-		for i := 0; i < len(bindingDeployments); i++ {
+
+		for i := range bindingDeployments {
 			err = provider.performTerraformUpgrade(ctx, bindingDeployments[i].Workspace)
 			provider.MarkOperationFinished(&bindingDeployments[i], err)
 			if err != nil {
