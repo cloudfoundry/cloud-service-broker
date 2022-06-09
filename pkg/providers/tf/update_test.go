@@ -58,7 +58,7 @@ var _ = Describe("Update", func() {
 		deployment.Workspace = fakeWorkspace
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		tfVersion := "1.1"
-		fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
+		fakeWorkspace.StateTFVersionReturns(newVersion(tfVersion), nil)
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 
 		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
@@ -76,7 +76,7 @@ var _ = Describe("Update", func() {
 		deployment.Workspace = fakeWorkspace
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		tfVersion := "1.1"
-		fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
+		fakeWorkspace.StateTFVersionReturns(newVersion(tfVersion), nil)
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 		fakeWorkspace.OutputsReturns(map[string]interface{}{"status": "status from terraform"}, nil)
 
@@ -92,7 +92,7 @@ var _ = Describe("Update", func() {
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		tfVersion := "1.1"
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
-		fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
+		fakeWorkspace.StateTFVersionReturns(newVersion(tfVersion), nil)
 		fakeDefaultInvoker.ApplyReturns(genericError)
 
 		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
@@ -170,7 +170,7 @@ var _ = Describe("Update", func() {
 			deployment.Workspace = fakeWorkspace
 			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 			tfVersion := "1.1"
-			fakeWorkspace.StateVersionReturns(newVersion(tfVersion), nil)
+			fakeWorkspace.StateTFVersionReturns(newVersion(tfVersion), nil)
 			fakeWorkspace.UpdateInstanceConfigurationReturns(genericError)
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)

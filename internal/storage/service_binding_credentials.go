@@ -60,7 +60,7 @@ func (s *Storage) GetServiceBindingCredentials(bindingID, serviceInstanceID stri
 	}, nil
 }
 
-func (s *Storage) GetServiceBindingsForServiceInstance(serviceInstanceID string) ([]string, error) {
+func (s *Storage) GetServiceBindingIDsForServiceInstance(serviceInstanceID string) ([]string, error) {
 	var receiver []models.ServiceBindingCredentials
 	if err := s.db.Where("service_instance_id = ?", serviceInstanceID).Find(&receiver).Error; err != nil {
 		return nil, err

@@ -607,16 +607,7 @@ var _ = Describe("DeploymentManager", func() {
 		})
 
 		It("gets all binding deployments for a service instance", func() {
-			fakeStore.GetAllServiceBindingCredentialsReturns([]storage.ServiceBindingCredentials{
-				{
-					ServiceInstanceGUID: "instance-guid",
-					BindingGUID:         "first-binding-guid",
-				},
-				{
-					ServiceInstanceGUID: "instance-guid",
-					BindingGUID:         "second-binding-guid",
-				},
-			}, nil)
+			fakeStore.GetServiceBindingsForServiceInstanceReturns([]string{"first-binding-guid", "second-binding-guid"}, nil)
 			firstBindingDeployment := storage.TerraformDeployment{
 				ID: "tf:instance-guid:first-binding-guid",
 			}
@@ -639,7 +630,7 @@ var _ = Describe("DeploymentManager", func() {
 		})
 
 		It("fails, when getting service bindings fails", func() {
-			fakeStore.GetAllServiceBindingCredentialsReturns([]storage.ServiceBindingCredentials{}, errors.New("cant get it now"))
+			fakeStore.GetServiceBindingsForServiceInstanceReturns([]string{}, errors.New("cant get it now"))
 
 			_, err := deploymentManager.GetBindingDeployments(existingInstanceDeploymentID)
 
@@ -647,16 +638,7 @@ var _ = Describe("DeploymentManager", func() {
 		})
 
 		It("fails, when getting a terraform deployment fails", func() {
-			fakeStore.GetAllServiceBindingCredentialsReturns([]storage.ServiceBindingCredentials{
-				{
-					ServiceInstanceGUID: "instance-guid",
-					BindingGUID:         "first-binding-guid",
-				},
-				{
-					ServiceInstanceGUID: "instance-guid",
-					BindingGUID:         "second-binding-guid",
-				},
-			}, nil)
+			fakeStore.GetServiceBindingsForServiceInstanceReturns([]string{"first-binding-guid", "second-binding-guid"}, nil)
 			fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New("cant get it now"))
 
 			_, err := deploymentManager.GetBindingDeployments(existingInstanceDeploymentID)

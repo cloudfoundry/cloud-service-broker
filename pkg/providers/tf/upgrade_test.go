@@ -76,7 +76,7 @@ var _ = Describe("Upgrade", func() {
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(1, fakeInvoker2)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(2, fakeDefaultInvoker)
 
-			fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
+			fakeWorkspace.StateTFVersionReturns(newVersion("0.0.1"), nil)
 			fakeWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "moduleName"}})
 		})
 
@@ -145,7 +145,7 @@ var _ = Describe("Upgrade", func() {
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(0, fakeInvoker1)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(1, fakeInvoker2)
 
-			fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
+			fakeWorkspace.StateTFVersionReturns(newVersion("0.0.1"), nil)
 			fakeWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "instance-moduleName"}})
 
 			fakeDeploymentManager.GetBindingDeploymentsReturns(bindingDeployments, nil)
@@ -154,10 +154,10 @@ var _ = Describe("Upgrade", func() {
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(4, fakeInvoker5)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(5, fakeInvoker6)
 
-			firstBindingWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
+			firstBindingWorkspace.StateTFVersionReturns(newVersion("0.0.1"), nil)
 			firstBindingWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "first-binding-moduleName"}})
 
-			secondBindingWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
+			secondBindingWorkspace.StateTFVersionReturns(newVersion("0.0.1"), nil)
 			secondBindingWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "second-binding-moduleName"}})
 
 			var err error
@@ -287,7 +287,7 @@ var _ = Describe("Upgrade", func() {
 		}
 		instanceTFDeployment.Workspace = fakeWorkspace
 		fakeDeploymentManager.GetTerraformDeploymentReturns(instanceTFDeployment, nil)
-		fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
+		fakeWorkspace.StateTFVersionReturns(newVersion("0.0.1"), nil)
 
 		provider := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
@@ -317,7 +317,7 @@ var _ = Describe("Upgrade", func() {
 		fakeInvoker1.ApplyReturnsOnCall(0, genericError)
 		fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(1, fakeInvoker2)
 
-		fakeWorkspace.StateVersionReturns(newVersion("0.0.1"), nil)
+		fakeWorkspace.StateTFVersionReturns(newVersion("0.0.1"), nil)
 		fakeWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "moduleName"}})
 
 		provider := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
@@ -346,7 +346,7 @@ var _ = Describe("Upgrade", func() {
 		It("fails", func() {
 			instanceTFDeployment.Workspace = fakeWorkspace
 			fakeDeploymentManager.GetTerraformDeploymentReturns(instanceTFDeployment, nil)
-			fakeWorkspace.StateVersionReturns(nil, genericError)
+			fakeWorkspace.StateTFVersionReturns(nil, genericError)
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 			_, err := provider.Upgrade(context.TODO(), instanceVarContext, nil)

@@ -123,7 +123,7 @@ func (d *DeploymentManager) GetTerraformDeployment(deploymentID string) (storage
 
 func (d *DeploymentManager) GetBindingDeployments(deploymentID string) ([]storage.TerraformDeployment, error) {
 	instanceID := getInstanceIDFromTfID(deploymentID)
-	bindingIDs, err := d.store.GetServiceBindingsForServiceInstance(instanceID)
+	bindingIDs, err := d.store.GetServiceBindingIDsForServiceInstance(instanceID)
 	if err != nil {
 		return []storage.TerraformDeployment{}, err
 	}

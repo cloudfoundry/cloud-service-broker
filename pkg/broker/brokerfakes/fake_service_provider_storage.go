@@ -127,7 +127,7 @@ func (fake *FakeServiceProviderStorage) ExistsTerraformDeploymentReturnsOnCall(i
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProviderStorage) GetServiceBindingsForServiceInstance(arg1 string) ([]string, error) {
+func (fake *FakeServiceProviderStorage) GetServiceBindingIDsForServiceInstance(arg1 string) ([]string, error) {
 	fake.getServiceBindingsForServiceInstanceMutex.Lock()
 	ret, specificReturn := fake.getServiceBindingsForServiceInstanceReturnsOnCall[len(fake.getServiceBindingsForServiceInstanceArgsForCall)]
 	fake.getServiceBindingsForServiceInstanceArgsForCall = append(fake.getServiceBindingsForServiceInstanceArgsForCall, struct {
@@ -135,7 +135,7 @@ func (fake *FakeServiceProviderStorage) GetServiceBindingsForServiceInstance(arg
 	}{arg1})
 	stub := fake.GetServiceBindingsForServiceInstanceStub
 	fakeReturns := fake.getServiceBindingsForServiceInstanceReturns
-	fake.recordInvocation("GetServiceBindingsForServiceInstance", []interface{}{arg1})
+	fake.recordInvocation("GetServiceBindingIDsForServiceInstance", []interface{}{arg1})
 	fake.getServiceBindingsForServiceInstanceMutex.Unlock()
 	if stub != nil {
 		return stub(arg1)

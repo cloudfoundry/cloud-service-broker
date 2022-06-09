@@ -153,7 +153,7 @@ func (broker *ServiceBroker) doUpdate(ctx context.Context, serviceProvider broke
 }
 
 func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, serviceDefinition *broker.ServiceDefinition, instance storage.ServiceInstanceDetails, plan *broker.ServicePlan) ([]*varcontext.VarContext, error) {
-	bindingIDs, err := broker.store.GetServiceBindingsForServiceInstance(instance.GUID)
+	bindingIDs, err := broker.store.GetServiceBindingIDsForServiceInstance(instance.GUID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving binding for instance %q: %w", instance.GUID, err)
 	}
