@@ -16,7 +16,7 @@ func (h *TestHelper) StartBrokerCommand(env ...string) *exec.Cmd {
 		os.Environ(),
 		"CSB_LISTENER_HOST=localhost",
 		"DB_TYPE=sqlite3",
-		fmt.Sprintf("DB_PATH=%s", h.databaseFile),
+		fmt.Sprintf("DB_PATH=%s", h.DatabaseFile),
 		fmt.Sprintf("PORT=%d", h.Port),
 		fmt.Sprintf("SECURITY_USER_NAME=%s", h.username),
 		fmt.Sprintf("SECURITY_USER_PASSWORD=%s", h.password),

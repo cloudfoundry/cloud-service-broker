@@ -111,7 +111,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 	})
 
 	AfterEach(func() {
-		session.Terminate()
+		session.Terminate().Wait()
 	})
 
 	When("brokerpak updates are disabled", func() {

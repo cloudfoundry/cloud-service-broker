@@ -10,6 +10,8 @@
     - Update endpoint can perform upgrades when the correct maintenance info information is passed and no other changes
       are requested.
     - Update, bind, unbind and delete operations are blocked if an upgrade has not happened first.
+- The `tf list` subcommand now prints the version of Terraform for each workspace state
+- A new "purge" subcommand can be used to remove a service instance from the database
 
 ### Fixes:
 - Broker checks the database deployment workspace readability aat startup before attempting encryption or removing salt.

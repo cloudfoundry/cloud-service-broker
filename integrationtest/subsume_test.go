@@ -24,7 +24,7 @@ var _ = Describe("Subsume", func() {
 	})
 
 	AfterEach(func() {
-		session.Terminate()
+		session.Terminate().Wait()
 	})
 
 	It("can subsume a resource", func() {

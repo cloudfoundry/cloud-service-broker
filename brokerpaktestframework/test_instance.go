@@ -267,7 +267,7 @@ func (instance *TestInstance) bind(serviceGUID, planGUID string, params map[stri
 }
 
 func (instance *TestInstance) Cleanup() error {
-	instance.serverSession.Terminate()
+	instance.serverSession.Terminate().Wait()
 	err := os.RemoveAll(instance.workspace)
 	return err
 }

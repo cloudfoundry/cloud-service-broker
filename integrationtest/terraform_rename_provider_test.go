@@ -20,7 +20,7 @@ var _ = Describe("Terraform Rename Provider", func() {
 	})
 
 	AfterEach(func() {
-		session.Terminate()
+		session.Terminate().Wait()
 	})
 
 	It("can provision when provider is renamed", func() {

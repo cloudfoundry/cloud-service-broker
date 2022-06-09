@@ -30,7 +30,7 @@ var _ = Describe("Terraform 0.12 Upgrade", func() {
 	})
 
 	AfterEach(func() {
-		session.Terminate()
+		session.Terminate().Wait()
 	})
 
 	terraformStateVersion := func(serviceInstanceGUID string) string {

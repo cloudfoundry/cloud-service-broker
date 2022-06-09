@@ -7,7 +7,7 @@ import (
 )
 
 func (h *TestHelper) DBConn() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(h.databaseFile), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(h.DatabaseFile), &gorm.Config{})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	return db
 }

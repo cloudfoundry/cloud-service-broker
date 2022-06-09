@@ -23,7 +23,7 @@ var _ = Describe("Maintenance Info", func() {
 	})
 
 	AfterEach(func() {
-		session.Terminate()
+		session.Terminate().Wait()
 	})
 
 	Context("Maintenance info", func() {

@@ -60,6 +60,20 @@ func (s *Storage) GetServiceBindingCredentials(bindingID, serviceInstanceID stri
 	}, nil
 }
 
+func (s *Storage) GetServiceBindingsForServiceInstance(serviceInstanceID string) ([]string, error) {
+	var receiver []models.ServiceBindingCredentials
+	if err := s.db.Where("service_instance_id = ?", serviceInstanceID).Find(&receiver).Error; err != nil {
+		return nil, err
+	}
+
+	result := make([]string, len(receiver))
+	for i := range receiver {
+		result[i] = receiver[i].BindingID
+	}
+
+	return result, nil
+}
+
 func (s *Storage) ExistsServiceBindingCredentials(bindingID, serviceInstanceID string) (bool, error) {
 	var count int64
 	if err := s.db.Model(&models.ServiceBindingCredentials{}).Where("service_instance_id = ? AND binding_id = ?", serviceInstanceID, bindingID).Count(&count).Error; err != nil {
