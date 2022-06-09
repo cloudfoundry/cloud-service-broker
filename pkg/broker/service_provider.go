@@ -69,5 +69,5 @@ type ServiceProviderStorage interface {
 	StoreTerraformDeployment(t storage.TerraformDeployment) error
 	GetTerraformDeployment(id string) (storage.TerraformDeployment, error)
 	ExistsTerraformDeployment(id string) (bool, error)
-	GetAllServiceBindingCredentials(instanceID string) ([]storage.ServiceBindingCredentials, error)
+	GetServiceBindingsForServiceInstance(serviceInstanceID string) ([]string, error)
 }

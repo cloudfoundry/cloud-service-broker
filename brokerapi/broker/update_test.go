@@ -409,7 +409,7 @@ var _ = Describe("Update", func() {
 
 			When("getting binding credentials fails", func() {
 				BeforeEach(func() {
-					fakeStorage.GetAllServiceBindingCredentialsReturns([]storage.ServiceBindingCredentials{}, errors.New("cant get bindings"))
+					fakeStorage.GetServiceBindingsForServiceInstanceReturns([]string{}, errors.New("cant get bindings"))
 				})
 
 				It("should error", func() {
