@@ -11,9 +11,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )
 
-// TODO:
-// - Refactor
-
 // Upgrade makes necessary updates to resources so they match plan configuration
 func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts []*varcontext.VarContext) (models.ServiceInstanceDetails, error) {
 	provider.logger.Debug("upgrade", correlation.ID(ctx), lager.Data{
@@ -72,7 +69,7 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext 
 }
 
 func (provider *TerraformProvider) performTerraformUpgrade(ctx context.Context, workspace workspace.Workspace) error {
-	currentTfVersion, err := workspace.StateVersion()
+	currentTfVersion, err := workspace.StateTFVersion()
 	if err != nil {
 		return err
 	}

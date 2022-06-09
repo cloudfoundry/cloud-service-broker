@@ -100,7 +100,7 @@ func (s *Storage) GetAllTerraformDeployments() ([]TerraformDeploymentListEntry, 
 				return fmt.Errorf("error decoding workspace %q: %w", terraformDeploymentBatch[i].ID, err)
 			}
 
-			version, err := tfWorkspace.StateVersion()
+			version, err := tfWorkspace.StateTFVersion()
 			if err != nil {
 				version = nil
 			}

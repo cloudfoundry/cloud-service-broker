@@ -15,7 +15,7 @@ type Workspace interface {
 	Serialize() (string, error)
 	HasState() bool
 
-	StateVersion() (*version.Version, error)
+	StateTFVersion() (*version.Version, error)
 	Outputs(instance string) (map[string]interface{}, error)
 	ModuleDefinitions() []ModuleDefinition
 	ModuleInstances() []ModuleInstance
