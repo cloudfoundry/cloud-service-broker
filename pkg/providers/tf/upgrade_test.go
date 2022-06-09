@@ -128,9 +128,9 @@ var _ = Describe("Upgrade", func() {
 				firstBindingDeployment,
 				secondBindingDeployment,
 			}
-			firstBindingVars    = map[string]interface{}{"first-binding-var": "first-binding-value"}
-			secondBindingVars   = map[string]interface{}{"second-binding-var": "second-binding-value"}
-			bindingsVarContexts map[string]*varcontext.VarContext
+			firstBindingVars    = map[string]interface{}{"tf_id": instanceDeploymentID + firstBindingID, "first-binding-var": "first-binding-value"}
+			secondBindingVars   = map[string]interface{}{"tf_id": instanceDeploymentID + secondBindingID, "second-binding-var": "second-binding-value"}
+			bindingsVarContexts []*varcontext.VarContext
 
 			fakeInvoker1 = &tffakes.FakeTerraformInvoker{}
 			fakeInvoker2 = &tffakes.FakeTerraformInvoker{}
@@ -193,9 +193,9 @@ var _ = Describe("Upgrade", func() {
 			By("checking the binding operations were also updated")
 			Expect(fakeDeploymentManager.MarkOperationFinishedCallCount()).To(Equal(3))
 			actualFirstBindingDeployment, _ := fakeDeploymentManager.MarkOperationFinishedArgsForCall(0)
-			Expect(actualFirstBindingDeployment.ID).To(BeElementOf([]string{firstBindingDeployment.ID, secondBindingDeployment.ID}))
+			Expect(actualFirstBindingDeployment.ID).To(Equal(firstBindingDeployment.ID))
 			actualSecondBindingDeployment, _ := fakeDeploymentManager.MarkOperationFinishedArgsForCall(1)
-			Expect(actualSecondBindingDeployment.ID).To(BeElementOf([]string{firstBindingDeployment.ID, secondBindingDeployment.ID}))
+			Expect(actualSecondBindingDeployment.ID).To(Equal(secondBindingDeployment.ID))
 
 			By("checking the invoker was called for the service instance with correct workspace")
 			Expect(fakeInvoker1.ApplyCallCount()).To(Equal(1))
@@ -234,14 +234,14 @@ var _ = Describe("Upgrade", func() {
 			Expect(actualUpgradeContext).To(Equal(instanceTemplateVars))
 
 			actualFirstBindingDeploymentID, actualFirstBindingAction, actualFirstBindingUpgradeContext := fakeDeploymentManager.UpdateWorkspaceHCLArgsForCall(1)
-			Expect(actualFirstBindingDeploymentID).To(BeElementOf([]string{firstBindingDeployment.ID, secondBindingDeployment.ID}))
+			Expect(actualFirstBindingDeploymentID).To(Equal(firstBindingDeployment.ID))
 			Expect(actualFirstBindingAction).To(Equal(bindAction))
-			Expect(actualFirstBindingUpgradeContext).To(BeElementOf([]map[string]interface{}{firstBindingVars, secondBindingVars}))
+			Expect(actualFirstBindingUpgradeContext).To(Equal(firstBindingVars))
 
 			actualSecondBindingDeploymentID, actualSecondBindingAction, actualSecondBindingUpgradeContext := fakeDeploymentManager.UpdateWorkspaceHCLArgsForCall(2)
-			Expect(actualSecondBindingDeploymentID).To(BeElementOf([]string{firstBindingDeployment.ID, secondBindingDeployment.ID}))
+			Expect(actualSecondBindingDeploymentID).To(Equal(secondBindingDeployment.ID))
 			Expect(actualSecondBindingAction).To(Equal(bindAction))
-			Expect(actualSecondBindingUpgradeContext).To(BeElementOf([]map[string]interface{}{firstBindingVars, secondBindingVars}))
+			Expect(actualSecondBindingUpgradeContext).To(Equal(secondBindingVars))
 		})
 
 		When("an apply fails for a binding", func() {
@@ -275,7 +275,7 @@ var _ = Describe("Upgrade", func() {
 				By("checking the binding operations were also finished with error")
 				Expect(fakeDeploymentManager.MarkOperationFinishedCallCount()).To(Equal(2))
 				actualFirstBindingDeployment, err := fakeDeploymentManager.MarkOperationFinishedArgsForCall(0)
-				Expect(actualFirstBindingDeployment.ID).To(BeElementOf([]string{firstBindingDeployment.ID, secondBindingDeployment.ID}))
+				Expect(actualFirstBindingDeployment.ID).To(Equal(firstBindingDeployment.ID))
 				Expect(err).To(MatchError(genericError))
 			})
 		})
