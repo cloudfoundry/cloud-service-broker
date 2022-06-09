@@ -19,7 +19,7 @@ var _ = Describe("Terraform 0.13", func() {
 	})
 
 	AfterEach(func() {
-		session.Terminate()
+		session.Terminate().Wait()
 	})
 
 	It("can provision using this Terraform version", func() {
