@@ -25,7 +25,7 @@ var _ = Describe("Multiple Updates to Properties", func() {
 	})
 
 	AfterEach(func() {
-		session.Terminate()
+		session.Terminate().Wait()
 	})
 
 	// This test was added for issue https://www.pivotaltracker.com/story/show/178213626 where a parameter that was

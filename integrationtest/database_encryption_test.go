@@ -159,7 +159,7 @@ var _ = Describe("Database Encryption", func() {
 	})
 
 	AfterEach(func() {
-		session.Terminate()
+		session.Terminate().Wait()
 	})
 
 	When("encryption is turned off", func() {

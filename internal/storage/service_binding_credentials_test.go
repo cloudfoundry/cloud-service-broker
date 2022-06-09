@@ -96,6 +96,18 @@ var _ = Describe("ServiceBindingCredentials", func() {
 		)
 	})
 
+	Describe("GetServiceBindingsForServiceInstance", func() {
+		BeforeEach(func() {
+			addFakeServiceCredentialBindings()
+		})
+
+		It("returns the bindings for the service instance", func() {
+			r, err := store.GetServiceBindingsForServiceInstance("fake-instance-id")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(r).To(ConsistOf("fake-binding-id", "fake-other-binding-id"))
+		})
+	})
+
 	Describe("ExistsServiceBindingCredentials", func() {
 		BeforeEach(func() {
 			addFakeServiceCredentialBindings()
