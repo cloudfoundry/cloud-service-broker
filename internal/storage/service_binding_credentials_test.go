@@ -106,6 +106,12 @@ var _ = Describe("ServiceBindingCredentials", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(r).To(ConsistOf("fake-binding-id", "fake-other-binding-id"))
 		})
+
+		It("returns an empty slice when no bindings are found", func() {
+			r, err := store.GetServiceBindingsForServiceInstance("instance-with-no-bindings")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(r).To(BeEmpty())
+		})
 	})
 
 	Describe("ExistsServiceBindingCredentials", func() {

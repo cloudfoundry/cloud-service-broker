@@ -34,29 +34,26 @@ var _ = Describe("Purge Service Instance", func() {
 		keepBinding1GUID, _ := testHelper.CreateBinding(keepInstance, bindParams)
 		keepBinding2GUID, _ := testHelper.CreateBinding(keepInstance, bindParams)
 
-		By("creating a service to purge")
-		purgeInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
-		purgeBinding1GUID, _ := testHelper.CreateBinding(purgeInstance, bindParams)
-		purgeBinding2GUID, _ := testHelper.CreateBinding(purgeInstance, bindParams)
+		By("creating a service without bindings to purge")
+		purgeInstanceWithoutBindings := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+
+		By("creating a service with bindings to purge")
+		purgeInstanceWithBindings := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+		purgeBinding1GUID, _ := testHelper.CreateBinding(purgeInstanceWithBindings, bindParams)
+		purgeBinding2GUID, _ := testHelper.CreateBinding(purgeInstanceWithBindings, bindParams)
 
 		By("stopping the broker")
 		brokerSession.Terminate().Wait()
 
-		By("purging the service instance")
-		cmd := exec.Command(csb, "purge", purgeInstance.GUID)
-		cmd.Env = append(
-			os.Environ(),
-			"DB_TYPE=sqlite3",
-			fmt.Sprintf("DB_PATH=%s", testHelper.DatabaseFile),
-		)
-		purgeSession, err := Start(cmd, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
-		Eventually(purgeSession).Should(Exit(0))
+		By("purging the service instances")
+		purgeServiceInstance(testHelper, purgeInstanceWithBindings.GUID)
+		purgeServiceInstance(testHelper, purgeInstanceWithoutBindings.GUID)
 
-		By("checking that we purged the service instance")
-		expectServiceInstanceStatus(testHelper, purgeInstance.GUID, BeFalse())
-		expectServiceBindingStatus(testHelper, purgeInstance.GUID, purgeBinding1GUID, BeFalse())
-		expectServiceBindingStatus(testHelper, purgeInstance.GUID, purgeBinding2GUID, BeFalse())
+		By("checking that we purged the service instances")
+		expectServiceInstanceStatus(testHelper, purgeInstanceWithoutBindings.GUID, BeFalse())
+		expectServiceInstanceStatus(testHelper, purgeInstanceWithBindings.GUID, BeFalse())
+		expectServiceBindingStatus(testHelper, purgeInstanceWithBindings.GUID, purgeBinding1GUID, BeFalse())
+		expectServiceBindingStatus(testHelper, purgeInstanceWithBindings.GUID, purgeBinding2GUID, BeFalse())
 
 		By("checking that the other service instance still exists")
 		expectServiceInstanceStatus(testHelper, keepInstance.GUID, BeTrue())
@@ -64,6 +61,18 @@ var _ = Describe("Purge Service Instance", func() {
 		expectServiceBindingStatus(testHelper, keepInstance.GUID, keepBinding2GUID, BeTrue())
 	})
 })
+
+func purgeServiceInstance(testHelper *helper.TestHelper, serviceInstanceGUID string) {
+	cmd := exec.Command(csb, "purge", serviceInstanceGUID)
+	cmd.Env = append(
+		os.Environ(),
+		"DB_TYPE=sqlite3",
+		fmt.Sprintf("DB_PATH=%s", testHelper.DatabaseFile),
+	)
+	purgeSession, err := Start(cmd, GinkgoWriter, GinkgoWriter)
+	Expect(err).WithOffset(1).NotTo(HaveOccurred())
+	Eventually(purgeSession).WithOffset(1).Should(Exit(0))
+}
 
 func expectServiceInstanceStatus(testHelper *helper.TestHelper, guid string, match types.GomegaMatcher) {
 	Expect(existsDatabaseEntry(testHelper, &models.ServiceInstanceDetails{}, "id=?", guid)).WithOffset(1).To(match, "service instance details")

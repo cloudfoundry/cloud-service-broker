@@ -17,7 +17,7 @@ func init() {
 		Long: `Lets you remove a service instance from the Cloud Service Broker database.
 
 It does not actually delete the service instance, it just removes all references from the database.
-All bindings will also be removed. This can be used to remove references to a service instance that
+All bindings will also be removed from the database. This can be used to remove references to a service instance that
 has been manually removed, or if you no longer want a service instance to be managed by the broker.
 
 If using Cloud Foundry, the steps are:
