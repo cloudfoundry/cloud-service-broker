@@ -24,6 +24,19 @@ type FakeDeploymentManagerInterface struct {
 		result1 storage.TerraformDeployment
 		result2 error
 	}
+	GetBindingDeploymentsStub        func(string) ([]storage.TerraformDeployment, error)
+	getBindingDeploymentsMutex       sync.RWMutex
+	getBindingDeploymentsArgsForCall []struct {
+		arg1 string
+	}
+	getBindingDeploymentsReturns struct {
+		result1 []storage.TerraformDeployment
+		result2 error
+	}
+	getBindingDeploymentsReturnsOnCall map[int]struct {
+		result1 []storage.TerraformDeployment
+		result2 error
+	}
 	GetTerraformDeploymentStub        func(string) (storage.TerraformDeployment, error)
 	getTerraformDeploymentMutex       sync.RWMutex
 	getTerraformDeploymentArgsForCall []struct {
@@ -154,6 +167,70 @@ func (fake *FakeDeploymentManagerInterface) CreateAndSaveDeploymentReturnsOnCall
 	}
 	fake.createAndSaveDeploymentReturnsOnCall[i] = struct {
 		result1 storage.TerraformDeployment
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeDeploymentManagerInterface) GetBindingDeployments(arg1 string) ([]storage.TerraformDeployment, error) {
+	fake.getBindingDeploymentsMutex.Lock()
+	ret, specificReturn := fake.getBindingDeploymentsReturnsOnCall[len(fake.getBindingDeploymentsArgsForCall)]
+	fake.getBindingDeploymentsArgsForCall = append(fake.getBindingDeploymentsArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.GetBindingDeploymentsStub
+	fakeReturns := fake.getBindingDeploymentsReturns
+	fake.recordInvocation("GetBindingDeployments", []interface{}{arg1})
+	fake.getBindingDeploymentsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeDeploymentManagerInterface) GetBindingDeploymentsCallCount() int {
+	fake.getBindingDeploymentsMutex.RLock()
+	defer fake.getBindingDeploymentsMutex.RUnlock()
+	return len(fake.getBindingDeploymentsArgsForCall)
+}
+
+func (fake *FakeDeploymentManagerInterface) GetBindingDeploymentsCalls(stub func(string) ([]storage.TerraformDeployment, error)) {
+	fake.getBindingDeploymentsMutex.Lock()
+	defer fake.getBindingDeploymentsMutex.Unlock()
+	fake.GetBindingDeploymentsStub = stub
+}
+
+func (fake *FakeDeploymentManagerInterface) GetBindingDeploymentsArgsForCall(i int) string {
+	fake.getBindingDeploymentsMutex.RLock()
+	defer fake.getBindingDeploymentsMutex.RUnlock()
+	argsForCall := fake.getBindingDeploymentsArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeDeploymentManagerInterface) GetBindingDeploymentsReturns(result1 []storage.TerraformDeployment, result2 error) {
+	fake.getBindingDeploymentsMutex.Lock()
+	defer fake.getBindingDeploymentsMutex.Unlock()
+	fake.GetBindingDeploymentsStub = nil
+	fake.getBindingDeploymentsReturns = struct {
+		result1 []storage.TerraformDeployment
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeDeploymentManagerInterface) GetBindingDeploymentsReturnsOnCall(i int, result1 []storage.TerraformDeployment, result2 error) {
+	fake.getBindingDeploymentsMutex.Lock()
+	defer fake.getBindingDeploymentsMutex.Unlock()
+	fake.GetBindingDeploymentsStub = nil
+	if fake.getBindingDeploymentsReturnsOnCall == nil {
+		fake.getBindingDeploymentsReturnsOnCall = make(map[int]struct {
+			result1 []storage.TerraformDeployment
+			result2 error
+		})
+	}
+	fake.getBindingDeploymentsReturnsOnCall[i] = struct {
+		result1 []storage.TerraformDeployment
 		result2 error
 	}{result1, result2}
 }
@@ -481,6 +558,8 @@ func (fake *FakeDeploymentManagerInterface) Invocations() map[string][][]interfa
 	defer fake.invocationsMutex.RUnlock()
 	fake.createAndSaveDeploymentMutex.RLock()
 	defer fake.createAndSaveDeploymentMutex.RUnlock()
+	fake.getBindingDeploymentsMutex.RLock()
+	defer fake.getBindingDeploymentsMutex.RUnlock()
 	fake.getTerraformDeploymentMutex.RLock()
 	defer fake.getTerraformDeploymentMutex.RUnlock()
 	fake.markOperationFinishedMutex.RLock()

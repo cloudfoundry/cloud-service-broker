@@ -23,7 +23,7 @@ func (provider *TerraformProvider) CheckUpgradeAvailable(deploymentGUID string) 
 }
 
 func (provider *TerraformProvider) checkTerraformVersion(workspace workspace.Workspace) error {
-	currentTfVersion, err := workspace.StateVersion()
+	currentTfVersion, err := workspace.StateTFVersion()
 	if err != nil {
 		return err
 	}

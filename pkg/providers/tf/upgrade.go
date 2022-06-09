@@ -12,41 +12,64 @@ import (
 )
 
 // Upgrade makes necessary updates to resources so they match plan configuration
-func (provider *TerraformProvider) Upgrade(ctx context.Context, upgradeContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts []*varcontext.VarContext) (models.ServiceInstanceDetails, error) {
 	provider.logger.Debug("upgrade", correlation.ID(ctx), lager.Data{
-		"context": upgradeContext.ToMap(),
+		"context": instanceContext.ToMap(),
 	})
 
-	tfID := upgradeContext.GetString("tf_id")
-	if err := upgradeContext.Error(); err != nil {
+	instanceDeploymentID := instanceContext.GetString("tf_id")
+	if err := instanceContext.Error(); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	if err := provider.UpdateWorkspaceHCL(tfID, provider.serviceDefinition.ProvisionSettings, upgradeContext.ToMap()); err != nil {
+	if err := provider.UpdateWorkspaceHCL(instanceDeploymentID, provider.serviceDefinition.ProvisionSettings, instanceContext.ToMap()); err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	deployment, err := provider.GetTerraformDeployment(tfID)
+	instanceDeployment, err := provider.GetTerraformDeployment(instanceDeploymentID)
 	if err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	workspace := deployment.Workspace
+	if err := provider.MarkOperationStarted(&instanceDeployment, models.UpgradeOperationType); err != nil {
+		return models.ServiceInstanceDetails{}, err
+	}
 
-	if err := provider.MarkOperationStarted(&deployment, models.UpgradeOperationType); err != nil {
+	for _, bindingContext := range bindingContexts {
+		bindingDeploymentID := bindingContext.GetString("tf_id")
+		if err := provider.UpdateWorkspaceHCL(bindingDeploymentID, provider.serviceDefinition.BindSettings, bindingContext.ToMap()); err != nil {
+			return models.ServiceInstanceDetails{}, err
+		}
+	}
+	bindingDeployments, err := provider.GetBindingDeployments(instanceDeploymentID)
+	if err != nil {
 		return models.ServiceInstanceDetails{}, err
 	}
 
 	go func() {
-		err = provider.performTerraformUpgrade(ctx, workspace)
-		provider.MarkOperationFinished(&deployment, err)
+		err = provider.performTerraformUpgrade(ctx, instanceDeployment.Workspace)
+		if err != nil {
+			provider.MarkOperationFinished(&instanceDeployment, err)
+			return
+		}
+
+		for i := range bindingDeployments {
+			err = provider.performTerraformUpgrade(ctx, bindingDeployments[i].Workspace)
+			provider.MarkOperationFinished(&bindingDeployments[i], err)
+			if err != nil {
+				provider.MarkOperationFinished(&instanceDeployment, err)
+				return
+			}
+		}
+
+		provider.MarkOperationFinished(&instanceDeployment, err)
 	}()
 
 	return models.ServiceInstanceDetails{}, nil
 }
 
 func (provider *TerraformProvider) performTerraformUpgrade(ctx context.Context, workspace workspace.Workspace) error {
-	currentTfVersion, err := workspace.StateVersion()
+	currentTfVersion, err := workspace.StateTFVersion()
 	if err != nil {
 		return err
 	}

@@ -47,7 +47,7 @@ func purge(serviceInstanceGUID string) {
 	encryptor := setupDBEncryption(db, logger)
 	store := storage.New(db, encryptor)
 
-	bindings, err := store.GetServiceBindingsForServiceInstance(serviceInstanceGUID)
+	bindings, err := store.GetServiceBindingIDsForServiceInstance(serviceInstanceGUID)
 	if err != nil {
 		log.Fatalf("error listing bindings: %s", err)
 	}

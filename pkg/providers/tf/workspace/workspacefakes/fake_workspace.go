@@ -82,15 +82,15 @@ type FakeWorkspace struct {
 		result1 string
 		result2 error
 	}
-	StateVersionStub        func() (*version.Version, error)
-	stateVersionMutex       sync.RWMutex
-	stateVersionArgsForCall []struct {
+	StateTFVersionStub        func() (*version.Version, error)
+	stateTFVersionMutex       sync.RWMutex
+	stateTFVersionArgsForCall []struct {
 	}
-	stateVersionReturns struct {
+	stateTFVersionReturns struct {
 		result1 *version.Version
 		result2 error
 	}
-	stateVersionReturnsOnCall map[int]struct {
+	stateTFVersionReturnsOnCall map[int]struct {
 		result1 *version.Version
 		result2 error
 	}
@@ -454,15 +454,15 @@ func (fake *FakeWorkspace) SerializeReturnsOnCall(i int, result1 string, result2
 	}{result1, result2}
 }
 
-func (fake *FakeWorkspace) StateVersion() (*version.Version, error) {
-	fake.stateVersionMutex.Lock()
-	ret, specificReturn := fake.stateVersionReturnsOnCall[len(fake.stateVersionArgsForCall)]
-	fake.stateVersionArgsForCall = append(fake.stateVersionArgsForCall, struct {
+func (fake *FakeWorkspace) StateTFVersion() (*version.Version, error) {
+	fake.stateTFVersionMutex.Lock()
+	ret, specificReturn := fake.stateTFVersionReturnsOnCall[len(fake.stateTFVersionArgsForCall)]
+	fake.stateTFVersionArgsForCall = append(fake.stateTFVersionArgsForCall, struct {
 	}{})
-	stub := fake.StateVersionStub
-	fakeReturns := fake.stateVersionReturns
-	fake.recordInvocation("StateVersion", []interface{}{})
-	fake.stateVersionMutex.Unlock()
+	stub := fake.StateTFVersionStub
+	fakeReturns := fake.stateTFVersionReturns
+	fake.recordInvocation("StateTFVersion", []interface{}{})
+	fake.stateTFVersionMutex.Unlock()
 	if stub != nil {
 		return stub()
 	}
@@ -472,39 +472,39 @@ func (fake *FakeWorkspace) StateVersion() (*version.Version, error) {
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeWorkspace) StateVersionCallCount() int {
-	fake.stateVersionMutex.RLock()
-	defer fake.stateVersionMutex.RUnlock()
-	return len(fake.stateVersionArgsForCall)
+func (fake *FakeWorkspace) StateTFVersionCallCount() int {
+	fake.stateTFVersionMutex.RLock()
+	defer fake.stateTFVersionMutex.RUnlock()
+	return len(fake.stateTFVersionArgsForCall)
 }
 
-func (fake *FakeWorkspace) StateVersionCalls(stub func() (*version.Version, error)) {
-	fake.stateVersionMutex.Lock()
-	defer fake.stateVersionMutex.Unlock()
-	fake.StateVersionStub = stub
+func (fake *FakeWorkspace) StateTFVersionCalls(stub func() (*version.Version, error)) {
+	fake.stateTFVersionMutex.Lock()
+	defer fake.stateTFVersionMutex.Unlock()
+	fake.StateTFVersionStub = stub
 }
 
-func (fake *FakeWorkspace) StateVersionReturns(result1 *version.Version, result2 error) {
-	fake.stateVersionMutex.Lock()
-	defer fake.stateVersionMutex.Unlock()
-	fake.StateVersionStub = nil
-	fake.stateVersionReturns = struct {
+func (fake *FakeWorkspace) StateTFVersionReturns(result1 *version.Version, result2 error) {
+	fake.stateTFVersionMutex.Lock()
+	defer fake.stateTFVersionMutex.Unlock()
+	fake.StateTFVersionStub = nil
+	fake.stateTFVersionReturns = struct {
 		result1 *version.Version
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeWorkspace) StateVersionReturnsOnCall(i int, result1 *version.Version, result2 error) {
-	fake.stateVersionMutex.Lock()
-	defer fake.stateVersionMutex.Unlock()
-	fake.StateVersionStub = nil
-	if fake.stateVersionReturnsOnCall == nil {
-		fake.stateVersionReturnsOnCall = make(map[int]struct {
+func (fake *FakeWorkspace) StateTFVersionReturnsOnCall(i int, result1 *version.Version, result2 error) {
+	fake.stateTFVersionMutex.Lock()
+	defer fake.stateTFVersionMutex.Unlock()
+	fake.StateTFVersionStub = nil
+	if fake.stateTFVersionReturnsOnCall == nil {
+		fake.stateTFVersionReturnsOnCall = make(map[int]struct {
 			result1 *version.Version
 			result2 error
 		})
 	}
-	fake.stateVersionReturnsOnCall[i] = struct {
+	fake.stateTFVersionReturnsOnCall[i] = struct {
 		result1 *version.Version
 		result2 error
 	}{result1, result2}
@@ -586,8 +586,8 @@ func (fake *FakeWorkspace) Invocations() map[string][][]interface{} {
 	defer fake.outputsMutex.RUnlock()
 	fake.serializeMutex.RLock()
 	defer fake.serializeMutex.RUnlock()
-	fake.stateVersionMutex.RLock()
-	defer fake.stateVersionMutex.RUnlock()
+	fake.stateTFVersionMutex.RLock()
+	defer fake.stateTFVersionMutex.RUnlock()
 	fake.updateInstanceConfigurationMutex.RLock()
 	defer fake.updateInstanceConfigurationMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

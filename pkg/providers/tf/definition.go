@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 
@@ -530,6 +531,11 @@ func (action *TfServiceDefinitionV1Action) validateTemplateOutputs() (errs *vali
 // as well as to uniquely identify the workspace.
 func generateTfID(instanceID, bindingID string) string {
 	return fmt.Sprintf("tf:%s:%s", instanceID, bindingID)
+}
+
+func getInstanceIDFromTfID(tfID string) string {
+	deploymentSplit := strings.Split(tfID, ":")
+	return deploymentSplit[1]
 }
 
 // ImportParameterMapping mapping for tf variable to service parameter

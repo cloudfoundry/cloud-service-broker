@@ -14,6 +14,15 @@ plans:
 provision:
   template_refs:
     main: fake-provision.tf
+  outputs:
+      - field_name: provision_output
+        type: integer
+        details: provision output
 bind:
   template_refs:
     main: fake-provision.tf
+  outputs:
+      - field_name: provision_output
+        type: integer
+        details: provision output
+

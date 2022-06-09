@@ -157,4 +157,5 @@ type DeploymentManagerInterface interface {
 	MarkOperationFinished(deployment *storage.TerraformDeployment, err error) error
 	OperationStatus(deploymentID string) (bool, string, error)
 	UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]interface{}) error
+	GetBindingDeployments(deploymentID string) ([]storage.TerraformDeployment, error)
 }

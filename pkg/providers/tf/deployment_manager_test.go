@@ -466,7 +466,88 @@ var _ = Describe("DeploymentManager", func() {
 			})
 		})
 
-		When("brokerpak updates disabled", func() {
+		When("terraform upgrades enabled", func() {
+			BeforeEach(func() {
+				viper.Set(featureflags.TfUpgradeEnabled, true)
+			})
+
+			It("updates the modules but keeps the original state", func() {
+				err := deploymentManager.UpdateWorkspaceHCL(id, updatedProvisionSettings, templateVars)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("checking that the right deployment is retrieved")
+				Expect(store.GetTerraformDeploymentCallCount()).To(Equal(1))
+				Expect(store.GetTerraformDeploymentArgsForCall(0)).To(Equal(id))
+
+				By("checking that the updated deployment is stored")
+				Expect(store.StoreTerraformDeploymentCallCount()).To(Equal(1))
+				actualTerraformDeployment := store.StoreTerraformDeploymentArgsForCall(0)
+				Expect(actualTerraformDeployment.ID).To(Equal(id))
+				Expect(actualTerraformDeployment.LastOperationType).To(Equal("fake operation"))
+				Expect(actualTerraformDeployment.LastOperationState).To(Equal("fake operation state"))
+				Expect(actualTerraformDeployment.LastOperationMessage).To(Equal("fake operation message"))
+
+				By("checking that the modules and instances are updated, but the state remains the same")
+				expectedWorkspace := &workspace.TerraformWorkspace{
+					Modules: []workspace.ModuleDefinition{{
+						Name:       "brokertemplate",
+						Definition: template,
+					}},
+					Instances: []workspace.ModuleInstance{{
+						ModuleName:   "brokertemplate",
+						InstanceName: "instance",
+						Configuration: map[string]interface{}{
+							"resourceGroup": nil,
+						},
+					}},
+					Transformer: workspace.TfTransformer{
+						ParameterMappings:  []workspace.ParameterMapping{},
+						ParametersToRemove: []string{},
+						ParametersToAdd:    []workspace.ParameterMapping{},
+					},
+					State: []byte(terraformState),
+				}
+				Expect(actualTerraformDeployment.Workspace).To(Equal(expectedWorkspace))
+			})
+
+			When("getting deployment fails", func() {
+				BeforeEach(func() {
+					store.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New("boom"))
+				})
+
+				It("returns the error", func() {
+					err := deploymentManager.UpdateWorkspaceHCL(id, updatedProvisionSettings, templateVars)
+					Expect(err).To(MatchError("boom"))
+				})
+			})
+
+			When("cannot create a workspace", func() {
+				It("returns the error", func() {
+					jammedOperationSettings := tf.TfServiceDefinitionV1Action{
+						Template: `
+				resource "azurerm_mssql_database" "azure_sql_db" {
+				  name                = 
+				}
+				`,
+					}
+					err := deploymentManager.UpdateWorkspaceHCL(id, jammedOperationSettings, templateVars)
+					Expect(err).To(MatchError(ContainSubstring("Invalid expression")))
+				})
+			})
+
+			When("cannot save the deployment", func() {
+				BeforeEach(func() {
+					store.StoreTerraformDeploymentReturns(errors.New("fake error"))
+				})
+
+				It("returns the error", func() {
+					err := deploymentManager.UpdateWorkspaceHCL(id, updatedProvisionSettings, templateVars)
+					Expect(err).To(MatchError("terraform provider create failed: fake error"))
+				})
+			})
+		})
+
+		When("brokerpak updates and terraform upgrades disabled", func() {
 			It("does not update the store", func() {
 				err := deploymentManager.UpdateWorkspaceHCL(id, updatedProvisionSettings, templateVars)
 				Expect(err).NotTo(HaveOccurred())
@@ -507,6 +588,60 @@ var _ = Describe("DeploymentManager", func() {
 			fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New("cant get it now"))
 
 			_, err := deploymentManager.GetTerraformDeployment(existingDeploymentID)
+
+			Expect(err).To(MatchError("cant get it now"))
+		})
+	})
+
+	Describe("GetBindingDeployments", func() {
+		var (
+			fakeStore         brokerfakes.FakeServiceProviderStorage
+			deploymentManager *tf.DeploymentManager
+		)
+
+		const existingInstanceDeploymentID = "tf:instance-guid:"
+
+		BeforeEach(func() {
+			fakeStore = brokerfakes.FakeServiceProviderStorage{}
+			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+		})
+
+		It("gets all binding deployments for a service instance", func() {
+			fakeStore.GetServiceBindingsForServiceInstanceReturns([]string{"first-binding-guid", "second-binding-guid"}, nil)
+			firstBindingDeployment := storage.TerraformDeployment{
+				ID: "tf:instance-guid:first-binding-guid",
+			}
+			secondBindingDeployment := storage.TerraformDeployment{
+				ID: "tf:instance-guid:second-binding-guid",
+			}
+			fakeStore.GetTerraformDeploymentReturnsOnCall(0, firstBindingDeployment, nil)
+			fakeStore.GetTerraformDeploymentReturnsOnCall(1, secondBindingDeployment, nil)
+
+			deployments, err := deploymentManager.GetBindingDeployments(existingInstanceDeploymentID)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(deployments)).To(Equal(2))
+			Expect(deployments[0]).To(Equal(firstBindingDeployment))
+			Expect(deployments[1]).To(Equal(secondBindingDeployment))
+
+			Expect(fakeStore.GetTerraformDeploymentCallCount()).To(Equal(2))
+			Expect(fakeStore.GetTerraformDeploymentArgsForCall(0)).To(Equal("tf:instance-guid:first-binding-guid"))
+			Expect(fakeStore.GetTerraformDeploymentArgsForCall(1)).To(Equal("tf:instance-guid:second-binding-guid"))
+		})
+
+		It("fails, when getting service bindings fails", func() {
+			fakeStore.GetServiceBindingsForServiceInstanceReturns([]string{}, errors.New("cant get it now"))
+
+			_, err := deploymentManager.GetBindingDeployments(existingInstanceDeploymentID)
+
+			Expect(err).To(MatchError("cant get it now"))
+		})
+
+		It("fails, when getting a terraform deployment fails", func() {
+			fakeStore.GetServiceBindingsForServiceInstanceReturns([]string{"first-binding-guid", "second-binding-guid"}, nil)
+			fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New("cant get it now"))
+
+			_, err := deploymentManager.GetBindingDeployments(existingInstanceDeploymentID)
 
 			Expect(err).To(MatchError("cant get it now"))
 		})
