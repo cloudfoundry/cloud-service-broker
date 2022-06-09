@@ -152,15 +152,15 @@ func (broker *ServiceBroker) doUpdate(ctx context.Context, serviceProvider broke
 	}, nil
 }
 
-func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, serviceDefinition *broker.ServiceDefinition, instance storage.ServiceInstanceDetails, plan *broker.ServicePlan) (map[string]*varcontext.VarContext, error) {
-	bindingCredentials, err := broker.store.GetAllServiceBindingCredentials(instance.GUID)
+func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, serviceDefinition *broker.ServiceDefinition, instance storage.ServiceInstanceDetails, plan *broker.ServicePlan) ([]*varcontext.VarContext, error) {
+	bindingIDs, err := broker.store.GetServiceBindingsForServiceInstance(instance.GUID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving binding for instance %q: %w", instance.GUID, err)
 	}
 
-	bindingContexts := make(map[string]*varcontext.VarContext)
-	for _, bindingCredential := range bindingCredentials {
-		storedParams, err := broker.store.GetBindRequestDetails(bindingCredential.BindingGUID, instance.GUID)
+	var bindingContexts []*varcontext.VarContext
+	for _, bindingID := range bindingIDs {
+		storedParams, err := broker.store.GetBindRequestDetails(bindingID, instance.GUID)
 		if err != nil {
 			return nil, fmt.Errorf("error retrieving bind request details for instance %q: %w", instance.GUID, err)
 		}
@@ -170,11 +170,11 @@ func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, servi
 			ServiceID:     instance.ServiceGUID,
 			RequestParams: storedParams,
 		}
-		vars, err := serviceDefinition.BindVariables(instance, bindingCredential.BindingGUID, parsedDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
+		vars, err := serviceDefinition.BindVariables(instance, bindingID, parsedDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
 		if err != nil {
 			return nil, fmt.Errorf("error constructing bind variables for instance %q: %w", instance.GUID, err)
 		}
-		bindingContexts[bindingCredential.BindingGUID] = vars
+		bindingContexts = append(bindingContexts, vars)
 	}
 	return bindingContexts, nil
 }

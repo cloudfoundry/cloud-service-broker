@@ -39,7 +39,7 @@ type ServiceProvider interface {
 	Update(ctx context.Context, updateContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
 
 	// Upgrade makes necessary upgrades to resources so they match plan configuration
-	Upgrade(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts map[string]*varcontext.VarContext) (models.ServiceInstanceDetails, error)
+	Upgrade(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts []*varcontext.VarContext) (models.ServiceInstanceDetails, error)
 
 	// GetImportedProperties extracts properties that should have been saved as part of subsume operation
 	GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []BrokerVariable) (map[string]interface{}, error)
@@ -69,5 +69,5 @@ type ServiceProviderStorage interface {
 	StoreTerraformDeployment(t storage.TerraformDeployment) error
 	GetTerraformDeployment(id string) (storage.TerraformDeployment, error)
 	ExistsTerraformDeployment(id string) (bool, error)
-	GetAllServiceBindingCredentials(instanceID string) ([]storage.ServiceBindingCredentials, error)
+	GetServiceBindingsForServiceInstance(serviceInstanceID string) ([]string, error)
 }

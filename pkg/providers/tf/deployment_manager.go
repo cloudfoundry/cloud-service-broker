@@ -122,14 +122,15 @@ func (d *DeploymentManager) GetTerraformDeployment(deploymentID string) (storage
 }
 
 func (d *DeploymentManager) GetBindingDeployments(deploymentID string) ([]storage.TerraformDeployment, error) {
-	bindingCredentials, err := d.store.GetAllServiceBindingCredentials(getInstanceIDFromTfID(deploymentID))
+	instanceID := getInstanceIDFromTfID(deploymentID)
+	bindingIDs, err := d.store.GetServiceBindingsForServiceInstance(instanceID)
 	if err != nil {
 		return []storage.TerraformDeployment{}, err
 	}
 
 	var bindingDeployments []storage.TerraformDeployment
-	for _, binding := range bindingCredentials {
-		bindingDeployment, err := d.store.GetTerraformDeployment(generateTfID(binding.ServiceInstanceGUID, binding.BindingGUID))
+	for _, bindingID := range bindingIDs {
+		bindingDeployment, err := d.store.GetTerraformDeployment(generateTfID(instanceID, bindingID))
 		if err != nil {
 			return []storage.TerraformDeployment{}, err
 		}

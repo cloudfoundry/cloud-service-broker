@@ -2,7 +2,6 @@ package storage_test
 
 import (
 	"errors"
-	"sort"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -97,53 +96,21 @@ var _ = Describe("ServiceBindingCredentials", func() {
 		)
 	})
 
-	Describe("GetAllServiceBindingCredentials", func() {
+	Describe("GetServiceBindingsForServiceInstance", func() {
 		BeforeEach(func() {
 			addFakeServiceCredentialBindings()
 		})
 
-		It("returns all bindings related to the instance", func() {
-			bindingCredentials, err := store.GetAllServiceBindingCredentials("fake-instance-id")
+		It("returns the bindings for the service instance", func() {
+			r, err := store.GetServiceBindingsForServiceInstance("fake-instance-id")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(len(bindingCredentials)).To(Equal(2))
-			sort.Slice(bindingCredentials, func(i, j int) bool {
-				return bindingCredentials[i].BindingGUID < bindingCredentials[j].BindingGUID
-			})
-			Expect(bindingCredentials[0].BindingGUID).To(Equal("fake-binding-id"))
-			Expect(bindingCredentials[0].ServiceGUID).To(Equal("fake-service-id"))
-			Expect(bindingCredentials[0].ServiceInstanceGUID).To(Equal("fake-instance-id"))
-			Expect(bindingCredentials[0].Credentials).To(Equal(storage.JSONObject{
-				"decrypted": map[string]interface{}{
-					"foo": "baz",
-					"bar": "quz",
-				},
-			}))
-
-			Expect(bindingCredentials[1].BindingGUID).To(Equal("fake-other-binding-id"))
-			Expect(bindingCredentials[1].ServiceGUID).To(Equal("fake-other-service-id"))
-			Expect(bindingCredentials[1].ServiceInstanceGUID).To(Equal("fake-instance-id"))
-			Expect(bindingCredentials[1].Credentials).To(Equal(storage.JSONObject{
-				"decrypted": map[string]interface{}{
-					"foo": "bar",
-				},
-			}))
+			Expect(r).To(ConsistOf("fake-binding-id", "fake-other-binding-id"))
 		})
 
-		When("no bindings exist for the instance", func() {
-			It("returns an empty array", func() {
-				bindingCredentials, err := store.GetAllServiceBindingCredentials("not-there")
-				Expect(err).NotTo(HaveOccurred())
-				Expect(len(bindingCredentials)).To(Equal(0))
-			})
-		})
-
-		When("decoding fails", func() {
-			It("returns an error", func() {
-				encryptor.DecryptReturns(nil, errors.New("bang"))
-
-				_, err := store.GetAllServiceBindingCredentials("fake-instance-id")
-				Expect(err.Error()).To(ContainSubstring(`decryption error: bang`))
-			})
+		It("returns an empty slice when no bindings are found", func() {
+			r, err := store.GetServiceBindingsForServiceInstance("instance-with-no-bindings")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(r).To(BeEmpty())
 		})
 	})
 

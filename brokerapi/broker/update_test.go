@@ -401,15 +401,15 @@ var _ = Describe("Update", func() {
 				By("validating provider update has been called")
 				Expect(fakeServiceProvider.UpgradeCallCount()).To(Equal(1))
 				_, _, bindingVars := fakeServiceProvider.UpgradeArgsForCall(0)
-				Expect(bindingVars["firstBindingID"].GetString("instance_output")).To(Equal("admin-user-name"))
-				Expect(bindingVars["firstBindingID"].GetString("first-binding-param")).To(Equal("first-binding-bar"))
-				Expect(bindingVars["secondBindingID"].GetString("instance_output")).To(Equal("admin-user-name"))
-				Expect(bindingVars["secondBindingID"].GetString("second-binding-param")).To(Equal("second-binding-bar"))
+				Expect(bindingVars[0].GetString("instance_output")).To(Equal("admin-user-name"))
+				Expect(bindingVars[0].GetString("first-binding-param")).To(Equal("first-binding-bar"))
+				Expect(bindingVars[1].GetString("instance_output")).To(Equal("admin-user-name"))
+				Expect(bindingVars[1].GetString("second-binding-param")).To(Equal("second-binding-bar"))
 			})
 
 			When("getting binding credentials fails", func() {
 				BeforeEach(func() {
-					fakeStorage.GetAllServiceBindingCredentialsReturns([]storage.ServiceBindingCredentials{}, errors.New("cant get bindings"))
+					fakeStorage.GetServiceBindingsForServiceInstanceReturns([]string{}, errors.New("cant get bindings"))
 				})
 
 				It("should error", func() {

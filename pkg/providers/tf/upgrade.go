@@ -11,12 +11,8 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )
 
-// TODO:
-// - Refactor
-// - check where is the tf_id added to the varcontext for instacens and bindings
-
 // Upgrade makes necessary updates to resources so they match plan configuration
-func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts map[string]*varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts []*varcontext.VarContext) (models.ServiceInstanceDetails, error) {
 	provider.logger.Debug("upgrade", correlation.ID(ctx), lager.Data{
 		"context": instanceContext.ToMap(),
 	})
@@ -39,13 +35,12 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext 
 		return models.ServiceInstanceDetails{}, err
 	}
 
-	for bindingID, bindingContext := range bindingContexts {
-		bindingDeploymentID := instanceDeploymentID + bindingID
+	for _, bindingContext := range bindingContexts {
+		bindingDeploymentID := bindingContext.GetString("tf_id")
 		if err := provider.UpdateWorkspaceHCL(bindingDeploymentID, provider.serviceDefinition.BindSettings, bindingContext.ToMap()); err != nil {
 			return models.ServiceInstanceDetails{}, err
 		}
 	}
-
 	bindingDeployments, err := provider.GetBindingDeployments(instanceDeploymentID)
 	if err != nil {
 		return models.ServiceInstanceDetails{}, err
@@ -58,9 +53,9 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext 
 			return
 		}
 
-		for _, bindingDeployment := range bindingDeployments {
-			err = provider.performTerraformUpgrade(ctx, bindingDeployment.Workspace)
-			provider.MarkOperationFinished(&bindingDeployment, err)
+		for i := range bindingDeployments {
+			err = provider.performTerraformUpgrade(ctx, bindingDeployments[i].Workspace)
+			provider.MarkOperationFinished(&bindingDeployments[i], err)
 			if err != nil {
 				provider.MarkOperationFinished(&instanceDeployment, err)
 				return
@@ -74,7 +69,7 @@ func (provider *TerraformProvider) Upgrade(ctx context.Context, instanceContext 
 }
 
 func (provider *TerraformProvider) performTerraformUpgrade(ctx context.Context, workspace workspace.Workspace) error {
-	currentTfVersion, err := workspace.StateVersion()
+	currentTfVersion, err := workspace.StateTFVersion()
 	if err != nil {
 		return err
 	}

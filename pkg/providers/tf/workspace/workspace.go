@@ -112,7 +112,7 @@ type TerraformWorkspace struct {
 	dir     string
 }
 
-func (workspace *TerraformWorkspace) StateVersion() (*version.Version, error) {
+func (workspace *TerraformWorkspace) StateTFVersion() (*version.Version, error) {
 	var receiver struct {
 		Version string `json:"terraform_version"`
 	}

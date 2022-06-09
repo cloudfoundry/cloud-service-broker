@@ -26,7 +26,7 @@ var _ = Describe("Info Endpoint", func() {
 	})
 
 	AfterEach(func() {
-		session.Terminate()
+		session.Terminate().Wait()
 	})
 
 	It("responds to the info endpoint", func() {
