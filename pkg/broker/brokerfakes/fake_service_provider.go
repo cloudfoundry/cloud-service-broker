@@ -9,7 +9,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 type FakeServiceProvider struct {
@@ -27,6 +26,18 @@ type FakeServiceProvider struct {
 		result1 map[string]interface{}
 		result2 error
 	}
+	CheckOperationConstraintsStub        func(string, string) error
+	checkOperationConstraintsMutex       sync.RWMutex
+	checkOperationConstraintsArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	checkOperationConstraintsReturns struct {
+		result1 error
+	}
+	checkOperationConstraintsReturnsOnCall map[int]struct {
+		result1 error
+	}
 	CheckUpgradeAvailableStub        func(string) error
 	checkUpgradeAvailableMutex       sync.RWMutex
 	checkUpgradeAvailableArgsForCall []struct {
@@ -38,13 +49,12 @@ type FakeServiceProvider struct {
 	checkUpgradeAvailableReturnsOnCall map[int]struct {
 		result1 error
 	}
-	DeprovisionStub        func(context.Context, string, domain.DeprovisionDetails, *varcontext.VarContext) (*string, error)
+	DeprovisionStub        func(context.Context, string, *varcontext.VarContext) (*string, error)
 	deprovisionMutex       sync.RWMutex
 	deprovisionArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
-		arg3 domain.DeprovisionDetails
-		arg4 *varcontext.VarContext
+		arg3 *varcontext.VarContext
 	}
 	deprovisionReturns struct {
 		result1 *string
@@ -226,6 +236,68 @@ func (fake *FakeServiceProvider) BindReturnsOnCall(i int, result1 map[string]int
 	}{result1, result2}
 }
 
+func (fake *FakeServiceProvider) CheckOperationConstraints(arg1 string, arg2 string) error {
+	fake.checkOperationConstraintsMutex.Lock()
+	ret, specificReturn := fake.checkOperationConstraintsReturnsOnCall[len(fake.checkOperationConstraintsArgsForCall)]
+	fake.checkOperationConstraintsArgsForCall = append(fake.checkOperationConstraintsArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	stub := fake.CheckOperationConstraintsStub
+	fakeReturns := fake.checkOperationConstraintsReturns
+	fake.recordInvocation("CheckOperationConstraints", []interface{}{arg1, arg2})
+	fake.checkOperationConstraintsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeServiceProvider) CheckOperationConstraintsCallCount() int {
+	fake.checkOperationConstraintsMutex.RLock()
+	defer fake.checkOperationConstraintsMutex.RUnlock()
+	return len(fake.checkOperationConstraintsArgsForCall)
+}
+
+func (fake *FakeServiceProvider) CheckOperationConstraintsCalls(stub func(string, string) error) {
+	fake.checkOperationConstraintsMutex.Lock()
+	defer fake.checkOperationConstraintsMutex.Unlock()
+	fake.CheckOperationConstraintsStub = stub
+}
+
+func (fake *FakeServiceProvider) CheckOperationConstraintsArgsForCall(i int) (string, string) {
+	fake.checkOperationConstraintsMutex.RLock()
+	defer fake.checkOperationConstraintsMutex.RUnlock()
+	argsForCall := fake.checkOperationConstraintsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeServiceProvider) CheckOperationConstraintsReturns(result1 error) {
+	fake.checkOperationConstraintsMutex.Lock()
+	defer fake.checkOperationConstraintsMutex.Unlock()
+	fake.CheckOperationConstraintsStub = nil
+	fake.checkOperationConstraintsReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeServiceProvider) CheckOperationConstraintsReturnsOnCall(i int, result1 error) {
+	fake.checkOperationConstraintsMutex.Lock()
+	defer fake.checkOperationConstraintsMutex.Unlock()
+	fake.CheckOperationConstraintsStub = nil
+	if fake.checkOperationConstraintsReturnsOnCall == nil {
+		fake.checkOperationConstraintsReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.checkOperationConstraintsReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeServiceProvider) CheckUpgradeAvailable(arg1 string) error {
 	fake.checkUpgradeAvailableMutex.Lock()
 	ret, specificReturn := fake.checkUpgradeAvailableReturnsOnCall[len(fake.checkUpgradeAvailableArgsForCall)]
@@ -287,21 +359,20 @@ func (fake *FakeServiceProvider) CheckUpgradeAvailableReturnsOnCall(i int, resul
 	}{result1}
 }
 
-func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 string, arg3 domain.DeprovisionDetails, arg4 *varcontext.VarContext) (*string, error) {
+func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 string, arg3 *varcontext.VarContext) (*string, error) {
 	fake.deprovisionMutex.Lock()
 	ret, specificReturn := fake.deprovisionReturnsOnCall[len(fake.deprovisionArgsForCall)]
 	fake.deprovisionArgsForCall = append(fake.deprovisionArgsForCall, struct {
 		arg1 context.Context
 		arg2 string
-		arg3 domain.DeprovisionDetails
-		arg4 *varcontext.VarContext
-	}{arg1, arg2, arg3, arg4})
+		arg3 *varcontext.VarContext
+	}{arg1, arg2, arg3})
 	stub := fake.DeprovisionStub
 	fakeReturns := fake.deprovisionReturns
-	fake.recordInvocation("Deprovision", []interface{}{arg1, arg2, arg3, arg4})
+	fake.recordInvocation("Deprovision", []interface{}{arg1, arg2, arg3})
 	fake.deprovisionMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3, arg4)
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -315,17 +386,17 @@ func (fake *FakeServiceProvider) DeprovisionCallCount() int {
 	return len(fake.deprovisionArgsForCall)
 }
 
-func (fake *FakeServiceProvider) DeprovisionCalls(stub func(context.Context, string, domain.DeprovisionDetails, *varcontext.VarContext) (*string, error)) {
+func (fake *FakeServiceProvider) DeprovisionCalls(stub func(context.Context, string, *varcontext.VarContext) (*string, error)) {
 	fake.deprovisionMutex.Lock()
 	defer fake.deprovisionMutex.Unlock()
 	fake.DeprovisionStub = stub
 }
 
-func (fake *FakeServiceProvider) DeprovisionArgsForCall(i int) (context.Context, string, domain.DeprovisionDetails, *varcontext.VarContext) {
+func (fake *FakeServiceProvider) DeprovisionArgsForCall(i int) (context.Context, string, *varcontext.VarContext) {
 	fake.deprovisionMutex.RLock()
 	defer fake.deprovisionMutex.RUnlock()
 	argsForCall := fake.deprovisionArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeServiceProvider) DeprovisionReturns(result1 *string, result2 error) {
@@ -829,6 +900,8 @@ func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.bindMutex.RLock()
 	defer fake.bindMutex.RUnlock()
+	fake.checkOperationConstraintsMutex.RLock()
+	defer fake.checkOperationConstraintsMutex.RUnlock()
 	fake.checkUpgradeAvailableMutex.RLock()
 	defer fake.checkUpgradeAvailableMutex.RUnlock()
 	fake.deprovisionMutex.RLock()

@@ -20,7 +20,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
@@ -55,13 +54,15 @@ type ServiceProvider interface {
 	// Deprovision deprovisions the service.
 	// If the deprovision is asynchronous (results in a long-running job), then operationId is returned.
 	// If no error and no operationId are returned, then the deprovision is expected to have been completed successfully.
-	Deprovision(ctx context.Context, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationID *string, err error)
+	Deprovision(ctx context.Context, instanceGUID string, vc *varcontext.VarContext) (*string, error)
 
 	PollInstance(ctx context.Context, instanceGUID string) (bool, string, error)
 
 	GetTerraformOutputs(ctx context.Context, instanceGUID string) (storage.JSONObject, error)
 
-	CheckUpgradeAvailable(deploymentGUID string) error
+	CheckUpgradeAvailable(deploymentID string) error
+
+	CheckOperationConstraints(deploymentID string, operationType string) error
 }
 
 //counterfeiter:generate . ServiceProviderStorage
