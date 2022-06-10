@@ -8,11 +8,10 @@ import (
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 // Deprovision performs a terraform destroy on the instance.
-func (provider *TerraformProvider) Deprovision(ctx context.Context, instanceGUID string, details domain.DeprovisionDetails, vc *varcontext.VarContext) (operationID *string, err error) {
+func (provider *TerraformProvider) Deprovision(ctx context.Context, instanceGUID string, vc *varcontext.VarContext) (*string, error) {
 	provider.logger.Debug("terraform-deprovision", correlation.ID(ctx), lager.Data{
 		"instance": instanceGUID,
 	})
