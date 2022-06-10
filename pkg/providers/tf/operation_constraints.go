@@ -18,7 +18,7 @@ func (provider *TerraformProvider) CheckOperationConstraints(deploymentID string
 
 	isProvisionOperationInProgress := deployment.LastOperationType == models.ProvisionOperationType && deployment.LastOperationState == InProgress
 	if isProvisionOperationInProgress {
-		return fmt.Errorf("operation not allowed while provision is in progress")
+		return fmt.Errorf("destroy operation not allowed while provision is in progress")
 	}
 
 	return nil

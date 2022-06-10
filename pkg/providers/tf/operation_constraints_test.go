@@ -53,7 +53,7 @@ var _ = Describe("CheckOperationConstraints", func() {
 			err := provider.CheckOperationConstraints(deploymentID, "deprovision")
 			Expect(err).To(
 				MatchError(
-					"operation not allowed while provision is in progress",
+					"destroy operation not allowed while provision is in progress",
 				),
 			)
 		})
