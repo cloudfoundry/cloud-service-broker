@@ -22,16 +22,16 @@ type FakeServiceProviderStorage struct {
 		result1 bool
 		result2 error
 	}
-	GetServiceBindingsForServiceInstanceStub        func(string) ([]string, error)
-	getServiceBindingsForServiceInstanceMutex       sync.RWMutex
-	getServiceBindingsForServiceInstanceArgsForCall []struct {
+	GetServiceBindingIDsForServiceInstanceStub        func(string) ([]string, error)
+	getServiceBindingIDsForServiceInstanceMutex       sync.RWMutex
+	getServiceBindingIDsForServiceInstanceArgsForCall []struct {
 		arg1 string
 	}
-	getServiceBindingsForServiceInstanceReturns struct {
+	getServiceBindingIDsForServiceInstanceReturns struct {
 		result1 []string
 		result2 error
 	}
-	getServiceBindingsForServiceInstanceReturnsOnCall map[int]struct {
+	getServiceBindingIDsForServiceInstanceReturnsOnCall map[int]struct {
 		result1 []string
 		result2 error
 	}
@@ -128,15 +128,15 @@ func (fake *FakeServiceProviderStorage) ExistsTerraformDeploymentReturnsOnCall(i
 }
 
 func (fake *FakeServiceProviderStorage) GetServiceBindingIDsForServiceInstance(arg1 string) ([]string, error) {
-	fake.getServiceBindingsForServiceInstanceMutex.Lock()
-	ret, specificReturn := fake.getServiceBindingsForServiceInstanceReturnsOnCall[len(fake.getServiceBindingsForServiceInstanceArgsForCall)]
-	fake.getServiceBindingsForServiceInstanceArgsForCall = append(fake.getServiceBindingsForServiceInstanceArgsForCall, struct {
+	fake.getServiceBindingIDsForServiceInstanceMutex.Lock()
+	ret, specificReturn := fake.getServiceBindingIDsForServiceInstanceReturnsOnCall[len(fake.getServiceBindingIDsForServiceInstanceArgsForCall)]
+	fake.getServiceBindingIDsForServiceInstanceArgsForCall = append(fake.getServiceBindingIDsForServiceInstanceArgsForCall, struct {
 		arg1 string
 	}{arg1})
-	stub := fake.GetServiceBindingsForServiceInstanceStub
-	fakeReturns := fake.getServiceBindingsForServiceInstanceReturns
+	stub := fake.GetServiceBindingIDsForServiceInstanceStub
+	fakeReturns := fake.getServiceBindingIDsForServiceInstanceReturns
 	fake.recordInvocation("GetServiceBindingIDsForServiceInstance", []interface{}{arg1})
-	fake.getServiceBindingsForServiceInstanceMutex.Unlock()
+	fake.getServiceBindingIDsForServiceInstanceMutex.Unlock()
 	if stub != nil {
 		return stub(arg1)
 	}
@@ -146,46 +146,46 @@ func (fake *FakeServiceProviderStorage) GetServiceBindingIDsForServiceInstance(a
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeServiceProviderStorage) GetServiceBindingsForServiceInstanceCallCount() int {
-	fake.getServiceBindingsForServiceInstanceMutex.RLock()
-	defer fake.getServiceBindingsForServiceInstanceMutex.RUnlock()
-	return len(fake.getServiceBindingsForServiceInstanceArgsForCall)
+func (fake *FakeServiceProviderStorage) GetServiceBindingIDsForServiceInstanceCallCount() int {
+	fake.getServiceBindingIDsForServiceInstanceMutex.RLock()
+	defer fake.getServiceBindingIDsForServiceInstanceMutex.RUnlock()
+	return len(fake.getServiceBindingIDsForServiceInstanceArgsForCall)
 }
 
-func (fake *FakeServiceProviderStorage) GetServiceBindingsForServiceInstanceCalls(stub func(string) ([]string, error)) {
-	fake.getServiceBindingsForServiceInstanceMutex.Lock()
-	defer fake.getServiceBindingsForServiceInstanceMutex.Unlock()
-	fake.GetServiceBindingsForServiceInstanceStub = stub
+func (fake *FakeServiceProviderStorage) GetServiceBindingIDsForServiceInstanceCalls(stub func(string) ([]string, error)) {
+	fake.getServiceBindingIDsForServiceInstanceMutex.Lock()
+	defer fake.getServiceBindingIDsForServiceInstanceMutex.Unlock()
+	fake.GetServiceBindingIDsForServiceInstanceStub = stub
 }
 
-func (fake *FakeServiceProviderStorage) GetServiceBindingsForServiceInstanceArgsForCall(i int) string {
-	fake.getServiceBindingsForServiceInstanceMutex.RLock()
-	defer fake.getServiceBindingsForServiceInstanceMutex.RUnlock()
-	argsForCall := fake.getServiceBindingsForServiceInstanceArgsForCall[i]
+func (fake *FakeServiceProviderStorage) GetServiceBindingIDsForServiceInstanceArgsForCall(i int) string {
+	fake.getServiceBindingIDsForServiceInstanceMutex.RLock()
+	defer fake.getServiceBindingIDsForServiceInstanceMutex.RUnlock()
+	argsForCall := fake.getServiceBindingIDsForServiceInstanceArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeServiceProviderStorage) GetServiceBindingsForServiceInstanceReturns(result1 []string, result2 error) {
-	fake.getServiceBindingsForServiceInstanceMutex.Lock()
-	defer fake.getServiceBindingsForServiceInstanceMutex.Unlock()
-	fake.GetServiceBindingsForServiceInstanceStub = nil
-	fake.getServiceBindingsForServiceInstanceReturns = struct {
+func (fake *FakeServiceProviderStorage) GetServiceBindingIDsForServiceInstanceReturns(result1 []string, result2 error) {
+	fake.getServiceBindingIDsForServiceInstanceMutex.Lock()
+	defer fake.getServiceBindingIDsForServiceInstanceMutex.Unlock()
+	fake.GetServiceBindingIDsForServiceInstanceStub = nil
+	fake.getServiceBindingIDsForServiceInstanceReturns = struct {
 		result1 []string
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProviderStorage) GetServiceBindingsForServiceInstanceReturnsOnCall(i int, result1 []string, result2 error) {
-	fake.getServiceBindingsForServiceInstanceMutex.Lock()
-	defer fake.getServiceBindingsForServiceInstanceMutex.Unlock()
-	fake.GetServiceBindingsForServiceInstanceStub = nil
-	if fake.getServiceBindingsForServiceInstanceReturnsOnCall == nil {
-		fake.getServiceBindingsForServiceInstanceReturnsOnCall = make(map[int]struct {
+func (fake *FakeServiceProviderStorage) GetServiceBindingIDsForServiceInstanceReturnsOnCall(i int, result1 []string, result2 error) {
+	fake.getServiceBindingIDsForServiceInstanceMutex.Lock()
+	defer fake.getServiceBindingIDsForServiceInstanceMutex.Unlock()
+	fake.GetServiceBindingIDsForServiceInstanceStub = nil
+	if fake.getServiceBindingIDsForServiceInstanceReturnsOnCall == nil {
+		fake.getServiceBindingIDsForServiceInstanceReturnsOnCall = make(map[int]struct {
 			result1 []string
 			result2 error
 		})
 	}
-	fake.getServiceBindingsForServiceInstanceReturnsOnCall[i] = struct {
+	fake.getServiceBindingIDsForServiceInstanceReturnsOnCall[i] = struct {
 		result1 []string
 		result2 error
 	}{result1, result2}
@@ -321,8 +321,8 @@ func (fake *FakeServiceProviderStorage) Invocations() map[string][][]interface{}
 	defer fake.invocationsMutex.RUnlock()
 	fake.existsTerraformDeploymentMutex.RLock()
 	defer fake.existsTerraformDeploymentMutex.RUnlock()
-	fake.getServiceBindingsForServiceInstanceMutex.RLock()
-	defer fake.getServiceBindingsForServiceInstanceMutex.RUnlock()
+	fake.getServiceBindingIDsForServiceInstanceMutex.RLock()
+	defer fake.getServiceBindingIDsForServiceInstanceMutex.RUnlock()
 	fake.getTerraformDeploymentMutex.RLock()
 	defer fake.getTerraformDeploymentMutex.RUnlock()
 	fake.storeTerraformDeploymentMutex.RLock()

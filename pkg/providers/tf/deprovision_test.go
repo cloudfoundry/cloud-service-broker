@@ -173,25 +173,4 @@ var _ = Describe("Deprovision", func() {
 		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
 		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(expectedError))
 	})
-
-	It("return and error if a provision operation is in progress", func() {
-		deployment.LastOperationType = "provision"
-		deployment.LastOperationState = tf.InProgress
-		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
-
-		provider := tf.NewTerraformProvider(
-			executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("0.12.20"))},
-			fakeInvokerBuilder,
-			fakeLogger,
-			fakeServiceDefinition,
-			fakeDeploymentManager,
-		)
-
-		_, err := provider.Deprovision(context.TODO(), instanceGUID, deprovisionContext)
-
-		Expect(err).To(
-			MatchError("destroy operation not allowed while provision is in progress"),
-		)
-		Expect(fakeDeploymentManager.MarkOperationStartedCallCount()).To(Equal(0))
-	})
 })

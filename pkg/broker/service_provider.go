@@ -60,7 +60,9 @@ type ServiceProvider interface {
 
 	GetTerraformOutputs(ctx context.Context, instanceGUID string) (storage.JSONObject, error)
 
-	CheckUpgradeAvailable(deploymentGUID string) error
+	CheckUpgradeAvailable(deploymentID string) error
+
+	CheckOperationConstraints(deploymentID string, operationType string) error
 }
 
 //counterfeiter:generate . ServiceProviderStorage

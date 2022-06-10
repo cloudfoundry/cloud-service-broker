@@ -267,6 +267,19 @@ var _ = Describe("Deprovision", func() {
 		})
 	})
 
+	When("provision is in progress for the instance", func() {
+		It("should error", func() {
+			deprovisionDetails = domain.DeprovisionDetails{
+				ServiceID: offeringID,
+				PlanID:    "some-non-existent-plan",
+			}
+			fakeServiceProvider.CheckOperationConstraintsReturns(fmt.Errorf("generic-error"))
+
+			_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
+			Expect(err).To(MatchError(`generic-error`))
+		})
+	})
+
 	When("client cannot accept async", func() {
 		It("should error", func() {
 			_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, false)
