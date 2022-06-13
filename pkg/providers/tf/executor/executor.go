@@ -78,7 +78,7 @@ func (defaultExecutor) Execute(ctx context.Context, c *exec.Cmd) (ExecutionOutpu
 	})
 
 	if err != nil {
-		return ExecutionOutput{}, fmt.Errorf("%s %v", strings.ReplaceAll(string(errors), "\n", ""), err)
+		return ExecutionOutput{}, fmt.Errorf("%s %w", strings.ReplaceAll(string(errors), "\n", " "), err)
 	}
 
 	return ExecutionOutput{
