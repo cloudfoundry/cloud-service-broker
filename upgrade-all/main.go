@@ -1,13 +1,10 @@
 package main
 
 import (
-	"crypto/tls"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -25,16 +22,9 @@ func main() {
 		panic("no broker name")
 	}
 
-	// cf curl '/v3/service_plans?service_broker_names=csb-gblue' | jfq resources.guid
+	r := NewRequester(apiURL, apiToken)
 
-	// cf curl '/v3/service_instances?per_page=5000' | jfq 'resources[upgrade_available=true].{"guid":guid,"plan_guid":relationships.service_plan.data.guid}'
-	//for each unique plan
-	//get MI version: cf curl /v3/service_plans/a6e76697-0360-48b7-93de-2447591e6e39 | jfq maintenance_info.version
-	//for each service instance:
-	//trigger update: cf curl -X PATCH /v3/service_instances/a723ea6c-37cf-4685-bfc4-6b73aceed6fe -d '{"maintenance_info":{"version":"1.1.6"}}'
-	//poll until complete: cf curl /v3/service_instances/a723ea6c-37cf-4685-bfc4-6b73aceed6fe | jfq last_operation.state
-
-	plans := plansForBroker(apiURL, apiToken, brokerName)
+	plans := plansForBroker(r, brokerName)
 
 	var planGUIDs []string
 	planVersions := make(map[string]string)
@@ -44,14 +34,42 @@ func main() {
 		planVersions[p.GUID] = p.MaintenanceInfo.Version
 	}
 
-	instances := serviceInstances(apiURL, apiToken, planGUIDs)
+	instances := serviceInstances(r, planGUIDs)
 
-	for _, instance := range instances {
-		if instance.UpgradeAvailable {
-			newVersion := planVersions[instance.Relationships.ServicePlan.Data.GUID]
-			upgrade(instance.GUID, newVersion)
-		}
+	type upgradeTask struct {
+		serviceInstanceGUID string
+		newVersion          string
 	}
+
+	work := make(chan upgradeTask)
+	go func() {
+		for _, instance := range instances {
+			if instance.UpgradeAvailable {
+				newVersion := planVersions[instance.Relationships.ServicePlan.Data.GUID]
+				fmt.Printf("Will upgrade %s to %s\n", instance.GUID, newVersion)
+				work <- upgradeTask{
+					serviceInstanceGUID: instance.GUID,
+					newVersion:          newVersion,
+				}
+			}
+		}
+		close(work)
+	}()
+
+	const workers = 10
+	var wg sync.WaitGroup
+	wg.Add(workers)
+
+	for i := 0; i < workers; i++ {
+		go func() {
+			for task := range work {
+				upgrade(r, task.serviceInstanceGUID, task.newVersion)
+			}
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
 }
 
 type plan struct {
@@ -61,38 +79,11 @@ type plan struct {
 	} `json:"maintenance_info"`
 }
 
-func plansForBroker(apiURL, apiToken, brokerName string) []plan {
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/v3/service_plans?per_page=5000&service_broker_names=%s", apiURL, brokerName), nil)
-	if err != nil {
-		panic(err)
-	}
-	request.Header.Add("Authorization", apiToken)
-
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	client := &http.Client{
-		Transport: tr,
-		Timeout:   time.Minute,
-	}
-
-	response, err := client.Do(request)
-	if err != nil {
-		panic(err)
-	}
-
-	defer response.Body.Close()
-	data, err := io.ReadAll(response.Body)
-	if err != nil {
-		panic(err)
-	}
-
+func plansForBroker(r Requester, brokerName string) []plan {
 	var receiver struct {
 		Resources []plan `json:"resources"`
 	}
-	if err := json.Unmarshal(data, &receiver); err != nil {
-		panic(err)
-	}
+	r.Get(fmt.Sprintf("v3/service_plans?per_page=5000&service_broker_names=%s", brokerName), &receiver)
 
 	return receiver.Resources
 }
@@ -107,44 +98,38 @@ type serviceInstance struct {
 			} `json:"data"`
 		} `json:"service_plan"`
 	} `json:"relationships"`
+
+	LastOperation struct {
+		Type  string `json:"type"`
+		State string `json:"state"`
+	} `json:"last_operation"`
 }
 
-func serviceInstances(apiURL, apiToken string, planGUIDs []string) []serviceInstance {
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/v3/service_instances?per_page=5000&service_plan_guids=%s", apiURL, strings.Join(planGUIDs, ",")), nil)
-	if err != nil {
-		panic(err)
-	}
-	request.Header.Add("Authorization", apiToken)
-
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	client := &http.Client{
-		Transport: tr,
-		Timeout:   time.Minute,
-	}
-
-	response, err := client.Do(request)
-	if err != nil {
-		panic(err)
-	}
-
-	defer response.Body.Close()
-	data, err := io.ReadAll(response.Body)
-	if err != nil {
-		panic(err)
-	}
-
+func serviceInstances(r Requester, planGUIDs []string) []serviceInstance {
 	var receiver struct {
 		Resources []serviceInstance `json:"resources"`
 	}
-	if err := json.Unmarshal(data, &receiver); err != nil {
-		panic(err)
-	}
+	r.Get(fmt.Sprintf("v3/service_instances?per_page=5000&service_plan_guids=%s", strings.Join(planGUIDs, ",")), &receiver)
 
 	return receiver.Resources
 }
 
-func upgrade(serviceInstanceGUID, newVersion string) {
-	fmt.Printf("upgrading %s to %s\n", serviceInstanceGUID, newVersion)
+func upgrade(r Requester, serviceInstanceGUID, newVersion string) {
+	var body struct {
+		MaintenanceInfo struct {
+			Version string `json:"version"`
+		} `json:"maintenance_info"`
+	}
+	body.MaintenanceInfo.Version = newVersion
+	r.Patch(fmt.Sprintf("v3/service_instances/%s", serviceInstanceGUID), body)
+
+	for {
+		var receiver serviceInstance
+		r.Get(fmt.Sprintf("v3/service_instances/%s", serviceInstanceGUID), &receiver)
+
+		if receiver.LastOperation.Type != "update" || receiver.LastOperation.State != "in progress" {
+			return
+		}
+		time.Sleep(time.Second)
+	}
 }
