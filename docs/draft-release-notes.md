@@ -10,6 +10,7 @@
     - Update endpoint can perform upgrades when the correct maintenance info information is passed and no other changes
       are requested. This will upgrade the instance and all related bindings.
     - Update, bind, unbind and delete operations are blocked if an upgrade has not happened first.
+    - Terraform modules can also be upgraded
 - The `tf list` subcommand now prints the version of Terraform for each workspace state
 - A new "purge" subcommand can be used to remove a service instance from the database
 

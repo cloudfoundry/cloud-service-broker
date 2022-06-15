@@ -30,7 +30,7 @@ func ExampleModuleInstance_MarshalDefinition() {
 	fmt.Printf("%s\n", string(defnJSON))
 
 	// Output: <nil>
-	// {"module":{"instance":{"foo":"bar","source":"./foo-module"}},"output":{"output1":{"value":"${module.instance.output1}"},"output2":{"value":"${module.instance.output2}"}}}
+	// {"module":{"instance":{"foo":"bar","source":"./foo-module"}},"output":{"output1":{"sensitive":true,"value":"${module.instance.output1}"},"output2":{"sensitive":true,"value":"${module.instance.output2}"}}}
 }
 
 func ExampleModuleInstance_MarshalDefinition_emptyOutputs() {
