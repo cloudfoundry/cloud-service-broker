@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -14,6 +16,7 @@ func main() {
 }
 
 func runUpgrade(apiToken, apiURL, brokerName string) {
+	log.SetOutput(os.Stdout)
 
 	r := NewRequester(apiURL, apiToken)
 
@@ -27,6 +30,8 @@ func runUpgrade(apiToken, apiURL, brokerName string) {
 		planVersions[p.GUID] = p.MaintenanceInfo.Version
 	}
 
+	log.Printf("Discovering service instances for broker: %s", brokerName)
+
 	instances := serviceInstances(r, planGUIDs)
 
 	type upgradeTask struct {
@@ -34,35 +39,64 @@ func runUpgrade(apiToken, apiURL, brokerName string) {
 		newVersion          string
 	}
 
-	work := make(chan upgradeTask)
+	upgradeQueue := make(chan upgradeTask)
+
 	go func() {
 		for _, instance := range instances {
 			if instance.UpgradeAvailable {
 				newVersion := planVersions[instance.Relationships.ServicePlan.Data.GUID]
-				fmt.Printf("Will upgrade %s to %s\n", instance.GUID, newVersion)
-				work <- upgradeTask{
+				upgradeQueue <- upgradeTask{
 					serviceInstanceGUID: instance.GUID,
 					newVersion:          newVersion,
 				}
 			}
 		}
-		close(work)
+		close(upgradeQueue)
 	}()
+
+	log.Printf("---\n"+
+		"Total instances: %d\n"+
+		"Upgradable instances: %d\n"+
+		"---\n",
+		len(instances),
+		len(upgradeQueue))
 
 	const workers = 10
 	var wg sync.WaitGroup
 	wg.Add(workers)
 
+	log.Printf("Starting Upgrade\n")
+
+	var failedInstances []string
+
 	for i := 0; i < workers; i++ {
 		go func() {
-			for task := range work {
-				upgrade(r, task.serviceInstanceGUID, task.newVersion)
+			for task := range upgradeQueue {
+				err := upgrade(r, task.serviceInstanceGUID, task.newVersion)
+				if err != nil {
+					failedInstances = append(failedInstances, task.serviceInstanceGUID)
+				}
 			}
 			wg.Done()
 		}()
 	}
 
+	totalInstances := len(instances)
+
+	for range upgradeQueue {
+		log.Printf("Upgraded %d/%d\n", totalInstances-len(upgradeQueue), totalInstances)
+	}
+
 	wg.Wait()
+
+	log.Printf("---\n"+
+		"Finished upgrade:\n"+
+		"Total instances upgraded: %d\n"+
+		"Failed to upgrade instances:\n %s\n"+
+		"---\n",
+		totalInstances-len(failedInstances),
+		strings.Join(failedInstances, "\n"))
+
 }
 
 type plan struct {
@@ -107,7 +141,7 @@ func serviceInstances(r Requester, planGUIDs []string) []serviceInstance {
 	return receiver.Resources
 }
 
-func upgrade(r Requester, serviceInstanceGUID, newVersion string) {
+func upgrade(r Requester, serviceInstanceGUID, newVersion string) error {
 	var body struct {
 		MaintenanceInfo struct {
 			Version string `json:"version"`
@@ -120,8 +154,12 @@ func upgrade(r Requester, serviceInstanceGUID, newVersion string) {
 		var receiver serviceInstance
 		r.Get(fmt.Sprintf("v3/service_instances/%s", serviceInstanceGUID), &receiver)
 
+		if receiver.LastOperation.Type == "update" && receiver.LastOperation.State == "failed" {
+			return fmt.Errorf("failed to update ")
+		}
+
 		if receiver.LastOperation.Type != "update" || receiver.LastOperation.State != "in progress" {
-			return
+			return nil
 		}
 		time.Sleep(time.Second)
 	}
