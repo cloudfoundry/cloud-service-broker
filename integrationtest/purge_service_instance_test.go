@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
@@ -71,7 +72,7 @@ func purgeServiceInstance(testHelper *helper.TestHelper, serviceInstanceGUID str
 	)
 	purgeSession, err := Start(cmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).WithOffset(1).NotTo(HaveOccurred())
-	Eventually(purgeSession).WithOffset(1).Should(Exit(0))
+	Eventually(purgeSession).WithTimeout(time.Minute).WithOffset(1).Should(Exit(0))
 }
 
 func expectServiceInstanceStatus(testHelper *helper.TestHelper, guid string, match types.GomegaMatcher) {
