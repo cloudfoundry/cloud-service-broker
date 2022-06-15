@@ -78,13 +78,23 @@ func (defaultExecutor) Execute(ctx context.Context, c *exec.Cmd) (ExecutionOutpu
 	})
 
 	if err != nil {
-		return ExecutionOutput{}, fmt.Errorf("%s %w", strings.ReplaceAll(string(errors), "\n", " "), err)
+		return ExecutionOutput{}, fmt.Errorf("%s %w", flatten(errors), err)
 	}
 
 	return ExecutionOutput{
 		StdErr: string(errors),
 		StdOut: string(output),
 	}, nil
+}
+
+func flatten(input []byte) string {
+	var lines []string
+	for _, l := range strings.Split(string(input), "\n") {
+		if line := strings.TrimSpace(l); len(line) > 0 {
+			lines = append(lines, line)
+		}
+	}
+	return strings.Join(lines, " ")
 }
 
 // CustomTerraformExecutor executes a custom Terraform binary that uses plugins
