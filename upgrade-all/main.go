@@ -2,25 +2,18 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"code.cloudfoundry.org/cli/plugin"
 )
 
 func main() {
-	apiToken := os.Getenv("CF_TOKEN")
-	if apiToken == "" {
-		panic("no token")
-	}
-	apiURL := os.Getenv("CF_API")
-	if apiURL == "" {
-		panic("no api url")
-	}
-	brokerName := os.Getenv("BROKER_NAME")
-	if brokerName == "" {
-		panic("no broker name")
-	}
+	plugin.Start(new(UpgradePlugin))
+}
+
+func runUpgrade(apiToken, apiURL, brokerName string) {
 
 	r := NewRequester(apiURL, apiToken)
 
