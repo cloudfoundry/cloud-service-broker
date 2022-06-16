@@ -16,7 +16,7 @@ func main() {
 	plugin.Start(new(UpgradePlugin))
 }
 
-func runUpgrade(apiToken, apiURL, brokerName string) {
+func runUpgrade(apiToken, apiURL, brokerName string, dryRun bool) {
 	log.SetOutput(os.Stdout)
 
 	r := NewRequester(apiURL, apiToken)
@@ -49,6 +49,10 @@ func runUpgrade(apiToken, apiURL, brokerName string) {
 		len(instances),
 		upgradableInstances)
 
+	if dryRun {
+		return
+	}
+
 	type upgradeTask struct {
 		serviceInstanceGUID string
 		newVersion          string
@@ -59,6 +63,7 @@ func runUpgrade(apiToken, apiURL, brokerName string) {
 	go func() {
 		for _, instance := range instances {
 			if instance.UpgradeAvailable {
+				log.Printf("Instance upgradable: %v", instance.GUID)
 				newVersion := planVersions[instance.Relationships.ServicePlan.Data.GUID]
 				upgradeQueue <- upgradeTask{
 					serviceInstanceGUID: instance.GUID,
@@ -66,6 +71,7 @@ func runUpgrade(apiToken, apiURL, brokerName string) {
 				}
 			}
 		}
+		log.Printf("closing upgradeQueue")
 		close(upgradeQueue)
 	}()
 
@@ -88,6 +94,7 @@ func runUpgrade(apiToken, apiURL, brokerName string) {
 	var upgraded int32
 	for i := 0; i < workers; i++ {
 		go func() {
+			defer wg.Done()
 			for task := range upgradeQueue {
 				err := upgrade(r, task.serviceInstanceGUID, task.newVersion)
 				if err != nil {
@@ -95,13 +102,13 @@ func runUpgrade(apiToken, apiURL, brokerName string) {
 				}
 				atomic.AddInt32(&upgraded, 1)
 			}
-			wg.Done()
+			log.Printf("worker done")
 		}()
 	}
 
 	for range upgradeQueue {
 		log.Printf("Upgraded %d/%d\n", upgraded, upgradableInstances)
-		time.Sleep(10 * time.Second)
+		time.Sleep(30 * time.Second)
 	}
 
 	wg.Wait()
@@ -179,7 +186,7 @@ func upgrade(r Requester, serviceInstanceGUID, newVersion string) error {
 		var receiver serviceInstance
 		r.Get(fmt.Sprintf("v3/service_instances/%s", serviceInstanceGUID), &receiver)
 
-		if receiver.LastOperation.Type == "update" && receiver.LastOperation.State == "failed" {
+		if receiver.LastOperation.State == "failed" {
 			return fmt.Errorf(receiver.LastOperation.Description)
 		}
 
