@@ -1,11 +1,10 @@
 package command
 
 import (
-	"crypto/tls"
 	"flag"
 	"fmt"
-	"net/http"
-	"time"
+
+	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/requester"
 
 	"code.cloudfoundry.org/cli/plugin"
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/validate"
@@ -38,26 +37,6 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
 		}
 	}
 
-	NewRequester(apiEndPoint, accessToken, *skipVerify)
-
+	requester.NewRequester(apiEndPoint, accessToken, *skipVerify)
 	return nil
-}
-
-type Requester struct {
-	APIBaseURL string
-	APIToken   string
-	client     *http.Client
-}
-
-func NewRequester(apiBaseURL, apiToken string, insecureSkipVerify bool) Requester {
-	return Requester{
-		APIBaseURL: apiBaseURL,
-		APIToken:   apiToken,
-		client: &http.Client{
-			Timeout: time.Minute,
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: insecureSkipVerify},
-			},
-		},
-	}
 }
