@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/ccapi"
+
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/requester"
 
 	"code.cloudfoundry.org/cli/plugin"
@@ -15,6 +17,7 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
 	if err != nil {
 		return err
 	}
+	brokerName := args[0]
 
 	accessToken, err := cliConnection.AccessToken()
 	if err != nil {
@@ -37,6 +40,32 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
 		}
 	}
 
-	requester.NewRequester(apiEndPoint, accessToken, *skipVerify)
+	r := requester.NewRequester(apiEndPoint, accessToken, *skipVerify)
+
+	servicePlans, err := ccapi.GetServicePlans(r, brokerName)
+	if err != nil {
+		return err
+	}
+
+	var planGUIDs []string
+	planVersions := make(map[string]string)
+
+	for _, p := range servicePlans {
+		planGUIDs = append(planGUIDs, p.GUID)
+		planVersions[p.GUID] = p.MaintenanceInfo.Version
+	}
+
+	//serviceInstances, err := ccapi.GetServiceInstances(r, planGUIDs)
+	//if err != nil {
+	//	return err
+	//}
+
+	//Get Broker plans
+	//Get all service instances
+	//For each service instance
+	//	if upgrade is available add to channel
+	//for n workers:
+	//	range channel perform upgrade
+
 	return nil
 }
