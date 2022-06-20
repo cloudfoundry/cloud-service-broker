@@ -5,8 +5,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -22,8 +20,6 @@ var _ = Describe("Decider", func() {
 		otherPlanWithoutMI = "fake-other-plan-id-no-mi"
 	)
 	var (
-		serviceDefinition *broker.ServiceDefinition
-
 		defaultMI *domain.MaintenanceInfo
 		higherMI  *domain.MaintenanceInfo
 	)
@@ -36,37 +32,10 @@ var _ = Describe("Decider", func() {
 		higherMI = &domain.MaintenanceInfo{
 			Version: "1.2.4",
 		}
-
-		serviceDefinition = &broker.ServiceDefinition{
-			ID: "fake-service-id",
-			Plans: []broker.ServicePlan{
-				{
-					ServicePlan: domain.ServicePlan{ID: planWithMI, MaintenanceInfo: defaultMI},
-				},
-				{
-					ServicePlan: domain.ServicePlan{ID: otherPlanWithMI, MaintenanceInfo: higherMI},
-				},
-				{
-					ServicePlan: domain.ServicePlan{ID: planWithoutMI},
-				},
-				{
-					ServicePlan: domain.ServicePlan{ID: otherPlanWithoutMI},
-				},
-			},
-		}
 	})
 
 	Describe("DecideOperation", func() {
-		It("fails when the requested plan is not in the catalog", func() {
-			details := domain.UpdateDetails{
-				PlanID: "not-in-catalog",
-			}
-
-			_, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
-			Expect(err).To(MatchError("plan not-in-catalog does not exist"))
-		})
-
-		Context("request without maintenance_info - user is attempting update", func() {
+		Context("request without maintenance_info", func() {
 			It("does not error when the catalog's plan doesn't have maintenance info either", func() {
 				details := domain.UpdateDetails{
 					PlanID: otherPlanWithoutMI,
@@ -75,7 +44,7 @@ var _ = Describe("Decider", func() {
 					},
 				}
 
-				_, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
+				_, err := decider.Decider{}.DecideOperation(nil, details)
 				Expect(err).NotTo(HaveOccurred())
 			})
 
@@ -88,7 +57,7 @@ var _ = Describe("Decider", func() {
 						},
 					}
 
-					operation, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
+					operation, err := decider.Decider{}.DecideOperation(nil, details)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(operation).To(Equal(decider.Update))
 				})
@@ -101,7 +70,7 @@ var _ = Describe("Decider", func() {
 						RawParameters: json.RawMessage(`{"foo": "bar"}`),
 					}
 
-					operation, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
+					operation, err := decider.Decider{}.DecideOperation(nil, details)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(operation).To(Equal(decider.Update))
 				})
@@ -117,58 +86,21 @@ var _ = Describe("Decider", func() {
 						},
 					}
 
-					operation, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
+					operation, err := decider.Decider{}.DecideOperation(nil, details)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(operation).To(Equal(decider.Update))
 				})
 			})
 
 			When("the desired plan has maintenance_info in the catalog", func() {
-				When("no previous maintenance_info is present in the request", func() {
-					When("the previous plan has maintenance info", func() {
-						It("should fail", func() {
-							details := domain.UpdateDetails{
-								PlanID: otherPlanWithMI,
-								PreviousValues: domain.PreviousValues{
-									PlanID: planWithMI,
-								},
-							}
+				It("fails", func() {
+					details := domain.UpdateDetails{
+						PlanID: otherPlanWithMI,
+					}
 
-							operation, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
-							Expect(err).To(MatchError("service instance needs to be upgraded before updating: maintenance info defined in broker service catalog, but not passed in request"))
-							Expect(operation).To(Equal(decider.Failed))
-						})
-					})
-				})
-
-				When("previous maintenance_info is present in the request", func() {
-					It("fails when it does not match the catalog's maintenance info for the previous plan", func() {
-						details := domain.UpdateDetails{
-							PlanID: otherPlanWithMI,
-							PreviousValues: domain.PreviousValues{
-								PlanID:          planWithMI,
-								MaintenanceInfo: higherMI,
-							},
-						}
-
-						operation, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
-						Expect(err).To(MatchError("service instance needs to be upgraded before updating: maintenance info defined in broker service catalog, but not passed in request"))
-						Expect(operation).To(Equal(decider.Failed))
-					})
-
-					It("fails when it matches the catalog's maintenance info for the previous plan", func() {
-						details := domain.UpdateDetails{
-							PlanID: otherPlanWithMI,
-							PreviousValues: domain.PreviousValues{
-								PlanID:          planWithMI,
-								MaintenanceInfo: defaultMI,
-							},
-						}
-
-						op, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
-						Expect(err).To(MatchError("service instance needs to be upgraded before updating: maintenance info defined in broker service catalog, but not passed in request"))
-						Expect(op).To(Equal(decider.Failed))
-					})
+					operation, err := decider.Decider{}.DecideOperation(defaultMI, details)
+					Expect(err).To(MatchError("service instance needs to be upgraded before updating: maintenance info defined in broker service catalog, but not passed in request"))
+					Expect(operation).To(Equal(decider.Failed))
 				})
 			})
 		})
@@ -179,14 +111,14 @@ var _ = Describe("Decider", func() {
 					It("is an update", func() {
 						details := domain.UpdateDetails{
 							PlanID:          otherPlanWithMI,
-							MaintenanceInfo: higherMI,
+							MaintenanceInfo: defaultMI,
 							PreviousValues: domain.PreviousValues{
 								PlanID:          planWithMI,
 								MaintenanceInfo: defaultMI,
 							},
 						}
 
-						operation, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
+						operation, err := decider.Decider{}.DecideOperation(defaultMI, details)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(operation).To(Equal(decider.Update))
 					})
@@ -200,7 +132,7 @@ var _ = Describe("Decider", func() {
 							RawParameters:   json.RawMessage(`{"foo": "bar"}`),
 						}
 
-						operation, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
+						operation, err := decider.Decider{}.DecideOperation(defaultMI, details)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(operation).To(Equal(decider.Update))
 					})
@@ -218,15 +150,14 @@ var _ = Describe("Decider", func() {
 							},
 						}
 
-						operation, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
+						operation, err := decider.Decider{}.DecideOperation(defaultMI, details)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(operation).To(Equal(decider.Update))
 					})
 				})
-
 			})
 
-			Context("request has different maintenance_info values", func() {
+			Context("request has different maintenance_info values to the plan", func() {
 				When("adding maintenance_info when there was none before", func() {
 					It("is an upgrade", func() {
 						details := domain.UpdateDetails{
@@ -237,7 +168,7 @@ var _ = Describe("Decider", func() {
 							},
 						}
 
-						operation, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
+						operation, err := decider.Decider{}.DecideOperation(defaultMI, details)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(operation).To(Equal(decider.Upgrade))
 					})
@@ -253,7 +184,7 @@ var _ = Describe("Decider", func() {
 							},
 						}
 
-						operation, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
+						operation, err := decider.Decider{}.DecideOperation(nil, details)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(operation).To(Equal(decider.Upgrade))
 					})
@@ -270,61 +201,26 @@ var _ = Describe("Decider", func() {
 							},
 						}
 
-						operation, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
+						operation, err := decider.Decider{}.DecideOperation(defaultMI, details)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(operation).To(Equal(decider.Upgrade))
 					})
 				})
 
 				When("there is a change of plan", func() {
-					It("fails when the previous maintenance_info does not match the previous plan maintenance_info", func() {
-						details := domain.UpdateDetails{
-							PlanID:          planWithMI,
-							MaintenanceInfo: defaultMI,
-							PreviousValues: domain.PreviousValues{
-								PlanID:          otherPlanWithMI,
-								MaintenanceInfo: defaultMI,
-							},
-						}
-
-						_, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
-						Expect(err).To(MatchError(apiresponses.NewFailureResponseBuilder(
-							errors.New("service instance needs to be upgraded before updating"),
-							http.StatusUnprocessableEntity,
-							"previous-maintenance-info-check",
-						).Build()))
-					})
-
-					It("is an update when the previous maintenance_info matches the previous plan", func() {
+					It("is an update when the previous maintenance_info differs from the requested maintenance_info", func() {
 						details := domain.UpdateDetails{
 							PlanID:          otherPlanWithMI,
 							MaintenanceInfo: higherMI,
 							PreviousValues: domain.PreviousValues{
 								PlanID:          planWithMI,
-								MaintenanceInfo: defaultMI,
+								MaintenanceInfo: higherMI,
 							},
 						}
 
-						operation, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
+						operation, err := decider.Decider{}.DecideOperation(higherMI, details)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(operation).To(Equal(decider.Update))
-					})
-
-					It("is an update when the previous plan is not in the catalog", func() {
-						details := domain.UpdateDetails{
-							PlanID:          planWithMI,
-							MaintenanceInfo: defaultMI,
-							PreviousValues: domain.PreviousValues{
-								PlanID: "fake-plan-that-does-not-exist",
-								MaintenanceInfo: &domain.MaintenanceInfo{
-									Version: "1.2.1",
-								},
-							},
-						}
-
-						operation, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
-						Expect(err).To(MatchError("service instance needs to be upgraded: plan fake-plan-that-does-not-exist does not exist. Contact the operator for assistance"))
-						Expect(operation).To(Equal(decider.Failed))
 					})
 				})
 
@@ -340,7 +236,7 @@ var _ = Describe("Decider", func() {
 							},
 						}
 
-						_, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
+						_, err := decider.Decider{}.DecideOperation(defaultMI, details)
 						Expect(err).To(MatchError(apiresponses.NewFailureResponseBuilder(
 							errors.New("service instance needs to be upgraded before updating"),
 							http.StatusUnprocessableEntity,
@@ -357,7 +253,7 @@ var _ = Describe("Decider", func() {
 						MaintenanceInfo: higherMI,
 					}
 
-					_, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
+					_, err := decider.Decider{}.DecideOperation(defaultMI, details)
 
 					Expect(err).To(MatchError(apiresponses.ErrMaintenanceInfoConflict))
 				})
@@ -368,7 +264,7 @@ var _ = Describe("Decider", func() {
 						MaintenanceInfo: defaultMI,
 					}
 
-					_, err := decider.Decider{}.DecideOperation(serviceDefinition, details)
+					_, err := decider.Decider{}.DecideOperation(nil, details)
 					Expect(err).To(MatchError(apiresponses.ErrMaintenanceInfoNilConflict))
 				})
 			})
