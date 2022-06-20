@@ -367,7 +367,7 @@ var _ = Describe("Update", func() {
 
 		When("the instance has bindings", func() {
 			BeforeEach(func() {
-				fakeStorage.GetServiceBindingsForServiceInstanceReturns([]string{"firstBindingID", "secondBindingID"}, nil)
+				fakeStorage.GetServiceBindingIDsForServiceInstanceReturns([]string{"firstBindingID", "secondBindingID"}, nil)
 
 				fakeStorage.GetServiceInstanceDetailsReturns(storage.ServiceInstanceDetails{
 					GUID:        instanceID,
@@ -398,7 +398,7 @@ var _ = Describe("Update", func() {
 
 			When("getting binding credentials fails", func() {
 				BeforeEach(func() {
-					fakeStorage.GetServiceBindingsForServiceInstanceReturns([]string{}, errors.New("cant get bindings"))
+					fakeStorage.GetServiceBindingIDsForServiceInstanceReturns([]string{}, errors.New("cant get bindings"))
 				})
 
 				It("should error", func() {
