@@ -6,15 +6,14 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
-	brokera "github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 type FakeDecider struct {
-	DecideOperationStub        func(*brokera.ServiceDefinition, domain.UpdateDetails) (decider.Operation, error)
+	DecideOperationStub        func(*domain.MaintenanceInfo, domain.UpdateDetails) (decider.Operation, error)
 	decideOperationMutex       sync.RWMutex
 	decideOperationArgsForCall []struct {
-		arg1 *brokera.ServiceDefinition
+		arg1 *domain.MaintenanceInfo
 		arg2 domain.UpdateDetails
 	}
 	decideOperationReturns struct {
@@ -29,11 +28,11 @@ type FakeDecider struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeDecider) DecideOperation(arg1 *brokera.ServiceDefinition, arg2 domain.UpdateDetails) (decider.Operation, error) {
+func (fake *FakeDecider) DecideOperation(arg1 *domain.MaintenanceInfo, arg2 domain.UpdateDetails) (decider.Operation, error) {
 	fake.decideOperationMutex.Lock()
 	ret, specificReturn := fake.decideOperationReturnsOnCall[len(fake.decideOperationArgsForCall)]
 	fake.decideOperationArgsForCall = append(fake.decideOperationArgsForCall, struct {
-		arg1 *brokera.ServiceDefinition
+		arg1 *domain.MaintenanceInfo
 		arg2 domain.UpdateDetails
 	}{arg1, arg2})
 	stub := fake.DecideOperationStub
@@ -55,13 +54,13 @@ func (fake *FakeDecider) DecideOperationCallCount() int {
 	return len(fake.decideOperationArgsForCall)
 }
 
-func (fake *FakeDecider) DecideOperationCalls(stub func(*brokera.ServiceDefinition, domain.UpdateDetails) (decider.Operation, error)) {
+func (fake *FakeDecider) DecideOperationCalls(stub func(*domain.MaintenanceInfo, domain.UpdateDetails) (decider.Operation, error)) {
 	fake.decideOperationMutex.Lock()
 	defer fake.decideOperationMutex.Unlock()
 	fake.DecideOperationStub = stub
 }
 
-func (fake *FakeDecider) DecideOperationArgsForCall(i int) (*brokera.ServiceDefinition, domain.UpdateDetails) {
+func (fake *FakeDecider) DecideOperationArgsForCall(i int) (*domain.MaintenanceInfo, domain.UpdateDetails) {
 	fake.decideOperationMutex.RLock()
 	defer fake.decideOperationMutex.RUnlock()
 	argsForCall := fake.decideOperationArgsForCall[i]

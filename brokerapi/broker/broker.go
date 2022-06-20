@@ -129,5 +129,5 @@ func generateTFBindingID(instanceID, bindingID string) string {
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 //counterfeiter:generate . Decider
 type Decider interface {
-	DecideOperation(serviceDefinition *broker.ServiceDefinition, details domain.UpdateDetails) (decider.Operation, error)
+	DecideOperation(planMaintenanceInfo *domain.MaintenanceInfo, details domain.UpdateDetails) (decider.Operation, error)
 }

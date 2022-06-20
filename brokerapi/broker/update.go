@@ -93,7 +93,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return domain.UpdateServiceSpec{}, err
 	}
 
-	operation, err := broker.decider.DecideOperation(serviceDefinition, details)
+	operation, err := broker.decider.DecideOperation(plan.MaintenanceInfo, details)
 	switch {
 	case err != nil:
 		return domain.UpdateServiceSpec{}, fmt.Errorf("error deciding update path: %w", err)
