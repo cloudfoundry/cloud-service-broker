@@ -7,7 +7,6 @@ import (
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/pkg/broker"
@@ -40,7 +39,6 @@ var _ = Describe("Update", func() {
 		updateDetails domain.UpdateDetails
 
 		fakeStorage         *brokerfakes.FakeStorage
-		fakeDecider         *brokerfakes.FakeDecider
 		fakeServiceProvider *pkgBrokerFakes.FakeServiceProvider
 	)
 
@@ -130,21 +128,24 @@ var _ = Describe("Update", func() {
 			OperationGUID:    "provision-operation-GUID",
 		}, nil)
 
-		fakeDecider = &brokerfakes.FakeDecider{}
-		fakeDecider.DecideOperationReturns(decider.Update, nil)
-
 		var err error
-		serviceBroker, err = broker.New(brokerConfig, fakeStorage, fakeDecider, utils.NewLogger("brokers-test"))
+		serviceBroker, err = broker.New(brokerConfig, fakeStorage, utils.NewLogger("brokers-test"))
 		Expect(err).ToNot(HaveOccurred())
 
 		updateDetails = domain.UpdateDetails{
 			ServiceID: offeringID,
 			PlanID:    originalPlanID,
+			MaintenanceInfo: &domain.MaintenanceInfo{
+				Version: "2.0.0",
+			},
 			PreviousValues: domain.PreviousValues{
 				PlanID:    originalPlanID,
 				ServiceID: offeringID,
 				OrgID:     orgID,
 				SpaceID:   spaceID,
+				MaintenanceInfo: &domain.MaintenanceInfo{
+					Version: "2.0.0",
+				},
 			},
 			RawContext: json.RawMessage(fmt.Sprintf(`{"organization_guid":%q, "space_guid": %q}`, orgID, spaceID)),
 		}
@@ -157,6 +158,24 @@ var _ = Describe("Update", func() {
 					OperationType: models.UpdateOperationType,
 					OperationID:   updateOperationID,
 				}, nil)
+
+				updateDetails = domain.UpdateDetails{
+					ServiceID: offeringID,
+					PlanID:    originalPlanID,
+					MaintenanceInfo: &domain.MaintenanceInfo{
+						Version: "2.0.0",
+					},
+					PreviousValues: domain.PreviousValues{
+						PlanID:    originalPlanID,
+						ServiceID: offeringID,
+						OrgID:     orgID,
+						SpaceID:   spaceID,
+						MaintenanceInfo: &domain.MaintenanceInfo{
+							Version: "2.0.0",
+						},
+					},
+					RawContext: json.RawMessage(fmt.Sprintf(`{"organization_guid":%q, "space_guid": %q}`, orgID, spaceID)),
+				}
 			})
 
 			It("should complete without changing instance", func() {
@@ -197,11 +216,17 @@ var _ = Describe("Update", func() {
 				updateDetails = domain.UpdateDetails{
 					ServiceID: offeringID,
 					PlanID:    newPlanID,
+					MaintenanceInfo: &domain.MaintenanceInfo{
+						Version: "2.0.0",
+					},
 					PreviousValues: domain.PreviousValues{
 						PlanID:    originalPlanID,
 						ServiceID: offeringID,
 						OrgID:     orgID,
 						SpaceID:   spaceID,
+						MaintenanceInfo: &domain.MaintenanceInfo{
+							Version: "2.0.0",
+						},
 					},
 					RawContext: json.RawMessage(fmt.Sprintf(`{"organization_guid":%q, "space_guid": %q}`, orgID, spaceID)),
 				}
@@ -240,11 +265,17 @@ var _ = Describe("Update", func() {
 				updateDetails = domain.UpdateDetails{
 					ServiceID: offeringID,
 					PlanID:    originalPlanID,
+					MaintenanceInfo: &domain.MaintenanceInfo{
+						Version: "2.0.0",
+					},
 					PreviousValues: domain.PreviousValues{
 						PlanID:    originalPlanID,
 						ServiceID: offeringID,
 						OrgID:     orgID,
 						SpaceID:   spaceID,
+						MaintenanceInfo: &domain.MaintenanceInfo{
+							Version: "2.0.0",
+						},
 					},
 					RawContext:    json.RawMessage(fmt.Sprintf(`{"organization_guid":%q, "space_guid": %q}`, orgID, spaceID)),
 					RawParameters: json.RawMessage(`{"foo":"quz","guz":"muz"}`),
@@ -324,7 +355,6 @@ var _ = Describe("Update", func() {
 				},
 			}
 
-			fakeDecider.DecideOperationReturns(decider.Upgrade, nil)
 			fakeServiceProvider.UpgradeReturns(models.ServiceInstanceDetails{
 				OperationType: models.UpgradeOperationType,
 				OperationID:   upgradeOperationID,
@@ -447,11 +477,17 @@ var _ = Describe("Update", func() {
 				updateDetails = domain.UpdateDetails{
 					ServiceID: offeringID,
 					PlanID:    originalPlanID,
+					MaintenanceInfo: &domain.MaintenanceInfo{
+						Version: "2.0.0",
+					},
 					PreviousValues: domain.PreviousValues{
 						PlanID:    originalPlanID,
 						ServiceID: offeringID,
 						OrgID:     orgID,
 						SpaceID:   spaceID,
+						MaintenanceInfo: &domain.MaintenanceInfo{
+							Version: "2.0.0",
+						},
 					},
 					RawContext:    json.RawMessage(fmt.Sprintf(`{"organization_guid":%q, "space_guid": %q}`, orgID, spaceID)),
 					RawParameters: json.RawMessage(`{"foo":"quz","guz":"muz"}`),
@@ -487,11 +523,17 @@ var _ = Describe("Update", func() {
 				updateDetails = domain.UpdateDetails{
 					ServiceID: offeringID,
 					PlanID:    originalPlanID,
+					MaintenanceInfo: &domain.MaintenanceInfo{
+						Version: "2.0.0",
+					},
 					PreviousValues: domain.PreviousValues{
 						PlanID:    originalPlanID,
 						ServiceID: offeringID,
 						OrgID:     orgID,
 						SpaceID:   spaceID,
+						MaintenanceInfo: &domain.MaintenanceInfo{
+							Version: "2.0.0",
+						},
 					},
 					RawContext:    json.RawMessage(fmt.Sprintf(`{"organization_guid":%q, "space_guid": %q}`, orgID, spaceID)),
 					RawParameters: json.RawMessage(`{"guz":"duz"}`),
@@ -597,11 +639,17 @@ var _ = Describe("Update", func() {
 				updateDetails = domain.UpdateDetails{
 					ServiceID: offeringID,
 					PlanID:    originalPlanID,
+					MaintenanceInfo: &domain.MaintenanceInfo{
+						Version: "2.0.0",
+					},
 					PreviousValues: domain.PreviousValues{
 						PlanID:    originalPlanID,
 						ServiceID: offeringID,
 						OrgID:     orgID,
 						SpaceID:   spaceID,
+						MaintenanceInfo: &domain.MaintenanceInfo{
+							Version: "2.0.0",
+						},
 					},
 					RawParameters: json.RawMessage(`{"invalid_parameter":42,"foo":"bar","other_invalid":false,"plan-defined-key":42}`),
 				}
@@ -617,15 +665,29 @@ var _ = Describe("Update", func() {
 		})
 	})
 
-	When("neither update nor upgrade cannot be performed", func() {
-		BeforeEach(func() {
-			fakeDecider.DecideOperationReturns(decider.Failed, errors.New("some maintenance info mismatch"))
-		})
-
+	When("specified maintenance info is invalid", func() {
 		It("should error", func() {
+			updateDetails = domain.UpdateDetails{
+				ServiceID: offeringID,
+				PlanID:    originalPlanID,
+				MaintenanceInfo: &domain.MaintenanceInfo{
+					Version: "1.9.0",
+				},
+				PreviousValues: domain.PreviousValues{
+					PlanID:    originalPlanID,
+					ServiceID: offeringID,
+					OrgID:     orgID,
+					SpaceID:   spaceID,
+					MaintenanceInfo: &domain.MaintenanceInfo{
+						Version: "1.0.0",
+					},
+				},
+				RawContext: json.RawMessage(fmt.Sprintf(`{"organization_guid":%q, "space_guid": %q}`, orgID, spaceID)),
+			}
+
 			_, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
 
-			Expect(err).To(MatchError("error deciding update path: some maintenance info mismatch"))
+			Expect(err).To(MatchError("error deciding update path: passed maintenance_info does not match the catalog maintenance_info"))
 		})
 	})
 

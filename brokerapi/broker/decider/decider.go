@@ -9,8 +9,6 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 )
 
-type Decider struct{}
-
 type Operation int
 
 const (
@@ -21,7 +19,7 @@ const (
 
 const upgradeBeforeUpdateError = "service instance needs to be upgraded before updating"
 
-func (d Decider) DecideOperation(planMaintenanceInfo *domain.MaintenanceInfo, details domain.UpdateDetails) (Operation, error) {
+func DecideOperation(planMaintenanceInfo *domain.MaintenanceInfo, details domain.UpdateDetails) (Operation, error) {
 	if err := validateMaintenanceInfo(planMaintenanceInfo, details.PlanID, details.MaintenanceInfo); err != nil {
 		return Failed, err
 	}
