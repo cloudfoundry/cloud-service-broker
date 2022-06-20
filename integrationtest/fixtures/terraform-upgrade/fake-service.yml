@@ -14,24 +14,14 @@ plans:
 provision:
   template_refs:
     main: fake-provision.tf
-  user_inputs:
-    - field_name: alpha_input
-      type: string
-      details: alpha input
   outputs:
-      - field_name: provision_output
-        type: integer
-        details: provision output
+    - field_name: provision_output
+      type: integer
+      details: provision output
 bind:
   template_refs:
     main: fake-provision.tf
-  user_inputs:
-    - field_name: alpha_input
-      type: string
-      details: alpha input
   outputs:
-      - field_name: provision_output
-        type: integer
-        details: provision output
-
-
+    - field_name: provision_output
+      type: integer
+      details: provision output
