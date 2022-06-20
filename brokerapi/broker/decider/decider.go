@@ -1,11 +1,11 @@
 package decider
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 
-	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
+	"github.com/hashicorp/go-version"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 )
 
@@ -19,8 +19,8 @@ const (
 
 const upgradeBeforeUpdateError = "service instance needs to be upgraded before updating"
 
-func DecideOperation(planMaintenanceInfo *domain.MaintenanceInfo, details domain.UpdateDetails) (Operation, error) {
-	if err := validateMaintenanceInfo(planMaintenanceInfo, details.PlanID, details.MaintenanceInfo); err != nil {
+func DecideOperation(planMaintenanceInfoVersion *version.Version, details paramparser.UpdateDetails) (Operation, error) {
+	if err := validateMaintenanceInfo(planMaintenanceInfoVersion, details.MaintenanceInfoVersion); err != nil {
 		return Failed, err
 	}
 
@@ -28,45 +28,28 @@ func DecideOperation(planMaintenanceInfo *domain.MaintenanceInfo, details domain
 		return Upgrade, nil
 	}
 
-	if err := validatePreviousMaintenanceInfo(details, planMaintenanceInfo); err != nil {
+	if err := validatePreviousMaintenanceInfo(details, planMaintenanceInfoVersion); err != nil {
 		return Failed, err
 	}
 
 	return Update, nil
 }
 
-func planNotChanged(details domain.UpdateDetails) bool {
-	return details.PlanID == details.PreviousValues.PlanID
+func planNotChanged(details paramparser.UpdateDetails) bool {
+	return details.PlanID == details.PreviousPlanID
 }
 
-func requestParamsEmpty(details domain.UpdateDetails) bool {
-	if len(details.RawParameters) == 0 {
-		return true
-	}
-
-	var params map[string]interface{}
-	if err := json.Unmarshal(details.RawParameters, &params); err != nil {
-		return false
-	}
-	return len(params) == 0
+func requestParamsEmpty(details paramparser.UpdateDetails) bool {
+	return len(details.RequestParams) == 0
 }
 
-func requestMaintenanceInfoValuesDiffer(details domain.UpdateDetails) bool {
-	switch {
-	case details.MaintenanceInfo == nil && details.PreviousValues.MaintenanceInfo != nil:
-		return true
-	case details.MaintenanceInfo != nil && details.PreviousValues.MaintenanceInfo == nil:
-		return true
-	case details.MaintenanceInfo == nil && details.PreviousValues.MaintenanceInfo == nil:
-		return false
-	default:
-		return !details.MaintenanceInfo.Equals(*details.PreviousValues.MaintenanceInfo)
-	}
+func requestMaintenanceInfoValuesDiffer(details paramparser.UpdateDetails) bool {
+	return !details.MaintenanceInfoVersion.Equal(details.PreviousMaintenanceInfoVersion)
 }
 
-func validateMaintenanceInfo(planMaintenanceInfo *domain.MaintenanceInfo, planID string, catalogMaintenanceInfo *domain.MaintenanceInfo) error {
-	if maintenanceInfoConflict(catalogMaintenanceInfo, planMaintenanceInfo) {
-		if catalogMaintenanceInfo == nil {
+func validateMaintenanceInfo(planMaintenanceInfo, requestMaintenanceInfoVersion *version.Version) error {
+	if maintenanceInfoDifference(requestMaintenanceInfoVersion, planMaintenanceInfo) {
+		if requestMaintenanceInfoVersion == nil {
 			return errMaintenanceInfoNilInTheRequest()
 		}
 
@@ -80,25 +63,17 @@ func validateMaintenanceInfo(planMaintenanceInfo *domain.MaintenanceInfo, planID
 	return nil
 }
 
-func validatePreviousMaintenanceInfo(details domain.UpdateDetails, planMaintenanceInfo *domain.MaintenanceInfo) error {
-	if details.PreviousValues.MaintenanceInfo != nil {
-		if maintenanceInfoConflict(details.PreviousValues.MaintenanceInfo, planMaintenanceInfo) {
+func validatePreviousMaintenanceInfo(details paramparser.UpdateDetails, planMaintenanceInfoVersion *version.Version) error {
+	if details.PreviousMaintenanceInfoVersion != nil {
+		if maintenanceInfoDifference(details.PreviousMaintenanceInfoVersion, planMaintenanceInfoVersion) {
 			return errInstanceMustBeUpgradedFirst()
 		}
 	}
 	return nil
 }
 
-func maintenanceInfoConflict(a, b *domain.MaintenanceInfo) bool {
-	if a != nil && b != nil {
-		return !a.Equals(*b)
-	}
-
-	if a == nil && b == nil {
-		return false
-	}
-
-	return true
+func maintenanceInfoDifference(a, b *version.Version) bool {
+	return !a.Equal(b)
 }
 
 func errInstanceMustBeUpgradedFirst() *apiresponses.FailureResponse {
