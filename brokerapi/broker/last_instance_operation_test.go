@@ -3,8 +3,6 @@ package broker_test
 import (
 	"errors"
 
-	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
-
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
@@ -80,7 +78,7 @@ var _ = Describe("LastInstanceOperation", func() {
 			}, nil)
 
 		var err error
-		serviceBroker, err = broker.New(brokerConfig, fakeStorage, decider.Decider{}, utils.NewLogger("brokers-test"))
+		serviceBroker, err = broker.New(brokerConfig, fakeStorage, utils.NewLogger("brokers-test"))
 		Expect(err).ToNot(HaveOccurred())
 
 		pollDetails = domain.PollDetails{
