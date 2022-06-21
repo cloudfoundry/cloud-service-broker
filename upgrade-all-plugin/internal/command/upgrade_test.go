@@ -60,7 +60,7 @@ var _ = Describe("UpgradeAll", func() {
 		})
 	})
 
-	Describe("service plans", func() {
+	Describe("success", func() {
 		BeforeEach(func() {
 			fakeCliConnection.ApiVersionReturns("3.0.0", nil)
 			fakeCliConnection.IsLoggedInReturns(true, nil)
@@ -130,6 +130,17 @@ var _ = Describe("UpgradeAll", func() {
 			err := command.UpgradeAll(fakeCliConnection, []string{"test-broker-name"})
 			Expect(err).NotTo(HaveOccurred())
 		})
+
+		When("dryRun flag is given", func() {
+			It("should return nil", func() {
+				err := command.UpgradeAll(fakeCliConnection, []string{"test-broker-name", "-dry-run"})
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
+		// Gets the service plans
+		// Gets service instances
+		// It upgrades the service instances with upgradeAvailable
 
 	})
 

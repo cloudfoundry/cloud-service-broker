@@ -4,6 +4,10 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/upgrader"
+
+	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/scheduler"
+
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/ccapi"
 
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/requester"
@@ -30,7 +34,7 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
 	}
 
 	flagSet := flag.NewFlagSet("upgradeAll", flag.ExitOnError)
-	//dryRun := flagSet.Bool("dry-run", false, "displays number of instances which would be upgraded")
+	dryRun := flagSet.Bool("dry-run", false, "displays number of instances which would be upgraded")
 	skipVerify := flagSet.Bool("skip-ssl-validation", false, "skip ssl certificate validation during http requests")
 
 	if len(args) > 1 {
@@ -41,6 +45,10 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
 	}
 
 	r := requester.NewRequester(apiEndPoint, accessToken, *skipVerify)
+
+	if err := upgrader.Upgrade(r, brokerName); err != nil {
+		return err
+	}
 
 	servicePlans, err := ccapi.GetServicePlans(r, brokerName)
 	if err != nil {
@@ -55,10 +63,35 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
 		planVersions[p.GUID] = p.MaintenanceInfo.Version
 	}
 
-	//serviceInstances, err := ccapi.GetServiceInstances(r, planGUIDs)
-	//if err != nil {
-	//	return err
-	//}
+	if *dryRun {
+		return nil
+	}
+
+	serviceInstances, err := ccapi.GetServiceInstances(r, planGUIDs)
+	if err != nil {
+		return err
+	}
+
+	type upgradeTask struct {
+		serviceInstanceGUID string
+		newVersion          string
+	}
+	upgradeQueue := make(chan upgradeTask)
+
+	go func() {
+		for _, instance := range serviceInstances {
+			if instance.UpgradeAvailable {
+				newVersion := planVersions[instance.Relationships.ServicePlan.Data.GUID]
+				upgradeQueue <- upgradeTask{
+					serviceInstanceGUID: instance.GUID,
+					newVersion:          newVersion,
+				}
+			}
+		}
+		close(upgradeQueue)
+	}()
+
+	go scheduler.ScheduleWorkers(10, scheduler.Upgrade())
 
 	//Get Broker plans
 	//Get all service instances
