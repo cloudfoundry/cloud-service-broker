@@ -3,6 +3,8 @@ package upgrader_test
 import (
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/ccapi"
+
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/upgrader"
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/upgrader/upgraderfakes"
 	. "github.com/onsi/ginkgo/v2"
@@ -11,37 +13,39 @@ import (
 
 var _ = Describe("Upgrade", func() {
 	const fakePlanGUID = "test-plan-guid"
-	const fakeInstanceGUID = "test-instance-guid"
 	const fakeBrokerName = "fake-broker-name"
 
 	var (
-		fakeCCAPI                           *upgraderfakes.FakeCCAPI
-		fakePlan                            upgrader.Plan
-		fakeInstance, fakeInstanceNoUpgrade upgrader.ServiceInstance
+		fakeCCAPI                                           *upgraderfakes.FakeCCAPI
+		fakePlan                                            ccapi.Plan
+		fakeInstance1, fakeInstance2, fakeInstanceNoUpgrade ccapi.ServiceInstance
 	)
 
 	BeforeEach(func() {
-		fakePlan = upgrader.Plan{
+		fakePlan = ccapi.Plan{
 			GUID:                   fakePlanGUID,
 			MaintenanceInfoVersion: "test-maintenance-info",
 		}
-
-		fakeInstance = upgrader.ServiceInstance{
-			GUID:             fakeInstanceGUID,
+		fakeInstance1 = ccapi.ServiceInstance{
+			GUID:             "fake-instance-guid-1",
+			PlanGUID:         fakePlanGUID,
+			UpgradeAvailable: true,
+		}
+		fakeInstance2 = ccapi.ServiceInstance{
+			GUID:             "fake-instance-guid-2",
 			PlanGUID:         fakePlanGUID,
 			UpgradeAvailable: true,
 		}
 
-		fakeInstanceNoUpgrade = upgrader.ServiceInstance{
+		fakeInstanceNoUpgrade = ccapi.ServiceInstance{
 			GUID:             "fake-instance-no-upgrade-GUID",
 			PlanGUID:         fakePlanGUID,
 			UpgradeAvailable: false,
 		}
 
 		fakeCCAPI = &upgraderfakes.FakeCCAPI{}
-
-		fakeCCAPI.GetServicePlansReturns([]upgrader.Plan{fakePlan}, nil)
-		fakeCCAPI.GetServiceInstancesReturns([]upgrader.ServiceInstance{fakeInstance, fakeInstance, fakeInstanceNoUpgrade}, nil)
+		fakeCCAPI.GetServicePlansReturns([]ccapi.Plan{fakePlan}, nil)
+		fakeCCAPI.GetServiceInstancesReturns([]ccapi.ServiceInstance{fakeInstance1, fakeInstance2, fakeInstanceNoUpgrade}, nil)
 	})
 
 	It("upgrades a service instance", func() {
@@ -57,8 +61,9 @@ var _ = Describe("Upgrade", func() {
 		Expect(fakeCCAPI.GetServiceInstancesArgsForCall(0)).To(Equal([]string{fakePlanGUID}))
 
 		By("calling upgrade on each upgradeable instance")
-		Eventually(fakeCCAPI.UpgradeServiceInstanceCallCount()).Should(Equal(2))
-		Eventually(fakeCCAPI.UpgradeServiceInstanceArgsForCall(0)).Should(Equal(fakeInstanceGUID))
+		Expect(fakeCCAPI.UpgradeServiceInstanceCallCount()).Should(Equal(2))
+		guids := []string{fakeCCAPI.UpgradeServiceInstanceArgsForCall(0), fakeCCAPI.UpgradeServiceInstanceArgsForCall(1)}
+		Expect(guids).To(ConsistOf("fake-instance-guid-1", "fake-instance-guid-2"))
 	})
 
 	When("getting service plans fails", func() {
@@ -78,8 +83,4 @@ var _ = Describe("Upgrade", func() {
 			Expect(err).To(MatchError("instance-error"))
 		})
 	})
-
-	// Gets the service plans
-	// Gets service instances
-	// It upgrades the service instances with upgradeAvailable
 })

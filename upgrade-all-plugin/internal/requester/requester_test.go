@@ -1,6 +1,7 @@
 package requester_test
 
 import (
+	"math"
 	"net/http"
 
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/requester"
@@ -17,6 +18,15 @@ var _ = Describe("Requester", func() {
 		testReceiver  map[string]interface{}
 	)
 
+	BeforeEach(func() {
+		testReceiver = map[string]interface{}{}
+
+		fakeServer = ghttp.NewServer()
+		DeferCleanup(fakeServer.Close)
+
+		fakeRequester = requester.NewRequester(fakeServer.URL(), "test-token", false)
+	})
+
 	Describe("NewRequester", func() {
 		It("returns a requester with given values", func() {
 			actualRequester := requester.NewRequester("test-url", "test-token", false)
@@ -27,14 +37,6 @@ var _ = Describe("Requester", func() {
 	})
 
 	Describe("Get", func() {
-		BeforeEach(func() {
-			testReceiver = map[string]interface{}{}
-
-			fakeServer = ghttp.NewServer()
-
-			fakeRequester = requester.NewRequester(fakeServer.URL(), "test-token", false)
-		})
-
 		When("request is valid", func() {
 			BeforeEach(func() {
 				fakeServer.AppendHandlers(
@@ -44,17 +46,12 @@ var _ = Describe("Requester", func() {
 					),
 				)
 			})
-			It("fails if receiver is not pointer type", func() {
+			It("succeeds", func() {
 				err := fakeRequester.Get("test-endpoint", &testReceiver)
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(testReceiver).To(Equal(map[string]interface{}{"test_value": "foo"}))
 			})
-		})
-
-		It("errors if receiver is not of type pointer", func() {
-			err := fakeRequester.Get("test-endpoint", testReceiver)
-			Expect(err).To(MatchError("receiver must be of type Pointer"))
 		})
 
 		When("request is invalid", func() {
@@ -66,11 +63,14 @@ var _ = Describe("Requester", func() {
 					),
 				)
 			})
-
 			It("returns an error", func() {
 				err := fakeRequester.Get("not-a-real-url", &testReceiver)
-
 				Expect(err).To(MatchError("http response: 404"))
+			})
+
+			It("errors if receiver is not of type pointer", func() {
+				err := fakeRequester.Get("test-endpoint", testReceiver)
+				Expect(err).To(MatchError("receiver must be of type Pointer"))
 			})
 		})
 
@@ -83,17 +83,47 @@ var _ = Describe("Requester", func() {
 					),
 				)
 			})
-
 			It("returns an error", func() {
 				err := fakeRequester.Get("test-endpoint", &testReceiver)
-
 				Expect(err).To(MatchError("failed to unmarshal response into receiver error: unexpected end of JSON input"))
 			})
 		})
-
-		AfterEach(func() {
-			fakeServer.Close()
-		})
 	})
 
+	Describe("Patch", func() {
+		When("request is valid", func() {
+			BeforeEach(func() {
+				fakeServer.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PATCH", "/test-endpoint", ""),
+						ghttp.RespondWith(http.StatusAccepted, ``, nil),
+					),
+				)
+			})
+			It("succeeds", func() {
+				err := fakeRequester.Patch("test-endpoint", `data`)
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
+		When("the patch request fails", func() {
+			BeforeEach(func() {
+				fakeServer.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("PATCH", "/test-endpoint", ""),
+						ghttp.RespondWith(http.StatusInternalServerError, ``, nil),
+					),
+				)
+			})
+			It("returns an error", func() {
+				err := fakeRequester.Patch("test-endpoint", `data`)
+				Expect(err).To(MatchError("http response: 500"))
+			})
+		})
+
+		It("errors if data can not be marshalled", func() {
+			err := fakeRequester.Patch("test-endpoint", math.Inf(1))
+			Expect(err).To(MatchError("error marshaling data: json: unsupported value: +Inf"))
+		})
+	})
 })

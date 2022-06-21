@@ -1,10 +1,7 @@
 package ccapi_test
 
 import (
-	"fmt"
 	"net/http"
-
-	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/requester/requesterfakes"
 
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/requester"
 
@@ -17,63 +14,55 @@ import (
 var _ = Describe("GetServiceInstances", func() {
 
 	var (
-		fakeServer    *ghttp.Server
-		req           requester.Requester
-		fakeRequester *requesterfakes.FakeRequester
+		fakeServer *ghttp.Server
+		req        requester.Requester
 	)
 
-	When("Given a valid list of planGUIDs", func() {
+	BeforeEach(func() {
+		fakeServer = ghttp.NewServer()
+		DeferCleanup(fakeServer.Close)
+		req = requester.NewRequester(fakeServer.URL(), "fake-token", false)
+	})
+
+	When("service instances exist in the given plans", func() {
 		BeforeEach(func() {
-			responseServiceInstances := ccapi.ServiceInstances{Instances: []ccapi.ServiceInstance{{
-				GUID:             "test-guid",
-				UpgradeAvailable: true,
-				Relationships: struct {
-					ServicePlan struct {
-						Data struct {
-							GUID string `json:"guid"`
-						} `json:"data"`
-					} `json:"service_plan"`
-				}{
-					ServicePlan: struct {
-						Data struct {
-							GUID string `json:"guid"`
-						} `json:"data"`
-					}{
-						Data: struct {
-							GUID string `json:"guid"`
-						}{
-							GUID: "test-guid",
-						},
-					},
+			responseServiceInstances := `
+			{
+			  "resources": [{
+				"guid": "test-guid",
+				"maintenance_info": {
+				  "version": "1.0.0"
 				},
-				LastOperation: struct {
-					Type        string `json:"type"`
-					State       string `json:"state"`
-					Description string `json:"description"`
-				}{
-					Type:        "",
-					State:       "",
-					Description: "",
+				"upgrade_available": false,
+				"last_operation": {
+				  "type": "create",
+				  "state": "succeeded",
+				  "description": "Operation succeeded",
+				  "updated_at": "2020-03-10T15:49:32Z",
+				  "created_at": "2020-03-10T15:49:29Z"
 				},
-			}}}
-			fakeServer = ghttp.NewServer()
+				"relationships": {
+				  "service_plan": {
+					"data": {
+					  "guid": "test-plan-guid"
+					}
+				  }
+				}
+			  }]
+			}`
 			fakeServer.AppendHandlers(
 				ghttp.CombineHandlers(
-					ghttp.VerifyRequest("GET", "/v3/service_instances", "per_page=5000&service_plan_guids=test-guid,another-test-guid"),
-					ghttp.RespondWithJSONEncoded(http.StatusOK, responseServiceInstances),
+					ghttp.VerifyRequest("GET", "/v3/service_instances", "per_page=5000&service_plan_guids=test-plan-guid,another-test-guid"),
+					ghttp.RespondWith(http.StatusOK, responseServiceInstances),
 				),
 			)
-			req = requester.NewRequester(fakeServer.URL(), "fake-token", false)
-
 		})
 
 		It("returns instances from the given plans", func() {
-			By("checking all plan GUIDs are appended to the query")
-			actualInstances, err := ccapi.GetServiceInstances(req, []string{"test-guid", "another-test-guid"})
-
-			Expect(err).NotTo(HaveOccurred())
+			actualInstances, err := ccapi.GetServiceInstances(req, []string{"test-plan-guid", "another-test-guid"})
 
 			By("checking the valid service instance is returned")
+			Expect(err).NotTo(HaveOccurred())
 			Expect(len(actualInstances)).To(Equal(1))
 			Expect(actualInstances[0].GUID).To(Equal("test-guid"))
 		})
@@ -90,14 +79,13 @@ var _ = Describe("GetServiceInstances", func() {
 
 	When("the request fails", func() {
 		BeforeEach(func() {
-			fakeRequester = &requesterfakes.FakeRequester{}
-			fakeRequester.GetReturns(fmt.Errorf("some error"))
+			fakeServer.AppendHandlers(ghttp.RespondWith(http.StatusInternalServerError, nil))
 		})
 
 		It("returns an error", func() {
-			_, err := ccapi.GetServiceInstances(fakeRequester, []string{"test-guid"})
+			_, err := ccapi.GetServiceInstances(req, []string{"test-guid"})
 
-			Expect(err).To(MatchError("error getting service instances: some error"))
+			Expect(err).To(MatchError("error getting service instances: http response: 500"))
 		})
 	})
 

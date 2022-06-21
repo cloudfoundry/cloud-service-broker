@@ -4,34 +4,35 @@ package upgraderfakes
 import (
 	"sync"
 
+	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/ccapi"
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/upgrader"
 )
 
 type FakeCCAPI struct {
-	GetServiceInstancesStub        func([]string) ([]upgrader.ServiceInstance, error)
+	GetServiceInstancesStub        func([]string) ([]ccapi.ServiceInstance, error)
 	getServiceInstancesMutex       sync.RWMutex
 	getServiceInstancesArgsForCall []struct {
 		arg1 []string
 	}
 	getServiceInstancesReturns struct {
-		result1 []upgrader.ServiceInstance
+		result1 []ccapi.ServiceInstance
 		result2 error
 	}
 	getServiceInstancesReturnsOnCall map[int]struct {
-		result1 []upgrader.ServiceInstance
+		result1 []ccapi.ServiceInstance
 		result2 error
 	}
-	GetServicePlansStub        func(string) ([]upgrader.Plan, error)
+	GetServicePlansStub        func(string) ([]ccapi.Plan, error)
 	getServicePlansMutex       sync.RWMutex
 	getServicePlansArgsForCall []struct {
 		arg1 string
 	}
 	getServicePlansReturns struct {
-		result1 []upgrader.Plan
+		result1 []ccapi.Plan
 		result2 error
 	}
 	getServicePlansReturnsOnCall map[int]struct {
-		result1 []upgrader.Plan
+		result1 []ccapi.Plan
 		result2 error
 	}
 	PollServiceInstanceStub        func(string) (bool, error)
@@ -47,10 +48,11 @@ type FakeCCAPI struct {
 		result1 bool
 		result2 error
 	}
-	UpgradeServiceInstanceStub        func(string) error
+	UpgradeServiceInstanceStub        func(string, string) error
 	upgradeServiceInstanceMutex       sync.RWMutex
 	upgradeServiceInstanceArgsForCall []struct {
 		arg1 string
+		arg2 string
 	}
 	upgradeServiceInstanceReturns struct {
 		result1 error
@@ -62,7 +64,7 @@ type FakeCCAPI struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeCCAPI) GetServiceInstances(arg1 []string) ([]upgrader.ServiceInstance, error) {
+func (fake *FakeCCAPI) GetServiceInstances(arg1 []string) ([]ccapi.ServiceInstance, error) {
 	var arg1Copy []string
 	if arg1 != nil {
 		arg1Copy = make([]string, len(arg1))
@@ -92,7 +94,7 @@ func (fake *FakeCCAPI) GetServiceInstancesCallCount() int {
 	return len(fake.getServiceInstancesArgsForCall)
 }
 
-func (fake *FakeCCAPI) GetServiceInstancesCalls(stub func([]string) ([]upgrader.ServiceInstance, error)) {
+func (fake *FakeCCAPI) GetServiceInstancesCalls(stub func([]string) ([]ccapi.ServiceInstance, error)) {
 	fake.getServiceInstancesMutex.Lock()
 	defer fake.getServiceInstancesMutex.Unlock()
 	fake.GetServiceInstancesStub = stub
@@ -105,33 +107,33 @@ func (fake *FakeCCAPI) GetServiceInstancesArgsForCall(i int) []string {
 	return argsForCall.arg1
 }
 
-func (fake *FakeCCAPI) GetServiceInstancesReturns(result1 []upgrader.ServiceInstance, result2 error) {
+func (fake *FakeCCAPI) GetServiceInstancesReturns(result1 []ccapi.ServiceInstance, result2 error) {
 	fake.getServiceInstancesMutex.Lock()
 	defer fake.getServiceInstancesMutex.Unlock()
 	fake.GetServiceInstancesStub = nil
 	fake.getServiceInstancesReturns = struct {
-		result1 []upgrader.ServiceInstance
+		result1 []ccapi.ServiceInstance
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCCAPI) GetServiceInstancesReturnsOnCall(i int, result1 []upgrader.ServiceInstance, result2 error) {
+func (fake *FakeCCAPI) GetServiceInstancesReturnsOnCall(i int, result1 []ccapi.ServiceInstance, result2 error) {
 	fake.getServiceInstancesMutex.Lock()
 	defer fake.getServiceInstancesMutex.Unlock()
 	fake.GetServiceInstancesStub = nil
 	if fake.getServiceInstancesReturnsOnCall == nil {
 		fake.getServiceInstancesReturnsOnCall = make(map[int]struct {
-			result1 []upgrader.ServiceInstance
+			result1 []ccapi.ServiceInstance
 			result2 error
 		})
 	}
 	fake.getServiceInstancesReturnsOnCall[i] = struct {
-		result1 []upgrader.ServiceInstance
+		result1 []ccapi.ServiceInstance
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCCAPI) GetServicePlans(arg1 string) ([]upgrader.Plan, error) {
+func (fake *FakeCCAPI) GetServicePlans(arg1 string) ([]ccapi.Plan, error) {
 	fake.getServicePlansMutex.Lock()
 	ret, specificReturn := fake.getServicePlansReturnsOnCall[len(fake.getServicePlansArgsForCall)]
 	fake.getServicePlansArgsForCall = append(fake.getServicePlansArgsForCall, struct {
@@ -156,7 +158,7 @@ func (fake *FakeCCAPI) GetServicePlansCallCount() int {
 	return len(fake.getServicePlansArgsForCall)
 }
 
-func (fake *FakeCCAPI) GetServicePlansCalls(stub func(string) ([]upgrader.Plan, error)) {
+func (fake *FakeCCAPI) GetServicePlansCalls(stub func(string) ([]ccapi.Plan, error)) {
 	fake.getServicePlansMutex.Lock()
 	defer fake.getServicePlansMutex.Unlock()
 	fake.GetServicePlansStub = stub
@@ -169,28 +171,28 @@ func (fake *FakeCCAPI) GetServicePlansArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *FakeCCAPI) GetServicePlansReturns(result1 []upgrader.Plan, result2 error) {
+func (fake *FakeCCAPI) GetServicePlansReturns(result1 []ccapi.Plan, result2 error) {
 	fake.getServicePlansMutex.Lock()
 	defer fake.getServicePlansMutex.Unlock()
 	fake.GetServicePlansStub = nil
 	fake.getServicePlansReturns = struct {
-		result1 []upgrader.Plan
+		result1 []ccapi.Plan
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCCAPI) GetServicePlansReturnsOnCall(i int, result1 []upgrader.Plan, result2 error) {
+func (fake *FakeCCAPI) GetServicePlansReturnsOnCall(i int, result1 []ccapi.Plan, result2 error) {
 	fake.getServicePlansMutex.Lock()
 	defer fake.getServicePlansMutex.Unlock()
 	fake.GetServicePlansStub = nil
 	if fake.getServicePlansReturnsOnCall == nil {
 		fake.getServicePlansReturnsOnCall = make(map[int]struct {
-			result1 []upgrader.Plan
+			result1 []ccapi.Plan
 			result2 error
 		})
 	}
 	fake.getServicePlansReturnsOnCall[i] = struct {
-		result1 []upgrader.Plan
+		result1 []ccapi.Plan
 		result2 error
 	}{result1, result2}
 }
@@ -259,18 +261,19 @@ func (fake *FakeCCAPI) PollServiceInstanceReturnsOnCall(i int, result1 bool, res
 	}{result1, result2}
 }
 
-func (fake *FakeCCAPI) UpgradeServiceInstance(arg1 string) error {
+func (fake *FakeCCAPI) UpgradeServiceInstance(arg1 string, arg2 string) error {
 	fake.upgradeServiceInstanceMutex.Lock()
 	ret, specificReturn := fake.upgradeServiceInstanceReturnsOnCall[len(fake.upgradeServiceInstanceArgsForCall)]
 	fake.upgradeServiceInstanceArgsForCall = append(fake.upgradeServiceInstanceArgsForCall, struct {
 		arg1 string
-	}{arg1})
+		arg2 string
+	}{arg1, arg2})
 	stub := fake.UpgradeServiceInstanceStub
 	fakeReturns := fake.upgradeServiceInstanceReturns
-	fake.recordInvocation("UpgradeServiceInstance", []interface{}{arg1})
+	fake.recordInvocation("UpgradeServiceInstance", []interface{}{arg1, arg2})
 	fake.upgradeServiceInstanceMutex.Unlock()
 	if stub != nil {
-		return stub(arg1)
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -284,17 +287,17 @@ func (fake *FakeCCAPI) UpgradeServiceInstanceCallCount() int {
 	return len(fake.upgradeServiceInstanceArgsForCall)
 }
 
-func (fake *FakeCCAPI) UpgradeServiceInstanceCalls(stub func(string) error) {
+func (fake *FakeCCAPI) UpgradeServiceInstanceCalls(stub func(string, string) error) {
 	fake.upgradeServiceInstanceMutex.Lock()
 	defer fake.upgradeServiceInstanceMutex.Unlock()
 	fake.UpgradeServiceInstanceStub = stub
 }
 
-func (fake *FakeCCAPI) UpgradeServiceInstanceArgsForCall(i int) string {
+func (fake *FakeCCAPI) UpgradeServiceInstanceArgsForCall(i int) (string, string) {
 	fake.upgradeServiceInstanceMutex.RLock()
 	defer fake.upgradeServiceInstanceMutex.RUnlock()
 	argsForCall := fake.upgradeServiceInstanceArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeCCAPI) UpgradeServiceInstanceReturns(result1 error) {
