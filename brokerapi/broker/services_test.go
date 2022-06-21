@@ -2,7 +2,6 @@ package broker_test
 
 import (
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	. "github.com/onsi/ginkgo/v2"
@@ -55,7 +54,7 @@ var _ = Describe("Services", func() {
 		}
 
 		var err error
-		serviceBroker, err = broker.New(brokerConfig, &brokerfakes.FakeStorage{}, decider.Decider{}, utils.NewLogger("brokers-test"))
+		serviceBroker, err = broker.New(brokerConfig, &brokerfakes.FakeStorage{}, utils.NewLogger("brokers-test"))
 		Expect(err).ToNot(HaveOccurred())
 	})
 

@@ -44,7 +44,7 @@ var _ = Describe("Decider", func() {
 					},
 				}
 
-				_, err := decider.Decider{}.DecideOperation(nil, details)
+				_, err := decider.DecideOperation(nil, details)
 				Expect(err).NotTo(HaveOccurred())
 			})
 
@@ -57,7 +57,7 @@ var _ = Describe("Decider", func() {
 						},
 					}
 
-					operation, err := decider.Decider{}.DecideOperation(nil, details)
+					operation, err := decider.DecideOperation(nil, details)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(operation).To(Equal(decider.Update))
 				})
@@ -70,7 +70,7 @@ var _ = Describe("Decider", func() {
 						RawParameters: json.RawMessage(`{"foo": "bar"}`),
 					}
 
-					operation, err := decider.Decider{}.DecideOperation(nil, details)
+					operation, err := decider.DecideOperation(nil, details)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(operation).To(Equal(decider.Update))
 				})
@@ -86,7 +86,7 @@ var _ = Describe("Decider", func() {
 						},
 					}
 
-					operation, err := decider.Decider{}.DecideOperation(nil, details)
+					operation, err := decider.DecideOperation(nil, details)
 					Expect(err).NotTo(HaveOccurred())
 					Expect(operation).To(Equal(decider.Update))
 				})
@@ -98,7 +98,7 @@ var _ = Describe("Decider", func() {
 						PlanID: otherPlanWithMI,
 					}
 
-					operation, err := decider.Decider{}.DecideOperation(defaultMI, details)
+					operation, err := decider.DecideOperation(defaultMI, details)
 					Expect(err).To(MatchError("service instance needs to be upgraded before updating: maintenance info defined in broker service catalog, but not passed in request"))
 					Expect(operation).To(Equal(decider.Failed))
 				})
@@ -118,7 +118,7 @@ var _ = Describe("Decider", func() {
 							},
 						}
 
-						operation, err := decider.Decider{}.DecideOperation(defaultMI, details)
+						operation, err := decider.DecideOperation(defaultMI, details)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(operation).To(Equal(decider.Update))
 					})
@@ -132,7 +132,7 @@ var _ = Describe("Decider", func() {
 							RawParameters:   json.RawMessage(`{"foo": "bar"}`),
 						}
 
-						operation, err := decider.Decider{}.DecideOperation(defaultMI, details)
+						operation, err := decider.DecideOperation(defaultMI, details)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(operation).To(Equal(decider.Update))
 					})
@@ -150,7 +150,7 @@ var _ = Describe("Decider", func() {
 							},
 						}
 
-						operation, err := decider.Decider{}.DecideOperation(defaultMI, details)
+						operation, err := decider.DecideOperation(defaultMI, details)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(operation).To(Equal(decider.Update))
 					})
@@ -168,7 +168,7 @@ var _ = Describe("Decider", func() {
 							},
 						}
 
-						operation, err := decider.Decider{}.DecideOperation(defaultMI, details)
+						operation, err := decider.DecideOperation(defaultMI, details)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(operation).To(Equal(decider.Upgrade))
 					})
@@ -184,7 +184,7 @@ var _ = Describe("Decider", func() {
 							},
 						}
 
-						operation, err := decider.Decider{}.DecideOperation(nil, details)
+						operation, err := decider.DecideOperation(nil, details)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(operation).To(Equal(decider.Upgrade))
 					})
@@ -201,7 +201,7 @@ var _ = Describe("Decider", func() {
 							},
 						}
 
-						operation, err := decider.Decider{}.DecideOperation(defaultMI, details)
+						operation, err := decider.DecideOperation(defaultMI, details)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(operation).To(Equal(decider.Upgrade))
 					})
@@ -218,7 +218,7 @@ var _ = Describe("Decider", func() {
 							},
 						}
 
-						operation, err := decider.Decider{}.DecideOperation(higherMI, details)
+						operation, err := decider.DecideOperation(higherMI, details)
 						Expect(err).NotTo(HaveOccurred())
 						Expect(operation).To(Equal(decider.Update))
 					})
@@ -236,7 +236,7 @@ var _ = Describe("Decider", func() {
 							},
 						}
 
-						_, err := decider.Decider{}.DecideOperation(defaultMI, details)
+						_, err := decider.DecideOperation(defaultMI, details)
 						Expect(err).To(MatchError(apiresponses.NewFailureResponseBuilder(
 							errors.New("service instance needs to be upgraded before updating"),
 							http.StatusUnprocessableEntity,
@@ -253,7 +253,7 @@ var _ = Describe("Decider", func() {
 						MaintenanceInfo: higherMI,
 					}
 
-					_, err := decider.Decider{}.DecideOperation(defaultMI, details)
+					_, err := decider.DecideOperation(defaultMI, details)
 
 					Expect(err).To(MatchError(apiresponses.ErrMaintenanceInfoConflict))
 				})
@@ -264,7 +264,7 @@ var _ = Describe("Decider", func() {
 						MaintenanceInfo: defaultMI,
 					}
 
-					_, err := decider.Decider{}.DecideOperation(nil, details)
+					_, err := decider.DecideOperation(nil, details)
 					Expect(err).To(MatchError(apiresponses.ErrMaintenanceInfoNilConflict))
 				})
 			})

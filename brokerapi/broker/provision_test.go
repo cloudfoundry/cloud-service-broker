@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
-
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
@@ -109,7 +107,7 @@ var _ = Describe("Provision", func() {
 		fakeStorage.ExistsServiceInstanceDetailsReturns(false, nil)
 
 		var err error
-		serviceBroker, err = broker.New(brokerConfig, fakeStorage, decider.Decider{}, utils.NewLogger("brokers-test"))
+		serviceBroker, err = broker.New(brokerConfig, fakeStorage, utils.NewLogger("brokers-test"))
 		Expect(err).ToNot(HaveOccurred())
 
 		provisionDetails = domain.ProvisionDetails{
