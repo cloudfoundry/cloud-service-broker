@@ -62,7 +62,9 @@ var _ = Describe("Upgrade", func() {
 
 		By("calling upgrade on each upgradeable instance")
 		Expect(fakeCCAPI.UpgradeServiceInstanceCallCount()).Should(Equal(2))
-		guids := []string{fakeCCAPI.UpgradeServiceInstanceArgsForCall(0), fakeCCAPI.UpgradeServiceInstanceArgsForCall(1)}
+		instanceGuid1, _ := fakeCCAPI.UpgradeServiceInstanceArgsForCall(0)
+		instanceGuid2, _ := fakeCCAPI.UpgradeServiceInstanceArgsForCall(1)
+		guids := []string{instanceGuid1, instanceGuid2}
 		Expect(guids).To(ConsistOf("fake-instance-guid-1", "fake-instance-guid-2"))
 	})
 

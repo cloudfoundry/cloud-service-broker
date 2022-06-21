@@ -20,7 +20,7 @@ func Upgrade(api CCAPI, brokerName string) error {
 	}
 
 	var planGUIDS []string
-	var planVersions map[string]string
+	planVersions := make(map[string]string)
 
 	for _, plan := range plans {
 		planGUIDS = append(planGUIDS, plan.GUID)
