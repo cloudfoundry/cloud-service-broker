@@ -8,9 +8,9 @@ import (
 	"github.com/hashicorp/go-version"
 )
 
-func ValidateInput(cliConnection plugin.CliConnection, args []string) error {
+func ValidateInput(cliConnection plugin.CliConnection, args []string, usage string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("broker name must be specifed")
+		return fmt.Errorf("broker name must be specifed\nusage:\n%s", usage)
 	}
 
 	err := sanitiseBrokerName(args[0])

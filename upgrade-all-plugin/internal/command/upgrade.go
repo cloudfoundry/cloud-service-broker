@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/ccapi"
 
@@ -16,8 +15,8 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/validate"
 )
 
-func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
-	err := validate.ValidateInput(cliConnection, args)
+func UpgradeAll(cliConnection plugin.CliConnection, args []string, log *log.Logger) error {
+	err := validate.ValidateInput(cliConnection, args, Usage)
 	if err != nil {
 		return err
 	}
@@ -36,7 +35,6 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
 	flagSet := flag.NewFlagSet("upgradeAll", flag.ExitOnError)
 	skipVerify := flagSet.Bool("skip-ssl-validation", false, "skip ssl certificate validation during http requests")
 	batchSize := flagSet.Int("batch-size", 10, "number of concurrent upgrades")
-	//dryRun := flagSet.Bool("dry-run", false, "displays number of instances which would be upgraded")
 
 	if len(args) > 1 {
 		err = flagSet.Parse(args[1:])
@@ -48,7 +46,7 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
 	r := requester.NewRequester(apiEndPoint, accessToken, *skipVerify)
 	api := ccapi.NewCCAPI(r)
 
-	if err := upgrader.Upgrade(api, brokerName, *batchSize, log.New(os.Stdout, "", 0)); err != nil {
+	if err := upgrader.Upgrade(api, brokerName, *batchSize, log); err != nil {
 		return err
 	}
 

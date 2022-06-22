@@ -93,6 +93,14 @@ var _ = Describe("Upgrade", func() {
 		})
 	})
 
+	When("there are no upgradable instances", func() {
+		It("should return with no error", func() {
+			fakeCCAPI.GetServiceInstancesReturns([]ccapi.ServiceInstance{}, nil)
+			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5, fakeLog)
+			Expect(err).NotTo(HaveOccurred())
+		})
+	})
+
 	When("getting service plans fails", func() {
 		It("returns the error", func() {
 			fakeCCAPI.GetServicePlansReturns(nil, fmt.Errorf("plan-error"))
@@ -112,6 +120,18 @@ var _ = Describe("Upgrade", func() {
 	})
 
 	Describe("logging", func() {
+		When("no instances available to upgrade", func() {
+			matchLogOutput := SatisfyAll(
+				Say(`no instances available to upgrade\n`),
+			)
+
+			It("should output the correct logging", func() {
+				fakeCCAPI.GetServiceInstancesReturns([]ccapi.ServiceInstance{}, nil)
+
+				upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 1, fakeLog)
+				Expect(fakeStdout).To(matchLogOutput)
+			})
+		})
 		When("no failed upgrades", func() {
 			matchLogOutput := SatisfyAll(
 				Say(fmt.Sprintf(`Discovering service instances for broker: %s`, fakeBrokerName)),
@@ -125,7 +145,7 @@ var _ = Describe("Upgrade", func() {
 				Say(`Total instances upgraded: 2`),
 			)
 			It("should output the correct logging", func() {
-				upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5, fakeLog)
+				upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 1, fakeLog)
 				Expect(fakeStdout).To(matchLogOutput)
 			})
 		})

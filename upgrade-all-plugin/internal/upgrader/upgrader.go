@@ -1,7 +1,6 @@
 package upgrader
 
 import (
-	"fmt"
 	"log"
 	"sync"
 	"sync/atomic"
@@ -18,7 +17,7 @@ type CCAPI interface {
 	UpgradeServiceInstance(string, string) error
 }
 
-func Upgrade(api CCAPI, brokerName string, batchSize int, log *log.Logger) error {
+func Upgrade(api CCAPI, brokerName string, batchSize int, l *log.Logger) error {
 	plans, err := api.GetServicePlans(brokerName)
 	if err != nil {
 		return err
@@ -32,7 +31,7 @@ func Upgrade(api CCAPI, brokerName string, batchSize int, log *log.Logger) error
 		planVersions[plan.GUID] = plan.MaintenanceInfoVersion
 	}
 
-	log.Printf("Discovering service instances for broker: %s\n", brokerName)
+	l.Printf("Discovering service instances for broker: %s\n", brokerName)
 
 	serviceInstances, err := api.GetServiceInstances(planGUIDS)
 	if err != nil {
@@ -50,8 +49,12 @@ func Upgrade(api CCAPI, brokerName string, batchSize int, log *log.Logger) error
 			upgradableInstances = append(upgradableInstances, i)
 		}
 	}
+	if len(upgradableInstances) == 0 {
+		l.Printf("no instances available to upgrade\n")
+		return nil
+	}
 
-	log.Printf("---\n"+
+	l.Printf("---\n"+
 		"Total instances: %d\n"+
 		"Upgradable instances: %d\n"+
 		"---\n",
@@ -61,9 +64,9 @@ func Upgrade(api CCAPI, brokerName string, batchSize int, log *log.Logger) error
 	var upgraded int32
 	upgradeComplete := make(chan bool)
 
-	go logUpgradeProgress(upgradeComplete, &upgraded, len(upgradableInstances))
+	go logUpgradeProgress(upgradeComplete, &upgraded, len(upgradableInstances), l)
 
-	log.Printf("Starting upgrade...\n")
+	l.Printf("Starting upgrade...\n")
 
 	upgradeQueue := make(chan upgradeTask)
 	go func() {
@@ -88,7 +91,6 @@ func Upgrade(api CCAPI, brokerName string, batchSize int, log *log.Logger) error
 		for instance := range upgradeQueue {
 			err := api.UpgradeServiceInstance(instance.Guid, instance.MIVersion)
 			if err != nil {
-				log.Printf("error upgrading service instance: %s\n", err)
 				addFailedInstance(instance.Guid, err.Error())
 				continue
 			}
@@ -98,35 +100,35 @@ func Upgrade(api CCAPI, brokerName string, batchSize int, log *log.Logger) error
 
 	upgradeComplete <- true
 
-	logUpgradeComplete(upgraded, failedInstances)
+	logUpgradeComplete(upgraded, failedInstances, l)
 
 	return nil
 }
 
-func logUpgradeProgress(complete chan bool, upgraded *int32, upgradable int) {
+func logUpgradeProgress(complete chan bool, upgraded *int32, upgradable int, l *log.Logger) {
 	for {
 		select {
 		case <-complete:
 			return
 		case <-time.After(time.Minute):
-			fmt.Printf("Upgraded %d/%d\n", *upgraded, upgradable)
+			l.Printf("Upgraded %d/%d\n", *upgraded, upgradable)
 		}
 	}
 }
 
-func logUpgradeComplete(upgraded int32, failedInstances map[string]string) {
-	log.Printf("---\n"+
+func logUpgradeComplete(upgraded int32, failedInstances map[string]string, l *log.Logger) {
+	l.Printf("---\n"+
 		"Finished upgrade:\n"+
 		"Total instances upgraded: %d\n",
 		upgraded)
 
 	if len(failedInstances) > 0 {
-		log.Printf(
+		l.Printf(
 			"Failed to upgrade instances:\n" +
 				"GUID\tError\n")
 
 		for k, v := range failedInstances {
-			log.Printf("%s\t%s\n", k, v)
+			l.Printf("%s\t%s\n", k, v)
 		}
 	}
 }

@@ -1,7 +1,7 @@
 package command
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"code.cloudfoundry.org/cli/plugin"
@@ -13,16 +13,15 @@ type UpgradePlugin struct{}
 
 func (p *UpgradePlugin) Run(cliConnection plugin.CliConnection, args []string) {
 	if args[0] == "upgrade-all-service-instances" {
-		err := UpgradeAll(cliConnection, args[1:])
+		l := log.New(os.Stdout, "", 0)
+		err := UpgradeAll(cliConnection, args[1:], l)
 		if err != nil {
-			fmt.Printf("upgrade-all-service-instances plugin failed: %s", err.Error())
+			l.Printf("upgrade-all-service-instances plugin failed: %s", err.Error())
 			os.Exit(1)
 		}
 	}
-
 }
 
-//TODO
 func (p *UpgradePlugin) GetMetadata() plugin.PluginMetadata {
 	return plugin.PluginMetadata{
 		Name: "UpgradeAllPlugin",
@@ -41,7 +40,7 @@ func (p *UpgradePlugin) GetMetadata() plugin.PluginMetadata {
 				Name:     "upgrade-all-service-instances",
 				HelpText: "all instances with an upgrade available will be upgraded.",
 				UsageDetails: plugin.Usage{
-					Usage: "upgrade-all-service-instances\n cf upgrade-all-service-instances",
+					Usage: Usage,
 				},
 			},
 		},
