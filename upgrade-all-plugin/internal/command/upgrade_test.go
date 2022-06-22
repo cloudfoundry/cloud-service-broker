@@ -9,16 +9,10 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type mi struct {
-	Version string `json:"version"`
-}
-
 var _ = Describe("UpgradeAll", func() {
 
 	var (
 		fakeCliConnection *pluginfakes.FakeCliConnection
-		//fakeServer        *ghttp.Server
-		//responseCode      int
 	)
 
 	BeforeEach(func() {
@@ -53,6 +47,18 @@ var _ = Describe("UpgradeAll", func() {
 
 			err := command.UpgradeAll(fakeCliConnection, []string{"broker-name"})
 			Expect(err).To(MatchError(fmt.Errorf("error retrieving api endpoint: APIEndpoint error")))
+		})
+	})
+
+	When("upgrade errors", func() {
+		It("returns the error", func() {
+			fakeCliConnection.ApiVersionReturns("3.0.0", nil)
+			fakeCliConnection.IsLoggedInReturns(true, nil)
+			fakeCliConnection.AccessTokenReturns("access-token", nil)
+			fakeCliConnection.ApiEndpointReturns("test-endpoint", nil)
+
+			err := command.UpgradeAll(fakeCliConnection, []string{"broker-name"})
+			Expect(err).To(HaveOccurred())
 		})
 	})
 

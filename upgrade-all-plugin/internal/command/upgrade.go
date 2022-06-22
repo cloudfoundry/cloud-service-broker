@@ -34,9 +34,9 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
 	}
 
 	flagSet := flag.NewFlagSet("upgradeAll", flag.ExitOnError)
-	//dryRun := flagSet.Bool("dry-run", false, "displays number of instances which would be upgraded")
 	skipVerify := flagSet.Bool("skip-ssl-validation", false, "skip ssl certificate validation during http requests")
 	batchSize := flagSet.Int("batch-size", 10, "number of concurrent upgrades")
+	//dryRun := flagSet.Bool("dry-run", false, "displays number of instances which would be upgraded")
 
 	if len(args) > 1 {
 		err = flagSet.Parse(args[1:])
@@ -48,7 +48,7 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
 	r := requester.NewRequester(apiEndPoint, accessToken, *skipVerify)
 	api := ccapi.NewCCAPI(r)
 
-	if err = upgrader.Upgrade(api, brokerName, *batchSize, log.New(os.Stdout, "", 0)); err != nil {
+	if err := upgrader.Upgrade(api, brokerName, *batchSize, log.New(os.Stdout, "", 0)); err != nil {
 		return err
 	}
 
