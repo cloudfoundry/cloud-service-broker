@@ -52,6 +52,7 @@ var _ = Describe("GetServicePlans", func() {
 			`
 			fakeServer.AppendHandlers(
 				ghttp.CombineHandlers(
+					ghttp.VerifyHeaderKV("Authorization", "fake-token"),
 					ghttp.VerifyRequest("GET", "/v3/service_plans", "per_page=5000&service_broker_names=test-broker-name"),
 					ghttp.RespondWith(http.StatusOK, response),
 				),
@@ -64,6 +65,13 @@ var _ = Describe("GetServicePlans", func() {
 
 			Expect(err).NotTo(HaveOccurred())
 
+			By("checking the request contains the brokername query")
+			requests := fakeServer.ReceivedRequests()
+			Expect(requests).To(HaveLen(1))
+			Expect(requests[0].Method).To(Equal("GET"))
+			Expect(requests[0].URL.Path).To(Equal("/v3/service_plans"))
+			Expect(requests[0].URL.RawQuery).To(Equal("per_page=5000&service_broker_names=test-broker-name"))
+
 			By("checking the plan is returned")
 			Expect(actualPlans).To(HaveLen(3))
 			Expect(actualPlans[0].GUID).To(Equal("test-guid-1"))
@@ -74,7 +82,12 @@ var _ = Describe("GetServicePlans", func() {
 
 	When("the request fails", func() {
 		BeforeEach(func() {
-			fakeServer.AppendHandlers(ghttp.RespondWith(http.StatusInternalServerError, nil))
+			fakeServer.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyHeaderKV("Authorization", "fake-token"),
+					ghttp.RespondWith(http.StatusInternalServerError, nil),
+				),
+			)
 		})
 
 		It("returns an error", func() {

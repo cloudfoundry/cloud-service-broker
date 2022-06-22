@@ -24,15 +24,15 @@ var _ = Describe("Requester", func() {
 		fakeServer = ghttp.NewServer()
 		DeferCleanup(fakeServer.Close)
 
-		fakeRequester = requester.NewRequester(fakeServer.URL(), "test-token", false)
+		fakeRequester = requester.NewRequester(fakeServer.URL(), "fake-token", false)
 	})
 
 	Describe("NewRequester", func() {
 		It("returns a requester with given values", func() {
-			actualRequester := requester.NewRequester("test-url", "test-token", false)
+			actualRequester := requester.NewRequester("test-url", "fake-token", false)
 
 			Expect(actualRequester.APIBaseURL).To(Equal("test-url"))
-			Expect(actualRequester.APIToken).To(Equal("test-token"))
+			Expect(actualRequester.APIToken).To(Equal("fake-token"))
 		})
 	})
 
@@ -41,6 +41,7 @@ var _ = Describe("Requester", func() {
 			BeforeEach(func() {
 				fakeServer.AppendHandlers(
 					ghttp.CombineHandlers(
+						ghttp.VerifyHeaderKV("Authorization", "fake-token"),
 						ghttp.VerifyRequest("GET", "/test-endpoint", ""),
 						ghttp.RespondWith(http.StatusOK, `{"test_value": "foo"}`, nil),
 					),
@@ -58,6 +59,7 @@ var _ = Describe("Requester", func() {
 			BeforeEach(func() {
 				fakeServer.AppendHandlers(
 					ghttp.CombineHandlers(
+						ghttp.VerifyHeaderKV("Authorization", "fake-token"),
 						ghttp.VerifyRequest("GET", "/not-a-real-url", ""),
 						ghttp.RespondWith(http.StatusNotFound, "", nil),
 					),
@@ -78,6 +80,7 @@ var _ = Describe("Requester", func() {
 			BeforeEach(func() {
 				fakeServer.AppendHandlers(
 					ghttp.CombineHandlers(
+						ghttp.VerifyHeaderKV("Authorization", "fake-token"),
 						ghttp.VerifyRequest("GET", "/test-endpoint", ""),
 						ghttp.RespondWith(http.StatusOK, ``, nil),
 					),
@@ -95,6 +98,7 @@ var _ = Describe("Requester", func() {
 			BeforeEach(func() {
 				fakeServer.AppendHandlers(
 					ghttp.CombineHandlers(
+						ghttp.VerifyHeaderKV("Authorization", "fake-token"),
 						ghttp.VerifyRequest("PATCH", "/test-endpoint", ""),
 						ghttp.RespondWith(http.StatusAccepted, ``, nil),
 					),
@@ -110,6 +114,7 @@ var _ = Describe("Requester", func() {
 			BeforeEach(func() {
 				fakeServer.AppendHandlers(
 					ghttp.CombineHandlers(
+						ghttp.VerifyHeaderKV("Authorization", "fake-token"),
 						ghttp.VerifyRequest("PATCH", "/test-endpoint", ""),
 						ghttp.RespondWith(http.StatusInternalServerError, ``, nil),
 					),

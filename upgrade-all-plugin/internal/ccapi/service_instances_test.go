@@ -52,6 +52,7 @@ var _ = Describe("GetServiceInstances", func() {
 			}`
 			fakeServer.AppendHandlers(
 				ghttp.CombineHandlers(
+					ghttp.VerifyHeaderKV("Authorization", "fake-token"),
 					ghttp.VerifyRequest("GET", "/v3/service_instances", "per_page=5000&service_plan_guids=test-plan-guid,another-test-guid"),
 					ghttp.RespondWith(http.StatusOK, responseServiceInstances),
 				),
@@ -65,6 +66,14 @@ var _ = Describe("GetServiceInstances", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(actualInstances)).To(Equal(1))
 			Expect(actualInstances[0].GUID).To(Equal("test-guid"))
+
+			requests := fakeServer.ReceivedRequests()
+			Expect(requests).To(HaveLen(1))
+
+			By("making the appending the plan guids")
+			Expect(requests[0].Method).To(Equal("GET"))
+			Expect(requests[0].URL.Path).To(Equal("/v3/service_instances"))
+			Expect(requests[0].URL.RawQuery).To(Equal("per_page=5000&service_plan_guids=test-plan-guid,another-test-guid"))
 		})
 	})
 
@@ -79,7 +88,13 @@ var _ = Describe("GetServiceInstances", func() {
 
 	When("the request fails", func() {
 		BeforeEach(func() {
-			fakeServer.AppendHandlers(ghttp.RespondWith(http.StatusInternalServerError, nil))
+
+			fakeServer.AppendHandlers(
+				ghttp.CombineHandlers(
+					ghttp.VerifyHeaderKV("Authorization", "fake-token"),
+					ghttp.RespondWith(http.StatusInternalServerError, nil),
+				),
+			)
 		})
 
 		It("returns an error", func() {

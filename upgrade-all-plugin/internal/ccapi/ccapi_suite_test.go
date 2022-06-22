@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestCcapi(t *testing.T) {
+func TestCCapi(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Ccapi Suite")
 }

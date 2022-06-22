@@ -6,8 +6,6 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/upgrader"
 
-	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/ccapi"
-
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/requester"
 
 	"code.cloudfoundry.org/cli/plugin"
@@ -48,26 +46,8 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
 		return err
 	}
 
-	servicePlans, err := ccapi.GetServicePlans(r, brokerName)
-	if err != nil {
-		return err
-	}
-
-	var planGUIDs []string
-	planVersions := make(map[string]string)
-
-	for _, p := range servicePlans {
-		planGUIDs = append(planGUIDs, p.GUID)
-		planVersions[p.GUID] = p.MaintenanceInfo.Version
-	}
-
 	if *dryRun {
 		return nil
-	}
-
-	_, err = ccapi.GetServiceInstances(r, planGUIDs)
-	if err != nil {
-		return err
 	}
 
 	//Get Broker plans
