@@ -1,6 +1,7 @@
 package brokerpaktestframework
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -16,14 +17,35 @@ import (
 	cp "github.com/otiai10/copy"
 )
 
-func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.Writer) (*TestInstance, error) {
+const (
+	terraformVersion = "1.1.4"
+)
+
+var (
+	brokerpakDefaultFoldersToCopy = []string{"terraform"}
+)
+
+func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.Writer, brokerpakExtraFoldersToCopy ...string) (*TestInstance, error) {
 	csbBuild, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker")
 	if err != nil {
 		return nil, err
 	}
 
-	workingDir, err := createWorkspace(brokerPackDir, provider.Binary)
+	workingDir, err := os.MkdirTemp("", "prefix")
 	if err != nil {
+		return nil, fmt.Errorf("error creating temporal working directory %w", err)
+	}
+
+	if err := copyBrokerpakYMLFiles(brokerPackDir, workingDir); err != nil {
+		return nil, err
+	}
+
+	folders := append(brokerpakDefaultFoldersToCopy, brokerpakExtraFoldersToCopy...)
+	if err := copyBrokerpakFolders(brokerPackDir, workingDir, folders); err != nil {
+		return nil, err
+	}
+
+	if err := writeManifest(brokerPackDir, provider.Binary, workingDir); err != nil {
 		return nil, err
 	}
 
@@ -40,87 +62,71 @@ func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.W
 	return &TestInstance{brokerBuild: csbBuild, workspace: workingDir, username: "u", password: "p", port: "8080"}, nil
 }
 
-func createWorkspace(brokerPackDir string, build string) (string, error) {
-	workingDir, err := os.MkdirTemp("", "prefix")
-	if err != nil {
-		return "", err
-	}
-	err = copyBrokerpackFiles(brokerPackDir, workingDir)
-	if err != nil {
-		return "", err
-	}
-
-	return workingDir, templateManifest(brokerPackDir, build, workingDir)
-}
-
-func copyBrokerpackFiles(brokerPackDir string, workingDir string) error {
+func copyBrokerpakYMLFiles(brokerPackDir string, workingDir string) error {
 	yamlFiles, err := filepath.Glob(brokerPackDir + "/*.yml")
 	if err != nil {
 		return err
 	}
-	for _, file := range yamlFiles {
-		err = cp.Copy(file, path.Join(workingDir, filepath.Base(file)))
-		if err != nil {
+
+	for _, canonicalFilePath := range yamlFiles {
+		filename := filepath.Base(canonicalFilePath)
+		if filename == "manifest.yml" {
+			continue
+		}
+
+		if err = cp.Copy(canonicalFilePath, path.Join(workingDir, filename)); err != nil {
 			return err
 		}
 	}
-	err = cp.Copy(path.Join(brokerPackDir, "terraform"), path.Join(workingDir, "terraform"))
-	if err != nil {
-		return err
-	}
-	err = os.Remove(path.Join(workingDir, "manifest.yml"))
-	if err != nil {
-		return err
+
+	return nil
+}
+
+func copyBrokerpakFolders(brokerPackDir string, workingDir string, folders []string) error {
+	for _, directory := range folders {
+		src := path.Join(brokerPackDir, directory)
+		dst := path.Join(workingDir, directory)
+		if err := cp.Copy(src, dst); err != nil {
+			return fmt.Errorf("error in folder copy operation - src: %s - dst %s", src, dst)
+		}
 	}
 	return nil
 }
 
-func templateManifest(brokerPackDir string, build string, workingDir string) error {
+func writeManifest(brokerPackDir string, build string, workingDir string) (err error) {
 	contents, err := os.ReadFile(path.Join(brokerPackDir, "manifest.yml"))
 	if err != nil {
-		return err
+		return
 	}
 	parsedManifest, err := manifest.Parse(contents)
 	if err != nil {
-		return err
+		return
 	}
-	setArch(parsedManifest)
-	replaceTerraformBinaries(parsedManifest, build)
 
+	parsedManifest.Platforms = []platform.Platform{{Os: runtime.GOOS, Arch: runtime.GOARCH}}
+	versionOrPanic := version.Must(version.NewVersion(terraformVersion))
+	parsedManifest.TerraformVersions = []manifest.TerraformVersion{{Version: versionOrPanic, URLTemplate: build}}
+	parsedManifest.TerraformProviders = nil
 	outputFile, err := os.Create(path.Join(workingDir, "manifest.yml"))
 	if err != nil {
-		return err
+		return
 	}
+	defer func() {
+		closeErr := outputFile.Close()
+		if err == nil {
+			err = closeErr
+		}
+	}()
 
 	serializedManifest, err := parsedManifest.Serialize()
 	if err != nil {
-		return err
+		return
 	}
 
 	_, err = outputFile.Write(serializedManifest)
 	if err != nil {
-		return err
+		return
 	}
 
-	return outputFile.Close()
-}
-
-func replaceTerraformBinaries(parsedManifest *manifest.Manifest, terraformBuild string) error {
-	parsedManifest.TerraformVersions = []manifest.TerraformVersion{
-		{
-			Version:     version.Must(version.NewVersion("1.1.4")),
-			URLTemplate: terraformBuild,
-		},
-	}
-	parsedManifest.TerraformProviders = nil
-	return nil
-}
-
-func setArch(parsedManifest *manifest.Manifest) {
-	parsedManifest.Platforms = []platform.Platform{
-		{
-			Os:   runtime.GOOS,
-			Arch: runtime.GOARCH,
-		},
-	}
+	return
 }
