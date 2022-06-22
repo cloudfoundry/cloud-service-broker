@@ -82,6 +82,9 @@ var _ = DescribeTable(
 	Entry(nil, "no MI in plan; MI v1->none; plan change;    no params", decider.Failed, "service instance needs to be upgraded before updating"),
 	Entry(nil, "no MI in plan; MI v1->none; plan unchanged; params", decider.Failed, "service instance needs to be upgraded before updating"),
 	Entry(nil, "no MI in plan; MI v1->none; plan change;    params", decider.Failed, "service instance needs to be upgraded before updating"),
+	Entry(nil, "plan at v1;    MI none->v1; plan change;    no params", decider.Failed, "service instance needs to be upgraded before updating"),
+	Entry(nil, "plan at v1;    MI none->v1; plan unchanged; params", decider.Failed, "service instance needs to be upgraded before updating"),
+	Entry(nil, "plan at v1;    MI none->v1; plan change;    params", decider.Failed, "service instance needs to be upgraded before updating"),
 
 	// Attempted upgrades where the requested MI does not match the plan MI
 	Entry(nil, "plan at v1;    MI none->v2; plan unchanged; no params", decider.Failed, apiresponses.ErrMaintenanceInfoConflict),
@@ -100,12 +103,4 @@ var _ = DescribeTable(
 	Entry(nil, "plan at v1; no request MI; plan change;    no params", decider.Update, nil),
 	Entry(nil, "plan at v1; no request MI; plan unchanged; params", decider.Update, nil),
 	Entry(nil, "plan at v1; no request MI; plan change;    params", decider.Update, nil),
-
-	// Edge case: when there's no previous MI, but the new MI matches the plan MI,
-	// we assume it's an update if there are updates, otherwise it's an upgrade.
-	// With CloudFoundry, the previous MI is always specified, so we do not see this.
-	Entry(nil, "plan at v1; MI none->v1;  plan unchanged; no params", decider.Upgrade, nil),
-	Entry(nil, "plan at v1; MI none->v1;  plan change; no params", decider.Update, nil),
-	Entry(nil, "plan at v1; MI none->v1;  plan unchanged; params", decider.Update, nil),
-	Entry(nil, "plan at v1; MI none->v1;  plan change; params", decider.Update, nil),
 )
