@@ -3,6 +3,8 @@ package command
 import (
 	"flag"
 	"fmt"
+	"log"
+	"os"
 
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/ccapi"
 
@@ -46,7 +48,7 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
 	r := requester.NewRequester(apiEndPoint, accessToken, *skipVerify)
 	api := ccapi.NewCCAPI(r)
 
-	if err = upgrader.Upgrade(api, brokerName, *batchSize); err != nil {
+	if err = upgrader.Upgrade(api, brokerName, *batchSize, log.New(os.Stdout, "", 0)); err != nil {
 		return err
 	}
 

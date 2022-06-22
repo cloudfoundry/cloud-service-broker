@@ -2,6 +2,9 @@ package upgrader_test
 
 import (
 	"fmt"
+	"log"
+
+	. "github.com/onsi/gomega/gbytes"
 
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/ccapi"
 
@@ -19,6 +22,9 @@ var _ = Describe("Upgrade", func() {
 		fakeCCAPI                                           *upgraderfakes.FakeCCAPI
 		fakePlan                                            ccapi.Plan
 		fakeInstance1, fakeInstance2, fakeInstanceNoUpgrade ccapi.ServiceInstance
+		fakeServiceInstances                                []ccapi.ServiceInstance
+		fakeStdout                                          *Buffer
+		fakeLog                                             *log.Logger
 	)
 
 	BeforeEach(func() {
@@ -43,13 +49,18 @@ var _ = Describe("Upgrade", func() {
 			UpgradeAvailable: false,
 		}
 
+		fakeServiceInstances = []ccapi.ServiceInstance{fakeInstance1, fakeInstance2, fakeInstanceNoUpgrade}
+
 		fakeCCAPI = &upgraderfakes.FakeCCAPI{}
 		fakeCCAPI.GetServicePlansReturns([]ccapi.Plan{fakePlan}, nil)
-		fakeCCAPI.GetServiceInstancesReturns([]ccapi.ServiceInstance{fakeInstance1, fakeInstance2, fakeInstanceNoUpgrade}, nil)
+		fakeCCAPI.GetServiceInstancesReturns(fakeServiceInstances, nil)
+
+		fakeStdout = NewBuffer()
+		fakeLog = log.New(fakeStdout, "", 0)
 	})
 
 	It("upgrades a service instance", func() {
-		err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5)
+		err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5, fakeLog)
 		Expect(err).NotTo(HaveOccurred())
 
 		By("getting the service plans")
@@ -70,7 +81,7 @@ var _ = Describe("Upgrade", func() {
 
 	When("batch size is less that number of upgradable instances", func() {
 		It("upgrades all instances", func() {
-			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 1)
+			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 1, fakeLog)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("calling upgrade on each upgradeable instance")
@@ -86,7 +97,7 @@ var _ = Describe("Upgrade", func() {
 		It("returns the error", func() {
 			fakeCCAPI.GetServicePlansReturns(nil, fmt.Errorf("plan-error"))
 
-			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5)
+			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5, fakeLog)
 			Expect(err).To(MatchError("plan-error"))
 		})
 	})
@@ -95,8 +106,53 @@ var _ = Describe("Upgrade", func() {
 		It("returns the error", func() {
 			fakeCCAPI.GetServiceInstancesReturns(nil, fmt.Errorf("instance-error"))
 
-			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5)
+			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5, fakeLog)
 			Expect(err).To(MatchError("instance-error"))
+		})
+	})
+
+	Describe("logging", func() {
+		When("no failed upgrades", func() {
+			matchLogOutput := SatisfyAll(
+				Say(fmt.Sprintf(`Discovering service instances for broker: %s`, fakeBrokerName)),
+				Say(`---\n`),
+				Say(`Total instances: 3\n`),
+				Say(`Upgradable instances: 2\n`),
+				Say(`---\n`),
+				Say(`Starting upgrade...`),
+				Say(`---\n`),
+				Say(`Finished upgrade:`),
+				Say(`Total instances upgraded: 2`),
+			)
+			It("should output the correct logging", func() {
+				upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5, fakeLog)
+				Expect(fakeStdout).To(matchLogOutput)
+			})
+		})
+		When("an instance fails to upgrade", func() {
+			matchLogOutput := SatisfyAll(
+				Say(fmt.Sprintf(`Discovering service instances for broker: %s`, fakeBrokerName)),
+				Say(`---\n`),
+				Say(`Total instances: 3\n`),
+				Say(`Upgradable instances: 2\n`),
+				Say(`---\n`),
+				Say(`Starting upgrade...`),
+				Say(`---\n`),
+				Say(`Finished upgrade:`),
+				Say(`Total instances upgraded: 1`),
+				Say(`Failed to upgrade instances:`),
+				Say(`GUID	Error`),
+				Say(`fake-instance-guid-2	failed to upgrade instance`),
+			)
+			BeforeEach(func() {
+				fakeCCAPI.UpgradeServiceInstanceReturnsOnCall(0, nil)
+				fakeCCAPI.UpgradeServiceInstanceReturnsOnCall(1, fmt.Errorf("failed to upgrade instance"))
+			})
+
+			It("should output the correct logging", func() {
+				upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 1, fakeLog)
+				Expect(fakeStdout).To(matchLogOutput)
+			})
 		})
 	})
 })

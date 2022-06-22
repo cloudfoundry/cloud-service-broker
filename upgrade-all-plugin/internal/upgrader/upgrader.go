@@ -2,6 +2,7 @@ package upgrader
 
 import (
 	"fmt"
+	"log"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -17,7 +18,7 @@ type CCAPI interface {
 	UpgradeServiceInstance(string, string) error
 }
 
-func Upgrade(api CCAPI, brokerName string, batchSize int) error {
+func Upgrade(api CCAPI, brokerName string, batchSize int, log *log.Logger) error {
 	plans, err := api.GetServicePlans(brokerName)
 	if err != nil {
 		return err
@@ -31,7 +32,7 @@ func Upgrade(api CCAPI, brokerName string, batchSize int) error {
 		planVersions[plan.GUID] = plan.MaintenanceInfoVersion
 	}
 
-	fmt.Printf("Discovering service instances for broker: %s\n", brokerName)
+	log.Printf("Discovering service instances for broker: %s\n", brokerName)
 
 	serviceInstances, err := api.GetServiceInstances(planGUIDS)
 	if err != nil {
@@ -43,66 +44,53 @@ func Upgrade(api CCAPI, brokerName string, batchSize int) error {
 		MIVersion string
 	}
 
-	upgradableInstances := 0
+	var upgradableInstances []ccapi.ServiceInstance
 	for _, i := range serviceInstances {
 		if i.UpgradeAvailable {
-			upgradableInstances++
+			upgradableInstances = append(upgradableInstances, i)
 		}
 	}
 
-	fmt.Printf("---\n"+
+	log.Printf("---\n"+
 		"Total instances: %d\n"+
 		"Upgradable instances: %d\n"+
 		"---\n",
 		len(serviceInstances),
-		upgradableInstances)
+		len(upgradableInstances))
+
+	var upgraded int32
+	upgradeComplete := make(chan bool)
+
+	go logUpgradeProgress(upgradeComplete, &upgraded, len(upgradableInstances))
+
+	log.Printf("Starting upgrade...\n")
 
 	upgradeQueue := make(chan upgradeTask)
-
-	fmt.Printf("Starting upgrade...\n")
 	go func() {
-		for _, instance := range serviceInstances {
-			if instance.UpgradeAvailable {
-				upgradeQueue <- upgradeTask{
-					Guid:      instance.GUID,
-					MIVersion: planVersions[instance.PlanGUID],
-				}
+		for _, instance := range upgradableInstances {
+			upgradeQueue <- upgradeTask{
+				Guid:      instance.GUID,
+				MIVersion: planVersions[instance.PlanGUID],
 			}
 		}
 		close(upgradeQueue)
 	}()
 
-	var failedInstances map[string]string
+	failedInstances := make(map[string]string)
 	addFailedInstance := func(instance, description string) {
 		var lock sync.Mutex
-
 		lock.Lock()
 		defer lock.Unlock()
-
 		failedInstances[instance] = description
 	}
-
-	var upgraded int32
-
-	upgradeComplete := make(chan bool)
-
-	go func() {
-		for {
-			select {
-			case <-upgradeComplete:
-				return
-			case <-time.After(time.Minute):
-				fmt.Printf("Upgraded %d/%d\n", upgraded, upgradableInstances)
-			}
-		}
-	}()
 
 	workers.Run(batchSize, func() {
 		for instance := range upgradeQueue {
 			err := api.UpgradeServiceInstance(instance.Guid, instance.MIVersion)
 			if err != nil {
-				fmt.Printf("error upgrading service instance: %s\n", err)
+				log.Printf("error upgrading service instance: %s\n", err)
 				addFailedInstance(instance.Guid, err.Error())
+				continue
 			}
 			atomic.AddInt32(&upgraded, 1)
 		}
@@ -110,24 +98,35 @@ func Upgrade(api CCAPI, brokerName string, batchSize int) error {
 
 	upgradeComplete <- true
 
-	fmt.Printf("---\n"+
+	logUpgradeComplete(upgraded, failedInstances)
+
+	return nil
+}
+
+func logUpgradeProgress(complete chan bool, upgraded *int32, upgradable int) {
+	for {
+		select {
+		case <-complete:
+			return
+		case <-time.After(time.Minute):
+			fmt.Printf("Upgraded %d/%d\n", *upgraded, upgradable)
+		}
+	}
+}
+
+func logUpgradeComplete(upgraded int32, failedInstances map[string]string) {
+	log.Printf("---\n"+
 		"Finished upgrade:\n"+
 		"Total instances upgraded: %d\n",
 		upgraded)
 
 	if len(failedInstances) > 0 {
-		fmt.Printf(
+		log.Printf(
 			"Failed to upgrade instances:\n" +
 				"GUID\tError\n")
 
 		for k, v := range failedInstances {
-			fmt.Printf("%s\t%s\n", k, v)
+			log.Printf("%s\t%s\n", k, v)
 		}
 	}
-
-	return nil
-}
-
-func logUpgradableInstances(si []ccapi.ServiceInstance) {
-
 }
