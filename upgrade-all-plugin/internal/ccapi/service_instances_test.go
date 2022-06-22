@@ -66,10 +66,13 @@ var _ = Describe("GetServiceInstances", func() {
 
 			By("checking the valid service instance is returned")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(len(actualInstances)).To(Equal(1))
+			Expect(actualInstances).To(HaveLen(1))
 			Expect(actualInstances[0].GUID).To(Equal("test-guid"))
-			Expect(actualInstances[0].UpgradeAvailable).To(Equal("true"))
-			Expect(actualInstances[0].PlanGUID).To(Equal("true"))
+			Expect(actualInstances[0].UpgradeAvailable).To(BeTrue())
+			Expect(actualInstances[0].PlanGUID).To(Equal("test-plan-guid"))
+			Expect(actualInstances[0].LastOperation.State).To(Equal("succeeded"))
+			Expect(actualInstances[0].LastOperation.Type).To(Equal("create"))
+			Expect(actualInstances[0].LastOperation.Description).To(Equal("Operation succeeded"))
 
 			requests := fakeServer.ReceivedRequests()
 			Expect(requests).To(HaveLen(1))

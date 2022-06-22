@@ -6,8 +6,6 @@ import (
 )
 
 func (c CCAPI) UpgradeServiceInstance(guid, miVersion string) error {
-	fmt.Printf("Upgrading instance: %s with version: %s\n", guid, miVersion)
-
 	var body struct {
 		MaintenanceInfo struct {
 			Version string `json:"version"`
@@ -22,8 +20,6 @@ func (c CCAPI) UpgradeServiceInstance(guid, miVersion string) error {
 
 	var si ServiceInstance
 	for {
-		fmt.Printf("Polling instance: %v\n", guid)
-
 		err = c.requester.Get(fmt.Sprintf("v3/service_instances/%s", guid), &si)
 		if err != nil {
 			return fmt.Errorf("upgrade request error: %s", err)

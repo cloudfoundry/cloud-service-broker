@@ -77,8 +77,11 @@ var _ = Describe("GetServicePlans", func() {
 			By("checking the plan is returned")
 			Expect(actualPlans).To(HaveLen(3))
 			Expect(actualPlans[0].GUID).To(Equal("test-guid-1"))
+			Expect(actualPlans[0].MaintenanceInfoVersion).To(Equal("test-mi-version"))
 			Expect(actualPlans[1].GUID).To(Equal("test-guid-2"))
+			Expect(actualPlans[1].MaintenanceInfoVersion).To(Equal("test-mi-version"))
 			Expect(actualPlans[2].GUID).To(Equal("test-guid-3"))
+			Expect(actualPlans[2].MaintenanceInfoVersion).To(Equal("test-mi-version"))
 		})
 	})
 
