@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/ccapi"
+
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/upgrader"
 
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/requester"
@@ -30,7 +32,7 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
 	}
 
 	flagSet := flag.NewFlagSet("upgradeAll", flag.ExitOnError)
-	dryRun := flagSet.Bool("dry-run", false, "displays number of instances which would be upgraded")
+	//dryRun := flagSet.Bool("dry-run", false, "displays number of instances which would be upgraded")
 	skipVerify := flagSet.Bool("skip-ssl-validation", false, "skip ssl certificate validation during http requests")
 
 	if len(args) > 1 {
@@ -41,21 +43,11 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string) error {
 	}
 
 	r := requester.NewRequester(apiEndPoint, accessToken, *skipVerify)
+	api := ccapi.NewCCAPI(r)
 
-	if err := upgrader.Upgrade(r, brokerName); err != nil {
+	if err = upgrader.Upgrade(api, brokerName, 1); err != nil {
 		return err
 	}
-
-	if *dryRun {
-		return nil
-	}
-
-	//Get Broker plans
-	//Get all service instances
-	//For each service instance
-	//	if upgrade is available add to channel
-	//for n workers:
-	//	range channel perform upgrade
 
 	return nil
 }

@@ -3,9 +3,11 @@ package ccapi
 import (
 	"fmt"
 	"strings"
+
+	"code.cloudfoundry.org/jsonry"
 )
 
-func (c *CCAPI) GetServiceInstances(planGUIDs []string) ([]ServiceInstance, error) {
+func (c CCAPI) GetServiceInstances(planGUIDs []string) ([]ServiceInstance, error) {
 	if len(planGUIDs) == 0 {
 		return nil, fmt.Errorf("no service_plan_guids specified")
 	}
@@ -30,4 +32,8 @@ type ServiceInstance struct {
 
 type serviceInstances struct {
 	Instances []ServiceInstance `json:"resources"`
+}
+
+func (s *ServiceInstance) UnmarshalJSON(b []byte) error {
+	return jsonry.Unmarshal(b, s)
 }

@@ -9,5 +9,5 @@ import (
 
 func TestCCapi(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Ccapi Suite")
+	RunSpecs(t, "CCAPI Suite")
 }

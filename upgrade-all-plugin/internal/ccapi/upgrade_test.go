@@ -94,6 +94,7 @@ var _ = Describe("UpgradeServiceInstance", func() {
 				ghttp.CombineHandlers(
 					ghttp.VerifyHeaderKV("Authorization", "fake-token"),
 					ghttp.VerifyRequest("PATCH", "/v3/service_instances/test-guid"),
+					ghttp.VerifyBody([]byte(`{"maintenance_info":{"version":"test-mi-version"}}`)),
 					ghttp.RespondWith(http.StatusAccepted, ``, nil),
 				),
 				ghttp.CombineHandlers(
@@ -157,6 +158,7 @@ var _ = Describe("UpgradeServiceInstance", func() {
 				ghttp.CombineHandlers(
 					ghttp.VerifyHeaderKV("Authorization", "fake-token"),
 					ghttp.VerifyRequest("PATCH", "/v3/service_instances/test-guid"),
+					ghttp.VerifyBody([]byte(`{"maintenance_info":{"version":"test-mi-version"}}`)),
 					ghttp.RespondWith(http.StatusAccepted, ``, nil),
 				),
 				ghttp.CombineHandlers(

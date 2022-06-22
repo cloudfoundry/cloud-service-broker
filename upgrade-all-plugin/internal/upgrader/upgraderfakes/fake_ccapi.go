@@ -35,19 +35,6 @@ type FakeCCAPI struct {
 		result1 []ccapi.Plan
 		result2 error
 	}
-	PollServiceInstanceStub        func(string) (bool, error)
-	pollServiceInstanceMutex       sync.RWMutex
-	pollServiceInstanceArgsForCall []struct {
-		arg1 string
-	}
-	pollServiceInstanceReturns struct {
-		result1 bool
-		result2 error
-	}
-	pollServiceInstanceReturnsOnCall map[int]struct {
-		result1 bool
-		result2 error
-	}
 	UpgradeServiceInstanceStub        func(string, string) error
 	upgradeServiceInstanceMutex       sync.RWMutex
 	upgradeServiceInstanceArgsForCall []struct {
@@ -197,70 +184,6 @@ func (fake *FakeCCAPI) GetServicePlansReturnsOnCall(i int, result1 []ccapi.Plan,
 	}{result1, result2}
 }
 
-func (fake *FakeCCAPI) PollServiceInstance(arg1 string) (bool, error) {
-	fake.pollServiceInstanceMutex.Lock()
-	ret, specificReturn := fake.pollServiceInstanceReturnsOnCall[len(fake.pollServiceInstanceArgsForCall)]
-	fake.pollServiceInstanceArgsForCall = append(fake.pollServiceInstanceArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	stub := fake.PollServiceInstanceStub
-	fakeReturns := fake.pollServiceInstanceReturns
-	fake.recordInvocation("PollServiceInstance", []interface{}{arg1})
-	fake.pollServiceInstanceMutex.Unlock()
-	if stub != nil {
-		return stub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeCCAPI) PollServiceInstanceCallCount() int {
-	fake.pollServiceInstanceMutex.RLock()
-	defer fake.pollServiceInstanceMutex.RUnlock()
-	return len(fake.pollServiceInstanceArgsForCall)
-}
-
-func (fake *FakeCCAPI) PollServiceInstanceCalls(stub func(string) (bool, error)) {
-	fake.pollServiceInstanceMutex.Lock()
-	defer fake.pollServiceInstanceMutex.Unlock()
-	fake.PollServiceInstanceStub = stub
-}
-
-func (fake *FakeCCAPI) PollServiceInstanceArgsForCall(i int) string {
-	fake.pollServiceInstanceMutex.RLock()
-	defer fake.pollServiceInstanceMutex.RUnlock()
-	argsForCall := fake.pollServiceInstanceArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeCCAPI) PollServiceInstanceReturns(result1 bool, result2 error) {
-	fake.pollServiceInstanceMutex.Lock()
-	defer fake.pollServiceInstanceMutex.Unlock()
-	fake.PollServiceInstanceStub = nil
-	fake.pollServiceInstanceReturns = struct {
-		result1 bool
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeCCAPI) PollServiceInstanceReturnsOnCall(i int, result1 bool, result2 error) {
-	fake.pollServiceInstanceMutex.Lock()
-	defer fake.pollServiceInstanceMutex.Unlock()
-	fake.PollServiceInstanceStub = nil
-	if fake.pollServiceInstanceReturnsOnCall == nil {
-		fake.pollServiceInstanceReturnsOnCall = make(map[int]struct {
-			result1 bool
-			result2 error
-		})
-	}
-	fake.pollServiceInstanceReturnsOnCall[i] = struct {
-		result1 bool
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeCCAPI) UpgradeServiceInstance(arg1 string, arg2 string) error {
 	fake.upgradeServiceInstanceMutex.Lock()
 	ret, specificReturn := fake.upgradeServiceInstanceReturnsOnCall[len(fake.upgradeServiceInstanceArgsForCall)]
@@ -330,8 +253,6 @@ func (fake *FakeCCAPI) Invocations() map[string][][]interface{} {
 	defer fake.getServiceInstancesMutex.RUnlock()
 	fake.getServicePlansMutex.RLock()
 	defer fake.getServicePlansMutex.RUnlock()
-	fake.pollServiceInstanceMutex.RLock()
-	defer fake.pollServiceInstanceMutex.RUnlock()
 	fake.upgradeServiceInstanceMutex.RLock()
 	defer fake.upgradeServiceInstanceMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

@@ -22,6 +22,28 @@ func (p *UpgradePlugin) Run(cliConnection plugin.CliConnection, args []string) {
 
 }
 
+//TODO
 func (p *UpgradePlugin) GetMetadata() plugin.PluginMetadata {
-	return plugin.PluginMetadata{}
+	return plugin.PluginMetadata{
+		Name: "UpgradeAllPlugin",
+		Version: plugin.VersionType{
+			Major: 0,
+			Minor: 1,
+			Build: 0,
+		},
+		MinCliVersion: plugin.VersionType{
+			Major: 7,
+			Minor: 0,
+			Build: 0,
+		},
+		Commands: []plugin.Command{
+			{
+				Name:     "upgrade-all-service-instances",
+				HelpText: "all instances with an upgrade available will be upgraded.",
+				UsageDetails: plugin.Usage{
+					Usage: "upgrade-all-service-instances\n cf upgrade-all-service-instances",
+				},
+			},
+		},
+	}
 }

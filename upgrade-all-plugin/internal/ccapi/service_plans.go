@@ -6,7 +6,7 @@ import (
 	"code.cloudfoundry.org/jsonry"
 )
 
-func (c *CCAPI) GetServicePlans(brokerName string) ([]Plan, error) {
+func (c CCAPI) GetServicePlans(brokerName string) ([]Plan, error) {
 	var brokerPlans servicePlans
 	if err := c.requester.Get(fmt.Sprintf("v3/service_plans?per_page=5000&service_broker_names=%s", brokerName), &brokerPlans); err != nil {
 		return nil, fmt.Errorf("error getting service plans: %s", err)

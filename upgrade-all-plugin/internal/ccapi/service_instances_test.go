@@ -35,7 +35,7 @@ var _ = Describe("GetServiceInstances", func() {
 				"maintenance_info": {
 				  "version": "1.0.0"
 				},
-				"upgrade_available": false,
+				"upgrade_available": true,
 				"last_operation": {
 				  "type": "create",
 				  "state": "succeeded",
@@ -68,6 +68,8 @@ var _ = Describe("GetServiceInstances", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(actualInstances)).To(Equal(1))
 			Expect(actualInstances[0].GUID).To(Equal("test-guid"))
+			Expect(actualInstances[0].UpgradeAvailable).To(Equal("true"))
+			Expect(actualInstances[0].PlanGUID).To(Equal("true"))
 
 			requests := fakeServer.ReceivedRequests()
 			Expect(requests).To(HaveLen(1))
