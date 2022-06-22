@@ -23,19 +23,16 @@ var _ = DescribeTable(
 		)
 		for _, token := range separator.Split(spec, -1) {
 			switch token {
-			case "no MI in plan", "no params", "no MI change", "no plan":
+			case "no MI in plan", "no params", "no request MI":
 			case "plan change":
 				details.PlanID = "new-plan-id"
 				details.PreviousPlanID = "previous-plan-id"
-			case "plan static":
-				details.PlanID = "static-plan-id"
-				details.PreviousPlanID = "static-plan-id"
-			case "no plan change":
-				details.PlanID = "static-plan-id"
-			case "params":
-				details.RequestParams = map[string]any{"foo": "bar"}
+			case "plan unchanged":
+				details.PreviousPlanID = "plan-id"
 			case "plan at v1":
 				planVersion = version.Must(version.NewVersion("1.0.0"))
+			case "params":
+				details.RequestParams = map[string]any{"foo": "bar"}
 			case "MI none->v1":
 				details.MaintenanceInfoVersion = version.Must(version.NewVersion("1.0.0"))
 			case "MI none->v2":
@@ -43,7 +40,7 @@ var _ = DescribeTable(
 			case "MI v1->v1":
 				details.MaintenanceInfoVersion = version.Must(version.NewVersion("1.0.0"))
 				details.PreviousMaintenanceInfoVersion = version.Must(version.NewVersion("1.0.0"))
-			case "MI v1->none":
+			case "MI v1->none", "MI unchanged":
 				details.PreviousMaintenanceInfoVersion = version.Must(version.NewVersion("1.0.0"))
 			case "MI v2->v1":
 				details.MaintenanceInfoVersion = version.Must(version.NewVersion("1.0.0"))
@@ -62,19 +59,49 @@ var _ = DescribeTable(
 		}
 		Expect(operation).To(Equal(expectedOperation))
 	},
-	Entry(nil, "no MI in plan; no MI change; plan change;    no params", decider.Update, nil),
-	Entry(nil, "no MI in plan; no MI change; no plan change; params", decider.Update, nil),
-	Entry(nil, "no MI in plan; no MI change; plan static;    no params", decider.Update, nil),
-	Entry(nil, "plan at v1;    no MI change; plan static;    no params", decider.Failed, "service instance needs to be upgraded before updating: maintenance info defined in broker service catalog, but not passed in request"),
-	Entry(nil, "plan at v1;    MI v1->v1;    plan change;    no params", decider.Update, nil),
-	Entry(nil, "plan at v1;    MI none->v1;  no plan change; params", decider.Update, nil),
-	Entry(nil, "plan at v1;    MI v1->v1;    plan static;    no params", decider.Update, nil),
-	Entry(nil, "plan at v1;    MI none->v1;  plan static;    no params", decider.Upgrade, nil),
-	Entry(nil, "no MI in plan; MI v1->none;  plan static;    no params", decider.Upgrade, nil),
-	Entry(nil, "plan at v1;    MI v2->v1;    plan static;    no params", decider.Upgrade, nil),
-	Entry(nil, "plan at v1;    MI v1->v1;    plan change;    no params", decider.Update, nil), // Duplicate
-	Entry(nil, "plan at v1;    MI v2->v1;    plan static;    params", decider.Failed, "service instance needs to be upgraded before updating"),
-	Entry(nil, "plan at v1;    MI v2->v1;    plan static;    params", decider.Failed, "service instance needs to be upgraded before updating"),
-	Entry(nil, "plan at v1;    MI none->v2;  no plan change; no params", decider.Failed, apiresponses.ErrMaintenanceInfoConflict),
-	Entry(nil, "no MI in plan; MI none->v1;  no plan change; no params", decider.Failed, apiresponses.ErrMaintenanceInfoNilConflict),
+	// Old world Updates - MI does not exist
+	Entry(nil, "no MI in plan; no request MI; plan unchanged; no params", decider.Update, nil),
+	Entry(nil, "no MI in plan; no request MI; plan change;    no params", decider.Update, nil),
+	Entry(nil, "no MI in plan; no request MI; plan unchanged; params", decider.Update, nil),
+	Entry(nil, "no MI in plan; no request MI; plan change;    params", decider.Update, nil),
+
+	// New world Updates, MI is in previous values and is not being changed
+	Entry(nil, "plan at v1; MI unchanged; plan change;    no params", decider.Update, nil),
+	Entry(nil, "plan at v1; MI unchanged; plan unchanged; params", decider.Update, nil),
+	Entry(nil, "plan at v1; MI unchanged; plan change;    params", decider.Update, nil),
+
+	// Adding, removing and changing MI
+	Entry(nil, "plan at v1;    MI none->v1;  plan unchanged; no params", decider.Upgrade, nil),
+	Entry(nil, "no MI in plan; MI v1->none;  plan unchanged; no params", decider.Upgrade, nil),
+	Entry(nil, "plan at v1;    MI v2->v1;    plan unchanged; no params", decider.Upgrade, nil),
+
+	// Combined Upgrade and Update
+	Entry(nil, "plan at v1; MI v2->v1; plan unchanged; params", decider.Failed, "service instance needs to be upgraded before updating"),
+	Entry(nil, "plan at v1; MI v2->v1; plan change;    no params", decider.Failed, "service instance needs to be upgraded before updating"),
+	Entry(nil, "plan at v1; MI v2->v1; plan change;    params", decider.Failed, "service instance needs to be upgraded before updating"),
+
+	// Attempted upgrades where the requested MI does not match the plan MI
+	Entry(nil, "plan at v1;    MI none->v2; plan unchanged; no params", decider.Failed, apiresponses.ErrMaintenanceInfoConflict),
+	Entry(nil, "no MI in plan; MI none->v1; plan unchanged; no params", decider.Failed, apiresponses.ErrMaintenanceInfoNilConflict),
+
+	// Updates where MI is held constant
+	// With CloudFoundry, new MI is only specified if it's different to previous MI, so we do not see this.
+	Entry(nil, "plan at v1; MI v1->v1; plan unchanged; no params", decider.Update, nil),
+	Entry(nil, "plan at v1; MI v1->v1; plan change;    no params", decider.Update, nil),
+	Entry(nil, "plan at v1; MI v1->v1; plan unchanged; params", decider.Update, nil),
+	Entry(nil, "plan at v1; MI v1->v1; plan change;    params", decider.Update, nil),
+
+	// Updates where MI is not specified at all in the request as it has not changed.
+	// With CloudFoundry, previous MI is always specified, so we do not see this.
+	Entry(nil, "plan at v1; no request MI; plan unchanged; no params", decider.Update, nil),
+	Entry(nil, "plan at v1; no request MI; plan change;    no params", decider.Update, nil),
+	Entry(nil, "plan at v1; no request MI; plan unchanged; params", decider.Update, nil),
+	Entry(nil, "plan at v1; no request MI; plan change;    params", decider.Update, nil),
+
+	// When previous MI is nil, and there are other changes, it's an Update because the
+	// lack of a "previous MI" means the MI has not changed. With CloudFoundry, the previous
+	// MI is always specified, so we do not see this.
+	Entry(nil, "plan at v1; MI none->v1;  plan change; no params", decider.Update, nil),
+	Entry(nil, "plan at v1; MI none->v1;  plan unchanged; params", decider.Update, nil),
+	Entry(nil, "plan at v1; MI none->v1;  plan change; params", decider.Update, nil),
 )

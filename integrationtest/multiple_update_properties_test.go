@@ -21,7 +21,7 @@ var _ = Describe("Multiple Updates to Properties", func() {
 	BeforeEach(func() {
 		testHelper = helper.New(csb)
 		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "multiple-update-properties")
-		session = testHelper.StartBroker()
+		session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
 	})
 
 	AfterEach(func() {

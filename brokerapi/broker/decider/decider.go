@@ -20,73 +20,36 @@ const (
 const upgradeBeforeUpdateError = "service instance needs to be upgraded before updating"
 
 func DecideOperation(planMaintenanceInfoVersion *version.Version, details paramparser.UpdateDetails) (Operation, error) {
-	if err := validateMaintenanceInfo(planMaintenanceInfoVersion, details.MaintenanceInfoVersion); err != nil {
-		return Failed, err
-	}
+	requestHasParams := len(details.RequestParams) != 0
+	requestHasPlanChange := details.PlanID != "" && details.PlanID != details.PreviousPlanID
+	requestHasUpdate := requestHasParams || requestHasPlanChange
 
-	if planNotChanged(details) && requestParamsEmpty(details) && requestMaintenanceInfoValuesDiffer(details) {
+	requestHasMI := details.MaintenanceInfoVersion != nil
+	requestHasUpgrade := details.MaintenanceInfoVersion != nil && details.PreviousMaintenanceInfoVersion != nil && !details.MaintenanceInfoVersion.Equal(details.PreviousMaintenanceInfoVersion)
+	requestIntroducesMI := requestHasMI && details.PreviousMaintenanceInfoVersion == nil
+	requestRemovesMI := !requestHasMI && details.PreviousMaintenanceInfoVersion != nil
+
+	planAndRequestMIDiffer := requestHasMI && !details.MaintenanceInfoVersion.Equal(planMaintenanceInfoVersion)
+
+	switch {
+	case planAndRequestMIDiffer && planMaintenanceInfoVersion == nil:
+		return Failed, apiresponses.ErrMaintenanceInfoNilConflict
+	case planAndRequestMIDiffer:
+		return Failed, apiresponses.ErrMaintenanceInfoConflict
+	case requestHasUpdate && requestHasUpgrade:
+		return Failed, errInstanceMustBeUpgradedFirst()
+	case requestHasUpdate:
+		return Update, nil
+	case requestHasUpgrade, requestIntroducesMI, requestRemovesMI:
 		return Upgrade, nil
+	default:
+		return Update, nil
 	}
-
-	if err := validatePreviousMaintenanceInfo(details, planMaintenanceInfoVersion); err != nil {
-		return Failed, err
-	}
-
-	return Update, nil
-}
-
-func planNotChanged(details paramparser.UpdateDetails) bool {
-	return details.PlanID == details.PreviousPlanID
-}
-
-func requestParamsEmpty(details paramparser.UpdateDetails) bool {
-	return len(details.RequestParams) == 0
-}
-
-func requestMaintenanceInfoValuesDiffer(details paramparser.UpdateDetails) bool {
-	return !details.MaintenanceInfoVersion.Equal(details.PreviousMaintenanceInfoVersion)
-}
-
-func validateMaintenanceInfo(planMaintenanceInfo, requestMaintenanceInfoVersion *version.Version) error {
-	if maintenanceInfoDifference(requestMaintenanceInfoVersion, planMaintenanceInfo) {
-		if requestMaintenanceInfoVersion == nil {
-			return errMaintenanceInfoNilInTheRequest()
-		}
-
-		if planMaintenanceInfo == nil {
-			return apiresponses.ErrMaintenanceInfoNilConflict
-		}
-
-		return apiresponses.ErrMaintenanceInfoConflict
-	}
-
-	return nil
-}
-
-func validatePreviousMaintenanceInfo(details paramparser.UpdateDetails, planMaintenanceInfoVersion *version.Version) error {
-	if details.PreviousMaintenanceInfoVersion != nil {
-		if maintenanceInfoDifference(details.PreviousMaintenanceInfoVersion, planMaintenanceInfoVersion) {
-			return errInstanceMustBeUpgradedFirst()
-		}
-	}
-	return nil
-}
-
-func maintenanceInfoDifference(a, b *version.Version) bool {
-	return !a.Equal(b)
 }
 
 func errInstanceMustBeUpgradedFirst() *apiresponses.FailureResponse {
 	return apiresponses.NewFailureResponseBuilder(
 		errors.New(upgradeBeforeUpdateError),
-		http.StatusUnprocessableEntity,
-		"previous-maintenance-info-check",
-	).Build()
-}
-
-func errMaintenanceInfoNilInTheRequest() *apiresponses.FailureResponse {
-	return apiresponses.NewFailureResponseBuilder(
-		errors.New(upgradeBeforeUpdateError+": maintenance info defined in broker service catalog, but not passed in request"),
 		http.StatusUnprocessableEntity,
 		"previous-maintenance-info-check",
 	).Build()
