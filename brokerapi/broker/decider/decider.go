@@ -27,24 +27,23 @@ func DecideOperation(planMaintenanceInfoVersion *version.Version, details paramp
 	requestHasPlanChange := details.PlanID != "" && details.PlanID != details.PreviousPlanID
 	requestHasUpdate := requestHasParams || requestHasPlanChange
 
-	// There's an update, new and previous MI, and the new MI does not match the plan
+	// There's an update, new and previous MI, and the new MI does not match the previous MI.
+	// So there's a definite attempt to upgrade and update at the same time.
 	invalidUpdateAndMIChange := requestHasUpdate && requestHasMI && requestHasPreviousMI && !details.MaintenanceInfoVersion.Equal(details.PreviousMaintenanceInfoVersion)
 
-	// There's an update, new MI, no previous MI, and the new MI does not match the plan
-	invalidUpdateAndMIAddition := requestHasUpdate && requestHasMI && !requestHasPreviousMI && !details.MaintenanceInfoVersion.Equal(planMaintenanceInfoVersion)
-
-	// There's an update, no new MI, plan does not have MI, and there's a previous MI value
+	// There's an update, no new MI, plan does not have MI, but there's a previous MI value, so
+	// it looks like we are trying to change version at the same time as an update
 	invalidUpdateAndMIRemoval := requestHasUpdate && !requestHasMI && requestHasPreviousMI && planMaintenanceInfoVersion == nil
 
 	switch {
-	case details.MaintenanceInfoVersion != nil && planMaintenanceInfoVersion == nil:
+	case requestHasMI && planMaintenanceInfoVersion == nil:
 		// new MI is specified in request, but plan does not have MI
 		return Failed, apiresponses.ErrMaintenanceInfoNilConflict
-	case details.MaintenanceInfoVersion != nil && !planMaintenanceInfoVersion.Equal(details.MaintenanceInfoVersion):
+	case requestHasMI && !planMaintenanceInfoVersion.Equal(details.MaintenanceInfoVersion):
 		// new MI is specified, and doesn't match the plan MI
 		return Failed, apiresponses.ErrMaintenanceInfoConflict
-	case invalidUpdateAndMIChange, invalidUpdateAndMIAddition, invalidUpdateAndMIRemoval:
-		// invalid mixing of an update with an attempt to add, remove or alter MI
+	case invalidUpdateAndMIChange, invalidUpdateAndMIRemoval:
+		// invalid mixing of an update with an attempt to change or remove MI
 		return Failed, errInstanceMustBeUpgradedFirst()
 	case !requestHasUpdate && !details.MaintenanceInfoVersion.Equal(details.PreviousMaintenanceInfoVersion):
 		// MI changed and no updates, so must be an upgrade
