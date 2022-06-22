@@ -49,7 +49,7 @@ var _ = Describe("Upgrade", func() {
 	})
 
 	It("upgrades a service instance", func() {
-		err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName)
+		err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5)
 		Expect(err).NotTo(HaveOccurred())
 
 		By("getting the service plans")
@@ -68,11 +68,25 @@ var _ = Describe("Upgrade", func() {
 		Expect(guids).To(ConsistOf("fake-instance-guid-1", "fake-instance-guid-2"))
 	})
 
+	When("batch size is less that number of upgradable instances", func() {
+		It("upgrades all instances", func() {
+			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 1)
+			Expect(err).NotTo(HaveOccurred())
+
+			By("calling upgrade on each upgradeable instance")
+			Expect(fakeCCAPI.UpgradeServiceInstanceCallCount()).Should(Equal(2))
+			instanceGuid1, _ := fakeCCAPI.UpgradeServiceInstanceArgsForCall(0)
+			instanceGuid2, _ := fakeCCAPI.UpgradeServiceInstanceArgsForCall(1)
+			guids := []string{instanceGuid1, instanceGuid2}
+			Expect(guids).To(ConsistOf("fake-instance-guid-1", "fake-instance-guid-2"))
+		})
+	})
+
 	When("getting service plans fails", func() {
 		It("returns the error", func() {
 			fakeCCAPI.GetServicePlansReturns(nil, fmt.Errorf("plan-error"))
 
-			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName)
+			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5)
 			Expect(err).To(MatchError("plan-error"))
 		})
 	})
@@ -81,7 +95,7 @@ var _ = Describe("Upgrade", func() {
 		It("returns the error", func() {
 			fakeCCAPI.GetServiceInstancesReturns(nil, fmt.Errorf("instance-error"))
 
-			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName)
+			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5)
 			Expect(err).To(MatchError("instance-error"))
 		})
 	})

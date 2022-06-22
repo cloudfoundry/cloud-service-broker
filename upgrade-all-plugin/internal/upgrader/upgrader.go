@@ -13,7 +13,7 @@ type CCAPI interface {
 	PollServiceInstance(string) (bool, error)
 }
 
-func Upgrade(api CCAPI, brokerName string) error {
+func Upgrade(api CCAPI, brokerName string, batchSize int) error {
 	plans, err := api.GetServicePlans(brokerName)
 	if err != nil {
 		return err
@@ -51,7 +51,7 @@ func Upgrade(api CCAPI, brokerName string) error {
 		close(upgradeQueue)
 	}()
 
-	workers.Run(5, func() {
+	workers.Run(batchSize, func() {
 		for instance := range upgradeQueue {
 			api.UpgradeServiceInstance(instance.Guid, instance.MIVersion)
 		}

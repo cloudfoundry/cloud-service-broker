@@ -16,12 +16,14 @@ var _ = Describe("GetServiceInstances", func() {
 	var (
 		fakeServer *ghttp.Server
 		req        requester.Requester
+		fakeCCAPI  ccapi.CCAPI
 	)
 
 	BeforeEach(func() {
 		fakeServer = ghttp.NewServer()
 		DeferCleanup(fakeServer.Close)
 		req = requester.NewRequester(fakeServer.URL(), "fake-token", false)
+		fakeCCAPI = ccapi.NewCCAPI(req)
 	})
 
 	When("service instances exist in the given plans", func() {
@@ -60,7 +62,7 @@ var _ = Describe("GetServiceInstances", func() {
 		})
 
 		It("returns instances from the given plans", func() {
-			actualInstances, err := ccapi.GetServiceInstances(req, []string{"test-plan-guid", "another-test-guid"})
+			actualInstances, err := fakeCCAPI.GetServiceInstances([]string{"test-plan-guid", "another-test-guid"})
 
 			By("checking the valid service instance is returned")
 			Expect(err).NotTo(HaveOccurred())
@@ -79,7 +81,7 @@ var _ = Describe("GetServiceInstances", func() {
 
 	When("no plan GUIDs are given", func() {
 		It("returns an error", func() {
-			actualInstances, err := ccapi.GetServiceInstances(req, []string{})
+			actualInstances, err := fakeCCAPI.GetServiceInstances([]string{})
 
 			Expect(err).To(MatchError("no service_plan_guids specified"))
 			Expect(actualInstances).To(BeNil())
@@ -98,7 +100,7 @@ var _ = Describe("GetServiceInstances", func() {
 		})
 
 		It("returns an error", func() {
-			_, err := ccapi.GetServiceInstances(req, []string{"test-guid"})
+			_, err := fakeCCAPI.GetServiceInstances([]string{"test-guid"})
 
 			Expect(err).To(MatchError("error getting service instances: http response: 500"))
 		})
