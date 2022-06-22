@@ -8,9 +8,11 @@ import (
 	"github.com/hashicorp/go-version"
 )
 
-func ValidateInput(cliConnection plugin.CliConnection, args []string, usage string) error {
+const Usage = "cf upgrade-all-service-instances <broker-name>"
+
+func ValidateInput(cliConnection plugin.CliConnection, args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("broker name must be specifed\nusage:\n%s", usage)
+		return fmt.Errorf("broker name must be specifed\nusage:\n%s", Usage)
 	}
 
 	err := sanitiseBrokerName(args[0])
@@ -32,11 +34,14 @@ func ValidateInput(cliConnection plugin.CliConnection, args []string, usage stri
 }
 
 func validateAPIVersion(cliConnection plugin.CliConnection) error {
-	rawApiVersion, err := cliConnection.ApiVersion()
+	rawAPIVersion, err := cliConnection.ApiVersion()
 	if err != nil {
 		return fmt.Errorf("error retrieving api version: %s", err)
 	}
-	apiVersion, err := version.NewVersion(rawApiVersion)
+	apiVersion, err := version.NewVersion(rawAPIVersion)
+	if err != nil {
+		return err
+	}
 
 	if apiVersion.LessThan(version.Must(version.NewVersion("3.0.0"))) {
 		return fmt.Errorf("plugin requires CF API version >= 3.0.0")

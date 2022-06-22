@@ -2,6 +2,7 @@ package validate_test
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/validate"
 
@@ -16,10 +17,12 @@ var _ = Describe("Validate", func() {
 
 	var (
 		fakeCliConnection pluginfakes.FakeCliConnection
+		fakeLogger        *log.Logger
 	)
 
 	BeforeEach(func() {
 		fakeCliConnection = pluginfakes.FakeCliConnection{}
+		fakeLogger = log.Default()
 	})
 
 	Describe("brokername validation", func() {
@@ -67,7 +70,7 @@ var _ = Describe("Validate", func() {
 				fakeCliConnection.ApiVersionReturns("3.0.0", nil)
 				fakeCliConnection.IsLoggedInReturns(false, nil)
 
-				err := command.UpgradeAll(&fakeCliConnection, []string{"broker-name"})
+				err := command.UpgradeAll(&fakeCliConnection, []string{"broker-name"}, fakeLogger)
 
 				Expect(err).To(MatchError("you must authenticate with the cf cli before running this command"))
 			})
@@ -77,7 +80,7 @@ var _ = Describe("Validate", func() {
 				fakeCliConnection.ApiVersionReturns("3.0.0", nil)
 				fakeCliConnection.IsLoggedInReturns(false, fmt.Errorf("isLoggedIn error"))
 
-				err := command.UpgradeAll(&fakeCliConnection, []string{"broker-name"})
+				err := command.UpgradeAll(&fakeCliConnection, []string{"broker-name"}, fakeLogger)
 
 				Expect(err).To(MatchError("error validating user authentication: isLoggedIn error"))
 			})

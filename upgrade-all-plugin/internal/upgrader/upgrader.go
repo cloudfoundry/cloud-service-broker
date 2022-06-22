@@ -39,7 +39,7 @@ func Upgrade(api CCAPI, brokerName string, batchSize int, l *log.Logger) error {
 	}
 
 	type upgradeTask struct {
-		Guid      string
+		GUID      string
 		MIVersion string
 	}
 
@@ -72,7 +72,7 @@ func Upgrade(api CCAPI, brokerName string, batchSize int, l *log.Logger) error {
 	go func() {
 		for _, instance := range upgradableInstances {
 			upgradeQueue <- upgradeTask{
-				Guid:      instance.GUID,
+				GUID:      instance.GUID,
 				MIVersion: planVersions[instance.PlanGUID],
 			}
 		}
@@ -89,9 +89,9 @@ func Upgrade(api CCAPI, brokerName string, batchSize int, l *log.Logger) error {
 
 	workers.Run(batchSize, func() {
 		for instance := range upgradeQueue {
-			err := api.UpgradeServiceInstance(instance.Guid, instance.MIVersion)
+			err := api.UpgradeServiceInstance(instance.GUID, instance.MIVersion)
 			if err != nil {
-				addFailedInstance(instance.Guid, err.Error())
+				addFailedInstance(instance.GUID, err.Error())
 				continue
 			}
 			atomic.AddInt32(&upgraded, 1)

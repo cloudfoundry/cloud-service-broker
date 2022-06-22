@@ -16,7 +16,7 @@ import (
 )
 
 func UpgradeAll(cliConnection plugin.CliConnection, args []string, log *log.Logger) error {
-	err := validate.ValidateInput(cliConnection, args, Usage)
+	err := validate.ValidateInput(cliConnection, args)
 	if err != nil {
 		return err
 	}

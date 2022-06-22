@@ -2,6 +2,7 @@ package command_test
 
 import (
 	"fmt"
+	"log"
 
 	"code.cloudfoundry.org/cli/plugin/pluginfakes"
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/command"
@@ -13,15 +14,17 @@ var _ = Describe("UpgradeAll", func() {
 
 	var (
 		fakeCliConnection *pluginfakes.FakeCliConnection
+		fakeLogger        *log.Logger
 	)
 
 	BeforeEach(func() {
 		fakeCliConnection = &pluginfakes.FakeCliConnection{}
+		fakeLogger = log.Default()
 	})
 
 	When("invalid input is given", func() {
 		It("returns an error", func() {
-			err := command.UpgradeAll(fakeCliConnection, []string{})
+			err := command.UpgradeAll(fakeCliConnection, []string{}, fakeLogger)
 
 			Expect(err).To(MatchError(fmt.Errorf("broker name must be specifed")))
 		})
@@ -33,7 +36,7 @@ var _ = Describe("UpgradeAll", func() {
 			fakeCliConnection.IsLoggedInReturns(true, nil)
 			fakeCliConnection.AccessTokenReturns("", fmt.Errorf("AccessToken error"))
 
-			err := command.UpgradeAll(fakeCliConnection, []string{"broker-name"})
+			err := command.UpgradeAll(fakeCliConnection, []string{"broker-name"}, fakeLogger)
 			Expect(err).To(MatchError(fmt.Errorf("error retrieving api access token: AccessToken error")))
 		})
 	})
@@ -45,7 +48,7 @@ var _ = Describe("UpgradeAll", func() {
 			fakeCliConnection.AccessTokenReturns("access-token", nil)
 			fakeCliConnection.ApiEndpointReturns("", fmt.Errorf("APIEndpoint error"))
 
-			err := command.UpgradeAll(fakeCliConnection, []string{"broker-name"})
+			err := command.UpgradeAll(fakeCliConnection, []string{"broker-name"}, fakeLogger)
 			Expect(err).To(MatchError(fmt.Errorf("error retrieving api endpoint: APIEndpoint error")))
 		})
 	})
@@ -57,13 +60,9 @@ var _ = Describe("UpgradeAll", func() {
 			fakeCliConnection.AccessTokenReturns("access-token", nil)
 			fakeCliConnection.ApiEndpointReturns("test-endpoint", nil)
 
-			err := command.UpgradeAll(fakeCliConnection, []string{"broker-name"})
+			err := command.UpgradeAll(fakeCliConnection, []string{"broker-name"}, fakeLogger)
 			Expect(err).To(HaveOccurred())
 		})
 	})
-
-	// validate input
-	// gets token and endpoint
-	// parses flags
 
 })
