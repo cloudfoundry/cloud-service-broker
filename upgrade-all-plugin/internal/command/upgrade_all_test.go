@@ -66,6 +66,22 @@ var _ = Describe("UpgradeAll", func() {
 		})
 	})
 
+	Describe("validating user logged in", func() {
+		When("login status can't be retrieved", func() {
+			It("returns an error", func() {
+				fakeCliConnection.ApiVersionReturns("3.99.0", nil)
+				fakeCliConnection.IsLoggedInReturns(true, nil)
+				fakeCliConnection.AccessTokenReturns("access-token", nil)
+				fakeCliConnection.ApiEndpointReturns("test-endpoint", nil)
+				fakeCliConnection.IsSSLDisabledReturns(false, nil)
+				fakeCliConnection.IsLoggedInReturns(false, fmt.Errorf("logged in error"))
+
+				err := command.UpgradeAll(fakeCliConnection, []string{"broker-name"}, fakeLogger)
+				Expect(err).To(MatchError(fmt.Errorf("error validating user authentication: logged in error")))
+			})
+		})
+	})
+
 	When("upgrade errors", func() {
 		It("returns the error", func() {
 			fakeCliConnection.ApiVersionReturns("3.99.0", nil)
