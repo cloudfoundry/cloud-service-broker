@@ -31,6 +31,8 @@ var _ = DescribeTable(
 				details.PreviousPlanID = "plan-id"
 			case "plan at v1":
 				planVersion = version.Must(version.NewVersion("1.0.0"))
+			case "plan at v2":
+				planVersion = version.Must(version.NewVersion("2.0.0"))
 			case "params":
 				details.RequestParams = map[string]any{"foo": "bar"}
 			case "MI none->v1":
@@ -90,17 +92,22 @@ var _ = DescribeTable(
 	Entry(nil, "plan at v1;    MI none->v2; plan unchanged; no params", decider.Failed, apiresponses.ErrMaintenanceInfoConflict),
 	Entry(nil, "no MI in plan; MI none->v1; plan unchanged; no params", decider.Failed, apiresponses.ErrMaintenanceInfoNilConflict),
 
-	// Edge case: updates where MI is held constant
-	// With CloudFoundry, new MI is only specified if it's different to previous MI, so we do not see this.
+	// Updates where MI is held constant
+	// In this case the Upgrade would be a no-op, so we default to it being a valid Update
 	Entry(nil, "plan at v1; MI v1->v1; plan unchanged; no params", decider.Update, nil),
 	Entry(nil, "plan at v1; MI v1->v1; plan change;    no params", decider.Update, nil),
 	Entry(nil, "plan at v1; MI v1->v1; plan unchanged; params", decider.Update, nil),
 	Entry(nil, "plan at v1; MI v1->v1; plan change;    params", decider.Update, nil),
 
-	// Edge case: updates where MI is not specified at all in the request as it has not changed.
-	// With CloudFoundry, previous MI is always specified, so we do not see this.
-	Entry(nil, "plan at v1; no request MI; plan unchanged; no params", decider.Update, nil),
-	Entry(nil, "plan at v1; no request MI; plan change;    no params", decider.Update, nil),
-	Entry(nil, "plan at v1; no request MI; plan unchanged; params", decider.Update, nil),
-	Entry(nil, "plan at v1; no request MI; plan change;    params", decider.Update, nil),
+	// When previous MI does not match the plan, and it's not an upgrade, it suggests the platform
+	// (typically CloudFoundry) is not in sync with the broker. With CloudFoundry the "cf update-service-broker"
+	// command needs to be run
+	Entry(nil, "plan at v2; MI unchanged;  plan unchanged; no params", decider.Failed, apiresponses.ErrMaintenanceInfoConflict),
+	Entry(nil, "plan at v2; MI unchanged;  plan change;    no params", decider.Failed, apiresponses.ErrMaintenanceInfoConflict),
+	Entry(nil, "plan at v2; MI unchanged;  plan unchanged; params", decider.Failed, apiresponses.ErrMaintenanceInfoConflict),
+	Entry(nil, "plan at v2; MI unchanged;  plan change;    params", decider.Failed, apiresponses.ErrMaintenanceInfoConflict),
+	Entry(nil, "plan at v1; no request MI; plan unchanged; no params", decider.Failed, apiresponses.ErrMaintenanceInfoConflict),
+	Entry(nil, "plan at v1; no request MI; plan change;    no params", decider.Failed, apiresponses.ErrMaintenanceInfoConflict),
+	Entry(nil, "plan at v1; no request MI; plan unchanged; params", decider.Failed, apiresponses.ErrMaintenanceInfoConflict),
+	Entry(nil, "plan at v1; no request MI; plan change;    params", decider.Failed, apiresponses.ErrMaintenanceInfoConflict),
 )

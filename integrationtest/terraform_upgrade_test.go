@@ -114,7 +114,9 @@ var _ = Describe("Terraform Upgrade", func() {
 			Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, secondBindGUID)).To(BeElementOf(3, 4))
 
 			By("updating the service after the upgrade")
-			testHelper.UpdateService(serviceInstance, `{"alpha_input":"foo"}`)
+			testHelper.UpdateService(serviceInstance, `{"alpha_input":"foo"}`, domain.PreviousValues{
+				MaintenanceInfo: &domain.MaintenanceInfo{Version: endingVersion},
+			})
 		})
 	})
 
