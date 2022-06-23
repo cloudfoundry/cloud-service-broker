@@ -19,10 +19,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/spf13/viper"
-
 	"github.com/cloudfoundry/cloud-service-broker/pkg/brokerpak"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 const (

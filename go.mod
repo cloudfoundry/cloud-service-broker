@@ -24,7 +24,6 @@ require (
 	github.com/otiai10/copy v1.7.0
 	github.com/pborman/uuid v1.2.1
 	github.com/pivotal-cf/brokerapi/v8 v8.2.1
-	github.com/robertkrimen/otto v0.0.0-20210614181706-373ff5438452
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v1.4.0
@@ -127,7 +126,6 @@ require (
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
-	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	rsc.io/goversion v1.2.0 // indirect
 )
