@@ -54,7 +54,7 @@ test: download lint test-units test-integration ## run lint and unit tests
 
 .PHONY: test-units
 test-units: deps-go-binary ## run unit tests
-	$(GO) test $(PKG)/brokerapi/... $(PKG)/cmd/... $(PKG)/dbservice/... $(PKG)/internal/... $(PKG)/pkg/... $(PKG)/utils/... -tags=service_broker
+	$(GO) test $(PKG)/brokerapi/... $(PKG)/cmd/... $(PKG)/dbservice/... $(PKG)/internal/... $(PKG)/pkg/... $(PKG)/utils/... $(PKG)/upgrade-all-plugin/... -tags=service_broker
 
 .PHONY: test-integration
 test-integration: deps-go-binary ## run integration tests
