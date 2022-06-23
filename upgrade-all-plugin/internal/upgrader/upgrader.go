@@ -100,7 +100,7 @@ func Upgrade(api CCAPI, brokerName string, batchSize int, l *log.Logger) error {
 
 	upgradeComplete <- true
 
-	logUpgradeComplete(upgraded, failedInstances, l)
+	logUpgradeComplete(upgraded, len(upgradableInstances), failedInstances, l)
 
 	return nil
 }
@@ -116,7 +116,9 @@ func logUpgradeProgress(complete chan bool, upgraded *int32, upgradable int, l *
 	}
 }
 
-func logUpgradeComplete(upgraded int32, failedInstances map[string]string, l *log.Logger) {
+func logUpgradeComplete(upgraded int32, upgradable int, failedInstances map[string]string, l *log.Logger) {
+	l.Printf("Upgraded %d/%d\n", upgraded, upgradable)
+
 	l.Printf("---\n"+
 		"Finished upgrade:\n"+
 		"Total instances upgraded: %d\n",

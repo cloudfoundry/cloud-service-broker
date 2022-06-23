@@ -43,6 +43,10 @@ func (p *UpgradePlugin) GetMetadata() plugin.PluginMetadata {
 				HelpText: "all instances with an upgrade available will be upgraded.",
 				UsageDetails: plugin.Usage{
 					Usage: validate.Usage,
+					Options: map[string]string{
+						"-skip-ssl-validation": "skip ssl certificate validation during http requests",
+						"-batch-size":          "number of concurrent upgrades (default 10)",
+					},
 				},
 			},
 		},

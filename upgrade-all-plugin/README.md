@@ -1,7 +1,26 @@
 ## upgrade-all-service-instances (cf cli plugin)
 
-### What is this?
+A CF-CLI plugin for upgrading all service instances in a CF foundation.
 
-### How do I use it?
+### Purpose
+This tool was developed to allow operators to upgrade all service instances in a foundation, without having to navigate between orgs and spaces to discover upgradable instances.
 
-### Nice example
+### Installing
+First build the binary from the plugin directory
+```azure
+go build .
+```
+Then install the plugin using the cf cli
+```azure
+cf install-plugin <path_to_plugin_binary>
+```
+
+### Usage
+
+```azure
+cf upgrade-all-service-instances <broker_name>
+
+Options:
+    -skip-ssl-validation bool "skip ssl certificate validation during http requests"
+    -batch-size int "number of concurrent upgrades (default 10)"
+```
