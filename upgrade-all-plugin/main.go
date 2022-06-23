@@ -26,7 +26,7 @@ func (p *UpgradePlugin) Run(cliConnection plugin.CliConnection, args []string) {
 
 func (p *UpgradePlugin) GetMetadata() plugin.PluginMetadata {
 	return plugin.PluginMetadata{
-		Name: "UpgradeAllPlugin",
+		Name: "UpgradeAllServiceInstances",
 		Version: plugin.VersionType{
 			Major: 0,
 			Minor: 1,

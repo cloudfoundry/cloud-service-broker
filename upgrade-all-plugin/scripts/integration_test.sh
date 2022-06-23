@@ -21,7 +21,7 @@ function main {
   cf upgrade-all-service-instances --help
 
   testOutput "Uninstalling upgrade-all-service-instances plugin"
-  cf uninstall-plugin UpgradeServiceInstances
+  cf uninstall-plugin UpgradeAllServiceInstances
 
   testOutput "Test Success"
 }
