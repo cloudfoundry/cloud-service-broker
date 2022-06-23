@@ -12,16 +12,14 @@ plans:
   description: First plan
   display_name: First
 provision:
-  template_refs:
-    main: fake-provision.tf
+  template_ref: fake-provision.tf
   outputs:
     - field_name: provision_output
-      type: integer
+      type: string
       details: provision output
 bind:
-  template_refs:
-    main: fake-provision.tf
+  template_ref: fake-provision.tf
   outputs:
     - field_name: provision_output
-      type: integer
+      type: string
       details: provision output

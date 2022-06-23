@@ -19,9 +19,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/credstore"
@@ -42,22 +39,20 @@ type ServiceBroker struct {
 	registry  broker.BrokerRegistry
 	Credstore credstore.CredStore
 
-	store   Storage
-	decider Decider
-	Logger  lager.Logger
+	store  Storage
+	Logger lager.Logger
 }
 
 type TFDeploymentGUID string
 
 // New creates a ServiceBroker.
 // Exactly one of ServiceBroker or error will be nil when returned.
-func New(cfg *BrokerConfig, store Storage, decider Decider, logger lager.Logger) (*ServiceBroker, error) {
+func New(cfg *BrokerConfig, store Storage, logger lager.Logger) (*ServiceBroker, error) {
 	return &ServiceBroker{
 		registry:  cfg.Registry,
 		Credstore: cfg.Credstore,
 		Logger:    logger,
 		store:     store,
-		decider:   decider,
 	}, nil
 }
 
@@ -124,10 +119,4 @@ func generateTFInstanceID(instanceID string) string {
 
 func generateTFBindingID(instanceID, bindingID string) string {
 	return "tf:" + instanceID + ":" + bindingID
-}
-
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
-//counterfeiter:generate . Decider
-type Decider interface {
-	DecideOperation(serviceDefinition *broker.ServiceDefinition, details domain.UpdateDetails) (decider.Operation, error)
 }

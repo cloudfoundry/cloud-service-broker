@@ -9,6 +9,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+	"github.com/hashicorp/go-version"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
@@ -59,6 +60,10 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	if err != nil {
 		return domain.UpdateServiceSpec{}, err
 	}
+	maintenanceInfoVersion, err := planMaintenanceInfoVersion(plan)
+	if err != nil {
+		return domain.UpdateServiceSpec{}, err
+	}
 
 	// verify async provisioning is allowed if it is required
 	if !asyncAllowed {
@@ -93,7 +98,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return domain.UpdateServiceSpec{}, err
 	}
 
-	operation, err := broker.decider.DecideOperation(serviceDefinition, details)
+	operation, err := decider.DecideOperation(maintenanceInfoVersion, parsedDetails)
 	switch {
 	case err != nil:
 		return domain.UpdateServiceSpec{}, fmt.Errorf("error deciding update path: %w", err)
@@ -190,4 +195,15 @@ func mergeJSON(previousParams, newParams, importParams map[string]interface{}) (
 	}
 
 	return vc.ToMap(), nil
+}
+
+func planMaintenanceInfoVersion(plan *broker.ServicePlan) (*version.Version, error) {
+	if plan.MaintenanceInfo != nil && len(plan.MaintenanceInfo.Version) != 0 {
+		maintenanceInfoVersion, err := version.NewVersion(plan.MaintenanceInfo.Version)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing plan maintenance info version: %w", err)
+		}
+		return maintenanceInfoVersion, nil
+	}
+	return nil, nil
 }

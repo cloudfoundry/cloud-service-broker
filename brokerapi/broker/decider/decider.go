@@ -1,18 +1,13 @@
 package decider
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 
+	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
+	"github.com/hashicorp/go-version"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
-
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
-
-type Decider struct{}
 
 type Operation int
 
@@ -24,8 +19,8 @@ const (
 
 const upgradeBeforeUpdateError = "service instance needs to be upgraded before updating"
 
-func (d Decider) DecideOperation(service *broker.ServiceDefinition, details domain.UpdateDetails) (Operation, error) {
-	if err := validateMaintenanceInfo(service, details.PlanID, details.MaintenanceInfo); err != nil {
+func DecideOperation(planMaintenanceInfoVersion *version.Version, details paramparser.UpdateDetails) (Operation, error) {
+	if err := validateMaintenanceInfo(planMaintenanceInfoVersion, details.MaintenanceInfoVersion); err != nil {
 		return Failed, err
 	}
 
@@ -33,50 +28,28 @@ func (d Decider) DecideOperation(service *broker.ServiceDefinition, details doma
 		return Upgrade, nil
 	}
 
-	if err := validatePreviousMaintenanceInfo(details, service); err != nil {
+	if err := validatePreviousMaintenanceInfo(details, planMaintenanceInfoVersion); err != nil {
 		return Failed, err
 	}
 
 	return Update, nil
 }
 
-func planNotChanged(details domain.UpdateDetails) bool {
-	return details.PlanID == details.PreviousValues.PlanID
+func planNotChanged(details paramparser.UpdateDetails) bool {
+	return details.PlanID == details.PreviousPlanID
 }
 
-func requestParamsEmpty(details domain.UpdateDetails) bool {
-	if len(details.RawParameters) == 0 {
-		return true
-	}
-
-	var params map[string]interface{}
-	if err := json.Unmarshal(details.RawParameters, &params); err != nil {
-		return false
-	}
-	return len(params) == 0
+func requestParamsEmpty(details paramparser.UpdateDetails) bool {
+	return len(details.RequestParams) == 0
 }
 
-func requestMaintenanceInfoValuesDiffer(details domain.UpdateDetails) bool {
-	switch {
-	case details.MaintenanceInfo == nil && details.PreviousValues.MaintenanceInfo != nil:
-		return true
-	case details.MaintenanceInfo != nil && details.PreviousValues.MaintenanceInfo == nil:
-		return true
-	case details.MaintenanceInfo == nil && details.PreviousValues.MaintenanceInfo == nil:
-		return false
-	default:
-		return !details.MaintenanceInfo.Equals(*details.PreviousValues.MaintenanceInfo)
-	}
+func requestMaintenanceInfoValuesDiffer(details paramparser.UpdateDetails) bool {
+	return !details.MaintenanceInfoVersion.Equal(details.PreviousMaintenanceInfoVersion)
 }
 
-func validateMaintenanceInfo(service *broker.ServiceDefinition, planID string, catalogMaintenanceInfo *domain.MaintenanceInfo) error {
-	planMaintenanceInfo, err := getMaintenanceInfoForPlan(service, planID)
-	if err != nil {
-		return err
-	}
-
-	if maintenanceInfoConflict(catalogMaintenanceInfo, planMaintenanceInfo) {
-		if catalogMaintenanceInfo == nil {
+func validateMaintenanceInfo(planMaintenanceInfo, requestMaintenanceInfoVersion *version.Version) error {
+	if maintenanceInfoDifference(requestMaintenanceInfoVersion, planMaintenanceInfo) {
+		if requestMaintenanceInfoVersion == nil {
 			return errMaintenanceInfoNilInTheRequest()
 		}
 
@@ -90,45 +63,17 @@ func validateMaintenanceInfo(service *broker.ServiceDefinition, planID string, c
 	return nil
 }
 
-func validatePreviousMaintenanceInfo(details domain.UpdateDetails, service *broker.ServiceDefinition) error {
-	if details.PreviousValues.MaintenanceInfo != nil {
-		catalogPreviousPlanMaintenanceInfo, err := getMaintenanceInfoForPlan(service, details.PreviousValues.PlanID)
-		if err != nil {
-			return fmt.Errorf("service instance needs to be upgraded: %w. Contact the operator for assistance", err)
-		}
-		if maintenanceInfoConflict(details.PreviousValues.MaintenanceInfo, catalogPreviousPlanMaintenanceInfo) {
+func validatePreviousMaintenanceInfo(details paramparser.UpdateDetails, planMaintenanceInfoVersion *version.Version) error {
+	if details.PreviousMaintenanceInfoVersion != nil {
+		if maintenanceInfoDifference(details.PreviousMaintenanceInfoVersion, planMaintenanceInfoVersion) {
 			return errInstanceMustBeUpgradedFirst()
 		}
 	}
 	return nil
 }
 
-func getMaintenanceInfoForPlan(service *broker.ServiceDefinition, id string) (*domain.MaintenanceInfo, error) {
-	for _, plan := range service.Plans {
-		if plan.ID == id {
-			if plan.MaintenanceInfo != nil {
-				return &domain.MaintenanceInfo{
-					Version:     plan.MaintenanceInfo.Version,
-					Description: plan.MaintenanceInfo.Description,
-				}, nil
-			}
-			return nil, nil
-		}
-	}
-
-	return nil, fmt.Errorf("plan %s does not exist", id)
-}
-
-func maintenanceInfoConflict(a, b *domain.MaintenanceInfo) bool {
-	if a != nil && b != nil {
-		return !a.Equals(*b)
-	}
-
-	if a == nil && b == nil {
-		return false
-	}
-
-	return true
+func maintenanceInfoDifference(a, b *version.Version) bool {
+	return !a.Equal(b)
 }
 
 func errInstanceMustBeUpgradedFirst() *apiresponses.FailureResponse {

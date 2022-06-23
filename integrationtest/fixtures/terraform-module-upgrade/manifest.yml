@@ -12,6 +12,7 @@ terraform_binaries:
 - name: terraform
   version: 0.12.21
 - name: terraform-provider-random
-  version: 2.2.1
+  version: 3.1.0
+  source: https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip
 service_definitions:
 - fake-service.yml
