@@ -1,5 +1,8 @@
 ## Release notes for next release:
 
+### Breaking changes
+- The "config migrate-env" subcommand was removed as it appeared not to work and has assumed zero usage
+
 ### Features:
 
 - Terraform lifecycle meta-argument `prevent_destroy` is now supported to protect resources during a service update. The
