@@ -54,5 +54,5 @@ func (p *UpgradePlugin) GetMetadata() plugin.PluginMetadata {
 }
 
 func main() {
-	plugin.Start(new(UpgradePlugin))
+	plugin.Start(&UpgradePlugin{})
 }

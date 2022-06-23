@@ -43,8 +43,8 @@ func validateAPIVersion(cliConnection plugin.CliConnection) error {
 		return err
 	}
 
-	if apiVersion.LessThan(version.Must(version.NewVersion("3.0.0"))) {
-		return fmt.Errorf("plugin requires CF API version >= 3.0.0")
+	if apiVersion.LessThan(version.Must(version.NewVersion("3.74.0"))) {
+		return fmt.Errorf("plugin requires CF API version >= 3.74.0")
 	}
 
 	return nil

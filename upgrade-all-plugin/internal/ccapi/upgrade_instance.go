@@ -18,12 +18,12 @@ func (c CCAPI) UpgradeServiceInstance(guid, miVersion string) error {
 		return fmt.Errorf("upgrade request error: %s", err)
 	}
 
-	var si ServiceInstance
 	for timeout := time.After(time.Minute * 10); ; {
 		select {
 		case <-timeout:
 			return fmt.Errorf("error upgrade request timeout")
 		default:
+			var si ServiceInstance
 			err = c.requester.Get(fmt.Sprintf("v3/service_instances/%s", guid), &si)
 			if err != nil {
 				return fmt.Errorf("upgrade request error: %s", err)
