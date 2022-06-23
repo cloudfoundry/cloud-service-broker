@@ -8,7 +8,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/upgrader"
 )
 
-type FakeCCAPI struct {
+type FakeCFClient struct {
 	GetServiceInstancesStub        func([]string) ([]ccapi.ServiceInstance, error)
 	getServiceInstancesMutex       sync.RWMutex
 	getServiceInstancesArgsForCall []struct {
@@ -51,7 +51,7 @@ type FakeCCAPI struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeCCAPI) GetServiceInstances(arg1 []string) ([]ccapi.ServiceInstance, error) {
+func (fake *FakeCFClient) GetServiceInstances(arg1 []string) ([]ccapi.ServiceInstance, error) {
 	var arg1Copy []string
 	if arg1 != nil {
 		arg1Copy = make([]string, len(arg1))
@@ -75,26 +75,26 @@ func (fake *FakeCCAPI) GetServiceInstances(arg1 []string) ([]ccapi.ServiceInstan
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeCCAPI) GetServiceInstancesCallCount() int {
+func (fake *FakeCFClient) GetServiceInstancesCallCount() int {
 	fake.getServiceInstancesMutex.RLock()
 	defer fake.getServiceInstancesMutex.RUnlock()
 	return len(fake.getServiceInstancesArgsForCall)
 }
 
-func (fake *FakeCCAPI) GetServiceInstancesCalls(stub func([]string) ([]ccapi.ServiceInstance, error)) {
+func (fake *FakeCFClient) GetServiceInstancesCalls(stub func([]string) ([]ccapi.ServiceInstance, error)) {
 	fake.getServiceInstancesMutex.Lock()
 	defer fake.getServiceInstancesMutex.Unlock()
 	fake.GetServiceInstancesStub = stub
 }
 
-func (fake *FakeCCAPI) GetServiceInstancesArgsForCall(i int) []string {
+func (fake *FakeCFClient) GetServiceInstancesArgsForCall(i int) []string {
 	fake.getServiceInstancesMutex.RLock()
 	defer fake.getServiceInstancesMutex.RUnlock()
 	argsForCall := fake.getServiceInstancesArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeCCAPI) GetServiceInstancesReturns(result1 []ccapi.ServiceInstance, result2 error) {
+func (fake *FakeCFClient) GetServiceInstancesReturns(result1 []ccapi.ServiceInstance, result2 error) {
 	fake.getServiceInstancesMutex.Lock()
 	defer fake.getServiceInstancesMutex.Unlock()
 	fake.GetServiceInstancesStub = nil
@@ -104,7 +104,7 @@ func (fake *FakeCCAPI) GetServiceInstancesReturns(result1 []ccapi.ServiceInstanc
 	}{result1, result2}
 }
 
-func (fake *FakeCCAPI) GetServiceInstancesReturnsOnCall(i int, result1 []ccapi.ServiceInstance, result2 error) {
+func (fake *FakeCFClient) GetServiceInstancesReturnsOnCall(i int, result1 []ccapi.ServiceInstance, result2 error) {
 	fake.getServiceInstancesMutex.Lock()
 	defer fake.getServiceInstancesMutex.Unlock()
 	fake.GetServiceInstancesStub = nil
@@ -120,7 +120,7 @@ func (fake *FakeCCAPI) GetServiceInstancesReturnsOnCall(i int, result1 []ccapi.S
 	}{result1, result2}
 }
 
-func (fake *FakeCCAPI) GetServicePlans(arg1 string) ([]ccapi.Plan, error) {
+func (fake *FakeCFClient) GetServicePlans(arg1 string) ([]ccapi.Plan, error) {
 	fake.getServicePlansMutex.Lock()
 	ret, specificReturn := fake.getServicePlansReturnsOnCall[len(fake.getServicePlansArgsForCall)]
 	fake.getServicePlansArgsForCall = append(fake.getServicePlansArgsForCall, struct {
@@ -139,26 +139,26 @@ func (fake *FakeCCAPI) GetServicePlans(arg1 string) ([]ccapi.Plan, error) {
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeCCAPI) GetServicePlansCallCount() int {
+func (fake *FakeCFClient) GetServicePlansCallCount() int {
 	fake.getServicePlansMutex.RLock()
 	defer fake.getServicePlansMutex.RUnlock()
 	return len(fake.getServicePlansArgsForCall)
 }
 
-func (fake *FakeCCAPI) GetServicePlansCalls(stub func(string) ([]ccapi.Plan, error)) {
+func (fake *FakeCFClient) GetServicePlansCalls(stub func(string) ([]ccapi.Plan, error)) {
 	fake.getServicePlansMutex.Lock()
 	defer fake.getServicePlansMutex.Unlock()
 	fake.GetServicePlansStub = stub
 }
 
-func (fake *FakeCCAPI) GetServicePlansArgsForCall(i int) string {
+func (fake *FakeCFClient) GetServicePlansArgsForCall(i int) string {
 	fake.getServicePlansMutex.RLock()
 	defer fake.getServicePlansMutex.RUnlock()
 	argsForCall := fake.getServicePlansArgsForCall[i]
 	return argsForCall.arg1
 }
 
-func (fake *FakeCCAPI) GetServicePlansReturns(result1 []ccapi.Plan, result2 error) {
+func (fake *FakeCFClient) GetServicePlansReturns(result1 []ccapi.Plan, result2 error) {
 	fake.getServicePlansMutex.Lock()
 	defer fake.getServicePlansMutex.Unlock()
 	fake.GetServicePlansStub = nil
@@ -168,7 +168,7 @@ func (fake *FakeCCAPI) GetServicePlansReturns(result1 []ccapi.Plan, result2 erro
 	}{result1, result2}
 }
 
-func (fake *FakeCCAPI) GetServicePlansReturnsOnCall(i int, result1 []ccapi.Plan, result2 error) {
+func (fake *FakeCFClient) GetServicePlansReturnsOnCall(i int, result1 []ccapi.Plan, result2 error) {
 	fake.getServicePlansMutex.Lock()
 	defer fake.getServicePlansMutex.Unlock()
 	fake.GetServicePlansStub = nil
@@ -184,7 +184,7 @@ func (fake *FakeCCAPI) GetServicePlansReturnsOnCall(i int, result1 []ccapi.Plan,
 	}{result1, result2}
 }
 
-func (fake *FakeCCAPI) UpgradeServiceInstance(arg1 string, arg2 string) error {
+func (fake *FakeCFClient) UpgradeServiceInstance(arg1 string, arg2 string) error {
 	fake.upgradeServiceInstanceMutex.Lock()
 	ret, specificReturn := fake.upgradeServiceInstanceReturnsOnCall[len(fake.upgradeServiceInstanceArgsForCall)]
 	fake.upgradeServiceInstanceArgsForCall = append(fake.upgradeServiceInstanceArgsForCall, struct {
@@ -204,26 +204,26 @@ func (fake *FakeCCAPI) UpgradeServiceInstance(arg1 string, arg2 string) error {
 	return fakeReturns.result1
 }
 
-func (fake *FakeCCAPI) UpgradeServiceInstanceCallCount() int {
+func (fake *FakeCFClient) UpgradeServiceInstanceCallCount() int {
 	fake.upgradeServiceInstanceMutex.RLock()
 	defer fake.upgradeServiceInstanceMutex.RUnlock()
 	return len(fake.upgradeServiceInstanceArgsForCall)
 }
 
-func (fake *FakeCCAPI) UpgradeServiceInstanceCalls(stub func(string, string) error) {
+func (fake *FakeCFClient) UpgradeServiceInstanceCalls(stub func(string, string) error) {
 	fake.upgradeServiceInstanceMutex.Lock()
 	defer fake.upgradeServiceInstanceMutex.Unlock()
 	fake.UpgradeServiceInstanceStub = stub
 }
 
-func (fake *FakeCCAPI) UpgradeServiceInstanceArgsForCall(i int) (string, string) {
+func (fake *FakeCFClient) UpgradeServiceInstanceArgsForCall(i int) (string, string) {
 	fake.upgradeServiceInstanceMutex.RLock()
 	defer fake.upgradeServiceInstanceMutex.RUnlock()
 	argsForCall := fake.upgradeServiceInstanceArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCCAPI) UpgradeServiceInstanceReturns(result1 error) {
+func (fake *FakeCFClient) UpgradeServiceInstanceReturns(result1 error) {
 	fake.upgradeServiceInstanceMutex.Lock()
 	defer fake.upgradeServiceInstanceMutex.Unlock()
 	fake.UpgradeServiceInstanceStub = nil
@@ -232,7 +232,7 @@ func (fake *FakeCCAPI) UpgradeServiceInstanceReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeCCAPI) UpgradeServiceInstanceReturnsOnCall(i int, result1 error) {
+func (fake *FakeCFClient) UpgradeServiceInstanceReturnsOnCall(i int, result1 error) {
 	fake.upgradeServiceInstanceMutex.Lock()
 	defer fake.upgradeServiceInstanceMutex.Unlock()
 	fake.UpgradeServiceInstanceStub = nil
@@ -246,7 +246,7 @@ func (fake *FakeCCAPI) UpgradeServiceInstanceReturnsOnCall(i int, result1 error)
 	}{result1}
 }
 
-func (fake *FakeCCAPI) Invocations() map[string][][]interface{} {
+func (fake *FakeCFClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.getServiceInstancesMutex.RLock()
@@ -262,7 +262,7 @@ func (fake *FakeCCAPI) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *FakeCCAPI) recordInvocation(key string, args []interface{}) {
+func (fake *FakeCFClient) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -274,4 +274,4 @@ func (fake *FakeCCAPI) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ upgrader.CCAPI = new(FakeCCAPI)
+var _ upgrader.CFClient = new(FakeCFClient)

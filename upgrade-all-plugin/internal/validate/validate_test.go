@@ -44,7 +44,7 @@ var _ = Describe("Validate", func() {
 	})
 
 	Describe("validateAPIVersion", func() {
-		When("cf api version < 7", func() {
+		When("cf api version < 3.99.0", func() {
 			It("outputs the error", func() {
 				fakeCliConnection.ApiVersionReturns("2.0.0", nil)
 

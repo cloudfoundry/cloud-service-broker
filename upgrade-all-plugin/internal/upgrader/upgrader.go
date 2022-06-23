@@ -1,6 +1,7 @@
 package upgrader
 
 import (
+	"fmt"
 	"log"
 	"sync"
 	"sync/atomic"
@@ -10,17 +11,21 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/workers"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . CCAPI
-type CCAPI interface {
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . CFClient
+type CFClient interface {
 	GetServiceInstances([]string) ([]ccapi.ServiceInstance, error)
 	GetServicePlans(string) ([]ccapi.Plan, error)
 	UpgradeServiceInstance(string, string) error
 }
 
-func Upgrade(api CCAPI, brokerName string, batchSize int, l *log.Logger) error {
+func Upgrade(api CFClient, brokerName string, batchSize int, l *log.Logger) error {
 	plans, err := api.GetServicePlans(brokerName)
 	if err != nil {
 		return err
+	}
+
+	if len(plans) == 0 {
+		return fmt.Errorf(fmt.Sprintf("no service plans available for broker: %s", brokerName))
 	}
 
 	var planGUIDS []string
@@ -36,11 +41,6 @@ func Upgrade(api CCAPI, brokerName string, batchSize int, l *log.Logger) error {
 	serviceInstances, err := api.GetServiceInstances(planGUIDS)
 	if err != nil {
 		return err
-	}
-
-	type upgradeTask struct {
-		GUID      string
-		MIVersion string
 	}
 
 	var upgradableInstances []ccapi.ServiceInstance
@@ -68,12 +68,17 @@ func Upgrade(api CCAPI, brokerName string, batchSize int, l *log.Logger) error {
 
 	l.Printf("Starting upgrade...\n")
 
+	type upgradeTask struct {
+		ServiceInstanceGUID    string
+		MaintenanceInfoVersion string
+	}
+
 	upgradeQueue := make(chan upgradeTask)
 	go func() {
 		for _, instance := range upgradableInstances {
 			upgradeQueue <- upgradeTask{
-				GUID:      instance.GUID,
-				MIVersion: planVersions[instance.PlanGUID],
+				ServiceInstanceGUID:    instance.GUID,
+				MaintenanceInfoVersion: planVersions[instance.PlanGUID],
 			}
 		}
 		close(upgradeQueue)
@@ -89,9 +94,9 @@ func Upgrade(api CCAPI, brokerName string, batchSize int, l *log.Logger) error {
 
 	workers.Run(batchSize, func() {
 		for instance := range upgradeQueue {
-			err := api.UpgradeServiceInstance(instance.GUID, instance.MIVersion)
+			err := api.UpgradeServiceInstance(instance.ServiceInstanceGUID, instance.MaintenanceInfoVersion)
 			if err != nil {
-				addFailedInstance(instance.GUID, err.Error())
+				addFailedInstance(instance.ServiceInstanceGUID, err.Error())
 				continue
 			}
 			atomic.AddInt32(&upgraded, 1)
@@ -127,7 +132,7 @@ func logUpgradeComplete(upgraded int32, upgradable int, failedInstances map[stri
 	if len(failedInstances) > 0 {
 		l.Printf(
 			"Failed to upgrade instances:\n" +
-				"GUID\tError\n")
+				"ServiceInstanceGUID\tError\n")
 
 		for k, v := range failedInstances {
 			l.Printf("%s\t%s\n", k, v)

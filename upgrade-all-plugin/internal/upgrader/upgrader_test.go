@@ -19,7 +19,7 @@ var _ = Describe("Upgrade", func() {
 	const fakeBrokerName = "fake-broker-name"
 
 	var (
-		fakeCCAPI                                           *upgraderfakes.FakeCCAPI
+		fakeCFClient                                        *upgraderfakes.FakeCFClient
 		fakePlan                                            ccapi.Plan
 		fakeInstance1, fakeInstance2, fakeInstanceNoUpgrade ccapi.ServiceInstance
 		fakeServiceInstances                                []ccapi.ServiceInstance
@@ -51,43 +51,52 @@ var _ = Describe("Upgrade", func() {
 
 		fakeServiceInstances = []ccapi.ServiceInstance{fakeInstance1, fakeInstance2, fakeInstanceNoUpgrade}
 
-		fakeCCAPI = &upgraderfakes.FakeCCAPI{}
-		fakeCCAPI.GetServicePlansReturns([]ccapi.Plan{fakePlan}, nil)
-		fakeCCAPI.GetServiceInstancesReturns(fakeServiceInstances, nil)
+		fakeCFClient = &upgraderfakes.FakeCFClient{}
+		fakeCFClient.GetServicePlansReturns([]ccapi.Plan{fakePlan}, nil)
+		fakeCFClient.GetServiceInstancesReturns(fakeServiceInstances, nil)
 
 		fakeStdout = NewBuffer()
 		fakeLog = log.New(fakeStdout, "", 0)
 	})
 
 	It("upgrades a service instance", func() {
-		err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5, fakeLog)
+		err := upgrader.Upgrade(fakeCFClient, fakeBrokerName, 5, fakeLog)
 		Expect(err).NotTo(HaveOccurred())
 
 		By("getting the service plans")
-		Expect(fakeCCAPI.GetServicePlansCallCount()).To(Equal(1))
-		Expect(fakeCCAPI.GetServicePlansArgsForCall(0)).To(Equal(fakeBrokerName))
+		Expect(fakeCFClient.GetServicePlansCallCount()).To(Equal(1))
+		Expect(fakeCFClient.GetServicePlansArgsForCall(0)).To(Equal(fakeBrokerName))
 
 		By("getting the service instances")
-		Expect(fakeCCAPI.GetServiceInstancesCallCount()).To(Equal(1))
-		Expect(fakeCCAPI.GetServiceInstancesArgsForCall(0)).To(Equal([]string{fakePlanGUID}))
+		Expect(fakeCFClient.GetServiceInstancesCallCount()).To(Equal(1))
+		Expect(fakeCFClient.GetServiceInstancesArgsForCall(0)).To(Equal([]string{fakePlanGUID}))
 
 		By("calling upgrade on each upgradeable instance")
-		Expect(fakeCCAPI.UpgradeServiceInstanceCallCount()).Should(Equal(2))
-		instanceGUID1, _ := fakeCCAPI.UpgradeServiceInstanceArgsForCall(0)
-		instanceGUID2, _ := fakeCCAPI.UpgradeServiceInstanceArgsForCall(1)
+		Expect(fakeCFClient.UpgradeServiceInstanceCallCount()).Should(Equal(2))
+		instanceGUID1, _ := fakeCFClient.UpgradeServiceInstanceArgsForCall(0)
+		instanceGUID2, _ := fakeCFClient.UpgradeServiceInstanceArgsForCall(1)
 		guids := []string{instanceGUID1, instanceGUID2}
 		Expect(guids).To(ConsistOf("fake-instance-guid-1", "fake-instance-guid-2"))
 	})
 
+	When("no service plans are available", func() {
+		It("returns error stating no plans available", func() {
+			fakeCFClient.GetServicePlansReturns([]ccapi.Plan{}, nil)
+
+			err := upgrader.Upgrade(fakeCFClient, fakeBrokerName, 1, fakeLog)
+			Expect(err).To(MatchError(fmt.Sprintf("no service plans available for broker: %s", fakeBrokerName)))
+		})
+	})
+
 	When("batch size is less that number of upgradable instances", func() {
 		It("upgrades all instances", func() {
-			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 1, fakeLog)
+			err := upgrader.Upgrade(fakeCFClient, fakeBrokerName, 1, fakeLog)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("calling upgrade on each upgradeable instance")
-			Expect(fakeCCAPI.UpgradeServiceInstanceCallCount()).Should(Equal(2))
-			instanceGUID1, _ := fakeCCAPI.UpgradeServiceInstanceArgsForCall(0)
-			instanceGUID2, _ := fakeCCAPI.UpgradeServiceInstanceArgsForCall(1)
+			Expect(fakeCFClient.UpgradeServiceInstanceCallCount()).Should(Equal(2))
+			instanceGUID1, _ := fakeCFClient.UpgradeServiceInstanceArgsForCall(0)
+			instanceGUID2, _ := fakeCFClient.UpgradeServiceInstanceArgsForCall(1)
 			guids := []string{instanceGUID1, instanceGUID2}
 			Expect(guids).To(ConsistOf("fake-instance-guid-1", "fake-instance-guid-2"))
 		})
@@ -95,26 +104,26 @@ var _ = Describe("Upgrade", func() {
 
 	When("there are no upgradable instances", func() {
 		It("should return with no error", func() {
-			fakeCCAPI.GetServiceInstancesReturns([]ccapi.ServiceInstance{}, nil)
-			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5, fakeLog)
+			fakeCFClient.GetServiceInstancesReturns([]ccapi.ServiceInstance{}, nil)
+			err := upgrader.Upgrade(fakeCFClient, fakeBrokerName, 5, fakeLog)
 			Expect(err).NotTo(HaveOccurred())
 		})
 	})
 
 	When("getting service plans fails", func() {
 		It("returns the error", func() {
-			fakeCCAPI.GetServicePlansReturns(nil, fmt.Errorf("plan-error"))
+			fakeCFClient.GetServicePlansReturns(nil, fmt.Errorf("plan-error"))
 
-			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5, fakeLog)
+			err := upgrader.Upgrade(fakeCFClient, fakeBrokerName, 5, fakeLog)
 			Expect(err).To(MatchError("plan-error"))
 		})
 	})
 
 	When("getting service instances fails", func() {
 		It("returns the error", func() {
-			fakeCCAPI.GetServiceInstancesReturns(nil, fmt.Errorf("instance-error"))
+			fakeCFClient.GetServiceInstancesReturns(nil, fmt.Errorf("instance-error"))
 
-			err := upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 5, fakeLog)
+			err := upgrader.Upgrade(fakeCFClient, fakeBrokerName, 5, fakeLog)
 			Expect(err).To(MatchError("instance-error"))
 		})
 	})
@@ -126,9 +135,9 @@ var _ = Describe("Upgrade", func() {
 			)
 
 			It("should output the correct logging", func() {
-				fakeCCAPI.GetServiceInstancesReturns([]ccapi.ServiceInstance{}, nil)
+				fakeCFClient.GetServiceInstancesReturns([]ccapi.ServiceInstance{}, nil)
 
-				upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 1, fakeLog)
+				upgrader.Upgrade(fakeCFClient, fakeBrokerName, 1, fakeLog)
 				Expect(fakeStdout).To(matchLogOutput)
 			})
 		})
@@ -145,7 +154,7 @@ var _ = Describe("Upgrade", func() {
 				Say(`Total instances upgraded: 2`),
 			)
 			It("should output the correct logging", func() {
-				upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 1, fakeLog)
+				upgrader.Upgrade(fakeCFClient, fakeBrokerName, 1, fakeLog)
 				Expect(fakeStdout).To(matchLogOutput)
 			})
 		})
@@ -165,12 +174,12 @@ var _ = Describe("Upgrade", func() {
 				Say(`fake-instance-guid-2	failed to upgrade instance`),
 			)
 			BeforeEach(func() {
-				fakeCCAPI.UpgradeServiceInstanceReturnsOnCall(0, nil)
-				fakeCCAPI.UpgradeServiceInstanceReturnsOnCall(1, fmt.Errorf("failed to upgrade instance"))
+				fakeCFClient.UpgradeServiceInstanceReturnsOnCall(0, nil)
+				fakeCFClient.UpgradeServiceInstanceReturnsOnCall(1, fmt.Errorf("failed to upgrade instance"))
 			})
 
 			It("should output the correct logging", func() {
-				upgrader.Upgrade(fakeCCAPI, fakeBrokerName, 1, fakeLog)
+				upgrader.Upgrade(fakeCFClient, fakeBrokerName, 1, fakeLog)
 				Expect(fakeStdout).To(matchLogOutput)
 			})
 		})

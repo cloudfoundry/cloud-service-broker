@@ -37,6 +37,6 @@ func (c CCAPI) UpgradeServiceInstance(guid, miVersion string) error {
 				return nil
 			}
 		}
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * 10)
 	}
 }
