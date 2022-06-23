@@ -30,7 +30,7 @@ var _ = Describe("Validate", func() {
 			It("fails to run the upgrade", func() {
 				err := validate.ValidateInput(&fakeCliConnection, nil)
 
-				Expect(err).To(MatchError(fmt.Errorf("broker name must be specifed")))
+				Expect(err).To(MatchError(fmt.Errorf("broker name must be specifed\nusage:\ncf upgrade-all-service-instances <broker-name>")))
 			})
 		})
 
@@ -50,7 +50,7 @@ var _ = Describe("Validate", func() {
 
 				err := validate.ValidateInput(&fakeCliConnection, []string{"broker-name"})
 
-				Expect(err).To(MatchError("plugin requires CF API version >= 3.0.0"))
+				Expect(err).To(MatchError("plugin requires CF API version >= 3.99.0"))
 			})
 		})
 		When("unable to get API version", func() {
@@ -67,7 +67,7 @@ var _ = Describe("Validate", func() {
 	Describe("validateLoggedIn", func() {
 		When("not authenticated", func() {
 			It("outputs the error", func() {
-				fakeCliConnection.ApiVersionReturns("3.0.0", nil)
+				fakeCliConnection.ApiVersionReturns("3.99.0", nil)
 				fakeCliConnection.IsLoggedInReturns(false, nil)
 
 				err := command.UpgradeAll(&fakeCliConnection, []string{"broker-name"}, fakeLogger)
@@ -77,7 +77,7 @@ var _ = Describe("Validate", func() {
 		})
 		When("unable to check if logged in", func() {
 			It("outputs the error", func() {
-				fakeCliConnection.ApiVersionReturns("3.0.0", nil)
+				fakeCliConnection.ApiVersionReturns("3.99.0", nil)
 				fakeCliConnection.IsLoggedInReturns(false, fmt.Errorf("isLoggedIn error"))
 
 				err := command.UpgradeAll(&fakeCliConnection, []string{"broker-name"}, fakeLogger)

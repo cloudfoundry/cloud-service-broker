@@ -44,8 +44,7 @@ func (p *UpgradePlugin) GetMetadata() plugin.PluginMetadata {
 				UsageDetails: plugin.Usage{
 					Usage: validate.Usage,
 					Options: map[string]string{
-						"-skip-ssl-validation": "skip ssl certificate validation during http requests",
-						"-batch-size":          "number of concurrent upgrades (default 10)",
+						"-batch-size": "number of concurrent upgrades (default 10)",
 					},
 				},
 			},

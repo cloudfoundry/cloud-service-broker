@@ -32,10 +32,13 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string, log *log.Logg
 		return fmt.Errorf("error retrieving api endpoint: %s", err)
 	}
 
-	flagSet := flag.NewFlagSet("upgradeAll", flag.ExitOnError)
-	skipVerify := flagSet.Bool("skip-ssl-validation", false, "skip ssl certificate validation during http requests")
-	batchSize := flagSet.Int("batch-size", 10, "number of concurrent upgrades")
+	sslSkipValidation, err := cliConnection.IsSSLDisabled()
+	if err != nil {
+		return fmt.Errorf("error retrieving api ssl validation status: %s", err)
+	}
 
+	flagSet := flag.NewFlagSet("upgradeAll", flag.ExitOnError)
+	batchSize := flagSet.Int("batch-size", 10, "number of concurrent upgrades")
 	if len(args) > 1 {
 		err = flagSet.Parse(args[1:])
 		if err != nil {
@@ -43,7 +46,7 @@ func UpgradeAll(cliConnection plugin.CliConnection, args []string, log *log.Logg
 		}
 	}
 
-	r := requester.NewRequester(apiEndPoint, accessToken, *skipVerify)
+	r := requester.NewRequester(apiEndPoint, accessToken, sslSkipValidation)
 	api := ccapi.NewCCAPI(r)
 
 	if err := upgrader.Upgrade(api, brokerName, *batchSize, log); err != nil {
