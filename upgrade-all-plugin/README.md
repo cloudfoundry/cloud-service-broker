@@ -21,6 +21,5 @@ cf install-plugin <path_to_plugin_binary>
 cf upgrade-all-service-instances <broker_name>
 
 Options:
-    -skip-ssl-validation bool "skip ssl certificate validation during http requests"
     -batch-size int "number of concurrent upgrades (default 10)"
 ```
