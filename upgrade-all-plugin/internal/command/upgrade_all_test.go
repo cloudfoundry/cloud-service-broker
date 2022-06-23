@@ -20,6 +20,12 @@ var _ = Describe("UpgradeAll", func() {
 	BeforeEach(func() {
 		fakeCliConnection = &pluginfakes.FakeCliConnection{}
 		fakeLogger = log.Default()
+
+		fakeCliConnection.ApiVersionReturns("3.99.0", nil)
+		fakeCliConnection.IsLoggedInReturns(true, nil)
+		fakeCliConnection.AccessTokenReturns("access-token", nil)
+		fakeCliConnection.ApiEndpointReturns("test-endpoint", nil)
+		fakeCliConnection.IsSSLDisabledReturns(false, nil)
 	})
 
 	When("invalid input is given", func() {
@@ -32,8 +38,6 @@ var _ = Describe("UpgradeAll", func() {
 
 	When("access token can't be retrieved", func() {
 		It("returns an error", func() {
-			fakeCliConnection.ApiVersionReturns("3.99.0", nil)
-			fakeCliConnection.IsLoggedInReturns(true, nil)
 			fakeCliConnection.AccessTokenReturns("", fmt.Errorf("AccessToken error"))
 
 			err := command.UpgradeAll(fakeCliConnection, []string{"broker-name"}, fakeLogger)
@@ -43,9 +47,6 @@ var _ = Describe("UpgradeAll", func() {
 
 	When("api endpoint can't be retrieved", func() {
 		It("returns an error", func() {
-			fakeCliConnection.ApiVersionReturns("3.99.0", nil)
-			fakeCliConnection.IsLoggedInReturns(true, nil)
-			fakeCliConnection.AccessTokenReturns("access-token", nil)
 			fakeCliConnection.ApiEndpointReturns("", fmt.Errorf("APIEndpoint error"))
 
 			err := command.UpgradeAll(fakeCliConnection, []string{"broker-name"}, fakeLogger)
@@ -55,10 +56,6 @@ var _ = Describe("UpgradeAll", func() {
 
 	When("ssl validation can't be retrieved", func() {
 		It("returns an error", func() {
-			fakeCliConnection.ApiVersionReturns("3.99.0", nil)
-			fakeCliConnection.IsLoggedInReturns(true, nil)
-			fakeCliConnection.AccessTokenReturns("access-token", nil)
-			fakeCliConnection.ApiEndpointReturns("test-endpoint", nil)
 			fakeCliConnection.IsSSLDisabledReturns(false, fmt.Errorf("ssl error"))
 
 			err := command.UpgradeAll(fakeCliConnection, []string{"broker-name"}, fakeLogger)
@@ -66,30 +63,8 @@ var _ = Describe("UpgradeAll", func() {
 		})
 	})
 
-	Describe("validating user logged in", func() {
-		When("login status can't be retrieved", func() {
-			It("returns an error", func() {
-				fakeCliConnection.ApiVersionReturns("3.99.0", nil)
-				fakeCliConnection.IsLoggedInReturns(true, nil)
-				fakeCliConnection.AccessTokenReturns("access-token", nil)
-				fakeCliConnection.ApiEndpointReturns("test-endpoint", nil)
-				fakeCliConnection.IsSSLDisabledReturns(false, nil)
-				fakeCliConnection.IsLoggedInReturns(false, fmt.Errorf("logged in error"))
-
-				err := command.UpgradeAll(fakeCliConnection, []string{"broker-name"}, fakeLogger)
-				Expect(err).To(MatchError(fmt.Errorf("error validating user authentication: logged in error")))
-			})
-		})
-	})
-
 	When("upgrade errors", func() {
 		It("returns the error", func() {
-			fakeCliConnection.ApiVersionReturns("3.99.0", nil)
-			fakeCliConnection.IsLoggedInReturns(true, nil)
-			fakeCliConnection.AccessTokenReturns("access-token", nil)
-			fakeCliConnection.ApiEndpointReturns("test-endpoint", nil)
-			fakeCliConnection.IsSSLDisabledReturns(false, nil)
-
 			err := command.UpgradeAll(fakeCliConnection, []string{"broker-name"}, fakeLogger)
 			Expect(err).To(HaveOccurred())
 		})
