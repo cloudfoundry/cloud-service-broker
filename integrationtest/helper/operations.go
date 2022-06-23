@@ -38,9 +38,22 @@ func (h *TestHelper) Provision(serviceOfferingGUID, servicePlanGUID string, para
 	}
 }
 
-func (h *TestHelper) UpdateService(s ServiceInstance, params ...any) {
+func (h *TestHelper) UpdateService(s ServiceInstance, extras ...any) {
 	const offset = 1
-	updateResponse := h.Client().Update(s.GUID, s.ServiceOfferingGUID, s.ServicePlanGUID, uuid.New(), toJSONRawMessage(params, 2), domain.PreviousValues{}, nil)
+	params := json.RawMessage(`{}`)
+	var previous domain.PreviousValues
+	switch len(extras) {
+	case 2:
+		previous = extras[1].(domain.PreviousValues)
+		fallthrough
+	case 1:
+		params = toJSONRawMessage(extras[0:1], 2)
+	case 0:
+	default:
+		ginkgo.Fail("too many extras")
+	}
+
+	updateResponse := h.Client().Update(s.GUID, s.ServiceOfferingGUID, s.ServicePlanGUID, uuid.New(), params, previous, nil)
 	gomega.Expect(updateResponse.Error).WithOffset(offset).NotTo(gomega.HaveOccurred())
 	gomega.Expect(updateResponse.StatusCode).WithOffset(offset).To(gomega.Equal(http.StatusAccepted), string(updateResponse.ResponseBody))
 	gomega.Expect(h.LastOperationFinalState(s.GUID, 1)).WithOffset(offset).To(gomega.Equal(domain.Succeeded))
