@@ -60,7 +60,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 	if err != nil {
 		return domain.UpdateServiceSpec{}, err
 	}
-	maintenanceInfoVersion, err := planMaintenanceInfoVersion(plan)
+	maintenanceInfoVersion, err := readMaintenanceInfoVersion(plan)
 	if err != nil {
 		return domain.UpdateServiceSpec{}, err
 	}
@@ -197,7 +197,7 @@ func mergeJSON(previousParams, newParams, importParams map[string]interface{}) (
 	return vc.ToMap(), nil
 }
 
-func planMaintenanceInfoVersion(plan *broker.ServicePlan) (*version.Version, error) {
+func readMaintenanceInfoVersion(plan *broker.ServicePlan) (*version.Version, error) {
 	if plan.MaintenanceInfo != nil && len(plan.MaintenanceInfo.Version) != 0 {
 		maintenanceInfoVersion, err := version.NewVersion(plan.MaintenanceInfo.Version)
 		if err != nil {
