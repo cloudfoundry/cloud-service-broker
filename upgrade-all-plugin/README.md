@@ -9,17 +9,17 @@ This tool was developed to allow users to upgrade all service instances they hav
 
 ### Installing
 First build the binary from the plugin directory
-```azure
+```
 go build .
 ```
 Then install the plugin using the cf cli
-```azure
+```
 cf install-plugin <path_to_plugin_binary>
 ```
 
 ### Usage
 
-```azure
+```
 cf upgrade-all-service-instances <broker_name>
 
 Options:
