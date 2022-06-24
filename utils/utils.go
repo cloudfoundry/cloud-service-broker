@@ -23,16 +23,9 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/spf13/viper"
-	"golang.org/x/oauth2/google"
-	"golang.org/x/oauth2/jwt"
 )
 
-const (
-	EnvironmentVarPrefix = "gsb"
-	rootSaEnvVar         = "ROOT_SERVICE_ACCOUNT_JSON"
-	cloudPlatformScope   = "https://www.googleapis.com/auth/cloud-platform"
-)
+const EnvironmentVarPrefix = "gsb"
 
 var (
 	PropertyToEnvReplacer = strings.NewReplacer(".", "_", "-", "_")
@@ -41,19 +34,6 @@ var (
 	// dash and underscore characters in keys and values.
 	InvalidLabelChars = regexp.MustCompile("[^a-zA-Z0-9_-]+")
 )
-
-func init() {
-	viper.BindEnv("google.account", rootSaEnvVar)
-}
-
-func GetAuthedConfig() (*jwt.Config, error) {
-	rootCreds := GetServiceAccountJSON()
-	conf, err := google.JWTConfigFromJSON([]byte(rootCreds), cloudPlatformScope)
-	if err != nil {
-		return nil, fmt.Errorf("error initializing config from credentials: %s", err)
-	}
-	return conf, nil
-}
 
 // PrettyPrintOrExit writes a JSON serialized version of the content to stdout.
 // If a failure occurs during marshaling, the error is logged along with a
@@ -64,19 +44,6 @@ func PrettyPrintOrExit(content interface{}) {
 	if err != nil {
 		log.Fatalf("Could not format results: %s, results were: %+v", err, content)
 	}
-}
-
-// PrettyPrintOrErr writes a JSON serialized version of the content to stdout.
-// If a failure occurs during marshaling, the error is logged along with a
-// formatted version of the object and the function will return the error.
-func PrettyPrintOrErr(content interface{}) error {
-	err := prettyPrint(content)
-
-	if err != nil {
-		log.Printf("Could not format results: %s, results were: %+v", err, content)
-	}
-
-	return err
 }
 
 func prettyPrint(content interface{}) error {
@@ -151,23 +118,6 @@ func jsonDiff(superset, subset json.RawMessage) ([]byte, error) {
 	}
 
 	return json.Marshal(remainder)
-}
-
-// GetDefaultProjectID gets the default project id for the service broker based
-// on the JSON Service Account key.
-func GetDefaultProjectID() (string, error) {
-	serviceAccount := make(map[string]string)
-	if err := json.Unmarshal([]byte(GetServiceAccountJSON()), &serviceAccount); err != nil {
-		return "", fmt.Errorf("could not unmarshal service account details. %v", err)
-	}
-
-	return serviceAccount["project_id"], nil
-}
-
-// GetServiceAccountJSON gets the raw JSON credentials of the Service Account
-// the service broker acts as.
-func GetServiceAccountJSON() string {
-	return viper.GetString("google.account")
 }
 
 // SingleLineErrorFormatter creates a single line error string from an array of errors.
