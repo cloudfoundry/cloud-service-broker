@@ -36,7 +36,7 @@ var _ = Describe("Logger", func() {
 		result := captureStdout(func() {
 			l.InitialTotals(1, 2)
 		})
-		Expect(result).To(MatchRegexp(`Total instances: 1\n.*Upgradable instances: 2\n`))
+		Expect(result).To(MatchRegexp(`total instances: 1\n.*upgradable instances: 2\n`))
 	})
 
 	It("can log the start of an upgrade", func() {

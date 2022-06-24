@@ -71,10 +71,10 @@ func (l *Logger) InitialTotals(totalServiceInstances, totalUpgradableServiceInst
 	l.target = totalUpgradableServiceInstances
 
 	l.separator()
-	l.printf("Total instances: %d", totalServiceInstances)
-	l.printf("Upgradable instances: %d", totalUpgradableServiceInstances)
+	l.printf("total instances: %d", totalServiceInstances)
+	l.printf("upgradable instances: %d", totalUpgradableServiceInstances)
 	l.separator()
-	l.printf("Starting upgrade...")
+	l.printf("starting upgrade...")
 }
 
 func (l *Logger) FinalTotals() {
@@ -91,6 +91,7 @@ func (l *Logger) FinalTotals() {
 		var sb strings.Builder
 		tw := tabwriter.NewWriter(&sb, 0, 0, 1, ' ', tabwriter.Debug)
 		fmt.Fprintln(tw, "Service Instance GUID\t Details")
+		fmt.Fprintln(tw, "---------------------\t -------")
 
 		for guid, err := range l.failures {
 			fmt.Fprintf(tw, "%s\t %s\n", guid, err)
