@@ -42,11 +42,11 @@ func (p *UpgradePlugin) GetMetadata() plugin.PluginMetadata {
 		Commands: []plugin.Command{
 			{
 				Name:     "upgrade-all-service-instances",
-				HelpText: "all instances with an upgrade available will be upgraded.",
+				HelpText: "Upgrade all service instances from a broker to the latest available version of their current service plans.",
 				UsageDetails: plugin.Usage{
 					Usage: validate.Usage,
 					Options: map[string]string{
-						"-batch-size": "number of concurrent upgrades (default 10)",
+						"-batch-size": "The number of concurrent upgrades (defaults to 10)",
 					},
 				},
 			},

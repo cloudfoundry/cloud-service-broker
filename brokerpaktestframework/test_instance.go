@@ -23,7 +23,7 @@ type TestInstance struct {
 	workspace     string
 	password      string
 	username      string
-	port          string
+	port          int
 	serverSession *gexec.Session
 }
 
@@ -37,7 +37,8 @@ func (instance *TestInstance) Start(logger io.Writer, config []string) error {
 	serverCommand.Env = append([]string{
 		"DB_PATH=" + file.Name(),
 		"DB_TYPE=sqlite3",
-		"PORT=" + instance.port,
+		fmt.Sprintf("PORT=%d", instance.port),
+		"CSB_LISTENER_HOST=localhost",
 		"SECURITY_USER_NAME=" + instance.username,
 		"SECURITY_USER_PASSWORD=" + instance.password,
 	}, config...)
@@ -48,7 +49,7 @@ func (instance *TestInstance) Start(logger io.Writer, config []string) error {
 	}
 	instance.serverSession = start
 
-	return waitForHTTPServer("http://localhost:" + instance.port)
+	return waitForHTTPServer(fmt.Sprintf("http://localhost:%d", instance.port))
 }
 
 func waitForHTTPServer(s string) error {
@@ -86,7 +87,10 @@ func (instance *TestInstance) provision(serviceName string, planName string, par
 	if err != nil {
 		return "", nil, err
 	}
-	serviceGUID, planGUID := FindServicePlanGUIDs(catalog, serviceName, planName)
+	serviceGUID, planGUID, err := FindServicePlanGUIDs(catalog, serviceName, planName)
+	if err != nil {
+		return "", nil, err
+	}
 	details := domain.ProvisionDetails{
 		ServiceID: serviceGUID,
 		PlanID:    planGUID,
@@ -120,7 +124,10 @@ func (instance *TestInstance) update(instanceID, serviceName, planName string, p
 	if err != nil {
 		return nil, err
 	}
-	serviceGUID, planGUID := FindServicePlanGUIDs(catalog, serviceName, planName)
+	serviceGUID, planGUID, err := FindServicePlanGUIDs(catalog, serviceName, planName)
+	if err != nil {
+		return nil, err
+	}
 	details := domain.UpdateDetails{
 		ServiceID: serviceGUID,
 		PlanID:    planGUID,
@@ -211,7 +218,7 @@ func (instance *TestInstance) httpInvokeBroker(subpath string, method string, bo
 }
 
 func (instance *TestInstance) BrokerURL(subPath string) string {
-	return fmt.Sprintf("http://localhost:%s/v2/%s", instance.port, subPath)
+	return fmt.Sprintf("http://localhost:%d/v2/%s", instance.port, subPath)
 }
 
 // BrokerUrl returns the URL of the broker. Use BrokerURL instead.
@@ -226,7 +233,10 @@ func (instance *TestInstance) Bind(serviceName, planName, instanceID string, par
 	if err != nil {
 		return nil, err
 	}
-	serviceGUID, planGUID := FindServicePlanGUIDs(catalog, serviceName, planName)
+	serviceGUID, planGUID, err := FindServicePlanGUIDs(catalog, serviceName, planName)
+	if err != nil {
+		return nil, err
+	}
 
 	bindingResult, err := instance.bind(serviceGUID, planGUID, params, instanceID)
 	if err != nil {
