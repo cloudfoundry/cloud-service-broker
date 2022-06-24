@@ -3,6 +3,7 @@ package brokerpaktestframework
 import (
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"os/exec"
 	"path"
@@ -12,17 +13,8 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
-	"github.com/hashicorp/go-version"
 	"github.com/onsi/gomega/gexec"
 	cp "github.com/otiai10/copy"
-)
-
-const (
-	terraformVersion = "1.1.4"
-)
-
-var (
-	brokerpakDefaultFoldersToCopy = []string{"terraform"}
 )
 
 func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.Writer, brokerpakExtraFoldersToCopy ...string) (*TestInstance, error) {
@@ -40,7 +32,7 @@ func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.W
 		return nil, err
 	}
 
-	folders := append(brokerpakDefaultFoldersToCopy, brokerpakExtraFoldersToCopy...)
+	folders := append([]string{"terraform"}, brokerpakExtraFoldersToCopy...)
 	if err := copyBrokerpakFolders(brokerPackDir, workingDir, folders); err != nil {
 		return nil, err
 	}
@@ -52,14 +44,16 @@ func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.W
 	command := exec.Command(csbBuild, "pak", "build")
 	command.Dir = workingDir
 	session, err := gexec.Start(command, logger, logger)
-
 	if err != nil {
 		return nil, err
 	}
 
 	session.Wait(5 * time.Minute)
+	if session.ExitCode() != 0 {
+		return nil, fmt.Errorf("pak build exited with code %d", session.ExitCode())
+	}
 
-	return &TestInstance{brokerBuild: csbBuild, workspace: workingDir, username: "u", password: "p", port: "8080"}, nil
+	return &TestInstance{brokerBuild: csbBuild, workspace: workingDir, username: "u", password: "p", port: freePort()}, nil
 }
 
 func copyBrokerpakYMLFiles(brokerPackDir string, workingDir string) error {
@@ -104,8 +98,9 @@ func writeManifest(brokerPackDir string, build string, workingDir string) (err e
 	}
 
 	parsedManifest.Platforms = []platform.Platform{{Os: runtime.GOOS, Arch: runtime.GOARCH}}
-	versionOrPanic := version.Must(version.NewVersion(terraformVersion))
-	parsedManifest.TerraformVersions = []manifest.TerraformVersion{{Version: versionOrPanic, URLTemplate: build}}
+	for i := range parsedManifest.TerraformVersions {
+		parsedManifest.TerraformVersions[i].URLTemplate = build
+	}
 	parsedManifest.TerraformProviders = nil
 	outputFile, err := os.Create(path.Join(workingDir, "manifest.yml"))
 	if err != nil {
@@ -129,4 +124,13 @@ func writeManifest(brokerPackDir string, build string, workingDir string) (err e
 	}
 
 	return
+}
+
+func freePort() int {
+	listener, err := net.Listen("tcp", "localhost:0")
+	if err != nil {
+		panic("unable to open a listener port")
+	}
+	defer listener.Close()
+	return listener.Addr().(*net.TCPAddr).Port
 }
