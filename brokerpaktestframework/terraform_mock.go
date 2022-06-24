@@ -7,12 +7,22 @@ import (
 	"path"
 	"strings"
 
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-
 	"github.com/onsi/gomega/gexec"
 )
 
-func NewTerraformMock() (TerraformMock, error) {
+func NewTerraformMock(opts ...Option) (TerraformMock, error) {
+	var version string
+
+	for _, o := range opts {
+		version = o()
+	}
+
+	if version == "" {
+		version = readTerraformVersionFromManifest()
+	}
+
 	dir, err := os.MkdirTemp("", "invocation_store")
 	if err != nil {
 		return TerraformMock{}, err
@@ -23,13 +33,21 @@ func NewTerraformMock() (TerraformMock, error) {
 		return TerraformMock{}, err
 	}
 
-	mock := TerraformMock{Binary: build, invocationStore: dir, Version: "1.1.4"}
+	mock := TerraformMock{Binary: build, invocationStore: dir, Version: version}
 	err = mock.SetTFState([]TFStateValue{})
 	if err != nil {
 		return mock, err
 	}
 
 	return mock, nil
+}
+
+type Option func() string
+
+func WithVersion(version string) Option {
+	return func() string {
+		return version
+	}
 }
 
 type TerraformMock struct {
@@ -138,4 +156,31 @@ func (p TerraformMock) SetTFState(values []TFStateValue) error {
 // To set the Terraform State use the TerraformMock.SetTFState method.
 func (p TerraformMock) ReturnTFState(values []TFStateValue) error {
 	return p.SetTFState(values)
+}
+
+func readTerraformVersionFromManifest() string {
+	path := path.Join(PathToBrokerPack(2), "manifest.yml")
+	contents, err := os.ReadFile(path)
+	if err != nil {
+		panic(fmt.Sprintf("could not read manifest file %q: %s", path, err))
+	}
+	parsedManifest, err := manifest.Parse(contents)
+	if err != nil {
+		panic(fmt.Sprintf("count not parse manifest file %q: %s", path, err))
+	}
+
+	switch len(parsedManifest.TerraformVersions) {
+	case 0:
+		panic("no terraform versions in manifest")
+	case 1:
+		return parsedManifest.TerraformVersions[0].Version.String()
+	}
+
+	for _, v := range parsedManifest.TerraformVersions {
+		if v.Default {
+			return v.Version.String()
+		}
+	}
+
+	panic("unable to determine default Terraform version from manifest")
 }
