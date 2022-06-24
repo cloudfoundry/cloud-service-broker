@@ -1,0 +1,14 @@
+version: 1
+name: alpha-service
+
+id: 76c5725c-b246-11eb-871f-ffc97563fbd0
+description: description
+display_name: Alpha Service
+image_url: https://example.com/icon.jpg
+documentation_url: https://example.com
+support_url: https://example.com/support.html
+plans:
+- name: alpha
+  id: 8b52a460-b246-11eb-a8f5-d349948e2480
+  description: Alpha plan
+  display_name: Alpha
