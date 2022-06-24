@@ -7,18 +7,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/upgrader"
-
-	. "github.com/onsi/gomega"
-
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/logger"
+	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/upgrader"
 	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ upgrader.Logger = &logger.Logger{}
 
 var _ = Describe("Logger", func() {
-	const timestampRegexp = `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{2}:\d{2}`
+	const timestampRegexp = `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{2}:(\d{2}|Z)`
 
 	var l *logger.Logger
 
