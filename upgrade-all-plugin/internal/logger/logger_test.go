@@ -16,7 +16,7 @@ import (
 var _ upgrader.Logger = &logger.Logger{}
 
 var _ = Describe("Logger", func() {
-	const timestampRegexp = `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{2}:(\d{2}|Z)`
+	const timestampRegexp = `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}([+-]\d{2}:\d{2}|Z)`
 
 	var l *logger.Logger
 
