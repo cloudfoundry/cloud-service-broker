@@ -93,7 +93,7 @@ This structure holds information about a step in the Terraform upgrade process
 | --- | --- | --- |
 | version | semver | The terraform version to step through |
 
-**Note:** Upgrade is only supported for Terraform version >= 0.12.0.
+**Note:** Upgrade is only supported for Terraform versions >= 0.12.0.
 
 ### Example
 
