@@ -87,6 +87,7 @@ func (l *Logger) FinalTotals() {
 
 	if len(l.failures) > 0 {
 		l.printf("failed to upgrade %d instances", len(l.failures))
+		l.printf("")
 
 		var sb strings.Builder
 		tw := tabwriter.NewWriter(&sb, 0, 0, 1, ' ', tabwriter.Debug)
