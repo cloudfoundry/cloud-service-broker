@@ -76,17 +76,17 @@ var _ = Describe("Upgrade", func() {
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(1, fakeInvoker2)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(2, fakeDefaultInvoker)
 
-			fakeWorkspace.StateTFVersionReturns(newVersion("0.0.1"), nil)
+			fakeWorkspace.StateTFVersionReturns(newVersion("2.0.0"), nil)
 			fakeWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "moduleName"}})
 		})
 
 		It("runs apply with all tf versions in the upgrade path", func() {
 			tfBinContext := executor.TFBinariesContext{
-				DefaultTfVersion: newVersion("0.1.0"),
+				DefaultTfVersion: newVersion("4.0.0"),
 				TfUpgradePath: []*version.Version{
-					newVersion("0.0.1"),
-					newVersion("0.0.2"),
-					newVersion("0.1.0"),
+					newVersion("2.0.0"),
+					newVersion("3.0.0"),
+					newVersion("4.0.0"),
 				},
 			}
 
@@ -104,8 +104,8 @@ var _ = Describe("Upgrade", func() {
 			Expect(getWorkspace(fakeInvoker2, 0)).To(Equal(fakeWorkspace))
 
 			Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(2))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(0)).To(Equal(newVersion("0.0.2")))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(1)).To(Equal(newVersion("0.1.0")))
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(0)).To(Equal(newVersion("3.0.0")))
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(1)).To(Equal(newVersion("4.0.0")))
 
 			Expect(fakeDeploymentManager.UpdateWorkspaceHCLCallCount()).To(Equal(1))
 			actualDeploymentID, actualAction, actualUpgradeContext := fakeDeploymentManager.UpdateWorkspaceHCLArgsForCall(0)
@@ -145,7 +145,7 @@ var _ = Describe("Upgrade", func() {
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(0, fakeInvoker1)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(1, fakeInvoker2)
 
-			fakeWorkspace.StateTFVersionReturns(newVersion("0.0.1"), nil)
+			fakeWorkspace.StateTFVersionReturns(newVersion("2.0.0"), nil)
 			fakeWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "instance-moduleName"}})
 
 			fakeDeploymentManager.GetBindingDeploymentsReturns(bindingDeployments, nil)
@@ -154,10 +154,10 @@ var _ = Describe("Upgrade", func() {
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(4, fakeInvoker5)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(5, fakeInvoker6)
 
-			firstBindingWorkspace.StateTFVersionReturns(newVersion("0.0.1"), nil)
+			firstBindingWorkspace.StateTFVersionReturns(newVersion("2.0.0"), nil)
 			firstBindingWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "first-binding-moduleName"}})
 
-			secondBindingWorkspace.StateTFVersionReturns(newVersion("0.0.1"), nil)
+			secondBindingWorkspace.StateTFVersionReturns(newVersion("2.0.0"), nil)
 			secondBindingWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "second-binding-moduleName"}})
 
 			var err error
@@ -174,11 +174,11 @@ var _ = Describe("Upgrade", func() {
 
 		It("upgrades all the available bindings to latest version", func() {
 			tfBinContext := executor.TFBinariesContext{
-				DefaultTfVersion: newVersion("0.1.0"),
+				DefaultTfVersion: newVersion("4.0.0"),
 				TfUpgradePath: []*version.Version{
-					newVersion("0.0.1"),
-					newVersion("0.0.2"),
-					newVersion("0.1.0"),
+					newVersion("2.0.0"),
+					newVersion("3.0.0"),
+					newVersion("4.0.0"),
 				},
 			}
 			instanceTemplateVars = map[string]interface{}{"tf_id": instanceDeploymentID, "var": "value"}
@@ -219,12 +219,12 @@ var _ = Describe("Upgrade", func() {
 			Expect(getWorkspace(fakeInvoker6, 0)).To(Equal(secondBindingWorkspace))
 
 			Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(6))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(0)).To(Equal(newVersion("0.0.2")))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(1)).To(Equal(newVersion("0.1.0")))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(2)).To(Equal(newVersion("0.0.2")))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(3)).To(Equal(newVersion("0.1.0")))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(4)).To(Equal(newVersion("0.0.2")))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(5)).To(Equal(newVersion("0.1.0")))
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(0)).To(Equal(newVersion("3.0.0")))
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(1)).To(Equal(newVersion("4.0.0")))
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(2)).To(Equal(newVersion("3.0.0")))
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(3)).To(Equal(newVersion("4.0.0")))
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(4)).To(Equal(newVersion("3.0.0")))
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(5)).To(Equal(newVersion("4.0.0")))
 
 			By("ensuring the HCL was updated")
 			Expect(fakeDeploymentManager.UpdateWorkspaceHCLCallCount()).To(Equal(3))
@@ -256,14 +256,13 @@ var _ = Describe("Upgrade", func() {
 
 			It("fails the upgrade, if an apply fails for a binding", func() {
 				tfBinContext := executor.TFBinariesContext{
-					DefaultTfVersion: newVersion("0.1.0"),
+					DefaultTfVersion: newVersion("4.0.0"),
 					TfUpgradePath: []*version.Version{
-						newVersion("0.0.1"),
-						newVersion("0.0.2"),
-						newVersion("0.1.0"),
+						newVersion("2.0.0"),
+						newVersion("3.0.0"),
+						newVersion("4.0.0"),
 					},
 				}
-
 				provider := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
 				_, err := provider.Upgrade(context.TODO(), instanceVarContext, bindingsVarContexts)
@@ -281,13 +280,31 @@ var _ = Describe("Upgrade", func() {
 		})
 	})
 
-	It("fails the upgrade, if the version of statefile does not match the default tf version, and no upgrade path is specified", func() {
+	It("fails if the instance TF version is < 0.12.0", func() {
 		tfBinContext := executor.TFBinariesContext{
-			DefaultTfVersion: newVersion("0.1.0"),
+			DefaultTfVersion: newVersion("1.1.0"),
 		}
 		instanceTFDeployment.Workspace = fakeWorkspace
 		fakeDeploymentManager.GetTerraformDeploymentReturns(instanceTFDeployment, nil)
-		fakeWorkspace.StateTFVersionReturns(newVersion("0.0.1"), nil)
+		fakeWorkspace.StateTFVersionReturns(newVersion("0.11.1"), nil)
+
+		provider := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
+
+		_, err := provider.Upgrade(context.TODO(), instanceVarContext, nil)
+		Expect(err).NotTo(HaveOccurred())
+
+		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(instanceTFDeployment))
+		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("upgrade only supported for Terraform versions >= 0.12.0"))
+		Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(0))
+	})
+
+	It("fails the upgrade, if the version of statefile does not match the default tf version, and no upgrade path is specified", func() {
+		tfBinContext := executor.TFBinariesContext{
+			DefaultTfVersion: newVersion("1.0.0"),
+		}
+		instanceTFDeployment.Workspace = fakeWorkspace
+		fakeDeploymentManager.GetTerraformDeploymentReturns(instanceTFDeployment, nil)
+		fakeWorkspace.StateTFVersionReturns(newVersion("0.12.1"), nil)
 
 		provider := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
@@ -301,13 +318,14 @@ var _ = Describe("Upgrade", func() {
 
 	It("fails the upgrade, if an apply fails for the instance", func() {
 		tfBinContext := executor.TFBinariesContext{
-			DefaultTfVersion: newVersion("0.1.0"),
+			DefaultTfVersion: newVersion("4.0.0"),
 			TfUpgradePath: []*version.Version{
-				newVersion("0.0.1"),
-				newVersion("0.0.2"),
-				newVersion("0.1.0"),
+				newVersion("2.0.0"),
+				newVersion("3.0.0"),
+				newVersion("4.0.0"),
 			},
 		}
+
 		fakeInvoker1 := &tffakes.FakeTerraformInvoker{}
 		fakeInvoker2 := &tffakes.FakeTerraformInvoker{}
 
@@ -317,7 +335,7 @@ var _ = Describe("Upgrade", func() {
 		fakeInvoker1.ApplyReturnsOnCall(0, genericError)
 		fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(1, fakeInvoker2)
 
-		fakeWorkspace.StateTFVersionReturns(newVersion("0.0.1"), nil)
+		fakeWorkspace.StateTFVersionReturns(newVersion("2.0.0"), nil)
 		fakeWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "moduleName"}})
 
 		provider := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
