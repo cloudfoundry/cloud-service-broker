@@ -14,6 +14,7 @@
       are requested. This will upgrade the instance and all related bindings.
     - Update, bind, unbind and delete operations are blocked if an upgrade has not happened first.
     - Terraform modules can also be upgraded
+    - Upgrades are only supported for Terraform versions >= 0.12.0
 - The `tf list` subcommand now prints the version of Terraform for each workspace state
 - A new "purge" subcommand can be used to remove a service instance from the database
 - brokerpaktestframework: extra folders needed for brokerpak build are now supported.
