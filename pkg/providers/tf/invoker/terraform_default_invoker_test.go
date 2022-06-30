@@ -100,4 +100,39 @@ var _ = Context("TerraformDefaultInvoker", func() {
 			})
 		})
 	})
+
+	Context("Show", func() {
+		Context("has no renames", func() {
+			BeforeEach(func() {
+				invokerUnderTest = invoker.NewTerraformDefaultInvoker(fakeExecutor, pluginDirectory, nil)
+			})
+			It("initializes the workspace and show", func() {
+				invokerUnderTest.Show(expectedContext, fakeWorkspace)
+
+				Expect(fakeWorkspace.ExecuteCallCount()).To(Equal(1))
+				actualContext, actualExecutor, actualCommands := fakeWorkspace.ExecuteArgsForCall(0)
+				Expect(actualContext).To(Equal(expectedContext))
+				Expect(actualExecutor).To(Equal(fakeExecutor))
+				Expect(actualCommands).To(Equal([]command.TerraformCommand{
+					command.NewInit(pluginDirectory),
+					command.NewShow(),
+				}))
+			})
+		})
+		Context("has renames", func() {
+			It("renames providers before, initializing the workspace and applies", func() {
+				invokerUnderTest.Show(expectedContext, fakeWorkspace)
+
+				Expect(fakeWorkspace.ExecuteCallCount()).To(Equal(1))
+				actualContext, actualExecutor, actualCommands := fakeWorkspace.ExecuteArgsForCall(0)
+				Expect(actualContext).To(Equal(expectedContext))
+				Expect(actualExecutor).To(Equal(fakeExecutor))
+				Expect(actualCommands).To(Equal([]command.TerraformCommand{
+					command.NewRenameProvider("old_provider_1", "new_provider_1"),
+					command.NewInit(pluginDirectory),
+					command.NewShow(),
+				}))
+			})
+		})
+	})
 })

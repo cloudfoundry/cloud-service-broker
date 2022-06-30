@@ -32,8 +32,11 @@ func (cmd TerraformDefaultInvoker) Apply(ctx context.Context, workspace workspac
 
 func (cmd TerraformDefaultInvoker) Show(ctx context.Context, workspace workspace.Workspace) (string, error) {
 	output, err := workspace.Execute(ctx, cmd.executor,
-		command.NewInit(cmd.pluginDirectory),
-		command.NewShow())
+		append(
+			cmd.ReplacementCommands(),
+			command.NewInit(cmd.pluginDirectory),
+			command.NewShow(),
+		)...)
 	return output.StdOut, err
 }
 
