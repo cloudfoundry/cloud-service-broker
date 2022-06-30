@@ -3,19 +3,15 @@ package command
 import (
 	"flag"
 	"fmt"
-	"log"
-
-	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/ccapi"
-
-	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/upgrader"
-
-	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/requester"
 
 	"code.cloudfoundry.org/cli/plugin"
+	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/ccapi"
+	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/requester"
+	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/upgrader"
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/validate"
 )
 
-func UpgradeAll(cliConnection plugin.CliConnection, args []string, log *log.Logger) error {
+func UpgradeAll(cliConnection plugin.CliConnection, args []string, log upgrader.Logger) error {
 	err := validate.ValidateInput(cliConnection, args)
 	if err != nil {
 		return err

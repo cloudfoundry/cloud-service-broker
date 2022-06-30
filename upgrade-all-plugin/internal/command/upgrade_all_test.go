@@ -2,10 +2,10 @@ package command_test
 
 import (
 	"fmt"
-	"log"
 
 	"code.cloudfoundry.org/cli/plugin/pluginfakes"
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/command"
+	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/upgrader/upgraderfakes"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -14,12 +14,12 @@ var _ = Describe("UpgradeAll", func() {
 
 	var (
 		fakeCliConnection *pluginfakes.FakeCliConnection
-		fakeLogger        *log.Logger
+		fakeLogger        *upgraderfakes.FakeLogger
 	)
 
 	BeforeEach(func() {
 		fakeCliConnection = &pluginfakes.FakeCliConnection{}
-		fakeLogger = log.Default()
+		fakeLogger = &upgraderfakes.FakeLogger{}
 
 		fakeCliConnection.ApiVersionReturns("3.99.0", nil)
 		fakeCliConnection.IsLoggedInReturns(true, nil)
