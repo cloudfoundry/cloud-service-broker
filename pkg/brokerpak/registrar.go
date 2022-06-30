@@ -58,7 +58,7 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 			"prefix":            pak.ServicePrefix,
 		})
 
-		brokerPak, err := reader.DownloadAndOpenBrokerpak(pak.BrokerpakURI)
+		brokerPak, err := reader.OpenBrokerPak(pak.BrokerpakURI)
 		if err != nil {
 			return fmt.Errorf("couldn't open brokerpak: %q: %v", pak.BrokerpakURI, err)
 		}

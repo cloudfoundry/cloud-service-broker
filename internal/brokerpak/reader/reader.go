@@ -18,17 +18,14 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
-	"os"
 	"path"
 	"path/filepath"
 	"strings"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
-
-	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/fetcher"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
 	"github.com/hashicorp/go-version"
 )
@@ -42,24 +39,6 @@ func OpenBrokerPak(pakPath string) (*BrokerPakReader, error) {
 		return nil, err
 	}
 	return &BrokerPakReader{contents: rc}, nil
-}
-
-// DownloadAndOpenBrokerpak downloads a (potentially remote) brokerpak to
-// the local filesystem and opens it.
-func DownloadAndOpenBrokerpak(pakURI string) (*BrokerPakReader, error) {
-	// create a temp directory to hold the pak
-	pakDir, err := os.MkdirTemp("", "brokerpak-staging")
-	if err != nil {
-		return nil, fmt.Errorf("couldn't create brokerpak staging area for %q: %v", pakURI, err)
-	}
-
-	// Download the brokerpak
-	localLocation := filepath.Join(pakDir, "pack.brokerpak")
-	if err := fetcher.FetchBrokerpak(pakURI, localLocation); err != nil {
-		return nil, fmt.Errorf("couldn't download brokerpak %q: %v", pakURI, err)
-	}
-
-	return OpenBrokerPak(localLocation)
 }
 
 // BrokerPakReader reads bundled together Terraform and service definitions.
