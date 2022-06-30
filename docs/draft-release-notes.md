@@ -18,6 +18,7 @@
 - The `tf list` subcommand now prints the version of Terraform for each workspace state
 - A new "purge" subcommand can be used to remove a service instance from the database
 - brokerpaktestframework: extra folders needed for brokerpak build are now supported.
+- A duplicate copy of the brokerpak no longer occurs, freeing up disk space
 
 ### Fixes:
 - Broker checks the database deployment workspace readability aat startup before attempting encryption or removing salt.
