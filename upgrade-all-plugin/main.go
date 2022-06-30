@@ -1,8 +1,10 @@
 package main
 
 import (
-	"log"
 	"os"
+	"time"
+
+	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/logger"
 
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/validate"
 
@@ -15,7 +17,7 @@ type UpgradePlugin struct{}
 
 func (p *UpgradePlugin) Run(cliConnection plugin.CliConnection, args []string) {
 	if args[0] == "upgrade-all-service-instances" {
-		l := log.New(os.Stdout, "", 0)
+		l := logger.New(time.Minute)
 		err := command.UpgradeAll(cliConnection, args[1:], l)
 		if err != nil {
 			l.Printf("upgrade-all-service-instances plugin failed: %s", err.Error())

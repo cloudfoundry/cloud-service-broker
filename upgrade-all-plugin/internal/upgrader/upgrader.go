@@ -2,23 +2,31 @@ package upgrader
 
 import (
 	"fmt"
-	"log"
-	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/ccapi"
 	"github.com/cloudfoundry/cloud-service-broker/upgrade-all-plugin/internal/workers"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . CFClient
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//counterfeiter:generate . CFClient
 type CFClient interface {
 	GetServiceInstances([]string) ([]ccapi.ServiceInstance, error)
 	GetServicePlans(string) ([]ccapi.Plan, error)
 	UpgradeServiceInstance(string, string) error
 }
 
-func Upgrade(api CFClient, brokerName string, batchSize int, l *log.Logger) error {
+//counterfeiter:generate . Logger
+type Logger interface {
+	Printf(format string, a ...any)
+	UpgradeStarting(guid string)
+	UpgradeSucceeded(guid string, duration time.Duration)
+	UpgradeFailed(guid string, duration time.Duration, err error)
+	InitialTotals(totalServiceInstances, totalUpgradableServiceInstances int)
+	FinalTotals()
+}
+
+func Upgrade(api CFClient, brokerName string, batchSize int, log Logger) error {
 	plans, err := api.GetServicePlans(brokerName)
 	if err != nil {
 		return err
@@ -36,7 +44,7 @@ func Upgrade(api CFClient, brokerName string, batchSize int, l *log.Logger) erro
 		planVersions[plan.GUID] = plan.MaintenanceInfoVersion
 	}
 
-	l.Printf("Discovering service instances for broker: %s\n", brokerName)
+	log.Printf("discovering service instances for broker: %s", brokerName)
 
 	serviceInstances, err := api.GetServiceInstances(planGUIDS)
 	if err != nil {
@@ -50,23 +58,11 @@ func Upgrade(api CFClient, brokerName string, batchSize int, l *log.Logger) erro
 		}
 	}
 	if len(upgradableInstances) == 0 {
-		l.Printf("no instances available to upgrade\n")
+		log.Printf("no instances available to upgrade")
 		return nil
 	}
 
-	l.Printf("---\n"+
-		"Total instances: %d\n"+
-		"Upgradable instances: %d\n"+
-		"---\n",
-		len(serviceInstances),
-		len(upgradableInstances))
-
-	var upgraded int32
-	upgradeComplete := make(chan bool)
-
-	go logUpgradeProgress(upgradeComplete, &upgraded, len(upgradableInstances), l)
-
-	l.Printf("Starting upgrade...\n")
+	log.InitialTotals(len(serviceInstances), len(upgradableInstances))
 
 	type upgradeTask struct {
 		ServiceInstanceGUID    string
@@ -84,58 +80,20 @@ func Upgrade(api CFClient, brokerName string, batchSize int, l *log.Logger) erro
 		close(upgradeQueue)
 	}()
 
-	failedInstances := make(map[string]string)
-	addFailedInstance := func(instance, description string) {
-		var lock sync.Mutex
-		lock.Lock()
-		defer lock.Unlock()
-		failedInstances[instance] = description
-	}
-
 	workers.Run(batchSize, func() {
 		for instance := range upgradeQueue {
+			start := time.Now()
+			log.UpgradeStarting(instance.ServiceInstanceGUID)
 			err := api.UpgradeServiceInstance(instance.ServiceInstanceGUID, instance.MaintenanceInfoVersion)
-			if err != nil {
-				addFailedInstance(instance.ServiceInstanceGUID, err.Error())
-				continue
+			switch err {
+			case nil:
+				log.UpgradeSucceeded(instance.ServiceInstanceGUID, time.Since(start))
+			default:
+				log.UpgradeFailed(instance.ServiceInstanceGUID, time.Since(start), err)
 			}
-			atomic.AddInt32(&upgraded, 1)
 		}
 	})
 
-	upgradeComplete <- true
-
-	logUpgradeComplete(upgraded, len(upgradableInstances), failedInstances, l)
-
+	log.FinalTotals()
 	return nil
-}
-
-func logUpgradeProgress(complete chan bool, upgraded *int32, upgradable int, l *log.Logger) {
-	for {
-		select {
-		case <-complete:
-			return
-		case <-time.After(time.Minute):
-			l.Printf("Upgraded %d/%d\n", *upgraded, upgradable)
-		}
-	}
-}
-
-func logUpgradeComplete(upgraded int32, upgradable int, failedInstances map[string]string, l *log.Logger) {
-	l.Printf("Upgraded %d/%d\n", upgraded, upgradable)
-
-	l.Printf("---\n"+
-		"Finished upgrade:\n"+
-		"Total instances upgraded: %d\n",
-		upgraded)
-
-	if len(failedInstances) > 0 {
-		l.Printf(
-			"Failed to upgrade instances:\n" +
-				"ServiceInstanceGUID\tError\n")
-
-		for k, v := range failedInstances {
-			l.Printf("%s\t%s\n", k, v)
-		}
-	}
 }
