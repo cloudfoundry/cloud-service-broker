@@ -3,6 +3,7 @@ package tf
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 
@@ -170,6 +171,10 @@ func evaluateParametersToAdd(importParametersToAdd []ImportParameterMapping) []w
 }
 
 func createTFMainDefinition(workspace *workspace.TerraformWorkspace, mainTf string, logger lager.Logger) error {
+	if i := strings.Index(mainTf, "\nOutputs:"); i >= 0 {
+		mainTf = mainTf[:i]
+	}
+
 	var tf string
 	var parameterVals map[string]string
 	tf, parameterVals, err := workspace.Transformer.ReplaceParametersInTf(workspace.Transformer.AddParametersInTf(workspace.Transformer.CleanTf(mainTf)))
