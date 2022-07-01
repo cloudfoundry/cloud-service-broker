@@ -40,5 +40,6 @@
 - Fixes concatenation of words in Terraform error messages
 - Fixes an issue where a service instance update was incorrectly classified as invalid
 - brokerpaktestframework now handles "terraform_upgrade_path", as part of this change the signature for `FindServicePlanGUIDs()` was changed to return an error as errors were previously silent
+- "terraform show" output for Terraform greater than 0.12 is how handled correctly
 
 
