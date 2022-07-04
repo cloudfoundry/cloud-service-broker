@@ -3,9 +3,7 @@ module github.com/cloudfoundry/cloud-service-broker
 go 1.18
 
 require (
-	code.cloudfoundry.org/cli v7.1.0+incompatible
 	code.cloudfoundry.org/credhub-cli v0.0.0-20220620130410-645eee56ecdb
-	code.cloudfoundry.org/jsonry v1.1.3
 	code.cloudfoundry.org/lager v2.0.0+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/gops v0.3.24
