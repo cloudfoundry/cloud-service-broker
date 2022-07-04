@@ -6,13 +6,13 @@ require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20220620130410-645eee56ecdb
 	code.cloudfoundry.org/lager v2.0.0+incompatible
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/google/gops v0.3.23
+	github.com/google/gops v0.3.24
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-getter v1.6.2
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.1
-	github.com/hashicorp/go-version v1.5.0
+	github.com/hashicorp/go-version v1.6.0
 	github.com/hashicorp/hcl/v2 v2.13.0
 	github.com/hashicorp/hil v0.0.0-20210521165536-27a72121fd40
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
@@ -33,8 +33,8 @@ require (
 	golang.org/x/tools v0.1.11-0.20220513221640-090b14e8501f
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.3.4
-	gorm.io/driver/sqlite v1.3.4
-	gorm.io/gorm v1.23.6
+	gorm.io/driver/sqlite v1.3.5
+	gorm.io/gorm v1.23.7
 	honnef.co/go/tools v0.3.2
 )
 
@@ -44,7 +44,6 @@ require (
 	cloud.google.com/go/iam v0.3.0 // indirect
 	cloud.google.com/go/storage v1.15.0 // indirect
 	github.com/BurntSushi/toml v0.4.1 // indirect
-	github.com/StackExchange/wmi v1.2.1 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/aws/aws-sdk-go v1.25.3 // indirect
@@ -54,7 +53,7 @@ require (
 	github.com/cloudfoundry/go-socks5 v0.0.0-20180221174514-54f73bdb8a8e // indirect
 	github.com/cloudfoundry/socks5-proxy v0.2.60 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
-	github.com/go-ole/go-ole v1.2.6-0.20210915003542-8b1f7f90f6b1 // indirect
+	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -72,6 +71,7 @@ require (
 	github.com/keybase/go-ps v0.0.0-20190827175125-91aafc93ba19 // indirect
 	github.com/klauspost/compress v1.11.2 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
+	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-sqlite3 v1.14.12 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
@@ -83,22 +83,24 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/prometheus/client_golang v1.4.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.9.1 // indirect
 	github.com/prometheus/procfs v0.0.8 // indirect
-	github.com/shirou/gopsutil/v3 v3.21.9 // indirect
+	github.com/shirou/gopsutil/v3 v3.22.4 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.7.2 // indirect
 	github.com/subosito/gotenv v1.3.0 // indirect
-	github.com/tklauser/go-sysconf v0.3.9 // indirect
-	github.com/tklauser/numcpus v0.3.0 // indirect
+	github.com/tklauser/go-sysconf v0.3.10 // indirect
+	github.com/tklauser/numcpus v0.4.0 // indirect
 	github.com/ulikunitz/xz v0.5.8 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xlab/treeprint v1.1.0 // indirect
+	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20220218215828-6cf2b201936e // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
