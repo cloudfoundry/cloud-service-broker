@@ -47,6 +47,10 @@ func OpenBrokerPak(pakPath string) (*BrokerPakReader, error) {
 // DownloadAndOpenBrokerpak downloads a (potentially remote) brokerpak to
 // the local filesystem and opens it.
 func DownloadAndOpenBrokerpak(pakURI string) (*BrokerPakReader, error) {
+	if isLocalFile(pakURI) {
+		return OpenBrokerPak(pakURI)
+	}
+
 	// create a temp directory to hold the pak
 	pakDir, err := os.MkdirTemp("", "brokerpak-staging")
 	if err != nil {
@@ -279,4 +283,9 @@ func providerInstallPath(terraformVersion *version.Version, destination string, 
 		tfProvider.Version.String(),
 		fmt.Sprintf("%s_%s", plat.Os, plat.Arch),
 	)
+}
+
+func isLocalFile(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }
