@@ -95,6 +95,8 @@ This structure holds information about a step in the Terraform upgrade process
 
 **Note:** Upgrade is only supported for Terraform versions >= 0.12.0.
 
+**Note:** Terraform does not recommend making HCL changes at the same time that performing a terraform upgrade (see [docs](https://www.terraform.io/language/upgrade-guides/0-13#before-you-upgrade)). Hence ideally these changes should be included in a separate release of your brokerpak and all existing instances should be upgraded before installing a subsequent release.
+
 ### Example
 
 ```yaml
