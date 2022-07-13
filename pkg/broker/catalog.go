@@ -59,9 +59,9 @@ func (s Service) ToPlain() domain.Service {
 type ServicePlan struct {
 	domain.ServicePlan
 
-	ServiceProperties  map[string]interface{} `json:"service_properties"`
-	ProvisionOverrides map[string]interface{} `json:"provision_overrides,omitempty"`
-	BindOverrides      map[string]interface{} `json:"bind_overrides,omitempty"`
+	ServiceProperties  map[string]any `json:"service_properties"`
+	ProvisionOverrides map[string]any `json:"provision_overrides,omitempty"`
+	BindOverrides      map[string]any `json:"bind_overrides,omitempty"`
 }
 
 // Validate implements validation.Validatable.
@@ -73,6 +73,6 @@ func (sp *ServicePlan) Validate() (errs *validation.FieldError) {
 }
 
 // GetServiceProperties gets the plan settings variables as a string->interface map.
-func (sp *ServicePlan) GetServiceProperties() map[string]interface{} {
+func (sp *ServicePlan) GetServiceProperties() map[string]any {
 	return sp.ServiceProperties
 }

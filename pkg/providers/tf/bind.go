@@ -13,7 +13,7 @@ import (
 )
 
 // Bind creates a new backing Terraform job and executes it, waiting on the result.
-func (provider *TerraformProvider) Bind(ctx context.Context, bindContext *varcontext.VarContext) (map[string]interface{}, error) {
+func (provider *TerraformProvider) Bind(ctx context.Context, bindContext *varcontext.VarContext) (map[string]any, error) {
 	provider.logger.Debug("terraform-bind", correlation.ID(ctx), lager.Data{
 		"context": bindContext.ToMap(),
 	})

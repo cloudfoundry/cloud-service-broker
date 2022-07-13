@@ -255,7 +255,7 @@ func TestSetDatabaseCredentials(t *testing.T) {
 				Label:        "google-storage",
 				Tags:         []string{"gcp", "cloudsql", "mysql"},
 				Plan:         "nearline",
-				Credentials: map[string]interface{}{
+				Credentials: map[string]any{
 					"CaCert":                   "-truncated-",
 					"ClientCert":               "-truncated-",
 					"ClientKey":                "-truncated-",
@@ -286,7 +286,7 @@ func TestSetDatabaseCredentials(t *testing.T) {
 				Label:        "p.mysql",
 				Tags:         []string{"mysql"},
 				Plan:         "db-medium",
-				Credentials: map[string]interface{}{
+				Credentials: map[string]any{
 					"hostname": "10.0.0.20",
 					"jdbcUrl":  "jdbc:mysql://10.0.0.20:3306/service_instance_db?user=fefcbe8360854a18a7994b870e7b0bf5&password=z9z6eskdbs1rhtxt",
 					"name":     "service_instance_db",
@@ -306,7 +306,7 @@ func TestSetDatabaseCredentials(t *testing.T) {
 				Label:        "p.mysql",
 				Tags:         []string{"mysql"},
 				Plan:         "db-medium",
-				Credentials: map[string]interface{}{
+				Credentials: map[string]any{
 					"hostname": "10.0.0.20",
 					"jdbcUrl":  "jdbc:mysql://10.0.0.20:3306/service_instance_db?user=fefcbe8360854a18a7994b870e7b0bf5&password=z9z6eskdbs1rhtxt",
 					"name":     "service_instance_db",

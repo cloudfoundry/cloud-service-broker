@@ -11,7 +11,7 @@ import (
 var _ = Describe("Parser", func() {
 	DescribeTable(
 		"correct",
-		func(input string, expected interface{}) {
+		func(input string, expected any) {
 			output, err := passwordparser.Parse(input)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output).To(Equal(expected))
@@ -105,7 +105,7 @@ var _ = Describe("Parser", func() {
 
 	DescribeTable(
 		"errors",
-		func(input string, expected interface{}) {
+		func(input string, expected any) {
 			output, err := passwordparser.Parse(input)
 			Expect(output).To(BeEmpty())
 			Expect(err).To(MatchError(expected), err.Error())

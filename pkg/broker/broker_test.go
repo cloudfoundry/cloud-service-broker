@@ -87,7 +87,7 @@ func ExampleServiceDefinition_GetPlanByID() {
 
 func TestServiceDefinition_CatalogEntry(t *testing.T) {
 	cases := map[string]struct {
-		UserPlans   interface{}
+		UserPlans   any
 		PlanIds     map[string]bool
 		ExpectError bool
 	}{
@@ -220,132 +220,132 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 
 	cases := map[string]struct {
 		RawContext          string
-		OriginatingIdentity map[string]interface{}
+		OriginatingIdentity map[string]any
 		// precedence order - lowest number should win
-		UserParams         string                 // 4
-		ProvisionOverrides map[string]interface{} // 3
-		ServiceProperties  map[string]interface{} // 2
-		DefaultOverride    string                 // 5
-		GlobalDefaults     string                 // 6
+		UserParams         string         // 4
+		ProvisionOverrides map[string]any // 3
+		ServiceProperties  map[string]any // 2
+		DefaultOverride    string         // 5
+		GlobalDefaults     string         // 6
 		ExpectedError      error
-		ExpectedContext    map[string]interface{}
+		ExpectedContext    map[string]any
 	}{
 		"empty": {
 			UserParams:        "",
-			ServiceProperties: map[string]interface{}{},
-			ExpectedContext: map[string]interface{}{
+			ServiceProperties: map[string]any{},
+			ExpectedContext: map[string]any{
 				"location":            "us",
 				"name":                "name-us",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"includes request context information": {
 			UserParams: "",
 			RawContext: `{"platform": "cloudfoundry", "organization_name": "acceptance"}`,
-			OriginatingIdentity: map[string]interface{}{
+			OriginatingIdentity: map[string]any{
 				"platform": "cloudfoundry",
 				"value": map[string]string{
 					"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360",
 				}},
-			ServiceProperties: map[string]interface{}{},
-			ExpectedContext: map[string]interface{}{
+			ServiceProperties: map[string]any{},
+			ExpectedContext: map[string]any{
 				"location":      "us",
 				"name":          "name-us",
 				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{
+				"osb_context": map[string]any{
 					"platform":          "cloudfoundry",
 					"organization_name": "acceptance",
 				},
-				"originatingIdentity": map[string]interface{}{
+				"originatingIdentity": map[string]any{
 					"platform": "cloudfoundry",
-					"value":    map[string]interface{}{"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360"},
+					"value":    map[string]any{"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360"},
 				},
 			},
 		},
 		"service has missing param": {
-			ServiceProperties: map[string]interface{}{"maybe-missing": "custom"}, // 2
-			UserParams:        "",                                                // 4
-			ExpectedContext: map[string]interface{}{
+			ServiceProperties: map[string]any{"maybe-missing": "custom"}, // 2
+			UserParams:        "",                                        // 4
+			ExpectedContext: map[string]any{
 				"location":            "us",
 				"name":                "name-us",
 				"maybe-missing":       "custom",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"location gets truncated": {
-			ServiceProperties: map[string]interface{}{},            // 2
+			ServiceProperties: map[string]any{},                    // 2
 			UserParams:        `{"location": "averylonglocation"}`, // 4
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "averylongl",
 				"name":                "name-averylonglocation",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"user location and name": {
-			ServiceProperties: map[string]interface{}{},           // 2
+			ServiceProperties: map[string]any{},                   // 2
 			UserParams:        `{"location": "eu", "name":"foo"}`, // 4
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "eu",
 				"name":                "foo",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"user tries to overwrite service var": {
-			ServiceProperties: map[string]interface{}{"service-provided": "custom"},          // 2
+			ServiceProperties: map[string]any{"service-provided": "custom"},                  // 2
 			UserParams:        `{"location": "eu", "name":"foo", "service-provided":"test"}`, // 4
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "eu",
 				"name":                "foo",
 				"maybe-missing":       "default",
 				"service-provided":    "custom",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"operator defaults override computed defaults": {
-			ServiceProperties: map[string]interface{}{}, // 2
-			UserParams:        "",                       // 4
-			DefaultOverride:   `{"location":"eu"}`,      // 5
-			GlobalDefaults:    `{"location":"az"}`,      // 6
-			ExpectedContext: map[string]interface{}{
+			ServiceProperties: map[string]any{},    // 2
+			UserParams:        "",                  // 4
+			DefaultOverride:   `{"location":"eu"}`, // 5
+			GlobalDefaults:    `{"location":"az"}`, // 6
+			ExpectedContext: map[string]any{
 				"location":            "eu",
 				"name":                "name-eu",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"user values override operator defaults": {
-			ServiceProperties: map[string]interface{}{}, // 2
-			UserParams:        `{"location":"nz"}`,      // 4
-			DefaultOverride:   `{"location":"eu"}`,      // 5
+			ServiceProperties: map[string]any{},    // 2
+			UserParams:        `{"location":"nz"}`, // 4
+			DefaultOverride:   `{"location":"eu"}`, // 5
 			GlobalDefaults:    "{}",
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "nz",
 				"name":                "name-nz",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"operator defaults are not evaluated": {
-			ServiceProperties: map[string]interface{}{},     // 2
+			ServiceProperties: map[string]any{},             // 2
 			UserParams:        `{"location":"us"}`,          // 4
 			DefaultOverride:   `{"name":"foo-${location}"}`, // 5
 			GlobalDefaults:    "{}",
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "us",
 				"name":                "foo-${location}",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"invalid-request": {
@@ -353,45 +353,45 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			ExpectedError: errors.New("1 error(s) occurred: name: String length must be less than or equal to 30"),
 		},
 		"provision_overrides override user params and global_defaults but not computed defaults": {
-			ServiceProperties:  map[string]interface{}{},                 // 2
-			ProvisionOverrides: map[string]interface{}{"location": "eu"}, // 3
-			UserParams:         `{"location":"us"}`,                      // 4
-			DefaultOverride:    "{}",                                     // 5
-			GlobalDefaults:     `{"location":"az"}`,                      // 6
-			ExpectedContext: map[string]interface{}{
+			ServiceProperties:  map[string]any{},                 // 2
+			ProvisionOverrides: map[string]any{"location": "eu"}, // 3
+			UserParams:         `{"location":"us"}`,              // 4
+			DefaultOverride:    "{}",                             // 5
+			GlobalDefaults:     `{"location":"az"}`,              // 6
+			ExpectedContext: map[string]any{
 				"location":            "eu",
 				"name":                "name-eu",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"global_default override defaults but not computed defaults": {
-			ServiceProperties:  map[string]interface{}{}, // 2
-			ProvisionOverrides: map[string]interface{}{}, // 3
-			UserParams:         "{}",                     // 4
-			DefaultOverride:    "{}",                     // 5
-			GlobalDefaults:     `{"location":"az"}`,      // 6
-			ExpectedContext: map[string]interface{}{
+			ServiceProperties:  map[string]any{},    // 2
+			ProvisionOverrides: map[string]any{},    // 3
+			UserParams:         "{}",                // 4
+			DefaultOverride:    "{}",                // 5
+			GlobalDefaults:     `{"location":"az"}`, // 6
+			ExpectedContext: map[string]any{
 				"location":            "az",
 				"name":                "name-az",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"bogus global default json": {
-			ServiceProperties:  map[string]interface{}{}, // 2
-			ProvisionOverrides: map[string]interface{}{}, // 3
-			UserParams:         "{}",                     // 4
-			DefaultOverride:    "{}",                     // 5
-			GlobalDefaults:     `{"location","az"}`,      // 6
-			ExpectedContext: map[string]interface{}{
+			ServiceProperties:  map[string]any{},    // 2
+			ProvisionOverrides: map[string]any{},    // 3
+			UserParams:         "{}",                // 4
+			DefaultOverride:    "{}",                // 5
+			GlobalDefaults:     `{"location","az"}`, // 6
+			ExpectedContext: map[string]any{
 				"location":            "az",
 				"name":                "name-az",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 			ExpectedError: fmt.Errorf("failed unmarshaling config value provision.defaults"),
 		},
@@ -474,128 +474,128 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 
 	cases := map[string]struct {
 		RawContext          string
-		OriginatingIdentity map[string]interface{}
+		OriginatingIdentity map[string]any
 		// precedence order - lowest number should win
-		MergedUserProvidedParams string                 // 4
-		ProvisionOverrides       map[string]interface{} // 3
-		ServiceProperties        map[string]interface{} // 2
-		DefaultOverride          string                 // 5
-		GlobalDefaults           string                 // 6
+		MergedUserProvidedParams string         // 4
+		ProvisionOverrides       map[string]any // 3
+		ServiceProperties        map[string]any // 2
+		DefaultOverride          string         // 5
+		GlobalDefaults           string         // 6
 		ExpectedError            error
-		ExpectedContext          map[string]interface{}
+		ExpectedContext          map[string]any
 	}{
 		"empty": {
-			ServiceProperties: map[string]interface{}{},
-			ExpectedContext: map[string]interface{}{
+			ServiceProperties: map[string]any{},
+			ExpectedContext: map[string]any{
 				"location":            "us",
 				"name":                "name-us",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"includes request context information": {
 			RawContext: `{"platform": "cloudfoundry", "organization_name": "acceptance"}`,
-			OriginatingIdentity: map[string]interface{}{
+			OriginatingIdentity: map[string]any{
 				"platform": "cloudfoundry",
 				"value": map[string]string{
 					"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360",
 				}},
-			ServiceProperties: map[string]interface{}{},
-			ExpectedContext: map[string]interface{}{
+			ServiceProperties: map[string]any{},
+			ExpectedContext: map[string]any{
 				"location":      "us",
 				"name":          "name-us",
 				"maybe-missing": "default",
-				"osb_context": map[string]interface{}{
+				"osb_context": map[string]any{
 					"platform":          "cloudfoundry",
 					"organization_name": "acceptance",
 				},
-				"originatingIdentity": map[string]interface{}{
+				"originatingIdentity": map[string]any{
 					"platform": "cloudfoundry",
-					"value":    map[string]interface{}{"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360"},
+					"value":    map[string]any{"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360"},
 				},
 			},
 		},
 		"service has missing param": {
-			ServiceProperties: map[string]interface{}{"maybe-missing": "custom"}, // 2
-			ExpectedContext: map[string]interface{}{
+			ServiceProperties: map[string]any{"maybe-missing": "custom"}, // 2
+			ExpectedContext: map[string]any{
 				"location":            "us",
 				"name":                "name-us",
 				"maybe-missing":       "custom",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"location gets truncated": {
-			ServiceProperties:        map[string]interface{}{},            // 2
+			ServiceProperties:        map[string]any{},                    // 2
 			MergedUserProvidedParams: `{"location": "averylonglocation"}`, // 4
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "averylongl",
 				"name":                "name-averylonglocation",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"user location and name": {
-			ServiceProperties:        map[string]interface{}{},           // 2
+			ServiceProperties:        map[string]any{},                   // 2
 			MergedUserProvidedParams: `{"location": "eu", "name":"foo"}`, // 4
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "eu",
 				"name":                "foo",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"user tries to overwrite service var": {
-			ServiceProperties:        map[string]interface{}{"service-provided": "custom"},          // 2
+			ServiceProperties:        map[string]any{"service-provided": "custom"},                  // 2
 			MergedUserProvidedParams: `{"location": "eu", "name":"foo", "service-provided":"test"}`, // 4
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "eu",
 				"name":                "foo",
 				"maybe-missing":       "default",
 				"service-provided":    "custom",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"operator defaults override computed defaults": {
-			ServiceProperties: map[string]interface{}{}, // 2
-			DefaultOverride:   `{"location":"eu"}`,      // 5
-			GlobalDefaults:    `{"location":"az"}`,      // 6
-			ExpectedContext: map[string]interface{}{
+			ServiceProperties: map[string]any{},    // 2
+			DefaultOverride:   `{"location":"eu"}`, // 5
+			GlobalDefaults:    `{"location":"az"}`, // 6
+			ExpectedContext: map[string]any{
 				"location":            "eu",
 				"name":                "name-eu",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"user values override operator defaults": {
-			ServiceProperties:        map[string]interface{}{}, // 2
-			MergedUserProvidedParams: `{"location":"nz"}`,      // 4
-			DefaultOverride:          `{"location":"eu"}`,      // 5
+			ServiceProperties:        map[string]any{},    // 2
+			MergedUserProvidedParams: `{"location":"nz"}`, // 4
+			DefaultOverride:          `{"location":"eu"}`, // 5
 			GlobalDefaults:           "{}",
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "nz",
 				"name":                "name-nz",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"operator defaults are not evaluated": {
-			ServiceProperties:        map[string]interface{}{},     // 2
+			ServiceProperties:        map[string]any{},             // 2
 			MergedUserProvidedParams: `{"location":"us"}`,          // 4
 			DefaultOverride:          `{"name":"foo-${location}"}`, // 5
 			GlobalDefaults:           "{}",
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "us",
 				"name":                "foo-${location}",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"invalid-request": {
@@ -603,68 +603,68 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 			ExpectedError:            errors.New("1 error(s) occurred: name: String length must be less than or equal to 30"),
 		},
 		"provision_overrides override user params and global_defaults but not computed defaults": {
-			ServiceProperties:        map[string]interface{}{},                 // 2
-			ProvisionOverrides:       map[string]interface{}{"location": "eu"}, // 3
-			MergedUserProvidedParams: `{"location":"us"}`,                      // 4
-			DefaultOverride:          "{}",                                     // 5
-			GlobalDefaults:           `{"location":"az"}`,                      // 6
-			ExpectedContext: map[string]interface{}{
+			ServiceProperties:        map[string]any{},                 // 2
+			ProvisionOverrides:       map[string]any{"location": "eu"}, // 3
+			MergedUserProvidedParams: `{"location":"us"}`,              // 4
+			DefaultOverride:          "{}",                             // 5
+			GlobalDefaults:           `{"location":"az"}`,              // 6
+			ExpectedContext: map[string]any{
 				"location":            "eu",
 				"name":                "name-eu",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"global_default override defaults but not computed defaults": {
-			ServiceProperties:        map[string]interface{}{}, // 2
-			ProvisionOverrides:       map[string]interface{}{}, // 3
-			MergedUserProvidedParams: "{}",                     // 4
-			DefaultOverride:          "{}",                     // 5
-			GlobalDefaults:           `{"location":"az"}`,      // 6
-			ExpectedContext: map[string]interface{}{
+			ServiceProperties:        map[string]any{},    // 2
+			ProvisionOverrides:       map[string]any{},    // 3
+			MergedUserProvidedParams: "{}",                // 4
+			DefaultOverride:          "{}",                // 5
+			GlobalDefaults:           `{"location":"az"}`, // 6
+			ExpectedContext: map[string]any{
 				"location":            "az",
 				"name":                "name-az",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"bogus global default json": {
-			ServiceProperties:        map[string]interface{}{}, // 2
-			ProvisionOverrides:       map[string]interface{}{}, // 3
-			MergedUserProvidedParams: "{}",                     // 4
-			DefaultOverride:          "{}",                     // 5
-			GlobalDefaults:           `{"location","az"}`,      // 6
-			ExpectedContext: map[string]interface{}{
+			ServiceProperties:        map[string]any{},    // 2
+			ProvisionOverrides:       map[string]any{},    // 3
+			MergedUserProvidedParams: "{}",                // 4
+			DefaultOverride:          "{}",                // 5
+			GlobalDefaults:           `{"location","az"}`, // 6
+			ExpectedContext: map[string]any{
 				"location":            "az",
 				"name":                "name-az",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 			ExpectedError: fmt.Errorf("failed unmarshaling config value provision.defaults"),
 		},
 		"provision location and name": {
-			ServiceProperties:        map[string]interface{}{},           // 2
+			ServiceProperties:        map[string]any{},                   // 2
 			MergedUserProvidedParams: `{"location": "eu", "name":"foo"}`, // 5
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "eu",
 				"name":                "foo",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"update location and name": {
-			ServiceProperties:        map[string]interface{}{},              // 2
+			ServiceProperties:        map[string]any{},                      // 2
 			MergedUserProvidedParams: `{"name":"update", "location": "eu"}`, // 5
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "eu",
 				"name":                "update",
 				"maybe-missing":       "default",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 	}
@@ -703,7 +703,7 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 					ID:   "builtin-plan",
 					Name: "Builtin!",
 				},
-				ServiceProperties: map[string]interface{}{
+				ServiceProperties: map[string]any{
 					"service-property": "operator-set",
 				},
 			},
@@ -757,140 +757,140 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 	cases := map[string]struct {
 		UserParams          string
 		DefaultOverride     string
-		BindOverrides       map[string]interface{}
+		BindOverrides       map[string]any
 		ExpectedError       error
-		ExpectedContext     map[string]interface{}
-		InstanceVars        map[string]interface{}
+		ExpectedContext     map[string]any
+		InstanceVars        map[string]any
 		RawContext          string
-		OriginatingIdentity map[string]interface{}
+		OriginatingIdentity map[string]any
 	}{
 		"empty": {
 			UserParams:   "",
-			InstanceVars: map[string]interface{}{"foo": ""},
-			ExpectedContext: map[string]interface{}{
+			InstanceVars: map[string]any{"foo": ""},
+			ExpectedContext: map[string]any{
 				"location":            "us",
 				"name":                "name-us",
 				"instance-foo":        "",
 				"service-prop":        "operator-set",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"includes request context information": {
 			UserParams: "",
 			RawContext: `{"platform": "cloudfoundry", "organization_name": "acceptance"}`,
-			OriginatingIdentity: map[string]interface{}{
+			OriginatingIdentity: map[string]any{
 				"platform": "cloudfoundry",
 				"value": map[string]string{
 					"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360",
 				}},
-			InstanceVars: map[string]interface{}{"foo": ""},
-			ExpectedContext: map[string]interface{}{
+			InstanceVars: map[string]any{"foo": ""},
+			ExpectedContext: map[string]any{
 				"location":     "us",
 				"name":         "name-us",
 				"instance-foo": "",
 				"service-prop": "operator-set",
-				"osb_context": map[string]interface{}{
+				"osb_context": map[string]any{
 					"platform":          "cloudfoundry",
 					"organization_name": "acceptance",
 				},
-				"originatingIdentity": map[string]interface{}{
+				"originatingIdentity": map[string]any{
 					"platform": "cloudfoundry",
-					"value":    map[string]interface{}{"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360"},
+					"value":    map[string]any{"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360"},
 				},
 			},
 		},
 		"location gets truncated": {
 			UserParams:   `{"location": "averylonglocation"}`,
-			InstanceVars: map[string]interface{}{"foo": "default"},
-			ExpectedContext: map[string]interface{}{
+			InstanceVars: map[string]any{"foo": "default"},
+			ExpectedContext: map[string]any{
 				"location":            "averylongl",
 				"name":                "name-averylonglocation",
 				"instance-foo":        "default",
 				"service-prop":        "operator-set",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"user location and name": {
 			UserParams:   `{"location": "eu", "name":"foo"}`,
-			InstanceVars: map[string]interface{}{"foo": "default"},
-			ExpectedContext: map[string]interface{}{
+			InstanceVars: map[string]any{"foo": "default"},
+			ExpectedContext: map[string]any{
 				"location":            "eu",
 				"name":                "foo",
 				"instance-foo":        "default",
 				"service-prop":        "operator-set",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"operator defaults override computed defaults": {
 			UserParams:      "",
-			InstanceVars:    map[string]interface{}{"foo": "default"},
+			InstanceVars:    map[string]any{"foo": "default"},
 			DefaultOverride: `{"location":"eu"}`,
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "eu",
 				"name":                "name-eu",
 				"instance-foo":        "default",
 				"service-prop":        "operator-set",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"user values override operator defaults": {
 			UserParams:      `{"location":"nz"}`,
-			InstanceVars:    map[string]interface{}{"foo": "default"},
+			InstanceVars:    map[string]any{"foo": "default"},
 			DefaultOverride: `{"location":"eu"}`,
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "nz",
 				"name":                "name-nz",
 				"instance-foo":        "default",
 				"service-prop":        "operator-set",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"operator defaults are not evaluated": {
 			UserParams:      `{"location":"us"}`,
-			InstanceVars:    map[string]interface{}{"foo": "default"},
+			InstanceVars:    map[string]any{"foo": "default"},
 			DefaultOverride: `{"name":"foo-${location}"}`,
-			ExpectedContext: map[string]interface{}{
+			ExpectedContext: map[string]any{
 				"location":            "us",
 				"name":                "foo-${location}",
 				"instance-foo":        "default",
 				"service-prop":        "operator-set",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"instance info can get parsed": {
 			UserParams:   `{"location":"us"}`,
-			InstanceVars: map[string]interface{}{"foo": "bar"},
-			ExpectedContext: map[string]interface{}{
+			InstanceVars: map[string]any{"foo": "bar"},
+			ExpectedContext: map[string]any{
 				"location":            "us",
 				"name":                "name-us",
 				"instance-foo":        "bar",
 				"service-prop":        "operator-set",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 		"invalid-request": {
 			UserParams:    `{"name":"some-name-that-is-longer-than-thirty-characters"}`,
-			InstanceVars:  map[string]interface{}{"foo": ""},
+			InstanceVars:  map[string]any{"foo": ""},
 			ExpectedError: errors.New("1 error(s) occurred: name: String length must be less than or equal to 30"),
 		},
 		"bind_overrides override user params but not computed defaults": {
 			UserParams:    `{"location":"us"}`,
-			InstanceVars:  map[string]interface{}{"foo": "default"},
-			BindOverrides: map[string]interface{}{"location": "eu"},
-			ExpectedContext: map[string]interface{}{
+			InstanceVars:  map[string]any{"foo": "default"},
+			BindOverrides: map[string]any{"location": "eu"},
+			ExpectedContext: map[string]any{
 				"location":            "eu",
 				"name":                "name-eu",
 				"instance-foo":        "default",
 				"service-prop":        "operator-set",
-				"osb_context":         map[string]interface{}{},
-				"originatingIdentity": map[string]interface{}{},
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
 			},
 		},
 	}
@@ -982,7 +982,7 @@ func expectError(t *testing.T, expected, actual error) {
 	}
 }
 
-func mustUnmarshal(input string) (result map[string]interface{}) {
+func mustUnmarshal(input string) (result map[string]any) {
 	if len(input) == 0 {
 		return
 	}

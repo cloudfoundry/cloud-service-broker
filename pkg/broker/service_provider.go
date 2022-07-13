@@ -41,12 +41,12 @@ type ServiceProvider interface {
 	Upgrade(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts []*varcontext.VarContext) (models.ServiceInstanceDetails, error)
 
 	// GetImportedProperties extracts properties that should have been saved as part of subsume operation
-	GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []BrokerVariable) (map[string]interface{}, error)
+	GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []BrokerVariable) (map[string]any, error)
 
 	// Bind provisions the necessary resources for a user to be able to connect to the provisioned service.
 	// This may include creating service accounts, granting permissions, and adding users to services e.g. a SQL database user.
 	// It stores information necessary to access the service _and_ delete the binding in the returned map.
-	Bind(ctx context.Context, vc *varcontext.VarContext) (map[string]interface{}, error)
+	Bind(ctx context.Context, vc *varcontext.VarContext) (map[string]any, error)
 
 	// Unbind deprovisions the resources created with Bind.
 	Unbind(ctx context.Context, instanceGUID, bindingID string, vc *varcontext.VarContext) error

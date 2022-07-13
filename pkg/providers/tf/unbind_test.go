@@ -32,7 +32,7 @@ var _ = Describe("Unbind", func() {
 		fakeServiceDefinition tf.TfServiceDefinitionV1
 		fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface
 		unbindContext         *varcontext.VarContext
-		templateVars          = map[string]interface{}{"instance_id": instanceGUID}
+		templateVars          = map[string]any{"instance_id": instanceGUID}
 	)
 
 	BeforeEach(func() {

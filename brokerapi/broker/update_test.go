@@ -62,7 +62,7 @@ var _ = Describe("Update", func() {
 									Version: "2.0.0",
 								},
 							},
-							ServiceProperties: map[string]interface{}{
+							ServiceProperties: map[string]any{
 								"plan-defined-key":       "plan-defined-value",
 								"other-plan-defined-key": "other-plan-defined-value",
 							},
@@ -75,7 +75,7 @@ var _ = Describe("Update", func() {
 									Version: "2.0.0",
 								},
 							},
-							ServiceProperties: map[string]interface{}{
+							ServiceProperties: map[string]any{
 								"new-plan-defined-key":       "plan-defined-value",
 								"new-other-plan-defined-key": "other-plan-defined-value",
 							},
@@ -452,7 +452,7 @@ var _ = Describe("Update", func() {
 		Context("instance context variables", func() {
 			Describe("variables of previous provision or updates", func() {
 				It("should populate the instance context with variables of previous provision or updates", func() {
-					fakeStorage.GetProvisionRequestDetailsReturns(map[string]interface{}{"foo": "bar", "baz": "quz"}, nil)
+					fakeStorage.GetProvisionRequestDetailsReturns(map[string]any{"foo": "bar", "baz": "quz"}, nil)
 
 					_, err := serviceBroker.Update(context.TODO(), instanceID, upgradeDetails, true)
 					Expect(err).ToNot(HaveOccurred())
@@ -470,7 +470,7 @@ var _ = Describe("Update", func() {
 	Describe("instance context variables", func() {
 		Describe("passing variables on provision and update", func() {
 			BeforeEach(func() {
-				fakeStorage.GetProvisionRequestDetailsReturns(map[string]interface{}{"foo": "bar", "baz": "quz"}, nil)
+				fakeStorage.GetProvisionRequestDetailsReturns(map[string]any{"foo": "bar", "baz": "quz"}, nil)
 			})
 
 			It("should merge all variables", func() {
@@ -515,8 +515,8 @@ var _ = Describe("Update", func() {
 
 		Describe("passing variables on provision, import and update", func() {
 			BeforeEach(func() {
-				fakeStorage.GetProvisionRequestDetailsReturns(map[string]interface{}{"foo": "bar", "baz": "quz"}, nil)
-				fakeServiceProvider.GetImportedPropertiesReturns(map[string]interface{}{"foo": "quz", "guz": "muz", "laz": "taz"}, nil)
+				fakeStorage.GetProvisionRequestDetailsReturns(map[string]any{"foo": "bar", "baz": "quz"}, nil)
+				fakeServiceProvider.GetImportedPropertiesReturns(map[string]any{"foo": "quz", "guz": "muz", "laz": "taz"}, nil)
 			})
 
 			It("should merge all variables", func() {

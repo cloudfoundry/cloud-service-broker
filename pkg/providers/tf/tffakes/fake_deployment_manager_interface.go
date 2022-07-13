@@ -89,12 +89,12 @@ type FakeDeploymentManagerInterface struct {
 		result2 string
 		result3 error
 	}
-	UpdateWorkspaceHCLStub        func(string, tf.TfServiceDefinitionV1Action, map[string]interface{}) error
+	UpdateWorkspaceHCLStub        func(string, tf.TfServiceDefinitionV1Action, map[string]any) error
 	updateWorkspaceHCLMutex       sync.RWMutex
 	updateWorkspaceHCLArgsForCall []struct {
 		arg1 string
 		arg2 tf.TfServiceDefinitionV1Action
-		arg3 map[string]interface{}
+		arg3 map[string]any
 	}
 	updateWorkspaceHCLReturns struct {
 		result1 error
@@ -490,13 +490,13 @@ func (fake *FakeDeploymentManagerInterface) OperationStatusReturnsOnCall(i int, 
 	}{result1, result2, result3}
 }
 
-func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCL(arg1 string, arg2 tf.TfServiceDefinitionV1Action, arg3 map[string]interface{}) error {
+func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCL(arg1 string, arg2 tf.TfServiceDefinitionV1Action, arg3 map[string]any) error {
 	fake.updateWorkspaceHCLMutex.Lock()
 	ret, specificReturn := fake.updateWorkspaceHCLReturnsOnCall[len(fake.updateWorkspaceHCLArgsForCall)]
 	fake.updateWorkspaceHCLArgsForCall = append(fake.updateWorkspaceHCLArgsForCall, struct {
 		arg1 string
 		arg2 tf.TfServiceDefinitionV1Action
-		arg3 map[string]interface{}
+		arg3 map[string]any
 	}{arg1, arg2, arg3})
 	stub := fake.UpdateWorkspaceHCLStub
 	fakeReturns := fake.updateWorkspaceHCLReturns
@@ -517,13 +517,13 @@ func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCLCallCount() int {
 	return len(fake.updateWorkspaceHCLArgsForCall)
 }
 
-func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCLCalls(stub func(string, tf.TfServiceDefinitionV1Action, map[string]interface{}) error) {
+func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCLCalls(stub func(string, tf.TfServiceDefinitionV1Action, map[string]any) error) {
 	fake.updateWorkspaceHCLMutex.Lock()
 	defer fake.updateWorkspaceHCLMutex.Unlock()
 	fake.UpdateWorkspaceHCLStub = stub
 }
 
-func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCLArgsForCall(i int) (string, tf.TfServiceDefinitionV1Action, map[string]interface{}) {
+func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCLArgsForCall(i int) (string, tf.TfServiceDefinitionV1Action, map[string]any) {
 	fake.updateWorkspaceHCLMutex.RLock()
 	defer fake.updateWorkspaceHCLMutex.RUnlock()
 	argsForCall := fake.updateWorkspaceHCLArgsForCall[i]

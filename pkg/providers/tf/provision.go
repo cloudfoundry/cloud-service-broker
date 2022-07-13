@@ -128,7 +128,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 	return tfID, nil
 }
 
-func validateImportParams(importVariables []broker.ImportVariable, varsMap map[string]interface{}) ([]ImportResource, error) {
+func validateImportParams(importVariables []broker.ImportVariable, varsMap map[string]any) ([]ImportResource, error) {
 	var importParams []ImportResource
 	for _, importParam := range importVariables {
 		if param, ok := varsMap[importParam.Name]; ok {

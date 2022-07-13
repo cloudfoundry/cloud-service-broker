@@ -59,7 +59,7 @@ func Copy(src Source, dest Dest) error {
 }
 
 // FromYaml converts the interface to a stream of Yaml.
-func FromYaml(v interface{}) Source {
+func FromYaml(v any) Source {
 	bytes, err := yaml.Marshal(v)
 	if err != nil {
 		return FromError(err)
@@ -137,7 +137,7 @@ func ToBuffer(closeCallback func(*bytes.Buffer) error) Dest {
 }
 
 // ToYaml unmarshals the contents of the stream as YAML to the given struct.
-func ToYaml(v interface{}) Dest {
+func ToYaml(v any) Dest {
 	return ToBuffer(func(buf *bytes.Buffer) error {
 		return yaml.Unmarshal(buf.Bytes(), v)
 	})

@@ -24,8 +24,8 @@ var _ = Describe("ParseProvisionDetails", func() {
 			PlanID:           "fake-plan-id",
 			OrganizationGUID: "fake-org-guid",
 			SpaceGUID:        "fake-space-guid",
-			RequestParams:    map[string]interface{}{"foo": "bar"},
-			RequestContext:   map[string]interface{}{"baz": "quz"},
+			RequestParams:    map[string]any{"foo": "bar"},
+			RequestContext:   map[string]any{"baz": "quz"},
 		}))
 	})
 

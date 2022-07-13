@@ -30,7 +30,7 @@ var _ = Describe("Update", func() {
 		fakeLogger            = utils.NewLogger("test")
 		fakeServiceDefinition = tf.TfServiceDefinitionV1{}
 		varContext            *varcontext.VarContext
-		templateVars          = map[string]interface{}{"tf_id": "567c6af0-d68a-11ec-a5b6-367dda7ea869", "var": "value"}
+		templateVars          = map[string]any{"tf_id": "567c6af0-d68a-11ec-a5b6-367dda7ea869", "var": "value"}
 	)
 
 	BeforeEach(func() {
@@ -78,7 +78,7 @@ var _ = Describe("Update", func() {
 		tfVersion := "1.1"
 		fakeWorkspace.StateTFVersionReturns(newVersion(tfVersion), nil)
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
-		fakeWorkspace.OutputsReturns(map[string]interface{}{"status": "status from terraform"}, nil)
+		fakeWorkspace.OutputsReturns(map[string]any{"status": "status from terraform"}, nil)
 
 		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 		_, err := provider.Update(context.TODO(), varContext)
@@ -105,7 +105,7 @@ var _ = Describe("Update", func() {
 
 	When("update called on subsume plan", func() {
 		It("fails", func() {
-			varContext, err := varcontext.Builder().MergeMap(map[string]interface{}{"tf_id": "567c6af0-d68a-11ec-a5b6-367dda7ea869", "var": "value", "subsume": true}).Build()
+			varContext, err := varcontext.Builder().MergeMap(map[string]any{"tf_id": "567c6af0-d68a-11ec-a5b6-367dda7ea869", "var": "value", "subsume": true}).Build()
 			Expect(err).NotTo(HaveOccurred())
 			fakeServiceDefinition.ProvisionSettings.PlanInputs = []broker.BrokerVariable{
 				{

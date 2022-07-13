@@ -28,8 +28,8 @@ var _ = Describe("ParseBindDetails", func() {
 			PlanID:         "fake-plan-id",
 			ServiceID:      "fake-service-id",
 			BindAppGUID:    "fake-bind-app-guid",
-			RequestParams:  map[string]interface{}{"baz": "quz"},
-			RequestContext: map[string]interface{}{"foo": "bar"},
+			RequestParams:  map[string]any{"baz": "quz"},
+			RequestContext: map[string]any{"foo": "bar"},
 		}))
 	})
 

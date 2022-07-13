@@ -25,20 +25,20 @@ func TestConstraintBuilder(t *testing.T) {
 	// validate that our constants don't get changed.
 	cases := map[string]struct {
 		Constraints ConstraintBuilder
-		Expected    map[string]interface{}
+		Expected    map[string]any
 	}{
 		"empty": {
 			Constraints: NewConstraintBuilder().Build(),
-			Expected:    map[string]interface{}{},
+			Expected:    map[string]any{},
 		},
 		"annotations": {
 			Constraints: NewConstraintBuilder().
 				Description("desc").
 				Examples("exa", "exb").
 				Type("string"),
-			Expected: map[string]interface{}{
+			Expected: map[string]any{
 				"description": "desc",
-				"examples":    []interface{}{"exa", "exb"},
+				"examples":    []any{"exa", "exb"},
 				"type":        "string",
 			},
 		},
@@ -47,8 +47,8 @@ func TestConstraintBuilder(t *testing.T) {
 			Constraints: NewConstraintBuilder().
 				Enum("a", "b", "c").
 				Const("exa"),
-			Expected: map[string]interface{}{
-				"enum":  []interface{}{"a", "b", "c"},
+			Expected: map[string]any{
+				"enum":  []any{"a", "b", "c"},
 				"const": "exa",
 			},
 		},
@@ -60,7 +60,7 @@ func TestConstraintBuilder(t *testing.T) {
 				ExclusiveMaximum(4).
 				ExclusiveMinimum(0).
 				MultipleOf(1),
-			Expected: map[string]interface{}{
+			Expected: map[string]any{
 				"maximum":          3,
 				"minimum":          1,
 				"exclusiveMaximum": 4,
@@ -74,7 +74,7 @@ func TestConstraintBuilder(t *testing.T) {
 				MaxLength(30).
 				MinLength(10).
 				Pattern("^[A-Za-z]+[A-Za-z0-9]+$"),
-			Expected: map[string]interface{}{
+			Expected: map[string]any{
 				"maxLength": 30,
 				"minLength": 10,
 				"pattern":   "^[A-Za-z]+[A-Za-z0-9]+$",
@@ -85,7 +85,7 @@ func TestConstraintBuilder(t *testing.T) {
 			Constraints: NewConstraintBuilder().
 				MaxItems(30).
 				MinItems(10),
-			Expected: map[string]interface{}{
+			Expected: map[string]any{
 				"maxItems": 30,
 				"minItems": 10,
 			},
@@ -96,18 +96,18 @@ func TestConstraintBuilder(t *testing.T) {
 				MaxProperties(30).
 				MinProperties(10).
 				Required("a", "b", "c").
-				PropertyNames(map[string]interface{}{"type": "string"}),
-			Expected: map[string]interface{}{
+				PropertyNames(map[string]any{"type": "string"}),
+			Expected: map[string]any{
 				"maxProperties": 30,
 				"minProperties": 10,
 				"required":      []string{"a", "b", "c"},
-				"propertyNames": map[string]interface{}{"type": "string"},
+				"propertyNames": map[string]any{"type": "string"},
 			},
 		},
 
 		"secondOverwritesFirst": {
 			Constraints: NewConstraintBuilder().MaxLength(3).MaxLength(5).Build(),
-			Expected: map[string]interface{}{
+			Expected: map[string]any{
 				KeyMaxLength: 5,
 			},
 		},

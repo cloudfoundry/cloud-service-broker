@@ -20,7 +20,7 @@ func ExampleModuleInstance_MarshalDefinition() {
 	instance := ModuleInstance{
 		ModuleName:    "foo-module",
 		InstanceName:  "instance",
-		Configuration: map[string]interface{}{"foo": "bar"},
+		Configuration: map[string]any{"foo": "bar"},
 	}
 
 	outputs := []string{"output1", "output2"}
@@ -37,7 +37,7 @@ func ExampleModuleInstance_MarshalDefinition_emptyOutputs() {
 	instance := ModuleInstance{
 		ModuleName:    "foo-module",
 		InstanceName:  "instance",
-		Configuration: map[string]interface{}{"foo": "bar"},
+		Configuration: map[string]any{"foo": "bar"},
 	}
 
 	defnJSON, err := instance.MarshalDefinition([]string{})

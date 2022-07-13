@@ -150,16 +150,16 @@ func (svc *ServiceDefinition) ProvisionDefaultOverrideProperty() string {
 
 // ProvisionDefaultOverrides returns the deserialized JSON object for the
 // operator-provided property overrides.
-func (svc *ServiceDefinition) ProvisionDefaultOverrides() (map[string]interface{}, error) {
+func (svc *ServiceDefinition) ProvisionDefaultOverrides() (map[string]any, error) {
 	return unmarshalViper(svc.ProvisionDefaultOverrideProperty())
 }
 
-func ProvisionGlobalDefaults() (map[string]interface{}, error) {
+func ProvisionGlobalDefaults() (map[string]any, error) {
 	return unmarshalViper(GlobalProvisionDefaults)
 }
 
-func unmarshalViper(key string) (map[string]interface{}, error) {
-	vals := make(map[string]interface{})
+func unmarshalViper(key string) (map[string]any, error) {
+	vals := make(map[string]any)
 	if viper.IsSet(key) {
 		val := viper.GetString(key)
 		if err := json.Unmarshal([]byte(val), &vals); err != nil {
@@ -183,7 +183,7 @@ func (svc *ServiceDefinition) BindDefaultOverrideProperty() string {
 
 // BindDefaultOverrides returns the deserialized JSON object for the
 // operator-provided property overrides.
-func (svc *ServiceDefinition) BindDefaultOverrides() map[string]interface{} {
+func (svc *ServiceDefinition) BindDefaultOverrides() map[string]any {
 	return viper.GetStringMap(svc.BindDefaultOverrideProperty())
 }
 
@@ -299,7 +299,7 @@ func (svc *ServiceDefinition) UserDefinedPlans(maintenanceInfo *domain.Maintenan
 			return []ServicePlan{}, err
 		}
 
-		plan.ServiceProperties = make(map[string]interface{})
+		plan.ServiceProperties = make(map[string]any)
 		if err := json.Unmarshal(remainder, &plan.ServiceProperties); err != nil {
 			return []ServicePlan{}, err
 		}
@@ -385,8 +385,8 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 // Therefore, they get executed conditionally if a user-provided variable does not exist.
 // Computed variables get executed either unconditionally or conditionally for greater flexibility.
 func (svc *ServiceDefinition) variables(
-	constants map[string]interface{},
-	userProvidedParameters map[string]interface{},
+	constants map[string]any,
+	userProvidedParameters map[string]any,
 	plan ServicePlan) (*varcontext.VarContext, error) {
 
 	globalDefaults, err := ProvisionGlobalDefaults()
@@ -409,9 +409,9 @@ func (svc *ServiceDefinition) variables(
 	return buildAndValidate(builder, svc.ProvisionInputVariables)
 }
 
-func (svc *ServiceDefinition) ProvisionVariables(instanceID string, details paramparser.ProvisionDetails, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) ProvisionVariables(instanceID string, details paramparser.ProvisionDetails, plan ServicePlan, originatingIdentity map[string]any) (*varcontext.VarContext, error) {
 	// The namespaces of these values roughly align with the OSB spec.
-	constants := map[string]interface{}{
+	constants := map[string]any{
 		"request.plan_id":     details.PlanID,
 		"request.service_id":  details.ServiceID,
 		"request.instance_id": instanceID,
@@ -427,8 +427,8 @@ func (svc *ServiceDefinition) ProvisionVariables(instanceID string, details para
 	return svc.variables(constants, details.RequestParams, plan)
 }
 
-func (svc *ServiceDefinition) UpdateVariables(instanceID string, details paramparser.UpdateDetails, mergedUserProvidedParameters map[string]interface{}, plan ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
-	constants := map[string]interface{}{
+func (svc *ServiceDefinition) UpdateVariables(instanceID string, details paramparser.UpdateDetails, mergedUserProvidedParameters map[string]any, plan ServicePlan, originatingIdentity map[string]any) (*varcontext.VarContext, error) {
+	constants := map[string]any{
 		"request.plan_id":     details.PlanID,
 		"request.service_id":  details.ServiceID,
 		"request.instance_id": instanceID,
@@ -453,9 +453,9 @@ func (svc *ServiceDefinition) UpdateVariables(instanceID string, details parampa
 // 4. Operator default variables loaded from the environment.
 // 5. Default variables (in `bind_input_variables`).
 //
-func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDetails, bindingID string, details paramparser.BindDetails, plan *ServicePlan, originatingIdentity map[string]interface{}) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDetails, bindingID string, details paramparser.BindDetails, plan *ServicePlan, originatingIdentity map[string]any) (*varcontext.VarContext, error) {
 	// The namespaces of these values roughly align with the OSB spec.
-	constants := map[string]interface{}{
+	constants := map[string]any{
 		"request.x_broker_api_originating_identity": originatingIdentity,
 
 		// specified in the URL
@@ -504,7 +504,7 @@ func buildAndValidate(builder *varcontext.ContextBuilder, vars []BrokerVariable)
 	return vc, nil
 }
 
-func (svc *ServiceDefinition) AllowedUpdate(params map[string]interface{}) bool {
+func (svc *ServiceDefinition) AllowedUpdate(params map[string]any) bool {
 	for _, param := range svc.ProvisionInputVariables {
 		if param.ProhibitUpdate {
 			if _, ok := params[param.FieldName]; ok {

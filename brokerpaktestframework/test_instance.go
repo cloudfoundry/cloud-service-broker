@@ -61,7 +61,7 @@ func waitForHTTPServer(s string) error {
 	return err
 }
 
-func (instance *TestInstance) Provision(serviceName string, planName string, params map[string]interface{}) (string, error) {
+func (instance *TestInstance) Provision(serviceName string, planName string, params map[string]any) (string, error) {
 	instanceID, resp, err := instance.provision(serviceName, planName, params)
 	if err != nil {
 		return "", err
@@ -70,7 +70,7 @@ func (instance *TestInstance) Provision(serviceName string, planName string, par
 	return instanceID, instance.pollLastOperation("service_instances/"+instanceID+"/last_operation", resp.OperationData)
 }
 
-func (instance *TestInstance) Update(instanceGUID string, serviceName string, planName string, params map[string]interface{}) error {
+func (instance *TestInstance) Update(instanceGUID string, serviceName string, planName string, params map[string]any) error {
 	resp, err := instance.update(instanceGUID, serviceName, planName, params)
 
 	if err != nil {
@@ -80,7 +80,7 @@ func (instance *TestInstance) Update(instanceGUID string, serviceName string, pl
 	return instance.pollLastOperation("service_instances/"+instanceGUID+"/last_operation", resp.OperationData)
 }
 
-func (instance *TestInstance) provision(serviceName string, planName string, params map[string]interface{}) (string, *apiresponses.ProvisioningResponse, error) {
+func (instance *TestInstance) provision(serviceName string, planName string, params map[string]any) (string, *apiresponses.ProvisioningResponse, error) {
 	instanceID := uuid.New().String()
 
 	catalog, err := instance.Catalog()
@@ -119,7 +119,7 @@ func (instance *TestInstance) provision(serviceName string, planName string, par
 	return instanceID, &response, json.Unmarshal(body, &response)
 }
 
-func (instance *TestInstance) update(instanceID, serviceName, planName string, params map[string]interface{}) (*apiresponses.UpdateResponse, error) {
+func (instance *TestInstance) update(instanceID, serviceName, planName string, params map[string]any) (*apiresponses.UpdateResponse, error) {
 	catalog, err := instance.Catalog()
 	if err != nil {
 		return nil, err
@@ -228,7 +228,7 @@ func (instance *TestInstance) BrokerUrl(subPath string) string {
 	return instance.BrokerURL(subPath)
 }
 
-func (instance *TestInstance) Bind(serviceName, planName, instanceID string, params map[string]interface{}) (map[string]interface{}, error) {
+func (instance *TestInstance) Bind(serviceName, planName, instanceID string, params map[string]any) (map[string]any, error) {
 	catalog, err := instance.Catalog()
 	if err != nil {
 		return nil, err
@@ -246,7 +246,7 @@ func (instance *TestInstance) Bind(serviceName, planName, instanceID string, par
 	return bindingResult, nil
 }
 
-func (instance *TestInstance) bind(serviceGUID, planGUID string, params map[string]interface{}, instanceID string) (map[string]interface{}, error) {
+func (instance *TestInstance) bind(serviceGUID, planGUID string, params map[string]any, instanceID string) (map[string]any, error) {
 	bindDetails := domain.BindDetails{
 		ServiceID: serviceGUID,
 		PlanID:    planGUID,
@@ -273,7 +273,7 @@ func (instance *TestInstance) bind(serviceGUID, planGUID string, params map[stri
 	}
 	bindingResponse := apiresponses.BindingResponse{}
 
-	return bindingResponse.Credentials.(map[string]interface{}), json.Unmarshal(body, &bindingResponse)
+	return bindingResponse.Credentials.(map[string]any), json.Unmarshal(body, &bindingResponse)
 }
 
 func (instance *TestInstance) Cleanup() error {

@@ -181,7 +181,7 @@ func ValidateLastMigration(lastMigration int) error {
 	}
 }
 
-func autoMigrateTables(db *gorm.DB, tables ...interface{}) error {
+func autoMigrateTables(db *gorm.DB, tables ...any) error {
 	if db.Config.Dialector.Name() == "mysql" {
 		return db.Set("gorm:table_options", "ENGINE=InnoDB CHARSET=utf8").AutoMigrate(tables...)
 	} else {

@@ -76,7 +76,7 @@ type FakeTerraformInvoker struct {
 		result1 string
 		result2 error
 	}
-	invocations      map[string][][]interface{}
+	invocations      map[string][][]any
 	invocationsMutex sync.RWMutex
 }
 
@@ -89,7 +89,7 @@ func (fake *FakeTerraformInvoker) Apply(arg1 context.Context, arg2 workspace.Wor
 	}{arg1, arg2})
 	stub := fake.ApplyStub
 	fakeReturns := fake.applyReturns
-	fake.recordInvocation("Apply", []interface{}{arg1, arg2})
+	fake.recordInvocation("Apply", []any{arg1, arg2})
 	fake.applyMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
@@ -151,7 +151,7 @@ func (fake *FakeTerraformInvoker) Destroy(arg1 context.Context, arg2 workspace.W
 	}{arg1, arg2})
 	stub := fake.DestroyStub
 	fakeReturns := fake.destroyReturns
-	fake.recordInvocation("Destroy", []interface{}{arg1, arg2})
+	fake.recordInvocation("Destroy", []any{arg1, arg2})
 	fake.destroyMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
@@ -214,7 +214,7 @@ func (fake *FakeTerraformInvoker) Import(arg1 context.Context, arg2 workspace.Wo
 	}{arg1, arg2, arg3})
 	stub := fake.ImportStub
 	fakeReturns := fake.importReturns
-	fake.recordInvocation("Import", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("Import", []any{arg1, arg2, arg3})
 	fake.importMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2, arg3)
@@ -276,7 +276,7 @@ func (fake *FakeTerraformInvoker) Plan(arg1 context.Context, arg2 workspace.Work
 	}{arg1, arg2})
 	stub := fake.PlanStub
 	fakeReturns := fake.planReturns
-	fake.recordInvocation("Plan", []interface{}{arg1, arg2})
+	fake.recordInvocation("Plan", []any{arg1, arg2})
 	fake.planMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
@@ -341,7 +341,7 @@ func (fake *FakeTerraformInvoker) Show(arg1 context.Context, arg2 workspace.Work
 	}{arg1, arg2})
 	stub := fake.ShowStub
 	fakeReturns := fake.showReturns
-	fake.recordInvocation("Show", []interface{}{arg1, arg2})
+	fake.recordInvocation("Show", []any{arg1, arg2})
 	fake.showMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
@@ -397,7 +397,7 @@ func (fake *FakeTerraformInvoker) ShowReturnsOnCall(i int, result1 string, resul
 	}{result1, result2}
 }
 
-func (fake *FakeTerraformInvoker) Invocations() map[string][][]interface{} {
+func (fake *FakeTerraformInvoker) Invocations() map[string][][]any {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.applyMutex.RLock()
@@ -410,21 +410,21 @@ func (fake *FakeTerraformInvoker) Invocations() map[string][][]interface{} {
 	defer fake.planMutex.RUnlock()
 	fake.showMutex.RLock()
 	defer fake.showMutex.RUnlock()
-	copiedInvocations := map[string][][]interface{}{}
+	copiedInvocations := map[string][][]any{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
 	}
 	return copiedInvocations
 }
 
-func (fake *FakeTerraformInvoker) recordInvocation(key string, args []interface{}) {
+func (fake *FakeTerraformInvoker) recordInvocation(key string, args []any) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
-		fake.invocations = map[string][][]interface{}{}
+		fake.invocations = map[string][][]any{}
 	}
 	if fake.invocations[key] == nil {
-		fake.invocations[key] = [][]interface{}{}
+		fake.invocations[key] = [][]any{}
 	}
 	fake.invocations[key] = append(fake.invocations[key], args)
 }

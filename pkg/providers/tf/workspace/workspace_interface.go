@@ -16,9 +16,9 @@ type Workspace interface {
 	HasState() bool
 
 	StateTFVersion() (*version.Version, error)
-	Outputs(instance string) (map[string]interface{}, error)
+	Outputs(instance string) (map[string]any, error)
 	ModuleDefinitions() []ModuleDefinition
 	ModuleInstances() []ModuleInstance
-	UpdateInstanceConfiguration(vars map[string]interface{}) error
+	UpdateInstanceConfiguration(vars map[string]any) error
 	Execute(ctx context.Context, executor executor.TerraformExecutor, commands ...command.TerraformCommand) (executor.ExecutionOutput, error)
 }

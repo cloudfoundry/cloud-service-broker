@@ -48,17 +48,17 @@ type BrokerVariable struct {
 	// Human readable info about the field.
 	Details string `yaml:"details"`
 	// The default value of the field.
-	Default interface{} `yaml:"default,omitempty"`
+	Default any `yaml:"default,omitempty"`
 	// If there are a limited number of valid values for this field then
 	// Enum will hold them in value:friendly name pairs
-	Enum map[interface{}]string `yaml:"enum,omitempty"`
+	Enum map[any]string `yaml:"enum,omitempty"`
 	// Constraints holds JSON Schema validations defined for this variable.
 	// Keys are valid JSON Schema validation keywords, and values are their
 	// associated values.
 	// http://json-schema.org/latest/json-schema-validation.html
-	Constraints    map[string]interface{} `yaml:"constraints,omitempty"`
-	ProhibitUpdate bool                   `yaml:"prohibit_update,omitempty"`
-	TFAttribute    string                 `yaml:"tf_attribute,omitempty"`
+	Constraints    map[string]any `yaml:"constraints,omitempty"`
+	ProhibitUpdate bool           `yaml:"prohibit_update,omitempty"`
+	TFAttribute    string         `yaml:"tf_attribute,omitempty"`
 }
 
 // ImportVariable Variable definition for TF import support
@@ -87,8 +87,8 @@ func (bv *BrokerVariable) Validate() (errs *validation.FieldError) {
 }
 
 // ToSchema converts the BrokerVariable into the value part of a JSON Schema.
-func (bv *BrokerVariable) ToSchema() map[string]interface{} {
-	schema := map[string]interface{}{}
+func (bv *BrokerVariable) ToSchema() map[string]any {
+	schema := map[string]any{}
 
 	// Setting the auto-generated title comes first so it can be overridden
 	// manually by constraints in special cases.
@@ -101,7 +101,7 @@ func (bv *BrokerVariable) ToSchema() map[string]interface{} {
 	}
 
 	if len(bv.Enum) > 0 {
-		enumeration := []interface{}{}
+		enumeration := []any{}
 		for k := range bv.Enum {
 			enumeration = append(enumeration, k)
 		}
@@ -168,7 +168,7 @@ func fieldNameToLabel(fieldName string) string {
 }
 
 // ApplyDefaults adds default values for missing broker variables.
-func ApplyDefaults(parameters map[string]interface{}, variables []BrokerVariable) {
+func ApplyDefaults(parameters map[string]any, variables []BrokerVariable) {
 	for _, v := range variables {
 		if _, ok := parameters[v.FieldName]; !ok && v.Default != nil {
 			parameters[v.FieldName] = v.Default
@@ -177,13 +177,13 @@ func ApplyDefaults(parameters map[string]interface{}, variables []BrokerVariable
 
 }
 
-func ValidateVariables(parameters map[string]interface{}, variables []BrokerVariable) error {
+func ValidateVariables(parameters map[string]any, variables []BrokerVariable) error {
 	schema := CreateJSONSchema(variables)
 	return ValidateVariablesAgainstSchema(parameters, schema)
 }
 
 // ValidateVariablesAgainstSchema validates a list of BrokerVariables are adhering to their JSONSchema.
-func ValidateVariablesAgainstSchema(parameters map[string]interface{}, schema map[string]interface{}) error {
+func ValidateVariablesAgainstSchema(parameters map[string]any, schema map[string]any) error {
 
 	result, err := gojsonschema.Validate(gojsonschema.NewGoLoader(schema), gojsonschema.NewGoLoader(parameters))
 	if err != nil {
@@ -207,9 +207,9 @@ func ValidateVariablesAgainstSchema(parameters map[string]interface{}, schema ma
 }
 
 // CreateJSONSchema outputs a JSONSchema given a list of BrokerVariables
-func CreateJSONSchema(schemaVariables []BrokerVariable) map[string]interface{} {
+func CreateJSONSchema(schemaVariables []BrokerVariable) map[string]any {
 	required := utils.NewStringSet()
-	properties := make(map[string]interface{})
+	properties := make(map[string]any)
 
 	for _, variable := range schemaVariables {
 		properties[variable.FieldName] = variable.ToSchema()
@@ -218,7 +218,7 @@ func CreateJSONSchema(schemaVariables []BrokerVariable) map[string]interface{} {
 		}
 	}
 
-	schema := map[string]interface{}{
+	schema := map[string]any{
 		"$schema":    "http://json-schema.org/draft-04/schema#",
 		"type":       "object",
 		"properties": properties,

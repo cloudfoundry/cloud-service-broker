@@ -140,7 +140,7 @@ func (s *Storage) DeleteTerraformDeployment(id string) error {
 	return nil
 }
 
-func (s *Storage) loadTerraformDeploymentIfExists(id string, receiver interface{}) error {
+func (s *Storage) loadTerraformDeploymentIfExists(id string, receiver any) error {
 	if id == "" {
 		return nil
 	}

@@ -79,7 +79,7 @@ var _ = Describe("Unbind", func() {
 								Name:          "test-plan",
 								PlanUpdatable: &planUpdatable,
 							},
-							ServiceProperties: map[string]interface{}{
+							ServiceProperties: map[string]any{
 								"plan-defined-key":       "plan-defined-value",
 								"other-plan-defined-key": "other-plan-defined-value",
 							},

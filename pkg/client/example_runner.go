@@ -127,9 +127,9 @@ func runExamples(workers int, client *Client, examples []CompleteServiceExample)
 
 type CompleteServiceExample struct {
 	broker.ServiceExample `json:",inline"`
-	ServiceName           string                 `json:"service_name"`
-	ServiceID             string                 `json:"service_id"`
-	ExpectedOutput        map[string]interface{} `json:"expected_output"`
+	ServiceName           string         `json:"service_name"`
+	ServiceID             string         `json:"service_id"`
+	ExpectedOutput        map[string]any `json:"expected_output"`
 }
 
 func GetExamplesForAService(service *broker.ServiceDefinition) ([]CompleteServiceExample, error) {
@@ -219,7 +219,7 @@ func runExample(client *Client, id string, serviceExample CompleteServiceExample
 			return err
 		}
 
-		credentialsEntry := binding.Credentials.(map[string]interface{})
+		credentialsEntry := binding.Credentials.(map[string]any)
 
 		if err := broker.ValidateVariablesAgainstSchema(credentialsEntry, serviceExample.ExpectedOutput); err != nil {
 			log.Printf("Error: results don't match JSON Schema: %v", err)

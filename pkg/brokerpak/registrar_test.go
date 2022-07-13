@@ -166,24 +166,24 @@ func TestRegistrar_toDefinitions(t *testing.T) {
 
 func TestResolveParameters(t *testing.T) {
 	cases := map[string]struct {
-		Context  map[string]interface{}
+		Context  map[string]any
 		Params   []manifest.Parameter
 		Expected map[string]string
 	}{
 		"no-params": {
-			Context:  map[string]interface{}{"n": 1, "s": "two", "b": true},
+			Context:  map[string]any{"n": 1, "s": "two", "b": true},
 			Params:   []manifest.Parameter{},
 			Expected: map[string]string{},
 		},
 		"missing-in-context": {
-			Context: map[string]interface{}{"n": 1, "s": "two", "b": true},
+			Context: map[string]any{"n": 1, "s": "two", "b": true},
 			Params: []manifest.Parameter{
 				{Name: "foo", Description: "some missing param"},
 			},
 			Expected: map[string]string{},
 		},
 		"contained-in-context": {
-			Context: map[string]interface{}{"n": 1, "s": "two", "b": true},
+			Context: map[string]any{"n": 1, "s": "two", "b": true},
 			Params: []manifest.Parameter{
 				{Name: "s", Description: "a string param"},
 				{Name: "b", Description: "a bool param"},
@@ -211,7 +211,7 @@ func TestResolveParameters(t *testing.T) {
 func TestRegistrar_walk(t *testing.T) {
 	goodCases := map[string]struct {
 		Config   *ServerConfig
-		Expected map[string]map[string]interface{}
+		Expected map[string]map[string]any
 	}{
 		"basic": {
 			Config: &ServerConfig{
@@ -220,7 +220,7 @@ func TestRegistrar_walk(t *testing.T) {
 					"example": {Config: `{}`},
 				},
 			},
-			Expected: map[string]map[string]interface{}{
+			Expected: map[string]map[string]any{
 				"example": {},
 			},
 		},
@@ -231,7 +231,7 @@ func TestRegistrar_walk(t *testing.T) {
 					"example": {Config: `{}`},
 				},
 			},
-			Expected: map[string]map[string]interface{}{
+			Expected: map[string]map[string]any{
 				"example": {"foo": "bar"},
 			},
 		},
@@ -242,7 +242,7 @@ func TestRegistrar_walk(t *testing.T) {
 					"example": {Config: `{"foo":"bazz"}`},
 				},
 			},
-			Expected: map[string]map[string]interface{}{
+			Expected: map[string]map[string]any{
 				"example": {"foo": "bazz"},
 			},
 		},
@@ -253,7 +253,7 @@ func TestRegistrar_walk(t *testing.T) {
 					"example": {Config: `{"bar":"bazz"}`},
 				},
 			},
-			Expected: map[string]map[string]interface{}{
+			Expected: map[string]map[string]any{
 				"example": {"foo": "bar", "bar": "bazz"},
 			},
 		},
@@ -261,7 +261,7 @@ func TestRegistrar_walk(t *testing.T) {
 
 	for tn, tc := range goodCases {
 		t.Run(tn, func(t *testing.T) {
-			actual := make(map[string]map[string]interface{})
+			actual := make(map[string]map[string]any)
 			err := NewRegistrar(tc.Config).walk(func(name string, pak BrokerpakSourceConfig, vc *varcontext.VarContext) error {
 				actual[name] = vc.ToMap()
 				return nil

@@ -48,7 +48,7 @@ var _ = Describe("Bind", func() {
 
 	BeforeEach(func() {
 		fakeServiceProvider = &pkgBrokerFakes.FakeServiceProvider{}
-		fakeServiceProvider.BindReturns(map[string]interface{}{
+		fakeServiceProvider.BindReturns(map[string]any{
 			"fakeOutput": "fakeValue",
 		}, nil)
 
@@ -62,7 +62,7 @@ var _ = Describe("Bind", func() {
 			OrganizationGUID: orgID,
 			OperationType:    models.ProvisionOperationType,
 			OperationGUID:    "provision-operation-GUID",
-			Outputs:          map[string]interface{}{"fakeInstanceOutput": "fakeInstanceValue"},
+			Outputs:          map[string]any{"fakeInstanceOutput": "fakeInstanceValue"},
 		}, nil)
 
 		fakeCredStore = &credstorefakes.FakeCredStore{}
@@ -85,7 +85,7 @@ var _ = Describe("Bind", func() {
 								Name:          "test-plan",
 								PlanUpdatable: &planUpdatable,
 							},
-							ServiceProperties: map[string]interface{}{
+							ServiceProperties: map[string]any{
 								"plan-defined-key":       "plan-defined-value",
 								"other-plan-defined-key": "other-plan-defined-value",
 							},
@@ -131,7 +131,7 @@ var _ = Describe("Bind", func() {
 			Expect(response).To(Equal(domain.Binding{
 				IsAsync:       false,
 				AlreadyExists: false,
-				Credentials: map[string]interface{}{
+				Credentials: map[string]any{
 					"credhub-ref": "/c/csb/test-service/test-binding-id/secrets-and-services",
 				},
 			}))
@@ -151,7 +151,7 @@ var _ = Describe("Bind", func() {
 			Expect(actualBindRequest).To(Equal(storage.BindRequestDetails{
 				ServiceInstanceGUID: instanceID,
 				ServiceBindingGUID:  bindingID,
-				RequestDetails: map[string]interface{}{
+				RequestDetails: map[string]any{
 					"bind_field_1": "bind_value_1",
 				},
 			}))
@@ -171,7 +171,7 @@ var _ = Describe("Bind", func() {
 				Expect(response).To(Equal(domain.Binding{
 					IsAsync:       false,
 					AlreadyExists: false,
-					Credentials:   map[string]interface{}{"fakeInstanceOutput": "fakeInstanceValue", "fakeOutput": "fakeValue"},
+					Credentials:   map[string]any{"fakeInstanceOutput": "fakeInstanceValue", "fakeOutput": "fakeValue"},
 				}))
 
 				Expect(fakeCredStore.PutCallCount()).To(Equal(0))

@@ -66,7 +66,7 @@ func ErrIfBlank(value, field string) *FieldError {
 }
 
 // ErrIfNil returns an error if the value is nil.
-func ErrIfNil(value interface{}, field string) *FieldError {
+func ErrIfNil(value any, field string) *FieldError {
 	if value == nil {
 		return ErrMissingField(field)
 	}
@@ -174,7 +174,7 @@ type ValidatableTest struct {
 
 // Testable is a type derived from testing.T
 type Testable interface {
-	Errorf(format string, a ...interface{})
+	Errorf(format string, a ...any)
 }
 
 // Assert runs the validate function and fails Testable.

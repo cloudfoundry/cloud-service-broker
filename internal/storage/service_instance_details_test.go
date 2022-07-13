@@ -17,7 +17,7 @@ var _ = Describe("ServiceInstanceDetails", func() {
 				Name:             "fake-name",
 				Location:         "fake-location",
 				URL:              "fake-url",
-				Outputs:          map[string]interface{}{"foo": "bar"},
+				Outputs:          map[string]any{"foo": "bar"},
 				ServiceGUID:      "fake-service-guid",
 				PlanGUID:         "fake-plan-guid",
 				SpaceGUID:        "fake-space-guid",
@@ -62,7 +62,7 @@ var _ = Describe("ServiceInstanceDetails", func() {
 					Name:             "fake-name",
 					Location:         "fake-location",
 					URL:              "fake-url",
-					Outputs:          map[string]interface{}{"foo": "bar"},
+					Outputs:          map[string]any{"foo": "bar"},
 					ServiceGUID:      "fake-service-guid",
 					PlanGUID:         "fake-plan-guid",
 					SpaceGUID:        "fake-space-guid",
@@ -101,7 +101,7 @@ var _ = Describe("ServiceInstanceDetails", func() {
 			Expect(r.GUID).To(Equal("fake-id-2"))
 			Expect(r.Location).To(Equal("fake-location-2"))
 			Expect(r.URL).To(Equal("fake-url-2"))
-			Expect(r.Outputs).To(Equal(storage.JSONObject{"decrypted": map[string]interface{}{"foo": "bar-2"}}))
+			Expect(r.Outputs).To(Equal(storage.JSONObject{"decrypted": map[string]any{"foo": "bar-2"}}))
 			Expect(r.ServiceGUID).To(Equal("fake-service-id-2"))
 			Expect(r.PlanGUID).To(Equal("fake-plan-id-2"))
 			Expect(r.SpaceGUID).To(Equal("fake-space-guid-2"))

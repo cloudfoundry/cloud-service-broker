@@ -63,7 +63,7 @@ var _ = Describe("Provision", func() {
 								ID:   planID,
 								Name: "test-plan",
 							},
-							ServiceProperties: map[string]interface{}{
+							ServiceProperties: map[string]any{
 								"plan-defined-key":       "plan-defined-value",
 								"other-plan-defined-key": "other-plan-defined-value",
 							},

@@ -36,7 +36,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		session    *Session
 	)
 
-	findRecord := func(dest interface{}, query, guid string) {
+	findRecord := func(dest any, query, guid string) {
 		result := testHelper.DBConn().Where(query, guid).First(dest)
 		ExpectWithOffset(3, result.Error).NotTo(HaveOccurred())
 		ExpectWithOffset(3, result.RowsAffected).To(Equal(int64(1)))

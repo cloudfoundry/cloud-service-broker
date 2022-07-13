@@ -9,8 +9,8 @@ import (
 	"github.com/pivotal-cf/brokerapi/v8/middlewares"
 )
 
-func DecodeOriginatingIdentityHeader(ctx context.Context) map[string]interface{} {
-	var originatingIdentityMap map[string]interface{}
+func DecodeOriginatingIdentityHeader(ctx context.Context) map[string]any {
+	var originatingIdentityMap map[string]any
 
 	originatingIdentityHeader := ctx.Value(middlewares.OriginatingIdentityKey)
 	if originatingIdentityHeader != nil {
@@ -18,7 +18,7 @@ func DecodeOriginatingIdentityHeader(ctx context.Context) map[string]interface{}
 			platform, value := parseHeader(headerAsString)
 			if value != "" {
 				if valueMap := unmarshallBase64JSON(value); valueMap != nil {
-					originatingIdentityMap = map[string]interface{}{
+					originatingIdentityMap = map[string]any{
 						"platform": platform,
 						"value":    valueMap,
 					}
@@ -30,7 +30,7 @@ func DecodeOriginatingIdentityHeader(ctx context.Context) map[string]interface{}
 	return originatingIdentityMap
 }
 
-func unmarshallBase64JSON(input string) (result map[string]interface{}) {
+func unmarshallBase64JSON(input string) (result map[string]any) {
 	value, err := b64.StdEncoding.DecodeString(input)
 	if err != nil {
 		return nil

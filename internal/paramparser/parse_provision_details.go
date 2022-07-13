@@ -12,8 +12,8 @@ type ProvisionDetails struct {
 	PlanID           string
 	OrganizationGUID string
 	SpaceGUID        string
-	RequestParams    map[string]interface{}
-	RequestContext   map[string]interface{}
+	RequestParams    map[string]any
+	RequestContext   map[string]any
 }
 
 func ParseProvisionDetails(input domain.ProvisionDetails) (ProvisionDetails, error) {

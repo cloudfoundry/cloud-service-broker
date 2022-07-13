@@ -45,7 +45,7 @@ func CatalogDocumentation(registry broker.BrokerRegistry) string {
 func generateServiceDocumentation(svc *broker.ServiceDefinition) string {
 	catalog := svc.CatalogEntry()
 
-	vars := map[string]interface{}{
+	vars := map[string]any{
 		"catalog":            catalog,
 		"metadata":           catalog.Metadata,
 		"bindIn":             svc.BindInputVariables,
@@ -159,7 +159,7 @@ Uses plan: {{ code $example.PlanID }}.
 	return render(templateText, vars, funcMap)
 }
 
-func render(tmplText string, vars interface{}, funcMap template.FuncMap) string {
+func render(tmplText string, vars any, funcMap template.FuncMap) string {
 	tmpl, err := template.New("rendered").Funcs(funcMap).Parse(tmplText)
 	if err != nil {
 		log.Fatalf("parsing: %s", err)
@@ -175,7 +175,7 @@ func render(tmplText string, vars interface{}, funcMap template.FuncMap) string 
 	return buf.String()
 }
 
-func mdCode(text interface{}) string {
+func mdCode(text any) string {
 	return fmt.Sprintf("`%v`", text)
 }
 
@@ -202,7 +202,7 @@ func varNotes(variable broker.BrokerVariable) string {
 }
 
 // constraintsToDoc converts a map of JSON Schema validation key/values to human-readable bullet points.
-func constraintsToDoc(schema map[string]interface{}) []string {
+func constraintsToDoc(schema map[string]any) []string {
 	// We use an anonymous struct rather than a map to get a strict ordering of
 	// constraints so they are generated consistently in documentation.
 	// Not all JSON Schema constraints can be cleanly expressed in this format,
@@ -264,7 +264,7 @@ func cleanLines(text string) string {
 
 // jsonCodeBlock formats the value as pretty JSON and wraps it in a Github style
 // hilighted block.
-func jsonCodeBlock(value interface{}) string {
+func jsonCodeBlock(value any) string {
 	block, _ := json.MarshalIndent(value, "", "    ")
 	return fmt.Sprintf("```javascript\n%s\n```", block)
 }

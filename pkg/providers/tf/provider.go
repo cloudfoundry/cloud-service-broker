@@ -97,7 +97,7 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 	return tfID, nil
 }
 
-func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID string, templateVars map[string]interface{}, operationType string) error {
+func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID string, templateVars map[string]any, operationType string) error {
 	deployment, err := provider.GetTerraformDeployment(deploymentID)
 	if err != nil {
 		return err
@@ -114,7 +114,7 @@ func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID str
 		return err
 	}
 
-	limitedConfig := make(map[string]interface{})
+	limitedConfig := make(map[string]any)
 	for _, name := range inputList {
 		limitedConfig[name] = templateVars[name]
 	}
@@ -156,6 +156,6 @@ type DeploymentManagerInterface interface {
 	MarkOperationStarted(deployment *storage.TerraformDeployment, operationType string) error
 	MarkOperationFinished(deployment *storage.TerraformDeployment, err error) error
 	OperationStatus(deploymentID string) (bool, string, error)
-	UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]interface{}) error
+	UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]any) error
 	GetBindingDeployments(deploymentID string) ([]storage.TerraformDeployment, error)
 }

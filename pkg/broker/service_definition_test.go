@@ -247,12 +247,12 @@ var _ = Describe("ServiceDefinition", func() {
 		}
 
 		DescribeTable("returns the correct result",
-			func(params map[string]interface{}, expected bool) {
+			func(params map[string]any, expected bool) {
 				actual := serviceDefinition.AllowedUpdate(params)
 				Expect(actual).To(Equal(expected))
 			},
-			Entry("allowed", map[string]interface{}{"allowed": "some_val"}, true),
-			Entry("prohibited", map[string]interface{}{"prohibited": "some_val"}, false),
+			Entry("allowed", map[string]any{"allowed": "some_val"}, true),
+			Entry("prohibited", map[string]any{"prohibited": "some_val"}, false),
 			Entry("empty", nil, true),
 		)
 	})
@@ -291,7 +291,7 @@ var _ = Describe("ServiceDefinition", func() {
 			viper.Reset()
 		})
 
-		DescribeTable("invalid plans", func(plan interface{}, errorMessage string) {
+		DescribeTable("invalid plans", func(plan any, errorMessage string) {
 			service = broker.ServiceDefinition{
 				Name: "fake-service",
 				PlanVariables: []broker.BrokerVariable{
@@ -328,7 +328,7 @@ var _ = Describe("ServiceDefinition", func() {
 				Expect(actualPlans[0].Name).To(Equal(fakePlanName))
 				Expect(actualPlans[0].ID).To(Equal(fakePlanID))
 				Expect(actualPlans[0].Description).To(Equal(fakePlanDescription))
-				Expect(actualPlans[0].ServiceProperties).To(Equal(map[string]interface{}{"additional_property": fakePlanProperty}))
+				Expect(actualPlans[0].ServiceProperties).To(Equal(map[string]any{"additional_property": fakePlanProperty}))
 			})
 
 			When("an invalid plan is provided in configuration", func() {
@@ -367,7 +367,7 @@ var _ = Describe("ServiceDefinition", func() {
 				Expect(actualPlans[0].Name).To(Equal(fakePlanName))
 				Expect(actualPlans[0].ID).To(Equal(fakePlanGUID))
 				Expect(actualPlans[0].Description).To(Equal(fakePlanDescription))
-				Expect(actualPlans[0].ServiceProperties).To(Equal(map[string]interface{}{"additional_property": fakePlanProperty, "guid": fakePlanGUID}))
+				Expect(actualPlans[0].ServiceProperties).To(Equal(map[string]any{"additional_property": fakePlanProperty, "guid": fakePlanGUID}))
 			})
 
 			When("an invalid plan is provided as an environment variable", func() {

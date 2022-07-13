@@ -57,17 +57,17 @@ type FakeWorkspace struct {
 	moduleInstancesReturnsOnCall map[int]struct {
 		result1 []workspace.ModuleInstance
 	}
-	OutputsStub        func(string) (map[string]interface{}, error)
+	OutputsStub        func(string) (map[string]any, error)
 	outputsMutex       sync.RWMutex
 	outputsArgsForCall []struct {
 		arg1 string
 	}
 	outputsReturns struct {
-		result1 map[string]interface{}
+		result1 map[string]any
 		result2 error
 	}
 	outputsReturnsOnCall map[int]struct {
-		result1 map[string]interface{}
+		result1 map[string]any
 		result2 error
 	}
 	SerializeStub        func() (string, error)
@@ -94,10 +94,10 @@ type FakeWorkspace struct {
 		result1 *version.Version
 		result2 error
 	}
-	UpdateInstanceConfigurationStub        func(map[string]interface{}) error
+	UpdateInstanceConfigurationStub        func(map[string]any) error
 	updateInstanceConfigurationMutex       sync.RWMutex
 	updateInstanceConfigurationArgsForCall []struct {
-		arg1 map[string]interface{}
+		arg1 map[string]any
 	}
 	updateInstanceConfigurationReturns struct {
 		result1 error
@@ -334,7 +334,7 @@ func (fake *FakeWorkspace) ModuleInstancesReturnsOnCall(i int, result1 []workspa
 	}{result1}
 }
 
-func (fake *FakeWorkspace) Outputs(arg1 string) (map[string]interface{}, error) {
+func (fake *FakeWorkspace) Outputs(arg1 string) (map[string]any, error) {
 	fake.outputsMutex.Lock()
 	ret, specificReturn := fake.outputsReturnsOnCall[len(fake.outputsArgsForCall)]
 	fake.outputsArgsForCall = append(fake.outputsArgsForCall, struct {
@@ -359,7 +359,7 @@ func (fake *FakeWorkspace) OutputsCallCount() int {
 	return len(fake.outputsArgsForCall)
 }
 
-func (fake *FakeWorkspace) OutputsCalls(stub func(string) (map[string]interface{}, error)) {
+func (fake *FakeWorkspace) OutputsCalls(stub func(string) (map[string]any, error)) {
 	fake.outputsMutex.Lock()
 	defer fake.outputsMutex.Unlock()
 	fake.OutputsStub = stub
@@ -372,28 +372,28 @@ func (fake *FakeWorkspace) OutputsArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *FakeWorkspace) OutputsReturns(result1 map[string]interface{}, result2 error) {
+func (fake *FakeWorkspace) OutputsReturns(result1 map[string]any, result2 error) {
 	fake.outputsMutex.Lock()
 	defer fake.outputsMutex.Unlock()
 	fake.OutputsStub = nil
 	fake.outputsReturns = struct {
-		result1 map[string]interface{}
+		result1 map[string]any
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeWorkspace) OutputsReturnsOnCall(i int, result1 map[string]interface{}, result2 error) {
+func (fake *FakeWorkspace) OutputsReturnsOnCall(i int, result1 map[string]any, result2 error) {
 	fake.outputsMutex.Lock()
 	defer fake.outputsMutex.Unlock()
 	fake.OutputsStub = nil
 	if fake.outputsReturnsOnCall == nil {
 		fake.outputsReturnsOnCall = make(map[int]struct {
-			result1 map[string]interface{}
+			result1 map[string]any
 			result2 error
 		})
 	}
 	fake.outputsReturnsOnCall[i] = struct {
-		result1 map[string]interface{}
+		result1 map[string]any
 		result2 error
 	}{result1, result2}
 }
@@ -510,11 +510,11 @@ func (fake *FakeWorkspace) StateTFVersionReturnsOnCall(i int, result1 *version.V
 	}{result1, result2}
 }
 
-func (fake *FakeWorkspace) UpdateInstanceConfiguration(arg1 map[string]interface{}) error {
+func (fake *FakeWorkspace) UpdateInstanceConfiguration(arg1 map[string]any) error {
 	fake.updateInstanceConfigurationMutex.Lock()
 	ret, specificReturn := fake.updateInstanceConfigurationReturnsOnCall[len(fake.updateInstanceConfigurationArgsForCall)]
 	fake.updateInstanceConfigurationArgsForCall = append(fake.updateInstanceConfigurationArgsForCall, struct {
-		arg1 map[string]interface{}
+		arg1 map[string]any
 	}{arg1})
 	stub := fake.UpdateInstanceConfigurationStub
 	fakeReturns := fake.updateInstanceConfigurationReturns
@@ -535,13 +535,13 @@ func (fake *FakeWorkspace) UpdateInstanceConfigurationCallCount() int {
 	return len(fake.updateInstanceConfigurationArgsForCall)
 }
 
-func (fake *FakeWorkspace) UpdateInstanceConfigurationCalls(stub func(map[string]interface{}) error) {
+func (fake *FakeWorkspace) UpdateInstanceConfigurationCalls(stub func(map[string]any) error) {
 	fake.updateInstanceConfigurationMutex.Lock()
 	defer fake.updateInstanceConfigurationMutex.Unlock()
 	fake.UpdateInstanceConfigurationStub = stub
 }
 
-func (fake *FakeWorkspace) UpdateInstanceConfigurationArgsForCall(i int) map[string]interface{} {
+func (fake *FakeWorkspace) UpdateInstanceConfigurationArgsForCall(i int) map[string]any {
 	fake.updateInstanceConfigurationMutex.RLock()
 	defer fake.updateInstanceConfigurationMutex.RUnlock()
 	argsForCall := fake.updateInstanceConfigurationArgsForCall[i]

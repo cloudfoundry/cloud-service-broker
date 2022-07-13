@@ -29,7 +29,7 @@ var hilMutex sync.Mutex
 
 // Eval evaluates the tempate string using hil https://github.com/hashicorp/hil
 // with the given variables that can be accessed form the string.
-func Eval(templateString string, variables map[string]interface{}) (interface{}, error) {
+func Eval(templateString string, variables map[string]any) (any, error) {
 	hilMutex.Lock()
 	defer hilMutex.Unlock()
 
