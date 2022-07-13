@@ -40,7 +40,7 @@ var _ = Describe("Upgrade", func() {
 			BindSettings:      bindAction,
 		}
 		instanceVarContext   *varcontext.VarContext
-		instanceTemplateVars = map[string]interface{}{"tf_id": instanceDeploymentID, "var": "value"}
+		instanceTemplateVars = map[string]any{"tf_id": instanceDeploymentID, "var": "value"}
 	)
 
 	BeforeEach(func() {
@@ -128,8 +128,8 @@ var _ = Describe("Upgrade", func() {
 				firstBindingDeployment,
 				secondBindingDeployment,
 			}
-			firstBindingVars    = map[string]interface{}{"tf_id": instanceDeploymentID + firstBindingID, "first-binding-var": "first-binding-value"}
-			secondBindingVars   = map[string]interface{}{"tf_id": instanceDeploymentID + secondBindingID, "second-binding-var": "second-binding-value"}
+			firstBindingVars    = map[string]any{"tf_id": instanceDeploymentID + firstBindingID, "first-binding-var": "first-binding-value"}
+			secondBindingVars   = map[string]any{"tf_id": instanceDeploymentID + secondBindingID, "second-binding-var": "second-binding-value"}
 			bindingsVarContexts []*varcontext.VarContext
 
 			fakeInvoker1 = &tffakes.FakeTerraformInvoker{}
@@ -181,7 +181,7 @@ var _ = Describe("Upgrade", func() {
 					newVersion("4.0.0"),
 				},
 			}
-			instanceTemplateVars = map[string]interface{}{"tf_id": instanceDeploymentID, "var": "value"}
+			instanceTemplateVars = map[string]any{"tf_id": instanceDeploymentID, "var": "value"}
 
 			provider := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 			_, err := provider.Upgrade(context.TODO(), instanceVarContext, bindingsVarContexts)

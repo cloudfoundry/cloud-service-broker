@@ -38,22 +38,22 @@ const (
 // ContextBuilder is a builder for VariableContexts.
 type ContextBuilder struct {
 	errors    *multierror.Error
-	context   map[string]interface{}
-	constants map[string]interface{}
+	context   map[string]any
+	constants map[string]any
 }
 
 // Builder creates a new ContextBuilder for constructing VariableContexts.
 func Builder() *ContextBuilder {
 	return &ContextBuilder{
-		context:   make(map[string]interface{}),
-		constants: make(map[string]interface{}),
+		context:   make(map[string]any),
+		constants: make(map[string]any),
 	}
 }
 
 // SetEvalConstants sets constants that will be available to evaluation contexts
 // but not in the final output produced by the Build() call.
 // These can be used to set values users can't overwrite mistakenly or maliciously.
-func (builder *ContextBuilder) SetEvalConstants(constants map[string]interface{}) *ContextBuilder {
+func (builder *ContextBuilder) SetEvalConstants(constants map[string]any) *ContextBuilder {
 	builder.constants = constants
 
 	return builder
@@ -62,10 +62,10 @@ func (builder *ContextBuilder) SetEvalConstants(constants map[string]interface{}
 // DefaultVariable holds a value that may or may not be evaluated.
 // If the value is a string then it will be evaluated.
 type DefaultVariable struct {
-	Name      string      `json:"name" yaml:"name"`
-	Default   interface{} `json:"default" yaml:"default"`
-	Overwrite bool        `json:"overwrite" yaml:"overwrite"`
-	Type      string      `json:"type" yaml:"type"`
+	Name      string `json:"name" yaml:"name"`
+	Default   any    `json:"default" yaml:"default"`
+	Overwrite bool   `json:"overwrite" yaml:"overwrite"`
+	Type      string `json:"type" yaml:"type"`
 }
 
 var _ validation.Validatable = (*DefaultVariable)(nil)
@@ -108,7 +108,7 @@ func (builder *ContextBuilder) MergeDefaultWithEval(brokerVariables []DefaultVar
 // MergeEvalResult evaluates the template against the templating engine and
 // merges in the value if the result is not an error.
 func (builder *ContextBuilder) MergeEvalResult(key, template, resultType string) *ContextBuilder {
-	evaluationContext := make(map[string]interface{})
+	evaluationContext := make(map[string]any)
 	for k, v := range builder.context {
 		evaluationContext[k] = v
 	}
@@ -133,11 +133,11 @@ func (builder *ContextBuilder) MergeEvalResult(key, template, resultType string)
 	return builder
 }
 
-func toSliceE(value interface{}) ([]interface{}, error) {
+func toSliceE(value any) ([]any, error) {
 	kind := reflect.TypeOf(value).Kind()
 	switch kind {
 	case reflect.String:
-		out := []interface{}{}
+		out := []any{}
 		err := json.Unmarshal([]byte(value.(string)), &out)
 		return out, err
 	default:
@@ -145,7 +145,7 @@ func toSliceE(value interface{}) ([]interface{}, error) {
 	}
 }
 
-func castTo(value interface{}, jsonType string) (interface{}, error) {
+func castTo(value any, jsonType string) (any, error) {
 	switch jsonType {
 	case TypeObject:
 		return cast.ToStringMapE(value)
@@ -167,7 +167,7 @@ func castTo(value interface{}, jsonType string) (interface{}, error) {
 }
 
 // MergeMap inserts all the keys and values from the map into the context.
-func (builder *ContextBuilder) MergeMap(data map[string]interface{}) *ContextBuilder {
+func (builder *ContextBuilder) MergeMap(data map[string]any) *ContextBuilder {
 	for k, v := range data {
 		builder.context[k] = v
 	}
@@ -175,7 +175,7 @@ func (builder *ContextBuilder) MergeMap(data map[string]interface{}) *ContextBui
 	return builder
 }
 
-// MergeJSONObject converts the raw message to a map[string]interface{} and
+// MergeJSONObject converts the raw message to a map[string]any and
 // merges the values into the context. Blank RawMessages are treated like
 // empty objects.
 func (builder *ContextBuilder) MergeJSONObject(data json.RawMessage) *ContextBuilder {
@@ -183,7 +183,7 @@ func (builder *ContextBuilder) MergeJSONObject(data json.RawMessage) *ContextBui
 		return builder
 	}
 
-	out := map[string]interface{}{}
+	out := map[string]any{}
 	if err := json.Unmarshal(data, &out); err != nil {
 		builder.errors = multierror.Append(builder.errors, err)
 	}
@@ -193,7 +193,7 @@ func (builder *ContextBuilder) MergeJSONObject(data json.RawMessage) *ContextBui
 }
 
 // MergeStruct merges the given struct using its JSON field names.
-func (builder *ContextBuilder) MergeStruct(data interface{}) *ContextBuilder {
+func (builder *ContextBuilder) MergeStruct(data any) *ContextBuilder {
 	if jo, err := json.Marshal(data); err != nil {
 		builder.errors = multierror.Append(builder.errors, err)
 	} else {
@@ -216,7 +216,7 @@ func (builder *ContextBuilder) Build() (*VarContext, error) {
 
 // BuildMap is a shorthand of calling build then turning the returned varcontext
 // into a map. Exactly one of map and error will be nil.
-func (builder *ContextBuilder) BuildMap() (map[string]interface{}, error) {
+func (builder *ContextBuilder) BuildMap() (map[string]any, error) {
 	vc, err := builder.Build()
 	if err != nil {
 		return nil, err

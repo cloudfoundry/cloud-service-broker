@@ -38,7 +38,7 @@ var (
 // PrettyPrintOrExit writes a JSON serialized version of the content to stdout.
 // If a failure occurs during marshaling, the error is logged along with a
 // formatted version of the object and the program exits with a failure status.
-func PrettyPrintOrExit(content interface{}) {
+func PrettyPrintOrExit(content any) {
 	err := prettyPrint(content)
 
 	if err != nil {
@@ -46,7 +46,7 @@ func PrettyPrintOrExit(content interface{}) {
 	}
 }
 
-func prettyPrint(content interface{}) error {
+func prettyPrint(content any) error {
 	prettyResults, err := json.MarshalIndent(content, "", "    ")
 	if err == nil {
 		fmt.Println(string(prettyResults))
@@ -69,8 +69,8 @@ func PropertyToEnvUnprefixed(propertyName string) string {
 
 // SetParameter sets a value on a JSON raw message and returns a modified
 // version with the value set
-func SetParameter(input json.RawMessage, key string, value interface{}) (json.RawMessage, error) {
-	params := make(map[string]interface{})
+func SetParameter(input json.RawMessage, key string, value any) (json.RawMessage, error) {
+	params := make(map[string]any)
 
 	if len(input) != 0 {
 		err := json.Unmarshal(input, &params)
@@ -86,7 +86,7 @@ func SetParameter(input json.RawMessage, key string, value interface{}) (json.Ra
 
 // UnmarshalObjectRemainder unmarshals an object into v and returns the
 // remaining key/value pairs as a JSON string by doing a set difference.
-func UnmarshalObjectRemainder(data []byte, v interface{}) ([]byte, error) {
+func UnmarshalObjectRemainder(data []byte, v any) ([]byte, error) {
 	if err := json.Unmarshal(data, v); err != nil {
 		return nil, err
 	}

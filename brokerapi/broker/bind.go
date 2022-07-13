@@ -127,7 +127,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 			return domain.Binding{}, fmt.Errorf("bind failure: unable to add Credstore permissions to app: %w", err)
 		}
 
-		binding.Credentials = map[string]interface{}{
+		binding.Credentials = map[string]any{
 			"credhub-ref": credentialName,
 		}
 	}
@@ -135,7 +135,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	return *binding, nil
 }
 
-func validateBindParameters(params map[string]interface{}, validUserInputFields []broker.BrokerVariable) error {
+func validateBindParameters(params map[string]any, validUserInputFields []broker.BrokerVariable) error {
 	if len(params) == 0 {
 		return nil
 	}
@@ -150,7 +150,7 @@ func validateBindParameters(params map[string]interface{}, validUserInputFields 
 
 // BuildInstanceCredentials combines the bind credentials with the connection
 // information in the instance details to get a full set of connection details.
-func buildInstanceCredentials(credentials map[string]interface{}, outputs storage.JSONObject) (*domain.Binding, error) {
+func buildInstanceCredentials(credentials map[string]any, outputs storage.JSONObject) (*domain.Binding, error) {
 	vc, err := varcontext.Builder().
 		MergeMap(outputs).
 		MergeMap(credentials).

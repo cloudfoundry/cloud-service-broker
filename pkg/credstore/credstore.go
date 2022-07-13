@@ -29,9 +29,9 @@ import (
 //counterfeiter:generate . CredStore
 
 type CredStore interface {
-	Put(key string, credentials interface{}) (interface{}, error)
-	PutValue(key string, credentials interface{}) (interface{}, error)
-	Get(key string) (interface{}, error)
+	Put(key string, credentials any) (any, error)
+	PutValue(key string, credentials any) (any, error)
+	Get(key string) (any, error)
 	GetValue(key string) (string, error)
 	Delete(key string) error
 	AddPermission(path string, actor string, ops []string) (*permissions.Permission, error)
@@ -82,15 +82,15 @@ func NewCredhubStore(credStoreConfig *config.CredStoreConfig, logger lager.Logge
 	}, err
 }
 
-func (c *credhubStore) Put(key string, credentials interface{}) (interface{}, error) {
+func (c *credhubStore) Put(key string, credentials any) (any, error) {
 	return c.credHubClient.SetCredential(key, "json", credentials)
 }
 
-func (c *credhubStore) PutValue(key string, credentials interface{}) (interface{}, error) {
+func (c *credhubStore) PutValue(key string, credentials any) (any, error) {
 	return c.credHubClient.SetCredential(key, "value", credentials)
 }
 
-func (c *credhubStore) Get(key string) (interface{}, error) {
+func (c *credhubStore) Get(key string) (any, error) {
 	return c.credHubClient.GetLatestValue(key)
 }
 

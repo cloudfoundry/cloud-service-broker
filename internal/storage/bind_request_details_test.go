@@ -82,7 +82,7 @@ var _ = Describe("BindRequestDetails", func() {
 		It("reads the right object from the database", func() {
 			r, err := store.GetBindRequestDetails("fake-binding-id", "fake-instance-id")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(r).To(Equal(storage.JSONObject{"decrypted": map[string]interface{}{"foo": "bar"}}))
+			Expect(r).To(Equal(storage.JSONObject{"decrypted": map[string]any{"foo": "bar"}}))
 		})
 
 		When("decoding fails", func() {

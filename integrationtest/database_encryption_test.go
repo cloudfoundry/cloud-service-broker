@@ -39,7 +39,7 @@ var _ = Describe("Database Encryption", func() {
 		session    *Session
 	)
 
-	findRecord := func(dest interface{}, query, guid string) {
+	findRecord := func(dest any, query, guid string) {
 		result := testHelper.DBConn().Where(query, guid).First(dest)
 		ExpectWithOffset(1, result.Error).NotTo(HaveOccurred())
 		ExpectWithOffset(1, result.RowsAffected).To(Equal(int64(1)))

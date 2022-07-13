@@ -84,7 +84,7 @@ func renderAsPage(title, markdownContents string) http.HandlerFunc {
 	)
 
 	buf := &bytes.Buffer{}
-	err := pageTemplate.Execute(buf, map[string]interface{}{
+	err := pageTemplate.Execute(buf, map[string]any{
 		"Title":    title,
 		"Contents": template.HTML(page),
 	})

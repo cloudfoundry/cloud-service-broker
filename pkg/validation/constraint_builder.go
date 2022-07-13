@@ -48,7 +48,7 @@ func NewConstraintBuilder() ConstraintBuilder {
 }
 
 // ConstraintBuilder - A builder for JSON Schema compliant constraint lists
-type ConstraintBuilder map[string]interface{}
+type ConstraintBuilder map[string]any
 
 // Type adds a type constrinat.
 func (cb ConstraintBuilder) Type(t string) ConstraintBuilder {
@@ -71,21 +71,21 @@ func (cb ConstraintBuilder) Title(title string) ConstraintBuilder {
 }
 
 // Examples adds one or more examples
-func (cb ConstraintBuilder) Examples(ex ...interface{}) ConstraintBuilder {
+func (cb ConstraintBuilder) Examples(ex ...any) ConstraintBuilder {
 	cb[KeyExamples] = ex
 
 	return cb
 }
 
 // Const adds a constraint that the field must equal this value.
-func (cb ConstraintBuilder) Const(value interface{}) ConstraintBuilder {
+func (cb ConstraintBuilder) Const(value any) ConstraintBuilder {
 	cb[KeyConst] = value
 
 	return cb
 }
 
 // Enum adds a constraint that the field must be one of these values.
-func (cb ConstraintBuilder) Enum(value ...interface{}) ConstraintBuilder {
+func (cb ConstraintBuilder) Enum(value ...any) ConstraintBuilder {
 	cb[KeyEnum] = value
 
 	return cb
@@ -185,12 +185,12 @@ func (cb ConstraintBuilder) Required(properties ...string) ConstraintBuilder {
 }
 
 // PropertyNames adds a constraint that the object property names must match the given schema.
-func (cb ConstraintBuilder) PropertyNames(properties map[string]interface{}) ConstraintBuilder {
+func (cb ConstraintBuilder) PropertyNames(properties map[string]any) ConstraintBuilder {
 	cb[KeyPropertyNames] = properties
 
 	return cb
 }
 
-func (cb ConstraintBuilder) Build() map[string]interface{} {
+func (cb ConstraintBuilder) Build() map[string]any {
 	return cb
 }

@@ -12,7 +12,7 @@ import (
 var _ = Describe("ProvisionRequestDetails", func() {
 	Describe("StoreProvisionRequestDetails", func() {
 		It("creates the right object in the database", func() {
-			err := store.StoreProvisionRequestDetails("fake-instance-id", map[string]interface{}{"foo": "bar"})
+			err := store.StoreProvisionRequestDetails("fake-instance-id", map[string]any{"foo": "bar"})
 			Expect(err).NotTo(HaveOccurred())
 
 			var receiver models.ProvisionRequestDetails
@@ -25,7 +25,7 @@ var _ = Describe("ProvisionRequestDetails", func() {
 			It("returns an error", func() {
 				encryptor.EncryptReturns(nil, errors.New("bang"))
 
-				err := store.StoreProvisionRequestDetails("fake-instance-id", map[string]interface{}{"foo": "bar"})
+				err := store.StoreProvisionRequestDetails("fake-instance-id", map[string]any{"foo": "bar"})
 				Expect(err).To(MatchError("error encoding details: encryption error: bang"))
 			})
 		})
@@ -39,7 +39,7 @@ var _ = Describe("ProvisionRequestDetails", func() {
 			})
 
 			It("updates the existing record", func() {
-				err := store.StoreProvisionRequestDetails("fake-instance-id", map[string]interface{}{"foo": "qux"})
+				err := store.StoreProvisionRequestDetails("fake-instance-id", map[string]any{"foo": "qux"})
 				Expect(err).NotTo(HaveOccurred())
 
 				var receiver []models.ProvisionRequestDetails
@@ -59,7 +59,7 @@ var _ = Describe("ProvisionRequestDetails", func() {
 		It("reads the right object from the database", func() {
 			r, err := store.GetProvisionRequestDetails("fake-instance-id")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(r).To(Equal(storage.JSONObject{"decrypted": map[string]interface{}{"foo": "bar"}}))
+			Expect(r).To(Equal(storage.JSONObject{"decrypted": map[string]any{"foo": "bar"}}))
 		})
 
 		When("decoding fails", func() {

@@ -22,7 +22,7 @@ var _ = Describe("Definition", func() {
 				DisplayName:        "test-display-name",
 				Bullets:            []string{"test-bullet"},
 				Free:               false,
-				Properties:         map[string]interface{}{"test-property-key": "test-property-value"},
+				Properties:         map[string]any{"test-property-key": "test-property-value"},
 				ProvisionOverrides: nil,
 				BindOverrides:      nil,
 			}
@@ -40,7 +40,7 @@ var _ = Describe("Definition", func() {
 				Bullets:     []string{"test-bullet"},
 			}))
 			Expect(servicePlan.ServicePlan.MaintenanceInfo).To(BeNil())
-			Expect(servicePlan.ServiceProperties).To(Equal(map[string]interface{}{"test-property-key": "test-property-value"}))
+			Expect(servicePlan.ServiceProperties).To(Equal(map[string]any{"test-property-key": "test-property-value"}))
 			Expect(servicePlan.ProvisionOverrides).To(BeNil())
 			Expect(servicePlan.BindOverrides).To(BeNil())
 

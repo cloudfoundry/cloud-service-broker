@@ -12,12 +12,12 @@ type TerraformInvocation struct {
 	dir  string
 }
 
-func (i TerraformInvocation) TFVars() (map[string]interface{}, error) {
+func (i TerraformInvocation) TFVars() (map[string]any, error) {
 	tfVarsContents, err := i.TFVarsContents()
 	if err != nil {
 		return nil, err
 	}
-	output := map[string]interface{}{}
+	output := map[string]any{}
 
 	return output, json.Unmarshal([]byte(tfVarsContents), &output)
 }

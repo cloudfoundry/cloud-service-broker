@@ -84,12 +84,12 @@ var _ = Describe("Parser", func() {
 	When("there are multiple Terraform versions", func() {
 		It("can parse the manifest", func() {
 			m, err := manifest.Parse(fakeManifest(
-				withAdditionalEntry("terraform_binaries", map[string]interface{}{
+				withAdditionalEntry("terraform_binaries", map[string]any{
 					"name":    "terraform",
 					"version": "1.1.5",
 					"default": false,
 				}),
-				withAdditionalEntry("terraform_binaries", map[string]interface{}{
+				withAdditionalEntry("terraform_binaries", map[string]any{
 					"name":    "terraform",
 					"version": "1.1.6",
 					"default": true,
@@ -116,7 +116,7 @@ var _ = Describe("Parser", func() {
 
 		When("none are marked as default", func() {
 			It("fails", func() {
-				m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]interface{}{
+				m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]any{
 					"name":    "terraform",
 					"version": "1.1.5",
 					"default": false,
@@ -129,12 +129,12 @@ var _ = Describe("Parser", func() {
 		When("more than one is marked as default", func() {
 			It("fails", func() {
 				m, err := manifest.Parse(fakeManifest(
-					withAdditionalEntry("terraform_binaries", map[string]interface{}{
+					withAdditionalEntry("terraform_binaries", map[string]any{
 						"name":    "terraform",
 						"version": "1.1.5",
 						"default": true,
 					}),
-					withAdditionalEntry("terraform_binaries", map[string]interface{}{
+					withAdditionalEntry("terraform_binaries", map[string]any{
 						"name":    "terraform",
 						"version": "1.1.6",
 						"default": true,
@@ -148,16 +148,16 @@ var _ = Describe("Parser", func() {
 		When("the default is not the highest version", func() {
 			It("fails", func() {
 				m, err := manifest.Parse(fakeManifest(
-					withAdditionalEntry("terraform_binaries", map[string]interface{}{
+					withAdditionalEntry("terraform_binaries", map[string]any{
 						"name":    "terraform",
 						"version": "1.1.5",
 					}),
-					withAdditionalEntry("terraform_binaries", map[string]interface{}{
+					withAdditionalEntry("terraform_binaries", map[string]any{
 						"name":    "terraform",
 						"version": "1.1.6",
 						"default": true,
 					}),
-					withAdditionalEntry("terraform_binaries", map[string]interface{}{
+					withAdditionalEntry("terraform_binaries", map[string]any{
 						"name":    "terraform",
 						"version": "1.1.7",
 					}),
@@ -169,7 +169,7 @@ var _ = Describe("Parser", func() {
 
 		When("there are duplicate versions", func() {
 			It("fails", func() {
-				m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]interface{}{
+				m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]any{
 					"name":    "terraform",
 					"version": "1.1.4",
 					"default": true,
@@ -198,13 +198,13 @@ var _ = Describe("Parser", func() {
 	Context("terraform_upgrade_path", func() {
 		It("can parse and validate the upgrade path", func() {
 			m, err := manifest.Parse(fakeManifest(
-				withAdditionalEntry("terraform_binaries", map[string]interface{}{
+				withAdditionalEntry("terraform_binaries", map[string]any{
 					"name":    "terraform",
 					"version": "4.5.6",
 					"default": true,
 				}),
 				with("terraform_upgrade_path",
-					[]map[string]interface{}{
+					[]map[string]any{
 						{"version": "1.1.4"},
 						{"version": "4.5.6"},
 					},
@@ -219,7 +219,7 @@ var _ = Describe("Parser", func() {
 
 		It("must be semver", func() {
 			m, err := manifest.Parse(fakeManifest(with("terraform_upgrade_path",
-				[]map[string]interface{}{
+				[]map[string]any{
 					{"version": "non-semver"},
 				},
 			)))
@@ -229,7 +229,7 @@ var _ = Describe("Parser", func() {
 
 		It("must be in order", func() {
 			m, err := manifest.Parse(fakeManifest(with("terraform_upgrade_path",
-				[]map[string]interface{}{
+				[]map[string]any{
 					{"version": "1.2.3"},
 					{"version": "1.2.4"},
 					{"version": "1.2.1"},
@@ -241,7 +241,7 @@ var _ = Describe("Parser", func() {
 
 		It("must have a corresponding terraform binary", func() {
 			m, err := manifest.Parse(fakeManifest(with("terraform_upgrade_path",
-				[]map[string]interface{}{
+				[]map[string]any{
 					{"version": "1.2.3"},
 				},
 			)))
@@ -266,41 +266,41 @@ var _ = Describe("Parser", func() {
 	)
 
 	DescribeTable("missing platform data",
-		func(insert string, value map[string]interface{}) {
+		func(insert string, value map[string]any) {
 			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("platforms", value)))
 
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("missing field(s): %s", insert))))
 			Expect(m).To(BeNil())
 		},
-		Entry("os", "platforms[2].os", map[string]interface{}{"arch": "amd64"}),
-		Entry("arch", "platforms[2].arch", map[string]interface{}{"os": "linux"}),
+		Entry("os", "platforms[2].os", map[string]any{"arch": "amd64"}),
+		Entry("arch", "platforms[2].arch", map[string]any{"os": "linux"}),
 	)
 
 	DescribeTable("missing terraform binary data",
-		func(insert string, value map[string]interface{}) {
+		func(insert string, value map[string]any) {
 			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", value)))
 
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("missing field(s): %s", insert))))
 			Expect(m).To(BeNil())
 		},
-		Entry("name", "terraform_binaries[3].name", map[string]interface{}{"version": "1.2.3", "source": "https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip"}),
-		Entry("version", "terraform_binaries[3].version", map[string]interface{}{"name": "hello"}),
+		Entry("name", "terraform_binaries[3].name", map[string]any{"version": "1.2.3", "source": "https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip"}),
+		Entry("version", "terraform_binaries[3].version", map[string]any{"name": "hello"}),
 	)
 
 	DescribeTable("missing parameter data",
-		func(insert string, value map[string]interface{}) {
+		func(insert string, value map[string]any) {
 			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("parameters", value)))
 
 			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("missing field(s): %s", insert))))
 			Expect(m).To(BeNil())
 		},
-		Entry("name", "parameters[1].name", map[string]interface{}{"description": "something"}),
-		Entry("description", "parameters[1].description", map[string]interface{}{"name": "hello"}),
+		Entry("name", "parameters[1].name", map[string]any{"description": "something"}),
+		Entry("description", "parameters[1].description", map[string]any{"name": "hello"}),
 	)
 
 	DescribeTable("terraform provider locations",
 		func(provider, expected string) {
-			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]interface{}{
+			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]any{
 				"name":     "terraform-provider-foo",
 				"version":  "1.2.3",
 				"provider": provider,
@@ -343,7 +343,7 @@ var _ = Describe("Parser", func() {
 
 	When("the default flag is applied to something that isn't Terraform", func() {
 		It("fails", func() {
-			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]interface{}{
+			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]any{
 				"name":    "terraform-provider-random",
 				"version": "3.1.0",
 				"source":  "https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip",
@@ -356,7 +356,7 @@ var _ = Describe("Parser", func() {
 
 	When("a terraform version is not valid semver", func() {
 		It("fails", func() {
-			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]interface{}{
+			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]any{
 				"name":    "terraform",
 				"version": "not.semver",
 				"default": true,
@@ -371,10 +371,10 @@ var _ = Describe("Parser", func() {
 //go:embed test_manifest.yaml
 var testManifest []byte
 
-type option func(map[string]interface{})
+type option func(map[string]any)
 
 func fakeManifest(opts ...option) []byte {
-	var receiver map[string]interface{}
+	var receiver map[string]any
 	err := yaml.Unmarshal(testManifest, &receiver)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -388,20 +388,20 @@ func fakeManifest(opts ...option) []byte {
 }
 
 func without(field string) option {
-	return func(m map[string]interface{}) {
+	return func(m map[string]any) {
 		delete(m, field)
 	}
 }
 
-func with(key string, value interface{}) option {
-	return func(m map[string]interface{}) {
+func with(key string, value any) option {
+	return func(m map[string]any) {
 		m[key] = value
 	}
 }
 
-func withAdditionalEntry(key string, value map[string]interface{}) option {
-	return func(m map[string]interface{}) {
-		entries := m[key].([]interface{})
+func withAdditionalEntry(key string, value map[string]any) option {
+	return func(m map[string]any) {
+		entries := m[key].([]any)
 		m[key] = append(entries, value)
 	}
 }

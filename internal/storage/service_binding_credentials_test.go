@@ -58,7 +58,7 @@ var _ = Describe("ServiceBindingCredentials", func() {
 			Expect(r.ServiceInstanceGUID).To(Equal("fake-instance-id"))
 			Expect(r.BindingGUID).To(Equal("fake-binding-id"))
 			Expect(r.Credentials).To(Equal(storage.JSONObject{
-				"decrypted": map[string]interface{}{
+				"decrypted": map[string]any{
 					"foo": "baz",
 					"bar": "quz",
 				},

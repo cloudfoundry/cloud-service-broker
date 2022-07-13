@@ -46,17 +46,17 @@ type FakeCredStore struct {
 	deletePermissionReturnsOnCall map[int]struct {
 		result1 error
 	}
-	GetStub        func(string) (interface{}, error)
+	GetStub        func(string) (any, error)
 	getMutex       sync.RWMutex
 	getArgsForCall []struct {
 		arg1 string
 	}
 	getReturns struct {
-		result1 interface{}
+		result1 any
 		result2 error
 	}
 	getReturnsOnCall map[int]struct {
-		result1 interface{}
+		result1 any
 		result2 error
 	}
 	GetValueStub        func(string) (string, error)
@@ -72,32 +72,32 @@ type FakeCredStore struct {
 		result1 string
 		result2 error
 	}
-	PutStub        func(string, interface{}) (interface{}, error)
+	PutStub        func(string, any) (any, error)
 	putMutex       sync.RWMutex
 	putArgsForCall []struct {
 		arg1 string
-		arg2 interface{}
+		arg2 any
 	}
 	putReturns struct {
-		result1 interface{}
+		result1 any
 		result2 error
 	}
 	putReturnsOnCall map[int]struct {
-		result1 interface{}
+		result1 any
 		result2 error
 	}
-	PutValueStub        func(string, interface{}) (interface{}, error)
+	PutValueStub        func(string, any) (any, error)
 	putValueMutex       sync.RWMutex
 	putValueArgsForCall []struct {
 		arg1 string
-		arg2 interface{}
+		arg2 any
 	}
 	putValueReturns struct {
-		result1 interface{}
+		result1 any
 		result2 error
 	}
 	putValueReturnsOnCall map[int]struct {
-		result1 interface{}
+		result1 any
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -297,7 +297,7 @@ func (fake *FakeCredStore) DeletePermissionReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeCredStore) Get(arg1 string) (interface{}, error) {
+func (fake *FakeCredStore) Get(arg1 string) (any, error) {
 	fake.getMutex.Lock()
 	ret, specificReturn := fake.getReturnsOnCall[len(fake.getArgsForCall)]
 	fake.getArgsForCall = append(fake.getArgsForCall, struct {
@@ -322,7 +322,7 @@ func (fake *FakeCredStore) GetCallCount() int {
 	return len(fake.getArgsForCall)
 }
 
-func (fake *FakeCredStore) GetCalls(stub func(string) (interface{}, error)) {
+func (fake *FakeCredStore) GetCalls(stub func(string) (any, error)) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = stub
@@ -335,28 +335,28 @@ func (fake *FakeCredStore) GetArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *FakeCredStore) GetReturns(result1 interface{}, result2 error) {
+func (fake *FakeCredStore) GetReturns(result1 any, result2 error) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = nil
 	fake.getReturns = struct {
-		result1 interface{}
+		result1 any
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCredStore) GetReturnsOnCall(i int, result1 interface{}, result2 error) {
+func (fake *FakeCredStore) GetReturnsOnCall(i int, result1 any, result2 error) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = nil
 	if fake.getReturnsOnCall == nil {
 		fake.getReturnsOnCall = make(map[int]struct {
-			result1 interface{}
+			result1 any
 			result2 error
 		})
 	}
 	fake.getReturnsOnCall[i] = struct {
-		result1 interface{}
+		result1 any
 		result2 error
 	}{result1, result2}
 }
@@ -425,12 +425,12 @@ func (fake *FakeCredStore) GetValueReturnsOnCall(i int, result1 string, result2 
 	}{result1, result2}
 }
 
-func (fake *FakeCredStore) Put(arg1 string, arg2 interface{}) (interface{}, error) {
+func (fake *FakeCredStore) Put(arg1 string, arg2 any) (any, error) {
 	fake.putMutex.Lock()
 	ret, specificReturn := fake.putReturnsOnCall[len(fake.putArgsForCall)]
 	fake.putArgsForCall = append(fake.putArgsForCall, struct {
 		arg1 string
-		arg2 interface{}
+		arg2 any
 	}{arg1, arg2})
 	stub := fake.PutStub
 	fakeReturns := fake.putReturns
@@ -451,51 +451,51 @@ func (fake *FakeCredStore) PutCallCount() int {
 	return len(fake.putArgsForCall)
 }
 
-func (fake *FakeCredStore) PutCalls(stub func(string, interface{}) (interface{}, error)) {
+func (fake *FakeCredStore) PutCalls(stub func(string, any) (any, error)) {
 	fake.putMutex.Lock()
 	defer fake.putMutex.Unlock()
 	fake.PutStub = stub
 }
 
-func (fake *FakeCredStore) PutArgsForCall(i int) (string, interface{}) {
+func (fake *FakeCredStore) PutArgsForCall(i int) (string, any) {
 	fake.putMutex.RLock()
 	defer fake.putMutex.RUnlock()
 	argsForCall := fake.putArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCredStore) PutReturns(result1 interface{}, result2 error) {
+func (fake *FakeCredStore) PutReturns(result1 any, result2 error) {
 	fake.putMutex.Lock()
 	defer fake.putMutex.Unlock()
 	fake.PutStub = nil
 	fake.putReturns = struct {
-		result1 interface{}
+		result1 any
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCredStore) PutReturnsOnCall(i int, result1 interface{}, result2 error) {
+func (fake *FakeCredStore) PutReturnsOnCall(i int, result1 any, result2 error) {
 	fake.putMutex.Lock()
 	defer fake.putMutex.Unlock()
 	fake.PutStub = nil
 	if fake.putReturnsOnCall == nil {
 		fake.putReturnsOnCall = make(map[int]struct {
-			result1 interface{}
+			result1 any
 			result2 error
 		})
 	}
 	fake.putReturnsOnCall[i] = struct {
-		result1 interface{}
+		result1 any
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCredStore) PutValue(arg1 string, arg2 interface{}) (interface{}, error) {
+func (fake *FakeCredStore) PutValue(arg1 string, arg2 any) (any, error) {
 	fake.putValueMutex.Lock()
 	ret, specificReturn := fake.putValueReturnsOnCall[len(fake.putValueArgsForCall)]
 	fake.putValueArgsForCall = append(fake.putValueArgsForCall, struct {
 		arg1 string
-		arg2 interface{}
+		arg2 any
 	}{arg1, arg2})
 	stub := fake.PutValueStub
 	fakeReturns := fake.putValueReturns
@@ -516,41 +516,41 @@ func (fake *FakeCredStore) PutValueCallCount() int {
 	return len(fake.putValueArgsForCall)
 }
 
-func (fake *FakeCredStore) PutValueCalls(stub func(string, interface{}) (interface{}, error)) {
+func (fake *FakeCredStore) PutValueCalls(stub func(string, any) (any, error)) {
 	fake.putValueMutex.Lock()
 	defer fake.putValueMutex.Unlock()
 	fake.PutValueStub = stub
 }
 
-func (fake *FakeCredStore) PutValueArgsForCall(i int) (string, interface{}) {
+func (fake *FakeCredStore) PutValueArgsForCall(i int) (string, any) {
 	fake.putValueMutex.RLock()
 	defer fake.putValueMutex.RUnlock()
 	argsForCall := fake.putValueArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCredStore) PutValueReturns(result1 interface{}, result2 error) {
+func (fake *FakeCredStore) PutValueReturns(result1 any, result2 error) {
 	fake.putValueMutex.Lock()
 	defer fake.putValueMutex.Unlock()
 	fake.PutValueStub = nil
 	fake.putValueReturns = struct {
-		result1 interface{}
+		result1 any
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCredStore) PutValueReturnsOnCall(i int, result1 interface{}, result2 error) {
+func (fake *FakeCredStore) PutValueReturnsOnCall(i int, result1 any, result2 error) {
 	fake.putValueMutex.Lock()
 	defer fake.putValueMutex.Unlock()
 	fake.PutValueStub = nil
 	if fake.putValueReturnsOnCall == nil {
 		fake.putValueReturnsOnCall = make(map[int]struct {
-			result1 interface{}
+			result1 any
 			result2 error
 		})
 	}
 	fake.putValueReturnsOnCall[i] = struct {
-		result1 interface{}
+		result1 any
 		result2 error
 	}{result1, result2}
 }

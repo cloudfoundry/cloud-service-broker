@@ -23,7 +23,7 @@ import (
 
 func TestVarContext_GetString(t *testing.T) {
 	// The following tests operate on the following example map
-	testContext := map[string]interface{}{
+	testContext := map[string]any{
 		"anInt":   42,
 		"aString": "value",
 	}
@@ -62,7 +62,7 @@ func TestVarContext_GetString(t *testing.T) {
 
 func TestVarContext_GetInt(t *testing.T) {
 	// The following tests operate on the following example map
-	testContext := map[string]interface{}{
+	testContext := map[string]any{
 		"anInt":   42,
 		"aString": "value",
 	}
@@ -101,7 +101,7 @@ func TestVarContext_GetInt(t *testing.T) {
 
 func TestVarContext_GetBool(t *testing.T) {
 	// The following tests operate on the following example map
-	testContext := map[string]interface{}{
+	testContext := map[string]any{
 		"anInt":   42,
 		"zero":    0,
 		"tsBool":  "true",
@@ -150,7 +150,7 @@ func TestVarContext_GetBool(t *testing.T) {
 
 func TestVarContext_GetStringMapString(t *testing.T) {
 	// The following tests operate on the following example map
-	testContext := map[string]interface{}{
+	testContext := map[string]any{
 		"single":  map[string]string{"foo": "bar"},
 		"aString": "value",
 		"json":    `{"foo":"bar"}`,
@@ -189,17 +189,17 @@ func TestVarContext_GetStringMapString(t *testing.T) {
 }
 
 func TestVarContext_ToJson(t *testing.T) {
-	vc := &VarContext{context: map[string]interface{}{
+	vc := &VarContext{context: map[string]any{
 		"t": true,
 		"f": false,
 		"s": "a string",
-		"a": []interface{}{"an", "array"},
+		"a": []any{"an", "array"},
 		"F": 123.45,
 	}}
 	expected := vc.ToMap()
 
 	serialized, _ := vc.ToJSON()
-	actual := make(map[string]interface{})
+	actual := make(map[string]any)
 	json.Unmarshal(serialized, &actual)
 
 	if !reflect.DeepEqual(expected, actual) {

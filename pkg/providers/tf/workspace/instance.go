@@ -21,22 +21,22 @@ import (
 
 // ModuleInstance represents the configuration of a single instance of a module.
 type ModuleInstance struct {
-	ModuleName    string                 `json:"module_name"`
-	InstanceName  string                 `json:"instance_name"`
-	Configuration map[string]interface{} `json:"configuration"`
+	ModuleName    string         `json:"module_name"`
+	InstanceName  string         `json:"instance_name"`
+	Configuration map[string]any `json:"configuration"`
 }
 
 // MarshalDefinition converts the module instance definition into a JSON
 // definition that can be fed to Terraform to be created/destroyed.
 func (instance *ModuleInstance) MarshalDefinition(outputs []string) (json.RawMessage, error) {
-	instanceConfig := make(map[string]interface{})
+	instanceConfig := make(map[string]any)
 	for k, v := range instance.Configuration {
 		instanceConfig[k] = v
 	}
 
 	instanceConfig["source"] = fmt.Sprintf("./%s", instance.ModuleName)
 
-	outputMap := make(map[string]interface{})
+	outputMap := make(map[string]any)
 	for _, variable := range outputs {
 		outputMap[variable] = map[string]any{
 			"value":     fmt.Sprintf("${module.%s.%s}", instance.InstanceName, variable),
@@ -44,8 +44,8 @@ func (instance *ModuleInstance) MarshalDefinition(outputs []string) (json.RawMes
 		}
 	}
 
-	defn := map[string]interface{}{
-		"module": map[string]interface{}{
+	defn := map[string]any{
+		"module": map[string]any{
 			instance.InstanceName: instanceConfig,
 		},
 	}

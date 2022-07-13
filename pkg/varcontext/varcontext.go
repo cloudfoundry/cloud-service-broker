@@ -25,10 +25,10 @@ import (
 
 type VarContext struct {
 	errors  *multierror.Error
-	context map[string]interface{}
+	context map[string]any
 }
 
-func (vc *VarContext) validate(key, typeName string, validator func(interface{}) error) {
+func (vc *VarContext) validate(key, typeName string, validator func(any) error) {
 	val, ok := vc.context[key]
 	if !ok {
 		vc.errors = multierror.Append(vc.errors, fmt.Errorf("missing value for key %q", key))
@@ -43,7 +43,7 @@ func (vc *VarContext) validate(key, typeName string, validator func(interface{})
 // GetString gets a string from the context, storing an error if the key doesn't
 // exist or the variable couldn't be converted to a string.
 func (vc *VarContext) GetString(key string) (res string) {
-	vc.validate(key, "string", func(val interface{}) (err error) {
+	vc.validate(key, "string", func(val any) (err error) {
 		res, err = cast.ToStringE(val)
 		return err
 	})
@@ -54,7 +54,7 @@ func (vc *VarContext) GetString(key string) (res string) {
 // GetInt gets an integer from the context, storing an error if the key doesn't
 // exist or the variable couldn't be converted to an int.
 func (vc *VarContext) GetInt(key string) (res int) {
-	vc.validate(key, "integer", func(val interface{}) (err error) {
+	vc.validate(key, "integer", func(val any) (err error) {
 		res, err = cast.ToIntE(val)
 		return err
 	})
@@ -67,7 +67,7 @@ func (vc *VarContext) GetInt(key string) (res int) {
 // Integers can behave like bools in C style, 0 is false.
 // The strings "true" and "false" are also cast to their bool values.
 func (vc *VarContext) GetBool(key string) (res bool) {
-	vc.validate(key, "boolean", func(val interface{}) (err error) {
+	vc.validate(key, "boolean", func(val any) (err error) {
 		res, err = cast.ToBoolE(val)
 		return err
 	})
@@ -78,7 +78,7 @@ func (vc *VarContext) GetBool(key string) (res bool) {
 // GetStringMapString gets map[string]string from the context,
 // storing an error if the key doesn't exist or the variable couldn't be cast.
 func (vc *VarContext) GetStringMapString(key string) (res map[string]string) {
-	vc.validate(key, "map[string]string", func(val interface{}) (err error) {
+	vc.validate(key, "map[string]string", func(val any) (err error) {
 		res, err = cast.ToStringMapStringE(val)
 		return err
 	})
@@ -87,8 +87,8 @@ func (vc *VarContext) GetStringMapString(key string) (res map[string]string) {
 }
 
 // ToMap gets the underlying map representation of the variable context.
-func (vc *VarContext) ToMap() map[string]interface{} {
-	output := make(map[string]interface{})
+func (vc *VarContext) ToMap() map[string]any {
+	output := make(map[string]any)
 
 	for k, v := range vc.context {
 		output[k] = v

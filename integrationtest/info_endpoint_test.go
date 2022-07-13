@@ -37,7 +37,7 @@ var _ = Describe("Info Endpoint", func() {
 		defer resp.Body.Close()
 		body, err := io.ReadAll(resp.Body)
 		Expect(err).NotTo(HaveOccurred())
-		var data map[string]interface{}
+		var data map[string]any
 		Expect(json.Unmarshal(body, &data)).NotTo(HaveOccurred())
 
 		Expect(data).To(SatisfyAll(

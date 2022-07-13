@@ -124,7 +124,7 @@ func (client *Client) LastOperation(instanceID, requestID string) *BrokerRespons
 	return client.makeRequest(http.MethodGet, url, requestID, nil)
 }
 
-func (client *Client) makeRequest(method, path, requestID string, body interface{}) *BrokerResponse {
+func (client *Client) makeRequest(method, path, requestID string, body any) *BrokerResponse {
 	br := BrokerResponse{}
 
 	req, err := client.newRequest(method, path, requestID, body)
@@ -142,7 +142,7 @@ func (client *Client) makeRequest(method, path, requestID string, body interface
 	return &br
 }
 
-func (client *Client) newRequest(method, path, requestID string, body interface{}) (*http.Request, error) {
+func (client *Client) newRequest(method, path, requestID string, body any) (*http.Request, error) {
 	url, err := client.BaseURL.Parse(path)
 	if err != nil {
 		return nil, err

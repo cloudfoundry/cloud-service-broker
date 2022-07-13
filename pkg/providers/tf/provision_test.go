@@ -53,7 +53,7 @@ var _ = Describe("Provision", func() {
 	Describe("provision new resource", func() {
 		var (
 			provisionContext *varcontext.VarContext
-			templateVars     = map[string]interface{}{"tf_id": expectedTfID, "username": "some-user"}
+			templateVars     = map[string]any{"tf_id": expectedTfID, "username": "some-user"}
 		)
 
 		BeforeEach(func() {
@@ -80,7 +80,7 @@ var _ = Describe("Provision", func() {
 			Expect(actualWorkspace.Modules[0].Name).To(Equal("brokertemplate"))
 			Expect(actualWorkspace.Modules[0].Definition).To(Equal(fakeServiceDefinition.ProvisionSettings.Template))
 			Expect(actualWorkspace.Modules[0].Definitions).To(Equal(fakeServiceDefinition.ProvisionSettings.Templates))
-			Expect(actualWorkspace.Instances[0].Configuration).To(Equal(map[string]interface{}{"username": "some-user"}))
+			Expect(actualWorkspace.Instances[0].Configuration).To(Equal(map[string]any{"username": "some-user"}))
 			Expect(actualWorkspace.Transformer.ParameterMappings).To(Equal([]workspace.ParameterMapping{}))
 			Expect(actualWorkspace.Transformer.ParametersToRemove).To(Equal([]string{}))
 			Expect(actualWorkspace.Transformer.ParametersToAdd).To(Equal([]workspace.ParameterMapping{}))
@@ -161,7 +161,7 @@ var _ = Describe("Provision", func() {
 	Describe("provision from imported resource (aka subsume)", func() {
 		var (
 			provisionContext *varcontext.VarContext
-			templateVars     = map[string]interface{}{"tf_id": expectedTfID, "subsume": true, "import_input": "some_import_input", "username": "some-user"}
+			templateVars     = map[string]any{"tf_id": expectedTfID, "subsume": true, "import_input": "some_import_input", "username": "some-user"}
 		)
 
 		BeforeEach(func() {
@@ -219,7 +219,7 @@ var _ = Describe("Provision", func() {
 			Expect(actualWorkspace.Modules[0].Name).To(Equal("brokertemplate"))
 			Expect(actualWorkspace.Modules[0].Definition).To(BeEmpty())
 			Expect(actualWorkspace.Modules[0].Definitions).To(Equal(fakeServiceDefinition.ProvisionSettings.Templates))
-			Expect(actualWorkspace.Instances[0].Configuration).To(Equal(map[string]interface{}{"username": "some-user"}))
+			Expect(actualWorkspace.Instances[0].Configuration).To(Equal(map[string]any{"username": "some-user"}))
 			Expect(actualWorkspace.Transformer.ParameterMappings).To(Equal([]workspace.ParameterMapping{{TfVariable: "map_this_param", ParameterName: "map_to_this_param"}}))
 			Expect(actualWorkspace.Transformer.ParametersToRemove).To(Equal([]string{"remove_this_param"}))
 			Expect(actualWorkspace.Transformer.ParametersToAdd).To(Equal([]workspace.ParameterMapping{{TfVariable: "add_this_tf_param", ParameterName: "add_as_this_param"}}))
@@ -244,7 +244,7 @@ var _ = Describe("Provision", func() {
 		})
 
 		It("fails, when not all import params are provided", func() {
-			pc, err := varcontext.Builder().MergeMap(map[string]interface{}{"tf_id": expectedTfID, "subsume": true, "username": "some-user"}).Build()
+			pc, err := varcontext.Builder().MergeMap(map[string]any{"tf_id": expectedTfID, "subsume": true, "username": "some-user"}).Build()
 			Expect(err).NotTo(HaveOccurred())
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)

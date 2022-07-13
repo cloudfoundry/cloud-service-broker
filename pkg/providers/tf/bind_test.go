@@ -31,7 +31,7 @@ var _ = Describe("Bind", func() {
 		fakeLogger            = utils.NewLogger("test")
 		fakeServiceDefinition tf.TfServiceDefinitionV1
 		bindContext           *varcontext.VarContext
-		templateVars          = map[string]interface{}{"tf_id": expectedTfID, "username": "some-user"}
+		templateVars          = map[string]any{"tf_id": expectedTfID, "username": "some-user"}
 
 		fakeTerraformWorkspace *workspacefakes.FakeWorkspace
 	)
@@ -72,7 +72,7 @@ var _ = Describe("Bind", func() {
 			fakeDeploymentManager.OperationStatusReturns(true, "operation succeeded", nil)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 			fakeDefaultInvoker.ApplyReturns(nil)
-			fakeTerraformWorkspace.OutputsReturns(map[string]interface{}{"username": "some-user"}, nil)
+			fakeTerraformWorkspace.OutputsReturns(map[string]any{"username": "some-user"}, nil)
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
@@ -87,7 +87,7 @@ var _ = Describe("Bind", func() {
 			Expect(actualWorkspace.Modules[0].Name).To(Equal("brokertemplate"))
 			Expect(actualWorkspace.Modules[0].Definition).To(Equal(fakeServiceDefinition.BindSettings.Template))
 			Expect(actualWorkspace.Modules[0].Definitions).To(Equal(fakeServiceDefinition.BindSettings.Templates))
-			Expect(actualWorkspace.Instances[0].Configuration).To(Equal(map[string]interface{}{"username": "some-user"}))
+			Expect(actualWorkspace.Instances[0].Configuration).To(Equal(map[string]any{"username": "some-user"}))
 			Expect(actualWorkspace.Transformer.ParameterMappings).To(Equal([]workspace.ParameterMapping{}))
 			Expect(actualWorkspace.Transformer.ParametersToRemove).To(Equal([]string{}))
 			Expect(actualWorkspace.Transformer.ParametersToAdd).To(Equal([]workspace.ParameterMapping{}))

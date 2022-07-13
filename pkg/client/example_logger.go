@@ -17,11 +17,11 @@ func (l *exampleLogger) Println(s string) {
 	log.Println(l.format(s))
 }
 
-func (l *exampleLogger) Printf(format string, v ...interface{}) {
+func (l *exampleLogger) Printf(format string, v ...any) {
 	log.Printf(l.format(format), v...)
 }
 
-func (l *exampleLogger) Fatalf(format string, v ...interface{}) {
+func (l *exampleLogger) Fatalf(format string, v ...any) {
 	log.Fatalf(l.format(format), v...)
 }
 

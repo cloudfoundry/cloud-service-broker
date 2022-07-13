@@ -19,7 +19,7 @@ type directoryContentsMatcher struct {
 	expected string
 }
 
-func (m *directoryContentsMatcher) Match(actual interface{}) (bool, error) {
+func (m *directoryContentsMatcher) Match(actual any) (bool, error) {
 	a, ok := actual.(string)
 	if !ok {
 		return false, fmt.Errorf("actual must be a string")
@@ -34,7 +34,7 @@ func (m *directoryContentsMatcher) Match(actual interface{}) (bool, error) {
 	}
 }
 
-func (m *directoryContentsMatcher) FailureMessage(actual interface{}) string {
+func (m *directoryContentsMatcher) FailureMessage(actual any) string {
 	a, ok := actual.(string)
 	if !ok {
 		return "actual must be a string"
@@ -44,7 +44,7 @@ func (m *directoryContentsMatcher) FailureMessage(actual interface{}) string {
 	return fmt.Sprintf("Expected %s to match directory %s, but: %s", m.expected, a, err.Error())
 }
 
-func (m *directoryContentsMatcher) NegatedFailureMessage(actual interface{}) string {
+func (m *directoryContentsMatcher) NegatedFailureMessage(actual any) string {
 	a, ok := actual.(string)
 	if !ok {
 		return "actual must be a string"

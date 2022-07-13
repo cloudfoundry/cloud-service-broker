@@ -58,7 +58,7 @@ func hilFuncConfig() ast.Function {
 	return ast.Function{
 		ArgTypes:   []ast.Type{ast.TypeString},
 		ReturnType: ast.TypeString,
-		Callback: func(args []interface{}) (interface{}, error) {
+		Callback: func(args []any) (any, error) {
 			if viper.IsSet(args[0].(string)) {
 				return viper.GetString(args[0].(string)), nil
 			}
@@ -72,7 +72,7 @@ func hilFuncEnv() ast.Function {
 	return ast.Function{
 		ArgTypes:   []ast.Type{ast.TypeString},
 		ReturnType: ast.TypeString,
-		Callback: func(args []interface{}) (interface{}, error) {
+		Callback: func(args []any) (any, error) {
 			if val, ok := os.LookupEnv(args[0].(string)); ok {
 				return val, nil
 			}
@@ -87,7 +87,7 @@ func hilFuncTimeNano() ast.Function {
 	return ast.Function{
 		ArgTypes:   []ast.Type{},
 		ReturnType: ast.TypeString,
-		Callback: func(args []interface{}) (interface{}, error) {
+		Callback: func(args []any) (any, error) {
 			return fmt.Sprintf("%d", time.Now().UnixNano()), nil
 		},
 	}
@@ -99,7 +99,7 @@ func hilFuncStrTruncate() ast.Function {
 	return ast.Function{
 		ArgTypes:   []ast.Type{ast.TypeInt, ast.TypeString},
 		ReturnType: ast.TypeString,
-		Callback: func(args []interface{}) (interface{}, error) {
+		Callback: func(args []any) (any, error) {
 			maxLength := args[0].(int)
 			str := args[1].(string)
 			if len(str) > maxLength {
@@ -117,7 +117,7 @@ func hilFuncRegexpMatches() ast.Function {
 	return ast.Function{
 		ArgTypes:   []ast.Type{ast.TypeString, ast.TypeString},
 		ReturnType: ast.TypeBool,
-		Callback: func(args []interface{}) (interface{}, error) {
+		Callback: func(args []any) (any, error) {
 			return regexp.MatchString(args[0].(string), args[1].(string))
 		},
 	}
@@ -133,7 +133,7 @@ func hilFuncCounterNext() ast.Function {
 	return ast.Function{
 		ArgTypes:   []ast.Type{},
 		ReturnType: ast.TypeInt,
-		Callback: func(args []interface{}) (interface{}, error) {
+		Callback: func(args []any) (any, error) {
 			return cast.ToIntE(atomic.AddInt32(&counter, 1))
 		},
 	}
@@ -145,7 +145,7 @@ func hilFuncRandBase64() ast.Function {
 	return ast.Function{
 		ArgTypes:   []ast.Type{ast.TypeInt},
 		ReturnType: ast.TypeString,
-		Callback: func(args []interface{}) (interface{}, error) {
+		Callback: func(args []any) (any, error) {
 			passwordLength := args[0].(int)
 			rb := make([]byte, passwordLength)
 			if _, err := rand.Read(rb); err != nil {
@@ -162,7 +162,7 @@ func hilFuncStrQueryEscape() ast.Function {
 	return ast.Function{
 		ArgTypes:   []ast.Type{ast.TypeString},
 		ReturnType: ast.TypeString,
-		Callback: func(args []interface{}) (interface{}, error) {
+		Callback: func(args []any) (any, error) {
 			return url.QueryEscape(args[0].(string)), nil
 		},
 	}
@@ -173,7 +173,7 @@ func hilFuncAssert() ast.Function {
 	return ast.Function{
 		ArgTypes:   []ast.Type{ast.TypeBool, ast.TypeString},
 		ReturnType: ast.TypeBool,
-		Callback: func(args []interface{}) (interface{}, error) {
+		Callback: func(args []any) (any, error) {
 			condition := args[0].(bool)
 			message := args[1].(string)
 
@@ -191,7 +191,7 @@ func hilFuncJSONMarshal() ast.Function {
 	return ast.Function{
 		ArgTypes:   []ast.Type{ast.TypeAny},
 		ReturnType: ast.TypeString,
-		Callback: func(args []interface{}) (interface{}, error) {
+		Callback: func(args []any) (any, error) {
 			unwrapped, err := hilToInterface(args[0])
 			if err != nil {
 				return nil, err
@@ -212,7 +212,7 @@ func hilFuncMapFlatten() ast.Function {
 	return ast.Function{
 		ArgTypes:   []ast.Type{ast.TypeString, ast.TypeString, ast.TypeMap},
 		ReturnType: ast.TypeString,
-		Callback: func(args []interface{}) (interface{}, error) {
+		Callback: func(args []any) (any, error) {
 			kvSep := args[0].(string)
 			tupleSep := args[1].(string)
 			unwrapped, err := hilToInterface(args[2])
@@ -221,7 +221,7 @@ func hilFuncMapFlatten() ast.Function {
 			}
 
 			outArr := []string{}
-			for k, v := range unwrapped.(map[string]interface{}) {
+			for k, v := range unwrapped.(map[string]any) {
 				outArr = append(outArr, fmt.Sprintf("%v%s%v", k, kvSep, v))
 			}
 
@@ -232,11 +232,11 @@ func hilFuncMapFlatten() ast.Function {
 	}
 }
 
-func hilToInterface(arg interface{}) (interface{}, error) {
+func hilToInterface(arg any) (any, error) {
 	// The types here cover what HIL supports.
 	switch a := arg.(type) {
 	case map[string]ast.Variable:
-		out := make(map[string]interface{})
+		out := make(map[string]any)
 		for key, v := range a {
 			val, verr := hilToInterface(v)
 			if verr != nil {
@@ -248,7 +248,7 @@ func hilToInterface(arg interface{}) (interface{}, error) {
 		return out, nil
 
 	case []ast.Variable:
-		var out []interface{}
+		var out []any
 		for _, v := range a {
 			unwrapped, err := hil.VariableToInterface(v)
 			if err != nil {
