@@ -57,7 +57,7 @@ var _ = Describe("Deprovision", func() {
 								ID:   planID,
 								Name: "test-plan",
 							},
-							ServiceProperties: map[string]interface{}{
+							ServiceProperties: map[string]any{
 								"plan-defined-key":       "plan-defined-value",
 								"other-plan-defined-key": "other-plan-defined-value",
 							},
@@ -131,7 +131,7 @@ var _ = Describe("Deprovision", func() {
 		Describe("deprovision variables", func() {
 			When("there were provision variables during provision or update", func() {
 				BeforeEach(func() {
-					fakeStorage.GetProvisionRequestDetailsReturns(map[string]interface{}{"foo": "something", "import_field_1": "hello"}, nil)
+					fakeStorage.GetProvisionRequestDetailsReturns(map[string]any{"foo": "something", "import_field_1": "hello"}, nil)
 				})
 
 				It("should use the provision variables", func() {

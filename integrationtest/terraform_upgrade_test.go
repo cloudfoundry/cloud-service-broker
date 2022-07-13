@@ -35,8 +35,8 @@ var _ = Describe("Terraform Upgrade", func() {
 		Expect(json.Unmarshal(tfDeploymentReceiver.Workspace, &workspaceReceiver)).NotTo(HaveOccurred())
 		var stateReceiver struct {
 			Outputs map[string]struct {
-				Type  string      `json:"type"`
-				Value interface{} `json:"value"`
+				Type  string `json:"type"`
+				Value any    `json:"value"`
 			} `json:"outputs"`
 		}
 		Expect(json.Unmarshal(workspaceReceiver.State, &stateReceiver)).NotTo(HaveOccurred())

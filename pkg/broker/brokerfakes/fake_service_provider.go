@@ -12,18 +12,18 @@ import (
 )
 
 type FakeServiceProvider struct {
-	BindStub        func(context.Context, *varcontext.VarContext) (map[string]interface{}, error)
+	BindStub        func(context.Context, *varcontext.VarContext) (map[string]any, error)
 	bindMutex       sync.RWMutex
 	bindArgsForCall []struct {
 		arg1 context.Context
 		arg2 *varcontext.VarContext
 	}
 	bindReturns struct {
-		result1 map[string]interface{}
+		result1 map[string]any
 		result2 error
 	}
 	bindReturnsOnCall map[int]struct {
-		result1 map[string]interface{}
+		result1 map[string]any
 		result2 error
 	}
 	CheckOperationConstraintsStub        func(string, string) error
@@ -64,7 +64,7 @@ type FakeServiceProvider struct {
 		result1 *string
 		result2 error
 	}
-	GetImportedPropertiesStub        func(context.Context, string, string, []broker.BrokerVariable) (map[string]interface{}, error)
+	GetImportedPropertiesStub        func(context.Context, string, string, []broker.BrokerVariable) (map[string]any, error)
 	getImportedPropertiesMutex       sync.RWMutex
 	getImportedPropertiesArgsForCall []struct {
 		arg1 context.Context
@@ -73,11 +73,11 @@ type FakeServiceProvider struct {
 		arg4 []broker.BrokerVariable
 	}
 	getImportedPropertiesReturns struct {
-		result1 map[string]interface{}
+		result1 map[string]any
 		result2 error
 	}
 	getImportedPropertiesReturnsOnCall map[int]struct {
-		result1 map[string]interface{}
+		result1 map[string]any
 		result2 error
 	}
 	GetTerraformOutputsStub        func(context.Context, string) (storage.JSONObject, error)
@@ -171,7 +171,7 @@ type FakeServiceProvider struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeServiceProvider) Bind(arg1 context.Context, arg2 *varcontext.VarContext) (map[string]interface{}, error) {
+func (fake *FakeServiceProvider) Bind(arg1 context.Context, arg2 *varcontext.VarContext) (map[string]any, error) {
 	fake.bindMutex.Lock()
 	ret, specificReturn := fake.bindReturnsOnCall[len(fake.bindArgsForCall)]
 	fake.bindArgsForCall = append(fake.bindArgsForCall, struct {
@@ -197,7 +197,7 @@ func (fake *FakeServiceProvider) BindCallCount() int {
 	return len(fake.bindArgsForCall)
 }
 
-func (fake *FakeServiceProvider) BindCalls(stub func(context.Context, *varcontext.VarContext) (map[string]interface{}, error)) {
+func (fake *FakeServiceProvider) BindCalls(stub func(context.Context, *varcontext.VarContext) (map[string]any, error)) {
 	fake.bindMutex.Lock()
 	defer fake.bindMutex.Unlock()
 	fake.BindStub = stub
@@ -210,28 +210,28 @@ func (fake *FakeServiceProvider) BindArgsForCall(i int) (context.Context, *varco
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeServiceProvider) BindReturns(result1 map[string]interface{}, result2 error) {
+func (fake *FakeServiceProvider) BindReturns(result1 map[string]any, result2 error) {
 	fake.bindMutex.Lock()
 	defer fake.bindMutex.Unlock()
 	fake.BindStub = nil
 	fake.bindReturns = struct {
-		result1 map[string]interface{}
+		result1 map[string]any
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) BindReturnsOnCall(i int, result1 map[string]interface{}, result2 error) {
+func (fake *FakeServiceProvider) BindReturnsOnCall(i int, result1 map[string]any, result2 error) {
 	fake.bindMutex.Lock()
 	defer fake.bindMutex.Unlock()
 	fake.BindStub = nil
 	if fake.bindReturnsOnCall == nil {
 		fake.bindReturnsOnCall = make(map[int]struct {
-			result1 map[string]interface{}
+			result1 map[string]any
 			result2 error
 		})
 	}
 	fake.bindReturnsOnCall[i] = struct {
-		result1 map[string]interface{}
+		result1 map[string]any
 		result2 error
 	}{result1, result2}
 }
@@ -425,7 +425,7 @@ func (fake *FakeServiceProvider) DeprovisionReturnsOnCall(i int, result1 *string
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) GetImportedProperties(arg1 context.Context, arg2 string, arg3 string, arg4 []broker.BrokerVariable) (map[string]interface{}, error) {
+func (fake *FakeServiceProvider) GetImportedProperties(arg1 context.Context, arg2 string, arg3 string, arg4 []broker.BrokerVariable) (map[string]any, error) {
 	var arg4Copy []broker.BrokerVariable
 	if arg4 != nil {
 		arg4Copy = make([]broker.BrokerVariable, len(arg4))
@@ -458,7 +458,7 @@ func (fake *FakeServiceProvider) GetImportedPropertiesCallCount() int {
 	return len(fake.getImportedPropertiesArgsForCall)
 }
 
-func (fake *FakeServiceProvider) GetImportedPropertiesCalls(stub func(context.Context, string, string, []broker.BrokerVariable) (map[string]interface{}, error)) {
+func (fake *FakeServiceProvider) GetImportedPropertiesCalls(stub func(context.Context, string, string, []broker.BrokerVariable) (map[string]any, error)) {
 	fake.getImportedPropertiesMutex.Lock()
 	defer fake.getImportedPropertiesMutex.Unlock()
 	fake.GetImportedPropertiesStub = stub
@@ -471,28 +471,28 @@ func (fake *FakeServiceProvider) GetImportedPropertiesArgsForCall(i int) (contex
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
-func (fake *FakeServiceProvider) GetImportedPropertiesReturns(result1 map[string]interface{}, result2 error) {
+func (fake *FakeServiceProvider) GetImportedPropertiesReturns(result1 map[string]any, result2 error) {
 	fake.getImportedPropertiesMutex.Lock()
 	defer fake.getImportedPropertiesMutex.Unlock()
 	fake.GetImportedPropertiesStub = nil
 	fake.getImportedPropertiesReturns = struct {
-		result1 map[string]interface{}
+		result1 map[string]any
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) GetImportedPropertiesReturnsOnCall(i int, result1 map[string]interface{}, result2 error) {
+func (fake *FakeServiceProvider) GetImportedPropertiesReturnsOnCall(i int, result1 map[string]any, result2 error) {
 	fake.getImportedPropertiesMutex.Lock()
 	defer fake.getImportedPropertiesMutex.Unlock()
 	fake.GetImportedPropertiesStub = nil
 	if fake.getImportedPropertiesReturnsOnCall == nil {
 		fake.getImportedPropertiesReturnsOnCall = make(map[int]struct {
-			result1 map[string]interface{}
+			result1 map[string]any
 			result2 error
 		})
 	}
 	fake.getImportedPropertiesReturnsOnCall[i] = struct {
-		result1 map[string]interface{}
+		result1 map[string]any
 		result2 error
 	}{result1, result2}
 }

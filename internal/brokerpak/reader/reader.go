@@ -245,7 +245,7 @@ func (pak *BrokerPakReader) fileExistsInZip(path string) bool {
 	return false
 }
 
-func (pak *BrokerPakReader) readYaml(name string, v interface{}) error {
+func (pak *BrokerPakReader) readYaml(name string, v any) error {
 	fd := pak.contents.Find(name)
 	if fd == nil {
 		return fmt.Errorf("couldn't find the file with the name %q", name)

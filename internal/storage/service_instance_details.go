@@ -107,7 +107,7 @@ func (s *Storage) DeleteServiceInstanceDetails(guid string) error {
 	return nil
 }
 
-func (s *Storage) loadServiceInstanceDetailsIfExists(guid string, receiver interface{}) error {
+func (s *Storage) loadServiceInstanceDetailsIfExists(guid string, receiver any) error {
 	if guid == "" {
 		return nil
 	}

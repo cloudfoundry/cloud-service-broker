@@ -28,83 +28,83 @@ import (
 func TestContextBuilder(t *testing.T) {
 	cases := map[string]struct {
 		Builder     *ContextBuilder
-		Expected    map[string]interface{}
+		Expected    map[string]any
 		ErrContains string
 	}{
 		"an empty context": {
 			Builder:     Builder(),
-			Expected:    map[string]interface{}{},
+			Expected:    map[string]any{},
 			ErrContains: "",
 		},
 
 		// MergeMap
 		"MergeMap blank okay": {
-			Builder:  Builder().MergeMap(map[string]interface{}{}),
-			Expected: map[string]interface{}{},
+			Builder:  Builder().MergeMap(map[string]any{}),
+			Expected: map[string]any{},
 		},
 		"MergeMap multi-key": {
-			Builder:  Builder().MergeMap(map[string]interface{}{"a": "a", "b": "b"}),
-			Expected: map[string]interface{}{"a": "a", "b": "b"},
+			Builder:  Builder().MergeMap(map[string]any{"a": "a", "b": "b"}),
+			Expected: map[string]any{"a": "a", "b": "b"},
 		},
 		"MergeMap overwrite": {
-			Builder:  Builder().MergeMap(map[string]interface{}{"a": "a"}).MergeMap(map[string]interface{}{"a": "aaa"}),
-			Expected: map[string]interface{}{"a": "aaa"},
+			Builder:  Builder().MergeMap(map[string]any{"a": "a"}).MergeMap(map[string]any{"a": "aaa"}),
+			Expected: map[string]any{"a": "aaa"},
 		},
 
 		// MergeDefaultWithEval
 		"MergeDefaultWithEval no defaults": {
 			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "foo"}}),
-			Expected: map[string]interface{}{},
+			Expected: map[string]any{},
 		},
 		"MergeDefaultWithEval non-string": {
 			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "h2g2", Default: 42}}),
-			Expected: map[string]interface{}{"h2g2": 42},
+			Expected: map[string]any{"h2g2": 42},
 		},
 		"MergeDefaultWithEval basic-string": {
 			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "a", Default: "no-template"}}),
-			Expected: map[string]interface{}{"a": "no-template"},
+			Expected: map[string]any{"a": "no-template"},
 		},
 		"MergeDefaultWithEval template string": {
 			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "a", Default: "a"}, {Name: "b", Default: "${a}"}}),
-			Expected: map[string]interface{}{"a": "a", "b": "a"},
+			Expected: map[string]any{"a": "a", "b": "a"},
 		},
 		"MergeDefaultWithEval no-overwrite": {
 			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "a", Default: "a"}, {Name: "a", Default: "b", Overwrite: false}}),
-			Expected: map[string]interface{}{"a": "a"},
+			Expected: map[string]any{"a": "a"},
 		},
 		"MergeDefaultWithEval overwrite": {
 			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "a", Default: "a"}, {Name: "a", Default: "b", Overwrite: true}}),
-			Expected: map[string]interface{}{"a": "b"},
+			Expected: map[string]any{"a": "b"},
 		},
 
 		"MergeDefaultWithEval object": {
 			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "o", Default: `{"foo": "bar"}`, Type: "object"}}),
-			Expected: map[string]interface{}{"o": map[string]interface{}{"foo": "bar"}},
+			Expected: map[string]any{"o": map[string]any{"foo": "bar"}},
 		},
 
 		"MergeDefaultWithEval boolean": {
 			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "b", Default: `true`, Type: "boolean"}}),
-			Expected: map[string]interface{}{"b": true},
+			Expected: map[string]any{"b": true},
 		},
 		"MergeDefaultWithEval array": {
 			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "a", Default: `["a","b","c","d"]`, Type: "array"}}),
-			Expected: map[string]interface{}{"a": []interface{}{"a", "b", "c", "d"}},
+			Expected: map[string]any{"a": []any{"a", "b", "c", "d"}},
 		},
 		"MergeDefaultWithEval number": {
 			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "n", Default: `1.234`, Type: "number"}}),
-			Expected: map[string]interface{}{"n": 1.234},
+			Expected: map[string]any{"n": 1.234},
 		},
 		"MergeDefaultWithEval integer": {
 			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "i", Default: `1234`, Type: "integer"}}),
-			Expected: map[string]interface{}{"i": 1234},
+			Expected: map[string]any{"i": 1234},
 		},
 		"MergeDefaultWithEval string": {
 			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "s", Default: `1234`, Type: "string"}}),
-			Expected: map[string]interface{}{"s": "1234"},
+			Expected: map[string]any{"s": "1234"},
 		},
 		"MergeDefaultWithEval blank type": {
 			Builder:  Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "s", Default: `1234`, Type: ""}}),
-			Expected: map[string]interface{}{"s": "1234"},
+			Expected: map[string]any{"s": "1234"},
 		},
 		"MergeDefaultWithEval bad type": {
 			Builder:     Builder().MergeDefaultWithEval([]DefaultVariable{{Name: "s", Default: `1234`, Type: "class"}}),
@@ -114,7 +114,7 @@ func TestContextBuilder(t *testing.T) {
 		// MergeEvalResult
 		"MergeEvalResult accumulates context": {
 			Builder:  Builder().MergeEvalResult("a", "a", "string").MergeEvalResult("b", "${a}", "string"),
-			Expected: map[string]interface{}{"a": "a", "b": "a"},
+			Expected: map[string]any{"a": "a", "b": "a"},
 		},
 		"MergeEvalResult errors": {
 			Builder:     Builder().MergeEvalResult("a", "${dne}", "string"),
@@ -124,11 +124,11 @@ func TestContextBuilder(t *testing.T) {
 		// MergeJSONObject
 		"MergeJSONObject blank message": {
 			Builder:  Builder().MergeJSONObject(json.RawMessage{}),
-			Expected: map[string]interface{}{},
+			Expected: map[string]any{},
 		},
 		"MergeJSONObject valid message": {
 			Builder:  Builder().MergeJSONObject(json.RawMessage(`{"a":"a"}`)),
-			Expected: map[string]interface{}{"a": "a"},
+			Expected: map[string]any{"a": "a"},
 		},
 		"MergeJSONObject invalid message": {
 			Builder:     Builder().MergeJSONObject(json.RawMessage(`{{{}}}`)),
@@ -136,23 +136,23 @@ func TestContextBuilder(t *testing.T) {
 		},
 		"MergeJSONObject merge multiple": {
 			Builder:  Builder().MergeJSONObject(json.RawMessage(`{"foo":"bar"}`)).MergeJSONObject(json.RawMessage(`{"baz":"quz"}`)),
-			Expected: map[string]interface{}{"foo": "bar", "baz": "quz"},
+			Expected: map[string]any{"foo": "bar", "baz": "quz"},
 		},
 		"MergeJSONObject duplicate keys at top level": {
 			Builder:  Builder().MergeJSONObject(json.RawMessage(`{"foo":"bar","baz":"bar"}`)).MergeJSONObject(json.RawMessage(`{"baz":"quz"}`)),
-			Expected: map[string]interface{}{"foo": "bar", "baz": "quz"},
+			Expected: map[string]any{"foo": "bar", "baz": "quz"},
 		},
 		"MergeJSONObject only merges top level key/values": {
 			Builder:  Builder().MergeJSONObject(json.RawMessage(`{"foo":{"bar":"baz","quz":"buz"}}`)).MergeJSONObject(json.RawMessage(`{"foo":{"bar":"quz"}}`)),
-			Expected: map[string]interface{}{"foo": map[string]interface{}{"bar": "quz"}},
+			Expected: map[string]any{"foo": map[string]any{"bar": "quz"}},
 		},
 		"MergeJSONObject merge first empty object": {
 			Builder:  Builder().MergeJSONObject(json.RawMessage(`{}`)).MergeJSONObject(json.RawMessage(`{"baz":"quz"}`)),
-			Expected: map[string]interface{}{"baz": "quz"},
+			Expected: map[string]any{"baz": "quz"},
 		},
 		"MergeJSONObject merge second empty object": {
 			Builder:  Builder().MergeJSONObject(json.RawMessage(`{"baz":"quz"}`)).MergeJSONObject(json.RawMessage(`{}`)),
-			Expected: map[string]interface{}{"baz": "quz"},
+			Expected: map[string]any{"baz": "quz"},
 		},
 		"MergeJSONObject merge JSON non-object": {
 			Builder:     Builder().MergeJSONObject(json.RawMessage(`{"baz":"quz"}`)).MergeJSONObject(json.RawMessage(`true`)),
@@ -162,28 +162,28 @@ func TestContextBuilder(t *testing.T) {
 		// MergeStruct
 		"MergeStruct without JSON Tags": {
 			Builder:  Builder().MergeStruct(struct{ Name string }{Name: "Foo"}),
-			Expected: map[string]interface{}{"Name": "Foo"},
+			Expected: map[string]any{"Name": "Foo"},
 		},
 		"MergeStruct with JSON Tags": {
 			Builder: Builder().MergeStruct(struct {
 				Name string `json:"username"`
 			}{Name: "Foo"}),
-			Expected: map[string]interface{}{"username": "Foo"},
+			Expected: map[string]any{"username": "Foo"},
 		},
 
 		// constants
 		"Basic constants": {
 			Builder: Builder().
-				SetEvalConstants(map[string]interface{}{"PI": 3.14}).
+				SetEvalConstants(map[string]any{"PI": 3.14}).
 				MergeEvalResult("out", "${PI}", "string"),
-			Expected: map[string]interface{}{"out": "3.14"},
+			Expected: map[string]any{"out": "3.14"},
 		},
 		"User overrides constant": {
 			Builder: Builder().
-				SetEvalConstants(map[string]interface{}{"PI": 3.14}).
-				MergeMap(map[string]interface{}{"PI": 3.2}). // reassign incorrectly, https://en.wikipedia.org/wiki/Indiana_Pi_Bill
-				MergeEvalResult("PI", "${PI}", "string"),    // test which PI gets referenced
-			Expected: map[string]interface{}{"PI": "3.14"},
+				SetEvalConstants(map[string]any{"PI": 3.14}).
+				MergeMap(map[string]any{"PI": 3.2}).      // reassign incorrectly, https://en.wikipedia.org/wiki/Indiana_Pi_Bill
+				MergeEvalResult("PI", "${PI}", "string"), // test which PI gets referenced
+			Expected: map[string]any{"PI": "3.14"},
 		},
 	}
 

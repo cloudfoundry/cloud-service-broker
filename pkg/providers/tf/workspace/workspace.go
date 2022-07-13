@@ -37,7 +37,7 @@ const (
 
 // NewWorkspace creates a new TerraformWorkspace from a given template and variables to populate an instance of it.
 // The created instance will have the name specified by the DefaultInstanceName constant.
-func NewWorkspace(templateVars map[string]interface{},
+func NewWorkspace(templateVars map[string]any,
 	terraformTemplate string,
 	terraformTemplates map[string]string,
 	importParameterMappings []ParameterMapping,
@@ -54,7 +54,7 @@ func NewWorkspace(templateVars map[string]interface{},
 		return nil, err
 	}
 
-	limitedConfig := make(map[string]interface{})
+	limitedConfig := make(map[string]any)
 	for _, name := range inputList {
 		limitedConfig[name] = templateVars[name]
 	}
@@ -299,7 +299,7 @@ func (workspace *TerraformWorkspace) teardownFs() error {
 // given name. This function DOES NOT invoke Terraform and instead uses the stored state.
 // If no instance exists with the given name, it could be that Terraform pruned it due
 // to having no contents so a blank map is returned.
-func (workspace *TerraformWorkspace) Outputs(instance string) (map[string]interface{}, error) {
+func (workspace *TerraformWorkspace) Outputs(instance string) (map[string]any, error) {
 	state, err := NewTfstate(workspace.State)
 	if err != nil {
 		return nil, fmt.Errorf("error creating TF state: %w", err)
@@ -334,13 +334,13 @@ func (workspace *TerraformWorkspace) tfStatePath() string {
 	return path.Join(workspace.dir, "terraform.tfstate")
 }
 
-func (workspace *TerraformWorkspace) UpdateInstanceConfiguration(templateVars map[string]interface{}) error {
+func (workspace *TerraformWorkspace) UpdateInstanceConfiguration(templateVars map[string]any) error {
 	// we may be doing this twice in the case of dynamic HCL, that is fine.
 	inputList, err := workspace.Modules[0].Inputs()
 	if err != nil {
 		return err
 	}
-	limitedConfig := make(map[string]interface{})
+	limitedConfig := make(map[string]any)
 	for _, name := range inputList {
 		limitedConfig[name] = templateVars[name]
 	}

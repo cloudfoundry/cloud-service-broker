@@ -88,7 +88,7 @@ func (d *DeploymentManager) OperationStatus(deploymentID string) (bool, string, 
 	}
 }
 
-func (d *DeploymentManager) UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]interface{}) error {
+func (d *DeploymentManager) UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]any) error {
 	if !viper.GetBool(featureflags.DynamicHCLEnabled) && !viper.GetBool(featureflags.TfUpgradeEnabled) {
 		return nil
 	}

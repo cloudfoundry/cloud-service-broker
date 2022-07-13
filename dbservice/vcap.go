@@ -25,13 +25,13 @@ import (
 )
 
 type VcapService struct {
-	BindingName  string                 `json:"binding_name"`  // The name assigned to the service binding by the user.
-	InstanceName string                 `json:"instance_name"` // The name assigned to the service instance by the user.
-	Name         string                 `json:"name"`          // The binding_name if it exists; otherwise the instance_name.
-	Label        string                 `json:"label"`         // The name of the service offering.
-	Tags         []string               `json:"tags"`          // An array of strings an app can use to identify a service instance.
-	Plan         string                 `json:"plan"`          // The service plan selected when the service instance was created.
-	Credentials  map[string]interface{} `json:"credentials"`   // The service-specific credentials needed to access the service instance.
+	BindingName  string         `json:"binding_name"`  // The name assigned to the service binding by the user.
+	InstanceName string         `json:"instance_name"` // The name assigned to the service instance by the user.
+	Name         string         `json:"name"`          // The binding_name if it exists; otherwise the instance_name.
+	Label        string         `json:"label"`         // The name of the service offering.
+	Tags         []string       `json:"tags"`          // An array of strings an app can use to identify a service instance.
+	Plan         string         `json:"plan"`          // The service plan selected when the service instance was created.
+	Credentials  map[string]any `json:"credentials"`   // The service-specific credentials needed to access the service instance.
 }
 
 func UseVcapServices() error {
@@ -79,7 +79,7 @@ func SetDatabaseCredentials(vcapService VcapService) error {
 }
 
 // Return first non-null string in list of arguments
-func coalesce(credentials ...interface{}) string {
+func coalesce(credentials ...any) string {
 	for _, credential := range credentials {
 		if credential != nil {
 			switch credential.(type) {

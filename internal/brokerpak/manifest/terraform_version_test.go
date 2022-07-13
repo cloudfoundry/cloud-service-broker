@@ -27,12 +27,12 @@ var _ = Describe("DefaultTerraformVersion", func() {
 	When("there is more than one terraform version", func() {
 		It("returns the default version", func() {
 			m, err := manifest.Parse(fakeManifest(
-				withAdditionalEntry("terraform_binaries", map[string]interface{}{
+				withAdditionalEntry("terraform_binaries", map[string]any{
 					"name":    "terraform",
 					"version": "1.1.5",
 					"default": false,
 				}),
-				withAdditionalEntry("terraform_binaries", map[string]interface{}{
+				withAdditionalEntry("terraform_binaries", map[string]any{
 					"name":    "terraform",
 					"version": "1.1.6",
 					"default": true,

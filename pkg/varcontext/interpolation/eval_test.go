@@ -29,15 +29,15 @@ import (
 func TestEval(t *testing.T) {
 	tests := map[string]struct {
 		Template      string
-		Variables     map[string]interface{}
-		Expected      interface{}
+		Variables     map[string]any
+		Expected      any
 		ErrorContains string
 	}{
 		"Non-Templated String":  {Template: "foo", Expected: "foo"},
 		"Basic Evaluation":      {Template: "${33}", Expected: "33"},
 		"Escaped Evaluation":    {Template: "$${33}", Expected: "${33}"},
 		"Missing Variable":      {Template: "${a}", ErrorContains: "unknown variable accessed: a"},
-		"Variable Substitution": {Template: "${foo}", Variables: map[string]interface{}{"foo": 33}, Expected: "33"},
+		"Variable Substitution": {Template: "${foo}", Variables: map[string]any{"foo": 33}, Expected: "33"},
 		"Bad Template":          {Template: "${", ErrorContains: "expected expression"},
 		"Truncate Required":     {Template: `${str.truncate(2, "expression")}`, Expected: "ex"},
 		"Truncate Not Required": {Template: `${str.truncate(200, "expression")}`, Expected: "expression"},
@@ -52,15 +52,15 @@ func TestEval(t *testing.T) {
 		"assert success":        {Template: `${assert(true, "nothing should happen")}`, Expected: "true"},
 		"assert failure":        {Template: `${assert(false, "failure message")}`, ErrorContains: "failure message"},
 		"assert message":        {Template: `${assert(false, "failure message ${1+1}")}`, ErrorContains: "failure message 2"},
-		"json marshal":          {Template: "${json.marshal(mapval)}", Variables: map[string]interface{}{"mapval": map[string]string{"hello": "world"}}, Expected: `{"hello":"world"}`},
-		"json marshal array":    {Template: "${json.marshal(list)}", Variables: map[string]interface{}{"list": []string{"a", "b", "c"}}, Expected: `["a","b","c"]`},
+		"json marshal":          {Template: "${json.marshal(mapval)}", Variables: map[string]any{"mapval": map[string]string{"hello": "world"}}, Expected: `{"hello":"world"}`},
+		"json marshal array":    {Template: "${json.marshal(list)}", Variables: map[string]any{"list": []string{"a", "b", "c"}}, Expected: `["a","b","c"]`},
 		"json marshal numeric":  {Template: "${json.marshal(42)}", Expected: `42`},
 		"json marshal string":   {Template: `${json.marshal("str")}`, Expected: `"str"`},
 		"json marshal true":     {Template: "${json.marshal(true)}", Expected: `true`},
 		"json marshal false":    {Template: "${json.marshal(false)}", Expected: `false`},
-		"map flatten blank":     {Template: `${map.flatten(":", ";", mapval)}`, Variables: map[string]interface{}{"mapval": map[string]string{}}, Expected: ``},
-		"map flatten one":       {Template: `${map.flatten(":", ";", mapval)}`, Variables: map[string]interface{}{"mapval": map[string]string{"key1": "val1"}}, Expected: `key1:val1`},
-		"map flatten":           {Template: `${map.flatten(":", ";", mapval)}`, Variables: map[string]interface{}{"mapval": map[string]string{"key1": "val1", "key2": "val2"}}, Expected: `key1:val1;key2:val2`},
+		"map flatten blank":     {Template: `${map.flatten(":", ";", mapval)}`, Variables: map[string]any{"mapval": map[string]string{}}, Expected: ``},
+		"map flatten one":       {Template: `${map.flatten(":", ";", mapval)}`, Variables: map[string]any{"mapval": map[string]string{"key1": "val1"}}, Expected: `key1:val1`},
+		"map flatten":           {Template: `${map.flatten(":", ";", mapval)}`, Variables: map[string]any{"mapval": map[string]string{"key1": "val1", "key2": "val2"}}, Expected: `key1:val1;key2:val2`},
 		"env var":               {Template: `${env("FOO")}`, Expected: `Bar`},
 		"missing env var":       {Template: `${env("_MISSING")}`, ErrorContains: "missing environment variable _MISSING"},
 		"config val":            {Template: `${config("config.val")}`, Expected: `foo`},
@@ -123,18 +123,18 @@ func TestHilToInterface(t *testing.T) {
 	// taking valid user inputs (i.e. only JSON values), converting them to HIL
 	// values then converting them back.
 	tests := map[string]struct {
-		UserInput interface{}
-		Expected  interface{}
+		UserInput any
+		Expected  any
 	}{
 		"string":      {UserInput: "foo", Expected: "foo"},
 		"numeric":     {UserInput: 42, Expected: "42"},
 		"bool-true":   {UserInput: true, Expected: "1"},
 		"bool-false":  {UserInput: false, Expected: "0"},
-		"str-array":   {UserInput: []interface{}{"a", "b"}, Expected: []interface{}{"a", "b"}},
-		"mixed-array": {UserInput: []interface{}{"a", 2}, Expected: []interface{}{"a", "2"}},
+		"str-array":   {UserInput: []any{"a", "b"}, Expected: []any{"a", "b"}},
+		"mixed-array": {UserInput: []any{"a", 2}, Expected: []any{"a", "2"}},
 		"object": {
-			UserInput: map[string]interface{}{"s": "str", "n": 42.0, "a": []interface{}{"a", 2}},
-			Expected:  map[string]interface{}{"s": "str", "n": "42", "a": []interface{}{"a", "2"}},
+			UserInput: map[string]any{"s": "str", "n": 42.0, "a": []any{"a", 2}},
+			Expected:  map[string]any{"s": "str", "n": "42", "a": []any{"a", "2"}},
 		},
 	}
 

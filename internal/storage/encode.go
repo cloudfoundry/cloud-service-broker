@@ -14,7 +14,7 @@ func (s *Storage) encodeBytes(b []byte) ([]byte, error) {
 	return c, nil
 }
 
-func (s *Storage) encodeJSON(a interface{}) ([]byte, error) {
+func (s *Storage) encodeJSON(a any) ([]byte, error) {
 	b, err := json.Marshal(a)
 	if err != nil {
 		return nil, fmt.Errorf("JSON marshal error: %w", err)
@@ -37,7 +37,7 @@ func (s *Storage) decodeJSONObject(a []byte) (JSONObject, error) {
 	return receiver, s.decodeJSON(a, &receiver)
 }
 
-func (s *Storage) decodeJSON(a []byte, receiver interface{}) error {
+func (s *Storage) decodeJSON(a []byte, receiver any) error {
 	b, err := s.decodeBytes(a)
 	switch {
 	case err != nil:

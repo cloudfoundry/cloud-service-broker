@@ -56,7 +56,7 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 				Description: "Builds emails for example.com.",
 				Bullets:     []string{"information point 1", "information point 2", "some caveat here"},
 				Free:        false,
-				Properties: map[string]interface{}{
+				Properties: map[string]any{
 					"domain":                 "example.com",
 					"password_special_chars": `@/ \"?`,
 				},
@@ -133,8 +133,8 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 				Name:            "Example",
 				Description:     "Examples are used for documenting your service AND as integration tests.",
 				PlanID:          "00000000-0000-0000-0000-000000000001",
-				ProvisionParams: map[string]interface{}{"username": "my-account"},
-				BindParams:      map[string]interface{}{},
+				ProvisionParams: map[string]any{"username": "my-account"},
+				BindParams:      map[string]any{},
 			},
 		},
 	}
@@ -311,15 +311,15 @@ func (tfb *TfServiceDefinitionV1) IsSubsumePlan(planGUID string) bool {
 // TfServiceDefinitionV1Plan represents a service plan in a human-friendly format
 // that can be converted into an OSB compatible plan.
 type TfServiceDefinitionV1Plan struct {
-	Name               string                 `yaml:"name"`
-	ID                 string                 `yaml:"id"`
-	Description        string                 `yaml:"description"`
-	DisplayName        string                 `yaml:"display_name"`
-	Bullets            []string               `yaml:"bullets,omitempty"`
-	Free               bool                   `yaml:"free,omitempty"`
-	Properties         map[string]interface{} `yaml:"properties"`
-	ProvisionOverrides map[string]interface{} `yaml:"provision_overrides,omitempty"`
-	BindOverrides      map[string]interface{} `yaml:"bind_overrides,omitempty"`
+	Name               string         `yaml:"name"`
+	ID                 string         `yaml:"id"`
+	Description        string         `yaml:"description"`
+	DisplayName        string         `yaml:"display_name"`
+	Bullets            []string       `yaml:"bullets,omitempty"`
+	Free               bool           `yaml:"free,omitempty"`
+	Properties         map[string]any `yaml:"properties"`
+	ProvisionOverrides map[string]any `yaml:"provision_overrides,omitempty"`
+	BindOverrides      map[string]any `yaml:"bind_overrides,omitempty"`
 }
 
 var _ validation.Validatable = (*TfServiceDefinitionV1Plan)(nil)

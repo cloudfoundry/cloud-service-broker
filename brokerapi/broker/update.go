@@ -126,7 +126,7 @@ func (broker *ServiceBroker) doUpgrade(ctx context.Context, serviceDefinition *b
 	}, nil
 }
 
-func (broker *ServiceBroker) doUpdate(ctx context.Context, serviceProvider broker.ServiceProvider, instance storage.ServiceInstanceDetails, vars *varcontext.VarContext, parsedDetails paramparser.UpdateDetails, mergedDetails map[string]interface{}) (domain.UpdateServiceSpec, error) {
+func (broker *ServiceBroker) doUpdate(ctx context.Context, serviceProvider broker.ServiceProvider, instance storage.ServiceInstanceDetails, vars *varcontext.VarContext, parsedDetails paramparser.UpdateDetails, mergedDetails map[string]any) (domain.UpdateServiceSpec, error) {
 	err := serviceProvider.CheckUpgradeAvailable(generateTFInstanceID(instance.GUID))
 	if err != nil {
 		return domain.UpdateServiceSpec{}, fmt.Errorf("terraform version check failed: %s", err.Error())
@@ -184,7 +184,7 @@ func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, servi
 	return bindingContexts, nil
 }
 
-func mergeJSON(previousParams, newParams, importParams map[string]interface{}) (map[string]interface{}, error) {
+func mergeJSON(previousParams, newParams, importParams map[string]any) (map[string]any, error) {
 	vc, err := varcontext.Builder().
 		MergeMap(previousParams).
 		MergeMap(importParams).

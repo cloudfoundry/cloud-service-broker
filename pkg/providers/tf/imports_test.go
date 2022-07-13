@@ -75,7 +75,7 @@ var _ = Describe("Import", func() {
 							{
 								Name: "subsume-plan",
 								ID:   subsumePlanGUID,
-								Properties: map[string]interface{}{
+								Properties: map[string]any{
 									"subsume": true,
 								},
 							},
@@ -100,7 +100,7 @@ var _ = Describe("Import", func() {
 				actualTfID := fakeDeploymentManager.GetTerraformDeploymentArgsForCall(0)
 				Expect(actualTfID).To(Equal("tf:fakeInstanceGUID:"))
 				Expect(err).NotTo(HaveOccurred())
-				Expect(result).To(Equal(map[string]interface{}{"field_to_replace": "subsume-value"}))
+				Expect(result).To(Equal(map[string]any{"field_to_replace": "subsume-value"}))
 			})
 
 			It("returns empty list and no error when no replace vars are defined", func() {

@@ -97,7 +97,7 @@ func (p TerraformMock) Reset() error {
 	return nil
 }
 
-func (p TerraformMock) FirstTerraformInvocationVars() (map[string]interface{}, error) {
+func (p TerraformMock) FirstTerraformInvocationVars() (map[string]any, error) {
 	invocations, err := p.ApplyInvocations()
 	if err != nil {
 		return nil, err
@@ -125,19 +125,19 @@ func (p TerraformMock) setTFStateFile(state workspace.Tfstate) error {
 type TFStateValue struct {
 	Name  string
 	Type  string
-	Value interface{}
+	Value any
 }
 
 // SetTFState set the Terraform State in a JSON file.
 func (p TerraformMock) SetTFState(values []TFStateValue) error {
 	var outputs = make(map[string]struct {
-		Type  string      `json:"type"`
-		Value interface{} `json:"value"`
+		Type  string `json:"type"`
+		Value any    `json:"value"`
 	})
 	for _, value := range values {
 		outputs[value.Name] = struct {
-			Type  string      `json:"type"`
-			Value interface{} `json:"value"`
+			Type  string `json:"type"`
+			Value any    `json:"value"`
 		}{
 			Type:  value.Type,
 			Value: value.Value,

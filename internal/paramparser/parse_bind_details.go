@@ -12,8 +12,8 @@ type BindDetails struct {
 	PlanID         string
 	ServiceID      string
 	BindAppGUID    string
-	RequestParams  map[string]interface{}
-	RequestContext map[string]interface{}
+	RequestParams  map[string]any
+	RequestContext map[string]any
 }
 
 func ParseBindDetails(input domain.BindDetails) (BindDetails, error) {

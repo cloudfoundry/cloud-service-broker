@@ -13,14 +13,14 @@ type ExtractVariable struct {
 	FieldToWrite string
 }
 
-func GetParameters(tfHCL string, parameters []ExtractVariable) (map[string]interface{}, error) {
+func GetParameters(tfHCL string, parameters []ExtractVariable) (map[string]any, error) {
 	splitHcl := strings.Split(tfHCL, "Outputs")
 	parsedConfig, diags := hclwrite.ParseConfig([]byte(splitHcl[0]), "", hcl.InitialPos)
 	if diags.HasErrors() {
 		return nil, fmt.Errorf("error parsing subsumed HCL file: %v", diags.Error())
 	}
 
-	subsumedParameters := make(map[string]interface{})
+	subsumedParameters := make(map[string]any)
 	for _, block := range parsedConfig.Body().Blocks() {
 		if block.Type() == "resource" {
 			for _, param := range parameters {

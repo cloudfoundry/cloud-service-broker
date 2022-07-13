@@ -42,14 +42,14 @@ type Tfstate struct {
 	Version          int    `json:"version"`
 	TerraformVersion string `json:"terraform_version"`
 	Outputs          map[string]struct {
-		Type  string      `json:"type"`
-		Value interface{} `json:"value"`
+		Type  string `json:"type"`
+		Value any    `json:"value"`
 	} `json:"outputs"`
 }
 
 // GetOutputs gets the key/value outputs defined for a module.
-func (module *Tfstate) GetOutputs() map[string]interface{} {
-	out := make(map[string]interface{})
+func (module *Tfstate) GetOutputs() map[string]any {
+	out := make(map[string]any)
 
 	for outputName, tfOutput := range module.Outputs {
 		out[outputName] = tfOutput.Value

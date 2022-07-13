@@ -34,7 +34,7 @@ var _ = Describe("Outputs", func() {
 			fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{
 				Workspace: fakeWorkspace,
 			}, nil)
-			fakeWorkspace.OutputsReturns(map[string]interface{}{"out": "foo"}, nil)
+			fakeWorkspace.OutputsReturns(map[string]any{"out": "foo"}, nil)
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
@@ -63,7 +63,7 @@ var _ = Describe("Outputs", func() {
 			fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{
 				Workspace: fakeWorkspace,
 			}, nil)
-			fakeWorkspace.OutputsReturns(map[string]interface{}{}, errors.New("cant get outputs"))
+			fakeWorkspace.OutputsReturns(map[string]any{}, errors.New("cant get outputs"))
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 

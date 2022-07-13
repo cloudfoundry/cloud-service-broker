@@ -164,7 +164,7 @@ var _ = Describe("DeploymentManager", func() {
 		BeforeEach(func() {
 			fakeWorkspace = &workspacefakes.FakeWorkspace{}
 			fakeWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{InstanceName: "test-name"}})
-			fakeWorkspace.OutputsReturns(map[string]interface{}{}, nil)
+			fakeWorkspace.OutputsReturns(map[string]any{}, nil)
 			existingDeployment = storage.TerraformDeployment{
 				ID:                   "deploymentID",
 				Workspace:            fakeWorkspace,
@@ -192,7 +192,7 @@ var _ = Describe("DeploymentManager", func() {
 			})
 
 			It("sets the last operation message from the TF output status", func() {
-				fakeWorkspace.OutputsReturns(map[string]interface{}{"status": "apply completed successfully"}, nil)
+				fakeWorkspace.OutputsReturns(map[string]any{"status": "apply completed successfully"}, nil)
 
 				err := deploymentManager.MarkOperationFinished(&existingDeployment, nil)
 
@@ -325,7 +325,7 @@ var _ = Describe("DeploymentManager", func() {
 		)
 
 		var (
-			templateVars             map[string]interface{}
+			templateVars             map[string]any
 			store                    *brokerfakes.FakeServiceProviderStorage
 			deploymentManager        *tf.DeploymentManager
 			updatedProvisionSettings tf.TfServiceDefinitionV1Action
@@ -336,7 +336,7 @@ var _ = Describe("DeploymentManager", func() {
 				viper.Reset()
 				store = &brokerfakes.FakeServiceProviderStorage{}
 				deploymentManager = tf.NewDeploymentManager(store)
-				templateVars = map[string]interface{}{}
+				templateVars = map[string]any{}
 			})
 
 			By("creating a fake provisioned service instance", func() {
@@ -415,7 +415,7 @@ var _ = Describe("DeploymentManager", func() {
 					Instances: []workspace.ModuleInstance{{
 						ModuleName:   "brokertemplate",
 						InstanceName: "instance",
-						Configuration: map[string]interface{}{
+						Configuration: map[string]any{
 							"resourceGroup": nil,
 						},
 					}},
@@ -496,7 +496,7 @@ var _ = Describe("DeploymentManager", func() {
 					Instances: []workspace.ModuleInstance{{
 						ModuleName:   "brokertemplate",
 						InstanceName: "instance",
-						Configuration: map[string]interface{}{
+						Configuration: map[string]any{
 							"resourceGroup": nil,
 						},
 					}},

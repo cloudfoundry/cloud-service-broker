@@ -56,7 +56,7 @@ func New(cfg *BrokerConfig, store Storage, logger lager.Logger) (*ServiceBroker,
 	}, nil
 }
 
-func validateProvisionParameters(params map[string]interface{}, validUserInputFields []broker.BrokerVariable, validImportFields []broker.ImportVariable, plan *broker.ServicePlan) error {
+func validateProvisionParameters(params map[string]any, validUserInputFields []broker.BrokerVariable, validImportFields []broker.ImportVariable, plan *broker.ServicePlan) error {
 	if len(params) == 0 {
 		return nil
 	}
@@ -75,7 +75,7 @@ func validateProvisionParameters(params map[string]interface{}, validUserInputFi
 	return nil
 }
 
-func validateNoPlanParametersOverrides(params map[string]interface{}, plan *broker.ServicePlan) error {
+func validateNoPlanParametersOverrides(params map[string]any, plan *broker.ServicePlan) error {
 	var invalidPlanParams []string
 	for k := range params {
 		if _, ok := plan.ServiceProperties[k]; ok {
@@ -90,7 +90,7 @@ func validateNoPlanParametersOverrides(params map[string]interface{}, plan *brok
 	return nil
 }
 
-func validateDefinedParams(params map[string]interface{}, validUserInputFields []broker.BrokerVariable, validImportFields []broker.ImportVariable) error {
+func validateDefinedParams(params map[string]any, validUserInputFields []broker.BrokerVariable, validImportFields []broker.ImportVariable) error {
 	validParams := make(map[string]struct{})
 	for _, field := range validUserInputFields {
 		validParams[field.FieldName] = struct{}{}

@@ -27,7 +27,7 @@ var _ = Describe("HclParser", func() {
 				output, err := hclparser.GetParameters(tfHCL, replaceVars)
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(output).To(Equal(map[string]interface{}{
+				Expect(output).To(Equal(map[string]any{
 					"field_to_replace":       "subsume_value",
 					"other_field_to_replace": "other_subsume_value",
 				}))
@@ -47,7 +47,7 @@ var _ = Describe("HclParser", func() {
 				output, err := hclparser.GetParameters(tfHCL, replaceVars)
 
 				Expect(err).NotTo(HaveOccurred())
-				Expect(output).To(Equal(map[string]interface{}{"field_to_replace": "subsume_value"}))
+				Expect(output).To(Equal(map[string]any{"field_to_replace": "subsume_value"}))
 			})
 		})
 

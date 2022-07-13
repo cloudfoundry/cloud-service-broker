@@ -25,7 +25,7 @@ import (
 
 type credHubStoreMock struct{}
 
-func (c *credHubStoreMock) Put(key string, credentials interface{}) (interface{}, error) {
+func (c *credHubStoreMock) Put(key string, credentials any) (any, error) {
 	return nil, nil
 }
 
@@ -35,7 +35,7 @@ func getFileName(key string) string {
 	return fileName
 }
 
-func (c *credHubStoreMock) PutValue(key string, credentials interface{}) (interface{}, error) {
+func (c *credHubStoreMock) PutValue(key string, credentials any) (any, error) {
 	credstorePath := os.Getenv("DEV_MODE_ONLY")
 	if _, err := os.Stat(credstorePath); os.IsNotExist(err) {
 		err = os.MkdirAll(credstorePath, 0777)
@@ -77,7 +77,7 @@ func (c *credHubStoreMock) GetValue(key string) (string, error) {
 	return string(content), nil
 }
 
-func (c *credHubStoreMock) Get(key string) (interface{}, error) {
+func (c *credHubStoreMock) Get(key string) (any, error) {
 	return nil, nil
 }
 

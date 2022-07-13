@@ -15,14 +15,14 @@ func TestDecodeOriginatingIdentityHeader(t *testing.T) {
 	cases := []struct {
 		name     string
 		ctx      context.Context
-		expected map[string]interface{}
+		expected map[string]any
 	}{
 		{
 			name: "good-header",
 			ctx:  context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="),
-			expected: map[string]interface{}{
+			expected: map[string]any{
 				"platform": "cloudfoundry",
-				"value": map[string]interface{}{
+				"value": map[string]any{
 					"user_id": "683ea748-3092-4ff4-b656-39cacc4d5360",
 				},
 			},
