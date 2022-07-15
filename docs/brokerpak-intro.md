@@ -8,26 +8,29 @@ To understand the how and why of brokerpaks, it's first important to understand 
 
 ### A quick aside about service brokers
 
-A _service broker_ provides an interface between an _service provider_ (e.g. GCP, Azure or AWS), and an _application platform_ (e.g. Kubernetes or Cloud Foundry).
-The service broker is managed by _platform operators_.
-These _platform operators_ are responsible for configuring the broker to meet the needs of their business, platform, and _developers_.
-_Developers_ use the broker to provision and bind new services to their applications.
+A _service broker_ provides an interface between a _service provider_ (e.g. GCP, Azure or AWS), and an _application platform_ (e.g. Kubernetes or Cloud Foundry).
+
+There are two agents when it comes to talking about a service broker:
+* Platform operators
+    * The platform operators are responsible for configuring and managing the broker to meet the needs of their business, platform, and developers.
+* Developers
+    * The developers use the broker to provision and bind new services to their applications.
 
 Therefore, a service broker is responsible for federating access between an _application provider_ and a _developer_ with respecting the wishes of the _platform_ and its _operators_.
-Each of these parties influences the broker, its services, and structure.
+Each of these parties influences the broker, its services, and its structure.
 
 * Developers want lots of services that require minimal configuration yet give them enough control that they have independence.
 * Operators need to make sure the services they expose are secure, follow regulatory constraints, can be billed correctly, are well supported, and won't be abused.
 * Service providers are interested in providing lots of stable, generic services at a rapid pace.
-* Service brokers serve the needs of the operators, developers, and platforms. They map the services out to match a variety of different businesses models, threat models, regulatory constraints, and use-cases.
+* Service brokers serve the needs of the operators, developers, and platforms. They map the services out to match a variety of different business models, threat models, regulatory constraints, and use-cases.
 
 Together, this means a service broker must:
 
-* Provide many of services for developers.
-* Provide services granular enough that operators can control cost.
+* Provide many services for developers.
+* Provide services granular enough that operators can control costs.
 * Provide services robust enough that operators can control security.
-* Provide services structured enough operators can trust they'll be in compliance.
-* Provide services configurable enough developers will be happy.
+* Provide services structured enough that operators can trust they'll be in compliance.
+* Provide services configurable enough that developers will be happy.
 * Map a single platform service into its N use-cases so operators can grant developers fine-grained access.
 * Write documentation for each of those N use-cases.
 * Be backwards compatible with all changes so developers and operators get seamless upgrades.
@@ -55,16 +58,16 @@ Aim to keep your brokerpaks small and focused around a core idea.
 
 It may be beneficial to divide your services into brokerpaks based on any of the following factors:
 
- * The users of the service e.g. organizational unit.
+ * The users of the service, e.g. organizational unit.
  * The stability of the backing service (alpha, beta, GA).
- * The subject matter experts that work on the services e.g. networking vs database.
+ * The subject matter experts that work on the services, e.g. networking vs database.
  
 #### Brokerpak lifecycle example
 
 The GCP Service Broker will split its brokerpaks into three sets:
 
 * The `preview` brokerpak will contain upcoming services. It's expected that you install the GA brokerpak, so we can freely move services from preview to GA as needed.
-* The `current` brokerpak will contian the full list of services.
+* The `current` brokerpak will contain the full list of services.
 * The `unmaintained` brokerpaks will each contain exactly one service that we no longer support. This is so you can install exactly as many as needed and take over maintenance of any you need.
 
 As services evolve, support can naturally pass to those who still need legacy technologies. This is a pattern you can follow in your organization too.
