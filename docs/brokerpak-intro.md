@@ -74,7 +74,7 @@ As services evolve, support can naturally pass to those who still need legacy te
 
 ### Naming guidelines
 
-Names _should_ be CLI friendly, meaning that they are alphanumeric, lower-case, and are separated by dashes (-).
+Names _should_ be CLI friendly, meaning that they are alphanumeric, lower-case, and separated by dashes (-).
 
 Service names _should_ begin with your organization and if necessary the cloud platform they're based on. To avoid collisions, you can also include the department name. For example, if your company was "Widgets Inc.":
 
@@ -121,16 +121,16 @@ Breaking things down like this makes it easier to figure out what variables you 
 * The staging bucket plans could include options for setting up alerting and the queue at the same time as the bucket is created.
 
 Each cloud service you expose will have a plethora of tunable parameters to choose from.
-Ideally, you should expose enough to be useful to developers and secure, but few enough that your service has a well defined use-case.
+Ideally, you should expose enough to be useful to developers and secure, but few enough that your service has a well-defined use-case.
 You can always add more parameters later, but you can never get rid of one.
 
 #### Deciding where to include things
 
 Each parameter can either be set by the operator when they define plans (or in your plans that the operators enable for users) or by the user.
 
-In general, properties which have monetary cost or affect the security of the platform should be put in the plan and properties affecting the behavior of the resource should be defined by the user.
+In general, properties which have monetary costs or affect the security of the platform should be put in the plan and properties affecting the behaviour of the resource should be defined by the user.
 
-In our static site bucket example the operator would create plans for different domain names (security) and bucket locations/durabilities (pricing) and the developer would get to set the parameters for the default index/error pages and maybe hostname. A full CNAME would be calculated from the hostname and domain name combination. It isn't clear who would get control over the Pub/Sub endpoint. On one hand, the developers might need it to update a search engine index but on the other the operator might to conduct ongoing security audits.
+In our static site bucket example, the operator would create plans for different domain names (security) and bucket locations/durabilities (pricing), and the developer would get to set the parameters for the default index/error pages and maybe hostname. A full CNAME would be calculated from the hostname and domain name combination. It isn't clear who would get control over the Pub/Sub endpoint. On one hand, the developers might need it to update a search engine index, but on the other, the operator might conduct ongoing security audits.
 
 #### Deciding on sensible defaults
 
@@ -171,12 +171,12 @@ It can be in one of three states, represented by `tags` on the service definitio
 * `preview` - The service may have some outstanding issues, or lack documentation, but is ready for savvy users.
 * (no tag) - The service is ready to be used by all users.
 * `unmaintained` - The service should not be used by any users except those that already rely on it and will have no future developments.
-* `eol` - End of life. The service may operate in a reduced capacity (e.g. blocking new provisioning or forcing service upgrades) due to changes in the upstream service.
+* `eol` - End of life. The service may operate at a reduced capacity (e.g. blocking new provisioning or forcing service upgrades) due to changes in the upstream service.
 
 #### API life cycle
 
 The **API life cycle** reflects the state of the backing Google Cloud services your plugin depends on.
-These reflect the published [launch stages](https://cloud.google.com/terms/launch-stages).
+Here the published [launch stages](https://cloud.google.com/terms/launch-stages) that Google follows, and we replicate
 
 * `beta` - There are no SLA or technical support obligations in a Beta release, and charges may be waived in some cases. Products will be complete from a feature perspective, but may have some open outstanding issues. Beta releases are suitable for limited production use cases.
 * (no tag) - GA features are open to all developers and are considered stable and fully qualified for production use.
@@ -219,11 +219,11 @@ export BROKERPAK_SRC_DIR=<absolute path to broker source directory>
 docker run --rm -v ${BROKERPAK_SRC_DIR}:/brokerpak -w /brokerpak cfplatformeng/csb pak build
 ```
 
-If the broker builds successfully, the result will be *.brokerpak* file in the brokerplak source directory.
+If the broker builds successfully, the result will be *.brokerpak* file in the brokerpak source directory.
 
 ### Running Examples to test a Brokerpak
 
-If the *examples* section of the brokerpak is not empty, it is possible (and advisable) to use the examples to drive a provision, bind, unbind, deprovision cycle for each example against a locally running broker.
+If the *examples* section of the brokerpak is not empty, it is possible (and advisable) to use the examples to drive a provision, bind, unbind, and deprovision cycle for each example against a locally running broker.
 
 > For example purposes, this is the AWS broker, so AWS credentials are provided through environment variables. See [AWS brokerpak readme](../aws-brokerpak/README.md).
 
@@ -252,6 +252,7 @@ docker run --rm -v ${BROKERPAK_SRC_DIR}:/brokerpak -w /brokerpak \
 -e "SECURITY_USER_NAME=csb-un" \
 -e "SECURITY_USER_PASSWORD=csb-pw" \
 -e "GSB_API_HOSTNAME=host.docker.internal" \
+-e "GSB_API_PORT=8080" \
 -e USER \
 cfplatformeng/csb pak run-examples /brokerpak/$(ls *.brokerpak)
 ```
