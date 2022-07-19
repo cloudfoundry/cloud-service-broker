@@ -179,6 +179,7 @@ var _ = Describe("Parser", func() {
 			})
 		})
 	})
+
 	Context("terraform_state_provider_replacements", func() {
 		It("can parse and validate the provider replacements", func() {
 			m, err := manifest.Parse(fakeManifest(with("terraform_state_provider_replacements",
@@ -246,6 +247,16 @@ var _ = Describe("Parser", func() {
 				},
 			)))
 			Expect(err).To(MatchError(ContainSubstring(`no corresponding terrafom resource for terraform version "1.2.3": terraform_upgrade_path[0].version`)))
+			Expect(m).To(BeNil())
+		})
+
+		It("must upgrade up to the default version", func() {
+			m, err := manifest.Parse(fakeManifest(with("terraform_upgrade_path",
+				[]map[string]any{
+					{"version": "1.1.4"},
+				},
+			)))
+			Expect(err).To(MatchError(ContainSubstring(`upgrade path does not terminate at default version: terraform_upgrade_path[0].version`)))
 			Expect(m).To(BeNil())
 		})
 	})
