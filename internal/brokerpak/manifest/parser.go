@@ -76,15 +76,16 @@ func Parse(input []byte) (*Manifest, error) {
 }
 
 func parseTerraformUpgradePath(p parser) (result []*version.Version, errs *validation.FieldError) {
-	available := make(map[string]bool)
+	availableTerraformVersions := make(map[string]bool)
 	for _, v := range p.TerraformResources {
 		if v.Name == "terraform" {
-			available[v.Version] = true
+			availableTerraformVersions[v.Version] = v.Default
 		}
 	}
 
 	cur := version.Must(version.NewVersion("0.0.0"))
 	for i, v := range p.TerraformUpgradePath {
+		isDefault, available := availableTerraformVersions[v.Version]
 		ver, err := version.NewVersion(v.Version)
 		switch {
 		case err != nil:
@@ -94,9 +95,14 @@ func parseTerraformUpgradePath(p parser) (result []*version.Version, errs *valid
 				Message: fmt.Sprintf("expect versions to be in ascending order: %q <= %q", v.Version, cur.String()),
 				Paths:   []string{"version"},
 			}).ViaFieldIndex("terraform_upgrade_path", i))
-		case !available[v.Version]:
+		case !available:
 			errs = errs.Also((&validation.FieldError{
 				Message: fmt.Sprintf("no corresponding terrafom resource for terraform version %q", v.Version),
+				Paths:   []string{"version"},
+			}).ViaFieldIndex("terraform_upgrade_path", i))
+		case i == len(p.TerraformUpgradePath)-1 && !isDefault:
+			errs = errs.Also((&validation.FieldError{
+				Message: "upgrade path does not terminate at default version",
 				Paths:   []string{"version"},
 			}).ViaFieldIndex("terraform_upgrade_path", i))
 		}
