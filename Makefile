@@ -23,7 +23,17 @@ endif
 
 SRC = $(shell find . -name "*.go" | grep -v "_test\." )
 
-VERSION := $(or $(VERSION), dev)
+ifeq ($(VERSION),)
+	TAG_COMMIT := $(shell git rev-list --abbrev-commit --tags --max-count=1)
+	VERSION := $(shell git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
+	COMMIT := $(shell git rev-parse --short HEAD)
+	ifneq ($(COMMIT), $(TAG_COMMIT))
+		VERSION := $(VERSION)-$(COMMIT)
+	endif
+	ifneq ($(shell git status --porcelain),)
+		VERSION := $(VERSION)-dirty
+	endif
+endif
 
 LDFLAGS="-X github.com/cloudfoundry/cloud-service-broker/utils.Version=$(VERSION)"
 
@@ -76,6 +86,11 @@ test-integration-with-cache: deps-go-binary .pak-cache ## run integration with l
 
 .PHONY: build
 build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin ## build binary
+
+.PHONY: install
+install: deps-go-binary ## install as /usr/local/bin/csb
+	$(GO) build -o csb -ldflags ${LDFLAGS}
+	mv csb /usr/local/bin/csb
 
 .PHONY: generate
 generate: ## generate test fakes
