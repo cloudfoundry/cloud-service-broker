@@ -45,7 +45,9 @@ type BrokerVariable struct {
 	FieldName string `yaml:"field_name"`
 	// The JSONSchema type of the field
 	Type JSONType `yaml:"type"`
-	// Human readable info about the field.
+	// Whether the value can be set to 'null'
+	Nullable bool `yaml:"nullable,omitempty"`
+	// Human-readable info about the field.
 	Details string `yaml:"details"`
 	// The default value of the field.
 	Default any `yaml:"default,omitempty"`
@@ -119,7 +121,11 @@ func (bv *BrokerVariable) ToSchema() map[string]any {
 	}
 
 	if bv.Type != "" {
-		schema[validation.KeyType] = bv.Type
+		if bv.Nullable {
+			schema[validation.KeyType] = []string{string(bv.Type), "null"}
+		} else {
+			schema[validation.KeyType] = bv.Type
+		}
 	}
 
 	if bv.Default != nil {

@@ -48,6 +48,12 @@ func TestBrokerVariable_ToSchema(t *testing.T) {
 				"type": JSONTypeString,
 			},
 		},
+		"nullable": {
+			BrokerVariable{Type: JSONTypeString, Nullable: true},
+			map[string]any{
+				"type": []string{"string", "null"},
+			},
+		},
 		"default is copied": {
 			BrokerVariable{Default: "some-value"},
 			map[string]any{

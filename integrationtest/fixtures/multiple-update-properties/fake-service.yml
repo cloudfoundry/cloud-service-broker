@@ -17,9 +17,12 @@ provision:
   user_inputs:
     - field_name: alpha_input
       type: string
+      default: "default_alpha"
       details: alpha input
     - field_name: beta_input
       type: string
+      nullable: true
+      default: null
       details: beta input
   outputs:
     - field_name: alpha_output
