@@ -52,6 +52,7 @@ and which services it will provide.
 | env_config_mapping |map[string]string | List of mappings of environment variables into config keys, see [functions](#functions) for more information on how to use these |
 | terraform_upgrade_path | array of Terraform Upgrade Path | List of Terraform version steps when performing upgrade in ascending order |
 | terraform_state_provider_replacements | map of Terraform provider names | Map of terraform providers, where the key represents the old name of the provider and the value represents the new name of the provider. Can be used to replace the provider in the terraform state file when switching providers or upgrading to 0.13. |
+Fields marked with `*` are required, others are optional.
 
 #### Platform object
 
@@ -61,6 +62,7 @@ The platform OS and architecture follow Go's naming scheme.
 | --- | --- | --- | --- |
 | os* | string | The operating system of the platform. | `linux`, `darwin` |
 | arch* | string | The architecture of the platform. | `"386"`, `amd64` |
+Fields marked with `*` are required, others are optional.
 
 #### Terraform resource object
 
@@ -74,6 +76,7 @@ This structure holds information about a specific Terraform version or Resource.
 | url_template | string  | (optional) A custom URL template to get the release of the given tool. Available parameters are ${name}, ${version}, ${os}, and ${arch}. If unspecified the default Hashicorp Terraform download server is used. Can be a local file.     |
 | provider     | string  | (optional) The provider in the form of `namespace/type` (e.g `cyrilgdn/postgresql`). This is required if the provider is not provided by Hashicorp. This should match the source of the provider in terraform.required_providers. |
 | default      | boolean | (optional) Where there is more than one version of Terraform, this nominates the default version.                                                                                                                                         |
+Fields marked with `*` are required, others are optional.
 
 #### Parameter object
 
@@ -84,14 +87,16 @@ These variables are first resolved from the configuration of the brokerpak then 
 | --- | --- | --- |
 | name* | string | The environment variable that will be injected e.g. `PROJECT_ID`. |
 | description* | string | A human readable description of what the variable represents. |
+Fields marked with `*` are required, others are optional.
 
 #### Terraform Upgrade Path object
 
 This structure holds information about a step in the Terraform upgrade process
 
-| Field | Type | Description |
-| --- | --- | --- |
-| version | semver | The terraform version to step through |
+| Field    | Type | Description |
+|----------| --- | --- |
+| version* | semver | The terraform version to step through |
+Fields marked with `*` are required, others are optional.
 
 **Note:** Upgrade is only supported for Terraform versions >= 0.12.0.
 
@@ -142,69 +147,73 @@ terraform_state_provider_replacements:
 
 #### Service YAML flie
 
-| Field | Type | Description |
-| --- | --- | --- |
-| version* | int |  The version of the schema the service definition adheres to. This MUST be set to `1` to be compatible with the brokerpak specification v1. |
-| name* | string | A CLI-friendly name of the service. MUST only contain alphanumeric characters, periods, and hyphens (no spaces). MUST be unique across all service objects returned in this response. MUST be a non-empty string. |
-| id* | string | A UUID used to correlate this service in future requests to the Service Broker. This MUST be globally unique such that Platforms (and their users) MUST be able to assume that seeing the same value (no matter what Service Broker uses it) will always refer to this service. |
-| description* | string | A short description of the service. MUST be a non-empty string. |
-| tags | array of strings | Tags provide a flexible mechanism to expose a classification, attribute, or base technology of a service, enabling equivalent services to be swapped out without changes to dependent logic in applications, buildpacks, or other services. E.g. mysql, relational, redis, key-value, caching, messaging, amqp. |
-| display_name* | string | The name of the service to be displayed in graphical clients. |
-| image_url* | string | The URL to an image or a data URL containing an image. |
-| documentation_url* | string | Link to documentation page for the service. |
-| support_url* | string | Link to support page for the service. |
-| plan_updateable | boolean | Set to `true` if service supports `cf update-service` 
-| plans* | array of [plan objects](#plan-object) | A list of plans for this service, schema is defined below. MUST contain at least one plan. |
-| provision* | [action object](#action-object) | Contains configuration for the provision operation, schema is defined below. |
-| bind* | [action object](#action-object) | Contains configuration for the bind operation, schema is defined below. |
-| examples* | [example object](#example) | Contains examples for the service, used in documentation and testing.  MUST contain at least one example. |
+| Field              | Type                                  | Description                                                                                                                                                                                                                                                                                                     |
+|--------------------|---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| version*           | int                                   | The version of the schema the service definition adheres to. This MUST be set to `1` to be compatible with the brokerpak specification v1.                                                                                                                                                                      |
+| name*              | string                                | A CLI-friendly name of the service. MUST only contain alphanumeric characters, periods, and hyphens (no spaces). MUST be unique across all service objects returned in this response. MUST be a non-empty string.                                                                                               |
+| id*                | string                                | A UUID used to correlate this service in future requests to the Service Broker. This MUST be globally unique such that Platforms (and their users) MUST be able to assume that seeing the same value (no matter what Service Broker uses it) will always refer to this service.                                 |
+| description*       | string                                | A short description of the service. MUST be a non-empty string.                                                                                                                                                                                                                                                 |
+| tags               | array of strings                      | Tags provide a flexible mechanism to expose a classification, attribute, or base technology of a service, enabling equivalent services to be swapped out without changes to dependent logic in applications, buildpacks, or other services. E.g. mysql, relational, redis, key-value, caching, messaging, amqp. |
+| display_name*      | string                                | The name of the service to be displayed in graphical clients.                                                                                                                                                                                                                                                   |
+| image_url*         | string                                | The URL to an image or a data URL containing an image.                                                                                                                                                                                                                                                          |
+| documentation_url* | string                                | Link to documentation page for the service.                                                                                                                                                                                                                                                                     |
+| support_url*       | string                                | Link to support page for the service.                                                                                                                                                                                                                                                                           |
+| plan_updateable    | boolean                               | Set to `true` if service supports `cf update-service`                                                                                                                                                                                                                                                           |
+| plans*             | array of [plan objects](#plan-object) | A list of plans for this service, schema is defined below. MUST contain at least one plan.                                                                                                                                                                                                                      |
+| provision*         | [action object](#action-object)       | Contains configuration for the provision operation, schema is defined below.                                                                                                                                                                                                                                    |
+| bind*              | [action object](#action-object)       | Contains configuration for the bind operation, schema is defined below.                                                                                                                                                                                                                                         |
+| examples*          | [example object](#example)            | Contains examples for the service, used in documentation and testing.  MUST contain at least one example.                                                                                                                                                                                                       |
+Fields marked with `*` are required, others are optional.
 
 #### Plan object
 
 A service plan in a human-friendly format that can be converted into an OSB compatible plan.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| name* | string | The CLI-friendly name of the plan. MUST only contain alphanumeric characters, periods, and hyphens (no spaces). MUST be unique within the service. MUST be a non-empty string. |
-| id* | string | A GUID for this plan in UUID format. This MUST be globally unique such that Platforms (and their users) MUST be able to assume that seeing the same value (no matter what Service Broker uses it) will always refer to this plan. |
-| description* | string | A short description of the plan. MUST be a non-empty string. |
-| display_name* | string | The name of the plan to be displayed in graphical clients. |
-| bullets | array of string | Features of this plan, to be displayed in a bulleted-list. |
-| free | boolean | When false, Service Instances of this plan have a cost. The default is false. |
-| properties* | map of string:any | Constant values for the provision and bind calls. They take precedent over any other definition of the same field. |
-| provision_overrides | map of string:any | Constant values to be overwritten for the provision calls. |
-| bind_overrides | map of string:aany |  Constant values to be overwritten for the bind calls. |
+| Field               | Type               | Description                                                                                                                                                                                                                       |
+|---------------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| name*               | string             | The CLI-friendly name of the plan. MUST only contain alphanumeric characters, periods, and hyphens (no spaces). MUST be unique within the service. MUST be a non-empty string.                                                    |
+| id*                 | string             | A GUID for this plan in UUID format. This MUST be globally unique such that Platforms (and their users) MUST be able to assume that seeing the same value (no matter what Service Broker uses it) will always refer to this plan. |
+| description*        | string             | A short description of the plan. MUST be a non-empty string.                                                                                                                                                                      |
+| display_name*       | string             | The name of the plan to be displayed in graphical clients.                                                                                                                                                                        |
+| bullets             | array of string    | Features of this plan, to be displayed in a bulleted-list.                                                                                                                                                                        |
+| free                | boolean            | When false, Service Instances of this plan have a cost. The default is false.                                                                                                                                                     |
+| properties*         | map of string:any  | Constant values for the provision and bind calls. They take precedent over any other definition of the same field.                                                                                                                |
+| provision_overrides | map of string:any  | Constant values to be overwritten for the provision calls.                                                                                                                                                                        |
+| bind_overrides      | map of string:aany | Constant values to be overwritten for the bind calls.                                                                                                                                                                             |
+Fields marked with `*` are required, others are optional.
 
 #### Action object
 
 The Action object contains a Terraform template to execute as part of a
 provision or bind action, and the inputs and outputs to that template.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| import_inputs | array of [import-input](#import-input-object) | Defines the variables that will be passed to tf import command |
-| import_parameter_mappings | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines how tf resource variables will be replaced with broker variables between `tf import` and `tf apply` |
-| import_parameters_to_delete| array of string | list of `tf import` discovered values to remove before `tf apply`. `tf import` will return read-only values that cannot be set during `tf apply` so they should be listed here to be removed between import and apply |
-| import_parameters_to_add | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines tf resource variables to add between `tf import` and `tf apply`
-| plan_inputs | array of [variable](#variable-object) | Defines constraints and settings for the variables plans provide in their properties map. It is used to validate [plan objects](#plan-object) properties field.  |
-| user_inputs | array of [variable](#variable-object) | Defines constraints and defaults for the variables users provide as part of their request. |
-| computed_inputs | array of [computed variable](#computed-variable-object) | Defines default values or overrides that are executed before the template is run. |
-| template | string | The complete HCL of the Terraform template to execute. |
-| template_ref | string | A path to HCL of the Terraform template to execute. If present, this will be used to populate the `template` field. |
-| templates | map | The complete HCL of the Terraform templates to execute. |
-| template_refs | map | standard terraform file [snippet list](#template-references) |
-| outputs | array of [variable](#variable-object) | Defines constraints and settings for the outputs of the Terraform template. This MUST match the Terraform outputs and the constraints WILL be used as part of integration testing. |
+| Field                       | Type                                                                   | Description                                                                                                                                                                                                           |
+|-----------------------------|------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| import_inputs               | array of [import-input](#import-input-object)                          | Defines the variables that will be passed to tf import command                                                                                                                                                        |
+| import_parameter_mappings   | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines how tf resource variables will be replaced with broker variables between `tf import` and `tf apply`                                                                                                           |
+| import_parameters_to_delete | array of string                                                        | list of `tf import` discovered values to remove before `tf apply`. `tf import` will return read-only values that cannot be set during `tf apply` so they should be listed here to be removed between import and apply |
+| import_parameters_to_add    | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines tf resource variables to add between `tf import` and `tf apply`                                                                                                                                               |
+| plan_inputs                 | array of [variable](#variable-object)                                  | Defines constraints and settings for the variables plans provide in their properties map. It is used to validate [plan objects](#plan-object) properties field.                                                       |
+| user_inputs                 | array of [variable](#variable-object)                                  | Defines constraints and defaults for the variables users provide as part of their request.                                                                                                                            |
+| computed_inputs             | array of [computed variable](#computed-variable-object)                | Defines default values or overrides that are executed before the template is run.                                                                                                                                     |
+| template                    | string                                                                 | The complete HCL of the Terraform template to execute.                                                                                                                                                                |
+| template_ref                | string                                                                 | A path to HCL of the Terraform template to execute. If present, this will be used to populate the `template` field.                                                                                                   |
+| templates                   | map                                                                    | The complete HCL of the Terraform templates to execute.                                                                                                                                                               |
+| template_refs               | map                                                                    | standard terraform file [snippet list](#template-references)                                                                                                                                                          |
+| outputs                     | array of [variable](#variable-object)                                  | Defines constraints and settings for the outputs of the Terraform template. This MUST match the Terraform outputs and the constraints WILL be used as part of integration testing.                                    |
+Fields marked with `*` are required, others are optional.
 
 #### Import Input object
 
 The import input object defines the mapping of an input parameter to a terraform resource on the `tf import` command. The presence of any import input values will trigger a `tf import` before `tf apply` upon `cf create-service`
 
-| Field | Type | Description |
-| --- | --- | --- |
-| field_name | string | the name of the user input variable to use |
-| type | string | The JSON type of the field. This MUST be a valid JSONSchema type excepting null |
-| details | string | A description of what this field is |
-| tf_resource | string | The tf resource to import given this value. |
+| Field       | Type   | Description                                                                     |
+|-------------|--------|---------------------------------------------------------------------------------|
+| field_name  | string | the name of the user input variable to use                                      |
+| type        | string | The JSON type of the field. This MUST be a valid JSONSchema type excepting null |
+| details     | string | A description of what this field is                                             |
+| tf_resource | string | The tf resource to import given this value.                                     |
+Fields marked with `*` are required, others are optional.
 
 Given:
 ```yaml
@@ -232,10 +241,11 @@ The import parameter mapping object defines the tf variable to input variable ma
 
 `tf import` will return current values for all variables for the service instance. In order to allow user configuration of these values to support `cf update-service`, it is necessary to enumerate the terraform resource variables that should be parameterized with broker input variables.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| tf_variable | string | the terraform resource variable name |
-| parameter_name | string | the broker input variable name |
+| Field          | Type   | Description                          |
+|----------------|--------|--------------------------------------|
+| tf_variable    | string | the terraform resource variable name |
+| parameter_name | string | the broker input variable name       |
+Fields marked with `*` are required, others are optional.
 
 Given:
 ```yaml
@@ -328,25 +338,27 @@ Outputs are _only_ validated on integration tests.
 | required        | boolean           | Should the user request fail if this variable isn't provided?                                                                                                                                                                                                                                                                                                                                         |
 | field_name*     | string            | The name of the JSON field this variable serializes/deserializes to.                                                                                                                                                                                                                                                                                                                                  |
 | type*           | string            | The JSON type of the field. This MUST be a valid JSONSchema type excepting `null`.                                                                                                                                                                                                                                                                                                                    |
-| nullable*       | boolean           | Whether the field can be set to `null`. For example, if the type is `string`, this will allow the field to also be set to `null`, which is valid in HCL. This allows for differentiation between `null` and (say) an empty string.                                                                                                                                                                    |
+| nullable        | boolean           | Whether the field can be set to `null`. For example, if the type is `string`, this will allow the field to also be set to `null`, which is valid in HCL. This allows for differentiation between `null` and (say) an empty string.                                                                                                                                                                    |
 | details*        | string            | Provides explanation about the purpose of the variable.                                                                                                                                                                                                                                                                                                                                               |
 | default         | any               | The default value for this field. If `null`, the field MUST be marked as required. If a string, it will be executed as a HIL expression and cast to the appropriate type described in the `type` field. See the [Expression language reference](#expression-language-reference) section for more information about what's available.                                                                  |
 | enum            | map of any:string | Valid values for the field and their human-readable descriptions suitable for displaying in a drop-down list.                                                                                                                                                                                                                                                                                         |
 | constraints     | map of string:any | Holds additional JSONSchema validation for the field. Feature flag `enable-catalog-schemas` controls whether to serve Json schemas in catalog. The following keys are supported: `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`. |
 | tf_attribute    | string            | The tf resource attribute from which the value of this field can be extracted from (e.g. `azurerm_mssql_database.azure_sql_db.name`). To be specified for subsume use cases only.                                                                                                                                                                                                                     |
 | prohibit_update | boolean           | Defines if the field value can be updated on update operation.                                                                                                                                                                                                                                                                                                                                        |
+Fields marked with `*` are required, others are optional.
 
 #### Computed Variable Object
 
 Computed variables allow you to evaluate arbitrary HIL expressions against
 variables or metadata about the provision or bind call.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| name* | string | The name of the variable. |
-| default* | any | The value to set the variable to. If it's a string, it will be evaluated by the expression engine and cast to the provided type afterwards. See the "Expression language reference" section for more information about what's available. |
-| overwrite | boolean | If a variable already exists with the same name, should this one replace it? |
-| type | string | The JSON type of the field it will be cast to if evaluated as an expression. If defined, this MUST be a valid JSONSchema type excepting `null`. |
+| Field     | Type    | Description                                                                                                                                                                                                                              |
+|-----------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| name*     | string  | The name of the variable.                                                                                                                                                                                                                |
+| default*  | any     | The value to set the variable to. If it's a string, it will be evaluated by the expression engine and cast to the provided type afterwards. See the "Expression language reference" section for more information about what's available. |
+| overwrite | boolean | If a variable already exists with the same name, should this one replace it?                                                                                                                                                             |
+| type      | string  | The JSON type of the field it will be cast to if evaluated as an expression. If defined, this MUST be a valid JSONSchema type excepting `null`.                                                                                          |
+Fields marked with `*` are required, others are optional.
 
 ### Example
 
@@ -531,6 +543,7 @@ resource "database" "mydatabase" {
   lifecycle {
     prevent_destroy = true
   }
+}
 ```
 It might be that changing the database name would cause the Terraform to delete the
 database and create a new one with the correct name. This can be prevented by adding
