@@ -24,7 +24,7 @@ provision:
       details: provision output
 bind:
   template_refs:
-    main: fake-provision.tf
+    main: fake-bind.tf
   outputs:
     - field_name: provision_output
       type: integer

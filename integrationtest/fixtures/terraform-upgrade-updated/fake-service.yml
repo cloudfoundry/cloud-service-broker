@@ -19,14 +19,21 @@ provision:
       type: string
       details: alpha input
   outputs:
-      - field_name: provision_output
-        type: integer
-        details: provision output
+    - field_name: provision_output
+      type: integer
+      details: provision output
+    - field_name: new_output
+      type: integer
+      details: new provision output
 bind:
   template_refs:
-    main: fake-provision.tf
+    main: fake-bind.tf
+  computed_inputs:
+    - name: new_input
+      type: integer
+      default: ${instance.details["new_output"]}
   outputs:
-      - field_name: provision_output
-        type: integer
-        details: provision output
+    - field_name: provision_output
+      type: integer
+      details: provision output
 
