@@ -369,14 +369,14 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 // Variables have a very specific resolution order. Lower number are overwritten by higher numbers
 // except where noted.
 //
-// 1. Global defaults: key/value pairs set in JSON in Viper `provision.defaults`
-// 2. Service defaults: key/value pairs set in JSON in Viper `service.<service>.provision.defaults`
-// 3. Request parameters: key/value pairs passed in the provision/update request, typically
-//    with the "-c" parameter of the "cf" command
-// 4. Provision overrides: from the Plan definition "provision_overrides"
-// 5. Default values: from the Service definition YAML "user_inputs", only if the value has not been set above.
-// 6. Plan properties: from the Plan definition key "properties"
-// 7. Computed values: from Service definition YAML "computed_inputs", only if the value has not been set above.
+//  1. Global defaults: key/value pairs set in JSON in Viper `provision.defaults`
+//  2. Service defaults: key/value pairs set in JSON in Viper `service.<service>.provision.defaults`
+//  3. Request parameters: key/value pairs passed in the provision/update request, typically
+//     with the "-c" parameter of the "cf" command
+//  4. Provision overrides: from the Plan definition "provision_overrides"
+//  5. Default values: from the Service definition YAML "user_inputs", only if the value has not been set above.
+//  6. Plan properties: from the Plan definition key "properties"
+//  7. Computed values: from Service definition YAML "computed_inputs", only if the value has not been set above.
 //
 // Default values and Computed values are interpolated in HIL (see pkg/varcontext/interpolation.Eval()),
 // but others are not to prevent side-channel attacks.
@@ -452,7 +452,6 @@ func (svc *ServiceDefinition) UpdateVariables(instanceID string, details parampa
 // 3. User defined variables (in `bind_input_variables`)
 // 4. Operator default variables loaded from the environment.
 // 5. Default variables (in `bind_input_variables`).
-//
 func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDetails, bindingID string, details paramparser.BindDetails, plan *ServicePlan, originatingIdentity map[string]any) (*varcontext.VarContext, error) {
 	// The namespaces of these values roughly align with the OSB spec.
 	constants := map[string]any{
