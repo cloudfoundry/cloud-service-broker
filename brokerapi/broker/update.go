@@ -6,16 +6,16 @@ import (
 	"fmt"
 	"net/http"
 
+	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
+	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/hashicorp/go-version"
-
-	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/utils/request"
+	"github.com/hashicorp/go-version"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 )
@@ -110,19 +110,55 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 }
 
 func (broker *ServiceBroker) doUpgrade(ctx context.Context, serviceDefinition *broker.ServiceDefinition, serviceProvider broker.ServiceProvider, instance storage.ServiceInstanceDetails, instanceVars *varcontext.VarContext, plan *broker.ServicePlan) (domain.UpdateServiceSpec, error) {
-	bindingContexts, err := broker.createAllBindingContexts(ctx, serviceDefinition, instance, plan)
+	instanceUpgradeFinished, err := serviceProvider.UpgradeInstance(ctx, instanceVars)
 	if err != nil {
 		return domain.UpdateServiceSpec{}, err
 	}
 
-	instanceDetails, err := serviceProvider.Upgrade(ctx, instanceVars, bindingContexts)
-	if err != nil {
-		return domain.UpdateServiceSpec{}, err
-	}
+	go func() {
+		instanceUpgradeFinished.Wait()
+
+		deployment, err := broker.store.GetTerraformDeployment(generateTFInstanceID(instance.GUID))
+		if err != nil {
+			broker.storeUpgradeError(err, instance.GUID)
+			return
+		}
+
+		// If the instance upgrade has failed, the error will already have been recorded,
+		// so all we need to do is skip the upgrade of the bindings
+		if deployment.LastOperationState != tf.InProgress {
+			return
+		}
+
+		outs, err := serviceProvider.GetTerraformOutputs(ctx, instance.GUID)
+		if err != nil {
+			broker.storeUpgradeError(err, instance.GUID)
+			return
+		}
+
+		instance.Outputs = outs
+		if err := broker.store.StoreServiceInstanceDetails(instance); err != nil {
+			broker.storeUpgradeError(err, instance.GUID)
+			return
+		}
+
+		bindingContexts, err := broker.createAllBindingContexts(ctx, serviceDefinition, instance, plan)
+		if err != nil {
+			broker.storeUpgradeError(err, instance.GUID)
+			return
+		}
+
+		err = serviceProvider.UpgradeBindings(ctx, instanceVars, bindingContexts)
+		if err != nil {
+			broker.storeUpgradeError(err, instance.GUID)
+			return
+		}
+	}()
+
 	return domain.UpdateServiceSpec{
 		IsAsync:       true,
 		DashboardURL:  "",
-		OperationData: instanceDetails.OperationID,
+		OperationData: generateTFInstanceID(instance.GUID),
 	}, nil
 }
 
@@ -182,6 +218,21 @@ func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, servi
 		bindingContexts = append(bindingContexts, vars)
 	}
 	return bindingContexts, nil
+}
+
+func (broker *ServiceBroker) storeUpgradeError(errorToStore error, instanceID string) {
+	deployment, err := broker.store.GetTerraformDeployment(generateTFInstanceID(instanceID))
+	if err != nil {
+		broker.Logger.Error("error-storing-error-get", err)
+		return
+	}
+
+	deployment.LastOperationState = tf.Failed
+	deployment.LastOperationMessage = fmt.Sprintf("%s %s: %s", deployment.LastOperationType, tf.Failed, errorToStore)
+
+	if err := broker.store.StoreTerraformDeployment(deployment); err != nil {
+		broker.Logger.Error("error-storing-error-store", err)
+	}
 }
 
 func mergeJSON(previousParams, newParams, importParams map[string]any) (map[string]any, error) {

@@ -16,6 +16,7 @@ package broker
 
 import (
 	"context"
+	"sync"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -37,8 +38,8 @@ type ServiceProvider interface {
 	// Update makes necessary updates to resources so they match new desired configuration
 	Update(ctx context.Context, updateContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
 
-	// Upgrade makes necessary upgrades to resources so they match plan configuration
-	Upgrade(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts []*varcontext.VarContext) (models.ServiceInstanceDetails, error)
+	UpgradeInstance(ctx context.Context, instanceContext *varcontext.VarContext) (*sync.WaitGroup, error)
+	UpgradeBindings(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts []*varcontext.VarContext) error
 
 	// GetImportedProperties extracts properties that should have been saved as part of subsume operation
 	GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []BrokerVariable) (map[string]any, error)

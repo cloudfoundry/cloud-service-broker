@@ -4,6 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
+	"time"
+
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
@@ -335,7 +339,7 @@ var _ = Describe("Update", func() {
 	})
 
 	Describe("upgrade", func() {
-		const upgradeOperationID = "upgrade-operation-id"
+
 		var upgradeDetails domain.UpdateDetails
 
 		BeforeEach(func() {
@@ -355,10 +359,8 @@ var _ = Describe("Update", func() {
 				},
 			}
 
-			fakeServiceProvider.UpgradeReturns(models.ServiceInstanceDetails{
-				OperationType: models.UpgradeOperationType,
-				OperationID:   upgradeOperationID,
-			}, nil)
+			fakeServiceProvider.UpgradeInstanceReturns(&sync.WaitGroup{}, nil)
+			fakeServiceProvider.UpgradeBindingsReturns(nil)
 		})
 
 		It("should trigger an upgrade", func() {
@@ -371,13 +373,14 @@ var _ = Describe("Update", func() {
 			By("validating response")
 			Expect(response.IsAsync).To(BeTrue())
 			Expect(response.DashboardURL).To(BeEmpty())
-			Expect(response.OperationData).To(Equal(upgradeOperationID))
+			Expect(response.OperationData).To(Equal("tf:test-instance-id:"))
 
-			By("validating provider update has been called")
+			By("validating provider instance and binding upgrade has been called")
 			Expect(fakeServiceProvider.UpdateCallCount()).To(Equal(0))
-			Expect(fakeServiceProvider.UpgradeCallCount()).To(Equal(1))
-			actualContext, _, _ := fakeServiceProvider.UpgradeArgsForCall(0)
+			Expect(fakeServiceProvider.UpgradeInstanceCallCount()).To(Equal(1))
+			actualContext, _ := fakeServiceProvider.UpgradeInstanceArgsForCall(0)
 			Expect(actualContext.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
+			Expect(fakeServiceProvider.UpgradeBindingsCallCount()).To(Equal(0))
 
 			By("validating SI details and provision parameters are not updated")
 			Expect(fakeStorage.StoreServiceInstanceDetailsCallCount()).To(Equal(0))
@@ -386,7 +389,7 @@ var _ = Describe("Update", func() {
 
 		When("provider upgrade errors", func() {
 			BeforeEach(func() {
-				fakeServiceProvider.UpgradeReturns(models.ServiceInstanceDetails{}, errors.New("cannot upgrade right now"))
+				fakeServiceProvider.UpgradeInstanceReturns(&sync.WaitGroup{}, errors.New("cannot upgrade right now"))
 			})
 
 			It("should error", func() {
@@ -406,8 +409,11 @@ var _ = Describe("Update", func() {
 					PlanGUID:    originalPlanID,
 				}, nil)
 
+				fakeServiceProvider.GetTerraformOutputsReturns(storage.JSONObject{"instance-provision-output": "admin-user-name"}, nil)
+
 				fakeStorage.GetBindRequestDetailsReturnsOnCall(0, storage.JSONObject{"first-binding-param": "first-binding-bar"}, nil)
 				fakeStorage.GetBindRequestDetailsReturnsOnCall(1, storage.JSONObject{"second-binding-param": "second-binding-bar"}, nil)
+				fakeStorage.GetTerraformDeploymentReturns(storage.TerraformDeployment{LastOperationState: tf.InProgress}, nil)
 			})
 
 			It("should populate the binding contexts with binding computed output and previous bind properties", func() {
@@ -418,8 +424,11 @@ var _ = Describe("Update", func() {
 				Expect(fakeStorage.GetServiceInstanceDetailsCallCount()).To(Equal(1))
 
 				By("validating provider update has been called")
-				Expect(fakeServiceProvider.UpgradeCallCount()).To(Equal(1))
-				_, _, bindingVars := fakeServiceProvider.UpgradeArgsForCall(0)
+				Eventually(func(g Gomega) {
+					g.Expect(fakeServiceProvider.UpgradeBindingsCallCount()).To(Equal(1))
+				}).WithTimeout(time.Second).WithPolling(time.Millisecond).Should(Succeed())
+
+				_, _, bindingVars := fakeServiceProvider.UpgradeBindingsArgsForCall(0)
 				Expect(bindingVars[0].GetString("instance_output")).To(Equal("admin-user-name"))
 				Expect(bindingVars[0].GetString("first-binding-param")).To(Equal("first-binding-bar"))
 				Expect(bindingVars[1].GetString("instance_output")).To(Equal("admin-user-name"))
@@ -433,7 +442,13 @@ var _ = Describe("Update", func() {
 
 				It("should error", func() {
 					_, err := serviceBroker.Update(context.TODO(), instanceID, upgradeDetails, true)
-					Expect(err).To(MatchError(`error retrieving binding for instance "test-instance-id": cant get bindings`))
+					Expect(err).NotTo(HaveOccurred())
+
+					Eventually(func(g Gomega) {
+						g.Expect(fakeStorage.StoreTerraformDeploymentCallCount()).Should(Equal(1))
+						actualDeployment := fakeStorage.StoreTerraformDeploymentArgsForCall(0)
+						g.Expect(actualDeployment.LastOperationMessage).To(ContainSubstring(`error retrieving binding for instance "test-instance-id": cant get bindings`))
+					}).WithTimeout(time.Second).WithPolling(time.Millisecond).Should(Succeed())
 				})
 			})
 
@@ -444,7 +459,13 @@ var _ = Describe("Update", func() {
 
 				It("should error", func() {
 					_, err := serviceBroker.Update(context.TODO(), instanceID, upgradeDetails, true)
-					Expect(err).To(MatchError(`error retrieving bind request details for instance "test-instance-id": cant get binding request details`))
+					Expect(err).NotTo(HaveOccurred())
+
+					Eventually(func(g Gomega) {
+						g.Expect(fakeStorage.StoreTerraformDeploymentCallCount()).Should(Equal(1))
+						actualDeployment := fakeStorage.StoreTerraformDeploymentArgsForCall(0)
+						g.Expect(actualDeployment.LastOperationMessage).To(ContainSubstring(`error retrieving bind request details for instance "test-instance-id": cant get binding request details`))
+					}).WithTimeout(time.Second).WithPolling(time.Millisecond).Should(Succeed())
 				})
 			})
 		})
@@ -458,8 +479,8 @@ var _ = Describe("Update", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					By("validating provider update has been called")
-					Expect(fakeServiceProvider.UpgradeCallCount()).To(Equal(1))
-					_, actualInstanceVars, _ := fakeServiceProvider.UpgradeArgsForCall(0)
+					Expect(fakeServiceProvider.UpgradeInstanceCallCount()).To(Equal(1))
+					_, actualInstanceVars := fakeServiceProvider.UpgradeInstanceArgsForCall(0)
 					Expect(actualInstanceVars.GetString("foo")).To(Equal("bar"))
 					Expect(actualInstanceVars.GetString("baz")).To(Equal("quz"))
 				})
