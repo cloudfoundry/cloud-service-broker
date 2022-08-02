@@ -152,19 +152,31 @@ type FakeServiceProvider struct {
 		result1 models.ServiceInstanceDetails
 		result2 error
 	}
-	UpgradeStub        func(context.Context, *varcontext.VarContext, []*varcontext.VarContext) (models.ServiceInstanceDetails, error)
-	upgradeMutex       sync.RWMutex
-	upgradeArgsForCall []struct {
+	UpgradeBindingsStub        func(context.Context, *varcontext.VarContext, []*varcontext.VarContext) error
+	upgradeBindingsMutex       sync.RWMutex
+	upgradeBindingsArgsForCall []struct {
 		arg1 context.Context
 		arg2 *varcontext.VarContext
 		arg3 []*varcontext.VarContext
 	}
-	upgradeReturns struct {
-		result1 models.ServiceInstanceDetails
+	upgradeBindingsReturns struct {
+		result1 error
+	}
+	upgradeBindingsReturnsOnCall map[int]struct {
+		result1 error
+	}
+	UpgradeInstanceStub        func(context.Context, *varcontext.VarContext) (*sync.WaitGroup, error)
+	upgradeInstanceMutex       sync.RWMutex
+	upgradeInstanceArgsForCall []struct {
+		arg1 context.Context
+		arg2 *varcontext.VarContext
+	}
+	upgradeInstanceReturns struct {
+		result1 *sync.WaitGroup
 		result2 error
 	}
-	upgradeReturnsOnCall map[int]struct {
-		result1 models.ServiceInstanceDetails
+	upgradeInstanceReturnsOnCall map[int]struct {
+		result1 *sync.WaitGroup
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -824,25 +836,87 @@ func (fake *FakeServiceProvider) UpdateReturnsOnCall(i int, result1 models.Servi
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) Upgrade(arg1 context.Context, arg2 *varcontext.VarContext, arg3 []*varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+func (fake *FakeServiceProvider) UpgradeBindings(arg1 context.Context, arg2 *varcontext.VarContext, arg3 []*varcontext.VarContext) error {
 	var arg3Copy []*varcontext.VarContext
 	if arg3 != nil {
 		arg3Copy = make([]*varcontext.VarContext, len(arg3))
 		copy(arg3Copy, arg3)
 	}
-	fake.upgradeMutex.Lock()
-	ret, specificReturn := fake.upgradeReturnsOnCall[len(fake.upgradeArgsForCall)]
-	fake.upgradeArgsForCall = append(fake.upgradeArgsForCall, struct {
+	fake.upgradeBindingsMutex.Lock()
+	ret, specificReturn := fake.upgradeBindingsReturnsOnCall[len(fake.upgradeBindingsArgsForCall)]
+	fake.upgradeBindingsArgsForCall = append(fake.upgradeBindingsArgsForCall, struct {
 		arg1 context.Context
 		arg2 *varcontext.VarContext
 		arg3 []*varcontext.VarContext
 	}{arg1, arg2, arg3Copy})
-	stub := fake.UpgradeStub
-	fakeReturns := fake.upgradeReturns
-	fake.recordInvocation("Upgrade", []interface{}{arg1, arg2, arg3Copy})
-	fake.upgradeMutex.Unlock()
+	stub := fake.UpgradeBindingsStub
+	fakeReturns := fake.upgradeBindingsReturns
+	fake.recordInvocation("UpgradeBindings", []interface{}{arg1, arg2, arg3Copy})
+	fake.upgradeBindingsMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeServiceProvider) UpgradeBindingsCallCount() int {
+	fake.upgradeBindingsMutex.RLock()
+	defer fake.upgradeBindingsMutex.RUnlock()
+	return len(fake.upgradeBindingsArgsForCall)
+}
+
+func (fake *FakeServiceProvider) UpgradeBindingsCalls(stub func(context.Context, *varcontext.VarContext, []*varcontext.VarContext) error) {
+	fake.upgradeBindingsMutex.Lock()
+	defer fake.upgradeBindingsMutex.Unlock()
+	fake.UpgradeBindingsStub = stub
+}
+
+func (fake *FakeServiceProvider) UpgradeBindingsArgsForCall(i int) (context.Context, *varcontext.VarContext, []*varcontext.VarContext) {
+	fake.upgradeBindingsMutex.RLock()
+	defer fake.upgradeBindingsMutex.RUnlock()
+	argsForCall := fake.upgradeBindingsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeServiceProvider) UpgradeBindingsReturns(result1 error) {
+	fake.upgradeBindingsMutex.Lock()
+	defer fake.upgradeBindingsMutex.Unlock()
+	fake.UpgradeBindingsStub = nil
+	fake.upgradeBindingsReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeServiceProvider) UpgradeBindingsReturnsOnCall(i int, result1 error) {
+	fake.upgradeBindingsMutex.Lock()
+	defer fake.upgradeBindingsMutex.Unlock()
+	fake.UpgradeBindingsStub = nil
+	if fake.upgradeBindingsReturnsOnCall == nil {
+		fake.upgradeBindingsReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.upgradeBindingsReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeServiceProvider) UpgradeInstance(arg1 context.Context, arg2 *varcontext.VarContext) (*sync.WaitGroup, error) {
+	fake.upgradeInstanceMutex.Lock()
+	ret, specificReturn := fake.upgradeInstanceReturnsOnCall[len(fake.upgradeInstanceArgsForCall)]
+	fake.upgradeInstanceArgsForCall = append(fake.upgradeInstanceArgsForCall, struct {
+		arg1 context.Context
+		arg2 *varcontext.VarContext
+	}{arg1, arg2})
+	stub := fake.UpgradeInstanceStub
+	fakeReturns := fake.upgradeInstanceReturns
+	fake.recordInvocation("UpgradeInstance", []interface{}{arg1, arg2})
+	fake.upgradeInstanceMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -850,47 +924,47 @@ func (fake *FakeServiceProvider) Upgrade(arg1 context.Context, arg2 *varcontext.
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeServiceProvider) UpgradeCallCount() int {
-	fake.upgradeMutex.RLock()
-	defer fake.upgradeMutex.RUnlock()
-	return len(fake.upgradeArgsForCall)
+func (fake *FakeServiceProvider) UpgradeInstanceCallCount() int {
+	fake.upgradeInstanceMutex.RLock()
+	defer fake.upgradeInstanceMutex.RUnlock()
+	return len(fake.upgradeInstanceArgsForCall)
 }
 
-func (fake *FakeServiceProvider) UpgradeCalls(stub func(context.Context, *varcontext.VarContext, []*varcontext.VarContext) (models.ServiceInstanceDetails, error)) {
-	fake.upgradeMutex.Lock()
-	defer fake.upgradeMutex.Unlock()
-	fake.UpgradeStub = stub
+func (fake *FakeServiceProvider) UpgradeInstanceCalls(stub func(context.Context, *varcontext.VarContext) (*sync.WaitGroup, error)) {
+	fake.upgradeInstanceMutex.Lock()
+	defer fake.upgradeInstanceMutex.Unlock()
+	fake.UpgradeInstanceStub = stub
 }
 
-func (fake *FakeServiceProvider) UpgradeArgsForCall(i int) (context.Context, *varcontext.VarContext, []*varcontext.VarContext) {
-	fake.upgradeMutex.RLock()
-	defer fake.upgradeMutex.RUnlock()
-	argsForCall := fake.upgradeArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+func (fake *FakeServiceProvider) UpgradeInstanceArgsForCall(i int) (context.Context, *varcontext.VarContext) {
+	fake.upgradeInstanceMutex.RLock()
+	defer fake.upgradeInstanceMutex.RUnlock()
+	argsForCall := fake.upgradeInstanceArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeServiceProvider) UpgradeReturns(result1 models.ServiceInstanceDetails, result2 error) {
-	fake.upgradeMutex.Lock()
-	defer fake.upgradeMutex.Unlock()
-	fake.UpgradeStub = nil
-	fake.upgradeReturns = struct {
-		result1 models.ServiceInstanceDetails
+func (fake *FakeServiceProvider) UpgradeInstanceReturns(result1 *sync.WaitGroup, result2 error) {
+	fake.upgradeInstanceMutex.Lock()
+	defer fake.upgradeInstanceMutex.Unlock()
+	fake.UpgradeInstanceStub = nil
+	fake.upgradeInstanceReturns = struct {
+		result1 *sync.WaitGroup
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) UpgradeReturnsOnCall(i int, result1 models.ServiceInstanceDetails, result2 error) {
-	fake.upgradeMutex.Lock()
-	defer fake.upgradeMutex.Unlock()
-	fake.UpgradeStub = nil
-	if fake.upgradeReturnsOnCall == nil {
-		fake.upgradeReturnsOnCall = make(map[int]struct {
-			result1 models.ServiceInstanceDetails
+func (fake *FakeServiceProvider) UpgradeInstanceReturnsOnCall(i int, result1 *sync.WaitGroup, result2 error) {
+	fake.upgradeInstanceMutex.Lock()
+	defer fake.upgradeInstanceMutex.Unlock()
+	fake.UpgradeInstanceStub = nil
+	if fake.upgradeInstanceReturnsOnCall == nil {
+		fake.upgradeInstanceReturnsOnCall = make(map[int]struct {
+			result1 *sync.WaitGroup
 			result2 error
 		})
 	}
-	fake.upgradeReturnsOnCall[i] = struct {
-		result1 models.ServiceInstanceDetails
+	fake.upgradeInstanceReturnsOnCall[i] = struct {
+		result1 *sync.WaitGroup
 		result2 error
 	}{result1, result2}
 }
@@ -918,8 +992,10 @@ func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	defer fake.unbindMutex.RUnlock()
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
-	fake.upgradeMutex.RLock()
-	defer fake.upgradeMutex.RUnlock()
+	fake.upgradeBindingsMutex.RLock()
+	defer fake.upgradeBindingsMutex.RUnlock()
+	fake.upgradeInstanceMutex.RLock()
+	defer fake.upgradeInstanceMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

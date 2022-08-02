@@ -26,7 +26,7 @@ var _ = Describe("Terraform Upgrade", func() {
 		session    *Session
 	)
 
-	terraformStateOutputValue := func(deploymentID string, testHelper *helper.TestHelper) int {
+	terraformStateOutputValue := func(deploymentID, outputName string, testHelper *helper.TestHelper) any {
 		var tfDeploymentReceiver models.TerraformDeployment
 		Expect(testHelper.DBConn().Where("id = ?", deploymentID).First(&tfDeploymentReceiver).Error).NotTo(HaveOccurred())
 		var workspaceReceiver struct {
@@ -40,12 +40,8 @@ var _ = Describe("Terraform Upgrade", func() {
 			} `json:"outputs"`
 		}
 		Expect(json.Unmarshal(workspaceReceiver.State, &stateReceiver)).NotTo(HaveOccurred())
-
-		var result float64
-		for _, value := range stateReceiver.Outputs {
-			result = value.Value.(float64)
-		}
-		return int(result)
+		Expect(stateReceiver.Outputs).To(HaveKey(outputName), "could not find output with this name")
+		return stateReceiver.Outputs[outputName].Value
 	}
 
 	instanceTerraformStateVersion := func(serviceInstanceGUID string) string {
@@ -57,11 +53,13 @@ var _ = Describe("Terraform Upgrade", func() {
 	}
 
 	instanceTerraformStateOutputValue := func(serviceInstanceGUID string) int {
-		return terraformStateOutputValue(fmt.Sprintf("tf:%s:", serviceInstanceGUID), testHelper)
+		val := terraformStateOutputValue(fmt.Sprintf("tf:%s:", serviceInstanceGUID), "provision_output", testHelper)
+		return int(val.(float64))
 	}
 
 	bindingTerraformStateOutputValue := func(serviceInstanceGUID, bindingGUID string) int {
-		return terraformStateOutputValue(fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, bindingGUID), testHelper)
+		val := terraformStateOutputValue(fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, bindingGUID), "provision_output", testHelper)
+		return int(val.(float64))
 	}
 
 	BeforeEach(func() {
