@@ -18,7 +18,6 @@ toggles in the service broker.
 
 It mimics Go's `flags` package, but uses Viper as a backing store to abstract
 out how a particular flag is set.
-
 */
 package toggles
 

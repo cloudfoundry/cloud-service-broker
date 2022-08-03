@@ -18,7 +18,9 @@ var csb string
 
 var _ = SynchronizedBeforeSuite(
 	func() []byte {
-		path, err := Build("github.com/cloudfoundry/cloud-service-broker", `-gcflags="all=-N -l"`)
+		// -gcflags enabled "gops", but had to be removed as this doesn't compile with Go 1.19
+		//path, err := Build("github.com/cloudfoundry/cloud-service-broker", `-gcflags="all=-N -l"`)
+		path, err := Build("github.com/cloudfoundry/cloud-service-broker")
 		Expect(err).NotTo(HaveOccurred())
 		return []byte(path)
 	},

@@ -223,6 +223,7 @@ func (instance *TestInstance) BrokerURL(subPath string) string {
 
 // BrokerUrl returns the URL of the broker. Use BrokerURL instead.
 // Deprecated: due to name that does not conform to Go initialisms:  https://github.com/golang/go/wiki/CodeReviewComments#initialisms
+//
 //lint:ignore ST1003 to maintain backwards compatability
 func (instance *TestInstance) BrokerUrl(subPath string) string {
 	return instance.BrokerURL(subPath)
