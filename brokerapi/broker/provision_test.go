@@ -6,16 +6,15 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-
-	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
-
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -237,7 +236,8 @@ var _ = Describe("Provision", func() {
 
 		When("property validation is disabled", func() {
 			It("should not error", func() {
-				viper.Set(broker.DisableRequestPropertyValidation, true)
+				viper.Set(string(featureflags.DisableRequestPropertyValidation), true)
+				defer viper.Reset()
 
 				provisionDetails = domain.ProvisionDetails{
 					ServiceID:     offeringID,
@@ -247,10 +247,6 @@ var _ = Describe("Provision", func() {
 
 				_, err := serviceBroker.Provision(context.TODO(), "new-instance", provisionDetails, true)
 				Expect(err).ToNot(HaveOccurred())
-			})
-
-			AfterEach(func() {
-				viper.Set(broker.DisableRequestPropertyValidation, false)
 			})
 		})
 	})
