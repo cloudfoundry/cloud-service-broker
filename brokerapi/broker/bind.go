@@ -6,17 +6,16 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
-
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/utils/request"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -142,7 +141,7 @@ func validateBindParameters(params map[string]any, validUserInputFields []broker
 
 	// As this is a new check we have feature-flagged it so that it can easily be disabled
 	// if it causes problems.
-	if !viper.GetBool(DisableRequestPropertyValidation) {
+	if !featureflags.Enabled(featureflags.DisableRequestPropertyValidation) {
 		return validateDefinedParams(params, validUserInputFields, nil)
 	}
 	return nil

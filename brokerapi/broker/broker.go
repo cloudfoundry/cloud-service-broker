@@ -22,17 +22,10 @@ import (
 	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/credstore"
-	"github.com/spf13/viper"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
 )
 
-const (
-	credhubClientIdentifier          = "csb"
-	DisableRequestPropertyValidation = "request.property.validation.disabled"
-)
-
-func init() {
-	viper.BindEnv(DisableRequestPropertyValidation, "CSB_DISABLE_REQUEST_PROPERTY_VALIDATION")
-}
+const credhubClientIdentifier = "csb"
 
 // ServiceBroker is a brokerapi.ServiceBroker that can be used to generate an OSB compatible service broker.
 type ServiceBroker struct {
@@ -63,7 +56,7 @@ func validateProvisionParameters(params map[string]any, validUserInputFields []b
 
 	// As this is a new check we have feature-flagged it so that it can easily be disabled
 	// if it causes problems.
-	if !viper.GetBool(DisableRequestPropertyValidation) {
+	if !featureflags.Enabled(featureflags.DisableRequestPropertyValidation) {
 		err := validateNoPlanParametersOverrides(params, plan)
 		if err != nil {
 			return err

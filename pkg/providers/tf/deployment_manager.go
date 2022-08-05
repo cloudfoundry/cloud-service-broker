@@ -4,12 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
-
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-	"github.com/spf13/viper"
 )
 
 type DeploymentManager struct {
@@ -89,7 +87,7 @@ func (d *DeploymentManager) OperationStatus(deploymentID string) (bool, string, 
 }
 
 func (d *DeploymentManager) UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]any) error {
-	if !viper.GetBool(featureflags.DynamicHCLEnabled) && !viper.GetBool(featureflags.TfUpgradeEnabled) {
+	if !featureflags.Enabled(featureflags.DynamicHCLEnabled) && !featureflags.Enabled(featureflags.TfUpgradeEnabled) {
 		return nil
 	}
 	deployment, err := d.store.GetTerraformDeployment(deploymentID)
