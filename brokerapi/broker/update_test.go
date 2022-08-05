@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 
 	"code.cloudfoundry.org/lager"
@@ -674,14 +676,11 @@ var _ = Describe("Update", func() {
 					},
 					RawParameters: json.RawMessage(`{"invalid_parameter":42,"foo":"bar","other_invalid":false,"plan-defined-key":42}`),
 				}
-				viper.Set(broker.DisableRequestPropertyValidation, true)
+				viper.Set(string(featureflags.DisableRequestPropertyValidation), true)
+				defer viper.Reset()
 
 				_, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
 				Expect(err).ToNot(HaveOccurred())
-			})
-
-			AfterEach(func() {
-				viper.Set(broker.DisableRequestPropertyValidation, false)
 			})
 		})
 	})

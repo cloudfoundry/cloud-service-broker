@@ -3,15 +3,13 @@ package tf_test
 import (
 	"errors"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
-
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace/workspacefakes"
-
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace/workspacefakes"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/viper"
@@ -387,7 +385,7 @@ var _ = Describe("DeploymentManager", func() {
 
 		When("brokerpak updates enabled", func() {
 			BeforeEach(func() {
-				viper.Set(featureflags.DynamicHCLEnabled, true)
+				viper.Set(string(featureflags.DynamicHCLEnabled), true)
 			})
 
 			It("updates the modules but keeps the original state", func() {
@@ -468,7 +466,7 @@ var _ = Describe("DeploymentManager", func() {
 
 		When("terraform upgrades enabled", func() {
 			BeforeEach(func() {
-				viper.Set(featureflags.TfUpgradeEnabled, true)
+				viper.Set(string(featureflags.TfUpgradeEnabled), true)
 			})
 
 			It("updates the modules but keeps the original state", func() {
