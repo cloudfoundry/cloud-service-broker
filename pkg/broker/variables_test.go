@@ -181,6 +181,25 @@ func TestBrokerVariable_ValidateVariables(t *testing.T) {
 			},
 			Expected: errors.New(`1 error(s) occurred: test: test must be one of the following: "one", "theother"`),
 		},
+		"test nullable enum": {
+			Parameters: map[string]any{
+				"test": nil,
+			},
+			Variables: []BrokerVariable{
+				{
+					Required:  true,
+					FieldName: "test",
+					Nullable:  true,
+					Default:   nil,
+					Type:      JSONTypeString,
+					Enum: map[any]string{
+						"one":      "it's either this one",
+						"theother": "or this one",
+					},
+				},
+			},
+			Expected: nil,
+		},
 		"test missing": {
 			Parameters: map[string]any{},
 			Variables: []BrokerVariable{
