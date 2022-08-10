@@ -108,6 +108,10 @@ func (bv *BrokerVariable) ToSchema() map[string]any {
 			enumeration = append(enumeration, k)
 		}
 
+		if bv.Nullable {
+			enumeration = append(enumeration, nil)
+		}
+
 		// Sort enumerations lexocographically for documentation consistency.
 		sort.Slice(enumeration, func(i int, j int) bool {
 			return fmt.Sprintf("%v", enumeration[i]) < fmt.Sprintf("%v", enumeration[j])
