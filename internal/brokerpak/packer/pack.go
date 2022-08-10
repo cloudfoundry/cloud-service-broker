@@ -91,7 +91,11 @@ func packSources(m *manifest.Manifest, tmp string, cachePath string) error {
 }
 
 func getAny(source, destination string) error {
-	return getter.GetAny(destination, source)
+	err := getter.GetAny(destination, source)
+	if err != nil {
+		return fmt.Errorf("error getting %q: %w", source, err)
+	}
+	return nil
 }
 
 func packBinaries(m *manifest.Manifest, tmp string, cachePath string) error {
