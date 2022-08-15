@@ -3,7 +3,7 @@
 In this tutorial, we are going to add a feature to an existing service in the [AWS Brokerpak](https://github.com/cloudfoundry/csb-brokerpak-aws) for the S3 service. Our goal is to be able to add a feature to the service definition, write the accompanying Terraform HCL, and add adequate testing so that a PR can be raised against the Brokerpak.
 
 ## Before you Start
-Before you start, you should be familiar with Brokerpak concepts, for example by reading the [writing your first brokerpak](./writing-your-first-brokerpak) tutorial. 
+Before you start, you should be familiar with Brokerpak concepts, for example by reading the [writing your first brokerpak](./writing-your-first-brokerpak.md) tutorial. 
 
 In order to complete this tutorial, you will need:
 - Access to a Cloud Foundry environment
@@ -170,7 +170,7 @@ In another terminal you should run the test with
 ### Integration tests
 The tests are located in the `integration-tests/` directory. They test that values passed in to the
 broker are correctly translated into Terraform variables. The test are written in Go using
-the [Ginkgo](https://github.com/onis/ginkgo) test framework. It is possible to extend these
+the [Ginkgo](https://github.com/onsi/ginkgo) test framework. It is possible to extend these
 tests with minimal understanding of Go and Ginkgo. If we look at the S3 test file we see
 something like:
 ```go
