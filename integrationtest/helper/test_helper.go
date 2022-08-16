@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/cloudfoundry/cloud-service-broker/utils/freeport"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	"github.com/pborman/uuid"
@@ -31,7 +32,7 @@ func New(csb string) *TestHelper {
 		DatabaseFile: path.Join(tmpDir, "databaseFile.dat"),
 		OriginalDir:  original,
 		csb:          csb,
-		Port:         freePort(),
+		Port:         freeport.Must(),
 		username:     uuid.New(),
 		password:     uuid.New(),
 	}

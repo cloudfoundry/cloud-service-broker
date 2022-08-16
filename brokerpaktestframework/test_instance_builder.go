@@ -3,7 +3,6 @@ package brokerpaktestframework
 import (
 	"fmt"
 	"io"
-	"net"
 	"os"
 	"os/exec"
 	"path"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/utils/freeport"
 	"github.com/onsi/gomega/gexec"
 	cp "github.com/otiai10/copy"
 )
@@ -53,7 +53,7 @@ func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.W
 		return nil, fmt.Errorf("pak build exited with code %d", session.ExitCode())
 	}
 
-	return &TestInstance{brokerBuild: csbBuild, workspace: workingDir, username: "u", password: "p", port: freePort()}, nil
+	return &TestInstance{brokerBuild: csbBuild, workspace: workingDir, username: "u", password: "p", port: freeport.Must()}, nil
 }
 
 func copyBrokerpakYMLFiles(brokerPackDir string, workingDir string) error {
@@ -124,13 +124,4 @@ func writeManifest(brokerPackDir string, build string, workingDir string) (err e
 	}
 
 	return
-}
-
-func freePort() int {
-	listener, err := net.Listen("tcp", "localhost:0")
-	if err != nil {
-		panic("unable to open a listener port")
-	}
-	defer listener.Close()
-	return listener.Addr().(*net.TCPAddr).Port
 }
