@@ -169,7 +169,7 @@ In another terminal you should run the test with
 
 ### Integration tests
 The tests are located in the `integration-tests/` directory. They test that values passed in to the
-broker are correctly translated into Terraform variables. The test are written in Go using
+broker are correctly translated into Terraform variables. The tests are written in Go using
 the [Ginkgo](https://github.com/onsi/ginkgo) test framework. It is possible to extend these
 tests with minimal understanding of Go and Ginkgo. If we look at the S3 test file we see
 something like:
@@ -201,7 +201,7 @@ To run the integration tests, you can run `make run-integration-tests` in the to
 
 ## Acceptance Tests
 These test are located in the `acceptance_tests` directory. These are end-to-end tests which need to be run
-in coordination with a CloudFoundry environment. They are also written in Go with the Ginkgo framework
+in coordination with a CloudFoundry environment. They are also written in Go with the Ginkgo framework.
 In general there is a single test for each service, and the test is not extended for every additional property.
 
 To run the acceptance test, run `ginkgo -v --label-filter s3` in the `acceptance_tests`
