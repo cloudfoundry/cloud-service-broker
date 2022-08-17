@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package workspace is a model for Terraform workspaces
 package workspace
 
 import (

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package config implements configuration parsing for CredHub
 package config
 
 import (

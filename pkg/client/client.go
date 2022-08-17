@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package client enables code to make OSBAPI calls
 package client
 
 import (

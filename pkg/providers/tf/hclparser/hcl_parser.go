@@ -1,3 +1,4 @@
+// Package hclparser is used to parse HCL (Hashicorp Configuration Language) that Terraform is written in
 package hclparser
 
 import (

@@ -1,3 +1,4 @@
+// Package featureflags is used to determine the state of feature flags
 package featureflags
 
 import "github.com/spf13/viper"

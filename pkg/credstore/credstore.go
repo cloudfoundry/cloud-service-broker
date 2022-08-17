@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package credstore enables a connection to CredHub
 package credstore
 
 import (
