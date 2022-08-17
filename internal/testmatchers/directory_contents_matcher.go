@@ -1,3 +1,4 @@
+// Package testmatchers implements custom test matchers
 package testmatchers
 
 import (

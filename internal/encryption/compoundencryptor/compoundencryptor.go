@@ -1,3 +1,4 @@
+// Package compoundencryptor allows encryptors to be combined
 package compoundencryptor
 
 import "github.com/cloudfoundry/cloud-service-broker/internal/storage"

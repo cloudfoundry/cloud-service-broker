@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package platform is a utility for handling platform data
 package platform
 
 import (

@@ -1,3 +1,4 @@
+// Package passwordparser parses password data
 package passwordparser
 
 import (

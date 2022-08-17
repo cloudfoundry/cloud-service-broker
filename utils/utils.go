@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package utils contains various utils that do various things.
+// It is deprecated and any future utils should be added as an appropriately named sub-package.
+// Over time this package should be emptied.
 package utils
 
 import (

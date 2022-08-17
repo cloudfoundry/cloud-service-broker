@@ -1,3 +1,4 @@
+// Package gcmencryptor implements AES GCM encryption
 package gcmencryptor
 
 import (

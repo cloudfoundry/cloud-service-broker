@@ -1,3 +1,4 @@
+// Package createservice is an experimental mimic for the "cf create-service" command
 package createservice
 
 import (
