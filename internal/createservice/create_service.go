@@ -4,24 +4,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
 
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-
-	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
-
 	"github.com/cloudfoundry/cloud-service-broker/pkg/brokerpak"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
+	"github.com/cloudfoundry/cloud-service-broker/utils/freeport"
 	"github.com/pborman/uuid"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 func Run(service, plan, name, c, cachePath string) {
 	pakPath := pack(cachePath)
-	port := freePort()
+	port := freeport.Must()
 	username := uuid.New()
 	password := uuid.New()
 	workdir, err := os.MkdirTemp("", "csb-*")
@@ -188,14 +186,4 @@ func pack(cachePath string) string {
 	}
 
 	return pakPath
-}
-
-// TODO: this is the third copy of this in the codebase. Reduce that.
-func freePort() int {
-	listener, err := net.Listen("tcp", "localhost:0")
-	if err != nil {
-		panic("unable to open a listener port")
-	}
-	defer listener.Close()
-	return listener.Addr().(*net.TCPAddr).Port
 }
