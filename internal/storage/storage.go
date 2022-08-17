@@ -1,3 +1,4 @@
+// Package storage implements a Database Access Object (DAO)
 package storage
 
 import "gorm.io/gorm"

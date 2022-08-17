@@ -1,3 +1,4 @@
+// Package noopencryptor looks like an encryptor but doesn't do any encryption
 package noopencryptor
 
 func New() NoopEncryptor {

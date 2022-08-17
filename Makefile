@@ -129,7 +129,7 @@ vet: ## Runs go vet
 	${GO} vet ./...
 
 staticcheck: ## Runs staticcheck
-	${GO} run honnef.co/go/tools/cmd/staticcheck ./...
+	${GO} list ./... | grep -v 'fakes$$' | xargs ${GO} run honnef.co/go/tools/cmd/staticcheck
 
 ###### Format #################################################################
 

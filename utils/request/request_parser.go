@@ -1,3 +1,4 @@
+// Package request decodes the originating identity header
 package request
 
 import (

@@ -1,3 +1,4 @@
+// Package freeport identifies a random unused port
 package freeport
 
 import (

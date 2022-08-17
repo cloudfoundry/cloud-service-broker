@@ -1,3 +1,4 @@
+// Package infohandler handles the /info endpoint
 package infohandler
 
 import (

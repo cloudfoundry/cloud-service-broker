@@ -1,3 +1,4 @@
+// Package passwordcombiner combines passwords with salt to create encryption keys
 package passwordcombiner
 
 import (
