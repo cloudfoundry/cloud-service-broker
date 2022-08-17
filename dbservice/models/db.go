@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package models implements database object models for use with GORM
 package models
 
 const (

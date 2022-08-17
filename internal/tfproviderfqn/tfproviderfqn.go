@@ -1,3 +1,4 @@
+// Package tfproviderfqn implements fully qualified Terraform provider names
 package tfproviderfqn
 
 import "fmt"
