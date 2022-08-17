@@ -1,3 +1,4 @@
+// Package decider works out whether a service instance update is an Upgrade or and Update
 package decider
 
 import (
