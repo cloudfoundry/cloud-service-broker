@@ -24,14 +24,14 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
+	"github.com/hashicorp/go-version"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/fetcher"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
-	"github.com/hashicorp/go-version"
 )
 
 const manifestName = "manifest.yml"
@@ -83,19 +83,19 @@ func (pak *BrokerPakReader) Manifest() (*manifest.Manifest, error) {
 
 // Services gets the list of services included in the pack.
 func (pak *BrokerPakReader) Services() ([]tf.TfServiceDefinitionV1, error) {
-	manifest, err := pak.Manifest()
+	pakManifest, err := pak.Manifest()
 	if err != nil {
 		return nil, err
 	}
 
 	var services []tf.TfServiceDefinitionV1
-	for _, serviceDefinition := range manifest.ServiceDefinitions {
+	for _, serviceDefinition := range pakManifest.ServiceDefinitions {
 		var receiver tf.TfServiceDefinitionV1
 		if err := pak.readYaml(serviceDefinition, &receiver); err != nil {
 			return nil, err
 		}
 
-		receiver.RequiredEnvVars = manifest.RequiredEnvVars
+		receiver.RequiredEnvVars = pakManifest.RequiredEnvVars
 		services = append(services, receiver)
 	}
 

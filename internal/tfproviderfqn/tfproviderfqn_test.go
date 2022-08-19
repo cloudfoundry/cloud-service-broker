@@ -1,9 +1,10 @@
 package tfproviderfqn_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/internal/tfproviderfqn"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/cloudfoundry/cloud-service-broker/internal/tfproviderfqn"
 )
 
 var _ = Describe("TfProviderFQN", func() {

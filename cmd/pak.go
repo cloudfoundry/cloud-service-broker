@@ -19,9 +19,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/brokerpak"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/cloudfoundry/cloud-service-broker/pkg/brokerpak"
 )
 
 const (
@@ -29,7 +30,7 @@ const (
 )
 
 func init() {
-	viper.BindEnv(pakCachePath, "PAK_BUILD_CACHE_PATH")
+	_ = viper.BindEnv(pakCachePath, "PAK_BUILD_CACHE_PATH")
 
 	pakCmd := &cobra.Command{
 		Use:   "pak",
@@ -73,7 +74,7 @@ dependencies, services it provides, and the contents.
 
 `,
 		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Help()
+			_ = cmd.Help()
 		},
 	}
 
@@ -165,7 +166,7 @@ dependencies, services it provides, and the contents.
 		Short:   "generate the markdown usage docs for the given pack",
 		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			brokerpak.Docs(args[0])
+			_ = brokerpak.Docs(args[0])
 		},
 	})
 
@@ -179,7 +180,9 @@ dependencies, services it provides, and the contents.
 			if err != nil {
 				log.Fatalf("couldn't initialize temp directory: %v", err)
 			}
-			defer os.RemoveAll(td)
+			defer func(path string) {
+				_ = os.RemoveAll(path)
+			}(td)
 
 			if err := brokerpak.Init(td); err != nil {
 				log.Fatalf("couldn't initialize brokerpak: %v", err)
@@ -187,7 +190,9 @@ dependencies, services it provides, and the contents.
 
 			// Edit the manifest to point to our local server
 			packname, err := brokerpak.Pack(td, "", false)
-			defer os.Remove(packname)
+			defer func(name string) {
+				_ = os.Remove(name)
+			}(packname)
 			if err != nil {
 				log.Fatalf("couldn't pack brokerpak: %v", err)
 			}

@@ -19,13 +19,13 @@ import (
 	"fmt"
 	"time"
 
+	"code.cloudfoundry.org/lager"
+	"github.com/hashicorp/go-version"
+
+	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-	"github.com/hashicorp/go-version"
-
-	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 )
 
@@ -74,12 +74,12 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 		return "", err
 	}
 
-	workspace, err := workspace.NewWorkspace(vars.ToMap(), action.Template, action.Templates, []workspace.ParameterMapping{}, []string{}, []workspace.ParameterMapping{})
+	newWorkspace, err := workspace.NewWorkspace(vars.ToMap(), action.Template, action.Templates, []workspace.ParameterMapping{}, []string{}, []workspace.ParameterMapping{})
 	if err != nil {
 		return tfID, fmt.Errorf("error creating workspace: %w", err)
 	}
 
-	deployment, err := provider.CreateAndSaveDeployment(tfID, workspace)
+	deployment, err := provider.CreateAndSaveDeployment(tfID, newWorkspace)
 	if err != nil {
 		provider.logger.Error("terraform provider create failed", err)
 		return tfID, fmt.Errorf("terraform provider create failed: %w", err)
@@ -90,8 +90,8 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 	}
 
 	go func() {
-		err := provider.DefaultInvoker().Apply(ctx, workspace)
-		provider.MarkOperationFinished(&deployment, err)
+		err := provider.DefaultInvoker().Apply(ctx, newWorkspace)
+		_ = provider.MarkOperationFinished(&deployment, err)
 	}()
 
 	return tfID, nil
@@ -103,13 +103,13 @@ func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID str
 		return err
 	}
 
-	workspace := deployment.TFWorkspace()
+	tfWorkspace := deployment.TFWorkspace()
 
-	if err := workspace.RemovePreventDestroy(); err != nil {
+	if err := tfWorkspace.RemovePreventDestroy(); err != nil {
 		return err
 	}
 
-	inputList, err := workspace.Modules[0].Inputs()
+	inputList, err := tfWorkspace.Modules[0].Inputs()
 	if err != nil {
 		return err
 	}
@@ -119,15 +119,15 @@ func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID str
 		limitedConfig[name] = templateVars[name]
 	}
 
-	workspace.Instances[0].Configuration = limitedConfig
+	tfWorkspace.Instances[0].Configuration = limitedConfig
 
 	if err := provider.MarkOperationStarted(&deployment, operationType); err != nil {
 		return err
 	}
 
 	go func() {
-		err = provider.DefaultInvoker().Destroy(ctx, workspace)
-		provider.MarkOperationFinished(&deployment, err)
+		err = provider.DefaultInvoker().Destroy(ctx, tfWorkspace)
+		_ = provider.MarkOperationFinished(&deployment, err)
 	}()
 
 	return nil

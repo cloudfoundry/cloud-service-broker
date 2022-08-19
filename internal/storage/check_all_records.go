@@ -3,10 +3,11 @@ package storage
 import (
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/hashicorp/go-multierror"
 	"gorm.io/gorm"
+
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 )
 
 func (s *Storage) CheckAllRecords() error {

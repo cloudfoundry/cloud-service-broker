@@ -53,8 +53,7 @@ func (d *DeploymentManager) MarkOperationStarted(deployment *storage.TerraformDe
 func (d *DeploymentManager) MarkOperationFinished(deployment *storage.TerraformDeployment, err error) error {
 	if err == nil {
 		lastOperationMessage := fmt.Sprintf("%s %s", deployment.LastOperationType, Succeeded)
-		workspace := deployment.Workspace
-		outputs, err := workspace.Outputs(workspace.ModuleInstances()[0].InstanceName)
+		outputs, err := deployment.Workspace.Outputs(deployment.Workspace.ModuleInstances()[0].InstanceName)
 		if err == nil {
 			if status, ok := outputs["status"]; ok {
 				lastOperationMessage = fmt.Sprintf("%s %s: %s", deployment.LastOperationType, Succeeded, status)
@@ -100,14 +99,14 @@ func (d *DeploymentManager) UpdateWorkspaceHCL(deploymentID string, serviceDefin
 		return err
 	}
 
-	workspace, err := workspace.NewWorkspace(templateVars, serviceDefinitionAction.Template, serviceDefinitionAction.Templates, []workspace.ParameterMapping{}, []string{}, []workspace.ParameterMapping{})
+	newWorkspace, err := workspace.NewWorkspace(templateVars, serviceDefinitionAction.Template, serviceDefinitionAction.Templates, []workspace.ParameterMapping{}, []string{}, []workspace.ParameterMapping{})
 	if err != nil {
 		return err
 	}
 
-	workspace.State = currentWorkspace.State
+	newWorkspace.State = currentWorkspace.State
 
-	deployment.Workspace = workspace
+	deployment.Workspace = newWorkspace
 	if err := d.store.StoreTerraformDeployment(deployment); err != nil {
 		return fmt.Errorf("terraform provider create failed: %w", err)
 	}

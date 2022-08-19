@@ -15,11 +15,11 @@
 // Package models implements database object models for use with GORM
 package models
 
+// The following operation types are used as part of the OSB process.
+// The types correspond to asynchronous provision/deprovision/update calls
+// and will exist on a ServiceInstanceDetails with an operation ID that can be
+// used to look up the state of an operation.
 const (
-	// The following operation types are used as part of the OSB process.
-	// The types correspond to asynchronous provision/deprovision/update calls
-	// and will exist on a ServiceInstanceDetails with an operation ID that can be
-	// used to look up the state of an operation.
 	ProvisionOperationType   = "provision"
 	DeprovisionOperationType = "deprovision"
 	UpdateOperationType      = "update"
@@ -44,7 +44,7 @@ type ProvisionRequestDetails ProvisionRequestDetailsV3
 // to provision a service.
 type BindRequestDetails BindRequestDetailsV1
 
-// Migration represents the mgirations table. It holds a monotonically
+// Migration represents the migrations table. It holds a monotonically
 // increasing number that gets incremented with every database schema revision.
 type Migration MigrationV1
 

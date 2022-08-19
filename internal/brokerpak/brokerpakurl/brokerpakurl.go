@@ -14,18 +14,18 @@ const HashicorpURLTemplate = "https://releases.hashicorp.com/${name}/${version}/
 
 func URL(name, version, urlTemplate string, plat platform.Platform) string {
 	replacer := strings.NewReplacer("${name}", name, "${version}", version, "${os}", plat.Os, "${arch}", plat.Arch)
-	var url string
+	var template string
 
 	switch {
 	case urlTemplate == "":
-		url = HashicorpURLTemplate
+		template = HashicorpURLTemplate
 	case isURL(urlTemplate):
-		url = urlTemplate
+		template = urlTemplate
 	default:
-		url, _ = filepath.Abs(urlTemplate)
+		template, _ = filepath.Abs(urlTemplate)
 	}
 
-	return replacer.Replace(url)
+	return replacer.Replace(template)
 }
 
 func isURL(path string) bool {

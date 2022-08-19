@@ -212,7 +212,9 @@ func (instance *TestInstance) httpInvokeBroker(subpath string, method string, bo
 	if err != nil {
 		return nil, 0, err
 	}
-	defer response.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(response.Body)
 	contents, err := io.ReadAll(response.Body)
 	return contents, response.StatusCode, err
 }

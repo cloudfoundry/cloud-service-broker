@@ -16,7 +16,7 @@ func copyFromCache(cachePath string, source string, destination string) bool {
 	}
 	cacheKey := buildCacheKey(cachePath, source)
 	if _, err := os.Stat(cacheKey); err == nil {
-		cp.Copy(cacheKey, destination)
+		_ = cp.Copy(cacheKey, destination)
 		log.Println("\t", source, "found in cache at", cacheKey)
 		return true
 	} else {

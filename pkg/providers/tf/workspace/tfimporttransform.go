@@ -42,8 +42,8 @@ func braceCount(str string, count int) int {
 // CleanTf removes ttf.ParametersToRemove from tf string
 func (ttf *TfTransformer) CleanTf(tf string) string {
 	resource := regexp.MustCompile(`resource "(.*)" "(.*)"`)
-	value := regexp.MustCompile(`^[\s]*([^\s]*)[\s]*=[\s]*(.*)[\s]*$`)
-	block := regexp.MustCompile(`^[\s]*([^\s]*)[\s]*{[\s]*$`)
+	value := regexp.MustCompile(`^\s*(\S*)\s*=\s*(.*)\s*$`)
+	block := regexp.MustCompile(`^\s*(\S*)\s*{\s*$`)
 	depth := 0
 	blockStack := make([]string, 64)
 	scanner := bufio.NewScanner(strings.NewReader(tf))

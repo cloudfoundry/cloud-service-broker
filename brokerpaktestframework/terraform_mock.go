@@ -7,9 +7,10 @@ import (
 	"path"
 	"strings"
 
+	"github.com/onsi/gomega/gexec"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-	"github.com/onsi/gomega/gexec"
 )
 
 func NewTerraformMock(opts ...Option) (TerraformMock, error) {
@@ -61,13 +62,13 @@ func (p TerraformMock) ApplyInvocations() ([]TerraformInvocation, error) {
 	if err != nil {
 		return nil, err
 	}
-	filteredInovocations := []TerraformInvocation{}
+	filteredInvocations := []TerraformInvocation{}
 	for _, invocation := range invocations {
 		if invocation.Type == "apply" {
-			filteredInovocations = append(filteredInovocations, invocation)
+			filteredInvocations = append(filteredInvocations, invocation)
 		}
 	}
-	return filteredInovocations, nil
+	return filteredInvocations, nil
 }
 
 func (p TerraformMock) Invocations() ([]TerraformInvocation, error) {
@@ -118,7 +119,9 @@ func (p TerraformMock) setTFStateFile(state workspace.Tfstate) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		_ = file.Close()
+	}(file)
 	return json.NewEncoder(file).Encode(state)
 }
 
@@ -159,14 +162,14 @@ func (p TerraformMock) ReturnTFState(values []TFStateValue) error {
 }
 
 func readTerraformVersionFromManifest() string {
-	path := path.Join(PathToBrokerPack(2), "manifest.yml")
-	contents, err := os.ReadFile(path)
+	manifestPath := path.Join(PathToBrokerPack(2), "manifest.yml")
+	contents, err := os.ReadFile(manifestPath)
 	if err != nil {
-		panic(fmt.Sprintf("could not read manifest file %q: %s", path, err))
+		panic(fmt.Sprintf("could not read manifest file %q: %s", manifestPath, err))
 	}
 	parsedManifest, err := manifest.Parse(contents)
 	if err != nil {
-		panic(fmt.Sprintf("count not parse manifest file %q: %s", path, err))
+		panic(fmt.Sprintf("count not parse manifest file %q: %s", manifestPath, err))
 	}
 
 	switch len(parsedManifest.TerraformVersions) {

@@ -17,15 +17,15 @@ func main() {
 	}
 	timestamp := fmt.Sprintf("%d", time.Now().UnixNano())
 	targetDir := path.Join(InvocationStore, os.Args[1]+"-"+timestamp)
-	os.Mkdir(targetDir, 0700)
+	_ = os.Mkdir(targetDir, 0700)
 	pwd, err := os.Getwd()
 	if err != nil {
 		panic(err.Error())
 	}
-	cp.Copy(pwd, targetDir)
+	_ = cp.Copy(pwd, targetDir)
 	responseTFPath := path.Join(InvocationStore, "mock_tf_state.json")
 	if _, err := os.Stat(responseTFPath); err == nil {
-		cp.Copy(responseTFPath, path.Join(pwd, "terraform.tfstate"))
+		_ = cp.Copy(responseTFPath, path.Join(pwd, "terraform.tfstate"))
 	}
 
 }

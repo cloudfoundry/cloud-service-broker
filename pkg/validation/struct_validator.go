@@ -111,9 +111,9 @@ func ErrIfNotUUID(value, field string) *FieldError {
 
 // ErrIfNotURL returns an error if the value is not a valid URL.
 func ErrIfNotURL(value, field string) *FieldError {
-	// Validaiton inspired by: github.com/go-playground/validator/baked_in.go
-	url, err := url.ParseRequestURI(value)
-	if err != nil || url.Scheme == "" {
+	// Validation inspired by: github.com/go-playground/validator/baked_in.go
+	valueAsURL, err := url.ParseRequestURI(value)
+	if err != nil || valueAsURL.Scheme == "" {
 		return &FieldError{
 			Message: "field must be a URL",
 			Paths:   []string{field},
@@ -151,7 +151,7 @@ func ErrIfDuplicate(value, field string, cache map[string]struct{}) *FieldError 
 }
 
 // ErrIfOutsideLength returns an error if the length of the specified string is outside
-// of the specified length range
+// the specified length range
 func ErrIfOutsideLength(value, field string, min, max int) *FieldError {
 	l := len(value)
 	if l > max || l < min {
@@ -162,7 +162,7 @@ func ErrIfOutsideLength(value, field string, min, max int) *FieldError {
 
 // Validatable indicates that a particular type may have its fields validated.
 type Validatable interface {
-	// Validate checks the validity of this types fields.
+	// Validate checks the validity of this field type.
 	Validate() *FieldError
 }
 

@@ -8,7 +8,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 )
 
-func (provider *TerraformProvider) GetTerraformOutputs(ctx context.Context, instanceGUID string) (storage.JSONObject, error) {
+func (provider *TerraformProvider) GetTerraformOutputs(_ context.Context, instanceGUID string) (storage.JSONObject, error) {
 	tfID := generateTfID(instanceGUID, "")
 
 	outs, err := provider.outputs(tfID, workspace.DefaultInstanceName)

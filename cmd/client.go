@@ -18,13 +18,13 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/spf13/cobra"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/server"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/pborman/uuid"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -81,7 +81,7 @@ Because of the format, you can use the client to do automated testing of your
 user-defined plans.
 `,
 		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Help()
+			_ = cmd.Help()
 		},
 	}
 	rootCmd.AddCommand(clientCmd)
@@ -155,7 +155,7 @@ user-defined plans.
 	bindFlag := func(dest *string, name, description string, commands ...*cobra.Command) {
 		for _, sc := range commands {
 			sc.Flags().StringVarP(dest, name, "", "", description)
-			sc.MarkFlagRequired(name)
+			_ = sc.MarkFlagRequired(name)
 		}
 	}
 

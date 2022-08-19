@@ -11,14 +11,15 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/pborman/uuid"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/brokerpak"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
 	"github.com/cloudfoundry/cloud-service-broker/utils/freeport"
-	"github.com/pborman/uuid"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
-func Run(service, plan, name, c, cachePath string) {
+func Run(service, plan, name, cachePath string) {
 	pakPath := pack(cachePath)
 	port := freeport.Must()
 	username := uuid.New()
@@ -31,7 +32,7 @@ func Run(service, plan, name, c, cachePath string) {
 	if err != nil {
 		panic(err)
 	}
-	os.Symlink(pakPath, filepath.Join(workdir, filepath.Base(pakPath)))
+	_ = os.Symlink(pakPath, filepath.Join(workdir, filepath.Base(pakPath)))
 	cwd, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -139,7 +140,7 @@ type handle struct {
 }
 
 func (h *handle) Terminate() {
-	h.cmd.Process.Kill()
+	_ = h.cmd.Process.Kill()
 }
 
 func start(username, password, workdir, dbfile string, port int) *handle {

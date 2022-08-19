@@ -16,10 +16,14 @@ func Archive(sourceDirectory, destinationZip string) error {
 	if err != nil {
 		return fmt.Errorf("couldn't create archive %q: %v", destinationZip, err)
 	}
-	defer fd.Close()
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(fd)
 
 	w := zip.NewWriter(fd)
-	defer w.Close()
+	defer func(zw *zip.Writer) {
+		_ = zw.Close()
+	}(w)
 
 	sourceDirectory = path.Clean(sourceDirectory)
 	return filepath.Walk(sourceDirectory, func(path string, info os.FileInfo, walkErr error) error {
