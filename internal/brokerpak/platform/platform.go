@@ -18,9 +18,31 @@ package platform
 import (
 	"fmt"
 	"runtime"
+	"strings"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 )
+
+// CurrentPlatform returns the platform defined by GOOS and GOARCH.
+func CurrentPlatform() Platform {
+	return Platform{Os: runtime.GOOS, Arch: runtime.GOARCH}
+}
+
+func Parse(s string) Platform {
+	if s == "current" {
+		return CurrentPlatform()
+	}
+	parts := strings.SplitN(s, "/", 2)
+	switch len(parts) {
+	case 2:
+		return Platform{
+			Os:   parts[0],
+			Arch: parts[1],
+		}
+	default:
+		return Platform{}
+	}
+}
 
 // Platform holds an os/architecture pair.
 type Platform struct {
@@ -53,7 +75,6 @@ func (p Platform) MatchesCurrent() bool {
 	return p.Equals(CurrentPlatform())
 }
 
-// CurrentPlatform returns the platform defined by GOOS and GOARCH.
-func CurrentPlatform() Platform {
-	return Platform{Os: runtime.GOOS, Arch: runtime.GOARCH}
+func (p Platform) Empty() bool {
+	return p.Os == "" && p.Arch == ""
 }

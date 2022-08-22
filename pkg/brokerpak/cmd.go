@@ -23,14 +23,14 @@ import (
 	"path/filepath"
 	"text/tabwriter"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
-
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/packer"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/reader"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/generator"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/server"
 	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
 )
@@ -56,7 +56,7 @@ func Init(directory string) error {
 // Pack creates a new brokerpak from the given directory which MUST contain a
 // manifest.yml file. If the pack was successful, the returned string will be
 // the path to the created brokerpak.
-func Pack(directory string, cachePath string, includeSource bool) (string, error) {
+func Pack(directory string, cachePath string, includeSource bool, target platform.Platform) (string, error) {
 	data, err := os.ReadFile(filepath.Join(directory, manifestName))
 	if err != nil {
 		return "", err
@@ -68,10 +68,14 @@ func Pack(directory string, cachePath string, includeSource bool) (string, error
 	}
 
 	version, ok := os.LookupEnv(m.Version)
-
 	if !ok {
 		version = m.Version
 	}
+
+	if !target.Empty() {
+		m.Platforms = []platform.Platform{target}
+	}
+
 	packname := fmt.Sprintf("%s-%s.brokerpak", m.Name, version)
 	return packname, packer.Pack(m, directory, packname, cachePath, includeSource)
 }

@@ -11,7 +11,7 @@ import (
 )
 
 func (h *TestHelper) BuildBrokerpakCommand(paths ...string) *exec.Cmd {
-	return exec.Command(h.csb, "pak", "build", path.Join(paths...))
+	return exec.Command(h.csb, "pak", "build", "--target", "current", path.Join(paths...))
 }
 
 func (h *TestHelper) BuildBrokerpak(paths ...string) {

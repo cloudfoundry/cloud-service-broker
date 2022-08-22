@@ -19,10 +19,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/brokerpak"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-
-	"github.com/cloudfoundry/cloud-service-broker/pkg/brokerpak"
 )
 
 const (
@@ -96,7 +96,10 @@ dependencies, services it provides, and the contents.
 		},
 	})
 
-	const includeSourceFlag = "include-source"
+	const (
+		includeSourceFlag = "include-source"
+		targetFlag        = "target"
+	)
 	buildCmd := &cobra.Command{
 		Use:   "build [path/to/pack/directory]",
 		Short: "bundle up the service definition files and Terraform resources into a brokerpak",
@@ -111,8 +114,12 @@ dependencies, services it provides, and the contents.
 			if err != nil {
 				log.Fatalf("error while obtaining the %q flag: %s", includeSourceFlag, err)
 			}
+			target, err := cmd.Flags().GetString(targetFlag)
+			if err != nil {
+				log.Fatalf("error while obtaining the %q flag: %s", targetFlag, err)
+			}
 
-			pakPath, err := brokerpak.Pack(directory, viper.GetString(pakCachePath), includeSource)
+			pakPath, err := brokerpak.Pack(directory, viper.GetString(pakCachePath), includeSource, platform.Parse(target))
 			if err != nil {
 				log.Fatalf("error while packing %q: %v", directory, err)
 			}
@@ -125,6 +132,7 @@ dependencies, services it provides, and the contents.
 		},
 	}
 	buildCmd.Flags().BoolP(includeSourceFlag, "s", false, "include source in the brokerpak")
+	buildCmd.Flags().StringP(targetFlag, "t", "", "target specified platform; format 'darwin/amd64'; or special case 'current'")
 	pakCmd.AddCommand(buildCmd)
 
 	pakCmd.AddCommand(&cobra.Command{
@@ -189,10 +197,8 @@ dependencies, services it provides, and the contents.
 			}
 
 			// Edit the manifest to point to our local server
-			packname, err := brokerpak.Pack(td, "", false)
-			defer func(name string) {
-				_ = os.Remove(name)
-			}(packname)
+			packname, err := brokerpak.Pack(td, "", false, platform.Platform{})
+			defer os.Remove(packname)
 			if err != nil {
 				log.Fatalf("couldn't pack brokerpak: %v", err)
 			}

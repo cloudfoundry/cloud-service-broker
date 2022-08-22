@@ -11,12 +11,12 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/pborman/uuid"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/brokerpak"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
 	"github.com/cloudfoundry/cloud-service-broker/utils/freeport"
+	"github.com/pborman/uuid"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
 func Run(service, plan, name, cachePath string) {
@@ -176,7 +176,7 @@ func wait(port int, h *handle) {
 }
 
 func pack(cachePath string) string {
-	pakPath, err := brokerpak.Pack("", cachePath, false)
+	pakPath, err := brokerpak.Pack("", cachePath, false, platform.CurrentPlatform())
 	if err != nil {
 		log.Fatalf("error while packing: %v", err)
 	}

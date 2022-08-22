@@ -1,11 +1,14 @@
 package integrationtest_test
 
 import (
+	"fmt"
 	"os"
 	"path"
+	"runtime"
 	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -63,10 +66,10 @@ var _ = Describe("Brokerpak Build", func() {
 
 			By("checking that the expected files are there", func() {
 				paths := []string{
-					"bin/linux/amd64/0.12.21/terraform",
-					"bin/linux/amd64/0.13.4/terraform",
-					"bin/linux/amd64/cloud-service-broker.linux",
-					"bin/linux/amd64/extrafile.sh",
+					fmt.Sprintf("bin/%s/0.12.21/terraform", platform.CurrentPlatform()),
+					fmt.Sprintf("bin/%s/0.13.4/terraform", platform.CurrentPlatform()),
+					fmt.Sprintf("bin/%s/cloud-service-broker.%s", platform.CurrentPlatform(), runtime.GOOS),
+					fmt.Sprintf("bin/%s/extrafile.sh", platform.CurrentPlatform()),
 				}
 				for _, p := range paths {
 					Expect(path.Join(extractedPath, p)).To(BeAnExistingFile())
