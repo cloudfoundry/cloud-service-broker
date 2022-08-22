@@ -5,9 +5,10 @@ import (
 	"crypto/sha256"
 	"io"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/gcmencryptor"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/gcmencryptor"
 )
 
 var _ = Describe("GCMEncryptor", func() {
@@ -44,7 +45,7 @@ var _ = Describe("GCMEncryptor", func() {
 		})
 
 		It("panics when run on an uninitialised encryptor", func() {
-			Expect(func() { gcmencryptor.GCMEncryptor{}.Encrypt([]byte("foo")) }).To(Panic())
+			Expect(func() { _, _ = gcmencryptor.GCMEncryptor{}.Encrypt([]byte("foo")) }).To(Panic())
 		})
 	})
 
@@ -63,13 +64,13 @@ var _ = Describe("GCMEncryptor", func() {
 		})
 
 		It("panics when run on an uninitialised encryptor", func() {
-			Expect(func() { gcmencryptor.GCMEncryptor{}.Decrypt([]byte("foo")) }).To(Panic())
+			Expect(func() { _, _ = gcmencryptor.GCMEncryptor{}.Decrypt([]byte("foo")) }).To(Panic())
 		})
 	})
 })
 
 func newKey() [32]byte {
 	dbKey := make([]byte, 32)
-	io.ReadFull(rand.Reader, dbKey)
+	_, _ = io.ReadFull(rand.Reader, dbKey)
 	return sha256.Sum256(dbKey)
 }

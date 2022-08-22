@@ -12,9 +12,9 @@ func (provider *TerraformProvider) CheckUpgradeAvailable(deploymentGUID string) 
 		return err
 	}
 
-	workspace := deployment.TFWorkspace()
+	tfWorkspace := deployment.TFWorkspace()
 
-	err = provider.checkTerraformVersion(workspace)
+	err = provider.checkTerraformVersion(tfWorkspace)
 	if err != nil {
 		return err
 	}

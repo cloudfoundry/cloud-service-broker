@@ -3,8 +3,9 @@ package storage
 import (
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"gorm.io/gorm"
+
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 )
 
 func (s *Storage) UpdateAllRecords() error {

@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/hashicorp/go-version"
 	"gorm.io/gorm"
+
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 )
 
 type TerraformDeployment struct {
@@ -100,9 +101,9 @@ func (s *Storage) GetAllTerraformDeployments() ([]TerraformDeploymentListEntry, 
 				return fmt.Errorf("error decoding workspace %q: %w", terraformDeploymentBatch[i].ID, err)
 			}
 
-			version, err := tfWorkspace.StateTFVersion()
+			tfVersion, err := tfWorkspace.StateTFVersion()
 			if err != nil {
-				version = nil
+				tfVersion = nil
 			}
 
 			result = append(result, TerraformDeploymentListEntry{
@@ -110,7 +111,7 @@ func (s *Storage) GetAllTerraformDeployments() ([]TerraformDeploymentListEntry, 
 				LastOperationType:    terraformDeploymentBatch[i].LastOperationType,
 				LastOperationState:   terraformDeploymentBatch[i].LastOperationState,
 				LastOperationMessage: terraformDeploymentBatch[i].LastOperationMessage,
-				StateVersion:         version,
+				StateVersion:         tfVersion,
 				UpdatedAt:            terraformDeploymentBatch[i].UpdatedAt,
 			})
 		}

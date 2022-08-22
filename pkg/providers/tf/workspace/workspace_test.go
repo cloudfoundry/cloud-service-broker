@@ -39,7 +39,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 		Exec func(ws *TerraformWorkspace, executor executor.TerraformExecutor)
 	}{
 		"execute": {Exec: func(ws *TerraformWorkspace, executor executor.TerraformExecutor) {
-			ws.Execute(context.TODO(), executor, command.NewApply())
+			_, _ = ws.Execute(context.TODO(), executor, command.NewApply())
 		}},
 	}
 
@@ -52,11 +52,11 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// substitute the executor so we can validate the state at the time of
+			// substitute the executor, so we can validate the state at the time of
 			// "running" tf
 			executorRan := false
 			cmdDir := ""
-			executor := newTestExecutor(func(ctx context.Context, cmd *exec.Cmd) (executor.ExecutionOutput, error) {
+			tExecutor := newTestExecutor(func(ctx context.Context, cmd *exec.Cmd) (executor.ExecutionOutput, error) {
 				executorRan = true
 				cmdDir = cmd.Dir
 
@@ -66,12 +66,13 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 					t.Fatalf("couldn't stat the cmd execution dir %v", err)
 				}
 
-				variables, err := os.ReadFile(path.Join(cmd.Dir, "brokertemplate", "definition.tf"))
+				tfDefinitionFilePath := path.Join(cmd.Dir, "brokertemplate", "definition.tf")
+				variables, err := os.ReadFile(tfDefinitionFilePath)
 				if err != nil {
 					t.Fatalf("couldn't read the tf file %v", err)
 				}
 				if string(variables) != definitionTfContents {
-					t.Fatalf("Contents of %s should be %s, but got %s", path.Join(cmd.Dir, "brokertemplate", "defintion.tf"), definitionTfContents, string(variables))
+					t.Fatalf("Contents of %s should be %s, but got %s", tfDefinitionFilePath, definitionTfContents, string(variables))
 				}
 
 				// write dummy state file
@@ -83,7 +84,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 			})
 
 			// run function
-			tc.Exec(ws, executor)
+			tc.Exec(ws, tExecutor)
 
 			// check validator got ran
 			if !executorRan {
@@ -113,7 +114,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 		Exec func(ws *TerraformWorkspace, executor executor.TerraformExecutor)
 	}{
 		"execute": {Exec: func(ws *TerraformWorkspace, executor executor.TerraformExecutor) {
-			ws.Execute(context.TODO(), executor, command.NewApply())
+			_, _ = ws.Execute(context.TODO(), executor, command.NewApply())
 		}},
 	}
 
@@ -126,11 +127,11 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// substitute the executor so we can validate the state at the time of
+			// substitute the executor, so we can validate the state at the time of
 			// "running" tf
 			executorRan := false
 			cmdDir := ""
-			executor := newTestExecutor(func(ctx context.Context, cmd *exec.Cmd) (executor.ExecutionOutput, error) {
+			tExecutor := newTestExecutor(func(ctx context.Context, cmd *exec.Cmd) (executor.ExecutionOutput, error) {
 				executorRan = true
 				cmdDir = cmd.Dir
 
@@ -157,7 +158,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 			})
 
 			// run function
-			tc.Exec(ws, executor)
+			tc.Exec(ws, tExecutor)
 
 			// check validator got ran
 			if !executorRan {
@@ -223,12 +224,12 @@ func TestCustomTerraformExecutor012(t *testing.T) {
 			actual := exec.Command("!actual-never-got-called!")
 
 			tfVersion, _ := version.NewVersion("0.12.0")
-			executor := executor.CustomTerraformExecutor(customBinary, customPlugins, tfVersion, newTestExecutor(func(ctx context.Context, c *exec.Cmd) (executor.ExecutionOutput, error) {
+			tfExecutor := executor.CustomTerraformExecutor(customBinary, customPlugins, tfVersion, newTestExecutor(func(ctx context.Context, c *exec.Cmd) (executor.ExecutionOutput, error) {
 				actual = c
 				return executor.ExecutionOutput{}, nil
 			}))
 
-			executor.Execute(context.TODO(), tc.Input)
+			_, _ = tfExecutor.Execute(context.TODO(), tc.Input)
 
 			if actual.Path != tc.Expected.Path {
 				t.Errorf("path wasn't updated, expected: %q, actual: %q", tc.Expected.Path, actual.Path)
@@ -263,12 +264,12 @@ func TestCustomTerraformExecutor013(t *testing.T) {
 			actual := exec.Command("!actual-never-got-called!")
 
 			tfVersion, _ := version.NewVersion("0.13.0")
-			executor := executor.CustomTerraformExecutor(customBinary, customPlugins, tfVersion, newTestExecutor(func(ctx context.Context, c *exec.Cmd) (executor.ExecutionOutput, error) {
+			tfExecutor := executor.CustomTerraformExecutor(customBinary, customPlugins, tfVersion, newTestExecutor(func(ctx context.Context, c *exec.Cmd) (executor.ExecutionOutput, error) {
 				actual = c
 				return executor.ExecutionOutput{}, nil
 			}))
 
-			executor.Execute(context.TODO(), tc.Input)
+			_, _ = tfExecutor.Execute(context.TODO(), tc.Input)
 
 			if actual.Path != tc.Expected.Path {
 				t.Errorf("path wasn't updated, expected: %q, actual: %q", tc.Expected.Path, actual.Path)
@@ -286,12 +287,12 @@ func TestCustomEnvironmentExecutor(t *testing.T) {
 	c.Env = []string{"ORIGINAL=value"}
 
 	actual := exec.Command("!actual-never-got-called!")
-	executor := executor.CustomEnvironmentExecutor(map[string]string{"FOO": "bar"}, newTestExecutor(func(ctx context.Context, c *exec.Cmd) (executor.ExecutionOutput, error) {
+	customEnvExecutor := executor.CustomEnvironmentExecutor(map[string]string{"FOO": "bar"}, newTestExecutor(func(ctx context.Context, c *exec.Cmd) (executor.ExecutionOutput, error) {
 		actual = c
 		return executor.ExecutionOutput{}, nil
 	}))
 
-	executor.Execute(context.TODO(), c)
+	_, _ = customEnvExecutor.Execute(context.TODO(), c)
 	expected := []string{"ORIGINAL=value", "FOO=bar"}
 
 	if !reflect.DeepEqual(expected, actual.Env) {

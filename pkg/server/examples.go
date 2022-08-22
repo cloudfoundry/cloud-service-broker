@@ -24,9 +24,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/viper"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
-	"github.com/spf13/viper"
 )
 
 func GetAllCompleteServiceExamples(registry broker.BrokerRegistry) ([]client.CompleteServiceExample, error) {
@@ -110,6 +111,6 @@ func NewExampleHandler(registry broker.BrokerRegistry) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write(exampleJSON)
+		_, _ = w.Write(exampleJSON)
 	}
 }

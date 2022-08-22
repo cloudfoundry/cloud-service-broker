@@ -10,11 +10,12 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/onsi/gomega/gexec"
+	cp "github.com/otiai10/copy"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry/cloud-service-broker/utils/freeport"
-	"github.com/onsi/gomega/gexec"
-	cp "github.com/otiai10/copy"
 )
 
 func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.Writer, brokerpakExtraFoldersToCopy ...string) (*TestInstance, error) {

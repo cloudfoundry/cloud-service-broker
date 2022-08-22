@@ -19,9 +19,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cast"
+
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 )
 
 type VarContext struct {

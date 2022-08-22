@@ -20,7 +20,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// This file contains versioned models for the database so we
+// This file contains versioned models for the database, so we
 // can do proper tracking through gorm.
 //
 // If you need to change a model you MUST make a copy here and update the
@@ -234,7 +234,7 @@ func (BindRequestDetailsV1) TableName() string {
 	return "bind_request_details"
 }
 
-// MigrationV1 represents the mgirations table. It holds a monotonically
+// MigrationV1 represents the migrations table. It holds a monotonically
 // increasing number that gets incremented with every database schema revision.
 type MigrationV1 struct {
 	gorm.Model

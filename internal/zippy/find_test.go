@@ -1,10 +1,13 @@
 package zippy_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
+	"io"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
+
+	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
 )
 
 var _ = Describe("Find", func() {
@@ -17,7 +20,9 @@ var _ = Describe("Find", func() {
 
 		r, err := zf.Open()
 		Expect(err).NotTo(HaveOccurred())
-		defer r.Close()
+		defer func(rc io.ReadCloser) {
+			_ = rc.Close()
+		}(r)
 
 		Eventually(BufferReader(r)).Should(Say("some stuff"))
 	})

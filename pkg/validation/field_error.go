@@ -191,7 +191,7 @@ func asKey(key string) string {
 	return fmt.Sprintf("[%s]", key)
 }
 
-// flatten takes in a array of path components and looks for chances to flatten
+// flatten takes in an array of path components and looks for chances to flatten
 // objects that have index prefixes, examples:
 //
 //	err([0]).ViaField(bar).ViaField(foo) -> foo.bar.[0] converts to foo.bar[0]
@@ -238,7 +238,7 @@ func containsString(slice []string, s string) bool {
 	return false
 }
 
-// merge takes in a flat list of FieldErrors and returns back a merged list of
+// merge takes in a flat list of FieldErrors and returns a merged list of
 // FieldErrors. FieldErrors have their Paths combined (and de-duped) if their
 // Message and Details are the same. Merge will not inspect FieldError.errors.
 // Merge will also sort the .Path slice, and the errors slice before returning.
@@ -276,7 +276,7 @@ func merge(errs []*FieldError) []*FieldError {
 		return newErrs[i].Message < newErrs[j].Message
 	})
 
-	// return back the merged list of sorted errors.
+	// return the merged list of sorted errors.
 	return newErrs
 }
 
@@ -314,7 +314,7 @@ func ErrDisallowedUpdateDeprecatedFields(fieldPaths ...string) *FieldError {
 	}
 }
 
-// ErrInvalidArrayValue constructs a FieldError for a repetetive `field`
+// ErrInvalidArrayValue constructs a FieldError for a repetitive `field`
 // at `index` that has received an invalid string value.
 func ErrInvalidArrayValue(value any, field string, index int) *FieldError {
 	return ErrInvalidValue(value, CurrentField).ViaFieldIndex(field, index)
@@ -367,7 +367,7 @@ func ErrOutOfBoundsValue(value, lower, upper any, fieldPath string) *FieldError 
 }
 
 // ErrOutsideLength constructs a FieldError for a field that has received a
-// value that it outside of a length range
+// value that is outside the range
 func ErrOutsideLength(value, lower, upper int, fieldPath string) *FieldError {
 	return &FieldError{
 		Message: fmt.Sprintf("expected value to be %d-%d characters long, but got length %d", lower, upper, value),

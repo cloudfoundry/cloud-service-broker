@@ -18,9 +18,10 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
+
+	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 )
 
 // ModuleDefinition represents a module in a Terraform workspace.
@@ -30,7 +31,7 @@ type ModuleDefinition struct {
 	Definitions map[string]string
 }
 
-var _ (validation.Validatable) = (*ModuleDefinition)(nil)
+var _ validation.Validatable = &ModuleDefinition{}
 
 // Validate checks the validity of the ModuleDefinition struct.
 func (module *ModuleDefinition) Validate() (errs *validation.FieldError) {

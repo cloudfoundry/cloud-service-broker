@@ -6,16 +6,17 @@ import (
 	"net/http"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
+
+	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )
 
 // GetBinding fetches an existing service binding.
 // GET /v2/service_instances/{instance_id}/service_bindings/{binding_id}
 //
 // NOTE: This functionality is not implemented.
-func (broker *ServiceBroker) GetBinding(ctx context.Context, instanceID, bindingID string, details domain.FetchBindingDetails) (domain.GetBindingSpec, error) {
+func (broker *ServiceBroker) GetBinding(ctx context.Context, instanceID, bindingID string, _ domain.FetchBindingDetails) (domain.GetBindingSpec, error) {
 	broker.Logger.Info("GetBinding", correlation.ID(ctx), lager.Data{
 		"instance_id": instanceID,
 		"binding_id":  bindingID,

@@ -139,24 +139,24 @@ func (workspace *TerraformWorkspace) String() string {
 	var b strings.Builder
 
 	b.WriteString("# Terraform Workspace\n")
-	fmt.Fprintf(&b, "modules: %d\n", len(workspace.Modules))
-	fmt.Fprintf(&b, "instances: %d\n", len(workspace.Instances))
-	fmt.Fprintln(&b)
+	_, _ = fmt.Fprintf(&b, "modules: %d\n", len(workspace.Modules))
+	_, _ = fmt.Fprintf(&b, "instances: %d\n", len(workspace.Instances))
+	_, _ = fmt.Fprintln(&b)
 
 	for _, instance := range workspace.Instances {
-		fmt.Fprintf(&b, "## Instance %q\n", instance.InstanceName)
-		fmt.Fprintf(&b, "module = %q\n", instance.ModuleName)
+		_, _ = fmt.Fprintf(&b, "## Instance %q\n", instance.InstanceName)
+		_, _ = fmt.Fprintf(&b, "module = %q\n", instance.ModuleName)
 
 		for k, v := range instance.Configuration {
-			fmt.Fprintf(&b, "input.%s = %#v\n", k, v)
+			_, _ = fmt.Fprintf(&b, "input.%s = %#v\n", k, v)
 		}
 
 		if outputs, err := workspace.Outputs(instance.InstanceName); err != nil {
 			for k, v := range outputs {
-				fmt.Fprintf(&b, "output.%s = %#v\n", k, v)
+				_, _ = fmt.Fprintf(&b, "output.%s = %#v\n", k, v)
 			}
 		}
-		fmt.Fprintln(&b)
+		_, _ = fmt.Fprintln(&b)
 	}
 
 	return b.String()
@@ -195,7 +195,7 @@ func (workspace *TerraformWorkspace) initializeFsFlat() error {
 	return err
 }
 
-// initializeFsModules initializes multimodule terrafrom directory structure
+// initializeFsModules initializes multi-module terraform directory structure
 func (workspace *TerraformWorkspace) initializeFsModules() error {
 	outputs := make(map[string][]string)
 
@@ -300,7 +300,7 @@ func (workspace *TerraformWorkspace) teardownFs() error {
 // given name. This function DOES NOT invoke Terraform and instead uses the stored state.
 // If no instance exists with the given name, it could be that Terraform pruned it due
 // to having no contents so a blank map is returned.
-func (workspace *TerraformWorkspace) Outputs(instance string) (map[string]any, error) {
+func (workspace *TerraformWorkspace) Outputs(_ string) (map[string]any, error) {
 	state, err := NewTfstate(workspace.State)
 	if err != nil {
 		return nil, fmt.Errorf("error creating TF state: %w", err)
@@ -312,14 +312,16 @@ func (workspace *TerraformWorkspace) Outputs(instance string) (map[string]any, e
 
 func (workspace *TerraformWorkspace) Execute(ctx context.Context, terraformExecutor executor.TerraformExecutor, commands ...command.TerraformCommand) (executor.ExecutionOutput, error) {
 	err := workspace.initializeFsWithoutTerraformInit()
-	defer workspace.teardownFs()
+	defer func(w *TerraformWorkspace) {
+		_ = w.teardownFs()
+	}(workspace)
 	if err != nil {
 		return executor.ExecutionOutput{}, err
 	}
 	var lastExecutionOutput executor.ExecutionOutput
 
-	for _, command := range commands {
-		c := exec.Command("terraform", command.Command()...)
+	for _, cmd := range commands {
+		c := exec.Command("terraform", cmd.Command()...)
 		c.Env = os.Environ()
 		c.Dir = workspace.dir
 

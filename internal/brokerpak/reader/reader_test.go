@@ -7,18 +7,18 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
+	"github.com/hashicorp/go-version"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/reader"
 	"github.com/cloudfoundry/cloud-service-broker/internal/tfproviderfqn"
+	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
-	"github.com/hashicorp/go-version"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("reader", func() {
@@ -164,7 +164,7 @@ var _ = Describe("reader", func() {
 			reader, err := zippy.Open(pk)
 			Expect(err).NotTo(HaveOccurred())
 			output := GinkgoT().TempDir()
-			reader.ExtractDirectory("", output)
+			_ = reader.ExtractDirectory("", output)
 
 			Expect(filepath.Join(output, "src")).NotTo(BeAnExistingFile())
 		})
@@ -175,7 +175,7 @@ var _ = Describe("reader", func() {
 			reader, err := zippy.Open(pk)
 			Expect(err).NotTo(HaveOccurred())
 			output := GinkgoT().TempDir()
-			reader.ExtractDirectory("", output)
+			_ = reader.ExtractDirectory("", output)
 
 			Expect(filepath.Join(output, "src", "terraform-provider-fake.zip")).To(BeAnExistingFile())
 		})
@@ -221,8 +221,8 @@ func fakeBrokerpak(opts ...option) string {
 
 	Expect(stream.Copy(stream.FromYaml(m), stream.ToFile(dir, "manifest.yml"))).NotTo(HaveOccurred())
 
-	for _, path := range m.ServiceDefinitions {
-		Expect(stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition()), stream.ToFile(dir, path))).NotTo(HaveOccurred())
+	for _, sdPath := range m.ServiceDefinitions {
+		Expect(stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition()), stream.ToFile(dir, sdPath))).NotTo(HaveOccurred())
 	}
 
 	packName := path.Join(GinkgoT().TempDir(), "fake.brokerpak")

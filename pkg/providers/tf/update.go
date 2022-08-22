@@ -5,12 +5,13 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/lager"
+
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )
 
-// Update makes necessary updates to resources so they match new desired configuration
+// Update makes necessary updates to resources, so they match new desired configuration
 func (provider *TerraformProvider) Update(ctx context.Context, updateContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
 	provider.logger.Debug("update", correlation.ID(ctx), lager.Data{
 		"context": updateContext.ToMap(),
@@ -43,12 +44,12 @@ func (provider *TerraformProvider) Update(ctx context.Context, updateContext *va
 	go func() {
 		err = workspace.UpdateInstanceConfiguration(updateContext.ToMap())
 		if err != nil {
-			provider.MarkOperationFinished(&deployment, err)
+			_ = provider.MarkOperationFinished(&deployment, err)
 			return
 		}
 
 		err = provider.DefaultInvoker().Apply(ctx, workspace)
-		provider.MarkOperationFinished(&deployment, err)
+		_ = provider.MarkOperationFinished(&deployment, err)
 	}()
 
 	return models.ServiceInstanceDetails{

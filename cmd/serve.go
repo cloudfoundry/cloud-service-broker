@@ -21,6 +21,13 @@ import (
 	"net/http"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/gorilla/mux"
+	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"gorm.io/gorm"
+
 	osbapiBroker "github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption"
@@ -31,12 +38,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/server"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/toggles"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/gorilla/mux"
-	"github.com/pivotal-cf/brokerapi/v8"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"gorm.io/gorm"
 )
 
 const (
@@ -70,12 +71,12 @@ func init() {
 		},
 	})
 
-	viper.BindEnv(apiUserProp, "SECURITY_USER_NAME")
-	viper.BindEnv(apiPasswordProp, "SECURITY_USER_PASSWORD")
-	viper.BindEnv(apiPortProp, "PORT")
-	viper.BindEnv(apiHostProp, "CSB_LISTENER_HOST")
-	viper.BindEnv(encryptionPasswords, "ENCRYPTION_PASSWORDS")
-	viper.BindEnv(encryptionEnabled, "ENCRYPTION_ENABLED")
+	_ = viper.BindEnv(apiUserProp, "SECURITY_USER_NAME")
+	_ = viper.BindEnv(apiPasswordProp, "SECURITY_USER_PASSWORD")
+	_ = viper.BindEnv(apiPortProp, "PORT")
+	_ = viper.BindEnv(apiHostProp, "CSB_LISTENER_HOST")
+	_ = viper.BindEnv(encryptionPasswords, "ENCRYPTION_PASSWORDS")
+	_ = viper.BindEnv(encryptionEnabled, "ENCRYPTION_ENABLED")
 }
 
 func serve() {
@@ -190,7 +191,7 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 	port := viper.GetString(apiPortProp)
 	host := viper.GetString(apiHostProp)
 	logger.Info("Serving", lager.Data{"port": port})
-	http.ListenAndServe(fmt.Sprintf("%s:%s", host, port), router)
+	_ = http.ListenAndServe(fmt.Sprintf("%s:%s", host, port), router)
 }
 
 func labelName(label string) string {

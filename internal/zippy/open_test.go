@@ -1,9 +1,10 @@
 package zippy_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
 )
 
 var _ = Describe("Open", func() {

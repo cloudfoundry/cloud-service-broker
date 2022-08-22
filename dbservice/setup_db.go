@@ -49,27 +49,27 @@ const (
 )
 
 func init() {
-	viper.BindEnv(caCertProp, "CA_CERT")
-	viper.BindEnv(clientCertProp, "CLIENT_CERT")
-	viper.BindEnv(clientKeyProp, "CLIENT_KEY")
-	viper.BindEnv(dbTLS, "DB_TLS")
+	_ = viper.BindEnv(caCertProp, "CA_CERT")
+	_ = viper.BindEnv(clientCertProp, "CLIENT_CERT")
+	_ = viper.BindEnv(clientKeyProp, "CLIENT_KEY")
+	_ = viper.BindEnv(dbTLS, "DB_TLS")
 	viper.SetDefault(dbTLS, "true")
-	viper.BindEnv(customTLSSkipVerify, "CUSTOM_CERT_TLS_SKIP_VERIFY")
+	_ = viper.BindEnv(customTLSSkipVerify, "CUSTOM_CERT_TLS_SKIP_VERIFY")
 	viper.SetDefault(customTLSSkipVerify, true)
 
-	viper.BindEnv(dbHostProp, "DB_HOST")
-	viper.BindEnv(dbUserProp, "DB_USERNAME")
-	viper.BindEnv(dbPassProp, "DB_PASSWORD")
+	_ = viper.BindEnv(dbHostProp, "DB_HOST")
+	_ = viper.BindEnv(dbUserProp, "DB_USERNAME")
+	_ = viper.BindEnv(dbPassProp, "DB_PASSWORD")
 
-	viper.BindEnv(dbPortProp, "DB_PORT")
+	_ = viper.BindEnv(dbPortProp, "DB_PORT")
 	viper.SetDefault(dbPortProp, "3306")
-	viper.BindEnv(dbNameProp, "DB_NAME")
+	_ = viper.BindEnv(dbNameProp, "DB_NAME")
 	viper.SetDefault(dbNameProp, "servicebroker")
 
-	viper.BindEnv(dbTypeProp, "DB_TYPE")
+	_ = viper.BindEnv(dbTypeProp, "DB_TYPE")
 	viper.SetDefault(dbTypeProp, DBTypeMySQL)
 
-	viper.BindEnv(dbPathProp, "DB_PATH")
+	_ = viper.BindEnv(dbPathProp, "DB_PATH")
 }
 
 // SetupDB pulls db credentials from the environment, connects to the db, and returns the db connection
@@ -166,7 +166,7 @@ func generateTLSStringFromEnv() (string, error) {
 		}
 		clientCert := []tls.Certificate{certs}
 
-		mysql.RegisterTLSConfig("custom", &tls.Config{
+		_ = mysql.RegisterTLSConfig("custom", &tls.Config{
 			RootCAs:            rootCertPool,
 			Certificates:       clientCert,
 			InsecureSkipVerify: skipVerify,

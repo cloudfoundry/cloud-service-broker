@@ -18,8 +18,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"gorm.io/gorm"
+
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 )
 
 const numMigrations = 16
@@ -45,7 +46,7 @@ func RunMigrations(db *gorm.DB) error {
 		// functionality the migration required.
 		//
 		// It is acceptable to pass through this migration step on the way to
-		// intiailize a _new_ databse, but it is not acceptable to use this step
+		// initialize a _new_ database, but it is not acceptable to use this step
 		// in a path through the upgrade.
 		return autoMigrateTables(db, &models.CloudOperationV1{})
 	}
@@ -87,7 +88,7 @@ func RunMigrations(db *gorm.DB) error {
 	migrations[8] = func() error { // v0.2.2
 		if db.Config.Dialector.Name() == "sqlite3" {
 			// sqlite does not support changing column data types.
-			// Shouldn't matter because sqlite is only for non-prod deploments,
+			// Shouldn't matter because sqlite is only for non-prod deployments,
 			// and can be re-provisioned more easily.
 			return nil
 		} else {

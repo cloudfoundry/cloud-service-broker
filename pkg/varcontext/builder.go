@@ -19,11 +19,12 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/hashicorp/go-multierror"
+	"github.com/spf13/cast"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext/interpolation"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	multierror "github.com/hashicorp/go-multierror"
-	"github.com/spf13/cast"
 )
 
 const (
@@ -95,10 +96,6 @@ func (builder *ContextBuilder) MergeDefaultWithEval(brokerVariables []DefaultVar
 			builder.MergeEvalResult(v.Name, strVal, v.Type)
 		} else {
 			builder.context[v.Name] = v.Default
-		}
-
-		if _, exists := builder.context[v.Name]; exists && !v.Overwrite {
-			continue
 		}
 	}
 

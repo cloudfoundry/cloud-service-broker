@@ -7,6 +7,9 @@ import (
 	"net/http"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
@@ -14,8 +17,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/utils/request"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 )
 
 var (
@@ -25,7 +26,7 @@ var (
 
 // Bind creates an account with credentials to access an instance of a service.
 // It is bound to the `PUT /v2/service_instances/:instance_id/service_bindings/:binding_id` endpoint and can be called using the `cf bind-service` command.
-func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID string, details domain.BindDetails, clientSupportsAsync bool) (domain.Binding, error) {
+func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID string, details domain.BindDetails, _ bool) (domain.Binding, error) {
 	broker.Logger.Info("Binding", correlation.ID(ctx), lager.Data{
 		"instance_id": instanceID,
 		"binding_id":  bindingID,

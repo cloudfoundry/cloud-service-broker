@@ -3,13 +3,14 @@ package encryption
 import (
 	"errors"
 
+	"gorm.io/gorm"
+
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/compoundencryptor"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/noopencryptor"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/passwordcombiner"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/passwordparser"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
-	"gorm.io/gorm"
 )
 
 type Configuration struct {

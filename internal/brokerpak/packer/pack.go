@@ -8,14 +8,13 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
-
-	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/fetcher"
 	"github.com/hashicorp/go-getter"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/brokerpakurl"
+	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/fetcher"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
 )
@@ -36,7 +35,9 @@ func Pack(m *manifest.Manifest, base, dest, cachePath string, includeSource bool
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(dir) // clean up
+	defer func(path string) {
+		_ = os.RemoveAll(path)
+	}(dir) // clean up
 	log.Println("Using temp directory:", dir)
 
 	if includeSource {
@@ -127,7 +128,7 @@ func packBinaries(m *manifest.Manifest, tmp string, cachePath string) error {
 
 func packDefinitions(m *manifest.Manifest, tmp, base string) error {
 	// users can place definitions in any directory structure they like, even
-	// above the current directory so we standardize their location and names
+	// above the current directory, so we standardize their location and names
 	// for the zip to avoid collisions
 	//
 	// provision and bind templates are loaded from any template ref and packed inline

@@ -6,11 +6,12 @@ import (
 	"errors"
 	"fmt"
 
+	"golang.org/x/crypto/pbkdf2"
+	"gorm.io/gorm"
+
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/gcmencryptor"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/passwordparser"
-	"golang.org/x/crypto/pbkdf2"
-	"gorm.io/gorm"
 )
 
 func Combine(db *gorm.DB, parsed []passwordparser.PasswordEntry, storedPassMetadata []models.PasswordMetadata) (CombinedPasswords, error) {

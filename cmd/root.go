@@ -19,9 +19,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 )
 
 var cfgFile string

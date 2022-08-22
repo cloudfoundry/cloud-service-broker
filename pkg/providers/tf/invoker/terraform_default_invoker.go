@@ -73,8 +73,8 @@ type providerReplaceGenerator map[string]string
 func (replace providerReplaceGenerator) ReplacementCommands() []command.TerraformCommand {
 	var commands []command.TerraformCommand
 
-	for old, new := range replace {
-		commands = append(commands, command.NewRenameProvider(old, new))
+	for oldValue, newValue := range replace {
+		commands = append(commands, command.NewRenameProvider(oldValue, newValue))
 	}
 
 	return commands
