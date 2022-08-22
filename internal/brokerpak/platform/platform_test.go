@@ -65,3 +65,43 @@ func TestPlatform_Validate(t *testing.T) {
 		})
 	}
 }
+
+func TestPlatform_Parse(t *testing.T) {
+	t.Run("valid platform name", func(t *testing.T) {
+		const e = "darwin/amd64"
+		r := platform.Parse(e).String()
+		if r != e {
+			t.Fatalf("expected %q got %q", e, r)
+		}
+	})
+
+	t.Run("special case `current`", func(t *testing.T) {
+		e := platform.CurrentPlatform().String()
+		r := platform.Parse("current").String()
+		if r != e {
+			t.Fatalf("expected %q got %q", e, r)
+		}
+	})
+
+	t.Run("empty", func(t *testing.T) {
+		r := platform.Parse("")
+		if !r.Empty() {
+			t.Fatalf("unexpectedly not empty")
+		}
+	})
+}
+
+func TestPlatform_Empty(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		p := platform.Platform{}
+		if !p.Empty() {
+			t.Fatalf("unexpectedly not empty")
+		}
+	})
+
+	t.Run("not empty", func(t *testing.T) {
+		if platform.CurrentPlatform().Empty() {
+			t.Fatalf("expectedly empty")
+		}
+	})
+}
