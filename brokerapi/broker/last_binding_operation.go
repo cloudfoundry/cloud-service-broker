@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
+
+	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )
 
 // LastBindingOperation fetches last operation state for a service binding.

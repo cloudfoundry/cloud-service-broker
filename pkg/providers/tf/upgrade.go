@@ -5,9 +5,9 @@ import (
 	"errors"
 	"sync"
 
+	"code.cloudfoundry.org/lager"
 	"github.com/hashicorp/go-version"
 
-	"code.cloudfoundry.org/lager"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
@@ -43,7 +43,7 @@ func (provider *TerraformProvider) UpgradeInstance(ctx context.Context, instance
 	go func() {
 		err = provider.performTerraformUpgrade(ctx, instanceDeployment.Workspace)
 		if err != nil {
-			provider.MarkOperationFinished(&instanceDeployment, err)
+			_ = provider.MarkOperationFinished(&instanceDeployment, err)
 			return
 		}
 
@@ -85,14 +85,14 @@ func (provider *TerraformProvider) UpgradeBindings(ctx context.Context, instance
 	go func() {
 		for i := range bindingDeployments {
 			err = provider.performTerraformUpgrade(ctx, bindingDeployments[i].Workspace)
-			provider.MarkOperationFinished(&bindingDeployments[i], err)
+			_ = provider.MarkOperationFinished(&bindingDeployments[i], err)
 			if err != nil {
-				provider.MarkOperationFinished(&instanceDeployment, err)
+				_ = provider.MarkOperationFinished(&instanceDeployment, err)
 				return
 			}
 		}
 
-		provider.MarkOperationFinished(&instanceDeployment, err)
+		_ = provider.MarkOperationFinished(&instanceDeployment, err)
 	}()
 
 	return nil

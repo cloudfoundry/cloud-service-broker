@@ -1,11 +1,12 @@
 package paramparser_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
+
+	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 )
 
 var _ = Describe("ParseUpdateDetails", func() {

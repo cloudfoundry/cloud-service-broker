@@ -26,15 +26,16 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/spf13/viper"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/spf13/viper"
 )
 
-// NewExampleTfServiceDefinition creates a new service defintition with sample
+// NewExampleTfServiceDefinition creates a new service definition with sample
 // values for the service broker suitable to give a user a template to manually
 // edit.
 func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
@@ -202,7 +203,7 @@ func (tfb *TfServiceDefinitionV1) Validate() (errs *validation.FieldError) {
 func (tfb *TfServiceDefinitionV1) resolveEnvVars() (map[string]string, error) {
 	vars := make(map[string]string)
 	for _, v := range tfb.RequiredEnvVars {
-		viper.BindEnv(v, v)
+		_ = viper.BindEnv(v, v)
 		if !viper.IsSet(v) {
 			return vars, fmt.Errorf(fmt.Sprintf("missing required env var %s", v))
 		}
@@ -441,7 +442,7 @@ func (action *TfServiceDefinitionV1Action) Validate() (errs *validation.FieldErr
 	}
 
 	if action.TemplateRef != "" {
-		errs = errs.Also(validation.ErrIfBlank(action.Template, "template not loaded from templat ref"))
+		errs = errs.Also(validation.ErrIfBlank(action.Template, "template not loaded from template ref"))
 	}
 
 	errs = errs.Also(

@@ -1,9 +1,10 @@
 package noopencryptor_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/noopencryptor"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/noopencryptor"
 )
 
 var _ = Describe("NoopEncryptor", func() {

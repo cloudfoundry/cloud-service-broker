@@ -5,11 +5,12 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
+
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 )
 
 // LastOperation fetches last operation state for a service instance.

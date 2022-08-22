@@ -17,7 +17,7 @@ package fetcher
 import (
 	"testing"
 
-	getter "github.com/hashicorp/go-getter"
+	"github.com/hashicorp/go-getter"
 )
 
 func TestDefaultGetters(t *testing.T) {

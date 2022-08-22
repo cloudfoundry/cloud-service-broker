@@ -3,9 +3,9 @@ package tf
 import (
 	"context"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-
 	"code.cloudfoundry.org/lager"
+
+	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )

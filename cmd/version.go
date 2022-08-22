@@ -17,8 +17,9 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 )
 
 func init() {

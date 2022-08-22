@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/hashicorp/go-version"
+	"gopkg.in/yaml.v3"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 	"github.com/cloudfoundry/cloud-service-broker/internal/tfproviderfqn"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
-	"github.com/hashicorp/go-version"
-	"gopkg.in/yaml.v3"
 )
 
 // parser is used to parse the brokerpak manifest.
-// In code we should use the Manifest type
+// In code, we should use the Manifest type
 type parser struct {
 	PackVersion                        int                    `yaml:"packversion"`
 	Name                               string                 `yaml:"name"`
@@ -265,8 +266,8 @@ func (m *parser) validatePlatforms() *validation.FieldError {
 	}
 
 	var errs *validation.FieldError
-	for i, platform := range m.Platforms {
-		errs = errs.Also(platform.Validate().ViaFieldIndex("platforms", i))
+	for i, p := range m.Platforms {
+		errs = errs.Also(p.Validate().ViaFieldIndex("platforms", i))
 	}
 
 	return errs

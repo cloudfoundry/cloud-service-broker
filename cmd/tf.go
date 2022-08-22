@@ -22,13 +22,14 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	"github.com/cloudfoundry/cloud-service-broker/dbservice"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -56,7 +57,7 @@ func init() {
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Help()
+			_ = cmd.Help()
 		},
 	}
 
@@ -109,7 +110,7 @@ func init() {
 			}
 
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.StripEscape)
-			fmt.Fprintln(w, "ID\tLast Operation\tState\tVersion\tLast Updated\tElapsed\tMessage")
+			_, _ = fmt.Fprintln(w, "ID\tLast Operation\tState\tVersion\tLast Updated\tElapsed\tMessage")
 
 			for _, result := range results {
 				lastUpdate := result.UpdatedAt.Format(time.RFC822)
@@ -119,9 +120,9 @@ func init() {
 					elapsed = time.Since(result.UpdatedAt).Truncate(time.Second).String()
 				}
 
-				fmt.Fprintf(w, "%q\t%s\t%s\t%s\t%s\t%s\t%q\n", result.ID, result.LastOperationType, result.LastOperationState, result.StateVersion, lastUpdate, elapsed, result.LastOperationMessage)
+				_, _ = fmt.Fprintf(w, "%q\t%s\t%s\t%s\t%s\t%s\t%q\n", result.ID, result.LastOperationType, result.LastOperationState, result.StateVersion, lastUpdate, elapsed, result.LastOperationMessage)
 			}
-			w.Flush()
+			_ = w.Flush()
 		},
 	})
 }

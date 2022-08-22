@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
+
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 )
 
 // Services lists services in the broker's catalog.
 // It is called through the `GET /v2/catalog` endpoint or the `cf marketplace` command.
-func (broker *ServiceBroker) Services(ctx context.Context) ([]domain.Service, error) {
+func (broker *ServiceBroker) Services(_ context.Context) ([]domain.Service, error) {
 	var svcs []domain.Service
 
 	enabledServices, err := broker.registry.GetEnabledServices()

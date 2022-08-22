@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-
 	"code.cloudfoundry.org/lager"
+
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
@@ -63,7 +63,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 		return "", err
 	}
 
-	workspace, err := workspace.NewWorkspace(
+	newWorkspace, err := workspace.NewWorkspace(
 		varsMap,
 		"",
 		action.Templates,
@@ -74,7 +74,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 		return tfID, fmt.Errorf("error creating workspace: %w", err)
 	}
 
-	deployment, err := provider.CreateAndSaveDeployment(tfID, workspace)
+	deployment, err := provider.CreateAndSaveDeployment(tfID, newWorkspace)
 	if err != nil {
 		provider.logger.Error("terraform provider create failed", err)
 		return tfID, fmt.Errorf("terraform provider create failed: %w", err)
@@ -91,27 +91,27 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 			resources[resource.TfResource] = resource.IaaSResource
 		}
 
-		invoker := provider.DefaultInvoker()
+		terraformInvoker := provider.DefaultInvoker()
 		var mainTf string
 		steps := []func() error{
 			func() (errs error) {
-				return invoker.Import(ctx, workspace, resources)
+				return terraformInvoker.Import(ctx, newWorkspace, resources)
 			},
 			func() (errs error) {
-				mainTf, err = invoker.Show(ctx, workspace)
+				mainTf, err = terraformInvoker.Show(ctx, newWorkspace)
 				return err
 			},
 			func() (errs error) {
-				return createTFMainDefinition(workspace, mainTf, logger)
+				return createTFMainDefinition(newWorkspace, mainTf, logger)
 			},
 			func() (errs error) {
-				return provider.terraformPlanToCheckNoResourcesDeleted(invoker, ctx, workspace, logger)
+				return provider.terraformPlanToCheckNoResourcesDeleted(terraformInvoker, ctx, newWorkspace, logger)
 			},
 			func() (errs error) {
-				if err := invoker.Apply(ctx, workspace); err != nil {
+				if err := terraformInvoker.Apply(ctx, newWorkspace); err != nil {
 					return err
 				}
-				provider.MarkOperationFinished(&deployment, nil)
+				_ = provider.MarkOperationFinished(&deployment, nil)
 				return nil
 			},
 		}
@@ -119,7 +119,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 		for _, step := range steps {
 			if err := step(); err != nil {
 				logger.Error("operation failed", err)
-				provider.MarkOperationFinished(&deployment, err)
+				_ = provider.MarkOperationFinished(&deployment, err)
 				break
 			}
 		}

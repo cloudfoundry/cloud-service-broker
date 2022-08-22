@@ -1,13 +1,14 @@
 package broker_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
-	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"golang.org/x/net/context"
+
+	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
+	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 )
 
 var _ = Describe("GetBinding", func() {

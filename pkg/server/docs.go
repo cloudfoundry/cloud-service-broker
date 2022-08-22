@@ -19,10 +19,11 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/generator"
 	"github.com/gorilla/mux"
 	"github.com/russross/blackfriday/v2"
+
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/generator"
 )
 
 var pageTemplate = template.Must(template.New("docs-page").Parse(`
@@ -92,13 +93,13 @@ func renderAsPage(title, markdownContents string) http.HandlerFunc {
 	if err != nil {
 		return func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(err.Error()))
+			_, _ = w.Write([]byte(err.Error()))
 		}
 	}
 
 	return func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(200)
-		w.Write(buf.Bytes())
+		_, _ = w.Write(buf.Bytes())
 	}
 }

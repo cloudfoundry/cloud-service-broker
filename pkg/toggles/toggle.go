@@ -24,8 +24,9 @@ package toggles
 import (
 	"sort"
 
-	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/spf13/viper"
+
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 )
 
 // Features is the default set of flags for enabling different features.
@@ -66,9 +67,9 @@ type ToggleSet struct {
 // Toggles returns a list of all registered toggles sorted lexicographically by
 // their property name.
 func (set *ToggleSet) Toggles() []Toggle {
-	copy := append([]Toggle{}, set.toggles...)
-	sort.Slice(copy, func(i, j int) bool { return copy[i].Name < copy[j].Name })
-	return copy
+	toggleCopy := append([]Toggle{}, set.toggles...)
+	sort.Slice(toggleCopy, func(i, j int) bool { return toggleCopy[i].Name < toggleCopy[j].Name })
+	return toggleCopy
 }
 
 // Toggle creates a new toggle with the given name, default value, label and description.

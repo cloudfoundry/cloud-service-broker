@@ -15,9 +15,10 @@
 package cmd
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 )
 
 func init() {
@@ -41,16 +42,16 @@ dots replaced with underscores. For example:
 Some older environment variables don't follow this format are aliased so either
 format will work.
 
-Precidence is in the order:
+Precedence is in the order:
 
   environment vars > configuration > defaults
 
-You can show the known coonfiguration values using:
+You can show the known configuration values using:
 
   ./cloud-service-broker config show
 `,
 		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Help()
+			_ = cmd.Help()
 		},
 	}
 	rootCmd.AddCommand(configCmd)

@@ -24,7 +24,7 @@ import (
 )
 
 func ExampleUseVcapServices() {
-	os.Setenv("VCAP_SERVICES", `{
+	_ = os.Setenv("VCAP_SERVICES", `{
   "p.mysql": [
     {
       "label": "p.mysql",
@@ -48,7 +48,7 @@ func ExampleUseVcapServices() {
     }
   ]
 }`)
-	UseVcapServices()
+	_ = UseVcapServices()
 	fmt.Println(viper.Get(dbHostProp))
 	fmt.Println(viper.Get(dbUserProp))
 	fmt.Println(viper.Get(dbPassProp))

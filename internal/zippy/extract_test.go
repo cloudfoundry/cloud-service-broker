@@ -6,10 +6,11 @@ import (
 	"os"
 	"path/filepath"
 
-	. "github.com/cloudfoundry/cloud-service-broker/internal/testmatchers"
-	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	. "github.com/cloudfoundry/cloud-service-broker/internal/testmatchers"
+	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
 )
 
 var _ = Describe("extraction", func() {
@@ -67,7 +68,9 @@ var _ = Describe("extraction", func() {
 		When("a zip path contains `..`", func() {
 			It("returns an appropriate error", func() {
 				zipfile := createZipWithDotDot()
-				defer os.Remove(zipfile)
+				defer func(name string) {
+					_ = os.Remove(name)
+				}(zipfile)
 
 				zr, err := zippy.Open(zipfile)
 				Expect(err).NotTo(HaveOccurred())
@@ -127,7 +130,9 @@ var _ = Describe("extraction", func() {
 		When("a zip path contains `..`", func() {
 			It("returns an appropriate error", func() {
 				zipfile := createZipWithDotDot()
-				defer os.Remove(zipfile)
+				defer func(name string) {
+					_ = os.Remove(name)
+				}(zipfile)
 
 				zr, err := zippy.Open(zipfile)
 				Expect(err).NotTo(HaveOccurred())
@@ -143,14 +148,18 @@ func createZipWithDotDot() string {
 	fd, err := os.CreateTemp("", "")
 	Expect(err).NotTo(HaveOccurred())
 	zipfile := fd.Name()
-	defer fd.Close()
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(fd)
 
 	w := zip.NewWriter(fd)
-	defer w.Close()
+	defer func(zw *zip.Writer) {
+		_ = zw.Close()
+	}(w)
 
 	zd, err := w.CreateHeader(&zip.FileHeader{Name: "foo/../../baz"})
 	Expect(err).NotTo(HaveOccurred())
-	fmt.Fprintf(zd, "hello")
+	_, _ = fmt.Fprintf(zd, "hello")
 
 	return zipfile
 }
