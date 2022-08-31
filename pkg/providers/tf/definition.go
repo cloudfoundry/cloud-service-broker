@@ -143,20 +143,21 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 
 // TfServiceDefinitionV1 is the first version of user defined services.
 type TfServiceDefinitionV1 struct {
-	Version           int                         `yaml:"version"`
-	Name              string                      `yaml:"name"`
-	ID                string                      `yaml:"id"`
-	Description       string                      `yaml:"description"`
-	DisplayName       string                      `yaml:"display_name"`
-	ImageURL          string                      `yaml:"image_url"`
-	DocumentationURL  string                      `yaml:"documentation_url"`
-	SupportURL        string                      `yaml:"support_url"`
-	Tags              []string                    `yaml:"tags,flow"`
-	Plans             []TfServiceDefinitionV1Plan `yaml:"plans"`
-	ProvisionSettings TfServiceDefinitionV1Action `yaml:"provision"`
-	BindSettings      TfServiceDefinitionV1Action `yaml:"bind"`
-	Examples          []broker.ServiceExample     `yaml:"examples"`
-	PlanUpdateable    bool                        `yaml:"plan_updateable"`
+	Version             int                         `yaml:"version"`
+	Name                string                      `yaml:"name"`
+	ID                  string                      `yaml:"id"`
+	Description         string                      `yaml:"description"`
+	DisplayName         string                      `yaml:"display_name"`
+	ImageURL            string                      `yaml:"image_url"`
+	DocumentationURL    string                      `yaml:"documentation_url"`
+	ProviderDisplayName string                      `yaml:"provider_display_name"`
+	SupportURL          string                      `yaml:"support_url"`
+	Tags                []string                    `yaml:"tags,flow"`
+	Plans               []TfServiceDefinitionV1Plan `yaml:"plans"`
+	ProvisionSettings   TfServiceDefinitionV1Action `yaml:"provision"`
+	BindSettings        TfServiceDefinitionV1Action `yaml:"bind"`
+	Examples            []broker.ServiceExample     `yaml:"examples"`
+	PlanUpdateable      bool                        `yaml:"plan_updateable"`
 
 	RequiredEnvVars []string
 }
@@ -266,17 +267,18 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesCont
 
 	constDefn := *tfb
 	return &broker.ServiceDefinition{
-		ID:               tfb.ID,
-		Name:             tfb.Name,
-		Description:      tfb.Description,
-		Bindable:         true,
-		PlanUpdateable:   tfb.PlanUpdateable,
-		DisplayName:      tfb.DisplayName,
-		DocumentationURL: tfb.DocumentationURL,
-		SupportURL:       tfb.SupportURL,
-		ImageURL:         tfb.ImageURL,
-		Tags:             tfb.Tags,
-		Plans:            rawPlans,
+		ID:                  tfb.ID,
+		Name:                tfb.Name,
+		Description:         tfb.Description,
+		Bindable:            true,
+		PlanUpdateable:      tfb.PlanUpdateable,
+		DisplayName:         tfb.DisplayName,
+		DocumentationURL:    tfb.DocumentationURL,
+		ProviderDisplayName: tfb.ProviderDisplayName,
+		SupportURL:          tfb.SupportURL,
+		ImageURL:            tfb.ImageURL,
+		Tags:                tfb.Tags,
+		Plans:               rawPlans,
 
 		ProvisionInputVariables: tfb.ProvisionSettings.UserInputs,
 		ImportInputVariables:    tfb.ProvisionSettings.ImportVariables,

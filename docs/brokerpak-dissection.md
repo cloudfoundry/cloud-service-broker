@@ -208,6 +208,7 @@ name: csb-azure-mssql-db
 id: 6663f9f1-33c1-4f7d-839c-d4b7682d88cc
 description: Manage Azure SQL Databases on pre-provisioned database servers
 display_name: Azure SQL Database
+provider_display_name: Company Name
 image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquaretransparent1.png
 documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/
 support_url: https://docs.microsoft.com/en-us/azure/sql-database/
@@ -425,6 +426,7 @@ name: csb-azure-mssql-db
 id: 6663f9f1-33c1-4f7d-839c-d4b7682d88cc
 description: Manage Azure SQL Databases on pre-provisioned database servers
 display_name: Azure SQL Database
+provider_display_name: Company Name
 image_url: https://msdnshared.blob.core.windows.net/media/2017/03/azuresqlsquaretransparent1.png
 documentation_url: https://docs.microsoft.com/en-us/azure/sql-database/
 support_url: https://docs.microsoft.com/en-us/azure/sql-database/
@@ -441,6 +443,7 @@ Metadata about the service.
 | id | a unique guid |
 | description | human readable description of service |
 | display_name | human readable name of the service |
+| provider_display_name| name of the provider of this service |
 | image_url | a link to an image that may be included in documentation |
 | documentation_url | link to external documentation that may be included in documentation |
 | support_url | link to external support site that may be included in documentation |
