@@ -91,6 +91,7 @@ func generateServiceDocumentation(svc *broker.ServiceDefinition) string {
  * Catalog Metadata ID: {{code .catalog.ID}}
  * Tags: {{ join .catalog.Tags ", " }}
  * Service Name: {{ code .catalog.Name }}
+ * Provider Display Name : {{code .metadata.ProviderDisplayName }}
 
 ## Provisioning
 
