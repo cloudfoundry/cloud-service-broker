@@ -11,7 +11,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
 )
 
-func Archive(sourceDirectory, destinationZip string) error {
+func Archive(sourceDirectory, destinationZip string, compress bool) error {
 	fd, err := os.Create(destinationZip)
 	if err != nil {
 		return fmt.Errorf("couldn't create archive %q: %v", destinationZip, err)
@@ -39,7 +39,9 @@ func Archive(sourceDirectory, destinationZip string) error {
 		if err != nil {
 			return err
 		}
-		header.Method = zip.Deflate
+		if compress {
+			header.Method = zip.Deflate
+		}
 
 		if info.IsDir() {
 			header.Name = fmt.Sprintf("%s%c", clean(strings.TrimPrefix(path, sourceDirectory)), os.PathSeparator)

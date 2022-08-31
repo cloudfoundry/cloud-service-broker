@@ -42,7 +42,7 @@ func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.W
 		return nil, err
 	}
 
-	command := exec.Command(csbBuild, "pak", "build")
+	command := exec.Command(csbBuild, "pak", "build", "--compress=false")
 	command.Dir = workingDir
 	session, err := gexec.Start(command, logger, logger)
 	if err != nil {

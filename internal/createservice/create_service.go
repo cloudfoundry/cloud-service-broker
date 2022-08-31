@@ -176,7 +176,7 @@ func wait(port int, h *handle) {
 }
 
 func pack(cachePath string) string {
-	pakPath, err := brokerpak.Pack("", cachePath, false, platform.CurrentPlatform())
+	pakPath, err := brokerpak.Pack("", cachePath, false, false, platform.CurrentPlatform())
 	if err != nil {
 		log.Fatalf("error while packing: %v", err)
 	}

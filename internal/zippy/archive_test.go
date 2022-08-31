@@ -20,7 +20,7 @@ var _ = Describe("Archive", func() {
 	It("creates a zip", func() {
 		target := path.Join(tmpdir, "test.zip")
 
-		err := zippy.Archive("./fixtures/brokerpak", target)
+		err := zippy.Archive("./fixtures/brokerpak", target, false)
 		Expect(err).NotTo(HaveOccurred())
 
 		// Although we have a brokerpak.zip fixture that we could
@@ -37,18 +37,25 @@ var _ = Describe("Archive", func() {
 		Expect(extracted).To(MatchDirectoryContents("./fixtures/brokerpak"))
 	})
 
+	It("creates a compressed zip", func() {
+		target := path.Join(tmpdir, "test.zip")
+
+		err := zippy.Archive("./fixtures/brokerpak", target, true)
+		Expect(err).NotTo(HaveOccurred())
+	})
+
 	When("the source does not exist", func() {
 		It("returns an appropriate error", func() {
 			target := path.Join(tmpdir, "test.zip")
 
-			err := zippy.Archive("/this/does/not/exist", target)
+			err := zippy.Archive("/this/does/not/exist", target, false)
 			Expect(err).To(MatchError("lstat /this/does/not/exist: no such file or directory"))
 		})
 	})
 
 	When("the target cannot be written", func() {
 		It("returns an appropriate error", func() {
-			err := zippy.Archive("./fixtures/brokerpak", "/this/does/not/exist")
+			err := zippy.Archive("./fixtures/brokerpak", "/this/does/not/exist", false)
 			Expect(err).To(MatchError(`couldn't create archive "/this/does/not/exist": open /this/does/not/exist: no such file or directory`))
 		})
 	})
