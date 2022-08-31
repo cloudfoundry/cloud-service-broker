@@ -39,17 +39,18 @@ const GlobalProvisionDefaults = "provision.defaults"
 // ServiceDefinition holds the necessary details to describe an OSB service and
 // provision it.
 type ServiceDefinition struct {
-	ID               string
-	Name             string
-	Description      string
-	DisplayName      string
-	ImageURL         string
-	DocumentationURL string
-	SupportURL       string
-	Tags             []string
-	Bindable         bool
-	PlanUpdateable   bool
-	Plans            []ServicePlan
+	ID                  string
+	Name                string
+	Description         string
+	DisplayName         string
+	ImageURL            string
+	DocumentationURL    string
+	ProviderDisplayName string
+	SupportURL          string
+	Tags                []string
+	Bindable            bool
+	PlanUpdateable      bool
+	Plans               []ServicePlan
 
 	ProvisionInputVariables    []BrokerVariable
 	ImportInputVariables       []ImportVariable
@@ -206,12 +207,12 @@ func (svc *ServiceDefinition) CatalogEntry() *Service {
 			Name:        svc.Name,
 			Description: svc.Description,
 			Metadata: &domain.ServiceMetadata{
-				DisplayName:     svc.DisplayName,
-				LongDescription: svc.Description,
-
-				DocumentationUrl: svc.DocumentationURL,
-				ImageUrl:         svc.ImageURL,
-				SupportUrl:       svc.SupportURL,
+				DisplayName:         svc.DisplayName,
+				LongDescription:     svc.Description,
+				ProviderDisplayName: svc.ProviderDisplayName,
+				DocumentationUrl:    svc.DocumentationURL,
+				ImageUrl:            svc.ImageURL,
+				SupportUrl:          svc.SupportURL,
 			},
 			Tags:          svc.Tags,
 			Bindable:      svc.Bindable,

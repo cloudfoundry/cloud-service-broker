@@ -21,8 +21,9 @@ var _ = Describe("Services", func() {
 		brokerConfig := &broker.BrokerConfig{
 			Registry: pkgBroker.BrokerRegistry{
 				"first-service": &pkgBroker.ServiceDefinition{
-					ID:   "first-service-id",
-					Name: "first-service",
+					ID:                  "first-service-id",
+					Name:                "first-service",
+					ProviderDisplayName: "company-name-1",
 					Plans: []pkgBroker.ServicePlan{
 						{
 							ServicePlan: domain.ServicePlan{
@@ -39,8 +40,9 @@ var _ = Describe("Services", func() {
 					},
 				},
 				"second-service": &pkgBroker.ServiceDefinition{
-					ID:   "second-service-id",
-					Name: "second-service",
+					ID:                  "second-service-id",
+					Name:                "second-service",
+					ProviderDisplayName: "company-name-2",
 					Plans: []pkgBroker.ServicePlan{
 						{
 							ServicePlan: domain.ServicePlan{
@@ -67,6 +69,7 @@ var _ = Describe("Services", func() {
 
 			Expect(servicesList[0].ID).To(Equal("first-service-id"))
 			Expect(servicesList[0].Name).To(Equal("first-service"))
+			Expect(servicesList[0].Metadata.ProviderDisplayName).To(Equal("company-name-1"))
 			Expect(len(servicesList[0].Plans)).To(Equal(2))
 			Expect(servicesList[0].Plans[0].ID).To(Equal("plan-1"))
 			Expect(servicesList[0].Plans[0].Name).To(Equal("test-plan-1"))
@@ -75,6 +78,7 @@ var _ = Describe("Services", func() {
 
 			Expect(servicesList[1].ID).To(Equal("second-service-id"))
 			Expect(servicesList[1].Name).To(Equal("second-service"))
+			Expect(servicesList[1].Metadata.ProviderDisplayName).To(Equal("company-name-2"))
 			Expect(len(servicesList[1].Plans)).To(Equal(1))
 			Expect(servicesList[1].Plans[0].ID).To(Equal("plan-3"))
 			Expect(servicesList[1].Plans[0].Name).To(Equal("test-plan-3"))
