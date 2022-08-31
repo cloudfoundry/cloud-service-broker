@@ -64,14 +64,10 @@ test: download lint test-units test-integration ## run lint and unit tests
 
 .PHONY: test-units
 test-units: deps-go-binary ## run unit tests
-	$(GO) test $(PKG)/brokerapi/... $(PKG)/cmd/... $(PKG)/dbservice/... $(PKG)/internal/... $(PKG)/pkg/... $(PKG)/utils/... $(PKG)/upgrade-all-plugin/... -tags=service_broker
+	$(GO) test $(PKG)/brokerapi/... $(PKG)/cmd/... $(PKG)/dbservice/... $(PKG)/internal/... $(PKG)/pkg/... $(PKG)/utils/... -tags=service_broker
 
 .PHONY: test-integration
-test-integration: deps-go-binary ## run integration tests
-	$(GO) run github.com/onsi/ginkgo/v2/ginkgo -p integrationtest/...
-
-.PHONY: test-integration-with-cache
-test-integration-with-cache: deps-go-binary .pak-cache ## run integration with local cache
+test-integration: deps-go-binary .pak-cache ## run integration tests
 	PAK_BUILD_CACHE_PATH=$(PAK_CACHE) $(GO) run github.com/onsi/ginkgo/v2/ginkgo -p integrationtest/...
 
 .pak-cache:
