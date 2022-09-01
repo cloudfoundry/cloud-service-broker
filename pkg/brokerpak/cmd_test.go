@@ -95,7 +95,7 @@ func fakeBrokerpak() (string, error) {
 		}
 	}
 
-	return Pack(dir, "", true, platform.Platform{})
+	return Pack(dir, "", true, false, platform.Platform{})
 }
 
 func ExampleValidate() {

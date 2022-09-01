@@ -99,6 +99,7 @@ dependencies, services it provides, and the contents.
 	const (
 		includeSourceFlag = "include-source"
 		targetFlag        = "target"
+		compressFlag      = "compress"
 	)
 	buildCmd := &cobra.Command{
 		Use:   "build [path/to/pack/directory]",
@@ -114,12 +115,16 @@ dependencies, services it provides, and the contents.
 			if err != nil {
 				log.Fatalf("error while obtaining the %q flag: %s", includeSourceFlag, err)
 			}
+			compress, err := cmd.Flags().GetBool(compressFlag)
+			if err != nil {
+				log.Fatalf("error while obtaining the %q flag: %s", compressFlag, err)
+			}
 			target, err := cmd.Flags().GetString(targetFlag)
 			if err != nil {
 				log.Fatalf("error while obtaining the %q flag: %s", targetFlag, err)
 			}
 
-			pakPath, err := brokerpak.Pack(directory, viper.GetString(pakCachePath), includeSource, platform.Parse(target))
+			pakPath, err := brokerpak.Pack(directory, viper.GetString(pakCachePath), includeSource, compress, platform.Parse(target))
 			if err != nil {
 				log.Fatalf("error while packing %q: %v", directory, err)
 			}
@@ -132,6 +137,7 @@ dependencies, services it provides, and the contents.
 		},
 	}
 	buildCmd.Flags().BoolP(includeSourceFlag, "s", false, "include source in the brokerpak")
+	buildCmd.Flags().Bool(compressFlag, true, "compress the brokerpak")
 	buildCmd.Flags().StringP(targetFlag, "t", "", "target specified platform; format 'darwin/amd64'; or special case 'current'")
 	pakCmd.AddCommand(buildCmd)
 
@@ -197,7 +203,7 @@ dependencies, services it provides, and the contents.
 			}
 
 			// Edit the manifest to point to our local server
-			packname, err := brokerpak.Pack(td, "", false, platform.Platform{})
+			packname, err := brokerpak.Pack(td, "", false, true, platform.Platform{})
 			defer os.Remove(packname)
 			if err != nil {
 				log.Fatalf("couldn't pack brokerpak: %v", err)

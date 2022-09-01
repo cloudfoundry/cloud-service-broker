@@ -20,7 +20,7 @@ import (
 
 const manifestName = "manifest.yml"
 
-func Pack(m *manifest.Manifest, base, dest, cachePath string, includeSource bool) error {
+func Pack(m *manifest.Manifest, base, dest, cachePath string, includeSource, compress bool) error {
 	// NOTE: we use "log" rather than Lager because this is used by the CLI and
 	// needs to be human-readable rather than JSON.
 	switch base {
@@ -57,7 +57,7 @@ func Pack(m *manifest.Manifest, base, dest, cachePath string, includeSource bool
 	}
 
 	log.Println("Creating archive:", dest)
-	return zippy.Archive(dir, dest)
+	return zippy.Archive(dir, dest, compress)
 }
 
 func packSources(m *manifest.Manifest, tmp string, cachePath string) error {
