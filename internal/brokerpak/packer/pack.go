@@ -150,6 +150,10 @@ func packDefinitions(m *manifest.Manifest, tmp, base string) error {
 			return fmt.Errorf("couldn't load bind template %s: %v", defn.BindSettings.TemplateRef, err)
 		}
 
+		if err := defn.ImageURL.Encode(base); err != nil {
+			return fmt.Errorf("unable to encode service image: %v", err)
+		}
+
 		clearRefs(&defn.ProvisionSettings)
 		clearRefs(&defn.BindSettings)
 
