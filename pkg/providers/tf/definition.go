@@ -20,6 +20,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/cloudfoundry/cloud-service-broker/internal/serviceimage"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
@@ -148,7 +150,7 @@ type TfServiceDefinitionV1 struct {
 	ID                  string                      `yaml:"id"`
 	Description         string                      `yaml:"description"`
 	DisplayName         string                      `yaml:"display_name"`
-	ImageURL            string                      `yaml:"image_url"`
+	ImageURL            serviceimage.ServiceImage   `yaml:"image_url"`
 	DocumentationURL    string                      `yaml:"documentation_url"`
 	ProviderDisplayName string                      `yaml:"provider_display_name"`
 	SupportURL          string                      `yaml:"support_url"`
@@ -176,7 +178,7 @@ func (tfb *TfServiceDefinitionV1) Validate() (errs *validation.FieldError) {
 		validation.ErrIfNotUUID(tfb.ID, "id"),
 		validation.ErrIfBlank(tfb.Description, "description"),
 		validation.ErrIfBlank(tfb.DisplayName, "display_name"),
-		validation.ErrIfNotURL(tfb.ImageURL, "image_url"),
+		validation.ErrIfNotURL(string(tfb.ImageURL), "image_url"),
 		validation.ErrIfNotURL(tfb.DocumentationURL, "documentation_url"),
 		validation.ErrIfNotURL(tfb.SupportURL, "support_url"),
 	)
@@ -276,7 +278,7 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesCont
 		DocumentationURL:    tfb.DocumentationURL,
 		ProviderDisplayName: tfb.ProviderDisplayName,
 		SupportURL:          tfb.SupportURL,
-		ImageURL:            tfb.ImageURL,
+		ImageURL:            string(tfb.ImageURL),
 		Tags:                tfb.Tags,
 		Plans:               rawPlans,
 
