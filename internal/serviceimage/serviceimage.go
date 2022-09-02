@@ -1,3 +1,4 @@
+// Package serviceimage knows how to base64 encode a local image file
 package serviceimage
 
 import (
