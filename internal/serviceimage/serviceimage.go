@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -15,7 +16,7 @@ type ServiceImage string
 func (s *ServiceImage) Encode(srcDir string) error {
 	if strings.HasPrefix(string(*s), "file://") {
 		imgPath := strings.Split(string(*s), "file://")
-		encodedImage, err := base64EncodeImage(srcDir + imgPath[1])
+		encodedImage, err := base64EncodeImage(filepath.Join(srcDir, imgPath[1]))
 		if err != nil {
 			return err
 		}
