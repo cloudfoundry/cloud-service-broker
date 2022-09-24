@@ -261,8 +261,8 @@ github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ
 github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hashicorp/hcl v1.0.0 h1:0Anlzjpi4vEasTeNFn2mLJgTSwt0+6sfsiTG8qcWGx4=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
-github.com/hashicorp/hcl/v2 v2.14.0 h1:jX6+Q38Ly9zaAJlAjnFVyeNSNCKKW8D0wvyg7vij5Wc=
-github.com/hashicorp/hcl/v2 v2.14.0/go.mod h1:e4z5nxYlWNPdDSNYX+ph14EvWYMFm3eP0zIUqPc2jr0=
+github.com/hashicorp/hcl/v2 v2.14.1 h1:x0BpjfZ+CYdbiz+8yZTQ+gdLO7IXvOut7Da+XJayx34=
+github.com/hashicorp/hcl/v2 v2.14.1/go.mod h1:e4z5nxYlWNPdDSNYX+ph14EvWYMFm3eP0zIUqPc2jr0=
 github.com/hashicorp/hil v0.0.0-20210521165536-27a72121fd40 h1:ExwaL+hUy1ys2AWDbsbh/lxQS2EVCYxuj0LoyLTdB3Y=
 github.com/hashicorp/hil v0.0.0-20210521165536-27a72121fd40/go.mod h1:n2TSygSNwsLJ76m8qFXTSc7beTb+auJxYdqrnoqwZWE=
 github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40 h1:GT4RsKmHh1uZyhmTkWJTDALRjSHYQp6FRKrotf0zhAs=
