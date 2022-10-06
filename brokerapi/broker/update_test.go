@@ -162,24 +162,6 @@ var _ = Describe("Update", func() {
 					OperationType: models.UpdateOperationType,
 					OperationID:   updateOperationID,
 				}, nil)
-
-				updateDetails = domain.UpdateDetails{
-					ServiceID: offeringID,
-					PlanID:    originalPlanID,
-					MaintenanceInfo: &domain.MaintenanceInfo{
-						Version: "2.0.0",
-					},
-					PreviousValues: domain.PreviousValues{
-						PlanID:    originalPlanID,
-						ServiceID: offeringID,
-						OrgID:     orgID,
-						SpaceID:   spaceID,
-						MaintenanceInfo: &domain.MaintenanceInfo{
-							Version: "2.0.0",
-						},
-					},
-					RawContext: json.RawMessage(fmt.Sprintf(`{"organization_guid":%q, "space_guid": %q}`, orgID, spaceID)),
-				}
 			})
 
 			It("should complete changing the instance operation type", func() {
@@ -199,8 +181,8 @@ var _ = Describe("Update", func() {
 				actualContext, _ := fakeServiceProvider.UpdateArgsForCall(0)
 				Expect(actualContext.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
 
-				By("validating SI details is updated")
-				storeServiceInstanceDetailsValidation(
+				By("validating SI operation type is updated")
+				expectOperationTypeToBeUpdated(
 					fakeStorage,
 					updateOperationID,
 					instanceID,
@@ -208,13 +190,8 @@ var _ = Describe("Update", func() {
 					originalPlanID,
 					spaceID,
 					orgID,
+					storage.JSONObject{},
 				)
-
-				By("validating provision parameters storing call")
-				Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(1))
-				actualSI, actualParams := fakeStorage.StoreProvisionRequestDetailsArgsForCall(0)
-				Expect(actualSI).To(Equal(instanceID))
-				Expect(actualParams).To(BeEmpty())
 			})
 		})
 
@@ -224,24 +201,6 @@ var _ = Describe("Update", func() {
 					OperationType: models.UpdateOperationType,
 					OperationID:   updateOperationID,
 				}, nil)
-
-				updateDetails = domain.UpdateDetails{
-					ServiceID: offeringID,
-					PlanID:    newPlanID,
-					MaintenanceInfo: &domain.MaintenanceInfo{
-						Version: "2.0.0",
-					},
-					PreviousValues: domain.PreviousValues{
-						PlanID:    originalPlanID,
-						ServiceID: offeringID,
-						OrgID:     orgID,
-						SpaceID:   spaceID,
-						MaintenanceInfo: &domain.MaintenanceInfo{
-							Version: "2.0.0",
-						},
-					},
-					RawContext: json.RawMessage(fmt.Sprintf(`{"organization_guid":%q, "space_guid": %q}`, orgID, spaceID)),
-				}
 			})
 
 			It("should do update async and not change planID", func() {
@@ -257,14 +216,15 @@ var _ = Describe("Update", func() {
 				Expect(fakeServiceProvider.UpdateCallCount()).To(Equal(1))
 
 				By("validating SI details storing call")
-				storeServiceInstanceDetailsValidation(
+				expectOperationTypeToBeUpdated(
 					fakeStorage,
 					updateOperationID,
 					instanceID,
 					offeringID,
-					newPlanID,
+					originalPlanID,
 					spaceID,
 					orgID,
+					storage.JSONObject{},
 				)
 			})
 		})
@@ -312,7 +272,7 @@ var _ = Describe("Update", func() {
 				Expect(actualVars.GetString("guz")).To(Equal("muz"))
 
 				By("validating SI details is updated")
-				storeServiceInstanceDetailsValidation(
+				expectOperationTypeToBeUpdated(
 					fakeStorage,
 					updateOperationID,
 					instanceID,
@@ -320,12 +280,8 @@ var _ = Describe("Update", func() {
 					originalPlanID,
 					spaceID,
 					orgID,
+					storage.JSONObject{"foo": "quz", "guz": "muz"},
 				)
-
-				By("validating provision details have been stored")
-				Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(1))
-				_, actualRequestVars := fakeStorage.StoreProvisionRequestDetailsArgsForCall(0)
-				Expect(actualRequestVars).To(Equal(storage.JSONObject{"foo": "quz", "guz": "muz"}))
 			})
 		})
 
@@ -831,7 +787,7 @@ var _ = Describe("Update", func() {
 	})
 })
 
-func storeServiceInstanceDetailsValidation(
+func expectOperationTypeToBeUpdated(
 	fakeStorage *brokerfakes.FakeStorage,
 	operationGUID,
 	instanceID,
@@ -839,6 +795,7 @@ func storeServiceInstanceDetailsValidation(
 	newPlanID,
 	spaceID,
 	orgID string,
+	mergedDetails storage.JSONObject,
 ) {
 	Expect(fakeStorage.StoreServiceInstanceDetailsCallCount()).To(Equal(1))
 	actualServiceInstanceDetails := fakeStorage.StoreServiceInstanceDetailsArgsForCall(0)
@@ -849,4 +806,8 @@ func storeServiceInstanceDetailsValidation(
 	Expect(actualServiceInstanceDetails.PlanGUID).To(Equal(newPlanID))
 	Expect(actualServiceInstanceDetails.SpaceGUID).To(Equal(spaceID))
 	Expect(actualServiceInstanceDetails.OrganizationGUID).To(Equal(orgID))
+	Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(1))
+	actualSI, actualParams := fakeStorage.StoreProvisionRequestDetailsArgsForCall(0)
+	Expect(actualSI).To(Equal(instanceID))
+	Expect(actualParams).To(Equal(mergedDetails))
 }
