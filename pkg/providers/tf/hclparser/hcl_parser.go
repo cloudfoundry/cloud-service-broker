@@ -27,7 +27,9 @@ func GetParameters(tfHCL string, parameters []ExtractVariable) (map[string]any, 
 			for _, param := range parameters {
 				resourceName, attributeName := splitResource(param.FieldToRead)
 				if resourceName == strings.Join(block.Labels(), ".") {
-					subsumedParameters[param.FieldToWrite] = getAttribute(block, attributeName)
+					if val, ok := getAttribute(block, attributeName); ok {
+						subsumedParameters[param.FieldToWrite] = val
+					}
 				}
 			}
 		}
@@ -51,6 +53,10 @@ func splitResource(resource string) (string, string) {
 	return resource[:lastInd], resource[lastInd+1:]
 }
 
-func getAttribute(block *hclwrite.Block, attribute string) string {
-	return strings.Trim(strings.TrimSpace(string(block.Body().GetAttribute(attribute).Expr().BuildTokens(nil).Bytes())), "\"")
+func getAttribute(block *hclwrite.Block, attribute string) (string, bool) {
+	attr := block.Body().GetAttribute(attribute)
+	if attr == nil {
+		return "", false
+	}
+	return strings.Trim(strings.TrimSpace(string(attr.Expr().BuildTokens(nil).Bytes())), "\""), true
 }

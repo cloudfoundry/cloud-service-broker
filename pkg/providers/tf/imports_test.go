@@ -15,95 +15,95 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Import", func() {
-	Describe("GetImportedProperties", func() {
-		When("instance was not subsumed", func() {
-			It("should not return variables or error", func() {
-				defaultPlanGUID := "6526a7be-8504-11ec-b558-276c48808143"
-				tfProvider := tf.NewTerraformProvider(
-					executor.TFBinariesContext{}, nil,
-					utils.NewLogger("test"),
-					tf.TfServiceDefinitionV1{
-						Plans: []tf.TfServiceDefinitionV1Plan{
-							{
-								Name: "default-plan",
-								ID:   defaultPlanGUID,
-							},
+var _ = Describe("GetImportedProperties()", func() {
+	When("the offering is not subsumable", func() {
+		It("should not return variables or error", func() {
+			const defaultPlanGUID = "6526a7be-8504-11ec-b558-276c48808143"
+			tfProvider := tf.NewTerraformProvider(
+				executor.TFBinariesContext{}, nil,
+				utils.NewLogger("test"),
+				tf.TfServiceDefinitionV1{
+					Plans: []tf.TfServiceDefinitionV1Plan{
+						{
+							Name: "default-plan",
+							ID:   defaultPlanGUID,
 						},
 					},
-					&tffakes.FakeDeploymentManagerInterface{},
-				)
-
-				inputVariables := []broker.BrokerVariable{
-					{
-						FieldName:   "field_to_replace",
-						TFAttribute: "azurerm_mssql_database.azure_sql_db.subsume-key",
-					},
-				}
-
-				result, err := tfProvider.GetImportedProperties(context.TODO(), defaultPlanGUID, "", inputVariables)
-
-				Expect(err).NotTo(HaveOccurred())
-				Expect(result).To(BeEmpty())
-			})
-		})
-
-		When("instance was subsumed", func() {
-			var (
-				tfProvider            broker.ServiceProvider
-				subsumePlanGUID       string
-				fakeInvokerBuilder    *tffakes.FakeTerraformInvokerBuilder
-				fakeInvoker           *tffakes.FakeTerraformInvoker
-				fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface
+				},
+				&tffakes.FakeDeploymentManagerInterface{},
 			)
 
-			BeforeEach(func() {
-				fakeDeploymentManager = new(tffakes.FakeDeploymentManagerInterface)
-				fakeInvoker = new(tffakes.FakeTerraformInvoker)
-				fakeInvokerBuilder = new(tffakes.FakeTerraformInvokerBuilder)
+			inputVariables := []broker.BrokerVariable{
+				{
+					FieldName:   "field_to_replace",
+					TFAttribute: "azurerm_mssql_database.azure_sql_db.subsume-key",
+				},
+			}
 
-				subsumePlanGUID = "6526a7be-8504-11ec-b558-276c48808143"
-				fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeInvoker)
-				fakeInvoker.ShowReturns("# azurerm_mssql_database.azure_sql_db:\nresource \"azurerm_mssql_database\" \"azure_sql_db\" {\nsubsume-key = \"subsume-value\"\n}\nOutputs:\nname = \"test-name\"", nil)
+			result, err := tfProvider.GetImportedProperties(context.TODO(), defaultPlanGUID, "", inputVariables)
 
-				tfProvider = tf.NewTerraformProvider(
-					executor.TFBinariesContext{},
-					fakeInvokerBuilder,
-					utils.NewLogger("test"),
-					tf.TfServiceDefinitionV1{
-						Plans: []tf.TfServiceDefinitionV1Plan{
-							{
-								Name: "subsume-plan",
-								ID:   subsumePlanGUID,
-								Properties: map[string]any{
-									"subsume": true,
-								},
+			Expect(err).NotTo(HaveOccurred())
+			Expect(result).To(BeEmpty())
+		})
+	})
+
+	When("the offering is subsumable", func() {
+		var (
+			tfProvider            broker.ServiceProvider
+			subsumePlanGUID       string
+			fakeInvokerBuilder    *tffakes.FakeTerraformInvokerBuilder
+			fakeInvoker           *tffakes.FakeTerraformInvoker
+			fakeDeploymentManager *tffakes.FakeDeploymentManagerInterface
+		)
+
+		BeforeEach(func() {
+			fakeDeploymentManager = new(tffakes.FakeDeploymentManagerInterface)
+			fakeInvoker = new(tffakes.FakeTerraformInvoker)
+			fakeInvokerBuilder = new(tffakes.FakeTerraformInvokerBuilder)
+
+			subsumePlanGUID = "6526a7be-8504-11ec-b558-276c48808143"
+			fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeInvoker)
+			fakeInvoker.ShowReturns("# azurerm_mssql_database.azure_sql_db:\nresource \"azurerm_mssql_database\" \"azure_sql_db\" {\nsubsume-key = \"subsume-value\"\n}\nOutputs:\nname = \"test-name\"", nil)
+
+			tfProvider = tf.NewTerraformProvider(
+				executor.TFBinariesContext{},
+				fakeInvokerBuilder,
+				utils.NewLogger("test"),
+				tf.TfServiceDefinitionV1{
+					Plans: []tf.TfServiceDefinitionV1Plan{
+						{
+							Name: "subsume-plan",
+							ID:   subsumePlanGUID,
+							Properties: map[string]any{
+								"subsume": true,
 							},
 						},
 					},
-					fakeDeploymentManager,
-				)
-			})
+				},
+				fakeDeploymentManager,
+			)
+		})
 
-			It("should return subsumed variables", func() {
-				fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, nil)
+		It("returns subsumed variables", func() {
+			fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, nil)
 
-				inputVariables := []broker.BrokerVariable{
-					{
-						FieldName:   "field_to_replace",
-						TFAttribute: "azurerm_mssql_database.azure_sql_db.subsume-key",
-					},
-				}
+			inputVariables := []broker.BrokerVariable{
+				{
+					FieldName:   "field_to_replace",
+					TFAttribute: "azurerm_mssql_database.azure_sql_db.subsume-key",
+				},
+			}
 
-				result, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "fakeInstanceGUID", inputVariables)
+			result, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "fakeInstanceGUID", inputVariables)
 
-				actualTfID := fakeDeploymentManager.GetTerraformDeploymentArgsForCall(0)
-				Expect(actualTfID).To(Equal("tf:fakeInstanceGUID:"))
-				Expect(err).NotTo(HaveOccurred())
-				Expect(result).To(Equal(map[string]any{"field_to_replace": "subsume-value"}))
-			})
+			actualTfID := fakeDeploymentManager.GetTerraformDeploymentArgsForCall(0)
+			Expect(actualTfID).To(Equal("tf:fakeInstanceGUID:"))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(result).To(Equal(map[string]any{"field_to_replace": "subsume-value"}))
+		})
 
-			It("returns empty list and no error when no replace vars are defined", func() {
+		When("no replace vars are defined", func() {
+			It("returns empty list and no error", func() {
 				inputVariables := []broker.BrokerVariable{
 					{
 						FieldName: "field_to_replace",
@@ -117,8 +117,24 @@ var _ = Describe("Import", func() {
 				Expect(fakeDeploymentManager.GetTerraformDeploymentCallCount()).To(BeZero())
 				Expect(fakeInvoker.ShowCallCount()).To(BeZero())
 			})
+		})
 
-			It("returns error when tf show fails", func() {
+		When("the tf_attribute lookup fails", func() {
+			It("returns an error", func() {
+				inputVariables := []broker.BrokerVariable{
+					{
+						FieldName:   "field_to_replace",
+						TFAttribute: "azurerm_mssql_database.not-there.anything",
+					},
+				}
+
+				_, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "fakeInstanceGUID", inputVariables)
+				Expect(err).To(MatchError(`cannot find required subsumed values for fields: azurerm_mssql_database.not-there.anything`))
+			})
+		})
+
+		When("tf show fails", func() {
+			It("returns an error", func() {
 				fakeInvoker.ShowReturns("", errors.New("tf show failed"))
 				fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, nil)
 
