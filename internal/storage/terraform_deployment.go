@@ -116,7 +116,7 @@ func (s *Storage) GetAllTerraformDeployments() ([]TerraformDeploymentListEntry, 
 			})
 		}
 
-		return tx.Save(&terraformDeploymentBatch).Error
+		return nil
 	})
 	if status.Error != nil {
 		return nil, fmt.Errorf("error reading terraform deployment batch: %w", status.Error)
