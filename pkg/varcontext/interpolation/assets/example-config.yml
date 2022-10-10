@@ -1,0 +1,8 @@
+test:
+  object: {"value": "one"}
+  map:
+    value: one
+  string_object: '{"value":"one"}'
+  string_multiline_object: |
+    {"value":"one"}
+
