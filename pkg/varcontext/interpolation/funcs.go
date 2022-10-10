@@ -59,8 +59,18 @@ func hilFuncConfig() ast.Function {
 		ArgTypes:   []ast.Type{ast.TypeString},
 		ReturnType: ast.TypeString,
 		Callback: func(args []any) (any, error) {
-			if viper.IsSet(args[0].(string)) {
-				return viper.GetString(args[0].(string)), nil
+
+			key := args[0].(string)
+			if viper.IsSet(key) {
+				val := viper.Get(key)
+				// Check If we're handling a nested object
+				if mapVal, ok := val.(map[string]interface{}); ok {
+					bytes, err := json.Marshal(mapVal)
+					// return string representation of the object contents
+					return string(bytes), err
+				}
+				// return string and remove leading/trailing whitespace
+				return strings.TrimSpace(val.(string)), nil
 			}
 			return "", fmt.Errorf("missing config value %s", args[0].(string))
 		},
