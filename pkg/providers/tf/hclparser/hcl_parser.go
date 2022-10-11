@@ -42,7 +42,7 @@ func GetParameters(tfHCL string, parameters []ExtractVariable) (map[string]any, 
 				notFoundParameters = append(notFoundParameters, rv.FieldToRead)
 			}
 		}
-		return nil, fmt.Errorf("cannot find required subsumed values for fields: %s", strings.Join(notFoundParameters, ", "))
+		return nil, fmt.Errorf("cannot find required import values for fields: %s", strings.Join(notFoundParameters, ", "))
 	}
 
 	return subsumedParameters, nil

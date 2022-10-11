@@ -58,9 +58,10 @@ type BrokerVariable struct {
 	// Keys are valid JSON Schema validation keywords, and values are their
 	// associated values.
 	// http://json-schema.org/latest/json-schema-validation.html
-	Constraints    map[string]any `yaml:"constraints,omitempty"`
-	ProhibitUpdate bool           `yaml:"prohibit_update,omitempty"`
-	TFAttribute    string         `yaml:"tf_attribute,omitempty"`
+	Constraints     map[string]any `yaml:"constraints,omitempty"`
+	ProhibitUpdate  bool           `yaml:"prohibit_update,omitempty"`
+	TFAttribute     string         `yaml:"tf_attribute,omitempty"`
+	TFAttributeSkip string         `yaml:"tf_attribute_skip,omitempty"`
 }
 
 // ImportVariable Variable definition for TF import support
@@ -148,6 +149,10 @@ func (bv *BrokerVariable) ToSchema() map[string]any {
 
 	if bv.TFAttribute != "" {
 		schema[validation.KeyTFAttribute] = bv.TFAttribute
+	}
+
+	if bv.TFAttributeSkip != "" {
+		schema[validation.KeyTFAttributeSkip] = bv.TFAttributeSkip
 	}
 
 	return schema
