@@ -42,7 +42,7 @@ type ServiceProvider interface {
 	UpgradeBindings(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts []*varcontext.VarContext) error
 
 	// GetImportedProperties extracts properties that should have been saved as part of subsume operation
-	GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []BrokerVariable) (map[string]any, error)
+	GetImportedProperties(ctx context.Context, instanceGUID string, inputVariables []BrokerVariable, initialProperties map[string]any) (map[string]any, error)
 
 	// Bind provisions the necessary resources for a user to be able to connect to the provisioned service.
 	// This may include creating service accounts, granting permissions, and adding users to services e.g. a SQL database user.

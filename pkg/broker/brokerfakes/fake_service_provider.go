@@ -64,13 +64,13 @@ type FakeServiceProvider struct {
 		result1 *string
 		result2 error
 	}
-	GetImportedPropertiesStub        func(context.Context, string, string, []broker.BrokerVariable) (map[string]any, error)
+	GetImportedPropertiesStub        func(context.Context, string, []broker.BrokerVariable, map[string]any) (map[string]any, error)
 	getImportedPropertiesMutex       sync.RWMutex
 	getImportedPropertiesArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
-		arg3 string
-		arg4 []broker.BrokerVariable
+		arg3 []broker.BrokerVariable
+		arg4 map[string]any
 	}
 	getImportedPropertiesReturns struct {
 		result1 map[string]any
@@ -437,23 +437,23 @@ func (fake *FakeServiceProvider) DeprovisionReturnsOnCall(i int, result1 *string
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) GetImportedProperties(arg1 context.Context, arg2 string, arg3 string, arg4 []broker.BrokerVariable) (map[string]any, error) {
-	var arg4Copy []broker.BrokerVariable
-	if arg4 != nil {
-		arg4Copy = make([]broker.BrokerVariable, len(arg4))
-		copy(arg4Copy, arg4)
+func (fake *FakeServiceProvider) GetImportedProperties(arg1 context.Context, arg2 string, arg3 []broker.BrokerVariable, arg4 map[string]any) (map[string]any, error) {
+	var arg3Copy []broker.BrokerVariable
+	if arg3 != nil {
+		arg3Copy = make([]broker.BrokerVariable, len(arg3))
+		copy(arg3Copy, arg3)
 	}
 	fake.getImportedPropertiesMutex.Lock()
 	ret, specificReturn := fake.getImportedPropertiesReturnsOnCall[len(fake.getImportedPropertiesArgsForCall)]
 	fake.getImportedPropertiesArgsForCall = append(fake.getImportedPropertiesArgsForCall, struct {
 		arg1 context.Context
 		arg2 string
-		arg3 string
-		arg4 []broker.BrokerVariable
-	}{arg1, arg2, arg3, arg4Copy})
+		arg3 []broker.BrokerVariable
+		arg4 map[string]any
+	}{arg1, arg2, arg3Copy, arg4})
 	stub := fake.GetImportedPropertiesStub
 	fakeReturns := fake.getImportedPropertiesReturns
-	fake.recordInvocation("GetImportedProperties", []interface{}{arg1, arg2, arg3, arg4Copy})
+	fake.recordInvocation("GetImportedProperties", []interface{}{arg1, arg2, arg3Copy, arg4})
 	fake.getImportedPropertiesMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2, arg3, arg4)
@@ -470,13 +470,13 @@ func (fake *FakeServiceProvider) GetImportedPropertiesCallCount() int {
 	return len(fake.getImportedPropertiesArgsForCall)
 }
 
-func (fake *FakeServiceProvider) GetImportedPropertiesCalls(stub func(context.Context, string, string, []broker.BrokerVariable) (map[string]any, error)) {
+func (fake *FakeServiceProvider) GetImportedPropertiesCalls(stub func(context.Context, string, []broker.BrokerVariable, map[string]any) (map[string]any, error)) {
 	fake.getImportedPropertiesMutex.Lock()
 	defer fake.getImportedPropertiesMutex.Unlock()
 	fake.GetImportedPropertiesStub = stub
 }
 
-func (fake *FakeServiceProvider) GetImportedPropertiesArgsForCall(i int) (context.Context, string, string, []broker.BrokerVariable) {
+func (fake *FakeServiceProvider) GetImportedPropertiesArgsForCall(i int) (context.Context, string, []broker.BrokerVariable, map[string]any) {
 	fake.getImportedPropertiesMutex.RLock()
 	defer fake.getImportedPropertiesMutex.RUnlock()
 	argsForCall := fake.getImportedPropertiesArgsForCall[i]

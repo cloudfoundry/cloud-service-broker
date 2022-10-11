@@ -84,12 +84,16 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return domain.UpdateServiceSpec{}, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
 	}
 
-	importedParams, err := serviceProvider.GetImportedProperties(ctx, instance.PlanGUID, instance.GUID, serviceDefinition.ProvisionInputVariables)
+	initialProperties, err := mergeJSON(provisionDetails, parsedDetails.RequestParams, plan.GetServiceProperties())
 	if err != nil {
-		return domain.UpdateServiceSpec{}, fmt.Errorf("error retrieving subsume parameters for %q: %w", instanceID, err)
+		return domain.UpdateServiceSpec{}, err
+	}
+	importedParams, err := serviceProvider.GetImportedProperties(ctx, instance.GUID, serviceDefinition.ProvisionInputVariables, initialProperties)
+	if err != nil {
+		return domain.UpdateServiceSpec{}, fmt.Errorf("error retrieving expected parameters for %q: %w", instanceID, err)
 	}
 
-	mergedDetails, err := mergeJSON(provisionDetails, parsedDetails.RequestParams, importedParams)
+	mergedDetails, err := mergeJSON(provisionDetails, importedParams, parsedDetails.RequestParams)
 	if err != nil {
 		return domain.UpdateServiceSpec{}, fmt.Errorf("error merging update and provision details: %w", err)
 	}
@@ -239,12 +243,13 @@ func (broker *ServiceBroker) storeUpgradeError(errorToStore error, instanceID st
 	}
 }
 
-func mergeJSON(previousParams, newParams, importParams map[string]any) (map[string]any, error) {
-	vc, err := varcontext.Builder().
-		MergeMap(previousParams).
-		MergeMap(importParams).
-		MergeMap(newParams).
-		Build()
+func mergeJSON(params ...map[string]any) (map[string]any, error) {
+	builder := varcontext.Builder()
+	for _, p := range params {
+		builder = builder.MergeMap(p)
+	}
+
+	vc, err := builder.Build()
 	if err != nil {
 		return nil, err
 	}

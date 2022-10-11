@@ -66,7 +66,7 @@ var _ = Describe("GetParameters", func() {
 
 			_, err := hclparser.GetParameters(tfHCL, replaceVars)
 
-			Expect(err).To(MatchError("cannot find required subsumed values for fields: resource_type.resource_name.subsume_key"))
+			Expect(err).To(MatchError("cannot find required import values for fields: resource_type.resource_name.subsume_key"))
 		})
 	})
 
@@ -82,7 +82,7 @@ var _ = Describe("GetParameters", func() {
 
 			_, err := hclparser.GetParameters(tfHCL, replaceVars)
 
-			Expect(err).To(MatchError("cannot find required subsumed values for fields: other_resource_type.resource_name.non_existing_key"))
+			Expect(err).To(MatchError("cannot find required import values for fields: other_resource_type.resource_name.non_existing_key"))
 		})
 	})
 
@@ -97,7 +97,7 @@ var _ = Describe("GetParameters", func() {
 
 			_, err := hclparser.GetParameters("", replaceVars)
 
-			Expect(err).To(MatchError("cannot find required subsumed values for fields: resource_type.resource_name.subsume_key"))
+			Expect(err).To(MatchError("cannot find required import values for fields: resource_type.resource_name.subsume_key"))
 		})
 	})
 

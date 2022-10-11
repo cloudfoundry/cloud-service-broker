@@ -1,0 +1,32 @@
+version: 1
+name: fake-service
+id: 75384ad6-48ae-11ed-a6b1-53f54b82d2aa
+description: description
+display_name: Fake
+image_url: https://example.com/icon.jpg
+documentation_url: https://example.com
+support_url: https://example.com/support.html
+plans:
+- name: default
+  id: 8185cfb6-48ae-11ed-8152-7bc5a2d3a884
+  description: Default plan
+  display_name: Default
+- name: skip
+  id: 56591d42-48af-11ed-bda0-0327763028ca
+  description: Skip plan
+  display_name: Skip is set as plan property
+  properties:
+    skip: true
+provision:
+  template_refs:
+    main: fake-provision.tf
+  user_inputs:
+    - field_name: skip
+      type: boolean
+      details: Skip reading tf_attribute
+      default: false
+    - field_name: unreadable
+      type: string
+      details: A field whose tf_attribute fails to be read
+      tf_attribute: does.not.exist
+      tf_attribute_skip: skip

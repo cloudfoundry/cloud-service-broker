@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
-
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
@@ -62,7 +61,7 @@ var _ = Describe("GetImportedProperties()", func() {
 			},
 		}
 
-		result, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "fakeInstanceGUID", inputVariables)
+		result, err := tfProvider.GetImportedProperties(context.TODO(), "fakeInstanceGUID", inputVariables, nil)
 
 		actualTfID := fakeDeploymentManager.GetTerraformDeploymentArgsForCall(0)
 		Expect(actualTfID).To(Equal("tf:fakeInstanceGUID:"))
@@ -78,7 +77,7 @@ var _ = Describe("GetImportedProperties()", func() {
 				},
 			}
 
-			result, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "fakeInstanceGUID", inputVariables)
+			result, err := tfProvider.GetImportedProperties(context.TODO(), "fakeInstanceGUID", inputVariables, nil)
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(result).To(BeEmpty())
@@ -96,8 +95,108 @@ var _ = Describe("GetImportedProperties()", func() {
 				},
 			}
 
-			_, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "fakeInstanceGUID", inputVariables)
-			Expect(err).To(MatchError(`cannot find required subsumed values for fields: azurerm_mssql_database.not-there.anything`))
+			_, err := tfProvider.GetImportedProperties(context.TODO(), "fakeInstanceGUID", inputVariables, nil)
+			Expect(err).To(MatchError(`cannot find required import values for fields: azurerm_mssql_database.not-there.anything`))
+		})
+	})
+
+	When("there is a tf_attribute_skip condition", func() {
+		When("tf_attribute_skip evaluates to true", func() {
+			It("skips looking up the attribute", func() {
+				provisionDetails := storage.JSONObject{
+					"existing": true,
+				}
+
+				inputVariables := []broker.BrokerVariable{
+					{
+						FieldName:       "field_to_replace",
+						TFAttribute:     "azurerm_mssql_database.azure_sql_db.not-there",
+						TFAttributeSkip: "existing",
+					},
+				}
+
+				result, err := tfProvider.GetImportedProperties(context.TODO(), "fakeInstanceGUID", inputVariables, provisionDetails)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(result).To(BeEmpty())
+			})
+		})
+
+		When("tf_attribute_skip evaluates to false", func() {
+			When("the attribute is found", func() {
+				It("returns the value", func() {
+					provisionDetails := storage.JSONObject{
+						"existing": false,
+					}
+
+					inputVariables := []broker.BrokerVariable{
+						{
+							FieldName:       "field_to_replace",
+							TFAttribute:     "azurerm_mssql_database.azure_sql_db.subsume-key",
+							TFAttributeSkip: "existing",
+						},
+					}
+
+					result, err := tfProvider.GetImportedProperties(context.TODO(), "fakeInstanceGUID", inputVariables, provisionDetails)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(result).To(Equal(map[string]any{"field_to_replace": "subsume-value"}))
+				})
+			})
+
+			When("the attribute is not found", func() {
+				It("returns an error", func() {
+					provisionDetails := storage.JSONObject{
+						"existing": false,
+					}
+
+					inputVariables := []broker.BrokerVariable{
+						{
+							FieldName:       "field_to_replace",
+							TFAttribute:     "azurerm_mssql_database.azure_sql_db.not-there",
+							TFAttributeSkip: "existing",
+						},
+					}
+
+					_, err := tfProvider.GetImportedProperties(context.TODO(), "fakeInstanceGUID", inputVariables, provisionDetails)
+					Expect(err).NotTo(MatchError(`cannot find required subsumed values for fields: azurerm_mssql_database.azure_sql_db.not-there`))
+				})
+			})
+		})
+
+		When("tf_attribute_skip field is not found", func() {
+			It("does not skip", func() {
+				inputVariables := []broker.BrokerVariable{
+					{
+						FieldName:       "field_to_replace",
+						TFAttribute:     "azurerm_mssql_database.azure_sql_db.subsume-key",
+						TFAttributeSkip: "existing",
+					},
+				}
+
+				result, err := tfProvider.GetImportedProperties(context.TODO(), "fakeInstanceGUID", inputVariables, nil)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(result).To(Equal(map[string]any{"field_to_replace": "subsume-value"}))
+			})
+		})
+
+		When("tf_attribute_skip field has wrong type", func() {
+			It("does not skip", func() {
+				provisionDetails := storage.JSONObject{
+					"existing": "true", // string not boolean!
+				}
+
+				inputVariables := []broker.BrokerVariable{
+					{
+						FieldName:       "field_to_replace",
+						TFAttribute:     "azurerm_mssql_database.azure_sql_db.subsume-key",
+						TFAttributeSkip: "existing",
+					},
+				}
+
+				result, err := tfProvider.GetImportedProperties(context.TODO(), "fakeInstanceGUID", inputVariables, provisionDetails)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(result).To(Equal(map[string]any{"field_to_replace": "subsume-value"}))
+			})
 		})
 	})
 
@@ -113,7 +212,7 @@ var _ = Describe("GetImportedProperties()", func() {
 				},
 			}
 
-			_, err := tfProvider.GetImportedProperties(context.TODO(), subsumePlanGUID, "fakeInstanceGUID", inputVariables)
+			_, err := tfProvider.GetImportedProperties(context.TODO(), "fakeInstanceGUID", inputVariables, nil)
 
 			Expect(err).To(MatchError("tf show failed"))
 		})
