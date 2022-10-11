@@ -12,10 +12,6 @@ import (
 func (provider *TerraformProvider) GetImportedProperties(ctx context.Context, planGUID string, instanceGUID string, inputVariables []broker.BrokerVariable) (map[string]any, error) {
 	provider.logger.Debug("getImportedProperties", correlation.ID(ctx), lager.Data{})
 
-	if provider.serviceDefinition.IsSubsumePlan(planGUID) {
-		return map[string]any{}, nil
-	}
-
 	varsToReplace := getVarsToReplace(inputVariables)
 	if len(varsToReplace) == 0 {
 		return map[string]any{}, nil
