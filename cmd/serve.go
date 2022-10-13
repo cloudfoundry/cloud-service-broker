@@ -21,15 +21,9 @@ import (
 	"net/http"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/gorilla/mux"
-	"github.com/pivotal-cf/brokerapi/v8"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"gorm.io/gorm"
-
 	osbapiBroker "github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice"
+	"github.com/cloudfoundry/cloud-service-broker/internal/displaycatalog"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption"
 	"github.com/cloudfoundry/cloud-service-broker/internal/infohandler"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
@@ -38,6 +32,12 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/server"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/toggles"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
+	"github.com/gorilla/mux"
+	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"gorm.io/gorm"
 )
 
 const (
@@ -110,7 +110,7 @@ func serve() {
 	if err != nil {
 		logger.Error("creating service catalog", err)
 	}
-	logger.Info("service catalog", lager.Data{"catalog": services})
+	logger.Info("service catalog", lager.Data{"catalog": displaycatalog.DisplayCatalog(services)})
 
 	brokerAPI := brokerapi.New(serviceBroker, logger, credentials)
 
