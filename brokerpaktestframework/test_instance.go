@@ -49,7 +49,12 @@ func (instance *TestInstance) Start(logger io.Writer, config []string) error {
 	}
 	instance.serverSession = start
 
-	return waitForHTTPServer(fmt.Sprintf("http://localhost:%d", instance.port))
+	if err := waitForHTTPServer(fmt.Sprintf("http://localhost:%d", instance.port)); err != nil {
+		instance.Cleanup()
+		return err
+	}
+
+	return nil
 }
 
 func waitForHTTPServer(s string) error {

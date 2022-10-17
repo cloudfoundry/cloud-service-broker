@@ -27,6 +27,9 @@ var _ = Describe("brokerpaktestframework", func() {
 
 		By("starting the broker")
 		Expect(broker.Start(GinkgoWriter, nil)).To(Succeed())
+		DeferCleanup(func() {
+			Expect(broker.Cleanup()).To(Succeed())
+		})
 
 		By("testing catalog")
 		catalog, err := broker.Catalog()
@@ -49,8 +52,5 @@ var _ = Describe("brokerpaktestframework", func() {
 		creds, err := broker.Bind("alpha-service", "alpha", serviceInstanceID, nil)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(creds).To(BeEmpty())
-
-		By("stopping the broker")
-		Expect(broker.Cleanup()).To(Succeed())
 	})
 })
