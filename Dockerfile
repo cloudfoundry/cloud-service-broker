@@ -26,6 +26,10 @@ FROM alpine:latest
 
 COPY --from=build /app/build/cloud-service-broker /bin/cloud-service-broker
 
+RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
+ADD https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
 ENV PORT 8080
 EXPOSE 8080/tcp
 
