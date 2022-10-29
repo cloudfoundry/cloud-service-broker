@@ -6,31 +6,30 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
+	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gexec"
 )
 
 var _ = Describe("Info Endpoint", func() {
-	var (
-		testHelper *helper.TestHelper
-		session    *gexec.Session
-	)
+	var broker *testdrive.Broker
 
 	BeforeEach(func() {
-		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "info-endpoint")
-		session = testHelper.StartBroker()
-	})
+		brokerpak, err := testdrive.BuildBrokerpak(csb, fixtures("info-endpoint"))
+		Expect(err).NotTo(HaveOccurred())
 
-	AfterEach(func() {
-		session.Terminate().Wait()
+		broker, err = testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter))
+		Expect(err).NotTo(HaveOccurred())
+
+		DeferCleanup(func() {
+			Expect(broker.Stop()).To(Succeed())
+			cleanup(brokerpak)
+		})
 	})
 
 	It("responds to the info endpoint", func() {
-		resp, err := http.Get(fmt.Sprintf("http://localhost:%d/info", testHelper.Port))
+		resp, err := http.Get(fmt.Sprintf("http://localhost:%d/info", broker.Port))
 		Expect(err).NotTo(HaveOccurred())
 		Expect(resp).To(HaveHTTPStatus(http.StatusOK))
 

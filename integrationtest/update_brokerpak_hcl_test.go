@@ -3,12 +3,12 @@ package integrationtest_test
 import (
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
+
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gexec"
 )
 
 var _ = Describe("Update Brokerpak HCL", func() {
@@ -32,12 +32,12 @@ var _ = Describe("Update Brokerpak HCL", func() {
 	)
 
 	var (
-		testHelper *helper.TestHelper
-		session    *Session
+		brokerpak string
+		broker    *testdrive.Broker
 	)
 
 	findRecord := func(dest any, query, guid string) {
-		result := testHelper.DBConn().Where(query, guid).First(dest)
+		result := dbConn.Where(query, guid).First(dest)
 		ExpectWithOffset(3, result.Error).NotTo(HaveOccurred())
 		ExpectWithOffset(3, result.RowsAffected).To(Equal(int64(1)))
 	}
@@ -86,8 +86,12 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		Not(ContainSubstring(updateOutputStateKey)),
 	)
 
-	startBroker := func(updatesEnabled bool) *Session {
-		return testHelper.StartBroker(fmt.Sprintf("BROKERPAK_UPDATES_ENABLED=%t", updatesEnabled))
+	startBroker := func(updatesEnabled bool) {
+		broker = must(testdrive.StartBroker(
+			csb, brokerpak, database,
+			testdrive.WithOutputs(GinkgoWriter, GinkgoWriter),
+			testdrive.WithEnv(fmt.Sprintf("BROKERPAK_UPDATES_ENABLED=%t", updatesEnabled)),
+		))
 	}
 
 	persistedTerraformModuleDefinition := func(serviceInstanceGUID, serviceBindingGUID string) string {
@@ -99,63 +103,63 @@ var _ = Describe("Update Brokerpak HCL", func() {
 	}
 
 	pushUpdatedBrokerpak := func(updatesEnabled bool) {
-		session.Terminate().Wait()
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", updatedBrokerpak)
-		session = startBroker(updatesEnabled)
+		Expect(broker.Stop()).To(Succeed())
+		_, err := testdrive.BuildBrokerpak(csb, fixtures(updatedBrokerpak), testdrive.WithDirectory(brokerpak))
+		Expect(err).NotTo(HaveOccurred())
+		startBroker(updatesEnabled)
 	}
 
 	BeforeEach(func() {
-		testHelper = helper.New(csb)
+		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures(initialBrokerpak)))
 
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", initialBrokerpak)
-	})
-
-	AfterEach(func() {
-		session.Terminate().Wait()
+		DeferCleanup(func() {
+			Expect(broker.Stop()).To(Succeed())
+			cleanup(brokerpak)
+		})
 	})
 
 	When("brokerpak updates are disabled", func() {
 		BeforeEach(func() {
-			session = startBroker(false)
+			startBroker(false)
 		})
 
 		It("uses the original HCL for service instances operations", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(false)
 
-			testHelper.UpdateService(serviceInstance, updateParams)
+			Expect(broker.UpdateService(serviceInstance, testdrive.WithUpdateParams(updateParams))).To(Succeed())
 
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveInitialOutputs)
 
-			testHelper.Deprovision(serviceInstance)
+			Expect(broker.Deprovision(serviceInstance)).To(Succeed())
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveEmptyState)
 		})
 
 		It("uses the original HCL for binding operations", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
-			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance)
-			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBindingGUID)).To(beInitialBindingTerraformHCL)
-			Expect(persistedTerraformState(serviceInstance.GUID, serviceBindingGUID)).To(haveInitialBindingOutputs)
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
+			serviceBinding := must(broker.CreateBinding(serviceInstance))
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBinding.GUID)).To(beInitialBindingTerraformHCL)
+			Expect(persistedTerraformState(serviceInstance.GUID, serviceBinding.GUID)).To(haveInitialBindingOutputs)
 
 			pushUpdatedBrokerpak(false)
 
-			testHelper.DeleteBinding(serviceInstance, serviceBindingGUID)
+			Expect(broker.DeleteBinding(serviceInstance, serviceBinding.GUID)).To(Succeed())
 
-			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBindingGUID)).To(beInitialBindingTerraformHCL)
-			Expect(persistedTerraformState(serviceInstance.GUID, serviceBindingGUID)).To(haveEmptyState)
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBinding.GUID)).To(beInitialBindingTerraformHCL)
+			Expect(persistedTerraformState(serviceInstance.GUID, serviceBinding.GUID)).To(haveEmptyState)
 		})
 
 		It("ignores extra parameters added in the update", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(false)
 
-			testHelper.UpdateService(serviceInstance, `{"update_input":"update output value","extra_input":"foo"}`)
+			Expect(broker.UpdateService(serviceInstance, testdrive.WithUpdateParams(`{"update_input":"update output value","extra_input":"foo"}`))).To(Succeed())
 
 			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveInitialOutputs)
 		})
@@ -163,56 +167,56 @@ var _ = Describe("Update Brokerpak HCL", func() {
 
 	When("brokerpak updates are enabled", func() {
 		BeforeEach(func() {
-			session = startBroker(true)
+			startBroker(true)
 		})
 
 		It("uses the updated HCL for an update", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(true)
 
-			testHelper.UpdateService(serviceInstance, updateParams)
+			Expect(broker.UpdateService(serviceInstance, testdrive.WithUpdateParams(updateParams))).To(Succeed())
 
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beUpdatedTerraformHCL)
 			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveUpdatedOutputs)
 		})
 
 		It("uses the updated HCL for a deprovision", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
 
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(true)
 
-			testHelper.Deprovision(serviceInstance)
+			Expect(broker.Deprovision(serviceInstance)).To(Succeed())
 
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beUpdatedTerraformHCL)
 			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveEmptyState)
 		})
 
 		It("uses the updated HCL for unbind", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
-			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance, bindParams)
-			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBindingGUID)).To(beInitialBindingTerraformHCL)
-			Expect(persistedTerraformState(serviceInstance.GUID, serviceBindingGUID)).To(haveInitialBindingOutputs)
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
+			serviceBinding := must(broker.CreateBinding(serviceInstance, testdrive.WithBindingParams(bindParams)))
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBinding.GUID)).To(beInitialBindingTerraformHCL)
+			Expect(persistedTerraformState(serviceInstance.GUID, serviceBinding.GUID)).To(haveInitialBindingOutputs)
 
 			pushUpdatedBrokerpak(true)
 
-			testHelper.DeleteBinding(serviceInstance, serviceBindingGUID)
+			Expect(broker.DeleteBinding(serviceInstance, serviceBinding.GUID)).To(Succeed())
 
-			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBindingGUID)).To(beUpdatedBindingTerraformHCL)
-			Expect(persistedTerraformState(serviceInstance.GUID, serviceBindingGUID)).To(haveEmptyState)
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBinding.GUID)).To(beUpdatedBindingTerraformHCL)
+			Expect(persistedTerraformState(serviceInstance.GUID, serviceBinding.GUID)).To(haveEmptyState)
 		})
 
 		It("uses extra parameters added in the update", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
 
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
 			pushUpdatedBrokerpak(true)
 
-			testHelper.UpdateService(serviceInstance, `{"update_input":"update output value","extra_input":" and extra parameter"}`)
+			Expect(broker.UpdateService(serviceInstance, testdrive.WithUpdateParams(`{"update_input":"update output value","extra_input":" and extra parameter"}`))).To(Succeed())
 
 			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(ContainSubstring(`"value": "update output value and extra parameter"`))
 		})

@@ -9,28 +9,58 @@ import (
 	"time"
 )
 
-type Brokerpak string
+type BuildBrokerpakOption func(*buildBrokerpakCfg)
 
-func BuildBrokerpak(csbPath string, paths ...string) (Brokerpak, error) {
+type buildBrokerpakCfg struct {
+	extrafiles []func(string) error
+	dir        string
+}
+
+func BuildBrokerpak(csbPath, sourcePath string, opts ...BuildBrokerpakOption) (string, error) {
+	var cfg buildBrokerpakCfg
+	for _, o := range opts {
+		o(&cfg)
+	}
+
+	if cfg.dir == "" {
+		bpkDir, err := os.MkdirTemp("", "")
+		if err != nil {
+			return "", err
+		}
+		cfg.dir = bpkDir
+	}
+
+	for _, cb := range cfg.extrafiles {
+		if err := cb(cfg.dir); err != nil {
+			return "", err
+		}
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
-	bpkDir, err := os.MkdirTemp("", "")
-	if err != nil {
-		return "", err
-	}
-
-	cmd := exec.CommandContext(ctx, csbPath, "pak", "build", "--target", "current", filepath.Join(paths...))
-	cmd.Dir = bpkDir
+	cmd := exec.CommandContext(ctx, csbPath, "pak", "build", "--target", "current", sourcePath)
+	cmd.Dir = cfg.dir
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		_ = os.RemoveAll(cfg.dir)
 		return "", fmt.Errorf("error building brokerpak: %w\n\n%s", err, output)
 	}
 
-	return Brokerpak(bpkDir), nil
+	return cfg.dir, nil
 }
 
-func (b Brokerpak) Cleanup() error {
-	return os.RemoveAll(string(b))
+func WithExtraFile(name, contents string) BuildBrokerpakOption {
+	return func(cfg *buildBrokerpakCfg) {
+		cfg.extrafiles = append(cfg.extrafiles, func(dir string) error {
+			return os.WriteFile(filepath.Join(dir, name), []byte(contents), 0666)
+		})
+	}
+}
+
+func WithDirectory(dir string) BuildBrokerpakOption {
+	return func(cfg *buildBrokerpakCfg) {
+		cfg.dir = dir
+	}
 }
