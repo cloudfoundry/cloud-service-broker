@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager"
-
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/internal/steps"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
@@ -93,7 +93,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 
 		terraformInvoker := provider.DefaultInvoker()
 		var mainTf string
-		steps := []func() error{
+		err := steps.Sequentially(
 			func() (errs error) {
 				return terraformInvoker.Import(ctx, newWorkspace, resources)
 			},
@@ -114,14 +114,11 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 				_ = provider.MarkOperationFinished(&deployment, nil)
 				return nil
 			},
-		}
+		)
 
-		for _, step := range steps {
-			if err := step(); err != nil {
-				logger.Error("operation failed", err)
-				_ = provider.MarkOperationFinished(&deployment, err)
-				break
-			}
+		if err != nil {
+			logger.Error("operation failed", err)
+			_ = provider.MarkOperationFinished(&deployment, err)
 		}
 	}()
 
