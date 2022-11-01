@@ -1,0 +1,33 @@
+builds:
+- env:
+  - CGO_ENABLED=0
+  goarch:
+  - amd64
+  goos:
+  - linux
+  - darwin
+archives:
+- name_template: "{{ .ProjectName }}_{{ .Os }}"
+  format: binary
+  wrap_in_directory: false
+  files:
+  - none*
+changelog:
+  sort: asc
+  groups:
+  - title: 'Breaking Changes'
+    regexp: "^.*feat![(\\w)]*:+.*$"
+    order: 0
+  - title: 'Features'
+    regexp: "^.*feat[(\\w)]*:+.*$"
+    order: 1
+  - title: 'Bug fixes'
+    regexp: "^.*fix[(\\w)]*:+.*$"
+    order: 2
+  - title: 'Dependency updates'
+    regexp: "^.*[(deps)][(\\w)]*:+.*$ "
+    order: 3
+  - title: Others
+    order: 999
+checksum:
+  algorithm: sha1
