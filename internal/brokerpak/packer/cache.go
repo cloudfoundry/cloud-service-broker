@@ -8,6 +8,7 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/cloudfoundry/cloud-service-broker/internal/steps"
 	cp "github.com/otiai10/copy"
 )
 
@@ -52,7 +53,7 @@ func getAndCache(getter func(source string, destination string) error, source, d
 		_ = os.RemoveAll(tmpdir)
 	}()
 
-	for _, step := range []func() error{
+	return steps.Sequentially(
 		func() (err error) {
 			tmpdir, err = os.MkdirTemp("", "")
 			return
@@ -66,11 +67,5 @@ func getAndCache(getter func(source string, destination string) error, source, d
 		func() error {
 			return cp.Copy(tmpdir, destination)
 		},
-	} {
-		if err := step(); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	)
 }
