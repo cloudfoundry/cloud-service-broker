@@ -21,7 +21,7 @@ require (
 	github.com/onsi/gomega v1.24.0
 	github.com/otiai10/copy v1.7.0
 	github.com/pborman/uuid v1.2.1
-	github.com/pivotal-cf/brokerapi/v8 v8.2.2
+	github.com/pivotal-cf/brokerapi/v8 v8.2.3
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v1.6.1
