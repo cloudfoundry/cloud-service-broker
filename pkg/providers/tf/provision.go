@@ -93,7 +93,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 
 		terraformInvoker := provider.DefaultInvoker()
 		var mainTf string
-		err := steps.Sequentially(
+		err := steps.RunSequentially(
 			func() (errs error) {
 				return terraformInvoker.Import(ctx, newWorkspace, resources)
 			},

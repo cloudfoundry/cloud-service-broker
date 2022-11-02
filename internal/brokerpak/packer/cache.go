@@ -53,7 +53,7 @@ func getAndCache(getter func(source string, destination string) error, source, d
 		_ = os.RemoveAll(tmpdir)
 	}()
 
-	return steps.Sequentially(
+	return steps.RunSequentially(
 		func() (err error) {
 			tmpdir, err = os.MkdirTemp("", "")
 			return

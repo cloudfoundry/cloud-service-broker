@@ -8,11 +8,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Sequentially", func() {
+var _ = Describe("RunSequentially", func() {
 	It("does the things in sequence", func() {
 		step := 0
 
-		err := steps.Sequentially(
+		err := steps.RunSequentially(
 			func() error {
 				if step != 0 {
 					Fail("not at step 0")
@@ -43,7 +43,7 @@ var _ = Describe("Sequentially", func() {
 	It("returns errors", func() {
 		step := 0
 
-		err := steps.Sequentially(
+		err := steps.RunSequentially(
 			func() error {
 				if step != 0 {
 					Fail("not at step 0")
