@@ -27,7 +27,7 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.13.0
 	github.com/xeipuuv/gojsonschema v1.2.0
-	github.com/zclconf/go-cty v1.11.1
+	github.com/zclconf/go-cty v1.12.0
 	golang.org/x/crypto v0.1.0
 	golang.org/x/net v0.1.0
 	golang.org/x/tools v0.2.0
