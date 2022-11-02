@@ -18,23 +18,23 @@ require (
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.5.0
 	github.com/onsi/ginkgo/v2 v2.4.0
-	github.com/onsi/gomega v1.23.0
+	github.com/onsi/gomega v1.24.0
 	github.com/otiai10/copy v1.7.0
 	github.com/pborman/uuid v1.2.1
-	github.com/pivotal-cf/brokerapi/v8 v8.2.2
+	github.com/pivotal-cf/brokerapi/v8 v8.2.3
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.13.0
 	github.com/xeipuuv/gojsonschema v1.2.0
-	github.com/zclconf/go-cty v1.11.1
+	github.com/zclconf/go-cty v1.12.0
 	golang.org/x/crypto v0.1.0
 	golang.org/x/net v0.1.0
 	golang.org/x/tools v0.2.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.4.3
 	gorm.io/driver/sqlite v1.4.3
-	gorm.io/gorm v1.24.0
+	gorm.io/gorm v1.24.1
 	honnef.co/go/tools v0.3.3
 )
 
