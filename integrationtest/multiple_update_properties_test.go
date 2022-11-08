@@ -1,10 +1,9 @@
 package integrationtest_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
+	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gexec"
 )
 
 var _ = Describe("Multiple Updates to Properties", func() {
@@ -14,54 +13,54 @@ var _ = Describe("Multiple Updates to Properties", func() {
 	)
 
 	var (
-		testHelper *helper.TestHelper
-		session    *Session
+		brokerpak string
+		broker    *testdrive.Broker
 	)
 
 	BeforeEach(func() {
-		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "multiple-update-properties")
-		session = testHelper.StartBroker()
+		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures("multiple-update-properties")))
+		broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter)))
 	})
 
 	AfterEach(func() {
-		session.Terminate().Wait()
+		Expect(broker.Stop()).To(Succeed())
+		cleanup(brokerpak)
 	})
 
 	// This test was added for issue https://www.pivotaltracker.com/story/show/178213626 where a parameter that was
 	// updated would be reverted to the default value in subsequent updates
 	It("persists updated parameters in subsequent updates", func() {
 		By("provisioning with a parameter")
-		serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, `{"beta_input":"foo"}`)
+		serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(`{"beta_input":"foo"}`)))
 
 		By("checking that the parameter value, and the default value are in a binding")
-		_, bindingOutput := testHelper.CreateBinding(serviceInstance)
-		Expect(bindingOutput).To(ContainSubstring(`"bind_output":"default_alpha;foo"`))
+		binding := must(broker.CreateBinding(serviceInstance))
+		Expect(binding.Body).To(ContainSubstring(`"bind_output":"default_alpha;foo"`))
 
 		By("updating both parameters")
-		testHelper.UpdateService(serviceInstance, `{"alpha_input":"foo","beta_input":"bar"}`)
+		Expect(broker.UpdateService(serviceInstance, testdrive.WithUpdateParams(`{"alpha_input":"foo","beta_input":"bar"}`))).To(Succeed())
 
 		By("checking that the parameter values are in a binding")
-		_, bindingOutput = testHelper.CreateBinding(serviceInstance)
-		Expect(bindingOutput).To(ContainSubstring(`"bind_output":"foo;bar"`))
+		binding = must(broker.CreateBinding(serviceInstance))
+		Expect(binding.Body).To(ContainSubstring(`"bind_output":"foo;bar"`))
 
 		By("updating just one parameter")
-		testHelper.UpdateService(serviceInstance, `{"beta_input":"baz"}`)
+		Expect(broker.UpdateService(serviceInstance, testdrive.WithUpdateParams(`{"beta_input":"baz"}`))).To(Succeed())
 
 		By("checking that just one value is updated in a binding")
-		_, bindingOutput = testHelper.CreateBinding(serviceInstance)
-		Expect(bindingOutput).To(ContainSubstring(`"bind_output":"foo;baz"`))
+		binding = must(broker.CreateBinding(serviceInstance))
+		Expect(binding.Body).To(ContainSubstring(`"bind_output":"foo;baz"`))
 
 		By("updating another parameter")
-		testHelper.UpdateService(serviceInstance, `{"alpha_input":"quz"}`)
+		Expect(broker.UpdateService(serviceInstance, testdrive.WithUpdateParams(`{"alpha_input":"quz"}`))).To(Succeed())
 
 		By("checking that both parameters remain updated in a binding")
-		_, bindingOutput = testHelper.CreateBinding(serviceInstance)
-		Expect(bindingOutput).To(ContainSubstring(`"bind_output":"quz;baz"`))
+		binding = must(broker.CreateBinding(serviceInstance))
+		Expect(binding.Body).To(ContainSubstring(`"bind_output":"quz;baz"`))
 
 		By("unsetting parameters")
-		testHelper.UpdateService(serviceInstance, `{"alpha_input":"","beta_input":null}`)
-		_, bindingOutput = testHelper.CreateBinding(serviceInstance)
-		Expect(bindingOutput).To(ContainSubstring(`"bind_output":";is_null"`))
+		Expect(broker.UpdateService(serviceInstance, testdrive.WithUpdateParams(`{"alpha_input":"","beta_input":null}`))).To(Succeed())
+		binding = must(broker.CreateBinding(serviceInstance))
+		Expect(binding.Body).To(ContainSubstring(`"bind_output":";is_null"`))
 	})
 })

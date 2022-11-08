@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
+	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -23,72 +23,72 @@ var _ = Describe("Purge Service Instance", func() {
 
 	It("purges the correct service instance and no others", func() {
 		By("creating a broker with brokerpak")
-		testHelper := helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "purge-service-instance")
-		brokerSession := testHelper.StartBroker()
+		brokerpak := must(testdrive.BuildBrokerpak(csb, fixtures("purge-service-instance")))
+		broker := must(testdrive.StartBroker(csb, brokerpak, database))
 		DeferCleanup(func() {
-			brokerSession.Terminate().Wait()
+			broker.Stop()
+			cleanup(brokerpak)
 		})
 
 		By("creating a service to keep")
-		keepInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
-		keepBinding1GUID, _ := testHelper.CreateBinding(keepInstance, bindParams)
-		keepBinding2GUID, _ := testHelper.CreateBinding(keepInstance, bindParams)
+		keepInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID))
+		keepBinding1 := must(broker.CreateBinding(keepInstance, testdrive.WithBindingParams(bindParams)))
+		keepBinding2 := must(broker.CreateBinding(keepInstance, testdrive.WithBindingParams(bindParams)))
 
 		By("creating a service without bindings to purge")
-		purgeInstanceWithoutBindings := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+		purgeInstanceWithoutBindings := must(broker.Provision(serviceOfferingGUID, servicePlanGUID))
 
 		By("creating a service with bindings to purge")
-		purgeInstanceWithBindings := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
-		purgeBinding1GUID, _ := testHelper.CreateBinding(purgeInstanceWithBindings, bindParams)
-		purgeBinding2GUID, _ := testHelper.CreateBinding(purgeInstanceWithBindings, bindParams)
+		purgeInstanceWithBindings := must(broker.Provision(serviceOfferingGUID, servicePlanGUID))
+		purgeBinding1 := must(broker.CreateBinding(purgeInstanceWithBindings, testdrive.WithBindingParams(bindParams)))
+		purgeBinding2 := must(broker.CreateBinding(purgeInstanceWithBindings, testdrive.WithBindingParams(bindParams)))
 
 		By("stopping the broker")
-		brokerSession.Terminate().Wait()
+		broker.Stop()
 
 		By("purging the service instances")
-		purgeServiceInstance(testHelper, purgeInstanceWithBindings.GUID)
-		purgeServiceInstance(testHelper, purgeInstanceWithoutBindings.GUID)
+		purgeServiceInstance(database, purgeInstanceWithBindings.GUID)
+		purgeServiceInstance(database, purgeInstanceWithoutBindings.GUID)
 
 		By("checking that we purged the service instances")
-		expectServiceInstanceStatus(testHelper, purgeInstanceWithoutBindings.GUID, BeFalse())
-		expectServiceInstanceStatus(testHelper, purgeInstanceWithBindings.GUID, BeFalse())
-		expectServiceBindingStatus(testHelper, purgeInstanceWithBindings.GUID, purgeBinding1GUID, BeFalse())
-		expectServiceBindingStatus(testHelper, purgeInstanceWithBindings.GUID, purgeBinding2GUID, BeFalse())
+		expectServiceInstanceStatus(purgeInstanceWithoutBindings.GUID, BeFalse())
+		expectServiceInstanceStatus(purgeInstanceWithBindings.GUID, BeFalse())
+		expectServiceBindingStatus(purgeInstanceWithBindings.GUID, purgeBinding1.GUID, BeFalse())
+		expectServiceBindingStatus(purgeInstanceWithBindings.GUID, purgeBinding2.GUID, BeFalse())
 
 		By("checking that the other service instance still exists")
-		expectServiceInstanceStatus(testHelper, keepInstance.GUID, BeTrue())
-		expectServiceBindingStatus(testHelper, keepInstance.GUID, keepBinding1GUID, BeTrue())
-		expectServiceBindingStatus(testHelper, keepInstance.GUID, keepBinding2GUID, BeTrue())
+		expectServiceInstanceStatus(keepInstance.GUID, BeTrue())
+		expectServiceBindingStatus(keepInstance.GUID, keepBinding1.GUID, BeTrue())
+		expectServiceBindingStatus(keepInstance.GUID, keepBinding2.GUID, BeTrue())
 	})
 })
 
-func purgeServiceInstance(testHelper *helper.TestHelper, serviceInstanceGUID string) {
+func purgeServiceInstance(database, serviceInstanceGUID string) {
 	cmd := exec.Command(csb, "purge", serviceInstanceGUID)
 	cmd.Env = append(
 		os.Environ(),
 		"DB_TYPE=sqlite3",
-		fmt.Sprintf("DB_PATH=%s", testHelper.DatabaseFile),
+		fmt.Sprintf("DB_PATH=%s", database),
 	)
 	purgeSession, err := Start(cmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).WithOffset(1).NotTo(HaveOccurred())
 	Eventually(purgeSession).WithTimeout(time.Minute).WithOffset(1).Should(Exit(0))
 }
 
-func expectServiceInstanceStatus(testHelper *helper.TestHelper, guid string, match types.GomegaMatcher) {
-	Expect(existsDatabaseEntry(testHelper, &models.ServiceInstanceDetails{}, "id=?", guid)).WithOffset(1).To(match, "service instance details")
-	Expect(existsDatabaseEntry(testHelper, &models.ProvisionRequestDetails{}, "service_instance_id=?", guid)).WithOffset(1).To(match, "provision request details")
-	Expect(existsDatabaseEntry(testHelper, &models.TerraformDeployment{}, "id=?", fmt.Sprintf("tf:%s:", guid))).WithOffset(1).To(match, "terraform deployment")
+func expectServiceInstanceStatus(guid string, match types.GomegaMatcher) {
+	Expect(existsDatabaseEntry(&models.ServiceInstanceDetails{}, "id=?", guid)).WithOffset(1).To(match, "service instance details")
+	Expect(existsDatabaseEntry(&models.ProvisionRequestDetails{}, "service_instance_id=?", guid)).WithOffset(1).To(match, "provision request details")
+	Expect(existsDatabaseEntry(&models.TerraformDeployment{}, "id=?", fmt.Sprintf("tf:%s:", guid))).WithOffset(1).To(match, "terraform deployment")
 }
 
-func expectServiceBindingStatus(testHelper *helper.TestHelper, serviceInstanceGUID, bindingGUID string, match types.GomegaMatcher) {
-	Expect(existsDatabaseEntry(testHelper, &models.BindRequestDetails{}, "service_binding_id=?", bindingGUID)).WithOffset(1).To(match, "bind request details")
-	Expect(existsDatabaseEntry(testHelper, &models.ServiceBindingCredentials{}, "binding_id=?", bindingGUID)).WithOffset(1).To(match, "service binding credentials")
-	Expect(existsDatabaseEntry(testHelper, &models.TerraformDeployment{}, "id=?", fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, bindingGUID))).WithOffset(1).To(match, "terraform deployment")
+func expectServiceBindingStatus(serviceInstanceGUID, bindingGUID string, match types.GomegaMatcher) {
+	Expect(existsDatabaseEntry(&models.BindRequestDetails{}, "service_binding_id=?", bindingGUID)).WithOffset(1).To(match, "bind request details")
+	Expect(existsDatabaseEntry(&models.ServiceBindingCredentials{}, "binding_id=?", bindingGUID)).WithOffset(1).To(match, "service binding credentials")
+	Expect(existsDatabaseEntry(&models.TerraformDeployment{}, "id=?", fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, bindingGUID))).WithOffset(1).To(match, "terraform deployment")
 }
 
-func existsDatabaseEntry[T any, PtrT *T](testHelper *helper.TestHelper, model PtrT, query string, args ...any) bool {
+func existsDatabaseEntry[T any, PtrT *T](model PtrT, query string, args ...any) bool {
 	var count int64
-	Expect(testHelper.DBConn().Model(model).Where(query, args...).Count(&count).Error).NotTo(HaveOccurred())
+	Expect(dbConn.Model(model).Where(query, args...).Count(&count).Error).NotTo(HaveOccurred())
 	return count != 0
 }

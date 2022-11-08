@@ -3,37 +3,40 @@ package integrationtest_test
 import (
 	"encoding/json"
 
-	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
+	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gexec"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
 )
 
 var _ = Describe("Maintenance Info", func() {
 	var (
-		testHelper *helper.TestHelper
-		session    *Session
+		brokerpak string
+		broker    *testdrive.Broker
 	)
 
 	BeforeEach(func() {
-		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "maintenance-info")
+		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures("maintenance-info")))
 	})
 
 	AfterEach(func() {
-		session.Terminate().Wait()
+		Expect(broker.Stop()).To(Succeed())
+		cleanup(brokerpak)
 	})
 
 	Context("Maintenance info", func() {
 		When("TF upgrades are enabled", func() {
 			BeforeEach(func() {
-				session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
+				broker = must(testdrive.StartBroker(
+					csb, brokerpak, database,
+					testdrive.WithOutputs(GinkgoWriter, GinkgoWriter),
+					testdrive.WithEnv("TERRAFORM_UPGRADES_ENABLED=true"),
+				))
 			})
 
 			It("should match the default Terraform version", func() {
-				catalogResponse := testHelper.Client().Catalog(requestID())
+				catalogResponse := broker.Client.Catalog(requestID())
 				Expect(catalogResponse.Error).NotTo(HaveOccurred())
 
 				var catServices apiresponses.CatalogResponse
@@ -50,17 +53,18 @@ var _ = Describe("Maintenance Info", func() {
 
 		When("TF upgrades are disabled", func() {
 			BeforeEach(func() {
-				session = testHelper.StartBroker()
+				broker = must(testdrive.StartBroker(
+					csb, brokerpak, database,
+					testdrive.WithOutputs(GinkgoWriter, GinkgoWriter),
+				))
 			})
 
 			It("should not be set for the plan", func() {
-				catalogResponse := testHelper.Client().Catalog(requestID())
+				catalogResponse := broker.Client.Catalog(requestID())
 
 				Expect(catalogResponse.Error).NotTo(HaveOccurred())
 				Expect(string(catalogResponse.ResponseBody)).ToNot(ContainSubstring(`"maintenance_info"`))
 			})
 		})
-
 	})
-
 })

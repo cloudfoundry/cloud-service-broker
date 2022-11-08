@@ -3,13 +3,11 @@ package integrationtest_test
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
+	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gexec"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
@@ -22,13 +20,13 @@ var _ = Describe("Terraform Upgrade", func() {
 	)
 
 	var (
-		testHelper *helper.TestHelper
-		session    *Session
+		brokerpak string
+		broker    *testdrive.Broker
 	)
 
-	terraformStateOutputValue := func(deploymentID, outputName string, testHelper *helper.TestHelper) any {
+	terraformStateOutputValue := func(deploymentID, outputName string) any {
 		var tfDeploymentReceiver models.TerraformDeployment
-		Expect(testHelper.DBConn().Where("id = ?", deploymentID).First(&tfDeploymentReceiver).Error).NotTo(HaveOccurred())
+		Expect(dbConn.Where("id = ?", deploymentID).First(&tfDeploymentReceiver).Error).NotTo(HaveOccurred())
 		var workspaceReceiver struct {
 			State []byte `json:"tfstate"`
 		}
@@ -45,59 +43,64 @@ var _ = Describe("Terraform Upgrade", func() {
 	}
 
 	instanceTerraformStateVersion := func(serviceInstanceGUID string) string {
-		return terraformStateVersion(fmt.Sprintf("tf:%s:", serviceInstanceGUID), testHelper)
+		return terraformStateVersion(fmt.Sprintf("tf:%s:", serviceInstanceGUID))
 	}
 
 	bindingTerraformStateVersion := func(serviceInstanceGUID, bindingGUID string) string {
-		return terraformStateVersion(fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, bindingGUID), testHelper)
+		return terraformStateVersion(fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, bindingGUID))
 	}
 
 	instanceTerraformStateOutputValue := func(serviceInstanceGUID string) int {
-		val := terraformStateOutputValue(fmt.Sprintf("tf:%s:", serviceInstanceGUID), "provision_output", testHelper)
+		val := terraformStateOutputValue(fmt.Sprintf("tf:%s:", serviceInstanceGUID), "provision_output")
 		return int(val.(float64))
 	}
 
 	bindingTerraformStateOutputValue := func(serviceInstanceGUID, bindingGUID string) int {
-		val := terraformStateOutputValue(fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, bindingGUID), "provision_output", testHelper)
+		val := terraformStateOutputValue(fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, bindingGUID), "provision_output")
 		return int(val.(float64))
 	}
 
 	BeforeEach(func() {
-		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-upgrade")
-		session = testHelper.StartBroker()
+		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures("terraform-upgrade")))
+		broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter)))
 
 		DeferCleanup(func() {
-			session.Terminate().Wait()
+			Expect(broker.Stop()).To(Succeed())
+			cleanup(brokerpak)
 		})
 	})
 
 	Context("TF Upgrades are enabled", func() {
 		It("runs 'terraform apply' at each version in the upgrade path", func() {
 			By("provisioning a service instance at 0.13")
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID))
 			Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal(startingVersion))
 
 			By("creating service bindings")
-			firstBindGUID, _ := testHelper.CreateBinding(serviceInstance)
-			secondBindGUID, _ := testHelper.CreateBinding(serviceInstance)
+			firstBinding := must(broker.CreateBinding(serviceInstance))
+			secondBinding := must(broker.CreateBinding(serviceInstance))
 
 			By("updating the brokerpak and restarting the broker")
-			session.Terminate().Wait()
-			testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-upgrade-updated")
+			Expect(broker.Stop()).To(Succeed())
+			_, err := testdrive.BuildBrokerpak(csb, fixtures("terraform-upgrade-updated"), testdrive.WithDirectory(brokerpak))
+			Expect(err).NotTo(HaveOccurred())
 
-			session = testHelper.StartBroker("TERRAFORM_UPGRADES_ENABLED=true")
+			broker = must(testdrive.StartBroker(
+				csb, brokerpak, database,
+				testdrive.WithEnv("TERRAFORM_UPGRADES_ENABLED=true"),
+				testdrive.WithOutputs(GinkgoWriter, GinkgoWriter),
+			))
 
 			By("validating old state")
 			Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal(startingVersion))
 			Expect(instanceTerraformStateOutputValue(serviceInstance.GUID)).To(BeElementOf(1, 2))
-			Expect(bindingTerraformStateVersion(serviceInstance.GUID, firstBindGUID)).To(Equal(startingVersion))
-			Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, firstBindGUID)).To(BeElementOf(1, 2))
-			Expect(bindingTerraformStateVersion(serviceInstance.GUID, secondBindGUID)).To(Equal(startingVersion))
-			Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, secondBindGUID)).To(BeElementOf(1, 2))
+			Expect(bindingTerraformStateVersion(serviceInstance.GUID, firstBinding.GUID)).To(Equal(startingVersion))
+			Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, firstBinding.GUID)).To(BeElementOf(1, 2))
+			Expect(bindingTerraformStateVersion(serviceInstance.GUID, secondBinding.GUID)).To(Equal(startingVersion))
+			Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, secondBinding.GUID)).To(BeElementOf(1, 2))
 
 			By("running 'cf update-service'")
-			testHelper.UpgradeService(serviceInstance, domain.PreviousValues{PlanID: servicePlanGUID}, domain.MaintenanceInfo{Version: endingVersion})
+			Expect(broker.UpgradeService(serviceInstance, endingVersion, testdrive.WithUpgradePreviousValues(domain.PreviousValues{PlanID: servicePlanGUID}))).To(Succeed())
 
 			By("observing that the instance TF state file has been updated to the latest version")
 			Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal(endingVersion))
@@ -105,35 +108,36 @@ var _ = Describe("Terraform Upgrade", func() {
 			Expect(instanceTerraformStateOutputValue(serviceInstance.GUID)).To(BeElementOf(3, 4))
 
 			By("observing that the binding TF state file has been updated to the latest version")
-			Expect(bindingTerraformStateVersion(serviceInstance.GUID, firstBindGUID)).To(Equal(endingVersion))
-			Expect(bindingTerraformStateVersion(serviceInstance.GUID, secondBindGUID)).To(Equal(endingVersion))
+			Expect(bindingTerraformStateVersion(serviceInstance.GUID, firstBinding.GUID)).To(Equal(endingVersion))
+			Expect(bindingTerraformStateVersion(serviceInstance.GUID, secondBinding.GUID)).To(Equal(endingVersion))
 			By("observing that the binding TF state file has updated output value")
-			Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, firstBindGUID)).To(BeElementOf(3, 4))
-			Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, secondBindGUID)).To(BeElementOf(3, 4))
+			Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, firstBinding.GUID)).To(BeElementOf(3, 4))
+			Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, secondBinding.GUID)).To(BeElementOf(3, 4))
 
 			By("updating the service after the upgrade")
-			testHelper.UpdateService(serviceInstance, `{"alpha_input":"foo"}`, domain.PreviousValues{
-				MaintenanceInfo: &domain.MaintenanceInfo{Version: endingVersion},
-			})
+			Expect(broker.UpdateService(
+				serviceInstance,
+				testdrive.WithUpdateParams(`{"alpha_input":"foo"}`),
+				testdrive.WithUpdatePreviousValues(domain.PreviousValues{MaintenanceInfo: &domain.MaintenanceInfo{Version: endingVersion}}),
+			)).To(Succeed())
 		})
 	})
 
 	Context("TF Upgrades are disabled", func() {
 		It("does not upgrade the instance", func() {
 			By("provisioning a service instance at 0.13")
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID)
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID))
 			Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal(startingVersion))
 
 			By("updating the brokerpak and restarting the broker")
-			session.Terminate().Wait()
-			testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "terraform-upgrade-updated")
-			session = testHelper.StartBroker()
+			Expect(broker.Stop()).To(Succeed())
+			_, err := testdrive.BuildBrokerpak(csb, fixtures("terraform-upgrade-updated"), testdrive.WithDirectory(brokerpak))
+			Expect(err).NotTo(HaveOccurred())
+
+			broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter)))
 
 			By("seeing 'cf update-service' fail")
-			updateResponse := testHelper.Client().Update(serviceInstance.GUID, serviceOfferingGUID, servicePlanGUID, requestID(), nil, domain.PreviousValues{}, nil)
-			Expect(updateResponse.Error).NotTo(HaveOccurred())
-			Expect(updateResponse.StatusCode).To(Equal(http.StatusInternalServerError))
-			Expect(updateResponse.ResponseBody).To(ContainSubstring("terraform version check failed: operation attempted with newer version of Terraform than current state, upgrade the service before retrying operation"))
+			Expect(broker.UpdateService(serviceInstance)).To(MatchError(ContainSubstring("terraform version check failed: operation attempted with newer version of Terraform than current state, upgrade the service before retrying operation")))
 
 			By("observing that the TF version remains the same in the state file")
 			Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal(startingVersion))
@@ -141,9 +145,9 @@ var _ = Describe("Terraform Upgrade", func() {
 	})
 })
 
-func terraformStateVersion(deploymentID string, testHelper *helper.TestHelper) string {
+func terraformStateVersion(deploymentID string) string {
 	var tfDeploymentReceiver models.TerraformDeployment
-	Expect(testHelper.DBConn().Where("id = ?", deploymentID).First(&tfDeploymentReceiver).Error).NotTo(HaveOccurred())
+	Expect(dbConn.Where("id = ?", deploymentID).First(&tfDeploymentReceiver).Error).NotTo(HaveOccurred())
 	var workspaceReceiver struct {
 		State []byte `json:"tfstate"`
 	}

@@ -2,14 +2,11 @@ package integrationtest_test
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/integrationtest/helper"
+	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
-	. "github.com/onsi/gomega/gexec"
 )
 
 var _ = Describe("Database Encryption", func() {
@@ -35,12 +32,12 @@ var _ = Describe("Database Encryption", func() {
 	)
 
 	var (
-		testHelper *helper.TestHelper
-		session    *Session
+		brokerpak string
+		broker    *testdrive.Broker
 	)
 
 	findRecord := func(dest any, query, guid string) {
-		result := testHelper.DBConn().Where(query, guid).First(dest)
+		result := dbConn.Where(query, guid).First(dest)
 		ExpectWithOffset(1, result.Error).NotTo(HaveOccurred())
 		ExpectWithOffset(1, result.RowsAffected).To(Equal(int64(1)))
 	}
@@ -89,46 +86,60 @@ var _ = Describe("Database Encryption", func() {
 
 	expectNoPasswordMetadataToExist := func() {
 		var count int64
-		Expect(testHelper.DBConn().Model(&models.PasswordMetadata{}).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(dbConn.Model(&models.PasswordMetadata{}).Count(&count).Error).NotTo(HaveOccurred())
 		Expect(count).To(BeZero())
 	}
 
 	expectPasswordMetadataToNotExist := func(label string) {
 		var count int64
-		Expect(testHelper.DBConn().Model(&models.PasswordMetadata{}).Where(passwordMetadataQuery, label).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(dbConn.Model(&models.PasswordMetadata{}).Where(passwordMetadataQuery, label).Count(&count).Error).NotTo(HaveOccurred())
 		Expect(count).To(BeZero())
 	}
 
 	expectServiceBindingDetailsToNotExist := func(serviceInstanceGUID string) {
 		var count int64
-		Expect(testHelper.DBConn().Model(&models.ServiceBindingCredentials{}).Where(serviceInstanceFKQuery, serviceInstanceGUID).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(dbConn.Model(&models.ServiceBindingCredentials{}).Where(serviceInstanceFKQuery, serviceInstanceGUID).Count(&count).Error).NotTo(HaveOccurred())
 		Expect(count).To(BeZero())
 	}
 
 	expectBindRequestDetailsToNotExist := func(serviceBindingGUID string) {
 		var count int64
-		Expect(testHelper.DBConn().Model(&models.BindRequestDetails{}).Where(serviceBindingIDQuery, serviceBindingGUID).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(dbConn.Model(&models.BindRequestDetails{}).Where(serviceBindingIDQuery, serviceBindingGUID).Count(&count).Error).NotTo(HaveOccurred())
 		Expect(count).To(BeZero())
 	}
 
 	expectServiceInstanceDetailsToNotExist := func(serviceInstanceGUID string) {
 		var count int64
-		Expect(testHelper.DBConn().Model(&models.ServiceInstanceDetails{}).Where(serviceInstanceIDQuery, serviceInstanceGUID).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(dbConn.Model(&models.ServiceInstanceDetails{}).Where(serviceInstanceIDQuery, serviceInstanceGUID).Count(&count).Error).NotTo(HaveOccurred())
 		Expect(count).To(BeZero())
 	}
 
-	startBrokerSession := func(encryptionEnabled bool, encryptionPasswords string) *Session {
-		return testHelper.StartBrokerSession(
-			fmt.Sprintf("ENCRYPTION_ENABLED=%t", encryptionEnabled),
-			fmt.Sprintf("ENCRYPTION_PASSWORDS=%s", encryptionPasswords),
+	tryStartBroker := func(encryptionEnabled bool, encryptionPasswords string) error {
+		_, err := testdrive.StartBroker(
+			csb,
+			brokerpak,
+			database,
+			testdrive.WithOutputs(GinkgoWriter, GinkgoWriter),
+			testdrive.WithEnv(
+				fmt.Sprintf("ENCRYPTION_ENABLED=%t", encryptionEnabled),
+				fmt.Sprintf("ENCRYPTION_PASSWORDS=%s", encryptionPasswords),
+			),
 		)
+		Expect(err).To(HaveOccurred())
+		return err
 	}
 
-	startBroker := func(encryptionEnabled bool, encryptionPasswords string) *Session {
-		return testHelper.StartBroker(
-			fmt.Sprintf("ENCRYPTION_ENABLED=%t", encryptionEnabled),
-			fmt.Sprintf("ENCRYPTION_PASSWORDS=%s", encryptionPasswords),
-		)
+	startBroker := func(encryptionEnabled bool, encryptionPasswords string) {
+		broker = must(testdrive.StartBroker(
+			csb,
+			brokerpak,
+			database,
+			testdrive.WithOutputs(GinkgoWriter, GinkgoWriter),
+			testdrive.WithEnv(
+				fmt.Sprintf("ENCRYPTION_ENABLED=%t", encryptionEnabled),
+				fmt.Sprintf("ENCRYPTION_PASSWORDS=%s", encryptionPasswords),
+			),
+		))
 	}
 
 	bePlaintextProvisionParams := Equal([]byte(provisionParams))
@@ -154,21 +165,21 @@ var _ = Describe("Database Encryption", func() {
 	)
 
 	BeforeEach(func() {
-		testHelper = helper.New(csb)
-		testHelper.BuildBrokerpak(testHelper.OriginalDir, "fixtures", "database-encryption")
-	})
+		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures("database-encryption")))
 
-	AfterEach(func() {
-		session.Terminate().Wait()
+		DeferCleanup(func() {
+			Expect(broker.Stop()).To(Succeed())
+			cleanup(brokerpak)
+		})
 	})
 
 	When("encryption is turned off", func() {
 		BeforeEach(func() {
-			session = startBroker(false, "")
+			startBroker(false, "")
 		})
 
 		It("stores sensitive fields in plaintext", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
 
 			By("checking the provision fields")
 			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).To(bePlaintextProvisionParams)
@@ -176,13 +187,13 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).To(bePlaintextInstanceTerraformState)
 
 			By("checking the binding fields")
-			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance, bindParams)
-			Expect(persistedBindRequestDetails(serviceBindingGUID)).To(bePlaintextBindParams)
+			serviceBinding := must(broker.CreateBinding(serviceInstance, testdrive.WithBindingParams(bindParams)))
+			Expect(persistedBindRequestDetails(serviceBinding.GUID)).To(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).To(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).To(haveAnyPlaintextBindingTerraformState)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).To(haveAnyPlaintextBindingTerraformState)
 
 			By("checking how update persists service instance fields")
-			testHelper.UpdateService(serviceInstance, updateParams)
+			Expect(broker.UpdateService(serviceInstance, testdrive.WithUpdateParams(updateParams))).To(Succeed())
 			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).To(bePlaintextMergedParams)
 			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).To(Equal([]byte(updateOutput)))
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).To(SatisfyAll(
@@ -192,13 +203,13 @@ var _ = Describe("Database Encryption", func() {
 			))
 
 			By("checking the binding fields after unbind")
-			testHelper.DeleteBinding(serviceInstance, serviceBindingGUID)
+			broker.DeleteBinding(serviceInstance, serviceBinding.GUID)
 			expectServiceBindingDetailsToNotExist(serviceInstance.GUID)
-			expectBindRequestDetailsToNotExist(serviceBindingGUID)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).To(haveAnyPlaintextBindingTerraformState)
+			expectBindRequestDetailsToNotExist(serviceBinding.GUID)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).To(haveAnyPlaintextBindingTerraformState)
 
 			By("checking the service instance fields after deprovision")
-			testHelper.Deprovision(serviceInstance)
+			Expect(broker.Deprovision(serviceInstance)).To(Succeed())
 			expectServiceInstanceDetailsToNotExist(serviceInstance.GUID)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).To(SatisfyAll(
 				ContainSubstring(provisionOutputStateValue),
@@ -211,24 +222,24 @@ var _ = Describe("Database Encryption", func() {
 	When("encryption is turned on", func() {
 		BeforeEach(func() {
 			const encryptionPasswords = `[{"primary":true,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`
-			session = startBroker(true, encryptionPasswords)
+			startBroker(true, encryptionPasswords)
 		})
 
 		It("encrypts sensitive fields", func() {
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
 			By("checking the provision fields")
 			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(haveAnyPlaintextServiceTerraformState)
 
 			By("checking the binding fields")
-			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance, bindParams)
-			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(bePlaintextBindParams)
+			serviceBinding := must(broker.CreateBinding(serviceInstance, testdrive.WithBindingParams(bindParams)))
+			Expect(persistedBindRequestDetails(serviceBinding.GUID)).NotTo(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("checking how update persists service instance fields")
-			testHelper.UpdateService(serviceInstance, updateParams)
+			Expect(broker.UpdateService(serviceInstance, testdrive.WithUpdateParams(updateParams))).To(Succeed())
 			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(Equal(mergedParams))
 			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(Equal(updateOutput))
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(SatisfyAny(
@@ -238,13 +249,13 @@ var _ = Describe("Database Encryption", func() {
 			))
 
 			By("checking the binding fields after unbind")
-			testHelper.DeleteBinding(serviceInstance, serviceBindingGUID)
+			Expect(broker.DeleteBinding(serviceInstance, serviceBinding.GUID)).To(Succeed())
 			expectServiceBindingDetailsToNotExist(serviceInstance.GUID)
-			expectBindRequestDetailsToNotExist(serviceBindingGUID)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
+			expectBindRequestDetailsToNotExist(serviceBinding.GUID)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("ckecking the service instance fields after deprovision")
-			testHelper.Deprovision(serviceInstance)
+			Expect(broker.Deprovision(serviceInstance)).To(Succeed())
 			expectServiceInstanceDetailsToNotExist(serviceInstance.GUID)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(SatisfyAny(
 				ContainSubstring(provisionOutputStateValue),
@@ -257,29 +268,29 @@ var _ = Describe("Database Encryption", func() {
 	When("encryption is turned on after it was previously off", func() {
 		It("it encrypts the database", func() {
 			By("starting the broker without a password")
-			session = startBroker(false, "")
-			Expect(string(session.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
-			Expect(session).To(Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"none"}}`))
+			startBroker(false, "")
+			Expect(broker.Stdout.String()).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
+			Expect(broker.Stdout.String()).To(MatchRegexp(`cloud-service-broker.database-encryption\S*"data":{"primary":"none"}}`))
 
 			By("creating a service instance and checking fields are stored in plain text")
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
 			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).To(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).To(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).To(bePlaintextInstanceTerraformState)
 
 			By("creating a binding and checking the fields are stored in plain text")
-			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance, bindParams)
-			Expect(persistedBindRequestDetails(serviceBindingGUID)).To(bePlaintextBindParams)
+			serviceBinding := must(broker.CreateBinding(serviceInstance, testdrive.WithBindingParams(bindParams)))
+			Expect(persistedBindRequestDetails(serviceBinding.GUID)).To(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).To(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).To(bePlaintextBindingTerraformState)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).To(bePlaintextBindingTerraformState)
 
 			By("restarting the broker with a password")
-			session.Terminate().Wait()
+			Expect(broker.Stop()).To(Succeed())
 			const encryptionPasswords = `[{"primary":true,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`
-			session = startBroker(true, encryptionPasswords)
-			Expect(session.Out).To(SatisfyAll(
-				Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-password","previous-primary":"none"}}`),
-				Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-password"}}`),
+			startBroker(true, encryptionPasswords)
+			Expect(broker.Stdout.String()).To(SatisfyAll(
+				MatchRegexp(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-password","previous-primary":"none"}}`),
+				MatchRegexp(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-password"}}`),
 			))
 
 			By("checking that the password metadata are still stored")
@@ -289,24 +300,24 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(haveAnyPlaintextServiceTerraformState)
-			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(bePlaintextBindParams)
+			Expect(persistedBindRequestDetails(serviceBinding.GUID)).NotTo(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("restarting the broker with the same password")
-			session.Terminate().Wait()
-			session = startBroker(true, encryptionPasswords)
-			Expect(string(session.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
-			Expect(session.Out).To(Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-password"}}`))
+			Expect(broker.Stop()).To(Succeed())
+			startBroker(true, encryptionPasswords)
+			Expect(broker.Stdout.String()).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
+			Expect(broker.Stdout.String()).To(MatchRegexp(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-password"}}`))
 
 			By("checking that the password metadata are still stored")
 			Expect(persistedPasswordMetadata("my-password").Primary).To(BeTrue())
 
 			By("unbinding")
-			testHelper.DeleteBinding(serviceInstance, serviceBindingGUID)
+			Expect(broker.DeleteBinding(serviceInstance, serviceBinding.GUID)).To(Succeed())
 
 			By("deprovisioning")
-			testHelper.Deprovision(serviceInstance)
+			Expect(broker.Deprovision(serviceInstance)).To(Succeed())
 		})
 	})
 
@@ -314,31 +325,31 @@ var _ = Describe("Database Encryption", func() {
 		It("decrypts the database", func() {
 			By("starting the broker with a password")
 			encryptionPasswords := `[{"primary":true,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`
-			session = startBroker(true, encryptionPasswords)
-			Expect(session.Out).To(SatisfyAll(
-				Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-password","previous-primary":"none"}}`),
-				Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-password"}}`),
+			startBroker(true, encryptionPasswords)
+			Expect(broker.Stdout.String()).To(SatisfyAll(
+				MatchRegexp(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-password","previous-primary":"none"}}`),
+				MatchRegexp(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-password"}}`),
 			))
 
 			By("creating a service instance and checking fields are stored encrypted")
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
 			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(haveAnyPlaintextServiceTerraformState)
 
 			By("creating a binding and checking the fields are stored encrypted")
-			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance, bindParams)
-			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(bePlaintextBindParams)
+			serviceBinding := must(broker.CreateBinding(serviceInstance, testdrive.WithBindingParams(bindParams)))
+			Expect(persistedBindRequestDetails(serviceBinding.GUID)).NotTo(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("restarting the broker with encryption turned off")
-			session.Terminate().Wait()
+			Expect(broker.Stop()).To(Succeed())
 			encryptionPasswords = `[{"primary":false,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`
-			session = startBroker(false, encryptionPasswords)
-			Expect(session.Out).To(SatisfyAll(
-				Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"none","previous-primary":"my-password"}}`),
-				Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"none"}}`),
+			startBroker(false, encryptionPasswords)
+			Expect(broker.Stdout.String()).To(SatisfyAll(
+				MatchRegexp(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"none","previous-primary":"my-password"}}`),
+				MatchRegexp(`cloud-service-broker.database-encryption\S*"data":{"primary":"none"}}`),
 			))
 
 			By("checking that the password metadata are still stored")
@@ -348,24 +359,24 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).To(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).To(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).To(bePlaintextInstanceTerraformState)
-			Expect(persistedBindRequestDetails(serviceBindingGUID)).To(bePlaintextBindParams)
+			Expect(persistedBindRequestDetails(serviceBinding.GUID)).To(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).To(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).To(bePlaintextBindingTerraformState)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).To(bePlaintextBindingTerraformState)
 
 			By("restarting the broker with encryption turned off again")
-			session.Terminate().Wait()
-			session = startBroker(false, "")
-			Expect(string(session.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
-			Expect(session.Out).To(Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"none"}}`))
+			Expect(broker.Stop()).To(Succeed())
+			startBroker(false, "")
+			Expect(broker.Stdout.String()).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
+			Expect(broker.Stdout.String()).To(MatchRegexp(`cloud-service-broker.database-encryption\S*"data":{"primary":"none"}}`))
 
 			By("checking that the password metadata are removed")
 			expectNoPasswordMetadataToExist()
 
 			By("unbinding")
-			testHelper.DeleteBinding(serviceInstance, serviceBindingGUID)
+			Expect(broker.DeleteBinding(serviceInstance, serviceBinding.GUID)).To(Succeed())
 
 			By("deprovisioning")
-			testHelper.Deprovision(serviceInstance)
+			Expect(broker.Deprovision(serviceInstance)).To(Succeed())
 		})
 	})
 
@@ -374,36 +385,36 @@ var _ = Describe("Database Encryption", func() {
 			By("starting the broker with a password")
 			firstEncryptionPassword := `{"primary":true,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 			encryptionPasswords := fmt.Sprintf("[%s]", firstEncryptionPassword)
-			session = startBroker(true, encryptionPasswords)
-			Expect(session.Out).To(SatisfyAll(
-				Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-first-password","previous-primary":"none"}}`),
-				Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-first-password"}}`),
+			startBroker(true, encryptionPasswords)
+			Expect(broker.Stdout.String()).To(SatisfyAll(
+				MatchRegexp(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-first-password","previous-primary":"none"}}`),
+				MatchRegexp(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-first-password"}}`),
 			))
 
 			By("checking that the password metadata are stored")
 			Expect(persistedPasswordMetadata("my-first-password").Primary).To(BeTrue())
 
 			By("creating a service instance and checking fields are stored encrypted")
-			serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
 			firstEncryptionPersistedRequestDetails := persistedProvisionRequestDetails(serviceInstance.GUID)
 			firstEncryptionPersistedServiceInstanceDetails := persistedServiceInstanceDetails(serviceInstance.GUID)
 			firstEncryptionpersistedServiceInstanceTerraformWorkspace := persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)
 
 			By("creating a binding and checking the fields are stored in plain text")
-			serviceBindingGUID, _ := testHelper.CreateBinding(serviceInstance, bindParams)
-			firstEncryptionPersistedServiceBindingParams := persistedBindRequestDetails(serviceBindingGUID)
+			serviceBinding := must(broker.CreateBinding(serviceInstance, testdrive.WithBindingParams(bindParams)))
+			firstEncryptionPersistedServiceBindingParams := persistedBindRequestDetails(serviceBinding.GUID)
 			firstEncryptionPersistedServiceBindingDetails := persistedServiceBindingDetails(serviceInstance.GUID)
-			firstEncryptionPersistedServiceBindingTerraformWorkspace := persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)
+			firstEncryptionPersistedServiceBindingTerraformWorkspace := persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)
 
 			By("restarting the broker with a different primary password")
-			session.Terminate().Wait()
+			Expect(broker.Stop()).To(Succeed())
 			firstEncryptionPassword = `{"primary":false,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 			const secondEncryptionPassword = `{"primary":true,"label":"my-second-password","password":{"secret":"verysecretcoolpassword"}}`
 			encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
-			session = startBroker(true, encryptionPasswords)
-			Expect(session.Out).To(SatisfyAll(
-				Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`),
-				Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`),
+			startBroker(true, encryptionPasswords)
+			Expect(broker.Stdout.String()).To(SatisfyAll(
+				MatchRegexp(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`),
+				MatchRegexp(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`),
 			))
 
 			By("checking that the password metadata are stored")
@@ -414,33 +425,33 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(haveAnyPlaintextServiceTerraformState)
-			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(bePlaintextBindParams)
+			Expect(persistedBindRequestDetails(serviceBinding.GUID)).NotTo(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(bePlaintextBindingDetails)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).NotTo(haveAnyPlaintextBindingTerraformState)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).NotTo(haveAnyPlaintextBindingTerraformState)
 
 			By("checking that the previous data is encrypted differently")
 			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(Equal(firstEncryptionPersistedRequestDetails))
 			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(Equal(firstEncryptionPersistedServiceInstanceDetails))
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(Equal(firstEncryptionpersistedServiceInstanceTerraformWorkspace))
-			Expect(persistedBindRequestDetails(serviceBindingGUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingParams))
+			Expect(persistedBindRequestDetails(serviceBinding.GUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingParams))
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingDetails))
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBindingGUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingTerraformWorkspace))
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingTerraformWorkspace))
 
 			By("restarting the broker with the new password only")
-			session.Terminate().Wait()
-			session = startBroker(true, fmt.Sprintf("[%s]", secondEncryptionPassword))
-			Expect(string(session.Out.Contents())).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
-			Expect(session.Out).To(Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`))
+			Expect(broker.Stop()).To(Succeed())
+			startBroker(true, fmt.Sprintf("[%s]", secondEncryptionPassword))
+			Expect(broker.Stdout.String()).NotTo(ContainSubstring(`cloud-service-broker.rotating-database-encryption`))
+			Expect(broker.Stdout.String()).To(MatchRegexp(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`))
 
 			By("checking password metadata are cleaned up")
 			Expect(persistedPasswordMetadata("my-second-password").Primary).To(BeTrue())
 			expectPasswordMetadataToNotExist("my-first-password")
 
 			By("unbinding")
-			testHelper.DeleteBinding(serviceInstance, serviceBindingGUID)
+			Expect(broker.DeleteBinding(serviceInstance, serviceBinding.GUID)).To(Succeed())
 
 			By("deprovisioning")
-			testHelper.Deprovision(serviceInstance)
+			Expect(broker.Deprovision(serviceInstance)).To(Succeed())
 		})
 
 		When("previous password is not provided", func() {
@@ -448,29 +459,25 @@ var _ = Describe("Database Encryption", func() {
 				By("starting the broker with a password")
 				firstEncryptionPassword := `{"primary":true,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 				encryptionPasswords := fmt.Sprintf("[%s]", firstEncryptionPassword)
-				session = startBroker(true, encryptionPasswords)
-				Expect(session.Out).To(SatisfyAll(
-					Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-first-password","previous-primary":"none"}}`),
-					Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-first-password"}}`),
+				startBroker(true, encryptionPasswords)
+				Expect(broker.Stdout.String()).To(SatisfyAll(
+					MatchRegexp(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-first-password","previous-primary":"none"}}`),
+					MatchRegexp(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-first-password"}}`),
 				))
 
 				By("restarting the broker with a different primary password and without the initial password")
-				session.Terminate().Wait()
+				Expect(broker.Stop()).To(Succeed())
 				const secondEncryptionPassword = `{"primary":true,"label":"my-second-password","password":{"secret":"verysecretcoolpassword"}}`
 				encryptionPasswords = fmt.Sprintf("[%s]", secondEncryptionPassword)
-				session = startBrokerSession(true, encryptionPasswords)
-				session.Wait(time.Minute)
-
-				Expect(session.ExitCode()).NotTo(BeZero())
-				Expect(session.Err).To(Say(`the password labelled "my-first-password" must be supplied to decrypt the database`))
+				Expect(tryStartBroker(true, encryptionPasswords)).To(MatchError(ContainSubstring(`the password labelled "my-first-password" must be supplied to decrypt the database`)))
 
 				By("restarting the broker with a different primary password and with the initial password")
 				firstEncryptionPassword = `{"primary":false,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 				encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
-				session = startBroker(true, encryptionPasswords)
-				Expect(session.Out).To(SatisfyAll(
-					Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`),
-					Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`),
+				startBroker(true, encryptionPasswords)
+				Expect(broker.Stdout.String()).To(SatisfyAll(
+					MatchRegexp(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`),
+					MatchRegexp(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`),
 				))
 			})
 		})
@@ -480,47 +487,45 @@ var _ = Describe("Database Encryption", func() {
 				By("starting the broker with a password")
 				firstEncryptionPassword := `{"primary":true,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 				encryptionPasswords := fmt.Sprintf("[%s]", firstEncryptionPassword)
-				session = startBroker(true, encryptionPasswords)
-				Expect(session.Out).To(SatisfyAll(
-					Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-first-password","previous-primary":"none"}}`),
-					Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-first-password"}}`),
+				startBroker(true, encryptionPasswords)
+				Expect(broker.Stdout.String()).To(SatisfyAll(
+					MatchRegexp(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-first-password","previous-primary":"none"}}`),
+					MatchRegexp(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-first-password"}}`),
 				))
 
 				By("creating a service instance and checking fields are stored encrypted")
-				serviceInstance := testHelper.Provision(serviceOfferingGUID, servicePlanGUID, provisionParams)
+				serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
 
 				By("corrupting the DB")
 				var record models.ServiceInstanceDetails
 				findRecord(&record, serviceInstanceIDQuery, serviceInstance.GUID)
 				recordToRecover := record
 				record.OtherDetails = []byte("something-that-cannot-be-decrypted")
-				Expect(testHelper.DBConn().Save(&record).Error).NotTo(HaveOccurred())
+				Expect(dbConn.Save(&record).Error).NotTo(HaveOccurred())
 
 				By("restarting the broker with a different primary password")
-				session.Terminate().Wait()
+				Expect(broker.Stop()).To(Succeed())
 				firstEncryptionPassword = `{"primary":false,"label":"my-first-password","password":{"secret":"supersecretcoolpassword"}}`
 				const secondEncryptionPassword = `{"primary":true,"label":"my-second-password","password":{"secret":"verysecretcoolpassword"}}`
 				encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
-				session = startBrokerSession(true, encryptionPasswords)
-				session.Wait(time.Minute)
-
-				Expect(session.ExitCode()).NotTo(BeZero())
-				Expect(session.Out).To(Say(`cloud-service-broker.refusing to encrypt the database as some fields cannot be successfully read`))
-				Expect(session.Err).To(Say(`decode error for service instance details "\S+": decryption error: cipher: message authentication failed`))
+				Expect(tryStartBroker(true, encryptionPasswords)).To(MatchError(SatisfyAll(
+					MatchRegexp(`cloud-service-broker.refusing to encrypt the database as some fields cannot be successfully read`),
+					MatchRegexp(`decode error for service instance details "\S+": decryption error: cipher: message authentication failed`),
+				)))
 
 				By("checking password metadata are not removed")
 				Expect(persistedPasswordMetadata("my-first-password").Primary).To(BeTrue())
 				Expect(persistedPasswordMetadata("my-second-password").Primary).To(BeFalse())
 
 				By("fixing the corrupted value")
-				Expect(testHelper.DBConn().Save(&recordToRecover).Error).NotTo(HaveOccurred())
+				Expect(dbConn.Save(&recordToRecover).Error).NotTo(HaveOccurred())
 
 				By("restarting the broker with same config")
 				encryptionPasswords = fmt.Sprintf("[%s, %s]", firstEncryptionPassword, secondEncryptionPassword)
-				session = startBroker(true, encryptionPasswords)
-				Expect(session.Out).To(SatisfyAll(
-					Say(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`),
-					Say(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`),
+				startBroker(true, encryptionPasswords)
+				Expect(broker.Stdout.String()).To(SatisfyAll(
+					MatchRegexp(`cloud-service-broker.rotating-database-encryption\S*"data":{"new-primary":"my-second-password","previous-primary":"my-first-password"}}`),
+					MatchRegexp(`cloud-service-broker.database-encryption\S*"data":{"primary":"my-second-password"}}`),
 				))
 
 				By("checking password metadata are updated")
@@ -532,12 +537,12 @@ var _ = Describe("Database Encryption", func() {
 
 	When("encryption is turned on for a corrupted database", func() {
 		BeforeEach(func() {
-			Expect(testHelper.DBConn().Migrator().CreateTable(&models.ServiceInstanceDetails{})).NotTo(HaveOccurred())
-			Expect(testHelper.DBConn().Create(&models.ServiceInstanceDetails{
+			Expect(dbConn.Migrator().CreateTable(&models.ServiceInstanceDetails{})).NotTo(HaveOccurred())
+			Expect(dbConn.Create(&models.ServiceInstanceDetails{
 				ID:           "fake-id-1",
 				OtherDetails: []byte(`{"valid":"json"}`),
 			}).Error).NotTo(HaveOccurred())
-			Expect(testHelper.DBConn().Create(&models.ServiceInstanceDetails{
+			Expect(dbConn.Create(&models.ServiceInstanceDetails{
 				ID:           "fake-id-2",
 				OtherDetails: []byte("not-json"),
 			}).Error).NotTo(HaveOccurred())
@@ -545,14 +550,13 @@ var _ = Describe("Database Encryption", func() {
 
 		It("fails without encrypting anything", func() {
 			const encryptionPasswords = `[{"primary":true,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`
-			session = startBrokerSession(true, encryptionPasswords)
-
-			Eventually(session).WithTimeout(time.Minute).Should(Exit(2))
-			Expect(session.Out).To(Say(`cloud-service-broker.refusing to encrypt the database as some fields cannot be successfully read`))
-			Expect(session.Err).To(Say(`decode error for service instance details "fake-id-2": JSON parse error: invalid character 'o' in literal null \(expecting 'u'\)`))
+			Expect(tryStartBroker(true, encryptionPasswords)).To(MatchError(SatisfyAll(
+				MatchRegexp(`cloud-service-broker.refusing to encrypt the database as some fields cannot be successfully read`),
+				MatchRegexp(`decode error for service instance details "fake-id-2": JSON parse error: invalid character 'o' in literal null \(expecting 'u'\)`),
+			)))
 
 			var receiver models.ServiceInstanceDetails
-			Expect(testHelper.DBConn().Where("id= ? ", "fake-id-1").First(&receiver).Error).NotTo(HaveOccurred())
+			Expect(dbConn.Where("id= ? ", "fake-id-1").First(&receiver).Error).NotTo(HaveOccurred())
 			Expect(receiver.OtherDetails).To(Equal([]byte(`{"valid":"json"}`)))
 		})
 	})
@@ -561,25 +565,25 @@ var _ = Describe("Database Encryption", func() {
 		It("does not clean up the password metadata", func() {
 			By("registering the password")
 			const encryptionPasswords = `[{"label":"obsolete","password":{"secret":"supersecretcoolpassword"}}]`
-			session = startBroker(false, encryptionPasswords)
-			session.Terminate().Wait()
+			startBroker(false, encryptionPasswords)
+			Expect(broker.Stop()).To(Succeed())
 
 			var receiver models.PasswordMetadata
-			Expect(testHelper.DBConn().Where("label=?", "obsolete").First(&receiver).Error).NotTo(HaveOccurred())
+			Expect(dbConn.Where("label=?", "obsolete").First(&receiver).Error).NotTo(HaveOccurred())
 
 			By("corrupting the database")
-			Expect(testHelper.DBConn().Create(&models.ServiceInstanceDetails{
+			Expect(dbConn.Create(&models.ServiceInstanceDetails{
 				ID:           "fake-id-2",
 				OtherDetails: []byte("not-json"),
 			}).Error).NotTo(HaveOccurred())
 
 			By("starting the broker and checking that the password is not removed")
-			session = startBroker(false, "")
+			startBroker(false, "")
 
-			Expect(testHelper.DBConn().Where("label=?", "obsolete").First(&receiver).Error).NotTo(HaveOccurred())
-			Expect(session.Out).To(SatisfyAll(
-				Say(`cloud-service-broker.database-field-error`),
-				Say(`decode error for service instance details \\"fake-id-2\\": JSON parse error: invalid character 'o' in literal null \(expecting 'u'\)`),
+			Expect(dbConn.Where("label=?", "obsolete").First(&receiver).Error).NotTo(HaveOccurred())
+			Expect(broker.Stdout.String()).To(SatisfyAll(
+				ContainSubstring(`cloud-service-broker.database-field-error`),
+				ContainSubstring(`decode error for service instance details \"fake-id-2\": JSON parse error: invalid character 'o' in literal null (expecting 'u')`),
 			))
 		})
 	})
