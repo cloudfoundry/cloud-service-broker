@@ -10,12 +10,10 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/onsi/gomega/gexec"
-	cp "github.com/otiai10/copy"
-
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
-	"github.com/cloudfoundry/cloud-service-broker/utils/freeport"
+	"github.com/onsi/gomega/gexec"
+	cp "github.com/otiai10/copy"
 )
 
 func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.Writer, brokerpakExtraFoldersToCopy ...string) (*TestInstance, error) {
@@ -54,7 +52,7 @@ func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.W
 		return nil, fmt.Errorf("pak build exited with code %d", session.ExitCode())
 	}
 
-	return &TestInstance{brokerBuild: csbBuild, workspace: workingDir, username: "u", password: "p", port: freeport.Must()}, nil
+	return &TestInstance{brokerBuild: csbBuild, workspace: workingDir}, nil
 }
 
 func copyBrokerpakYMLFiles(brokerPackDir string, workingDir string) error {

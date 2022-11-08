@@ -27,5 +27,4 @@ func main() {
 	if _, err := os.Stat(responseTFPath); err == nil {
 		_ = cp.Copy(responseTFPath, path.Join(pwd, "terraform.tfstate"))
 	}
-
 }
