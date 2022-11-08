@@ -7,7 +7,7 @@ builds:
   - linux
   - darwin
 archives:
-- name_template: "{{ .ProjectName }}_{{ .Os }}"
+- name_template: "{{ .ProjectName }}.{{ .Os }}"
   format: binary
   wrap_in_directory: false
   files:
