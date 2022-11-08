@@ -65,3 +65,24 @@ func WithUpdateParams(params any) UpdateOption {
 		return nil
 	}
 }
+
+func WithUpdatePreviousValues(v domain.PreviousValues) UpdateOption {
+	return func(cfg *updateConfig) error {
+		cfg.previousValues = v
+		return nil
+	}
+}
+
+func WithUpdateMaintenanceInfo(m domain.MaintenanceInfo) UpdateOption {
+	return func(cfg *updateConfig) error {
+		cfg.maintenanceInfo = &m
+		return nil
+	}
+}
+
+func WithUpdatePlan(servicePlanGUID string) UpdateOption {
+	return func(cfg *updateConfig) error {
+		cfg.servicePlanGUID = servicePlanGUID
+		return nil
+	}
+}

@@ -11,7 +11,7 @@ type runner struct {
 	cmd    *exec.Cmd
 }
 
-func runCommand(cmd *exec.Cmd) *runner {
+func newCommand(cmd *exec.Cmd) *runner {
 	r := runner{cmd: cmd}
 	if err := cmd.Start(); err != nil {
 		return r.error(err)
