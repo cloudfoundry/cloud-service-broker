@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"gorm.io/gorm"
 )
 
 type ServiceInstanceDetails struct {
@@ -97,6 +98,22 @@ func (s *Storage) GetServiceInstanceDetails(guid string) (ServiceInstanceDetails
 		OperationType:    receiver.OperationType,
 		OperationGUID:    receiver.OperationID,
 	}, nil
+}
+
+func (s *Storage) GetServiceInstancesIDs() (ids []string, err error) {
+	var serviceInstanceDetailsBatch []models.ServiceInstanceDetails
+	result := s.db.FindInBatches(&serviceInstanceDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
+		for _, e := range serviceInstanceDetailsBatch {
+			ids = append(ids, e.ID)
+		}
+
+		return nil
+	})
+	if result.Error != nil {
+		return nil, fmt.Errorf("error reading service instance ids: %w", result.Error)
+	}
+
+	return ids, nil
 }
 
 func (s *Storage) DeleteServiceInstanceDetails(guid string) error {
