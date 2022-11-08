@@ -57,3 +57,10 @@ func WithBindingParams(params any) CreateBindingOption {
 		return nil
 	}
 }
+
+func WithBindingGUID(guid string) CreateBindingOption {
+	return func(cfg *createBindingConfig) error {
+		cfg.guid = guid
+		return nil
+	}
+}

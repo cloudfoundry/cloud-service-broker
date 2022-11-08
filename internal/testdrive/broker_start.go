@@ -79,7 +79,7 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 		Client:   clnt,
 		username: username,
 		password: password,
-		runner:   runCommand(cmd),
+		runner:   newCommand(cmd),
 		Stdout:   &stdout,
 		Stderr:   &stderr,
 	}
@@ -105,5 +105,12 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 func WithEnv(extraEnv ...string) StartBrokerOption {
 	return func(cfg *startBrokerConfig) {
 		cfg.extraEnv = append(cfg.extraEnv, extraEnv...)
+	}
+}
+
+func WithOutputs(stdout, stderr io.Writer) StartBrokerOption {
+	return func(cfg *startBrokerConfig) {
+		cfg.stdout = stdout
+		cfg.stderr = stderr
 	}
 }

@@ -3,11 +3,10 @@ package storage_test
 import (
 	"errors"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("ServiceInstanceDetails", func() {
@@ -140,6 +139,28 @@ var _ = Describe("ServiceInstanceDetails", func() {
 			Entry("empty", []byte(``)),
 			Entry("nil", []byte(nil)),
 		)
+	})
+
+	Describe("GetServiceInstanceIDs", func() {
+		When("database has service instances", func() {
+			BeforeEach(func() {
+				addFakeServiceInstanceDetails()
+			})
+
+			It("reads the ids database", func() {
+				r, err := store.GetServiceInstancesIDs()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(r).To(ConsistOf("fake-id-1", "fake-id-2", "fake-id-3"))
+			})
+		})
+
+		When("nothing is found", func() {
+			It("returns an empty slice", func() {
+				r, err := store.GetServiceInstancesIDs()
+				Expect(err).NotTo(HaveOccurred())
+				Expect(r).To(BeEmpty())
+			})
+		})
 	})
 
 	Describe("ExistsServiceInstanceDetails", func() {

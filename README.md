@@ -64,7 +64,7 @@ It supports the following sub-commands:
 ## Development
 
 `make` is used to orchestrate most development tasks. 
-`go` 1.18 is required to build the broker. If you don't have `go` installed, it is possible to use a `docker` image to build and unit test the broker. If the environment variable `USE_GO_CONTAINERS` exists, `make` will use `docker` versions of the tools so you don't need to have them installed locally. 
+`go` is required to build the broker. If you don't have `go` installed, it is possible to use a `docker` image to build and unit test the broker. If the environment variable `USE_GO_CONTAINERS` exists, `make` will use `docker` versions of the tools so you don't need to have them installed locally. 
 
 There are make targets for most common dev tasks. Running make without a target will list the possible targets.
 
@@ -73,6 +73,23 @@ There are make targets for most common dev tasks. Running make without a target 
 `make build` | builds broker into `./build`
 `make test-units` | runs unit tests
 `make clean` | removes binaries and built broker paks
+
+## Local mimic commands
+The mimic commands look and feel like CloudFoundry CLI commands, but actually run CSB actions locally. They are useful when developing brokerpaks.
+By using the make target `make install` you can install the CSB as a local command called `csb`.
+The mimic commands are:
+- `csb create-service` - creates a service instance
+- `csb services` - lists created service instances
+- `csb update-service` - updates a serivce instance
+- `csb delete-service` - deletes a service instance
+- `csb create-service-key` - creates a "binding" and prints credentials
+- `csb service-keys` - lists service keys
+- `csb delete-service-key` - deletes a "binding"
+
+The mimic commands build a brokerpak, start an ephemeral CSB server and send OSBAPI
+requests to it in a similar style to what CloudFoundry would do. The CSB database
+is stored as a file.
+
 
 ## Bug Reports, Feature Requests, Documentation Requests & Support
 
