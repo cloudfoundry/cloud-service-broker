@@ -25,7 +25,7 @@ changelog:
     regexp: "^.*fix[(\\w)]*:+.*$"
     order: 2
   - title: 'Dependency updates'
-    regexp: "^.*[(deps)][(\\w)]*:+.*$ "
+    regexp: "^.*[(deps)][(\\w)]*:+.*$"
     order: 3
   - title: Others
     order: 999
