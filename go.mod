@@ -28,7 +28,7 @@ require (
 	github.com/zclconf/go-cty v1.12.1
 	golang.org/x/crypto v0.3.0
 	golang.org/x/net v0.2.0
-	golang.org/x/tools v0.2.0
+	golang.org/x/tools v0.3.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.4.4
 	gorm.io/driver/sqlite v1.4.3
@@ -102,7 +102,7 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20220218215828-6cf2b201936e // indirect
-	golang.org/x/mod v0.6.0 // indirect
+	golang.org/x/mod v0.7.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
