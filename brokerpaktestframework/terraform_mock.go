@@ -7,9 +7,10 @@ import (
 	"path"
 	"strings"
 
+	"github.com/onsi/gomega/gexec"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-	"github.com/onsi/gomega/gexec"
 )
 
 func NewTerraformMock(opts ...Option) (TerraformMock, error) {
