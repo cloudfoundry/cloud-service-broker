@@ -199,6 +199,153 @@ can be updated.
 
 To run the integration tests, you can run `make run-integration-tests` in the top level of the brokerpak.
 
+### Terraform tests
+
+Terraform tests are `unit` tests that run with the system's **installed** Terraform binary on the Terraform files directly.
+These tests will download the latest versions of the providers that comply with the restrictions in definition files, 
+usually the `provider.tf` files. They won't look at the service offering definitions (.yml) or the manifest.yml files.
+
+The tests are located in the `terraform-tests/` directory, and they aim to verify that given a set of variables inputs,
+Terraform sends the expected values to the providers. The language used to write the tests is Go and 
+[Ginkgo](https://github.com/onsi/ginkgo) the test framework.
+
+If you look at the S3 test file we see something like this:
+```go
+package terraformtests
+
+var _ = Describe("S3", Label("S3-terraform"), Ordered, func() {
+	var (
+		plan                  tfjson.Plan
+		terraformProvisionDir string
+	)
+
+	requestPayer := "BucketOwner"
+	bucketName := "csb-s3-test"
+	defaultVars := map[string]any{
+		"aws_access_key_id":      awsAccessKeyID,
+		"aws_secret_access_key":  awsSecretAccessKey,
+		"bucket_name":            bucketName,
+		"region":                 "us-west-2",
+		"request_payer":          requestPayer,
+	}
+	
+	BeforeAll(func() {
+		terraformProvisionDir = path.Join(workingDir, "s3/provision") // where the Terraform files are
+		Init(terraformProvisionDir)
+	})
+	
+	Context("with default values", func() {
+        BeforeAll(func() {
+            plan = ShowPlan(terraformProvisionDir, buildVars(defaultVars, map[string]any{}))
+        })
+    
+        It("should create the right resources", func() {
+            Expect(plan.ResourceChanges).To(HaveLen(6))
+    
+            Expect(ResourceChangesTypes(plan)).To(ConsistOf(
+                "aws_s3_bucket",
+                "aws_s3_bucket_acl",
+                "aws_s3_bucket_versioning",
+                "aws_s3_bucket_ownership_controls",
+                "aws_s3_bucket_public_access_block",
+                "aws_s3_bucket_request_payment_configuration", // A new resource was added
+            ))
+        })
+    
+        It("should create an S3 bucket with the correct properties", func() {
+            Expect(AfterValuesForType(plan, "aws_s3_bucket")).To(
+                MatchKeys(IgnoreExtras, Keys{
+                    "bucket":              Equal("csb-s3-test"),
+                    "object_lock_enabled": BeFalse(),
+                    "tags": MatchAllKeys(Keys{
+                        "k1": Equal("v1"),
+                    }),
+                }),
+            )
+        })
+
+        // Check that the new resource will be created with the correct values!!
+        It("should create an S3 bucket request payment configuration resource with the right values", func() {
+            Expect(AfterValuesForType(plan, "aws_s3_bucket_request_payment_configuration")).To(
+                MatchKeys(IgnoreExtras, Keys{
+                    "bucket": Equal(bucketName),
+                    "payer":  Equal(requestPayer),
+                }))
+        })
+    })
+})
+```
+
+Without understanding all the details of the test, you can see the dynamics of the tests. In this way it is easy to test
+the logic applied in your Terraform code in which ternary operations or local variables are usually added. Thanks to
+this type of test, you add an extra layer of security for future changes.
+
+As you see in the next section, you can check that the new Terraform resource added will be created with the
+expected values:
+
+```go
+package terraformtests
+
+var _ = Describe("S3", Label("S3-terraform"), Ordered, func() {
+
+	requestPayer := "BucketOwner"
+	bucketName := "csb-s3-test"
+	defaultVars := map[string]any{
+		"aws_access_key_id":      awsAccessKeyID,
+		"aws_secret_access_key":  awsSecretAccessKey,
+		"bucket_name":            bucketName,
+		"request_payer":          requestPayer,
+	}
+
+	// ...
+
+	Context("with default values", func() {
+		BeforeAll(func() {
+			plan = ShowPlan(terraformProvisionDir, buildVars(defaultVars, map[string]any{}))
+		})
+		// ...
+
+		// Check that the new resource will be created with the correct values!!
+		It("should create an S3 bucket request payment configuration resource with the right values", func() {
+			Expect(AfterValuesForType(plan, "aws_s3_bucket_request_payment_configuration")).To(
+				MatchKeys(IgnoreExtras, Keys{
+					"bucket": Equal(bucketName),
+					"payer":  Equal(requestPayer),
+				}))
+		})
+	})
+})
+```
+You can examine other tests in this folder, and add your examples by analyzing the rest.
+
+To run the Terraform tests, run `make run-terraform-tests` in the top level of the brokerpak, but before doing it,
+you will need to set the environment variables to connect with the provider.
+
+Take a look at the file `terraform_tests_suite_test.go`. You will find the mandatory configuration to run the tests.
+
+```go
+package terraformtests
+
+...
+
+var (
+	...
+	awsSecretAccessKey = os.Getenv("AWS_SECRET_ACCESS_KEY")
+	awsAccessKeyID     = os.Getenv("AWS_ACCESS_KEY_ID")
+	...
+)
+```
+
+Two environment variables are mandatory: `AWS_SECRET_ACCESS_KEY` and `AWS_ACCESS_KEY_ID`, both used to provide the credentials.
+Therefore, the final command you will execute will look like this:
+
+```shell
+AWS_ACCESS_KEY_ID=AKIAZOXYEKVGEOPFJMNB AWS_SECRET_ACCESS_KEY=MaFwk/lSZr7JEU/TzcLgZ3yRh0MmRxeytDqHxCFF make run-terraform-tests
+```
+Obviously, you must replace the values with the credentials associated with your account in AWS.
+For more information see the following link:
+[Terraform: Authentication and Configuration](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication-and-configuration) 
+
 ## Acceptance Tests
 These test are located in the `acceptance_tests` directory. These are end-to-end tests which need to be run
 in coordination with a CloudFoundry environment. They are also written in Go with the Ginkgo framework.
