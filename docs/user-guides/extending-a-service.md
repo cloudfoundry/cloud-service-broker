@@ -336,15 +336,27 @@ var (
 )
 ```
 
-Two environment variables are mandatory: `AWS_SECRET_ACCESS_KEY` and `AWS_ACCESS_KEY_ID`, both used to provide the credentials.
+Two environment variables are mandatory on AWS: `AWS_SECRET_ACCESS_KEY` and `AWS_ACCESS_KEY_ID`, both used to provide the credentials.
 Therefore, the final command you will execute will look like this:
 
 ```shell
-AWS_ACCESS_KEY_ID=AKIAZOXYEKVGEOPFJMNB AWS_SECRET_ACCESS_KEY=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 make run-terraform-tests
+AWS_ACCESS_KEY_ID=<AWS-ACCESS-KEY-ID> AWS_SECRET_ACCESS_KEY=<AWS-SECRET-ACCESS-KEY> make run-terraform-tests
 ```
-Obviously, you must replace the values with the credentials associated with your account in AWS.
+Obviously, you must replace the placeholder with the credentials associated with your account in AWS.
 For more information see the following link:
-[Terraform: Authentication and Configuration](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication-and-configuration) 
+[Terraform: Authentication and Configuration](https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication-and-configuration)
+
+**Note:** Each provider needs its environment variables. To know what they are, you should see the configuration in
+the following file `terraform_tests_suite_test.go`.
+At the time of writing this text, the necessary variables categorized by the provider are as follows:
+* AWS:
+    * AWS_ACCESS_KEY_ID
+    * AWS_SECRET_ACCESS_KEY
+* AZURE:
+    * ARM_CLIENT_ID
+    * ARM_CLIENT_SECRET
+    * ARM_SUBSCRIPTION_ID
+    * ARM_TENANT_ID
 
 ## Acceptance Tests
 These test are located in the `acceptance_tests` directory. These are end-to-end tests which need to be run
