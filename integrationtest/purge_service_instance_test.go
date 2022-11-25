@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -23,7 +24,7 @@ var _ = Describe("Purge Service Instance", func() {
 
 	It("purges the correct service instance and no others", func() {
 		By("creating a broker with brokerpak")
-		brokerpak := must(testdrive.BuildBrokerpak(csb, fixtures("purge-service-instance")))
+		brokerpak := must(packer.BuildBrokerpak(csb, fixtures("purge-service-instance")))
 		broker := must(testdrive.StartBroker(csb, brokerpak, database))
 		DeferCleanup(func() {
 			broker.Stop()
