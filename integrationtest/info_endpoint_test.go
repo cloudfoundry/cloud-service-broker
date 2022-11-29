@@ -18,10 +18,7 @@ var _ = Describe("Info Endpoint", func() {
 
 	BeforeEach(func() {
 		brokerpak := must(packer.BuildBrokerpak(csb, fixtures("info-endpoint")))
-
-		var err error
-		broker, err = testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter))
-		Expect(err).NotTo(HaveOccurred())
+		broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter)))
 
 		DeferCleanup(func() {
 			Expect(broker.Stop()).To(Succeed())
