@@ -3,6 +3,7 @@ package integrationtest_test
 import (
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -15,7 +16,7 @@ var _ = Describe("Service Catalog", func() {
 	var brokerpak string
 
 	BeforeEach(func() {
-		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures("service-catalog")))
+		brokerpak = must(packer.BuildBrokerpak(csb, fixtures("service-catalog")))
 
 		DeferCleanup(func() {
 			cleanup(brokerpak)

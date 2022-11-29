@@ -1,4 +1,5 @@
-package testdrive
+// Package packer is a test helper to build brokerpaks for the integration tests
+package packer
 
 import (
 	"context"

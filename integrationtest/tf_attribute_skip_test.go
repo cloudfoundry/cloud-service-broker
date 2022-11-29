@@ -3,6 +3,7 @@ package integrationtest_test
 import (
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -20,7 +21,7 @@ var _ = Describe("The tf_attribute_skip property", func() {
 	)
 
 	BeforeEach(func() {
-		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures("tf_attribute_skip")))
+		brokerpak = must(packer.BuildBrokerpak(csb, fixtures("tf_attribute_skip")))
 		broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter)))
 
 		DeferCleanup(func() {

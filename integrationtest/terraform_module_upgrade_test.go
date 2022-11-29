@@ -3,6 +3,7 @@ package integrationtest_test
 import (
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -29,7 +30,7 @@ var _ = Describe("Terraform Module Upgrade", func() {
 	}
 
 	BeforeEach(func() {
-		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures("terraform-module-upgrade")))
+		brokerpak = must(packer.BuildBrokerpak(csb, fixtures("terraform-module-upgrade")))
 		broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter)))
 
 		DeferCleanup(func() {
@@ -50,8 +51,7 @@ var _ = Describe("Terraform Module Upgrade", func() {
 
 			By("updating the brokerpak and restarting the broker")
 			Expect(broker.Stop()).To(Succeed())
-			_, err := testdrive.BuildBrokerpak(csb, fixtures("terraform-module-upgrade-updated"), testdrive.WithDirectory(brokerpak))
-			Expect(err).NotTo(HaveOccurred())
+			must(packer.BuildBrokerpak(csb, fixtures("terraform-module-upgrade-updated"), packer.WithDirectory(brokerpak)))
 
 			broker = must(testdrive.StartBroker(
 				csb, brokerpak, database,

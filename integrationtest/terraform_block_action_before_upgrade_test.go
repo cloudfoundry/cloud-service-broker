@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -21,7 +22,7 @@ var _ = Describe("Terraform block action before upgrade", func() {
 	)
 
 	BeforeEach(func() {
-		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures("terraform-block-action-before-upgrade")))
+		brokerpak = must(packer.BuildBrokerpak(csb, fixtures("terraform-block-action-before-upgrade")))
 		broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter)))
 
 		DeferCleanup(func() {
@@ -53,13 +54,12 @@ var _ = Describe("Terraform block action before upgrade", func() {
 
 				By("updating the brokerpak and restarting the broker")
 				Expect(broker.Stop()).To(Succeed())
-				_, err := testdrive.BuildBrokerpak(csb, fixtures("terraform-block-action-before-upgrade-updated"), testdrive.WithDirectory(brokerpak))
-				Expect(err).NotTo(HaveOccurred())
+				must(packer.BuildBrokerpak(csb, fixtures("terraform-block-action-before-upgrade-updated"), packer.WithDirectory(brokerpak)))
 
 				broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter)))
 
 				By("creating a binding")
-				_, err = broker.CreateBinding(serviceInstance)
+				_, err := broker.CreateBinding(serviceInstance)
 				Expect(err).To(MatchError(ContainSubstring("operation attempted with newer version of Terraform than current state, upgrade the service before retrying operation")))
 				Expect(broker.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Succeeded))
 				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))
@@ -79,13 +79,12 @@ var _ = Describe("Terraform block action before upgrade", func() {
 
 				By("updating the brokerpak and restarting the broker")
 				Expect(broker.Stop()).To(Succeed())
-				_, err := testdrive.BuildBrokerpak(csb, fixtures("terraform-block-action-before-upgrade-updated"), testdrive.WithDirectory(brokerpak))
-				Expect(err).NotTo(HaveOccurred())
+				must(packer.BuildBrokerpak(csb, fixtures("terraform-block-action-before-upgrade-updated"), packer.WithDirectory(brokerpak)))
 
 				broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter)))
 
 				By("deleting the instance binding")
-				err = broker.DeleteBinding(serviceInstance, binding.GUID)
+				err := broker.DeleteBinding(serviceInstance, binding.GUID)
 				Expect(err).To(MatchError(ContainSubstring("operation attempted with newer version of Terraform than current state, upgrade the service before retrying operation")))
 				Expect(broker.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Succeeded))
 				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))
@@ -102,13 +101,12 @@ var _ = Describe("Terraform block action before upgrade", func() {
 
 				By("updating the brokerpak and restarting the broker")
 				Expect(broker.Stop()).To(Succeed())
-				_, err := testdrive.BuildBrokerpak(csb, fixtures("terraform-block-action-before-upgrade-updated"), testdrive.WithDirectory(brokerpak))
-				Expect(err).NotTo(HaveOccurred())
+				must(packer.BuildBrokerpak(csb, fixtures("terraform-block-action-before-upgrade-updated"), packer.WithDirectory(brokerpak)))
 
 				broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter)))
 
 				By("deleting the service instance")
-				err = broker.Deprovision(serviceInstance)
+				err := broker.Deprovision(serviceInstance)
 				Expect(err).To(MatchError(ContainSubstring("operation attempted with newer version of Terraform than current state, upgrade the service before retrying operation")))
 				Expect(broker.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Succeeded))
 				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))

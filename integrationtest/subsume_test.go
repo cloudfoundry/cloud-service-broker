@@ -3,6 +3,7 @@ package integrationtest_test
 import (
 	"net/http"
 
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -18,7 +19,7 @@ var _ = Describe("Subsume", func() {
 	)
 
 	BeforeEach(func() {
-		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures("subsume")))
+		brokerpak = must(packer.BuildBrokerpak(csb, fixtures("subsume")))
 		broker = must(testdrive.StartBroker(csb, brokerpak, database))
 
 		DeferCleanup(func() {

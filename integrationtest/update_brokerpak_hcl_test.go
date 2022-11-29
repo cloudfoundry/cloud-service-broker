@@ -3,6 +3,7 @@ package integrationtest_test
 import (
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
@@ -104,13 +105,12 @@ var _ = Describe("Update Brokerpak HCL", func() {
 
 	pushUpdatedBrokerpak := func(updatesEnabled bool) {
 		Expect(broker.Stop()).To(Succeed())
-		_, err := testdrive.BuildBrokerpak(csb, fixtures(updatedBrokerpak), testdrive.WithDirectory(brokerpak))
-		Expect(err).NotTo(HaveOccurred())
+		must(packer.BuildBrokerpak(csb, fixtures(updatedBrokerpak), packer.WithDirectory(brokerpak)))
 		startBroker(updatesEnabled)
 	}
 
 	BeforeEach(func() {
-		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures(initialBrokerpak)))
+		brokerpak = must(packer.BuildBrokerpak(csb, fixtures(initialBrokerpak)))
 
 		DeferCleanup(func() {
 			Expect(broker.Stop()).To(Succeed())
