@@ -1,6 +1,7 @@
 package integrationtest_test
 
 import (
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -18,7 +19,7 @@ var _ = Describe("Multiple Updates to Properties", func() {
 	)
 
 	BeforeEach(func() {
-		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures("multiple-update-properties")))
+		brokerpak = must(packer.BuildBrokerpak(csb, fixtures("multiple-update-properties")))
 		broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter)))
 	})
 

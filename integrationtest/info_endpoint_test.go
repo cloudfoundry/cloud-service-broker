@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	. "github.com/onsi/ginkgo/v2"
@@ -16,11 +17,8 @@ var _ = Describe("Info Endpoint", func() {
 	var broker *testdrive.Broker
 
 	BeforeEach(func() {
-		brokerpak, err := testdrive.BuildBrokerpak(csb, fixtures("info-endpoint"))
-		Expect(err).NotTo(HaveOccurred())
-
-		broker, err = testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter))
-		Expect(err).NotTo(HaveOccurred())
+		brokerpak := must(packer.BuildBrokerpak(csb, fixtures("info-endpoint")))
+		broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter)))
 
 		DeferCleanup(func() {
 			Expect(broker.Stop()).To(Succeed())

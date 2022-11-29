@@ -3,6 +3,7 @@ package integrationtest_test
 import (
 	"encoding/json"
 
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -17,7 +18,7 @@ var _ = Describe("Maintenance Info", func() {
 	)
 
 	BeforeEach(func() {
-		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures("maintenance-info")))
+		brokerpak = must(packer.BuildBrokerpak(csb, fixtures("maintenance-info")))
 	})
 
 	AfterEach(func() {

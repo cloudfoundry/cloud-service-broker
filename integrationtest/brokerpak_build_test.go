@@ -5,8 +5,8 @@ import (
 	"path"
 	"runtime"
 
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
-	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	"github.com/cloudfoundry/cloud-service-broker/internal/zippy"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -15,7 +15,7 @@ import (
 var _ = Describe("Brokerpak Build", func() {
 	When("duplicate plan IDs", func() {
 		It("fails to build", func() {
-			_, err := testdrive.BuildBrokerpak(csb, fixtures("brokerpak-build-duplicate-plan-id"))
+			_, err := packer.BuildBrokerpak(csb, fixtures("brokerpak-build-duplicate-plan-id"))
 			Expect(err).To(MatchError(ContainSubstring(`duplicated value, must be unique: 8b52a460-b246-11eb-a8f5-d349948e2480: services[1].plans[1].ID`)), err.Error())
 		})
 	})
@@ -24,12 +24,11 @@ var _ = Describe("Brokerpak Build", func() {
 		It("includes the files", func() {
 
 			By("building the brokerpak")
-			brokerpak, err := testdrive.BuildBrokerpak(
+			brokerpak := must(packer.BuildBrokerpak(
 				csb,
 				fixtures("brokerpak-build-file-inclusion"),
-				testdrive.WithExtraFile("extrafile.sh", "echo hello"),
-			)
-			Expect(err).NotTo(HaveOccurred())
+				packer.WithExtraFile("extrafile.sh", "echo hello"),
+			))
 			DeferCleanup(func() {
 				cleanup(brokerpak)
 			})

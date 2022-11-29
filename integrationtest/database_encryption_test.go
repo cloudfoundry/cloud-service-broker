@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -165,7 +166,7 @@ var _ = Describe("Database Encryption", func() {
 	)
 
 	BeforeEach(func() {
-		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures("database-encryption")))
+		brokerpak = must(packer.BuildBrokerpak(csb, fixtures("database-encryption")))
 
 		DeferCleanup(func() {
 			Expect(broker.Stop()).To(Succeed())

@@ -1,6 +1,7 @@
 package integrationtest_test
 
 import (
+	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -14,7 +15,7 @@ var _ = Describe("Terraform Rename Provider", func() {
 	)
 
 	BeforeEach(func() {
-		brokerpak = must(testdrive.BuildBrokerpak(csb, fixtures("terraform-rename-provider")))
+		brokerpak = must(packer.BuildBrokerpak(csb, fixtures("terraform-rename-provider")))
 		broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter)))
 
 		DeferCleanup(func() {
@@ -29,8 +30,7 @@ var _ = Describe("Terraform Rename Provider", func() {
 		serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID))
 
 		Expect(broker.Stop()).To(Succeed())
-		_, err := testdrive.BuildBrokerpak(csb, fixtures("terraform-rename-provider"), testdrive.WithDirectory(brokerpak))
-		Expect(err).NotTo(HaveOccurred())
+		must(packer.BuildBrokerpak(csb, fixtures("terraform-rename-provider"), packer.WithDirectory(brokerpak)))
 
 		broker = must(testdrive.StartBroker(
 			csb, brokerpak, database,
@@ -55,8 +55,7 @@ var _ = Describe("Terraform Rename Provider", func() {
 		serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID))
 
 		Expect(broker.Stop()).To(Succeed())
-		_, err := testdrive.BuildBrokerpak(csb, fixtures("terraform-rename-provider"), testdrive.WithDirectory(brokerpak))
-		Expect(err).NotTo(HaveOccurred())
+		must(packer.BuildBrokerpak(csb, fixtures("terraform-rename-provider"), packer.WithDirectory(brokerpak)))
 
 		broker = must(testdrive.StartBroker(
 			csb, brokerpak, database,
@@ -75,8 +74,7 @@ var _ = Describe("Terraform Rename Provider", func() {
 		binding := must(broker.CreateBinding(serviceInstance))
 
 		Expect(broker.Stop()).To(Succeed())
-		_, err := testdrive.BuildBrokerpak(csb, fixtures("terraform-rename-provider"), testdrive.WithDirectory(brokerpak))
-		Expect(err).NotTo(HaveOccurred())
+		must(packer.BuildBrokerpak(csb, fixtures("terraform-rename-provider"), packer.WithDirectory(brokerpak)))
 
 		broker = must(testdrive.StartBroker(
 			csb, brokerpak, database,
