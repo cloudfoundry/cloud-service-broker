@@ -5,7 +5,7 @@ go 1.19
 require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20220620130410-645eee56ecdb
 	code.cloudfoundry.org/lager v2.0.0+incompatible
-	github.com/go-sql-driver/mysql v1.6.0
+	github.com/go-sql-driver/mysql v1.7.0
 	github.com/google/gops v0.3.26
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-getter v1.6.2
