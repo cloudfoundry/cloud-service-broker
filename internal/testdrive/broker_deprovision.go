@@ -14,7 +14,7 @@ func (b *Broker) Deprovision(s ServiceInstance) error {
 	case deprovisionResponse.Error != nil:
 		return deprovisionResponse.Error
 	case deprovisionResponse.StatusCode != http.StatusAccepted:
-		return fmt.Errorf("unexpected status code %d: %s", deprovisionResponse.StatusCode, deprovisionResponse.ResponseBody)
+		return &UnexpectedStatusError{StatusCode: deprovisionResponse.StatusCode, ResponseBody: deprovisionResponse.ResponseBody}
 	}
 
 	state, err := b.LastOperationFinalState(s.GUID)

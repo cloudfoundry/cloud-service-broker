@@ -2,7 +2,6 @@ package testdrive
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
@@ -38,7 +37,7 @@ func (b *Broker) CreateBinding(s ServiceInstance, opts ...CreateBindingOption) (
 	case bindResponse.Error != nil:
 		return ServiceBinding{}, bindResponse.Error
 	case bindResponse.StatusCode != http.StatusCreated:
-		return ServiceBinding{}, fmt.Errorf("unexpected status code %d: %s", bindResponse.StatusCode, bindResponse.ResponseBody)
+		return ServiceBinding{}, &UnexpectedStatusError{StatusCode: bindResponse.StatusCode, ResponseBody: bindResponse.ResponseBody}
 	default:
 		return ServiceBinding{
 			GUID: cfg.guid,

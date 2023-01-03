@@ -38,7 +38,7 @@ func (b *Broker) Provision(serviceOfferingGUID, servicePlanGUID string, opts ...
 			case provisionResponse.Error != nil:
 				return provisionResponse.Error
 			case provisionResponse.StatusCode != http.StatusAccepted:
-				return fmt.Errorf("unexpected status code %d: %s", provisionResponse.StatusCode, provisionResponse.ResponseBody)
+				return &UnexpectedStatusError{StatusCode: provisionResponse.StatusCode, ResponseBody: provisionResponse.ResponseBody}
 			default:
 				return nil
 			}
