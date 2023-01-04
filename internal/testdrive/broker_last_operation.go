@@ -16,7 +16,7 @@ func (b *Broker) LastOperation(serviceInstanceGUID string) (domain.LastOperation
 	case lastOperationResponse.Error != nil:
 		return domain.LastOperation{}, lastOperationResponse.Error
 	case lastOperationResponse.StatusCode != http.StatusOK:
-		return domain.LastOperation{}, fmt.Errorf("expected status code %d: %s", lastOperationResponse.StatusCode, lastOperationResponse.ResponseBody)
+		return domain.LastOperation{}, &UnexpectedStatusError{StatusCode: lastOperationResponse.StatusCode, ResponseBody: lastOperationResponse.ResponseBody}
 	}
 
 	var receiver domain.LastOperation

@@ -34,7 +34,7 @@ func (b *Broker) UpgradeService(s ServiceInstance, version string, opts ...Upgra
 			case updateResponse.Error != nil:
 				return updateResponse.Error
 			case updateResponse.StatusCode != http.StatusAccepted:
-				return fmt.Errorf("unexpected status code %d: %s", updateResponse.StatusCode, updateResponse.ResponseBody)
+				return &UnexpectedStatusError{StatusCode: updateResponse.StatusCode, ResponseBody: updateResponse.ResponseBody}
 			default:
 				return nil
 			}
