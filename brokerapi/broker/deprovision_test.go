@@ -5,12 +5,6 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/lager"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/pivotal-cf/brokerapi/v8/middlewares"
-	"golang.org/x/net/context"
-
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
@@ -19,6 +13,12 @@ import (
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v8/middlewares"
+	"golang.org/x/net/context"
 )
 
 var _ = Describe("Deprovision", func() {
@@ -216,9 +216,9 @@ var _ = Describe("Deprovision", func() {
 			fakeStorage.ExistsServiceInstanceDetailsReturns(false, nil)
 		})
 
-		It("should error", func() {
+		It("should return HTTP 410 as per OSBAPI spec", func() {
 			_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
-			Expect(err).To(MatchError("instance does not exist"))
+			Expect(err).To(MatchError(apiresponses.ErrInstanceDoesNotExist))
 		})
 	})
 
