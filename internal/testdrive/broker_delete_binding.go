@@ -1,7 +1,6 @@
 package testdrive
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/pborman/uuid"
@@ -13,7 +12,7 @@ func (b *Broker) DeleteBinding(s ServiceInstance, serviceBindingGUID string) err
 	case unbindResponse.Error != nil:
 		return unbindResponse.Error
 	case unbindResponse.StatusCode != http.StatusOK:
-		return fmt.Errorf("unexpected status code %d: %s", unbindResponse.StatusCode, unbindResponse.ResponseBody)
+		return &UnexpectedStatusError{StatusCode: unbindResponse.StatusCode, ResponseBody: unbindResponse.ResponseBody}
 	default:
 		return nil
 	}
