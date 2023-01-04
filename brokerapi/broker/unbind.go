@@ -28,16 +28,6 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return domain.UnbindSpec{}, err
 	}
 
-	err = serviceProvider.CheckUpgradeAvailable(generateTFBindingID(instanceID, bindingID))
-	if err != nil {
-		return domain.UnbindSpec{}, fmt.Errorf("failed to unbind: %s", err.Error())
-	}
-
-	plan, err := serviceDefinition.GetPlanByID(details.PlanID)
-	if err != nil {
-		return domain.UnbindSpec{}, err
-	}
-
 	// validate existence of binding
 	exists, err := broker.store.ExistsServiceBindingCredentials(bindingID, instanceID)
 	switch {
@@ -50,7 +40,18 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	// get existing service instance details
 	instance, err := broker.store.GetServiceInstanceDetails(instanceID)
 	if err != nil {
-		return domain.UnbindSpec{}, fmt.Errorf("error retrieving service instance details: %s", err)
+		// in practice, we will not see this error as the binding will likely not exist
+		return domain.UnbindSpec{}, apiresponses.ErrInstanceDoesNotExist
+	}
+
+	err = serviceProvider.CheckUpgradeAvailable(generateTFBindingID(instanceID, bindingID))
+	if err != nil {
+		return domain.UnbindSpec{}, fmt.Errorf("failed to unbind: %s", err.Error())
+	}
+
+	plan, err := serviceDefinition.GetPlanByID(details.PlanID)
+	if err != nil {
+		return domain.UnbindSpec{}, err
 	}
 
 	storedParams, err := broker.store.GetBindRequestDetails(bindingID, instanceID)

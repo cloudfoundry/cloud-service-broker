@@ -4,12 +4,6 @@ import (
 	"errors"
 
 	"code.cloudfoundry.org/lager"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/pivotal-cf/brokerapi/v8/middlewares"
-	"golang.org/x/net/context"
-
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
@@ -17,6 +11,12 @@ import (
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v8/middlewares"
+	"golang.org/x/net/context"
 )
 
 var _ = Describe("LastInstanceOperation", func() {
@@ -284,6 +284,17 @@ var _ = Describe("LastInstanceOperation", func() {
 				Expect(result.State).To(Equal(domain.Succeeded))
 				Expect(result.Description).To(Equal("operation complete"))
 			})
+		})
+	})
+
+	Describe("service instance does not exist", func() {
+		BeforeEach(func() {
+			fakeStorage.GetServiceInstanceDetailsReturns(storage.ServiceInstanceDetails{}, errors.New("does not exist"))
+		})
+
+		It("should return HTTP 410 as per OSBAPI spec", func() {
+			_, err := serviceBroker.LastOperation(context.TODO(), instanceID, pollDetails)
+			Expect(err).To(Equal(apiresponses.ErrInstanceDoesNotExist))
 		})
 	})
 })

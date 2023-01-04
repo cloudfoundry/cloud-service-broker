@@ -228,7 +228,7 @@ var _ = Describe("Bind", func() {
 				fakeStorage.ExistsServiceBindingCredentialsReturns(true, nil)
 			})
 
-			It("should error", func() {
+			It("should return HTTP 409 as per OSBAPI spec", func() {
 				_, err := serviceBroker.Bind(context.TODO(), instanceID, bindingID, bindDetails, false)
 
 				Expect(err).To(MatchError(apiresponses.ErrBindingAlreadyExists))

@@ -7,12 +7,6 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/lager"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/pivotal-cf/brokerapi/v8/middlewares"
-	"github.com/spf13/viper"
-
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
@@ -22,6 +16,12 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v8/middlewares"
+	"github.com/spf13/viper"
 )
 
 var _ = Describe("Provision", func() {
@@ -268,9 +268,9 @@ var _ = Describe("Provision", func() {
 			fakeStorage.ExistsServiceInstanceDetailsReturns(true, nil)
 		})
 
-		It("should error", func() {
+		It("should return HTTP 409 as per OSBAPI spec", func() {
 			_, err := serviceBroker.Provision(context.TODO(), "new-instance", provisionDetails, true)
-			Expect(err).To(MatchError("instance already exists"))
+			Expect(err).To(MatchError(apiresponses.ErrInstanceAlreadyExists))
 		})
 	})
 

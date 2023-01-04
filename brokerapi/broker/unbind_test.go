@@ -210,7 +210,7 @@ var _ = Describe("Unbind", func() {
 	})
 
 	Describe("unsuccessful unbind", func() {
-		When("error validating the service exists", func() {
+		When("service offering does not exists", func() {
 			const nonExistentService = "non-existent-service"
 
 			BeforeEach(func() {
@@ -234,7 +234,7 @@ var _ = Describe("Unbind", func() {
 			})
 		})
 
-		When("error validating the plan exists", func() {
+		When("error validating the service plan exists", func() {
 			const nonExistentPlan = "non-existent-plan"
 
 			BeforeEach(func() {
@@ -253,7 +253,7 @@ var _ = Describe("Unbind", func() {
 				fakeStorage.ExistsServiceBindingCredentialsReturns(false, nil)
 			})
 
-			It("should error", func() {
+			It("should return HTTP 410 as per OSBAPI spec", func() {
 				_, err := serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, false)
 
 				Expect(err).To(MatchError(apiresponses.ErrBindingDoesNotExist))
@@ -277,10 +277,10 @@ var _ = Describe("Unbind", func() {
 				fakeStorage.GetServiceInstanceDetailsReturns(storage.ServiceInstanceDetails{}, fmt.Errorf("error"))
 			})
 
-			It("should error", func() {
+			It("should return HTTP 410 as per OSBAPI spec", func() {
 				_, err := serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, false)
 
-				Expect(err).To(MatchError("error retrieving service instance details: error"))
+				Expect(err).To(MatchError(apiresponses.ErrInstanceDoesNotExist))
 			})
 		})
 
