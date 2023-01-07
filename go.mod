@@ -31,7 +31,7 @@ require (
 	golang.org/x/tools v0.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.4.5
-	gorm.io/driver/sqlite v1.4.3
+	gorm.io/driver/sqlite v1.4.4
 	gorm.io/gorm v1.24.3
 	honnef.co/go/tools v0.3.3
 )
