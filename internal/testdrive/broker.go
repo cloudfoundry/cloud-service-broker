@@ -19,5 +19,10 @@ type Broker struct {
 }
 
 func (b *Broker) Stop() error {
-	return b.runner.stop()
+	switch b.runner {
+	case nil:
+		return nil
+	default:
+		return b.runner.stop()
+	}
 }

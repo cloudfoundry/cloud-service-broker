@@ -35,14 +35,14 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
 )
 
-const manifestName = "manifest.yml"
+const ManifestName = "manifest.yml"
 
 //go:embed "examples/manifest.yml"
 var exampleManifest []byte
 
 // Init initializes a new brokerpak in the given directory with an example manifest and service definition.
 func Init(directory string) error {
-	if err := os.WriteFile(manifestName, exampleManifest, 0600); err != nil {
+	if err := os.WriteFile(ManifestName, exampleManifest, 0600); err != nil {
 		return err
 	}
 
@@ -57,7 +57,7 @@ func Init(directory string) error {
 // manifest.yml file. If the pack was successful, the returned string will be
 // the path to the created brokerpak.
 func Pack(directory string, cachePath string, includeSource, compress bool, target platform.Platform) (string, error) {
-	data, err := os.ReadFile(filepath.Join(directory, manifestName))
+	data, err := os.ReadFile(filepath.Join(directory, ManifestName))
 	if err != nil {
 		return "", err
 	}

@@ -3,22 +3,16 @@ package local
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"text/tabwriter"
-
-	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 )
 
 func Marketplace(cachePath string) {
 	pakDir, cleanup := pack(cachePath)
 	defer cleanup()
 
-	broker, err := testdrive.StartBroker(os.Args[0], pakDir, databasePath(), testdrive.WithOutputs(os.Stdout, os.Stderr))
-	if err != nil {
-		log.Fatal(err)
-	}
+	broker := startBroker(pakDir)
 	defer broker.Stop()
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.StripEscape)

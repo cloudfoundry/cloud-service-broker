@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
@@ -17,17 +18,14 @@ import (
 type StartBrokerOption func(config *startBrokerConfig)
 
 type startBrokerConfig struct {
-	extraEnv []string
-	stdout   io.Writer
-	stderr   io.Writer
+	env    []string
+	stdout io.Writer
+	stderr io.Writer
 }
 
 func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, error) {
-	var (
-		stdout bytes.Buffer
-		stderr bytes.Buffer
-		cfg    startBrokerConfig
-	)
+	var stdout, stderr bytes.Buffer
+	cfg := startBrokerConfig{env: os.Environ()}
 
 	for _, o := range opts {
 		o(&cfg)
@@ -44,7 +42,7 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 	cmd := exec.Command(csbPath, "serve")
 	cmd.Dir = bpk
 	cmd.Env = append(
-		os.Environ(),
+		cfg.env,
 		"CSB_LISTENER_HOST=localhost",
 		"DB_TYPE=sqlite3",
 		fmt.Sprintf("DB_PATH=%s", db),
@@ -52,7 +50,6 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 		fmt.Sprintf("SECURITY_USER_NAME=%s", username),
 		fmt.Sprintf("SECURITY_USER_PASSWORD=%s", password),
 	)
-	cmd.Env = append(cmd.Env, cfg.extraEnv...)
 
 	switch cfg.stdout {
 	case nil:
@@ -104,7 +101,25 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 
 func WithEnv(extraEnv ...string) StartBrokerOption {
 	return func(cfg *startBrokerConfig) {
-		cfg.extraEnv = append(cfg.extraEnv, extraEnv...)
+		cfg.env = append(cfg.env, extraEnv...)
+	}
+}
+
+func WithAllowedEnvs(allowed []string) StartBrokerOption {
+	a := make(map[string]struct{})
+	for _, allow := range allowed {
+		a[allow] = struct{}{}
+	}
+
+	return func(cfg *startBrokerConfig) {
+		var result []string
+		for _, e := range cfg.env {
+			name := varname(e)
+			if _, ok := a[name]; ok || strings.HasPrefix(name, "GSB_") {
+				result = append(result, e)
+			}
+		}
+		cfg.env = result
 	}
 }
 
@@ -113,4 +128,9 @@ func WithOutputs(stdout, stderr io.Writer) StartBrokerOption {
 		cfg.stdout = stdout
 		cfg.stderr = stderr
 	}
+}
+
+func varname(e string) string {
+	parts := strings.SplitN(e, "=", 2)
+	return parts[0]
 }

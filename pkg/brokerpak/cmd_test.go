@@ -85,7 +85,7 @@ func fakeBrokerpak() (string, error) {
 		return "", err
 	}
 
-	if err := stream.Copy(stream.FromBytes(data), stream.ToFile(dir, manifestName)); err != nil {
+	if err := stream.Copy(stream.FromBytes(data), stream.ToFile(dir, ManifestName)); err != nil {
 		return "", err
 	}
 
