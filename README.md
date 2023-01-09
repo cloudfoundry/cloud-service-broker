@@ -88,7 +88,7 @@ The mimic commands are:
 
 The mimic commands build a brokerpak, start an ephemeral CSB server and send OSBAPI
 requests to it in a similar style to what CloudFoundry would do. The CSB database
-is stored as a file.
+is stored as a file called `.csb.db`.
 
 
 ## Bug Reports, Feature Requests, Documentation Requests & Support
