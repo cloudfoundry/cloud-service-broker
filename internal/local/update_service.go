@@ -2,7 +2,6 @@ package local
 
 import (
 	"log"
-	"os"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 )
@@ -13,10 +12,7 @@ func UpdateService(name, plan, params, cachePath string) {
 
 	serviceInstance := lookupServiceInstanceByGUID(nameToID(name))
 
-	broker, err := testdrive.StartBroker(os.Args[0], pakDir, databasePath(), testdrive.WithOutputs(os.Stdout, os.Stderr))
-	if err != nil {
-		log.Fatal(err)
-	}
+	broker := startBroker(pakDir)
 	defer broker.Stop()
 
 	opts := []testdrive.UpdateOption{testdrive.WithUpdateParams(params)}
@@ -25,7 +21,7 @@ func UpdateService(name, plan, params, cachePath string) {
 		opts = append(opts, testdrive.WithUpdatePlan(planID))
 	}
 
-	if err = broker.UpdateService(serviceInstance, opts...); err != nil {
+	if err := broker.UpdateService(serviceInstance, opts...); err != nil {
 		log.Fatal(err)
 	}
 }
