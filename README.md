@@ -98,4 +98,4 @@ is stored as a file called `.csb.db`.
 ## Contributing
 We are always looking for folks to contribute Brokerpaks! 
 
-See [Brokerpak Dissection](https://github.com/cloudfoundry/cloud-service-broker/blob/master/docs/brokerpak-dissection.md) and the [tutorials](https://github.com/cloudfoundry/cloud-service-broker/blob/master/docs/tutorials) for more information on how to contribute to existing brokerpaks and how build one from scratch.
+See [Brokerpak Dissection](https://github.com/cloudfoundry/cloud-service-broker/blob/master/docs/brokerpak-dissection.md) and the [user guides](https://github.com/cloudfoundry/cloud-service-broker/blob/master/docs/user-guides) for more information on how to contribute to existing brokerpaks and how build one from scratch.
