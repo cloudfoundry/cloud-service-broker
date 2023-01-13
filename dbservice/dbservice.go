@@ -33,7 +33,7 @@ func New(logger lager.Logger) *gorm.DB {
 	once.Do(func() {
 		db = SetupDB(logger)
 		if err := RunMigrations(db); err != nil {
-			panic(fmt.Sprintf("Error migrating database: %s", err.Error()))
+			panic(fmt.Sprintf("Error migrating database: %s", err))
 		}
 	})
 	return db
