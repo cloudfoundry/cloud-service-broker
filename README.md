@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![test](https://github.com/cloudfoundry/cloud-service-broker/workflows/test/badge.svg?branch=master)](https://github.com/cloudfoundry/cloud-service-broker/actions?query=workflow%3Atest+branch%3Amaster)
+[![test](https://github.com/cloudfoundry/cloud-service-broker/workflows/test/badge.svg?branch=main)](https://github.com/cloudfoundry/cloud-service-broker/actions?query=workflow%3Atest+branch%3Amain)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cloudfoundry/cloud-service-broker)](https://goreportcard.com/report/github.com/cloudfoundry/cloud-service-broker)
 
 # Cloud Service Broker
@@ -7,13 +7,13 @@ An OSBAPI-compliant service broker that uses Terraform to create service instanc
 
 This is a service broker built to be used with [Cloud Foundry](https://docs.cloudfoundry.org/services/overview.html) and Kubernetes. It adheres to the [Open Service Broker API v2.13](https://github.com/openservicebrokerapi/servicebroker/blob/v2.13/spec.md).
 
-Cloud Service Broker is an fork of the [GCP Service Broker](https://github.com/GoogleCloudPlatform/gcp-service-broker) and uses [Brokerpaks](https://github.com/cloudfoundry/cloud-service-broker/blob/master/docs/brokerpak-intro.md) to expose services. As long as your target cloud has a [Terraform provider](https://www.terraform.io/docs/providers/index.html), services can be provisioned via a common interface using standard `cf` CLI commands.
+Cloud Service Broker is a fork of the [GCP Service Broker](https://github.com/GoogleCloudPlatform/gcp-service-broker) and uses [Brokerpaks](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/brokerpak-intro.md) to expose services. As long as your target cloud has a [Terraform provider](https://www.terraform.io/docs/providers/index.html), services can be provisioned via a common interface using standard `cf` CLI commands.
 
 Some of the benefits over traditional, IaaS-provided, service brokers include: 
 - **Easily extensible and maintainable** Less talking to far-flung teams, more getting work done. 
 - **One common broker for all brokered services.** Cloud Service Broker decouples the service broker functionality from the catalog of services that it exposes.
 - **Credhub integration out-of-the-box** CredHub encrypts and manages all the secrets associated with your usage of cloud services.
-- **Community** When you expose a service via a [Brokerpak](https://github.com/cloudfoundry/cloud-service-broker/blob/master/docs/brokerpak-intro.md), you can make it available to everyone who uses CSB.
+- **Community** When you expose a service via a [Brokerpak](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/brokerpak-intro.md), you can make it available to everyone who uses CSB.
 - **Possible to migrate existing services using [TF Import](https://www.terraform.io/docs/import/index.html)**
 
 ## Architecture
@@ -98,4 +98,4 @@ is stored as a file called `.csb.db`.
 ## Contributing
 We are always looking for folks to contribute Brokerpaks! 
 
-See [Brokerpak Dissection](https://github.com/cloudfoundry/cloud-service-broker/blob/master/docs/brokerpak-dissection.md) and the [user guides](https://github.com/cloudfoundry/cloud-service-broker/blob/master/docs/user-guides) for more information on how to contribute to existing brokerpaks and how build one from scratch.
+See [Brokerpak Dissection](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/brokerpak-dissection.md) and the [user guides](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/user-guides) for more information on how to contribute to existing brokerpaks and how build one from scratch.
