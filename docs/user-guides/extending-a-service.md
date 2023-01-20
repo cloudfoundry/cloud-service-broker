@@ -357,6 +357,9 @@ At the time of writing this text, the necessary variables categorized by the pro
     * ARM_CLIENT_SECRET
     * ARM_SUBSCRIPTION_ID
     * ARM_TENANT_ID
+* GCP:
+    * GOOGLE_CREDENTIALS
+    * GOOGLE_PROJECT
 
 ## Acceptance Tests
 These test are located in the `acceptance_tests` directory. These are end-to-end tests which need to be run
