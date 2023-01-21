@@ -7,7 +7,7 @@ Improve your developer experience through examples and valuable tips that make y
 * Familiarity with the command line.
 * Install the latest [Go version](https://go.dev/).
 * Install the shell extension [direnv](https://direnv.net/).
-* Set environment variables. See [Necessary environment variables section](#Necessary environment variables).
+* Set environment variables. See [Necessary environment variables section](#necessary-environment-variables).
 
 
 ### Local Development Experience
@@ -209,7 +209,7 @@ If you do not set the environment variables necessary for the selected provider,
 2023/01/16 21:40:21 unexpected status code 500: {"description":"1 error(s) occurred: couldn't compute the value for \"aws_secret_access_key\", template: \"${config(\\\"aws.secret_access_key\\\")}\", config: missing config value aws.secret_access_key"}
 ```
 
-Check the environment variables [section](#Necessary environment variables) to know the names of the variables.
+Check the environment variables [section](#necessary-environment-variables) to know the names of the variables.
 
 
 ##### Check the created service
@@ -393,7 +393,7 @@ O rows
 ```
 
 Remember that you previously got the service instance ID by executing the SQL
-[command](#Identify the service in the AWS console) in the section "Identify the service in the AWS console". 
+[command](#identify-the-service-in-the-aws-console) in the section "Identify the service in the AWS console". 
 
 ### Necessary environment variables
 
