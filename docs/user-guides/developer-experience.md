@@ -310,6 +310,7 @@ accepts 1 arg(s), received 0
 ##### Identify the service on the AWS console
 
 Well, you probably are asking yourself, how to identify your service in the AWS console.
+
 The local development uses an SQLite database stored in the root of the project of the brokerpak you are using.
 If you navigate to the root folder of the `csb-brokerpak-aws` project, you will see a file called `.csb.db`.
 
@@ -325,7 +326,7 @@ id                                  ,bucket_name                             ,se
 ```
 
 You can navigate to the S3 console and search your bucket by name `csb-6d792d62-7563-6b65-742e-2e2e2e2e2e2e`.
-You will see on the `Properties` tab that Bucket Versioning is Enabled.
+You will see on the `Properties` tab, that Bucket Versioning is Enabled.
 
 
 ##### Create a service key
@@ -347,7 +348,7 @@ csb create-service-key my-bucket my-first-key
 Service Key: {"credentials":{"access_key_id":"<YOU WILL SEE YOUR ACCESS KEY HERE>","arn":"arn:aws:s3:::csb-6d792d62-7563-6b65-742e-2e2e2e2e2e2e","bucket_domain_name":"csb-6d792d62-7563-6b65-742e-2e2e2e2e2e2e.s3.amazonaws.com","bucket_name":"csb-6d792d62-7563-6b65-742e-2e2e2e2e2e2e","region":"us-west-2","secret_access_key":"<YOU WILL SEE YOUR SECRET ACCESS KEY HERE>"}}
 ```
 
-Remember you can see the result stored in the database by executing:
+You can always see the result stored in the database by executing:
 
 ```sql
 select
@@ -377,7 +378,7 @@ my-first-key
 
 ##### Delete your service key
 
-In the same way, you created the service key, you can delete it. 
+In the same way you created the service key, you can delete it. 
 
 Check the help to know the expected parameters: 
 
@@ -411,7 +412,7 @@ csb delete-service-key my-bucket my-first-key
 
 ##### Delete your service
 
-Finally, try deleting the created service, in other words, delete your bucket by running the command:
+Finally, try deleting the created service. In other words, delete your bucket by running the command:
 
 ```shell
 csb delete-service my-bucket
@@ -433,7 +434,7 @@ O rows
 ```
 
 Remember that you previously got the service instance ID by executing the SQL
-[command](#identify-the-service-in-the-aws-console) in the section "Identify the service in the AWS console". 
+[command](#identify-the-service-in-the-aws-console) in the section **Identify the service in the AWS console**. 
 
 ### Necessary environment variables
 
