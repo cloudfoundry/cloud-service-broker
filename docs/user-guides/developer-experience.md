@@ -307,7 +307,7 @@ accepts 1 arg(s), received 0
 
 ```
 
-###### Identify the service in the AWS console
+##### Identify the service in the AWS console
 
 Well, you probably are asking yourself, how to identify your service in the AWS console.
 The local development uses an SQLite database stored in the root of the project of the brokerpak you are using.
