@@ -246,7 +246,7 @@ my-bucket  csb-aws-s3-bucket  default
 
 The executed command shows you the bucket `my-bucket` you created in the previous step.
 
-Next step: you can modify the service `my-bucket` and continue with your learning path.
+You can modify the service `my-bucket` and continue with your learning path.
 
 ##### Update your service
 
