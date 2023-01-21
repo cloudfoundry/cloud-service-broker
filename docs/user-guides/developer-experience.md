@@ -42,7 +42,7 @@ After installing the CSB binary, you will be ready to advance to the next step.
 
 ##### Check the installation
 
-Explore the available commands using the command `help`.
+Explore the available commands using the command `csb help`.
 
 ```shell
 {▸} ~/workspace/csb/cloud-service-broker on main ✓ csb help              
@@ -80,7 +80,7 @@ Use "cloud-service-broker [command] --help" for more information about a command
 
 ```
 
-Or check the installed version:
+Or check the installed version by running `csb version`:
 ```shell
 {▸} ~/workspace/csb/cloud-service-broker on main ✓ csb version
 v0.14.0-1b000966
@@ -102,6 +102,11 @@ You can also check the brokerpaks developed by the CSB team:
 * [Brokerpak for Azure](https://github.com/cloudfoundry/csb-brokerpak-azure)
 
 Clone the brokerpak for AWS and navigate to the root of the project:
+
+```shell
+cd .. && git clone git@github.com:cloudfoundry/csb-brokerpak-aws.git && cd csb-brokerpak-aws
+```
+
 ```shell
 {▸} ~/workspace/csb/cloud-service-broker on main ✓ cd .. && git clone git@github.com:cloudfoundry/csb-brokerpak-aws.git && cd csb-brokerpak-aws
 ...
@@ -125,6 +130,10 @@ the different services, the path for the cache, etc.
 #### Check the available services
 
 You can check the available services by executing the next command:
+
+```shell
+csb marketplace
+```
 
 ```shell
 {▸} ~/workspace/csb/csb-brokerpak-aws on main ✓ csb marketplace        
@@ -191,6 +200,11 @@ You have to select the service offering, the plan, and write a name for your ser
 default values associated with the plan you have selected, use the -c option to add extra parameters.
 
 Run the following command to create an S3 Bucket using the default plan and default values:
+
+```shell
+csb create-service csb-aws-s3-bucket default my-bucket 
+```
+
 ```shell
 {▪} ~/workspace/csb/csb-brokerpak-aws on main ✓ csb create-service csb-aws-s3-bucket default my-bucket         
 .........
@@ -215,6 +229,10 @@ Check the environment variables [section](#necessary-environment-variables) to k
 ##### Check the created service
 
 You can see the created service by running the command:
+
+```shell
+csb services
+```
 
 ```shell
 {▸} ~/workspace/csb/csb-brokerpak-aws on main ✓ csb services                                          
@@ -254,6 +272,10 @@ the value for the `enable_versioning` property is false because it is the defaul
 > The environment variable called `GSB_SERVICE_CSB_AWS_S3_BUCKET_PLANS` defines an array of plans for AWS S3.
 
 You can enable this functionality by running the command:
+
+```shell
+csb update-service my-bucket -c '{"enable_versioning": true}'
+```
 
 ```shell
 {▪} ~/workspace/csb/csb-brokerpak-aws on main ✓ csb update-service my-bucket -c '{"enable_versioning": true}'
@@ -315,6 +337,10 @@ From the point of view of the Open Service Broker API, a service key represents 
 In other words, you can create the necessary credentials to connect with your service by running the command:
 
 ```shell
+csb create-service-key my-bucket my-first-key
+```
+
+```shell
 {▸} ~/workspace/csb/csb-brokerpak-aws on main ✓ csb create-service-key my-bucket my-first-key         
 ...
 ...
@@ -337,6 +363,10 @@ id,    binding_details
 ##### List your service keys 
 
 You can list the service keys associated with your service by running the command:
+
+```shell
+csb service-keys my-bucket 
+```
 
 ```shell
 {▸} ~/workspace/csb/csb-brokerpak-aws on main ✓ csb service-keys my-bucket  
@@ -369,13 +399,23 @@ accepts 2 arg(s), received 0
 And now, delete your key by executing the command:
 
 ```shell
+csb delete-service-key my-bucket my-first-key
+```
+
+```shell
 {▸} ~/workspace/csb/csb-brokerpak-aws on main ✓ csb delete-service-key my-bucket my-first-key
-....
+...
+...
+...
 ```
 
 ##### Delete your service
 
 Finally, try deleting the created service, in other words, delete your bucket by running the command:
+
+```shell
+csb delete-service my-bucket
+```
 
 ```shell
 {▸} ~/workspace/csb/csb-brokerpak-aws on main ✓ csb delete-service my-bucket
