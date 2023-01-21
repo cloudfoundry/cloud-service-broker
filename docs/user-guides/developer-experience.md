@@ -434,7 +434,7 @@ O rows
 ```
 
 Remember that you previously got the service instance ID by executing the SQL
-[command](#identify-the-service-in-the-aws-console) in the section **Identify the service in the AWS console**. 
+[command](#identify-the-service-on-the-aws-console) in the section **Identify the service in the AWS console**.
 
 ### Necessary environment variables
 
