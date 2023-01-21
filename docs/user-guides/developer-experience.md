@@ -27,14 +27,14 @@ Make sure you have an up-to-date version of Go installed, then run the following
 
 The next command will build the CSB, and install it in your local machine with the name `csb`.
   ```shell
-  {▸} ~/workspace/csb/cloud-service-broker on extensibility ✓ make install
+  {▸} ~/workspace/csb/cloud-service-broker on main ✓ make install
   go build -o csb -ldflags "-X github.com/cloudfoundry/cloud-service-broker/utils.Version=v0.14.0-1b000966"
   mv csb /usr/local/bin/csb
   ```
 If you do not have the latest version of Go, you will get an error similar to this:
 
   ```shell
-  {▪} ~/workspace/csb/cloud-service-broker on extensibility ✓ make install
+  {▪} ~/workspace/csb/cloud-service-broker on main ✓ make install
   Go version does not match: expected: go1.19.5, got go1.18.2
   make: *** [Makefile:45: deps-go-binary] Error 1
   ```
@@ -45,7 +45,7 @@ After installing the CSB binary, you will be ready to advance to the next step.
 Explore the available commands using the command `help`.
 
 ```shell
-{▸} ~/workspace/csb/cloud-service-broker on extensibility ✓ csb help              
+{▸} ~/workspace/csb/cloud-service-broker on main ✓ csb help              
 An OSB compatible service broker for that leverages Terraform for service brokering
 
 Usage:
@@ -82,7 +82,7 @@ Use "cloud-service-broker [command] --help" for more information about a command
 
 Or check the installed version:
 ```shell
-{▸} ~/workspace/csb/cloud-service-broker on extensibility ✓ csb version
+{▸} ~/workspace/csb/cloud-service-broker on main ✓ csb version
 v0.14.0-1b000966
 ```
 
@@ -103,7 +103,7 @@ You can also check the brokerpaks developed by the CSB team:
 
 Clone the brokerpak for AWS and navigate to the root of the project:
 ```shell
-{▸} ~/workspace/csb/cloud-service-broker on extensibility ✓ cd .. && git clone git@github.com:cloudfoundry/csb-brokerpak-aws.git && cd csb-brokerpak-aws
+{▸} ~/workspace/csb/cloud-service-broker on main ✓ cd .. && git clone git@github.com:cloudfoundry/csb-brokerpak-aws.git && cd csb-brokerpak-aws
 ...
 ...
 direnv: error ~/workspace/csb/csb-brokerpak-aws/.envrc is blocked. Run `direnv allow` to approve its content
