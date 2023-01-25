@@ -1,16 +1,16 @@
 package cmd
 
 import (
+	"log"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/local"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 func init() {
-	var (
-		params string
-		plan   string
-	)
+	var params, plan, service, example string
+	var all bool
 
 	marketplaceCmd := &cobra.Command{
 		Use:   "marketplace",
@@ -97,4 +97,35 @@ func init() {
 		},
 	}
 	rootCmd.AddCommand(deleteServiceKeyCmd)
+
+	listExamplesCmd := &cobra.Command{
+		Use:   "examples",
+		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list example tests",
+		Args:  cobra.ExactArgs(0),
+		Run: func(cmd *cobra.Command, args []string) {
+			local.ListExamples(viper.GetString(pakCachePath))
+		},
+	}
+	rootCmd.AddCommand(listExamplesCmd)
+
+	const (
+		serviceFlag = "service-name"
+		exampleFlag = "example-name"
+		allFlag     = "all"
+	)
+	runExamplesCmd := &cobra.Command{
+		Use:   "run-examples",
+		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: run example tests",
+		Args:  cobra.ExactArgs(0),
+		Run: func(cmd *cobra.Command, args []string) {
+			if !all && service == "" && example == "" {
+				log.Fatalln("specify --service-name and/or --example-name, or --all to run all the tests")
+			}
+			local.RunExamples(service, example, viper.GetString(pakCachePath))
+		},
+	}
+	runExamplesCmd.Flags().StringVarP(&service, serviceFlag, "s", "", "service offering name")
+	runExamplesCmd.Flags().StringVarP(&example, exampleFlag, "e", "", "example test name")
+	runExamplesCmd.Flags().BoolVarP(&all, allFlag, "a", false, "run all tests")
+	rootCmd.AddCommand(runExamplesCmd)
 }

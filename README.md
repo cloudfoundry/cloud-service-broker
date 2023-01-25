@@ -90,6 +90,10 @@ The mimic commands build a brokerpak, start an ephemeral CSB server and send OSB
 requests to it in a similar style to what CloudFoundry would do. The CSB database
 is stored as a file called `.csb.db`.
 
+Additionally, there are commands which use the same framework to run the example tests. These are:
+- `csb examples` - list the example tests
+- `csb run-examples` - runs the specified example tests
+
 
 ## Bug Reports, Feature Requests, Documentation Requests & Support
 
