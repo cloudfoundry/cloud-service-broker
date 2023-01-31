@@ -326,29 +326,49 @@ To test out the Brokerpak:
 1. Build the Brokerpak: `cloud-service-broker pak build`
    Note that to build the Brokerpak you will need a CSB binary that works on your system (e.g Mac),
    which may be different to the CSB binary that you push to Cloud Foundry (Linux).
-   
-1. Push the broker: `cf push -f cf-manifest.yml`
-   1. The push step will fail becase we haven't provided values for `DB_HOST`, `DB_USERNAME` and `DB_PASSWORD` variables.
-      - If your Cloudfoundry instance already provides a database service you can bind to:
-         1. Run: `cf bind-service cloud-service-broker-tutorial <your-database-service-name>`
-            Example: `cf bind-service cloud-service-broker-tutorial csb-sql`
-         1. Restage the app: `cf restage cloud-service-broker-tutorial`
-      - If you need to set this variables manually, use the `cf push --vars-file` or `cf push --var` flags instead:
-         1. `cf push -f cf-manifest.yml --var DB_HOST <db-host> --var DB_USERNAME <db-username> --var DB_PASSWORD <db-password>`
 
-1. The following command requires `SECURITY_USER_NAME` and `SECURITY_USER_PASSWORD` variables to be set:
-   1. Set SECURITY_USER_NAME: `cf set-env cloud-service-broker-tutorial SECURITY_USER_NAME <username>`
-   1. Set SECURITY_USER_PASSWORD: `cf set-env cloud-service-broker-tutorial SECURITY_USER_PASSWORD <password>`
-   1. Restage the app: `cf restage cloud-service-broker-tutorial`
-   1. Obtain the <app URL>: `cf app cloud-service-broker-tutorial`
-   1. Register the broker: `cf create-service-broker mybroker <username> <password> https://<app URL>`
+1. Push and set credentials:
+   - **If you want to add all environment variables and credentials in a single step, use the commands below. Otherwise, skip this bullet and follow the step by step explanation below.**
+   ```
+   cf push -f cf-manifest.yml --no-start
+   cf bind-service cloud-service-broker-tutorial <your-database-service-name>
+   cf set-env cloud-service-broker-tutorial SECURITY_USER_NAME <username>
+   cf set-env cloud-service-broker-tutorial SECURITY_USER_PASSWORD <password>
+   cf set-env cloud-service-broker-tutorial AWS_ACCESS_KEY_ID <your-aws-id>
+   cf set-env cloud-service-broker-tutorial AWS_SECRET_ACCESS_KEY <your-aws-pass>
+   cf set-env cloud-service-broker-tutorial AWS_VPC_ID <your-vpc-id>
+   cf start cloud-service-broker-tutorial
 
-1. The following command requires `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_VPC_ID` variables to be set:
-   1. Set AWS_ACCESS_KEY_ID: `cf set-env cloud-service-broker-tutorial AWS_ACCESS_KEY_ID <your-aws-id>`
-   1. Set AWS_SECRET_ACCESS_KEY: `cf set-env cloud-service-broker-tutorial AWS_SECRET_ACCESS_KEY <your-aws-pass>`
-   1. Set AWS_VPC_ID: `cf set-env cloud-service-broker-tutorial AWS_VPC_ID <your-vpc-id>`
-   1. Restage the app: `cf restage cloud-service-broker-tutorial`
-   1. Make the services available: `cf enable-service-access aws-mysql-tutorial`
+   cf app cloud-service-broker-tutorial
+   cf create-service-broker mybroker <username> <password> https://<app URL>
+   cf enable-service-access aws-mysql-tutorial
+   ```
+
+   - **Step by step explanation** *Skip this if you added all environment variables and credentials in a single step as described in the bullet above
+      1. Push the broker: `cf push -f cf-manifest.yml`
+        1. The push step will fail becase we haven't provided values for `DB_HOST`, `DB_USERNAME` and `DB_PASSWORD` variables.
+           - If your Cloudfoundry instance already provides a database service you can bind to:
+              1. Run: `cf bind-service cloud-service-broker-tutorial <your-database-service-name>`
+                 Example: `cf bind-service cloud-service-broker-tutorial csb-sql`
+              1. Restage the app: `cf restage cloud-service-broker-tutorial`
+           - If you need to set this variables manually, use the `cf push --vars-file` or `cf push --var` flags instead:
+              1. `cf push -f cf-manifest.yml --var DB_HOST <db-host> --var DB_USERNAME <db-username> --var DB_PASSWORD <db-password>`
+
+     1. The following command requires `SECURITY_USER_NAME` and `SECURITY_USER_PASSWORD` variables to be set:
+        1. Set SECURITY_USER_NAME: `cf set-env cloud-service-broker-tutorial SECURITY_USER_NAME <username>`
+        1. Set SECURITY_USER_PASSWORD: `cf set-env cloud-service-broker-tutorial SECURITY_USER_PASSWORD <password>`
+        1. Restage the app: `cf restage cloud-service-broker-tutorial`
+        1. Obtain the <app URL>: `cf app cloud-service-broker-tutorial`
+        1. Register the broker: `cf create-service-broker mybroker <username> <password> https://<app URL>`
+
+     1. The following command requires `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_VPC_ID` variables to be set:
+        1. Set AWS_ACCESS_KEY_ID: `cf set-env cloud-service-broker-tutorial AWS_ACCESS_KEY_ID <your-aws-id>`
+        1. Set AWS_SECRET_ACCESS_KEY: `cf set-env cloud-service-broker-tutorial AWS_SECRET_ACCESS_KEY <your-aws-pass>`
+        1. Set AWS_VPC_ID: `cf set-env cloud-service-broker-tutorial AWS_VPC_ID <your-vpc-id>`
+        1. Restage the app: `cf restage cloud-service-broker-tutorial`
+        1. Make the services available: `cf enable-service-access aws-mysql-tutorial`
+
+**Continue running the following steps**
 
 1. Check that you can see the new service: `cf marketplace`
 
@@ -369,7 +389,9 @@ The VPC is usually created when Cloudfoundry is deployed. If you don't know what
 
 #### Service instance is not working and I can't delete it
 
-If you forgot to pass some of the variables at the right time the service might become unuseable and even reject any delete attempts: `cf delete-service mydb`. **Beware! The following command can leave dangling resources in your IAAS if used incorrectly. Only use this if you know no IAAS resources were created.**
+If you forgot to pass some of the variables at the right time the service might become unusable and even reject any delete attempts: `cf delete-service mydb`. You can delete all information held by Cloud Foundry about the service instance by executing the following command.
+
+**Beware! The following command can leave dangling resources in your IAAS if used incorrectly. Only use this if you know no IAAS resources were created.**
 
 `cf purge-service-instance mydb`
 
