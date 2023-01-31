@@ -15,6 +15,13 @@ In order to complete this tutorial, you will need:
 - A MySQL instance accessible from a Cloud Foundry app, to act as the state store
 - A development environment with the ability to create files and run commands
 
+### AWS Permissions required to follow this guide
+
+Where you willing to create a separate IAM account for this tutorial, these are the required permissions:
+- AmazonEC2ReadOnlyAccess
+- AmazonRDSFullAccess
+
+
 ## Provisioning and Binding
 
 In CloudFoundry, services have a lifecycle. This is specified in the Open Service Broker API. There are two phases:
@@ -290,6 +297,10 @@ This YAML should be placed into the file `cf-manifest.yml` at the top level of t
 
 You will need to provide credentials for a MySQL database that the CSB can store state in, credentials
 for AWS and a username and password for the broker itself.
+To that goal, you have several options (this tutorial uses option 2):
+1. Hardcode the values inside `cf-manifest.yml` (not recommended)
+1. Provide the values using `cf set-env` once the app has been pushed
+1. Use `cf push --var-file` or `cf push --var` to provide these values at push time
 
 Your directory should now look like:
 ```console
@@ -315,12 +326,49 @@ To test out the Brokerpak:
 1. Build the Brokerpak: `cloud-service-broker pak build`
    Note that to build the Brokerpak you will need a CSB binary that works on your system (e.g Mac),
    which may be different to the CSB binary that you push to Cloud Foundry (Linux).
-   
-1. Push the broker: `cf push -f cf-manifest.yml`
 
-1. Register the broker: `cf create-service-broker mybroker <username> <password> https://<app URL>`
+1. Push and set credentials:
+   - **If you want to add all environment variables and credentials in a single step, use the commands below. Otherwise, skip this bullet and follow the step by step explanation below.**
+   ```
+   cf push -f cf-manifest.yml --no-start
+   cf bind-service cloud-service-broker-tutorial <your-database-service-name>
+   cf set-env cloud-service-broker-tutorial SECURITY_USER_NAME <username>
+   cf set-env cloud-service-broker-tutorial SECURITY_USER_PASSWORD <password>
+   cf set-env cloud-service-broker-tutorial AWS_ACCESS_KEY_ID <your-aws-id>
+   cf set-env cloud-service-broker-tutorial AWS_SECRET_ACCESS_KEY <your-aws-pass>
+   cf set-env cloud-service-broker-tutorial AWS_VPC_ID <your-vpc-id>
+   cf start cloud-service-broker-tutorial
 
-1. Make the services available: `cf enable-service-access aws-mysql-tutorial`
+   cf app cloud-service-broker-tutorial
+   cf create-service-broker mybroker <username> <password> https://<app URL>
+   cf enable-service-access aws-mysql-tutorial
+   ```
+
+   - **Step by step explanation** *Skip this if you added all environment variables and credentials in a single step as described in the bullet above
+      1. Push the broker: `cf push -f cf-manifest.yml`
+        1. The push step will fail becase we haven't provided values for `DB_HOST`, `DB_USERNAME` and `DB_PASSWORD` variables.
+           - If your Cloudfoundry instance already provides a database service you can bind to:
+              1. Run: `cf bind-service cloud-service-broker-tutorial <your-database-service-name>`
+                 Example: `cf bind-service cloud-service-broker-tutorial csb-sql`
+              1. Restage the app: `cf restage cloud-service-broker-tutorial`
+           - If you need to set this variables manually, use the `cf push --vars-file` or `cf push --var` flags instead:
+              1. `cf push -f cf-manifest.yml --var DB_HOST <db-host> --var DB_USERNAME <db-username> --var DB_PASSWORD <db-password>`
+
+     1. The following command requires `SECURITY_USER_NAME` and `SECURITY_USER_PASSWORD` variables to be set:
+        1. Set SECURITY_USER_NAME: `cf set-env cloud-service-broker-tutorial SECURITY_USER_NAME <username>`
+        1. Set SECURITY_USER_PASSWORD: `cf set-env cloud-service-broker-tutorial SECURITY_USER_PASSWORD <password>`
+        1. Restage the app: `cf restage cloud-service-broker-tutorial`
+        1. Obtain the <app URL>: `cf app cloud-service-broker-tutorial`
+        1. Register the broker: `cf create-service-broker mybroker <username> <password> https://<app URL>`
+
+     1. The following command requires `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_VPC_ID` variables to be set:
+        1. Set AWS_ACCESS_KEY_ID: `cf set-env cloud-service-broker-tutorial AWS_ACCESS_KEY_ID <your-aws-id>`
+        1. Set AWS_SECRET_ACCESS_KEY: `cf set-env cloud-service-broker-tutorial AWS_SECRET_ACCESS_KEY <your-aws-pass>`
+        1. Set AWS_VPC_ID: `cf set-env cloud-service-broker-tutorial AWS_VPC_ID <your-vpc-id>`
+        1. Restage the app: `cf restage cloud-service-broker-tutorial`
+        1. Make the services available: `cf enable-service-access aws-mysql-tutorial`
+
+**Continue running the following steps**
 
 1. Check that you can see the new service: `cf marketplace`
 
@@ -332,6 +380,20 @@ To confirm which one it is, you can get the GUID of the service instance
 ```shell
 cf delete-service mydb -f
 ```
+
+### Troubleshooting
+
+#### Where can I find AWS_VPC_ID?
+
+The VPC is usually created when Cloudfoundry is deployed. If you don't know what your `AWS_VPC_ID` should be, ask your infrastructure operator (the one who set up Cloudfoundry) for this value.
+
+#### Service instance is not working and I can't delete it
+
+If you forgot to pass some of the variables at the right time the service might become unusable and even reject any delete attempts: `cf delete-service mydb`. You can delete all information held by Cloud Foundry about the service instance by executing the following command.
+
+**Beware! The following command can leave dangling resources in your IAAS if used incorrectly. Only use this if you know no IAAS resources were created.**
+
+`cf purge-service-instance mydb`
 
 ## Adding the Ability to Bind
 A database is only useful if you can connect to it. We saw in the Terraform files above that our MySQL is
@@ -528,6 +590,16 @@ Now it’s time to build and test it out:
 1. Build the Brokerpak: `cloud-service-broker pak build`
 
 1. Push the broker: `cf push -f cf-manifest.yml`
+   1. Since we have pushed the APP again, the variables we set before have been overriden.
+   1. If you provided database variables manually in the previous section, add them again at push time.
+      **Ignore this step if you did bind a database service instead.**
+      - `cf push -f cf-manifest.yml --var DB_HOST <db-host> --var DB_USERNAME <db-username> --var DB_PASSWORD <db-password>`
+   1. Set SECURITY_USER_NAME: `cf set-env cloud-service-broker-tutorial SECURITY_USER_NAME <username>`
+   1. Set SECURITY_USER_PASSWORD: `cf set-env cloud-service-broker-tutorial SECURITY_USER_PASSWORD <password>`
+   1. Set AWS_ACCESS_KEY_ID: `cf set-env cloud-service-broker-tutorial AWS_ACCESS_KEY_ID <your-aws-id>`
+   1. Set AWS_SECRET_ACCESS_KEY: `cf set-env cloud-service-broker-tutorial AWS_SECRET_ACCESS_KEY <your-aws-pass>`
+   1. Set AWS_VPC_ID: `cf set-env cloud-service-broker-tutorial AWS_VPC_ID <your-vpc-id>`
+   1. Restage the app: `cf restage cloud-service-broker-tutorial`
 
 1. Create a service: `cf create-service aws-mysql-tutorial basic mydb`
    (note, the service broker should still be registered and the service access enabled from the previous steps)
