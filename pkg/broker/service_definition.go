@@ -21,14 +21,15 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/spf13/viper"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/toggles"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/spf13/viper"
 )
 
 var enableCatalogSchemas = toggles.Features.Toggle("enable-catalog-schemas", false, `Enable generating JSONSchema for the service catalog.`)
@@ -67,6 +68,12 @@ type ServiceDefinition struct {
 
 	// IsBuiltin is true if the service is built-in to the platform.
 	IsBuiltin bool
+}
+
+type separateOutputs struct {
+	scalars map[string]any
+	arrays  map[string][]any
+	objects map[string]map[string]any
 }
 
 var _ validation.Validatable = (*ServiceDefinition)(nil)
@@ -455,6 +462,7 @@ func (svc *ServiceDefinition) UpdateVariables(instanceID string, details parampa
 // 5. Default variables (in `bind_input_variables`).
 func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDetails, bindingID string, details paramparser.BindDetails, plan *ServicePlan, originatingIdentity map[string]any) (*varcontext.VarContext, error) {
 	// The namespaces of these values roughly align with the OSB spec.
+	outputs := sortOutputs(instance.Outputs)
 	constants := map[string]any{
 		"request.x_broker_api_originating_identity": originatingIdentity,
 
@@ -473,8 +481,10 @@ func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDeta
 		"request.plan_properties": plan.GetServiceProperties(),
 
 		// specified by the existing instance
-		"instance.name":    instance.Name,
-		"instance.details": instance.Outputs,
+		"instance.name":            instance.Name,
+		"instance.details":         outputs.scalars,
+		"instance.details.arrays":  outputs.arrays,
+		"instance.details.objects": outputs.objects,
 	}
 
 	builder := varcontext.Builder().
@@ -486,6 +496,25 @@ func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDeta
 		MergeDefaultWithEval(svc.BindComputedVariables)
 
 	return buildAndValidate(builder, svc.BindInputVariables)
+}
+
+func sortOutputs(outputs storage.JSONObject) separateOutputs {
+
+	scalarOutputs := map[string]any{}
+	arrayOutputs := map[string][]any{}
+	objectOutputs := map[string]map[string]any{}
+
+	for k, v := range outputs {
+		switch val := v.(type) {
+		case []any:
+			arrayOutputs[k] = val
+		case map[string]any:
+			objectOutputs[k] = val
+		default:
+			scalarOutputs[k] = v
+		}
+	}
+	return separateOutputs{scalars: scalarOutputs, arrays: arrayOutputs, objects: objectOutputs}
 }
 
 // buildAndValidate builds the varcontext and if it's valid validates the

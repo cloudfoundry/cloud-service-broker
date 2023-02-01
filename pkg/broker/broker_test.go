@@ -21,12 +21,13 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/spf13/viper"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/spf13/viper"
 )
 
 func ExampleServiceDefinition_UserDefinedPlansProperty() {
@@ -694,75 +695,16 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 }
 
 func TestServiceDefinition_BindVariables(t *testing.T) {
-	service := ServiceDefinition{
-		ID:   "00000000-0000-0000-0000-000000000000",
-		Name: "left-handed-smoke-sifter",
-		Plans: []ServicePlan{
-			{
-				ServicePlan: domain.ServicePlan{
-					ID:   "builtin-plan",
-					Name: "Builtin!",
-				},
-				ServiceProperties: map[string]any{
-					"service-property": "operator-set",
-				},
-			},
-		},
-		BindInputVariables: []BrokerVariable{
-			{
-				FieldName: "location",
-				Type:      JSONTypeString,
-				Default:   "us",
-			},
-			{
-				FieldName: "name",
-				Type:      JSONTypeString,
-				Default:   "name-${location}",
-				Constraints: validation.NewConstraintBuilder().
-					MaxLength(30).
-					Build(),
-			},
-		},
-		BindComputedVariables: []varcontext.DefaultVariable{
-			{
-				Name:      "location",
-				Default:   "${str.truncate(10, location)}",
-				Overwrite: true,
-			},
-			{
-				Name:      "instance-foo",
-				Default:   `${instance.details["foo"]}`,
-				Overwrite: true,
-			},
-			{
-				Name:      "service-prop",
-				Default:   `${request.plan_properties["service-property"]}`,
-				Overwrite: true,
-			},
-			{
-				Name:      "osb_context",
-				Default:   `${json.marshal(request.context)}`,
-				Overwrite: true,
-				Type:      "object",
-			},
-			{
-				Name:      "originatingIdentity",
-				Default:   `${json.marshal(request.x_broker_api_originating_identity)}`,
-				Overwrite: true,
-				Type:      "object",
-			},
-		},
-	}
-
 	cases := map[string]struct {
-		UserParams          string
-		DefaultOverride     string
-		BindOverrides       map[string]any
-		ExpectedError       error
-		ExpectedContext     map[string]any
-		InstanceVars        map[string]any
-		RawContext          string
-		OriginatingIdentity map[string]any
+		UserParams                string
+		DefaultOverride           string
+		BindOverrides             map[string]any
+		ExpectedError             error
+		ExpectedContext           map[string]any
+		InstanceVars              map[string]any
+		RawContext                string
+		OriginatingIdentity       map[string]any
+		ServiceDefinitionOverride *ServiceDefinition
 	}{
 		"empty": {
 			UserParams:   "",
@@ -893,19 +835,77 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 				"originatingIdentity": map[string]any{},
 			},
 		},
+		"instance variables may contain arrays": {
+			InstanceVars: map[string]any{
+				"string_value": "test string",
+				"array_value":  []any{"one", "two", "three"},
+			},
+			ServiceDefinitionOverride: serviceDefinitionWithComputedVariables([]varcontext.DefaultVariable{
+				{
+					Name:      "use_string_value",
+					Default:   `${instance.details["string_value"]}`,
+					Overwrite: true,
+					Type:      "string",
+				},
+				{
+					Name:      "use_array_value",
+					Default:   `${instance.details.arrays["array_value"]}`,
+					Overwrite: true,
+					Type:      "array",
+				},
+			}),
+			ExpectedContext: map[string]any{
+				"location":         "us",
+				"name":             "name-us",
+				"use_array_value":  []any{"one", "two", "three"},
+				"use_string_value": "test string",
+			},
+		},
+		"instance variables may contain objects": {
+			InstanceVars: map[string]any{
+				"string_value": "test string",
+				"object_value": map[string]any{"key1": "value1", "key2": "value2"},
+			},
+			ServiceDefinitionOverride: serviceDefinitionWithComputedVariables([]varcontext.DefaultVariable{
+				{
+					Name:      "use_string_value",
+					Default:   `${instance.details["string_value"]}`,
+					Overwrite: true,
+					Type:      "string",
+				},
+				{
+					Name:      "use_object_value",
+					Default:   `${instance.details.objects["object_value"]}`,
+					Overwrite: true,
+					Type:      "object",
+				},
+			}),
+			ExpectedContext: map[string]any{
+				"location":         "us",
+				"name":             "name-us",
+				"use_object_value": map[string]any{"key1": "value1", "key2": "value2"},
+				"use_string_value": "test string",
+			},
+		},
 	}
 
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			viper.Set(service.BindDefaultOverrideProperty(), tc.DefaultOverride)
+			var testService *ServiceDefinition
+			if tc.ServiceDefinitionOverride != nil {
+				testService = tc.ServiceDefinitionOverride
+			} else {
+				testService = defaultServiceDefinition()
+			}
+			viper.Set(testService.BindDefaultOverrideProperty(), tc.DefaultOverride)
 			defer viper.Reset()
 
 			details := domain.BindDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
 			parsedDetails, _ := paramparser.ParseBindDetails(details)
 			instance := storage.ServiceInstanceDetails{Outputs: tc.InstanceVars}
 
-			service.Plans[0].BindOverrides = tc.BindOverrides
-			vars, err := service.BindVariables(instance, "binding-id-here", parsedDetails, &service.Plans[0], tc.OriginatingIdentity)
+			testService.Plans[0].BindOverrides = tc.BindOverrides
+			vars, err := testService.BindVariables(instance, "binding-id-here", parsedDetails, &testService.Plans[0], tc.OriginatingIdentity)
 
 			expectError(t, tc.ExpectedError, err)
 
@@ -914,6 +914,74 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 			}
 		})
 	}
+}
+
+func defaultServiceDefinition() *ServiceDefinition {
+	return &ServiceDefinition{
+		ID:   "00000000-0000-0000-0000-000000000000",
+		Name: "left-handed-smoke-sifter",
+		Plans: []ServicePlan{
+			{
+				ServicePlan: domain.ServicePlan{
+					ID:   "builtin-plan",
+					Name: "Builtin!",
+				},
+				ServiceProperties: map[string]any{
+					"service-property": "operator-set",
+				},
+			},
+		},
+		BindInputVariables: []BrokerVariable{
+			{
+				FieldName: "location",
+				Type:      JSONTypeString,
+				Default:   "us",
+			},
+			{
+				FieldName: "name",
+				Type:      JSONTypeString,
+				Default:   "name-${location}",
+				Constraints: validation.NewConstraintBuilder().
+					MaxLength(30).
+					Build(),
+			},
+		},
+		BindComputedVariables: []varcontext.DefaultVariable{
+			{
+				Name:      "location",
+				Default:   "${str.truncate(10, location)}",
+				Overwrite: true,
+			},
+			{
+				Name:      "instance-foo",
+				Default:   `${instance.details["foo"]}`,
+				Overwrite: true,
+			},
+			{
+				Name:      "service-prop",
+				Default:   `${request.plan_properties["service-property"]}`,
+				Overwrite: true,
+			},
+			{
+				Name:      "osb_context",
+				Default:   `${json.marshal(request.context)}`,
+				Overwrite: true,
+				Type:      "object",
+			},
+			{
+				Name:      "originatingIdentity",
+				Default:   `${json.marshal(request.x_broker_api_originating_identity)}`,
+				Overwrite: true,
+				Type:      "object",
+			},
+		},
+	}
+}
+
+func serviceDefinitionWithComputedVariables(variables []varcontext.DefaultVariable) *ServiceDefinition {
+	result := defaultServiceDefinition()
+	result.BindComputedVariables = variables
+	return result
 }
 
 func TestServiceDefinition_createSchemas(t *testing.T) {
