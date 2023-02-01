@@ -6,8 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
-	"text/tabwriter"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
 )
@@ -24,15 +22,11 @@ func ListExamples(cachePath string) {
 		log.Fatal(err)
 	}
 
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.StripEscape)
-	_, _ = fmt.Fprintln(w)
-	_, _ = fmt.Fprintln(w, "Example Name\tService Offering Name")
-	_, _ = fmt.Fprintln(w, "------------\t---------------------")
+	tp := newTablePrinter("Example Name", "Service Offering Name")
 	for _, e := range examples {
-		_, _ = fmt.Fprintf(w, "%s\t%s\n", e.Name, e.ServiceName)
+		tp.row(e.Name, e.ServiceName)
 	}
-	_, _ = fmt.Fprintln(w)
-	_ = w.Flush()
+	tp.print()
 }
 
 func listExamples(port int) ([]client.CompleteServiceExample, error) {
