@@ -75,7 +75,7 @@ func (broker *ServiceBroker) updateStateOnOperationCompletion(ctx context.Contex
 
 	outs, err := service.GetTerraformOutputs(ctx, details.GUID)
 	if err != nil {
-		return fmt.Errorf("error getting new instance details from GCP: %v", err)
+		return fmt.Errorf("error getting new instance details: %s", err)
 	}
 
 	details.Outputs = outs
