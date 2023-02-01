@@ -45,3 +45,9 @@ bind:
     - field_name: bind_output
       type: string
       details: bind output
+    - field_name: bind_output_2
+      type: object
+      details: bind output
+    - field_name: bind_output_3
+      type: object
+      details: bind output
