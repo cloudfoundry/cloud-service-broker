@@ -134,13 +134,13 @@ type TFStateValue struct {
 // SetTFState set the Terraform State in a JSON file.
 func (p TerraformMock) SetTFState(values []TFStateValue) error {
 	var outputs = make(map[string]struct {
-		Type  string `json:"type"`
-		Value any    `json:"value"`
+		Type  any `json:"type"`
+		Value any `json:"value"`
 	})
 	for _, value := range values {
 		outputs[value.Name] = struct {
-			Type  string `json:"type"`
-			Value any    `json:"value"`
+			Type  any `json:"type"`
+			Value any `json:"value"`
 		}{
 			Type:  value.Type,
 			Value: value.Value,
