@@ -6,12 +6,6 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/lager"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
-	"github.com/pivotal-cf/brokerapi/v8/middlewares"
-
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
@@ -19,8 +13,15 @@ import (
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/credstore/credstorefakes"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v8/middlewares"
+	"github.com/spf13/viper"
 )
 
 var _ = Describe("Bind", func() {
@@ -117,6 +118,10 @@ var _ = Describe("Bind", func() {
 			ServiceID:     serviceID,
 			RawParameters: json.RawMessage(`{"bind_field_1":"bind_value_1"}`),
 		}
+
+		DeferCleanup(func() {
+			viper.Reset()
+		})
 	})
 
 	Describe("successful bind", func() {
@@ -208,6 +213,32 @@ var _ = Describe("Bind", func() {
 			})
 		})
 
+		Describe("binding outputs", func() {
+			BeforeEach(func() {
+				brokerConfig.Credstore = nil
+				var err error
+				serviceBroker, err = broker.New(brokerConfig, fakeStorage, utils.NewLogger("bind-test-no-credstore"))
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("should merge output from the instance into binding credentials", func() {
+				response, err := serviceBroker.Bind(context.TODO(), instanceID, bindingID, bindDetails, false)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(response.Credentials).To(Equal(map[string]any{"fakeInstanceOutput": "fakeInstanceValue", "fakeOutput": "fakeValue"}))
+			})
+
+			When("feature flag CSB_DISABLE_BIND_OUTPUT_MERGING is enabled", func() {
+				BeforeEach(func() {
+					viper.Set(string(featureflags.DisableBindOutputMerging), true)
+				})
+
+				It("should not merge output from the instance into binding credentials", func() {
+					response, err := serviceBroker.Bind(context.TODO(), instanceID, bindingID, bindDetails, false)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(response.Credentials).To(Equal(map[string]any{"fakeOutput": "fakeValue"}))
+				})
+			})
+		})
 	})
 
 	Describe("unsuccessful bind", func() {

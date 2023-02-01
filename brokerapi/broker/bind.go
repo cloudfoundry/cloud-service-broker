@@ -151,10 +151,11 @@ func validateBindParameters(params map[string]any, validUserInputFields []broker
 // BuildInstanceCredentials combines the bind credentials with the connection
 // information in the instance details to get a full set of connection details.
 func buildInstanceCredentials(credentials map[string]any, outputs storage.JSONObject) (*domain.Binding, error) {
-	vc, err := varcontext.Builder().
-		MergeMap(outputs).
-		MergeMap(credentials).
-		Build()
+	if featureflags.Enabled(featureflags.DisableBindOutputMerging) {
+		return &domain.Binding{Credentials: credentials}, nil
+	}
+
+	vc, err := varcontext.Builder().MergeMap(outputs).MergeMap(credentials).Build()
 	if err != nil {
 		return nil, err
 	}

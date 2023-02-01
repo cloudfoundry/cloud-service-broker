@@ -616,8 +616,17 @@ Outputs from terraform will be collected into binding credentials.
 | type | field type |
 | details | Human readable description of output field |
 
-> output fields *must* be declared as *output* variables in terraform. Failure to do so will result in failures creating brokerpak
+Output fields *must* be declared as *output* variables in terraform. Failure to do so will result in failures creating brokerpak
 
-> binding credentials will contain all output variables from both the *provision* and *bind* portions of the service yaml.
+Output fields from the *provision* are can be accessed in the binding via `instance.details` in the computed inputs.
 
-> there is a special output parameter called *status* that may be declared in terraform, it does not need to be declared in the service manifest yaml. The *status* output value will be returned as the status message for the OSBAPI provision call and will be displayed to the user as the *message* portion of a `cf service <service name>` command. It is recommended that resource ID's and other information that may help a user identify the managed resource.
+By default, binding credentials will contain all output variables from both the *provision* and *bind* portions of the service yaml,
+with outputs from the *bind* having precedence.
+But if the `CSB_DISABLE_BIND_OUTPUT_MERGING` feature flag is enabled, then binding credentials will only
+contain outputs from the *bind*. This is considered to be preferable because the *provision* outputs will often
+contain administrator credentials, and there is a risk of them accidentally leaking into the binding credentials if
+brokerpak authors do not overwrite them by creating *bind* outputs with the same name. If an output from the
+*provision* should appear in the binding credentials, then it should be make an input and output of the binding so
+that it gets copied.
+
+There is a special output parameter called *status* that may be declared in terraform, it does not need to be declared in the service manifest yaml. The *status* output value will be returned as the status message for the OSBAPI provision call and will be displayed to the user as the *message* portion of a `cf service <service name>` command. It is recommended that resource ID's and other information that may help a user identify the managed resource.
