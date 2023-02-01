@@ -42,8 +42,8 @@ type Tfstate struct {
 	Version          int    `json:"version"`
 	TerraformVersion string `json:"terraform_version"`
 	Outputs          map[string]struct {
-		Type  string `json:"type"`
-		Value any    `json:"value"`
+		Type  any `json:"type"`
+		Value any `json:"value"`
 	} `json:"outputs"`
 }
 
