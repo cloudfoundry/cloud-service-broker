@@ -26,7 +26,6 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/pborman/uuid"
-	"github.com/pivotal-cf/brokerapi/v8"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 )
 
@@ -343,9 +342,9 @@ func (ee *exampleExecutor) pollUntilFinished() error {
 		}
 
 		state := responseBody["state"]
-		eq := state == string(brokerapi.Succeeded)
+		eq := state == string(domain.Succeeded)
 
-		if state == string(brokerapi.Failed) {
+		if state == string(domain.Failed) {
 			ee.logger.Printf("Last operation for %q was %q: %s\n", ee.InstanceID, state, responseBody["description"])
 			return false, fmt.Errorf(responseBody["description"])
 		}
