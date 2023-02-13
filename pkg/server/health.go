@@ -16,15 +16,15 @@ package server
 
 import (
 	"database/sql"
+	"net/http"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/heptiolabs/healthcheck"
 )
 
 // AddHealthHandler creates a new handler for health and liveness checks and
 // adds it to the /live and /ready endpoints.
-func AddHealthHandler(router *mux.Router, db *sql.DB) healthcheck.Handler {
+func AddHealthHandler(router *http.ServeMux, db *sql.DB) healthcheck.Handler {
 	health := healthcheck.NewHandler()
 
 	if db != nil {

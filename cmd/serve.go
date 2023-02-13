@@ -19,6 +19,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"code.cloudfoundry.org/lager"
 	osbapiBroker "github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
@@ -32,7 +33,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/server"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/toggles"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/gorilla/mux"
 	"github.com/pivotal-cf/brokerapi/v8"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/spf13/cobra"
@@ -176,17 +176,24 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
 func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.Handler) {
 	logger := utils.NewLogger("cloud-service-broker")
 
-	router := mux.NewRouter()
+	docsHandler := server.DocsHandler(registry)
 
-	// match paths going to the brokerapi first
-	if brokerapi != nil {
-		router.PathPrefix("/v2").Handler(brokerapi)
-	}
-
-	server.AddDocsHandler(router, registry)
+	router := http.NewServeMux()
+	router.Handle("/docs", docsHandler)
 	router.HandleFunc("/examples", server.NewExampleHandler(registry))
 	server.AddHealthHandler(router, db)
 	router.HandleFunc("/info", infohandler.NewDefault())
+
+	router.HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {
+		switch {
+		case req.URL.Path == "/":
+			docsHandler.ServeHTTP(res, req)
+		case strings.HasPrefix(req.URL.Path, "/v2") && brokerapi != nil:
+			brokerapi.ServeHTTP(res, req)
+		default:
+			http.NotFound(res, req)
+		}
+	})
 
 	port := viper.GetString(apiPortProp)
 	host := viper.GetString(apiHostProp)
