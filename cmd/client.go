@@ -18,13 +18,13 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/server"
+	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v8/domain"
 	"github.com/spf13/cobra"
-
-	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/server"
-	"github.com/cloudfoundry/cloud-service-broker/utils"
 )
 
 var (
@@ -150,7 +150,10 @@ user-defined plans.
 		},
 	}
 
-	clientCmd.AddCommand(clientCatalogCmd, provisionCmd, deprovisionCmd, bindCmd, unbindCmd, lastCmd, runExamplesCmd, updateCmd, examplesCmd)
+	clientCmd.AddCommand(clientCatalogCmd, provisionCmd, deprovisionCmd, bindCmd, unbindCmd, lastCmd, updateCmd)
+	if featureflags.Enabled(featureflags.EnableLegacyExamplesCommands) {
+		clientCmd.AddCommand(runExamplesCmd, examplesCmd)
+	}
 
 	bindFlag := func(dest *string, name, description string, commands ...*cobra.Command) {
 		for _, sc := range commands {
