@@ -227,10 +227,12 @@ If the *examples* section of the brokerpak is not empty, it is possible (and adv
 
 > For example purposes, this is the AWS broker, so AWS credentials are provided through environment variables. See [AWS brokerpak readme](../aws-brokerpak/README.md).
 
-#### Run Broker
+In the brokerpak repo root, run:
+```bash
+csb run-examples --all
+```
 
-In one command shell, start the broker:
-
+Or when using Docker:
 ```bash
 docker run --rm -v ${BROKERPAK_SRC_DIR}:/brokerpak -w /brokerpak \
 -p 8080:8080 \
@@ -238,23 +240,7 @@ docker run --rm -v ${BROKERPAK_SRC_DIR}:/brokerpak -w /brokerpak \
 -e "SECURITY_USER_PASSWORD=csb-pw" \
 -e AWS_ACCESS_KEY_ID \
 -e AWS_SECRET_ACCESS_KEY \
--e "DB_TYPE=sqlite3" \
--e "DB_PATH=/tmp/csb-db"  \
-cfplatformeng/csb serve
-```
-
-#### Run Example Tests
-
-In a second command shell, run the examples:
-
-```bash
-docker run --rm -v ${BROKERPAK_SRC_DIR}:/brokerpak -w /brokerpak \
--e "SECURITY_USER_NAME=csb-un" \
--e "SECURITY_USER_PASSWORD=csb-pw" \
--e "GSB_API_HOSTNAME=host.docker.internal" \
--e "GSB_API_PORT=8080" \
--e USER \
-cfplatformeng/csb pak run-examples /brokerpak/$(ls *.brokerpak)
+cfplatformeng/csb run-examples --all
 ```
 
 If this completes successfully, it means all the examples in the brokerpak successfully completed a provision, bind, unbind and deprovision lifecycle. 
