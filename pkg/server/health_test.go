@@ -22,7 +22,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gorilla/mux"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -83,7 +82,7 @@ func TestNewHealthHandler(t *testing.T) {
 
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			router := mux.NewRouter()
+			router := http.NewServeMux()
 			sqldb, err := db.DB()
 			if err != nil {
 				t.Fatal(err)

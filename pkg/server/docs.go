@@ -19,7 +19,6 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/russross/blackfriday/v2"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
@@ -61,14 +60,12 @@ var pageTemplate = template.Must(template.New("docs-page").Parse(`
 </html>
 `))
 
-// AddDocsHandler creates a handler func that generates HTML documentation for
+// DocsHandler creates a handler func that generates HTML documentation for
 // the given registry and adds it to the /docs and / routes.
-func AddDocsHandler(router *mux.Router, registry broker.BrokerRegistry) {
+func DocsHandler(registry broker.BrokerRegistry) http.HandlerFunc {
 	docsPageMd := generator.CatalogDocumentation(registry)
 	handler := renderAsPage("Service Broker Documents", docsPageMd)
-
-	router.Handle("/docs", handler)
-	router.Handle("/", handler)
+	return handler
 }
 
 func renderAsPage(title, markdownContents string) http.HandlerFunc {
