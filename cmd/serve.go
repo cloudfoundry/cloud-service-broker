@@ -107,10 +107,14 @@ func serve() {
 	}
 
 	services, err := serviceBroker.Services(context.Background())
-	if err != nil {
+	switch {
+	case len(services) == 0:
+		logger.Fatal("refusing to start", fmt.Errorf("no services are defined"))
+	case err != nil:
 		logger.Error("creating service catalog", err)
+	default:
+		logger.Info("service catalog", lager.Data{"catalog": displaycatalog.DisplayCatalog(services)})
 	}
-	logger.Info("service catalog", lager.Data{"catalog": displaycatalog.DisplayCatalog(services)})
 
 	brokerAPI := brokerapi.New(serviceBroker, logger, credentials)
 
