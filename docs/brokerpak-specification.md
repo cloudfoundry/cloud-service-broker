@@ -102,6 +102,10 @@ Fields marked with `*` are required, others are optional.
 
 **Note:** Terraform does not recommend making HCL changes at the same time that performing a terraform upgrade (see [docs](https://www.terraform.io/language/upgrade-guides/0-13#before-you-upgrade)). Hence ideally these changes should be included in a separate release of your brokerpak and all existing instances should be upgraded before installing a subsequent release.
 
+**Note:** For upgrades to be carried over by the broker when requested, the feature flags `BROKERPAK_UPDATES_ENABLED` and `TERRAFORM_UPGRADES_ENABLED` must be set to `true`. The default is `false`.
+To trigger the upgrade of an instance, a request to `update` the instance without any parameters must be made or a `cf upgrade-service <instance_name>` has to be executed.
+
+
 ### Example
 
 ```yaml
