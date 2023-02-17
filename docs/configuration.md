@@ -99,6 +99,8 @@ Feature flags can be toggled through the following configuration values. See als
 | <tt>GSB_COMPATIBILITY_ENABLE_PREVIEW_SERVICES</tt> <b>*</b> | compatibility.enable_preview_services | Boolean | <p>Enable services that are new to the broker this release.</p>| "true" |
 | <tt>GSB_COMPATIBILITY_ENABLE_TERRAFORM_SERVICES</tt> <b>*</b> | compatibility.enable_terraform_services | Boolean | <p>Enable services that use the experimental, unstable, Terraform back-end.</p>| "false" |
 | <tt>GSB_COMPATIBILITY_ENABLE_UNMAINTAINED_SERVICES</tt> <b>*</b> | compatibility.enable_unmaintained_services | Boolean | <p>Enable broker services that are unmaintained.</p>| "false" |
+| <tt>TERRAFORM_UPGRADES_ENABLED</tt> <b>*</b> | brokerpak.terraform.upgrades.enabled | Boolean | <p>Enables terraform version upgrades when brokerpak specifies an upgrade path and an upgrade is requested for an instance.</p>| "false" |
+| <tt>BROKERPAK_UPDATES_ENABLED</tt> <b>*</b> | brokerpak.updates.enabled | Boolean | <p>Enable update of HCL of existing instances on update. When false, any update will be executed with the same HCL the instance was created with. If true, updates will be executed with newest specification in the brokerpak.</p>| "false" |
 
 ## Credhub Configuration
 The broker supports passing credentials to apps via [credhub references](https://github.com/cloudfoundry-incubator/credhub/blob/master/docs/secure-service-credentials.md#service-brokers), thus keeping them private to the application (they won't show up in `cf env app_name` output.)
