@@ -6,7 +6,9 @@ This document will explain how a terraform upgrade can be implemented and trigge
 
 In order for terraform upgrades to be carried over by the broker, this capability needs to be turned on.
 To do so, enable the relevant flags as documented in [Feature Flags Configuration](configuration.md#feature-flags-configuration)
-and restage the app.
+and restage the app. 
+
+The broker manifest must also include a `terraform_upgrade_path` section and the new version of the terraform binary. See below.
 
 ### Brokerpak specification
 
@@ -16,10 +18,27 @@ Optionally, the `terraform_state_provider_replacements` has to be provided. This
 terraform 0.12 to 0.13 and it is otherwise not needed.
 For more information on these manifest sections, see [brokerpak-specification](brokerpak-specification.md#manifest-yaml-file) and [Terraform Upgrade Path object](brokerpak-specification.md#terraform-upgrade-Path-object)
 
-**Note:** Upgrade is only supported for Terraform versions >= 0.12.0.
+> :warning: **Note:** Upgrade is only supported for Terraform versions >= 0.12.0.
 
-**Note:** Terraform does not recommend making HCL changes at the same time that performing a terraform upgrade (see [docs](https://www.terraform.io/language/upgrade-guides/0-13#before-you-upgrade)). Hence ideally these changes should be included in a separate release of your brokerpak and all existing instances should be upgraded before installing a subsequent release.
+> **Note:** Terraform does not recommend making HCL changes at the same time that performing a terraform upgrade (see [docs](https://www.terraform.io/language/upgrade-guides/0-13#before-you-upgrade)). Hence ideally these changes should be included in a separate release of your brokerpak and all existing instances should be upgraded before installing a subsequent release.
 
+#### Example Brokerpak manifest additions
+```
+...
+terraform_upgrade_path:
+- version: 0.13.7
+- version: 0.12.30
+terraform_binaries:
+- name: terraform
+  version: 0.12.30
+  source: https://github.com/hashicorp/terraform/archive/v0.12.30.zip  
+- name: terraform
+  version: 0.13.7
+  source: https://github.com/hashicorp/terraform/archive/v0.13.7.zip
+terraform_state_provider_replacements:
+  registry.terraform.io/-/aws: "registry.terraform.io/hashicorp/aws"
+...
+```
 
 ### Triggering an upgrade
 
