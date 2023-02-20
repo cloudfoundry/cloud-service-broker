@@ -1,0 +1,7 @@
+{
+  "ignorePatterns": [
+    {
+      "pattern": "(%7Barch%7D|{arch}).zip$"
+    }
+  ]
+}
