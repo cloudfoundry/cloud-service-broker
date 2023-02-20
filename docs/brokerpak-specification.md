@@ -38,19 +38,19 @@ and which services it will provide.
 
 #### Manifest YAML file
 
-| Field | Type | Description |
-| --- | --- |--- |
-| packversion* | int | The version of the schema the manifest adheres to. This MUST be set to `1` to be compatible with the brokerpak specification v1. |
-| version* | string | The version of this brokerpak. It's RECOMMENDED you follow [semantic versioning](https://semver.org/) for your brokerpaks. |
-| name* | string | The name of this brokerpak. It's RECOMMENDED that this be lower-case and include only alphanumeric characters, dashes, and underscores. |
-| metadata | object | A free-form field for key/value pairs of additional information about this brokerpak. This could include the authors, creation date, source code repository, etc. |
-| platforms* | array of platform | The platforms this brokerpak will be executed on. |
-| terraform_binaries* | array of Terraform resource | The list of Terraform providers and Terraform that'll be bundled with the brokerpak. *The broker currently only supports terraform version v0.12.x and higher*|
-| service_definitions* | array of string | Each entry points to a file relative to the manifest that defines a service as part of the brokerpak. |
-| parameters | array of parameter | These values are set as environment variables when Terraform is executed. |
-| required_env_variables | array of string | These are the required environment variables that will be passed through to the terraform execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution. |
-| env_config_mapping |map[string]string | List of mappings of environment variables into config keys, see [functions](#functions) for more information on how to use these |
-| terraform_upgrade_path | array of Terraform Upgrade Path | List of Terraform version steps when performing upgrade in ascending order |
+| Field                                 | Type                            | Description                                                                                                                                                                                                                                             |
+|---------------------------------------|---------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| packversion*                          | int                             | The version of the schema the manifest adheres to. This MUST be set to `1` to be compatible with the brokerpak specification v1.                                                                                                                        |
+| version*                              | string                          | The version of this brokerpak. It's RECOMMENDED you follow [semantic versioning](https://semver.org/) for your brokerpaks.                                                                                                                              |
+| name*                                 | string                          | The name of this brokerpak. It's RECOMMENDED that this be lower-case and include only alphanumeric characters, dashes, and underscores.                                                                                                                 |
+| metadata                              | object                          | A free-form field for key/value pairs of additional information about this brokerpak. This could include the authors, creation date, source code repository, etc.                                                                                       |
+| platforms*                            | array of platform               | The platforms this brokerpak will be executed on.                                                                                                                                                                                                       |
+| terraform_binaries*                   | array of Terraform resource     | The list of Terraform providers and Terraform that'll be bundled with the brokerpak. *The broker currently only supports terraform version v0.12.x and higher*                                                                                          |
+| service_definitions*                  | array of string                 | Each entry points to a file relative to the manifest that defines a service as part of the brokerpak.                                                                                                                                                   |
+| parameters                            | array of parameter              | These values are set as environment variables when Terraform is executed.                                                                                                                                                                               |
+| required_env_variables                | array of string                 | These are the required environment variables that will be passed through to the terraform execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution.                                        |
+| env_config_mapping                    | map[string]string               | List of mappings of environment variables into config keys, see [functions](#functions) for more information on how to use these                                                                                                                        |
+| terraform_upgrade_path                | array of Terraform Upgrade Path | List of Terraform version steps when performing upgrade in ascending order                                                                                                                                                                              |
 | terraform_state_provider_replacements | map of Terraform provider names | Map of terraform providers, where the key represents the old name of the provider and the value represents the new name of the provider. Can be used to replace the provider in the terraform state file when switching providers or upgrading to 0.13. |
 Fields marked with `*` are required, others are optional.
 
@@ -58,24 +58,24 @@ Fields marked with `*` are required, others are optional.
 
 The platform OS and architecture follow Go's naming scheme.
 
-| Field | Type | Description | Valid Values |
-| --- | --- | --- | --- |
-| os* | string | The operating system of the platform. | `linux`, `darwin` |
-| arch* | string | The architecture of the platform. | `"386"`, `amd64` |
+| Field | Type   | Description                           | Valid Values      |
+|-------|--------|---------------------------------------|-------------------|
+| os*   | string | The operating system of the platform. | `linux`, `darwin` |
+| arch* | string | The architecture of the platform.     | `"386"`, `amd64`  |
 Fields marked with `*` are required, others are optional.
 
 #### Terraform resource object
 
 This structure holds information about a specific Terraform version or Resource.
 
-| Field        | Type    | Description                                                                                                                                                                                                                               |
-|--------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| name*        | string  | The name of this resource. e.g. `terraform-provider-google-beta`.                                                                                                                                                                         |
-| version*     | string  | The version of the resource e.g. 1.19.0. *The broker currently only supports terraform version 0.12.x*                                                                                                                                    |
-| source       | string  | (optional) The URL to a zip of the source code for the resource.                                                                                                                                                                          |
-| url_template | string  | (optional) A custom URL template to get the release of the given tool. Available parameters are ${name}, ${version}, ${os}, and ${arch}. If unspecified the default Hashicorp Terraform download server is used. Can be a local file.     |
-| provider     | string  | (optional) The provider in the form of `namespace/type` (e.g `cyrilgdn/postgresql`). This is required if the provider is not provided by Hashicorp. This should match the source of the provider in terraform.required_providers. |
-| default      | boolean | (optional) Where there is more than one version of Terraform, this nominates the default version.                                                                                                                                         |
+| Field        | Type    | Description                                                                                                                                                                                                                           |
+|--------------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| name*        | string  | The name of this resource. e.g. `terraform-provider-google-beta`.                                                                                                                                                                     |
+| version*     | string  | The version of the resource e.g. 1.19.0. *The broker currently only supports terraform version 0.12.x*                                                                                                                                |
+| source       | string  | (optional) The URL to a zip of the source code for the resource.                                                                                                                                                                      |
+| url_template | string  | (optional) A custom URL template to get the release of the given tool. Available parameters are ${name}, ${version}, ${os}, and ${arch}. If unspecified the default Hashicorp Terraform download server is used. Can be a local file. |
+| provider     | string  | (optional) The provider in the form of `namespace/type` (e.g `cyrilgdn/postgresql`). This is required if the provider is not provided by Hashicorp. This should match the source of the provider in terraform.required_providers.     |
+| default      | boolean | (optional) Where there is more than one version of Terraform, this nominates the default version.                                                                                                                                     |
 Fields marked with `*` are required, others are optional.
 
 #### Parameter object
@@ -83,10 +83,10 @@ Fields marked with `*` are required, others are optional.
 This structure holds information about an environment variable that the user can set on the Terraform instance.
 These variables are first resolved from the configuration of the brokerpak then against a global set of values.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| name* | string | The environment variable that will be injected e.g. `PROJECT_ID`. |
-| description* | string | A human readable description of what the variable represents. |
+| Field        | Type   | Description                                                       |
+|--------------|--------|-------------------------------------------------------------------|
+| name*        | string | The environment variable that will be injected e.g. `PROJECT_ID`. |
+| description* | string | A human readable description of what the variable represents.     |
 Fields marked with `*` are required, others are optional.
 
 #### Terraform Upgrade Path object
@@ -294,7 +294,7 @@ Will convert the resulting `tf import`
 
 ```tf
 resource "azurerm_mssql_database" "azure_sql_db" {
-    id = /subscriptions/899bf076-632b-4143-b015-43da8179e53f/resourceGroups/broker-cf-test/providers/Microsoft.Sql/servers/masb-subsume-test-server
+    id = "/subscriptions/899bf076-632b-4143-b015-43da8179e53f/resourceGroups/broker-cf-test/providers/Microsoft.Sql/servers/masb-subsume-test-server"
     requested_service_objective_name = S0
 }
 ```
@@ -314,7 +314,7 @@ So that `tr apply` will not fail trying to set the read-only field *id*
 It is possible to break terraform code into sections to aid reusability and better follow [terraform best practices](https://www.terraform-best-practices.com/code-structure#getting-started-with-structuring-of-terraform-configurations). It is also required to support `tf import` as main.tf is a special case during import.
 
 Given:
-```hcl
+```yaml
   template_refs:
     outputs: terraform/subsume-masb-mssql-db/mssql-db-outputs.tf
     provider: terraform/subsume-masb-mssql-db/azure-provider.tf
@@ -331,7 +331,7 @@ Will result is a terraform workspace with the following structure:
 * data.tf gets contents of *terraform/subsume-masb-mssql-db/mssql-db-data.tf*
 
 > If there are [import inputs](#import-input-object), a `tf import` will be run for each import input value before `tf apply` is run. Once all the import calls are complete, `tf show` is run to generate a new *main.tf*. So it is important not to put anything into *main.tf* that needs to be preserved. Put them in one of the other tf files.
-> 
+
 #### Variable object
 
 The variable object describes a particular input or output variable. The
@@ -512,7 +512,7 @@ The order of combining all plan properties before invoking Terraform is as follo
 * `request.service_id` - _string_ The GUID of the requested service.
 * `request.plan_id` - _string_ The ID of the requested plan. Plan IDs are unique within an instance.
 * `request.instance_id` - _string_ The ID of the requested instance. Instance IDs are unique within a service.
-* `request.default_labels` - _map[string]string_ A map of labels that should be applied to the created infrastructure for billing/accounting/tracking purposes. See [billing documentation](billing.md) for full details about mapping process including special handling of characters in Osb request. 
+* `request.default_labels` - _map[string]string_ A map of labels that should be applied to the created infrastructure for billing/accounting/tracking purposes. 
    * `request.default_labels.pcf-organization-guid` - _string_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) `organization_guid`
    * `request.default_labels.pcf-space-guid` - _string_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) `space_guid`
    * `request.default_labels.pcf-instance-id` - _string_ Mapped from the ID of the requested instance. 

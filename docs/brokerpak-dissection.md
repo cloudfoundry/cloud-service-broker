@@ -18,7 +18,7 @@ Hopefully this document helps familiarize you enough with layout and details of 
 
 Browse the brokerpak contents [here](https://github.com/cloudfoundry/cloud-service-broker/tree/master/azure-brokerpak)
 
-Have a look at the Azure brokerpak, starting with *[manifest.yml](https://github.com/cloudfoundry/cloud-service-broker/blob/master/azure-brokerpak/manifest.yml)*
+Have a look at the Azure brokerpak, starting with *[manifest.yml](https://github.com/cloudfoundry/csb-brokerpak-azure/blob/master/manifest.yml)*
 
 The file should resemble:
 
@@ -96,12 +96,12 @@ metadata:
 
 Metadata about the brokerpak.
 
-| Field | Value |
-|-------|-------|
-| packversion | should always be 1 |
-| name | name of brokerpak |
-| version | version of brokerpak |
-| metadata | a map of metadata to add to broker |
+| Field       | Value                              |
+|-------------|------------------------------------|
+| packversion | should always be 1                 |
+| name        | name of brokerpak                  |
+| version     | version of brokerpak               |
+| metadata    | a map of metadata to add to broker |
 
 Besides *packversion* (which should always be 1,) these values are left to the brokerpak author to describe the brokerpak.
 
@@ -151,12 +151,12 @@ terraform_binaries:
 
 This section defines all the binaries and terraform providers that will be bundled into the brokerpak when its built. The *os* and *arch* parameters are substituted from the platforms section above.
 
-| Field | Value |
-|-------|-------|
-| name  | name of artifact|
-| version | version of artifact |
-| source | URL for source code archive of artifact, which can optionally be included in the brokerpak. |
-| url_template | non-standard location to copy artifact from (default: *https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip*)|
+| Field        | Value                                                                                                                                           |
+|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| name         | name of artifact                                                                                                                                |
+| version      | version of artifact                                                                                                                             |
+| source       | URL for source code archive of artifact, which can optionally be included in the brokerpak.                                                     |
+| url_template | non-standard location to copy artifact from (default: *https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip*) |
 
 ### Environment Config Mapping
 
@@ -200,7 +200,7 @@ Each of theses service yml files and their requisite terraform will be bundled i
 
 ## A Service Definition
 
-Now lets dive into one of the service yaml files, *[azure-mssql-db.yml](https://github.com/cloudfoundry/cloud-service-broker/blob/master/azure-brokerpak/azure-mssql-db.yml)*
+Now lets dive into one of the service yaml files, *[azure-mssql-db.yml](https://github.com/cloudfoundry/csb-brokerpak-azure/blob/master/azure-mssql-db.yml)*
 
 ```yaml
 version: 1
@@ -470,13 +470,13 @@ plans:
 
 There may be zero or more plan entries.
 
-| Field | Value |
-|-------|-------|
-| name | name of plan |
-| id | a unique guid |
-| description | human readable description of plan |
-| display_name | human readable plan name |
-| properties | list of property values for plan settings, property names must be defined in plan_inputs and user_inputs | 
+| Field        | Value                                                                                                    |
+|--------------|----------------------------------------------------------------------------------------------------------|
+| name         | name of plan                                                                                             |
+| id           | a unique guid                                                                                            |
+| description  | human readable description of plan                                                                       |
+| display_name | human readable plan name                                                                                 |
+| properties   | list of property values for plan settings, property names must be defined in plan_inputs and user_inputs | 
 
 ### Provision and Bind 
 
@@ -506,11 +506,11 @@ Configuration parameters that can only be set as part of plan description. Users
     details: Subsume existing DB
 ```
 
-| Field | Value |
-|-------|-------|
-| field_name | name of plan variable |
-| type | field type |
-| details | human readable description of field |
+| Field      | Value                               |
+|------------|-------------------------------------|
+| field_name | name of plan variable               |
+| type       | field type                          |
+| details    | human readable description of field |
 
 > The plan input *subsume* has special meaning. It is used to designate a plan for `tf import` to take over an existing resource. When *subsume* is true, all *import_parameter_mappings* values must be provided through `cf create-service ... -c {...}` and `cf update-service ... -p subsume` is prohibited.
 
@@ -531,13 +531,16 @@ Configuration parameters that my be set as part of a plan or set by the user thr
       multipleOf: 2
 ```
 
-| Field | Value |
-|-------|-------|
-| field_name | name of user variable |
-| type | field type |
-| details | human readable description of field |
-| default | (optional) default value for field |
-| constraints | (optional) Holds additional JSONSchema validation for the field. Feature flag `enable-catalog-schemas` controls whether to serve Json schemas in catalog. The following keys are supported: `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`.|
+| Field       | Value                                                                                                         |
+|-------------|---------------------------------------------------------------------------------------------------------------|
+| field_name  | name of user variable                                                                                         |
+| type        | field type                                                                                                    |
+| details     | human readable description of field                                                                           |
+| default     | (optional) default value for field                                                                            |
+| constraints | (optional) Holds additional JSONSchema validation for the field. Feature flag `enable-catalog-schemas`        |
+|             | controls whether to serve Json schemas in catalog. The following keys are supported:                          |
+|             | `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, |
+|             | `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`.        |
 
 > input fields must be declared as terraform *variables*. Failure to do so will result in failures to build brokerpak.
 
@@ -552,11 +555,11 @@ In order to support `tf import` to subsume control of existing resources (instea
     details: Azure resource id for database to subsume
     tf_resource: azurerm_mssql_database.azure_sql_db
 ```
-| Field | Value |
-|-------|-------|
-| field_name | name of user variable |
-| type | field type |
-| details | human readable description of field |
+| Field       | Value                                             |
+|-------------|---------------------------------------------------|
+| field_name  | name of user variable                             |
+| type        | field type                                        |
+| details     | human readable description of field               |
 | tf_resource | resource.instance of terraform resource to import |
 
 A user will provide the values through `cf create-service ... -c {...}` and the broker will use them during the `tf import` phase.
@@ -610,11 +613,11 @@ Outputs from terraform will be collected into binding credentials.
     details: The username to authenticate to the database instance.
 ```
 
-| Field | Value |
-|-------|-------|
-| field_name | name of output field |
-| type | field type |
-| details | Human readable description of output field |
+| Field      | Value                                      |
+|------------|--------------------------------------------|
+| field_name | name of output field                       |
+| type       | field type                                 |
+| details    | Human readable description of output field |
 
 > output fields *must* be declared as *output* variables in terraform. Failure to do so will result in failures creating brokerpak
 

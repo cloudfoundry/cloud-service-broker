@@ -31,7 +31,7 @@ This service broker can be installed as a CF application. See the instructions f
 * [AWS](https://github.com/cloudfoundry/csb-brokerpak-aws/blob/main/docs/aws-installation.md)
 * [Azure](https://github.com/cloudfoundry/csb-brokerpak-azure/blob/main/docs/azure-installation.md)
   * [Azure configuration examples](https://github.com/cloudfoundry/csb-brokerpak-azure/blob/main/docs/azure-example-configs.md)
-* [GCP](https://github.com/cloudfoundry/csb-brokerpak-gcp/blob/main/docs/gcp-installation.md)
+* [GCP](https://github.com/cloudfoundry/csb-brokerpak-gcp/blob/main/docs/installation.md)
 
 
 ## CSB-Provided Brokerpaks 
@@ -68,11 +68,11 @@ It supports the following sub-commands:
 
 There are make targets for most common dev tasks. Running make without a target will list the possible targets.
 
-| command | action |
-|---------|--------|
-`make build` | builds broker into `./build`
-`make test-units` | runs unit tests
-`make clean` | removes binaries and built broker paks
+| command           | action                                 |
+|-------------------|----------------------------------------|
+| `make build`      | builds broker into `./build`           |
+| `make test-units` | runs unit tests                        |
+| `make clean`      | removes binaries and built broker paks |
 
 ## Local mimic commands
 The mimic commands look and feel like CloudFoundry CLI commands, but actually run CSB actions locally. They are useful when developing brokerpaks.
