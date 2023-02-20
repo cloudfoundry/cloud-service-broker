@@ -8,7 +8,7 @@ In order for terraform upgrades to be carried over by the broker, this capabilit
 To do so, enable the relevant flags as documented in [Feature Flags Configuration](configuration.md#feature-flags-configuration)
 and restage the app. 
 
-The broker manifest must also include a `terraform_upgrade_path` section and the new version of the terraform binary. See below.
+The brokerpak manifest must also include a `terraform_upgrade_path` section and the new version of the terraform binary. See below.
 
 ### Brokerpak specification
 
