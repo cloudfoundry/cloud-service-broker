@@ -17,6 +17,8 @@ const (
 	EnableLegacyExamplesCommands FeatureFlagName = "legacy.examples.enabled"
 )
 
+var AllFeatureFlagEnvVars []string
+
 func init() {
 	for ffName, varName := range map[FeatureFlagName]string{
 		TfUpgradeEnabled:                 "TERRAFORM_UPGRADES_ENABLED", // deprecated pattern - future variables should start CSB_
@@ -26,6 +28,7 @@ func init() {
 	} {
 		viper.BindEnv(string(ffName), varName)
 		viper.SetDefault(string(ffName), false)
+		AllFeatureFlagEnvVars = append(AllFeatureFlagEnvVars, varName)
 	}
 }
 
