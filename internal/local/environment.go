@@ -6,7 +6,14 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/brokerpak"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
 )
+
+func passThroughEnvs() []string {
+	result := append(manifestAllowedEnvs(), "TF_LOG", "TF_LOG_CORE", "TF_LOG_PROVIDER", "TF_LOG_PATH")
+	result = append(result, featureflags.AllFeatureFlagEnvVars...)
+	return result
+}
 
 func manifestAllowedEnvs() (result []string) {
 	data, err := os.ReadFile(brokerpak.ManifestName)
