@@ -1,0 +1,10 @@
+{
+  "ignorePatterns": [
+    {
+      "pattern": "(%7Barch%7D|{arch}).zip$"
+    },
+    {
+      "pattern": "opensource.org/license/apache-2"
+    }
+  ]
+}
