@@ -26,8 +26,8 @@ For more information on these manifest sections, see [brokerpak-specification](b
 ```
 ...
 terraform_upgrade_path:
-- version: 0.13.7
 - version: 0.12.30
+- version: 0.13.7
 terraform_binaries:
 - name: terraform
   version: 0.12.30
@@ -35,10 +35,12 @@ terraform_binaries:
 - name: terraform
   version: 0.13.7
   source: https://github.com/hashicorp/terraform/archive/v0.13.7.zip
+  default: true
 terraform_state_provider_replacements:
   registry.terraform.io/-/aws: "registry.terraform.io/hashicorp/aws"
 ...
 ```
+> **Note:** `terraform_upgrade_path`s must be in ascending order and one entry in the `terraform_binaries` list must be marked `default: true`.
 
 ### Triggering an upgrade
 
