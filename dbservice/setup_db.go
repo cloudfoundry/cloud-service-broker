@@ -105,8 +105,11 @@ func setupSqlite3Db(logger lager.Logger) (*gorm.DB, error) {
 		return nil, fmt.Errorf("you must set a database path when using SQLite3 databases")
 	}
 
+	// full mutex mode to stop "database is locked" errors caused by concurrent use of same db connection
+	dsn := fmt.Sprintf("%s?_mutex=full", dbPath)
+
 	logger.Info("WARNING: DO NOT USE SQLITE3 IN PRODUCTION!")
-	return gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
+	return gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 }
 
 func setupMySQLDB(logger lager.Logger) (*gorm.DB, error) {
