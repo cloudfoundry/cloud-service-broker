@@ -48,8 +48,8 @@ func (module *ModuleDefinition) Validate() (errs *validation.FieldError) {
 func decode(body string) (hcl.Blocks, error) {
 	parser := hclparse.NewParser()
 	f, diags := parser.ParseHCL([]byte(body), "")
-	if diags.HasErrors() {
-		return hcl.Blocks{}, fmt.Errorf(diags.Error())
+	if diags != nil && diags.HasErrors() { // nil check required to silence CodeQL linting
+		return hcl.Blocks{}, diags
 	}
 	schema := hcl.BodySchema{
 		Blocks: []hcl.BlockHeaderSchema{
@@ -65,7 +65,7 @@ func decode(body string) (hcl.Blocks, error) {
 	}
 	content, _, diags := f.Body.PartialContent(&schema)
 	if diags.HasErrors() {
-		return hcl.Blocks{}, fmt.Errorf(diags.Error())
+		return hcl.Blocks{}, diags
 	}
 
 	return content.Blocks, nil
