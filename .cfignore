@@ -1,15 +1,29 @@
 product/
 release/
-integration_tests/
+integrationtest/
 build/
 .git/
 docs/
-acceptance-tests/
 .vscode
 ci/
 hack/
 k8s/
 scripts/
 .github/
+brokerpaktestframework/
+.dockerignore
+.gitignore
+.gitmodules
+*.yml
+*.md
+go.*
+Makefile
+AUTHORS
+CODEOWNERS
+Dockerfile
+gcp_logo.png
+NOTICE
+staticcheck.conf
+yamllint.conf
 
 
