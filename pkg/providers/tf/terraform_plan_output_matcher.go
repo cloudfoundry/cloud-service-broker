@@ -6,7 +6,7 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 
-	"code.cloudfoundry.org/lager"
+	"code.cloudfoundry.org/lager/v3"
 )
 
 var planMessageMatcher = regexp.MustCompile(`Plan: \d+ to add, \d+ to change, (\d+) to destroy\.`)

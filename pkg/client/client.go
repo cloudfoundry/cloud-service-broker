@@ -23,7 +23,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/pivotal-cf/brokerapi/v9/domain"
 	"github.com/spf13/viper"
 )
 

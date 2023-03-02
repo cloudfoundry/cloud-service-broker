@@ -1,7 +1,7 @@
 package tf
 
 import (
-	"code.cloudfoundry.org/lager"
+	"code.cloudfoundry.org/lager/v3"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

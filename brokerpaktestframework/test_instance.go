@@ -9,7 +9,7 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 	"github.com/pborman/uuid"
-	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v9/domain/apiresponses"
 )
 
 type TestInstance struct {

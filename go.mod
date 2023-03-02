@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20220620130410-645eee56ecdb
-	code.cloudfoundry.org/lager v2.0.0+incompatible
+	code.cloudfoundry.org/lager/v3 v3.0.0
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/google/gops v0.3.27
 	github.com/hashicorp/go-getter v1.7.0
@@ -14,11 +14,11 @@ require (
 	github.com/hashicorp/hil v0.0.0-20210521165536-27a72121fd40
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.6.1
-	github.com/onsi/ginkgo/v2 v2.8.3
-	github.com/onsi/gomega v1.27.1
+	github.com/onsi/ginkgo/v2 v2.8.4
+	github.com/onsi/gomega v1.27.2
 	github.com/otiai10/copy v1.9.0
 	github.com/pborman/uuid v1.2.1
-	github.com/pivotal-cf/brokerapi/v8 v8.2.3
+	github.com/pivotal-cf/brokerapi/v9 v9.0.0
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.5.0
 	github.com/spf13/cobra v1.6.1

@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"code.cloudfoundry.org/lager"
+	"code.cloudfoundry.org/lager/v3"
 	"github.com/hashicorp/go-version"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-	"github.com/pivotal-cf/brokerapi/v8/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v9/domain"
+	"github.com/pivotal-cf/brokerapi/v9/domain/apiresponses"
 
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/decider"
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
