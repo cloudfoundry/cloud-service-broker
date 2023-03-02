@@ -72,4 +72,5 @@ func purge(serviceInstanceGUID string) {
 	if err := store.DeleteTerraformDeployment(fmt.Sprintf("tf:%s:", serviceInstanceGUID)); err != nil {
 		log.Fatalf("error deleting service terraform deployment for %q: %s", serviceInstanceGUID, err)
 	}
+	log.Printf("deleted instance %s from the Cloud Service Broker database", serviceInstanceGUID)
 }
