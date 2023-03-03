@@ -6,7 +6,7 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 
-	"code.cloudfoundry.org/lager"
+	"code.cloudfoundry.org/lager/v3"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"

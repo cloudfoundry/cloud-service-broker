@@ -10,7 +10,7 @@ import (
 
 	"github.com/hashicorp/go-version"
 
-	"code.cloudfoundry.org/lager"
+	"code.cloudfoundry.org/lager/v3"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )

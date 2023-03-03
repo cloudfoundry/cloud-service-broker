@@ -23,7 +23,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/server"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	"github.com/pborman/uuid"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/pivotal-cf/brokerapi/v9/domain"
 	"github.com/spf13/cobra"
 )
 

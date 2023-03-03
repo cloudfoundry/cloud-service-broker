@@ -17,13 +17,12 @@ package server
 import (
 	"context"
 
-	"github.com/pivotal-cf/brokerapi/v8/domain"
-
-	"github.com/pivotal-cf/brokerapi/v8"
+	"github.com/pivotal-cf/brokerapi/v9"
+	"github.com/pivotal-cf/brokerapi/v9/domain"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
-//counterfeiter:generate -o ./fakes/servicebroker.go github.com/pivotal-cf/brokerapi/v8/domain.ServiceBroker
+//counterfeiter:generate -o ./fakes/servicebroker.go github.com/pivotal-cf/brokerapi/v9/domain.ServiceBroker
 
 // CfSharingWrapper enables the Shareable flag for every service provided by the broker.
 type CfSharingWrapper struct {

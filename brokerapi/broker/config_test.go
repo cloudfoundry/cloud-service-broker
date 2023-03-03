@@ -17,7 +17,7 @@ package broker
 import (
 	"testing"
 
-	"code.cloudfoundry.org/lager"
+	"code.cloudfoundry.org/lager/v3"
 )
 
 func TestNewBrokerConfigFromEnv(t *testing.T) {

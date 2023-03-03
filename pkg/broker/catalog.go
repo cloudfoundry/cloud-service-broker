@@ -16,7 +16,7 @@ package broker
 
 import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/pivotal-cf/brokerapi/v9/domain"
 )
 
 // Service overrides the canonical Service Broker service type using a custom
