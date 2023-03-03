@@ -8,7 +8,7 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
 	"github.com/pborman/uuid"
-	"github.com/pivotal-cf/brokerapi/v8/domain"
+	"github.com/pivotal-cf/brokerapi/v9/domain"
 )
 
 func catalog(clnt *client.Client) []domain.Service {

@@ -25,7 +25,7 @@ import (
 	"regexp"
 	"strings"
 
-	"code.cloudfoundry.org/lager"
+	"code.cloudfoundry.org/lager/v3"
 )
 
 const EnvironmentVarPrefix = "gsb"

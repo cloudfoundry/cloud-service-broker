@@ -4,8 +4,8 @@ package correlation
 import (
 	"context"
 
-	"code.cloudfoundry.org/lager"
-	"github.com/pivotal-cf/brokerapi/v8/middlewares"
+	"code.cloudfoundry.org/lager/v3"
+	"github.com/pivotal-cf/brokerapi/v9/middlewares"
 )
 
 func ID(ctx context.Context) lager.Data {

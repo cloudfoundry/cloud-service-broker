@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"code.cloudfoundry.org/lager"
+	"code.cloudfoundry.org/lager/v3"
 	"github.com/hashicorp/go-version"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"

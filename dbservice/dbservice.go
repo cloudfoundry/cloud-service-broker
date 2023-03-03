@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"sync"
 
-	"code.cloudfoundry.org/lager"
+	"code.cloudfoundry.org/lager/v3"
 	"gorm.io/gorm"
 
 	_ "gorm.io/driver/sqlite"

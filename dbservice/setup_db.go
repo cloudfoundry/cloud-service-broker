@@ -23,7 +23,7 @@ import (
 
 	"gorm.io/driver/sqlite"
 
-	"code.cloudfoundry.org/lager"
+	"code.cloudfoundry.org/lager/v3"
 	"github.com/go-sql-driver/mysql"
 	"github.com/spf13/viper"
 	gormmysql "gorm.io/driver/mysql"
