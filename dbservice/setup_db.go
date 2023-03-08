@@ -19,6 +19,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 
 	"gorm.io/driver/sqlite"
@@ -106,7 +107,7 @@ func setupSqlite3Db(logger lager.Logger) (*gorm.DB, error) {
 	}
 
 	// full mutex mode to stop "database is locked" errors caused by concurrent use of same db connection
-	dsn := fmt.Sprintf("%s?_mutex=full", dbPath)
+	dsn := fmt.Sprintf("%s?%s", dbPath, url.QueryEscape("_mutex=full"))
 
 	logger.Info("WARNING: DO NOT USE SQLITE3 IN PRODUCTION!")
 	return gorm.Open(sqlite.Open(dsn), &gorm.Config{})
