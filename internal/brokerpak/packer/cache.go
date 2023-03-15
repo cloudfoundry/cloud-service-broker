@@ -22,7 +22,7 @@ func cachedFetchFile(getter func(source string, destination string) error, sourc
 	case exists(source):
 		log.Println("\t", source, "->", destination, "(local file)")
 		return copyLocalFile(source, destination)
-	case exists(cacheKey):
+	case cacheDirHasContents(cacheKey):
 		log.Println("\t", source, "->", destination, "(from cache)")
 		return cp.Copy(cacheKey, destination)
 	default:
@@ -38,6 +38,20 @@ func buildCacheKey(cachePath string, source string) string {
 func exists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
+}
+
+// cacheDirHasContents checks that the cache directory still has the data, as files in /tmp are
+// sometimes cleaned up by the operating system
+func cacheDirHasContents(path string) bool {
+	if !exists(path) {
+		return false
+	}
+
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return false
+	}
+	return len(entries) > 0
 }
 
 func copyLocalFile(source, destination string) error {
