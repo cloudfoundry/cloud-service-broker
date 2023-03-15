@@ -437,6 +437,7 @@ bind:
 examples:
 - name: Example
   description: Examples are used for documenting your service AND as integration tests.
+  expected_error: Allows documenting bogus combinations only validated by the IAAS.
   plan_id: 00000000-0000-0000-0000-000000000001
   provision_params:
     username: my-account

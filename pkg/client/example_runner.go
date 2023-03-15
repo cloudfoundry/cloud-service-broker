@@ -21,6 +21,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -78,6 +79,12 @@ func runExamples(workers int, client *Client, examples []CompleteServiceExample)
 			for w := range queue {
 				start := time.Now()
 				err := runExample(client, w.id, w.example)
+				if err != nil && w.example.ExpectedError != "" && strings.Contains(err.Error(), w.example.ExpectedError) {
+					err = nil
+				}
+				if err != nil && w.example.ExpectedError != "" && !strings.Contains(err.Error(), w.example.ExpectedError) {
+					err = fmt.Errorf("expected error: %s\nbut got: %w", w.example.ExpectedError, err)
+				}
 				addResult(result{
 					id:       w.id,
 					name:     w.example.Name,

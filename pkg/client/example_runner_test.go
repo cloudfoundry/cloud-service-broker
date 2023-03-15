@@ -192,6 +192,40 @@ func TestGetExamplesForAService(t *testing.T) {
 			},
 			ExpectedError: nil,
 		},
+		"service with bogus examples": {
+			ServiceDefinition: &broker.ServiceDefinition{
+				ID:   "BogusExamplesID",
+				Name: "BogusExamplesService",
+				Examples: []broker.ServiceExample{
+					{
+						Name:            "Bogus Example",
+						Description:     "Describe an example known to fail with a specific error message from the IAAS.",
+						ExpectedError:   "The specified combination is not valid. Says the IAAS",
+						PlanID:          "BogusExamplesPlan",
+						ProvisionParams: map[string]any{},
+						BindParams:      map[string]any{},
+						BindCanFail:     true,
+					},
+				},
+			},
+			ExpectedResponse: []CompleteServiceExample{
+				{
+					ServiceID:      "BogusExamplesID",
+					ServiceName:    "BogusExamplesService",
+					ExpectedOutput: broker.CreateJSONSchema([]broker.BrokerVariable{}),
+					ServiceExample: broker.ServiceExample{
+						Name:            "Bogus Example",
+						Description:     "Describe an example known to fail with a specific error message from the IAAS.",
+						ExpectedError:   "The specified combination is not valid. Says the IAAS",
+						PlanID:          "BogusExamplesPlan",
+						ProvisionParams: map[string]any{},
+						BindParams:      map[string]any{},
+						BindCanFail:     true,
+					},
+				},
+			},
+			ExpectedError: nil,
+		},
 	}
 
 	for tn, tc := range cases {

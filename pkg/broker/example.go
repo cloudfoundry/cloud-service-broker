@@ -23,6 +23,8 @@ type ServiceExample struct {
 	Name string `json:"name" yaml:"name"`
 	// Description is a long-form description of what this example is about.
 	Description string `json:"description" yaml:"description"`
+	// Controls whether the example should fail, and what is the expected error message
+	ExpectedError string `json:"expected_error" yaml:"expected_error"`
 	// PlanID is the plan this example will run against.
 	PlanID string `json:"plan_id" yaml:"plan_id"`
 

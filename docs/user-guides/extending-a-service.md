@@ -151,6 +151,7 @@ examples:
 - name: s3-default
   description: Default S3 Bucket
   plan_id: f64891b4-5021-4742-9871-dfe1a9051302
+  expected_error: ""
   provision_params: {}
   bind_params: {}
 ```
@@ -161,6 +162,11 @@ definition. Because running these tests creates artifacts in AWS and hence incur
 cost, it's not practical to test every possible value for every input. Running the example
 test will check that the Terraform HCL works, and that the default value for
 `request_payer` also works.
+
+Example tests can specify an `expected_error` property.
+This allows documenting invalid combinations only validated by the IAAS.
+If such an example finishes without raising any error or if
+the actual error is different than `expected_error` the test fails.
 
 To run the example tests, you should start the broker in one terminal with `make run`.
 In another terminal you should run the test with
