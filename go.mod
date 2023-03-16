@@ -32,7 +32,7 @@ require (
 	gorm.io/driver/mysql v1.4.7
 	gorm.io/driver/sqlite v1.4.4
 	gorm.io/gorm v1.24.6
-	honnef.co/go/tools v0.4.2
+	honnef.co/go/tools v0.4.3
 )
 
 require (
