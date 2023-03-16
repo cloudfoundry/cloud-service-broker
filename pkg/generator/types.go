@@ -45,13 +45,15 @@ func CatalogDocumentation(registry broker.BrokerRegistry) string {
 func generateServiceDocumentation(svc *broker.ServiceDefinition) string {
 	catalog := svc.CatalogEntry()
 
+	validExamples, bogusExamples := categorizeExamples(svc.Examples)
 	vars := map[string]any{
 		"catalog":            catalog,
 		"metadata":           catalog.Metadata,
 		"bindIn":             svc.BindInputVariables,
 		"bindOut":            svc.BindOutputVariables,
 		"provisionInputVars": svc.ProvisionInputVariables,
-		"examples":           svc.Examples,
+		"examples":           validExamples,
+		"commonMistakes":     bogusExamples,
 	}
 
 	funcMap := template.FuncMap{
@@ -152,6 +154,39 @@ Uses plan: {{ code $example.PlanID }}.
 
 <pre>
 {{exampleCommands $example}}
+</pre>
+
+{{ end }}
+
+## Common Mistakes
+
+{{ if eq (len .commonMistakes) 0 }}_No common mistakes._{{ end }}
+
+{{ range $i, $commonMistake := .commonMistakes}}
+### {{ $commonMistake.Name }}
+
+
+{{ $commonMistake.Description }}
+Uses plan: {{ code $commonMistake.PlanID }}.
+
+**Error Message**
+
+<blockquote>
+{{ $commonMistake.ExpectedError }}
+</blockquote>
+
+**Provision**
+
+{{ jsonCodeBlock $commonMistake.ProvisionParams }}
+
+**Bind**
+
+{{ jsonCodeBlock $commonMistake.BindParams }}
+
+**Cloud Foundry Example**
+
+<pre>
+{{exampleCommands $commonMistake}}
 </pre>
 
 {{ end }}
@@ -268,4 +303,18 @@ func cleanLines(text string) string {
 func jsonCodeBlock(value any) string {
 	block, _ := json.MarshalIndent(value, "", "    ")
 	return fmt.Sprintf("```javascript\n%s\n```", block)
+}
+
+// categorizeExamples loops over the received slice and returns two different slices:
+// the first slice contains all examples which don't define an ExpectedError and are known to succeed,
+// the second slice contains the examples which define an ExpectedError and serve to document common mistakes
+func categorizeExamples(allExamples []broker.ServiceExample) (validExamples, bogusExamples []broker.ServiceExample) {
+	for _, example := range allExamples {
+		if example.ExpectedError == "" {
+			validExamples = append(validExamples, example)
+		} else {
+			bogusExamples = append(bogusExamples, example)
+		}
+	}
+	return
 }
