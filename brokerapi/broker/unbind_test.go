@@ -337,10 +337,11 @@ var _ = Describe("Unbind", func() {
 				fakeCredStore.DeleteReturns(fmt.Errorf("credstore-error"))
 			})
 
-			It("should error", func() {
+			// If creds no longer exist in CredHub, we don't want to force users to add them back in order to unbind
+			It("should succeed", func() {
 				_, err := serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, false)
 
-				Expect(err).To(MatchError(`credstore-error`))
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 	})

@@ -76,17 +76,14 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	}
 
 	if broker.Credstore != nil {
-
 		credentialName := getCredentialName(broker.getServiceName(serviceDefinition), bindingID)
 
-		err = broker.Credstore.DeletePermission(credentialName)
-		if err != nil {
-			broker.Logger.Error(fmt.Sprintf("fail to delete permissions on the key %s", credentialName), err)
+		if err := broker.Credstore.DeletePermission(credentialName); err != nil {
+			broker.Logger.Error(fmt.Sprintf("failed to delete permissions on the CredHub key %s", credentialName), err)
 		}
 
-		err := broker.Credstore.Delete(credentialName)
-		if err != nil {
-			return domain.UnbindSpec{}, err
+		if err := broker.Credstore.Delete(credentialName); err != nil {
+			broker.Logger.Error(fmt.Sprintf("failed to delete CredHub key %s", credentialName), err)
 		}
 	}
 
