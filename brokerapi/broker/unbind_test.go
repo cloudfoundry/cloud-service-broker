@@ -95,9 +95,7 @@ var _ = Describe("Unbind", func() {
 			Credstore: fakeCredStore,
 		}
 
-		var err error
-		serviceBroker, err = broker.New(brokerConfig, fakeStorage, utils.NewLogger("unbind-test-with-credstore"))
-		Expect(err).ToNot(HaveOccurred())
+		serviceBroker = must(broker.New(brokerConfig, fakeStorage, utils.NewLogger("unbind-test-with-credstore")))
 
 		unbindDetails = domain.UnbindDetails{
 			PlanID:    planID,
@@ -161,9 +159,7 @@ var _ = Describe("Unbind", func() {
 		When("credstore disabled", func() {
 			BeforeEach(func() {
 				brokerConfig.Credstore = nil
-				var err error
-				serviceBroker, err = broker.New(brokerConfig, fakeStorage, utils.NewLogger("unbind-test-no-credstore"))
-				Expect(err).ToNot(HaveOccurred())
+				serviceBroker = must(broker.New(brokerConfig, fakeStorage, utils.NewLogger("unbind-test-no-credstore")))
 			})
 
 			It("does not remove the credentials from the credstore", func() {
