@@ -77,9 +77,7 @@ var _ = Describe("LastInstanceOperation", func() {
 				OrganizationGUID: orgID,
 			}, nil)
 
-		var err error
-		serviceBroker, err = broker.New(brokerConfig, fakeStorage, utils.NewLogger("brokers-test"))
-		Expect(err).ToNot(HaveOccurred())
+		serviceBroker = must(broker.New(brokerConfig, fakeStorage, utils.NewLogger("brokers-test")))
 
 		pollDetails = domain.PollDetails{
 			ServiceID:     offeringID,

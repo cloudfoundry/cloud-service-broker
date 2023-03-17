@@ -55,9 +55,7 @@ var _ = Describe("Services", func() {
 			},
 		}
 
-		var err error
-		serviceBroker, err = broker.New(brokerConfig, &brokerfakes.FakeStorage{}, utils.NewLogger("brokers-test"))
-		Expect(err).ToNot(HaveOccurred())
+		serviceBroker = must(broker.New(brokerConfig, &brokerfakes.FakeStorage{}, utils.NewLogger("brokers-test")))
 	})
 
 	Describe("getting services", func() {
