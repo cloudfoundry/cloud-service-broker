@@ -21,7 +21,6 @@ func (factory TerraformInvokerFactory) VersionedTerraformInvoker(tfVersion *vers
 	}
 	if tfVersion.LessThan(version.Must(version.NewVersion("1.2.0"))) {
 		return NewTerraformDefaultInvoker(factory.executorBuilder.VersionedExecutor(tfVersion), factory.terraformPluginsDirectory, factory.pluginRenames)
-	} else {
-		return NewTerraformDefaultInvoker(factory.executorBuilder.VersionedExecutor(tfVersion), factory.terraformPluginsDirectory, map[string]string{})
 	}
+	return NewTerraformDefaultInvoker(factory.executorBuilder.VersionedExecutor(tfVersion), factory.terraformPluginsDirectory, map[string]string{})
 }
