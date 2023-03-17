@@ -15,7 +15,8 @@ The brokerpak manifest must also include a `terraform_upgrade_path` section and 
 Each brokerpak can instruct the broker to upgrade the terraform version independently.
 The manifest needs to be updated to include a `terraform_upgrade_path` section and the new version of the terraform binary.
 Optionally, the `terraform_state_provider_replacements` has to be provided. This is specially needed for the upgrade from 
-terraform 0.12 to 0.13 and it is otherwise not needed.
+terraform 0.12 to 0.13 and it is otherwise not needed. This replacements won't be taken into account when upgrading from newer versions
+of terraform.
 For more information on these manifest sections, see [brokerpak-specification](brokerpak-specification.md#manifest-yaml-file) and [Terraform Upgrade Path object](brokerpak-specification.md#terraform-upgrade-Path-object)
 
 > :warning: **Note:** Upgrade is only supported for Terraform versions >= 0.12.0.
