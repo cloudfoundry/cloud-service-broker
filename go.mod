@@ -15,7 +15,7 @@ require (
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.6.1
 	github.com/onsi/ginkgo/v2 v2.9.2
-	github.com/onsi/gomega v1.27.4
+	github.com/onsi/gomega v1.27.5
 	github.com/otiai10/copy v1.9.0
 	github.com/pborman/uuid v1.2.1
 	github.com/pivotal-cf/brokerapi/v9 v9.0.0
