@@ -71,3 +71,17 @@ func lookupServiceNamesByID(clnt *client.Client, serviceID, planID string) (stri
 	}
 	panic(fmt.Sprintf("could not find service %q in catalog", serviceID))
 }
+
+func lookupPlanMaintenanceInfoByGUID(clnt *client.Client, serviceID, planGUID string) domain.MaintenanceInfo {
+	for _, s := range catalog(clnt) {
+		if s.ID == serviceID {
+			for _, p := range s.Plans {
+				if p.ID == planGUID {
+					return *p.MaintenanceInfo
+				}
+			}
+			log.Fatalf("could not find plan %q in service %q", planGUID, serviceID)
+		}
+	}
+	panic(fmt.Sprintf("could not find service %q in catalog", serviceID))
+}

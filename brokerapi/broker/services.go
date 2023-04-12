@@ -3,10 +3,8 @@ package broker
 import (
 	"context"
 	"fmt"
-
-	"github.com/pivotal-cf/brokerapi/v9/domain"
-
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+	"github.com/pivotal-cf/brokerapi/v9/domain"
 )
 
 // Services lists services in the broker's catalog.
