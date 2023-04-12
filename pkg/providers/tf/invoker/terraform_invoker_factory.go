@@ -1,6 +1,7 @@
 package invoker
 
 import (
+	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/hashicorp/go-version"
 )
@@ -19,8 +20,8 @@ func (factory TerraformInvokerFactory) VersionedTerraformInvoker(tfVersion *vers
 	if tfVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
 		return NewTerraform012Invoker(factory.executorBuilder.VersionedExecutor(tfVersion), factory.terraformPluginsDirectory)
 	}
-	if tfVersion.LessThan(version.Must(version.NewVersion("1.2.0"))) {
-		return NewTerraformDefaultInvoker(factory.executorBuilder.VersionedExecutor(tfVersion), factory.terraformPluginsDirectory, factory.pluginRenames)
+	if tfVersion.GreaterThanOrEqual(version.Must(version.NewVersion("1.2.0"))) && featureflags.Enabled(featureflags.DisableTfUpgradeProviderRenames) {
+		return NewTerraformDefaultInvoker(factory.executorBuilder.VersionedExecutor(tfVersion), factory.terraformPluginsDirectory, map[string]string{})
 	}
-	return NewTerraformDefaultInvoker(factory.executorBuilder.VersionedExecutor(tfVersion), factory.terraformPluginsDirectory, map[string]string{})
+	return NewTerraformDefaultInvoker(factory.executorBuilder.VersionedExecutor(tfVersion), factory.terraformPluginsDirectory, factory.pluginRenames)
 }
