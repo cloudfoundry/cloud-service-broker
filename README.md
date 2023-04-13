@@ -28,7 +28,7 @@ Please reach out on the #cloudservicebroker channel in the [Cloud Foundry Slack]
 This service broker can be installed as a CF application. See the instructions for:
 
 * [General configuration](./docs/configuration.md)
-* [AWS](https://github.com/cloudfoundry/csb-brokerpak-aws/blob/main/docs/aws-installation.md)
+* [AWS](https://github.com/cloudfoundry/csb-brokerpak-aws/blob/main/docs/installation.md)
 * [Azure](https://github.com/cloudfoundry/csb-brokerpak-azure/blob/main/docs/azure-installation.md)
   * [Azure configuration examples](https://github.com/cloudfoundry/csb-brokerpak-azure/blob/main/docs/azure-example-configs.md)
 * [GCP](https://github.com/cloudfoundry/csb-brokerpak-gcp/blob/main/docs/installation.md)

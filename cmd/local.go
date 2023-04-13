@@ -57,6 +57,16 @@ func init() {
 	updateServiceCmd.Flags().StringVarP(&plan, planFlag, planFlag, "", "change service plan for a service instance")
 	rootCmd.AddCommand(updateServiceCmd)
 
+	upgradeServiceCmd := &cobra.Command{
+		Use:   "upgrade-service NAME PREVIOUS_VERSION",
+		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: upgrade a service instance from PREVIOUS_VERSION to current version",
+		Args:  cobra.ExactArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			local.UpgradeService(args[0], args[1], viper.GetString(pakCachePath))
+		},
+	}
+	rootCmd.AddCommand(upgradeServiceCmd)
+
 	deleteServiceCmd := &cobra.Command{
 		Use:   "delete-service NAME",
 		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: delete a service instance",
