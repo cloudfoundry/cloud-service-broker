@@ -5,6 +5,9 @@ updates:
   schedule:
     interval: "daily"
     time: "22:00"
+  ignore:
+    - dependency-name: "gorm.io/driver/sqlite"
+      versions: ["1.5.0"]
 - package-ecosystem: docker
   directory: "/"
   schedule:
