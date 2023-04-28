@@ -6,6 +6,8 @@ builds:
   goos:
   - linux
   - darwin
+  ldflags:
+  - -X github.com/cloudfoundry/cloud-service-broker/utils.Version={{.Version}}
 archives:
 - name_template: "{{ .ProjectName }}.{{ .Os }}"
   format: binary
