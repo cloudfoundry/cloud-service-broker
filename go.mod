@@ -27,7 +27,7 @@ require (
 	github.com/zclconf/go-cty v1.13.1
 	golang.org/x/crypto v0.8.0
 	golang.org/x/net v0.10.0
-	golang.org/x/tools v0.8.0
+	golang.org/x/tools v0.9.1
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.5.0
 	gorm.io/driver/sqlite v1.4.4
