@@ -72,6 +72,13 @@ test-integration: deps-go-binary .pak-cache ## run integration tests
 
 .pak-cache:
 	mkdir -p $(PAK_CACHE)
+
+.PHONY: test-units-coverage
+test-units-coverage: ## test-units coverage score
+	paste -sd "," <($(GO) list ./... | grep -v fake) > /tmp/csb-coverage-pkgs.txt
+	$(GO) test -coverpkg=`cat /tmp/csb-coverage-pkgs.txt` -coverprofile=/tmp/csb-coverage.out `$(GO) list ./... | grep -v integrationtest`
+	$(GO) tool cover -func /tmp/csb-coverage.out | grep total
+
 ###### Build ##################################################################
 
 ./build/cloud-service-broker.linux: $(SRC)
@@ -103,6 +110,8 @@ download: ## download go module dependencies
 clean: deps-go-binary ## clean up from previous builds
 	-$(GO) clean --modcache
 	-rm -rf ./build
+	-rm -rf /tmp/csb-coverage.out
+	-rm -rf /tmp/csb-coverage-pkgs.txt
 
 ###### Lint ###################################################################
 
