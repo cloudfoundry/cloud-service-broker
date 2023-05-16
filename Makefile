@@ -75,7 +75,8 @@ test-integration: deps-go-binary .pak-cache ## run integration tests
 
 .PHONY: test-units-coverage
 test-units-coverage: ## test-units coverage score
-	paste -sd "," <($(GO) list ./... | grep -v fake) > /tmp/csb-coverage-pkgs.txt
+	$(GO) list ./... | grep -v fake > /tmp/csb-non-fake.txt
+	paste -sd "," /tmp/csb-non-fake.txt > /tmp/csb-coverage-pkgs.txt
 	$(GO) test -coverpkg=`cat /tmp/csb-coverage-pkgs.txt` -coverprofile=/tmp/csb-coverage.out `$(GO) list ./... | grep -v integrationtest`
 	$(GO) tool cover -func /tmp/csb-coverage.out | grep total
 
@@ -110,6 +111,7 @@ download: ## download go module dependencies
 clean: deps-go-binary ## clean up from previous builds
 	-$(GO) clean --modcache
 	-rm -rf ./build
+	-rm -rf /tmp/csb-non-fake.txt
 	-rm -rf /tmp/csb-coverage.out
 	-rm -rf /tmp/csb-coverage-pkgs.txt
 
