@@ -17,8 +17,8 @@ package server
 import (
 	"context"
 
-	"github.com/pivotal-cf/brokerapi/v9"
-	"github.com/pivotal-cf/brokerapi/v9/domain"
+	"github.com/pivotal-cf/brokerapi/v10"
+	"github.com/pivotal-cf/brokerapi/v10/domain"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
