@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/go-version"
-	"github.com/pivotal-cf/brokerapi/v9/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v10/domain/apiresponses"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 )

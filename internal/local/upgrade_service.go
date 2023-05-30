@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
-	"github.com/pivotal-cf/brokerapi/v9/domain"
+	"github.com/pivotal-cf/brokerapi/v10/domain"
 )
 
 func UpgradeService(name, previousVersion, cachePath string) {

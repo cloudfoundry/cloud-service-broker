@@ -2,7 +2,7 @@
 // printing out binary images etc... which also form part of the catalog
 package displaycatalog
 
-import "github.com/pivotal-cf/brokerapi/v9/domain"
+import "github.com/pivotal-cf/brokerapi/v10/domain"
 
 func DisplayCatalog(services []domain.Service) []any {
 	return mapSlice(services, func(service domain.Service) any {

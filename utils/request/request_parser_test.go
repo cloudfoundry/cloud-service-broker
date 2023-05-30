@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/cloudfoundry/cloud-service-broker/utils/request"
-	"github.com/pivotal-cf/brokerapi/v9/middlewares"
+	"github.com/pivotal-cf/brokerapi/v10/middlewares"
 )
 
 func TestDecodeOriginatingIdentityHeader(t *testing.T) {

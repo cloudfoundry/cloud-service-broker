@@ -28,7 +28,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/pivotal-cf/brokerapi/v9/domain"
+	"github.com/pivotal-cf/brokerapi/v10/domain"
 	"github.com/spf13/viper"
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
