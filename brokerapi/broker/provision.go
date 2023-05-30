@@ -19,8 +19,8 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/pivotal-cf/brokerapi/v9/domain"
-	"github.com/pivotal-cf/brokerapi/v9/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v10/domain"
+	"github.com/pivotal-cf/brokerapi/v10/domain/apiresponses"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"

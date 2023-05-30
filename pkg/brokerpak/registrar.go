@@ -28,7 +28,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/pivotal-cf/brokerapi/v9/domain"
+	"github.com/pivotal-cf/brokerapi/v10/domain"
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 )

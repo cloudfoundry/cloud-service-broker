@@ -26,7 +26,7 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/pborman/uuid"
-	"github.com/pivotal-cf/brokerapi/v9/domain"
+	"github.com/pivotal-cf/brokerapi/v10/domain"
 )
 
 // RunExamplesForService runs all the examples for a given service name against
