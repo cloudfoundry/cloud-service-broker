@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20220620130410-645eee56ecdb
-	code.cloudfoundry.org/lager/v3 v3.0.1
+	code.cloudfoundry.org/lager/v3 v3.0.2
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/google/gops v0.3.27
 	github.com/hashicorp/go-getter v1.7.1
