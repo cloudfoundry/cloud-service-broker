@@ -183,13 +183,6 @@ func TestNewServerConfigFromEnv(t *testing.T) {
 			Sources: `{"good-key":{"uri":"file://path/to/brokerpak", "config":"aaa{}"}}`,
 			Err:     `brokerpak config was invalid: invalid JSON: Brokerpaks[good-key].config`,
 		},
-		"bad brokerpak values222222222": {
-			Config: `{
-               "global_labels": [{"guid"=>"b6f2957b-0518-4ba2-bbc4-daf981d2034b", "key"=>"env", "value"=>"development"}, {"guid"=>"507340b1-621d-4c3c-b560-114b7daab18a", "key"=>"net", "value"=>"cloud-bite"}, {"guid"=>"8feeff89-4377-48a5-91ba-8652db45c4ae", "key"=>"owner", "value"=>"andrea"}, {"guid"=>"71098c28-35ac-465a-a1de-47e2c1023935", "key"=>"mandanga", "value"=>"fina"}]
-             }`,
-			Sources: `{"good-key":{"uri":"file://path/to/brokerpak", "config":"{}"}}`,
-			Err:     `brokerpak config was invalid: invalid JSON: Brokerpaks[good-key].config`,
-		},
 	}
 
 	for tn, tc := range cases {
