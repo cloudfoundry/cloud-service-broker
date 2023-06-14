@@ -7,6 +7,13 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/lager/v3"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"github.com/pivotal-cf/brokerapi/v10/domain"
+	"github.com/pivotal-cf/brokerapi/v10/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v10/middlewares"
+	"github.com/spf13/viper"
+
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
@@ -16,12 +23,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/brokerapi/v10/domain"
-	"github.com/pivotal-cf/brokerapi/v10/domain/apiresponses"
-	"github.com/pivotal-cf/brokerapi/v10/middlewares"
-	"github.com/spf13/viper"
 )
 
 var _ = Describe("Provision", func() {
@@ -55,8 +56,9 @@ var _ = Describe("Provision", func() {
 		brokerConfig := &broker.BrokerConfig{
 			Registry: pkgBroker.BrokerRegistry{
 				"test-service": &pkgBroker.ServiceDefinition{
-					ID:   offeringID,
-					Name: "test-service",
+					GlobalLabels: map[string]string{"key1": "value1", "key2": "value2"},
+					ID:           offeringID,
+					Name:         "test-service",
 					Plans: []pkgBroker.ServicePlan{
 						{
 							ServicePlan: domain.ServicePlan{
@@ -200,7 +202,8 @@ var _ = Describe("Provision", func() {
 					_, actualVars := fakeServiceProvider.ProvisionArgsForCall(0)
 
 					Expect(actualVars.GetString("copyOriginatingIdentity")).To(Equal(`{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`))
-					Expect(actualVars.GetString("labels")).To(Equal(`{"pcf-instance-id":"test-instance-id","pcf-organization-guid":"test-org-id","pcf-space-guid":"test-space-id"}`))
+					expectedLabels := `{"key1":"value1","key2":"value2","pcf-instance-id":"test-instance-id","pcf-organization-guid":"test-org-id","pcf-space-guid":"test-space-id"}`
+					Expect(actualVars.GetString("labels")).To(Equal(expectedLabels))
 				})
 			})
 		})

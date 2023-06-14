@@ -183,6 +183,13 @@ func TestNewServerConfigFromEnv(t *testing.T) {
 			Sources: `{"good-key":{"uri":"file://path/to/brokerpak", "config":"aaa{}"}}`,
 			Err:     `brokerpak config was invalid: invalid JSON: Brokerpaks[good-key].config`,
 		},
+		"bad brokerpak values222222222": {
+			Config: `{
+               "global_labels": [{"guid"=>"b6f2957b-0518-4ba2-bbc4-daf981d2034b", "key"=>"env", "value"=>"development"}, {"guid"=>"507340b1-621d-4c3c-b560-114b7daab18a", "key"=>"net", "value"=>"cloud-bite"}, {"guid"=>"8feeff89-4377-48a5-91ba-8652db45c4ae", "key"=>"owner", "value"=>"andrea"}, {"guid"=>"71098c28-35ac-465a-a1de-47e2c1023935", "key"=>"mandanga", "value"=>"fina"}]
+             }`,
+			Sources: `{"good-key":{"uri":"file://path/to/brokerpak", "config":"{}"}}`,
+			Err:     `brokerpak config was invalid: invalid JSON: Brokerpaks[good-key].config`,
+		},
 	}
 
 	for tn, tc := range cases {
@@ -204,6 +211,33 @@ func TestNewServerConfigFromEnv(t *testing.T) {
 				t.Fatalf("Expected %q got %q", tc.Err, err.Error())
 			}
 		})
+	}
+}
+
+func TestNewServerConfigFromEnv_Valid_Configuration(t *testing.T) {
+	brokerpakServerConfig := `{
+				"global_labels": [
+						{"key":  "key1", "value":  "value1"},
+						{"key":  "key2", "value":  "value2"}
+					]
+				}`
+	sources := `{}`
+
+	viper.Set("brokerpak.sources", sources)
+	viper.Set("brokerpak.config", brokerpakServerConfig)
+	defer viper.Reset()
+
+	serverConfigFromEnv, err := NewServerConfigFromEnv()
+	if err != nil {
+		t.Fatalf("unexpected error, got %s", err)
+	}
+
+	if serverConfigFromEnv == nil {
+		t.Fatalf("invalid server configuration")
+	}
+
+	if !reflect.DeepEqual(serverConfigFromEnv.Config, brokerpakServerConfig) {
+		t.Errorf("unexpected configuration, got %s, want %s", serverConfigFromEnv.Config, brokerpakServerConfig)
 	}
 }
 
