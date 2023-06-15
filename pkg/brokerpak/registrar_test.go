@@ -26,10 +26,11 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
 
+	"github.com/spf13/viper"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
-	"github.com/spf13/viper"
 )
 
 func TestNewRegistrar(t *testing.T) {
@@ -64,13 +65,6 @@ func TestNewRegistrar(t *testing.T) {
 }
 
 func TestRegistrar_toDefinitions(t *testing.T) {
-	fakeDefn := func(name, id string) tf.TfServiceDefinitionV1 {
-		ex := tf.NewExampleTfServiceDefinition()
-		ex.ID = id
-		ex.Name = "service-" + name
-
-		return ex
-	}
 
 	goodCases := map[string]struct {
 		Services      []tf.TfServiceDefinitionV1
@@ -114,7 +108,7 @@ func TestRegistrar_toDefinitions(t *testing.T) {
 
 	for tn, tc := range goodCases {
 		t.Run(tn, func(t *testing.T) {
-			r := NewRegistrar(nil)
+			r := NewRegistrar(&ServerConfig{})
 			defns, err := r.toDefinitions(tc.Services, tc.Config, executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("0.0.0"))}, nil)
 			if err != nil {
 				t.Fatalf("Expected no error, got: %v", err)
@@ -147,7 +141,7 @@ func TestRegistrar_toDefinitions(t *testing.T) {
 
 	for tn, tc := range badCases {
 		t.Run(tn, func(t *testing.T) {
-			r := NewRegistrar(nil)
+			r := NewRegistrar(&ServerConfig{})
 			defns, err := r.toDefinitions(tc.Services, tc.Config, executor.TFBinariesContext{}, nil)
 			if err == nil {
 				t.Fatal("Expected error, got: <nil>")
@@ -159,6 +153,77 @@ func TestRegistrar_toDefinitions(t *testing.T) {
 
 			if err.Error() != tc.ExpectedError {
 				t.Errorf("Expected error to be %q got %v", tc.ExpectedError, err)
+			}
+		})
+	}
+}
+
+func TestRegistrar_toDefinitions_with_global_configuration(t *testing.T) {
+	casesWithServerConfiguration := map[string]struct {
+		Services             []tf.TfServiceDefinitionV1
+		Config               BrokerpakSourceConfig
+		ServerConfig         *ServerConfig
+		ExpectedGlobalLabels map[string]string
+	}{
+		"with default labels": {
+			Services: []tf.TfServiceDefinitionV1{fakeDefn("foo", "b69a96ad-0c38-4e84-84a3-be9513e3c645")},
+			Config:   BrokerpakSourceConfig{},
+			ServerConfig: &ServerConfig{
+				Config: `{
+				"global_labels": [
+						{"key":  "key1", "value":  "value1"},
+						{"key":  "key2", "value":  "value2"}
+					]
+				}`,
+			},
+			ExpectedGlobalLabels: map[string]string{"key1": "value1", "key2": "value2"},
+		},
+		"with no labels": {
+			Services: []tf.TfServiceDefinitionV1{fakeDefn("foo", "b69a96ad-0c38-4e84-84a3-be9513e3c645")},
+			Config:   BrokerpakSourceConfig{},
+			ServerConfig: &ServerConfig{
+				Config: `{
+				"another_property": [
+						{"key":  "key1", "value":  "value1"},
+						{"key":  "key2", "value":  "value2"}
+					]
+				}`,
+			},
+			ExpectedGlobalLabels: map[string]string{},
+		},
+
+		"with an empty object": {
+			Services: []tf.TfServiceDefinitionV1{fakeDefn("foo", "b69a96ad-0c38-4e84-84a3-be9513e3c645")},
+			Config:   BrokerpakSourceConfig{},
+			ServerConfig: &ServerConfig{
+				Config: `{}`,
+			},
+			ExpectedGlobalLabels: map[string]string{},
+		},
+
+		"with empty server configuration": {
+			Services: []tf.TfServiceDefinitionV1{fakeDefn("foo", "b69a96ad-0c38-4e84-84a3-be9513e3c645")},
+			Config:   BrokerpakSourceConfig{},
+			ServerConfig: &ServerConfig{
+				Config: ``,
+			},
+			ExpectedGlobalLabels: map[string]string{},
+		},
+	}
+
+	for tn, tc := range casesWithServerConfiguration {
+		t.Run(tn, func(t *testing.T) {
+			r := NewRegistrar(tc.ServerConfig)
+			tfBinariesContext := executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("0.0.0"))}
+			defns, err := r.toDefinitions(tc.Services, tc.Config, tfBinariesContext, nil)
+			if err != nil {
+				t.Fatalf("Expected no error, got: %v", err)
+			}
+
+			for _, defn := range defns {
+				if !reflect.DeepEqual(defn.GlobalLabels, tc.ExpectedGlobalLabels) {
+					t.Errorf("invalid server configuration propagation, got %+v, want %+v", defn.GlobalLabels, tc.ExpectedGlobalLabels)
+				}
 			}
 		})
 	}
@@ -325,4 +390,12 @@ func TestRegistrar_walk(t *testing.T) {
 			}
 		})
 	}
+}
+
+func fakeDefn(name, id string) tf.TfServiceDefinitionV1 {
+	ex := tf.NewExampleTfServiceDefinition()
+	ex.ID = id
+	ex.Name = "service-" + name
+
+	return ex
 }

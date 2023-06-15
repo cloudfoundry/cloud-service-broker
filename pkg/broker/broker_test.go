@@ -21,12 +21,13 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/pivotal-cf/brokerapi/v10/domain"
+	"github.com/spf13/viper"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
-	"github.com/pivotal-cf/brokerapi/v10/domain"
-	"github.com/spf13/viper"
 )
 
 func ExampleServiceDefinition_UserDefinedPlansProperty() {
@@ -470,6 +471,7 @@ func TestServiceDefinition_UpdateVariables(t *testing.T) {
 				Type:      "object",
 			},
 		},
+		GlobalLabels: map[string]string{"key1": "value1", "key2": "value2"},
 	}
 
 	cases := map[string]struct {

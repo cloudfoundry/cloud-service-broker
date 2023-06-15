@@ -55,8 +55,9 @@ var _ = Describe("Update", func() {
 		brokerConfig := &broker.BrokerConfig{
 			Registry: pkgBroker.BrokerRegistry{
 				"test-service": &pkgBroker.ServiceDefinition{
-					ID:   offeringID,
-					Name: "test-service",
+					GlobalLabels: map[string]string{"key1": "value1", "key2": "value2"},
+					ID:           offeringID,
+					Name:         "test-service",
 					Plans: []pkgBroker.ServicePlan{
 						{
 							ServicePlan: domain.ServicePlan{
@@ -569,7 +570,8 @@ var _ = Describe("Update", func() {
 				Expect(fakeServiceProvider.UpdateCallCount()).To(Equal(1))
 				_, actualVars := fakeServiceProvider.UpdateArgsForCall(0)
 				Expect(actualVars.GetString("copyOriginatingIdentity")).To(Equal(`{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`))
-				Expect(actualVars.GetString("labels")).To(Equal(`{"pcf-instance-id":"test-instance-id","pcf-organization-guid":"test-org-id","pcf-space-guid":"test-space-id"}`))
+				expectedLabels := `{"key1":"value1","key2":"value2","pcf-instance-id":"test-instance-id","pcf-organization-guid":"test-org-id","pcf-space-guid":"test-space-id"}`
+				Expect(actualVars.GetString("labels")).To(Equal(expectedLabels))
 			})
 		})
 

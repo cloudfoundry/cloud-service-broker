@@ -1,0 +1,37 @@
+version: 1
+name: fake-service
+id: cc2005ea-2bb3-46e6-a505-248d43bffcc4
+description: description
+display_name: Fake
+image_url: https://example.com/icon.jpg
+documentation_url: https://example.com
+support_url: https://example.com/support.html
+plans:
+  - name: fake
+    id: d0af9bdf-3795-4e96-857a-db0050463d72
+    description: fake plan
+    display_name: fake
+provision:
+  outputs:
+    - field_name: labels
+      type: string
+      details: global labels merged with default labels
+  computed_inputs:
+    - name: labels
+      default: ${json.marshal(request.default_labels)}
+      overwrite: true
+      type: object
+  template_refs:
+    main: fake-provision.tf
+bind:
+  outputs:
+    - field_name: labels
+      type: string
+      details: global labels merged with default labels
+  computed_inputs:
+    - name: labels
+      default: ${json.marshal(request.default_labels)}
+      overwrite: true
+      type: object
+  template_refs:
+    main: fake-provision.tf
