@@ -457,8 +457,8 @@ github.com/mattn/go-sqlite3 v1.14.16 h1:yOQRA0RpS5PFz/oikGwBEqvAWhWg5ufRz4ETLjwp
 github.com/mattn/go-sqlite3 v1.14.16/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
 github.com/matttproud/golang_protobuf_extensions v1.0.1 h1:4hp9jkHxhMHkqkrB3Ix0jegS5sx/RkqARlsWZ6pIwiU=
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
-github.com/maxbrunsfeld/counterfeiter/v6 v6.6.1 h1:9XE5ykDiC8eNSqIPkxx0EsV3kMX1oe4kQWRZjIgytUA=
-github.com/maxbrunsfeld/counterfeiter/v6 v6.6.1/go.mod h1:qbKwBR+qQODzH2WD/s53mdgp/xVcXMlJb59GRFOp6Z4=
+github.com/maxbrunsfeld/counterfeiter/v6 v6.6.2 h1:CEy7VRV/Vbm7YLuZo3pGKa5GlPX4zzric6dEubIJTx0=
+github.com/maxbrunsfeld/counterfeiter/v6 v6.6.2/go.mod h1:otjOyjeqm3LALYcmX2AQIGH0VlojDoSd8aGOzsHAnBc=
 github.com/mitchellh/go-homedir v1.1.0 h1:lukF9ziXFxDFPkA1vsr5zpc1XuPDn/wFntq5mG+4E0Y=
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/mitchellh/go-testing-interface v1.14.1 h1:jrgshOhYAUVNMAJiKbEu7EqAwgJJ2JqpQmpLJOu07cU=
