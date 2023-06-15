@@ -22,10 +22,11 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/spf13/viper"
+
 	"github.com/cloudfoundry/cloud-service-broker/pkg/toggles"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/spf13/viper"
 )
 
 const (
@@ -114,6 +115,31 @@ func (cfg *ServerConfig) Validate() (errs *validation.FieldError) {
 	}
 
 	return errs
+}
+
+func (cfg *ServerConfig) GetGlobalLabels() (map[string]string, error) {
+	if cfg.Config == "" {
+		return map[string]string{}, nil
+	}
+
+	type label struct {
+		Key   string `json:"key"`
+		Value string `json:"value"`
+	}
+
+	var globalConfiguration struct {
+		GlobalLabels []label `json:"global_labels"`
+	}
+	if err := json.Unmarshal([]byte(cfg.Config), &globalConfiguration); err != nil {
+		return nil, fmt.Errorf("invalid global configuration for brokerpak %w", err)
+	}
+
+	labels := map[string]string{}
+	for _, value := range globalConfiguration.GlobalLabels {
+		labels[value.Key] = value.Value
+	}
+
+	return labels, nil
 }
 
 // NewServerConfigFromEnv loads the global Brokerpak config from Viper.

@@ -21,14 +21,15 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager/v3"
+	"github.com/pivotal-cf/brokerapi/v10/domain"
+	"github.com/spf13/viper"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/toggles"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/pivotal-cf/brokerapi/v10/domain"
-	"github.com/spf13/viper"
 )
 
 var enableCatalogSchemas = toggles.Features.Toggle("enable-catalog-schemas", false, `Enable generating JSONSchema for the service catalog.`)
@@ -67,6 +68,8 @@ type ServiceDefinition struct {
 
 	// IsBuiltin is true if the service is built-in to the platform.
 	IsBuiltin bool
+
+	GlobalLabels map[string]string
 }
 
 var _ validation.Validatable = (*ServiceDefinition)(nil)
@@ -364,7 +367,7 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 	return out
 }
 
-// variables is used by ProvisionVariables and UpdateVariables
+// variables function is used by ProvisionVariables and UpdateVariables
 // to get the variables and values to pass to Terraform. The output is a map where
 // the keys are all the variables that Terraform is expecting, and the values are their values.
 // Variables have a very specific resolution order. Lower number are overwritten by higher numbers
@@ -416,11 +419,11 @@ func (svc *ServiceDefinition) ProvisionVariables(instanceID string, details para
 		"request.plan_id":     details.PlanID,
 		"request.service_id":  details.ServiceID,
 		"request.instance_id": instanceID,
-		"request.default_labels": map[string]string{
+		"request.default_labels": svc.combineLabels(map[string]string{
 			"pcf-organization-guid": utils.InvalidLabelChars.ReplaceAllString(details.OrganizationGUID, "_"),
 			"pcf-space-guid":        utils.InvalidLabelChars.ReplaceAllString(details.SpaceGUID, "_"),
 			"pcf-instance-id":       utils.InvalidLabelChars.ReplaceAllString(instanceID, "_"),
-		},
+		}),
 		"request.context": details.RequestContext,
 		"request.x_broker_api_originating_identity": originatingIdentity,
 	}
@@ -433,11 +436,11 @@ func (svc *ServiceDefinition) UpdateVariables(instanceID string, details parampa
 		"request.plan_id":     details.PlanID,
 		"request.service_id":  details.ServiceID,
 		"request.instance_id": instanceID,
-		"request.default_labels": map[string]string{
+		"request.default_labels": svc.combineLabels(map[string]string{
 			"pcf-organization-guid": utils.InvalidLabelChars.ReplaceAllString(details.PreviousOrgID, "_"),
 			"pcf-space-guid":        utils.InvalidLabelChars.ReplaceAllString(details.PreviousSpaceID, "_"),
 			"pcf-instance-id":       utils.InvalidLabelChars.ReplaceAllString(instanceID, "_"),
-		},
+		}),
 		"request.context": details.RequestContext,
 		"request.x_broker_api_originating_identity": originatingIdentity,
 	}
@@ -486,6 +489,23 @@ func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDeta
 		MergeDefaultWithEval(svc.BindComputedVariables)
 
 	return buildAndValidate(builder, svc.BindInputVariables)
+}
+
+// combineLabels combines the labels obtained from brokerpak.ServerConfig and the default labels
+func (svc *ServiceDefinition) combineLabels(defaultLabels map[string]string) map[string]string {
+	ll := map[string]string{}
+
+	for key, value := range svc.GlobalLabels {
+		ll[key] = value
+	}
+
+	// default labels override global labels
+	// in other words, "pcf-organization-guid", "pcf-space-guid", and "pcf-instance-id" have preference over global labels
+	for key, value := range defaultLabels {
+		ll[key] = value
+	}
+
+	return ll
 }
 
 // buildAndValidate builds the varcontext and if it's valid validates the

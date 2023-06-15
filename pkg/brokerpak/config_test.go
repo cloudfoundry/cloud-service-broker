@@ -207,6 +207,33 @@ func TestNewServerConfigFromEnv(t *testing.T) {
 	}
 }
 
+func TestNewServerConfigFromEnv_Valid_Configuration(t *testing.T) {
+	brokerpakServerConfig := `{
+				"global_labels": [
+						{"key":  "key1", "value":  "value1"},
+						{"key":  "key2", "value":  "value2"}
+					]
+				}`
+	sources := `{}`
+
+	viper.Set("brokerpak.sources", sources)
+	viper.Set("brokerpak.config", brokerpakServerConfig)
+	defer viper.Reset()
+
+	serverConfigFromEnv, err := NewServerConfigFromEnv()
+	if err != nil {
+		t.Fatalf("unexpected error, got %s", err)
+	}
+
+	if serverConfigFromEnv == nil {
+		t.Fatalf("invalid server configuration")
+	}
+
+	if !reflect.DeepEqual(serverConfigFromEnv.Config, brokerpakServerConfig) {
+		t.Errorf("unexpected configuration, got %s, want %s", serverConfigFromEnv.Config, brokerpakServerConfig)
+	}
+}
+
 func TestListBrokerpaks(t *testing.T) {
 	t.Parallel()
 
