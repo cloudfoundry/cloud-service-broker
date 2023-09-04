@@ -20,7 +20,7 @@ jobs:
     - uses: actions/setup-go@v4
       with:
         go-version: '1.21.0'
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - run: make test
   call-dependabot-pr-workflow:
     needs: test
