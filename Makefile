@@ -1,5 +1,5 @@
 SHELL = /bin/bash
-GO-VERSION = 1.21.0
+GO-VERSION = 1.21.1
 GO-VER = go$(GO-VERSION)
 
 PAK_CACHE=$(PWD)/.pak-cache
