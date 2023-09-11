@@ -24,6 +24,7 @@ import (
 	"code.cloudfoundry.org/lager/v3"
 	osbapiBroker "github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice"
+	"github.com/cloudfoundry/cloud-service-broker/internal/credshandler"
 	"github.com/cloudfoundry/cloud-service-broker/internal/displaycatalog"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption"
 	"github.com/cloudfoundry/cloud-service-broker/internal/infohandler"
@@ -187,6 +188,7 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 	router.HandleFunc("/examples", server.NewExampleHandler(registry))
 	server.AddHealthHandler(router, db)
 	router.HandleFunc("/info", infohandler.NewDefault())
+	router.HandleFunc("/creds", credshandler.Handle)
 
 	router.HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {
 		switch {
