@@ -27,12 +27,12 @@ require (
 	github.com/zclconf/go-cty v1.14.0
 	golang.org/x/crypto v0.13.0
 	golang.org/x/net v0.14.0
-	golang.org/x/tools v0.12.0
+	golang.org/x/tools v0.12.1-0.20230825192346-2191a27a6dc5
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.5.1
 	gorm.io/driver/sqlite v1.4.4
 	gorm.io/gorm v1.25.4
-	honnef.co/go/tools v0.4.5
+	honnef.co/go/tools v0.4.6
 )
 
 require (
