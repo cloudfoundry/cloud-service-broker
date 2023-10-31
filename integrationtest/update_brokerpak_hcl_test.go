@@ -3,6 +3,9 @@ package integrationtest_test
 import (
 	"fmt"
 
+	"github.com/onsi/gomega/gstruct"
+	"github.com/onsi/gomega/types"
+
 	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 
@@ -25,11 +28,12 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		updatedBindingOutputHCL     = `bind_output_updated { value = "${var.provision_output} and bind output value" }`
 		bindingOutputStateKey       = `"bind_output"`
 
-		serviceOfferingGUID = "76c5725c-b246-11eb-871f-ffc97563fbd0"
-		servicePlanGUID     = "8b52a460-b246-11eb-a8f5-d349948e2480"
-		tfWorkspaceIDQuery  = "id = ?"
-		initialBrokerpak    = "update-brokerpak-hcl"
-		updatedBrokerpak    = "update-brokerpak-hcl-updated"
+		serviceOfferingGUID       = "76c5725c-b246-11eb-871f-ffc97563fbd0"
+		servicePlanGUID           = "8b52a460-b246-11eb-a8f5-d349948e2480"
+		tfWorkspaceIDQuery        = "id = ?"
+		initialBrokerpak          = "update-brokerpak-hcl"
+		updatedBrokerpak          = "update-brokerpak-hcl-updated"
+		updatedBrokerpakWithError = "update-brokerpak-hcl-updated-with-error"
 	)
 
 	var (
@@ -67,19 +71,9 @@ var _ = Describe("Update Brokerpak HCL", func() {
 
 	haveInitialBindingOutputs := ContainSubstring(bindingOutputStateKey)
 
-	haveEmptyState := SatisfyAll(
-		ContainSubstring(`"outputs": {}`),
-		ContainSubstring(`"resources": []`),
-	)
-
 	beUpdatedTerraformHCL := SatisfyAll(
 		ContainSubstring(updatedOutputHCL),
 		Not(ContainSubstring(initialOutputHCL)),
-	)
-
-	beUpdatedBindingTerraformHCL := SatisfyAll(
-		ContainSubstring(updatedBindingOutputHCL),
-		Not(ContainSubstring(initialBindingOutputHCL)),
 	)
 
 	haveUpdatedOutputs := SatisfyAll(
@@ -109,6 +103,22 @@ var _ = Describe("Update Brokerpak HCL", func() {
 		startBroker(updatesEnabled)
 	}
 
+	pushUpdatedBrokerpakWithError := func(updatesEnabled bool) {
+		Expect(broker.Stop()).To(Succeed())
+		must(packer.BuildBrokerpak(csb, fixtures(updatedBrokerpakWithError), packer.WithDirectory(brokerpak)))
+		startBroker(updatesEnabled)
+	}
+
+	verifyUpdatedHCLInUse := func(err error) {
+		Expect(err).To(HaveOccurred())
+		Expect(err).To(matchUnexpectedStatusErrorWithSubstring(500, `An input variable with the name \"wrong_variable\" has not been declared`))
+	}
+
+	verifyDeprovisionUpdatedHCLInUse := func(err error) {
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring(`An input variable with the name "wrong_update_input" has not been declared`))
+	}
+
 	BeforeEach(func() {
 		brokerpak = must(packer.BuildBrokerpak(csb, fixtures(initialBrokerpak)))
 
@@ -123,7 +133,7 @@ var _ = Describe("Update Brokerpak HCL", func() {
 			startBroker(false)
 		})
 
-		It("uses the original HCL for service instances operations", func() {
+		It("uses the original HCL for service instance update", func() {
 			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 
@@ -133,24 +143,6 @@ var _ = Describe("Update Brokerpak HCL", func() {
 
 			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
 			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveInitialOutputs)
-
-			Expect(broker.Deprovision(serviceInstance)).To(Succeed())
-			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
-			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveEmptyState)
-		})
-
-		It("uses the original HCL for binding operations", func() {
-			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
-			serviceBinding := must(broker.CreateBinding(serviceInstance))
-			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBinding.GUID)).To(beInitialBindingTerraformHCL)
-			Expect(persistedTerraformState(serviceInstance.GUID, serviceBinding.GUID)).To(haveInitialBindingOutputs)
-
-			pushUpdatedBrokerpak(false)
-
-			Expect(broker.DeleteBinding(serviceInstance, serviceBinding.GUID)).To(Succeed())
-
-			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBinding.GUID)).To(beInitialBindingTerraformHCL)
-			Expect(persistedTerraformState(serviceInstance.GUID, serviceBinding.GUID)).To(haveEmptyState)
 		})
 
 		It("ignores extra parameters added in the update", func() {
@@ -163,6 +155,29 @@ var _ = Describe("Update Brokerpak HCL", func() {
 
 			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveInitialOutputs)
 		})
+
+		It("uses the original HCL for service instance deprovision", func() {
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
+
+			pushUpdatedBrokerpakWithError(false) // if it errors then it is using the updated HCL
+
+			Expect(broker.UpdateService(serviceInstance, testdrive.WithUpdateParams(updateParams))).To(Succeed())
+
+			Expect(broker.Deprovision(serviceInstance)).To(Succeed())
+		})
+
+		It("uses the original HCL for unbinding", func() {
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
+			serviceBinding := must(broker.CreateBinding(serviceInstance))
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBinding.GUID)).To(beInitialBindingTerraformHCL)
+			Expect(persistedTerraformState(serviceInstance.GUID, serviceBinding.GUID)).To(haveInitialBindingOutputs)
+
+			pushUpdatedBrokerpakWithError(false) // if it errors then it is using the updated HCL
+
+			Expect(broker.DeleteBinding(serviceInstance, serviceBinding.GUID)).To(Succeed())
+		})
+
 	})
 
 	When("brokerpak updates are enabled", func() {
@@ -182,33 +197,6 @@ var _ = Describe("Update Brokerpak HCL", func() {
 			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveUpdatedOutputs)
 		})
 
-		It("uses the updated HCL for a deprovision", func() {
-			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
-
-			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
-
-			pushUpdatedBrokerpak(true)
-
-			Expect(broker.Deprovision(serviceInstance)).To(Succeed())
-
-			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beUpdatedTerraformHCL)
-			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(haveEmptyState)
-		})
-
-		It("uses the updated HCL for unbind", func() {
-			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
-			serviceBinding := must(broker.CreateBinding(serviceInstance, testdrive.WithBindingParams(bindParams)))
-			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBinding.GUID)).To(beInitialBindingTerraformHCL)
-			Expect(persistedTerraformState(serviceInstance.GUID, serviceBinding.GUID)).To(haveInitialBindingOutputs)
-
-			pushUpdatedBrokerpak(true)
-
-			Expect(broker.DeleteBinding(serviceInstance, serviceBinding.GUID)).To(Succeed())
-
-			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBinding.GUID)).To(beUpdatedBindingTerraformHCL)
-			Expect(persistedTerraformState(serviceInstance.GUID, serviceBinding.GUID)).To(haveEmptyState)
-		})
-
 		It("uses extra parameters added in the update", func() {
 			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
 
@@ -220,5 +208,33 @@ var _ = Describe("Update Brokerpak HCL", func() {
 
 			Expect(persistedTerraformState(serviceInstance.GUID, "")).To(ContainSubstring(`"value": "update output value and extra parameter"`))
 		})
+
+		It("uses the updated HCL for a deprovision", func() {
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
+
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, "")).To(beInitialTerraformHCL)
+
+			pushUpdatedBrokerpakWithError(true) // if it errors then it is using the updated HCL
+
+			verifyDeprovisionUpdatedHCLInUse(broker.Deprovision(serviceInstance))
+		})
+
+		It("uses the updated HCL for unbind", func() {
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
+			serviceBinding := must(broker.CreateBinding(serviceInstance, testdrive.WithBindingParams(bindParams)))
+			Expect(persistedTerraformModuleDefinition(serviceInstance.GUID, serviceBinding.GUID)).To(beInitialBindingTerraformHCL)
+			Expect(persistedTerraformState(serviceInstance.GUID, serviceBinding.GUID)).To(haveInitialBindingOutputs)
+
+			pushUpdatedBrokerpakWithError(true) // if it errors then it is using the updated HCL
+
+			verifyUpdatedHCLInUse(broker.DeleteBinding(serviceInstance, serviceBinding.GUID))
+		})
 	})
 })
+
+func matchUnexpectedStatusErrorWithSubstring(code int, subs string) types.GomegaMatcher {
+	return gstruct.PointTo(gstruct.MatchAllFields(gstruct.Fields{
+		"StatusCode":   Equal(code),
+		"ResponseBody": ContainSubstring(subs),
+	}))
+}

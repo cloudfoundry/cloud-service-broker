@@ -108,10 +108,10 @@ var _ = Describe("ProvisionRequestDetails", func() {
 			addFakeProvisionRequestDetails()
 		})
 
-		It("deletes from the database", func() {
+		It("deletes psychically from the database", func() {
 			exists := func() bool {
 				var count int64
-				Expect(db.Model(&models.ProvisionRequestDetails{}).Where(`service_instance_id="fake-instance-id"`).Count(&count).Error).NotTo(HaveOccurred())
+				Expect(db.Model(&models.ProvisionRequestDetails{}).Unscoped().Where(`service_instance_id="fake-instance-id"`).Count(&count).Error).NotTo(HaveOccurred())
 				return count != 0
 			}
 			Expect(exists()).To(BeTrue())

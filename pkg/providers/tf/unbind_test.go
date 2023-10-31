@@ -54,7 +54,7 @@ var _ = Describe("Unbind", func() {
 		}
 
 		deployment = storage.TerraformDeployment{
-			ID: instanceGUID,
+			ID: fmt.Sprintf("tf:%s:%s", instanceGUID, bindingGUID),
 			Workspace: &workspace.TerraformWorkspace{
 				Modules: []workspace.ModuleDefinition{
 					{
@@ -146,5 +146,33 @@ var _ = Describe("Unbind", func() {
 
 		err := provider.Unbind(context.TODO(), instanceGUID, bindingGUID, unbindContext)
 		Expect(err).To(MatchError(expectedError))
+	})
+
+	Describe("DeleteBindingData", func() {
+		var provider *tf.TerraformProvider
+		BeforeEach(func() {
+			fakeDeploymentManager = &tffakes.FakeDeploymentManagerInterface{}
+
+			provider = tf.NewTerraformProvider(
+				executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1.4"))},
+				fakeInvokerBuilder,
+				fakeLogger,
+				fakeServiceDefinition,
+				fakeDeploymentManager,
+			)
+		})
+
+		It("deletes binding deployment from database", func() {
+			Expect(provider.DeleteBindingData(context.TODO(), instanceGUID, bindingGUID)).To(BeNil())
+			Expect(fakeDeploymentManager.DeleteTerraformDeploymentCallCount()).To(Equal(1))
+			Expect(fakeDeploymentManager.DeleteTerraformDeploymentArgsForCall(0)).To(Equal(fmt.Sprintf("tf:%s:%s", instanceGUID, bindingGUID)))
+		})
+
+		It("returns any errors", func() {
+			fakeDeploymentManager.DeleteTerraformDeploymentReturns(fmt.Errorf("some error deleting the deployment from the database"))
+			Expect(provider.DeleteBindingData(context.TODO(), instanceGUID, bindingGUID)).To(MatchError("some error deleting the deployment from the database"))
+			Expect(fakeDeploymentManager.DeleteTerraformDeploymentCallCount()).To(Equal(1))
+			Expect(fakeDeploymentManager.DeleteTerraformDeploymentArgsForCall(0)).To(Equal(fmt.Sprintf("tf:%s:%s", instanceGUID, bindingGUID)))
+		})
 	})
 })

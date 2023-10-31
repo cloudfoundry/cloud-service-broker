@@ -49,6 +49,31 @@ type FakeServiceProvider struct {
 	checkUpgradeAvailableReturnsOnCall map[int]struct {
 		result1 error
 	}
+	DeleteBindingDataStub        func(context.Context, string, string) error
+	deleteBindingDataMutex       sync.RWMutex
+	deleteBindingDataArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+		arg3 string
+	}
+	deleteBindingDataReturns struct {
+		result1 error
+	}
+	deleteBindingDataReturnsOnCall map[int]struct {
+		result1 error
+	}
+	DeleteInstanceDataStub        func(context.Context, string) error
+	deleteInstanceDataMutex       sync.RWMutex
+	deleteInstanceDataArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+	}
+	deleteInstanceDataReturns struct {
+		result1 error
+	}
+	deleteInstanceDataReturnsOnCall map[int]struct {
+		result1 error
+	}
 	DeprovisionStub        func(context.Context, string, *varcontext.VarContext) (*string, error)
 	deprovisionMutex       sync.RWMutex
 	deprovisionArgsForCall []struct {
@@ -367,6 +392,131 @@ func (fake *FakeServiceProvider) CheckUpgradeAvailableReturnsOnCall(i int, resul
 		})
 	}
 	fake.checkUpgradeAvailableReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeServiceProvider) DeleteBindingData(arg1 context.Context, arg2 string, arg3 string) error {
+	fake.deleteBindingDataMutex.Lock()
+	ret, specificReturn := fake.deleteBindingDataReturnsOnCall[len(fake.deleteBindingDataArgsForCall)]
+	fake.deleteBindingDataArgsForCall = append(fake.deleteBindingDataArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+		arg3 string
+	}{arg1, arg2, arg3})
+	stub := fake.DeleteBindingDataStub
+	fakeReturns := fake.deleteBindingDataReturns
+	fake.recordInvocation("DeleteBindingData", []interface{}{arg1, arg2, arg3})
+	fake.deleteBindingDataMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeServiceProvider) DeleteBindingDataCallCount() int {
+	fake.deleteBindingDataMutex.RLock()
+	defer fake.deleteBindingDataMutex.RUnlock()
+	return len(fake.deleteBindingDataArgsForCall)
+}
+
+func (fake *FakeServiceProvider) DeleteBindingDataCalls(stub func(context.Context, string, string) error) {
+	fake.deleteBindingDataMutex.Lock()
+	defer fake.deleteBindingDataMutex.Unlock()
+	fake.DeleteBindingDataStub = stub
+}
+
+func (fake *FakeServiceProvider) DeleteBindingDataArgsForCall(i int) (context.Context, string, string) {
+	fake.deleteBindingDataMutex.RLock()
+	defer fake.deleteBindingDataMutex.RUnlock()
+	argsForCall := fake.deleteBindingDataArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeServiceProvider) DeleteBindingDataReturns(result1 error) {
+	fake.deleteBindingDataMutex.Lock()
+	defer fake.deleteBindingDataMutex.Unlock()
+	fake.DeleteBindingDataStub = nil
+	fake.deleteBindingDataReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeServiceProvider) DeleteBindingDataReturnsOnCall(i int, result1 error) {
+	fake.deleteBindingDataMutex.Lock()
+	defer fake.deleteBindingDataMutex.Unlock()
+	fake.DeleteBindingDataStub = nil
+	if fake.deleteBindingDataReturnsOnCall == nil {
+		fake.deleteBindingDataReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.deleteBindingDataReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeServiceProvider) DeleteInstanceData(arg1 context.Context, arg2 string) error {
+	fake.deleteInstanceDataMutex.Lock()
+	ret, specificReturn := fake.deleteInstanceDataReturnsOnCall[len(fake.deleteInstanceDataArgsForCall)]
+	fake.deleteInstanceDataArgsForCall = append(fake.deleteInstanceDataArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	stub := fake.DeleteInstanceDataStub
+	fakeReturns := fake.deleteInstanceDataReturns
+	fake.recordInvocation("DeleteInstanceData", []interface{}{arg1, arg2})
+	fake.deleteInstanceDataMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeServiceProvider) DeleteInstanceDataCallCount() int {
+	fake.deleteInstanceDataMutex.RLock()
+	defer fake.deleteInstanceDataMutex.RUnlock()
+	return len(fake.deleteInstanceDataArgsForCall)
+}
+
+func (fake *FakeServiceProvider) DeleteInstanceDataCalls(stub func(context.Context, string) error) {
+	fake.deleteInstanceDataMutex.Lock()
+	defer fake.deleteInstanceDataMutex.Unlock()
+	fake.DeleteInstanceDataStub = stub
+}
+
+func (fake *FakeServiceProvider) DeleteInstanceDataArgsForCall(i int) (context.Context, string) {
+	fake.deleteInstanceDataMutex.RLock()
+	defer fake.deleteInstanceDataMutex.RUnlock()
+	argsForCall := fake.deleteInstanceDataArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeServiceProvider) DeleteInstanceDataReturns(result1 error) {
+	fake.deleteInstanceDataMutex.Lock()
+	defer fake.deleteInstanceDataMutex.Unlock()
+	fake.DeleteInstanceDataStub = nil
+	fake.deleteInstanceDataReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeServiceProvider) DeleteInstanceDataReturnsOnCall(i int, result1 error) {
+	fake.deleteInstanceDataMutex.Lock()
+	defer fake.deleteInstanceDataMutex.Unlock()
+	fake.DeleteInstanceDataStub = nil
+	if fake.deleteInstanceDataReturnsOnCall == nil {
+		fake.deleteInstanceDataReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.deleteInstanceDataReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -978,6 +1128,10 @@ func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	defer fake.checkOperationConstraintsMutex.RUnlock()
 	fake.checkUpgradeAvailableMutex.RLock()
 	defer fake.checkUpgradeAvailableMutex.RUnlock()
+	fake.deleteBindingDataMutex.RLock()
+	defer fake.deleteBindingDataMutex.RUnlock()
+	fake.deleteInstanceDataMutex.RLock()
+	defer fake.deleteInstanceDataMutex.RUnlock()
 	fake.deprovisionMutex.RLock()
 	defer fake.deprovisionMutex.RUnlock()
 	fake.getImportedPropertiesMutex.RLock()
