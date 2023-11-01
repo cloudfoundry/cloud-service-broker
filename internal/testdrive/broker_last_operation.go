@@ -28,16 +28,24 @@ func (b *Broker) LastOperation(serviceInstanceGUID string) (domain.LastOperation
 }
 
 func (b *Broker) LastOperationFinalState(serviceInstanceGUID string) (domain.LastOperationState, error) {
+	lastOperation, err := b.LastOperationFinalValue(serviceInstanceGUID)
+	if err != nil {
+		return "", err
+	}
+	return lastOperation.State, nil
+}
+
+func (b *Broker) LastOperationFinalValue(serviceInstanceGUID string) (domain.LastOperation, error) {
 	start := time.Now()
 	for {
 		lastOperation, err := b.LastOperation(serviceInstanceGUID)
 		switch {
 		case err != nil:
-			return "", err
+			return domain.LastOperation{}, err
 		case time.Since(start) > time.Hour:
-			return "", fmt.Errorf("timed out waiting for last operation on service instance %q", serviceInstanceGUID)
+			return domain.LastOperation{}, fmt.Errorf("timed out waiting for last operation on service instance %q", serviceInstanceGUID)
 		case lastOperation.State == domain.Failed, lastOperation.State == domain.Succeeded:
-			return lastOperation.State, nil
+			return lastOperation, nil
 		default:
 			time.Sleep(time.Second)
 		}

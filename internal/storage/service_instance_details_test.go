@@ -182,12 +182,16 @@ var _ = Describe("ServiceInstanceDetails", func() {
 			addFakeServiceInstanceDetails()
 		})
 
-		It("deletes from the database", func() {
+		It("deletes physically from the database", func() {
 			Expect(store.ExistsServiceInstanceDetails("fake-id-3")).To(BeTrue())
 
 			Expect(store.DeleteServiceInstanceDetails("fake-id-3")).NotTo(HaveOccurred())
 
 			Expect(store.ExistsServiceInstanceDetails("fake-id-3")).To(BeFalse())
+
+			var count int64
+			db.Model(&models.ServiceInstanceDetails{}).Unscoped().Where("id = ? ", "fake-id-3").Count(&count)
+			Expect(int(count)).To(Equal(0))
 		})
 
 		It("is idempotent", func() {

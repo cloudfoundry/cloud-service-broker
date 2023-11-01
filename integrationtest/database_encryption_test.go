@@ -115,6 +115,18 @@ var _ = Describe("Database Encryption", func() {
 		Expect(count).To(BeZero())
 	}
 
+	expectBindTerraformWorkspaceToNotExist := func(serviceInstanceGUID, serviceBindingGUID string) {
+		var count int64
+		Expect(dbConn.Model(&models.TerraformDeployment{}).Where(tfWorkspaceIDQuery, fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, serviceBindingGUID)).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(count).To(BeZero())
+	}
+
+	expectServiceInstanceTerraformWorkspaceToNotExist := func(serviceInstanceGUID string) {
+		var count int64
+		Expect(dbConn.Model(&models.TerraformDeployment{}).Where(tfWorkspaceIDQuery, fmt.Sprintf("tf:%s:", serviceInstanceGUID)).Count(&count).Error).NotTo(HaveOccurred())
+		Expect(count).To(BeZero())
+	}
+
 	tryStartBroker := func(encryptionEnabled bool, encryptionPasswords string) error {
 		_, err := testdrive.StartBroker(
 			csb,
@@ -207,16 +219,12 @@ var _ = Describe("Database Encryption", func() {
 			broker.DeleteBinding(serviceInstance, serviceBinding.GUID)
 			expectServiceBindingDetailsToNotExist(serviceInstance.GUID)
 			expectBindRequestDetailsToNotExist(serviceBinding.GUID)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).To(haveAnyPlaintextBindingTerraformState)
+			expectBindTerraformWorkspaceToNotExist(serviceInstance.GUID, serviceBinding.GUID)
 
 			By("checking the service instance fields after deprovision")
 			Expect(broker.Deprovision(serviceInstance)).To(Succeed())
 			expectServiceInstanceDetailsToNotExist(serviceInstance.GUID)
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).To(SatisfyAll(
-				ContainSubstring(provisionOutputStateValue),
-				ContainSubstring(updateOutputStateValue),
-				ContainSubstring(tfStateKey),
-			))
+			expectServiceInstanceTerraformWorkspaceToNotExist(serviceInstance.GUID)
 		})
 	})
 
@@ -253,16 +261,12 @@ var _ = Describe("Database Encryption", func() {
 			Expect(broker.DeleteBinding(serviceInstance, serviceBinding.GUID)).To(Succeed())
 			expectServiceBindingDetailsToNotExist(serviceInstance.GUID)
 			expectBindRequestDetailsToNotExist(serviceBinding.GUID)
-			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).NotTo(haveAnyPlaintextBindingTerraformState)
+			expectBindTerraformWorkspaceToNotExist(serviceInstance.GUID, serviceBinding.GUID)
 
-			By("ckecking the service instance fields after deprovision")
+			By("checking the service instance fields after deprovision")
 			Expect(broker.Deprovision(serviceInstance)).To(Succeed())
 			expectServiceInstanceDetailsToNotExist(serviceInstance.GUID)
-			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(SatisfyAny(
-				ContainSubstring(provisionOutputStateValue),
-				ContainSubstring(updateOutputStateValue),
-				ContainSubstring(tfStateKey),
-			))
+			expectServiceInstanceTerraformWorkspaceToNotExist(serviceInstance.GUID)
 		})
 	})
 

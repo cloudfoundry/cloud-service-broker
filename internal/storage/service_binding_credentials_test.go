@@ -134,12 +134,16 @@ var _ = Describe("ServiceBindingCredentials", func() {
 			addFakeServiceCredentialBindings()
 		})
 
-		It("deletes from the database", func() {
+		It("deletes physically from the database", func() {
 			Expect(store.ExistsServiceBindingCredentials("fake-binding-id", "fake-instance-id")).To(BeTrue())
 
 			Expect(store.DeleteServiceBindingCredentials("fake-binding-id", "fake-instance-id")).NotTo(HaveOccurred())
 
 			Expect(store.ExistsServiceBindingCredentials("fake-binding-id", "fake-instance-id")).To(BeFalse())
+
+			var count int64
+			db.Model(&models.ServiceBindingCredentials{}).Unscoped().Where("service_instance_id = ? AND binding_id = ?", "fake-instance-id", "fake-binding-id").Count(&count)
+			Expect(int(count)).To(Equal(0))
 		})
 
 		It("is idempotent", func() {

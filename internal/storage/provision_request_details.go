@@ -58,7 +58,7 @@ func (s *Storage) GetProvisionRequestDetails(serviceInstanceID string) (JSONObje
 }
 
 func (s *Storage) DeleteProvisionRequestDetails(serviceInstanceID string) error {
-	err := s.db.Where("service_instance_id = ?", serviceInstanceID).Delete(&models.ProvisionRequestDetails{}).Error
+	err := s.db.Where("service_instance_id = ?", serviceInstanceID).Unscoped().Delete(&models.ProvisionRequestDetails{}).Error
 	if err != nil {
 		return fmt.Errorf("error deleting provision request details: %w", err)
 	}

@@ -66,6 +66,17 @@ type FakeStorage struct {
 	deleteServiceInstanceDetailsReturnsOnCall map[int]struct {
 		result1 error
 	}
+	DeleteTerraformDeploymentStub        func(string) error
+	deleteTerraformDeploymentMutex       sync.RWMutex
+	deleteTerraformDeploymentArgsForCall []struct {
+		arg1 string
+	}
+	deleteTerraformDeploymentReturns struct {
+		result1 error
+	}
+	deleteTerraformDeploymentReturnsOnCall map[int]struct {
+		result1 error
+	}
 	ExistsServiceBindingCredentialsStub        func(string, string) (bool, error)
 	existsServiceBindingCredentialsMutex       sync.RWMutex
 	existsServiceBindingCredentialsArgsForCall []struct {
@@ -538,6 +549,67 @@ func (fake *FakeStorage) DeleteServiceInstanceDetailsReturnsOnCall(i int, result
 		})
 	}
 	fake.deleteServiceInstanceDetailsReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeStorage) DeleteTerraformDeployment(arg1 string) error {
+	fake.deleteTerraformDeploymentMutex.Lock()
+	ret, specificReturn := fake.deleteTerraformDeploymentReturnsOnCall[len(fake.deleteTerraformDeploymentArgsForCall)]
+	fake.deleteTerraformDeploymentArgsForCall = append(fake.deleteTerraformDeploymentArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.DeleteTerraformDeploymentStub
+	fakeReturns := fake.deleteTerraformDeploymentReturns
+	fake.recordInvocation("DeleteTerraformDeployment", []interface{}{arg1})
+	fake.deleteTerraformDeploymentMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeStorage) DeleteTerraformDeploymentCallCount() int {
+	fake.deleteTerraformDeploymentMutex.RLock()
+	defer fake.deleteTerraformDeploymentMutex.RUnlock()
+	return len(fake.deleteTerraformDeploymentArgsForCall)
+}
+
+func (fake *FakeStorage) DeleteTerraformDeploymentCalls(stub func(string) error) {
+	fake.deleteTerraformDeploymentMutex.Lock()
+	defer fake.deleteTerraformDeploymentMutex.Unlock()
+	fake.DeleteTerraformDeploymentStub = stub
+}
+
+func (fake *FakeStorage) DeleteTerraformDeploymentArgsForCall(i int) string {
+	fake.deleteTerraformDeploymentMutex.RLock()
+	defer fake.deleteTerraformDeploymentMutex.RUnlock()
+	argsForCall := fake.deleteTerraformDeploymentArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeStorage) DeleteTerraformDeploymentReturns(result1 error) {
+	fake.deleteTerraformDeploymentMutex.Lock()
+	defer fake.deleteTerraformDeploymentMutex.Unlock()
+	fake.DeleteTerraformDeploymentStub = nil
+	fake.deleteTerraformDeploymentReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeStorage) DeleteTerraformDeploymentReturnsOnCall(i int, result1 error) {
+	fake.deleteTerraformDeploymentMutex.Lock()
+	defer fake.deleteTerraformDeploymentMutex.Unlock()
+	fake.DeleteTerraformDeploymentStub = nil
+	if fake.deleteTerraformDeploymentReturnsOnCall == nil {
+		fake.deleteTerraformDeploymentReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.deleteTerraformDeploymentReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -1379,6 +1451,8 @@ func (fake *FakeStorage) Invocations() map[string][][]interface{} {
 	defer fake.deleteServiceBindingCredentialsMutex.RUnlock()
 	fake.deleteServiceInstanceDetailsMutex.RLock()
 	defer fake.deleteServiceInstanceDetailsMutex.RUnlock()
+	fake.deleteTerraformDeploymentMutex.RLock()
+	defer fake.deleteTerraformDeploymentMutex.RUnlock()
 	fake.existsServiceBindingCredentialsMutex.RLock()
 	defer fake.existsServiceBindingCredentialsMutex.RUnlock()
 	fake.existsServiceInstanceDetailsMutex.RLock()

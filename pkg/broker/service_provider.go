@@ -61,6 +61,10 @@ type ServiceProvider interface {
 
 	GetTerraformOutputs(ctx context.Context, instanceGUID string) (storage.JSONObject, error)
 
+	DeleteInstanceData(ctx context.Context, instanceGUID string) error
+
+	DeleteBindingData(ctx context.Context, instanceGUID, bindingID string) error
+
 	CheckUpgradeAvailable(deploymentID string) error
 
 	CheckOperationConstraints(deploymentID string, operationType string) error
@@ -70,6 +74,7 @@ type ServiceProvider interface {
 type ServiceProviderStorage interface {
 	StoreTerraformDeployment(t storage.TerraformDeployment) error
 	GetTerraformDeployment(id string) (storage.TerraformDeployment, error)
+	DeleteTerraformDeployment(id string) error
 	ExistsTerraformDeployment(id string) (bool, error)
 	GetServiceBindingIDsForServiceInstance(serviceInstanceID string) ([]string, error)
 }

@@ -25,6 +25,20 @@ func (provider *TerraformProvider) Deprovision(ctx context.Context, instanceGUID
 	if err := provider.destroy(ctx, tfID, vc.ToMap(), models.DeprovisionOperationType); err != nil {
 		return nil, err
 	}
-
 	return &tfID, nil
+}
+
+// DeleteInstanceData deletes a terraform deployment from the database
+func (provider *TerraformProvider) DeleteInstanceData(ctx context.Context, instanceGUID string) error {
+	provider.logger.Debug("terraform-delete-instance-data", correlation.ID(ctx), lager.Data{
+		"instance": instanceGUID,
+	})
+
+	tfID := generateTfID(instanceGUID, "")
+
+	if err := provider.DeleteTerraformDeployment(tfID); err != nil {
+		return err
+	}
+
+	return nil
 }

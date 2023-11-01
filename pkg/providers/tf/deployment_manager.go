@@ -118,6 +118,10 @@ func (d *DeploymentManager) GetTerraformDeployment(deploymentID string) (storage
 	return d.store.GetTerraformDeployment(deploymentID)
 }
 
+func (d *DeploymentManager) DeleteTerraformDeployment(deploymentID string) error {
+	return d.store.DeleteTerraformDeployment(deploymentID)
+}
+
 func (d *DeploymentManager) GetBindingDeployments(deploymentID string) ([]storage.TerraformDeployment, error) {
 	instanceID := getInstanceIDFromTfID(deploymentID)
 	bindingIDs, err := d.store.GetServiceBindingIDsForServiceInstance(instanceID)

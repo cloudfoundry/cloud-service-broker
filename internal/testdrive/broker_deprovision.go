@@ -17,12 +17,12 @@ func (b *Broker) Deprovision(s ServiceInstance) error {
 		return &UnexpectedStatusError{StatusCode: deprovisionResponse.StatusCode, ResponseBody: deprovisionResponse.ResponseBody}
 	}
 
-	state, err := b.LastOperationFinalState(s.GUID)
+	lastOperation, err := b.LastOperationFinalValue(s.GUID)
 	switch {
 	case err != nil:
 		return err
-	case state != domain.Succeeded:
-		return fmt.Errorf("deprovison failed with state: %s", state)
+	case lastOperation.State != domain.Succeeded:
+		return fmt.Errorf("deprovison failed with state: %s and error: %s", lastOperation.State, lastOperation.Description)
 	}
 
 	return nil

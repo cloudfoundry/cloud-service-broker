@@ -158,4 +158,5 @@ type DeploymentManagerInterface interface {
 	OperationStatus(deploymentID string) (bool, string, error)
 	UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]any) error
 	GetBindingDeployments(deploymentID string) ([]storage.TerraformDeployment, error)
+	DeleteTerraformDeployment(deploymentID string) error
 }

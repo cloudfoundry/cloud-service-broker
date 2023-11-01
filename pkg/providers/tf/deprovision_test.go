@@ -173,4 +173,40 @@ var _ = Describe("Deprovision", func() {
 		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
 		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(expectedError))
 	})
+
+	Describe("DeleteInstanceData", func() {
+		var provider *tf.TerraformProvider
+		BeforeEach(func() {
+			fakeDeploymentManager = &tffakes.FakeDeploymentManagerInterface{}
+			deployment = storage.TerraformDeployment{
+				ID: instanceGUID,
+				Workspace: &workspace.TerraformWorkspace{
+					Modules:   []workspace.ModuleDefinition{{Name: "test-module-instance"}},
+					Instances: []workspace.ModuleInstance{{ModuleName: "test-module-instance"}},
+					State:     []byte(`{"terraform_version":"1.4"}`),
+				},
+			}
+
+			provider = tf.NewTerraformProvider(
+				executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1.4"))},
+				fakeInvokerBuilder,
+				fakeLogger,
+				fakeServiceDefinition,
+				fakeDeploymentManager,
+			)
+		})
+
+		It("deletes instance deployment from database", func() {
+			Expect(provider.DeleteInstanceData(context.TODO(), instanceGUID)).To(BeNil())
+			Expect(fakeDeploymentManager.DeleteTerraformDeploymentCallCount()).To(Equal(1))
+			Expect(fakeDeploymentManager.DeleteTerraformDeploymentArgsForCall(0)).To(Equal(fmt.Sprintf("tf:%s:", instanceGUID)))
+		})
+
+		It("returns any errors", func() {
+			fakeDeploymentManager.DeleteTerraformDeploymentReturns(fmt.Errorf("some error deleting the deployment from the database"))
+			Expect(provider.DeleteInstanceData(context.TODO(), instanceGUID)).To(MatchError("some error deleting the deployment from the database"))
+			Expect(fakeDeploymentManager.DeleteTerraformDeploymentCallCount()).To(Equal(1))
+			Expect(fakeDeploymentManager.DeleteTerraformDeploymentArgsForCall(0)).To(Equal(fmt.Sprintf("tf:%s:", instanceGUID)))
+		})
+	})
 })

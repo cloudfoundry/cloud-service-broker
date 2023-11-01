@@ -66,7 +66,7 @@ func (s *Storage) GetBindRequestDetails(bindingID string, instanceID string) (JS
 }
 
 func (s *Storage) DeleteBindRequestDetails(bindingID string, instanceID string) error {
-	err := s.db.Where("service_binding_id = ? AND service_instance_id = ?", bindingID, instanceID).Delete(&models.BindRequestDetails{}).Error
+	err := s.db.Where("service_binding_id = ? AND service_instance_id = ?", bindingID, instanceID).Unscoped().Delete(&models.BindRequestDetails{}).Error
 	if err != nil {
 		return fmt.Errorf("error deleting bind request details: %w", err)
 	}

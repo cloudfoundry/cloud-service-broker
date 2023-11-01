@@ -95,5 +95,9 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return domain.UnbindSpec{}, fmt.Errorf("error soft-deleting bind request details from database: %s", err)
 	}
 
+	if err := serviceProvider.DeleteBindingData(ctx, instanceID, bindingID); err != nil {
+		return domain.UnbindSpec{}, fmt.Errorf("error deleting provider binding data from database: %s", err)
+	}
+
 	return domain.UnbindSpec{}, nil
 }

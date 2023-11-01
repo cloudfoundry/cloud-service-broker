@@ -154,6 +154,12 @@ var _ = Describe("Unbind", func() {
 			actualBindingID, actualInstanceID = fakeStorage.DeleteBindRequestDetailsArgsForCall(0)
 			Expect(actualBindingID).To(Equal(bindingID))
 			Expect(actualInstanceID).To(Equal(instanceID))
+
+			By("validating the provider service is asked to delete the binding data")
+			Expect(fakeServiceProvider.DeleteBindingDataCallCount()).To(Equal(1))
+			_, actualInstanceID, actualBindingID = fakeServiceProvider.DeleteBindingDataArgsForCall(0)
+			Expect(actualBindingID).To(Equal(bindingID))
+			Expect(actualInstanceID).To(Equal(instanceID))
 		})
 
 		When("credstore disabled", func() {
@@ -329,6 +335,20 @@ var _ = Describe("Unbind", func() {
 				_, err := serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, false)
 
 				Expect(err).To(MatchError(fmt.Sprintf(`error soft-deleting bind request details from database: %s`, deleteError)))
+			})
+		})
+
+		When("fails to delete provider binding details", func() {
+			const deleteError = "bind-provider-details-delete-error"
+
+			BeforeEach(func() {
+				fakeServiceProvider.DeleteBindingDataReturns(fmt.Errorf(deleteError))
+			})
+
+			It("should error", func() {
+				_, err := serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, false)
+
+				Expect(err).To(MatchError(fmt.Sprintf(`error deleting provider binding data from database: %s`, deleteError)))
 			})
 		})
 

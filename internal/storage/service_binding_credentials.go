@@ -83,7 +83,7 @@ func (s *Storage) ExistsServiceBindingCredentials(bindingID, serviceInstanceID s
 }
 
 func (s *Storage) DeleteServiceBindingCredentials(bindingID, serviceInstanceID string) error {
-	err := s.db.Where("service_instance_id = ? AND binding_id = ?", serviceInstanceID, bindingID).Delete(&models.ServiceBindingCredentials{}).Error
+	err := s.db.Where("service_instance_id = ? AND binding_id = ?", serviceInstanceID, bindingID).Unscoped().Delete(&models.ServiceBindingCredentials{}).Error
 	if err != nil {
 		return fmt.Errorf("error deleting service binding credentials: %w", err)
 	}

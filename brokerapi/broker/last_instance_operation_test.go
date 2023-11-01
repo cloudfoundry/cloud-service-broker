@@ -166,6 +166,12 @@ var _ = Describe("LastInstanceOperation", func() {
 				actualSIID := fakeStorage.DeleteProvisionRequestDetailsArgsForCall(0)
 				Expect(actualSIID).To(Equal(instanceID))
 
+				By("validating that provider instance details are removed")
+				Expect(fakeServiceProvider.DeleteInstanceDataCallCount()).To(Equal(1))
+				_, actualSI = fakeServiceProvider.DeleteInstanceDataArgsForCall(0)
+				Expect(actualSI).To(Equal(instanceID))
+
+				By("validating that details are not stored again")
 				Expect(fakeStorage.StoreServiceInstanceDetailsCallCount()).To(Equal(0))
 			})
 		})
@@ -279,6 +285,27 @@ var _ = Describe("LastInstanceOperation", func() {
 			It("should error", func() {
 				result, err := serviceBroker.LastOperation(context.TODO(), instanceID, pollDetails)
 				Expect(err).To(MatchError("error deleting provision request details from the database: failed to delete provision params"))
+				Expect(result.State).To(Equal(domain.Succeeded))
+				Expect(result.Description).To(Equal("operation complete"))
+			})
+		})
+	})
+
+	Describe("Service provider error", func() {
+		Context("service provider errors when deleting provider instance data", func() {
+			BeforeEach(func() {
+				fakeStorage.GetServiceInstanceDetailsReturns(
+					storage.ServiceInstanceDetails{
+						GUID:          instanceID,
+						OperationType: models.DeprovisionOperationType,
+						ServiceGUID:   offeringID,
+					}, nil)
+				fakeServiceProvider.DeleteInstanceDataReturns(errors.New("failed to delete provider instance data"))
+			})
+
+			It("should error", func() {
+				result, err := serviceBroker.LastOperation(context.TODO(), instanceID, pollDetails)
+				Expect(err).To(MatchError("error deleting provider instance data: failed to delete provider instance data"))
 				Expect(result.State).To(Equal(domain.Succeeded))
 				Expect(result.Description).To(Equal("operation complete"))
 			})
