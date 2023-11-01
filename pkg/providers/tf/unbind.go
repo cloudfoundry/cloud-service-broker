@@ -29,3 +29,19 @@ func (provider *TerraformProvider) Unbind(ctx context.Context, instanceGUID, bin
 
 	return provider.Wait(ctx, tfID)
 }
+
+// DeleteBindingData deletes a terraform deployment from the database
+func (provider *TerraformProvider) DeleteBindingData(ctx context.Context, instanceGUID, bindingID string) error {
+	tfID := generateTfID(instanceGUID, bindingID)
+	provider.logger.Debug("terraform-delete-binding-data", correlation.ID(ctx), lager.Data{
+		"instance": instanceGUID,
+		"binding":  bindingID,
+		"tfId":     tfID,
+	})
+
+	if err := provider.DeleteTerraformDeployment(tfID); err != nil {
+		return err
+	}
+
+	return nil
+}

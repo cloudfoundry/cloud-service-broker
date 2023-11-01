@@ -63,6 +63,11 @@ func (broker *ServiceBroker) updateStateOnOperationCompletion(ctx context.Contex
 			return fmt.Errorf("error deleting provision request details from the database: %w", err)
 		}
 
+		err := service.DeleteInstanceData(ctx, instanceID)
+		if err != nil {
+			return fmt.Errorf("error deleting provider instance data: %s", err)
+		}
+
 		return nil
 	}
 

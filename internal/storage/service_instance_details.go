@@ -117,7 +117,7 @@ func (s *Storage) GetServiceInstancesIDs() (ids []string, err error) {
 }
 
 func (s *Storage) DeleteServiceInstanceDetails(guid string) error {
-	err := s.db.Where("id = ?", guid).Delete(&models.ServiceInstanceDetails{}).Error
+	err := s.db.Where("id = ?", guid).Unscoped().Delete(&models.ServiceInstanceDetails{}).Error
 	if err != nil {
 		return fmt.Errorf("error deleting service instance details: %w", err)
 	}
