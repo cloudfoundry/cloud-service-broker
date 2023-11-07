@@ -222,7 +222,7 @@ func fakeBrokerpak(opts ...option) string {
 	Expect(stream.Copy(stream.FromYaml(m), stream.ToFile(dir, "manifest.yml"))).NotTo(HaveOccurred())
 
 	for _, sdPath := range m.ServiceDefinitions {
-		Expect(stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition()), stream.ToFile(dir, sdPath))).NotTo(HaveOccurred())
+		Expect(stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition("00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000")), stream.ToFile(dir, sdPath))).NotTo(HaveOccurred())
 	}
 
 	packName := path.Join(GinkgoT().TempDir(), "fake.brokerpak")

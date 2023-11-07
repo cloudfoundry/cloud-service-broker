@@ -20,18 +20,15 @@ import (
 	"path"
 	"strings"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/serviceimage"
-
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
-
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-
 	"code.cloudfoundry.org/lager/v3"
 	"github.com/pivotal-cf/brokerapi/v10/domain"
 	"github.com/spf13/viper"
 
+	"github.com/cloudfoundry/cloud-service-broker/internal/serviceimage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
@@ -40,11 +37,11 @@ import (
 // NewExampleTfServiceDefinition creates a new service definition with sample
 // values for the service broker suitable to give a user a template to manually
 // edit.
-func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
+func NewExampleTfServiceDefinition(serviceID string, planID string) TfServiceDefinitionV1 {
 	return TfServiceDefinitionV1{
 		Version:          1,
 		Name:             "example-service",
-		ID:               "00000000-0000-0000-0000-000000000000",
+		ID:               serviceID,
 		Description:      "a longer service description",
 		DisplayName:      "Example Service",
 		ImageURL:         "https://example.com/icon.jpg",
@@ -53,7 +50,7 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 		Tags:             []string{"gcp", "example", "service"},
 		Plans: []TfServiceDefinitionV1Plan{
 			{
-				ID:          "00000000-0000-0000-0000-000000000001",
+				ID:          planID,
 				Name:        "example-email-plan",
 				DisplayName: "example.com email builder",
 				Description: "Builds emails for example.com.",
@@ -135,7 +132,7 @@ func NewExampleTfServiceDefinition() TfServiceDefinitionV1 {
 			{
 				Name:            "Example",
 				Description:     "Examples are used for documenting your service AND as integration tests.",
-				PlanID:          "00000000-0000-0000-0000-000000000001",
+				PlanID:          planID,
 				ProvisionParams: map[string]any{"username": "my-account"},
 				BindParams:      map[string]any{},
 			},
