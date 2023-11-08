@@ -23,6 +23,8 @@ import (
 	"path/filepath"
 	"text/tabwriter"
 
+	"github.com/pborman/uuid"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/packer"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
@@ -46,7 +48,8 @@ func Init(directory string) error {
 		return err
 	}
 
-	if err := stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition()), stream.ToFile(directory, "example-service-definition.yml")); err != nil {
+	if err := stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition(uuid.New(), uuid.New())),
+		stream.ToFile(directory, "example-service-definition.yml")); err != nil {
 		return err
 	}
 
@@ -135,14 +138,15 @@ func finfo(pack string, out io.Writer) error {
 		fmt.Fprintln(out, "Dependencies")
 		w := cmdTabWriter(out)
 		fmt.Fprintln(w, "NAME\tVERSION\tSOURCE")
+		const tableRowTemplate = "%s\t%s\t%s\n"
 		for _, resource := range mf.TerraformVersions {
-			fmt.Fprintf(w, "%s\t%s\t%s\n", "terraform", resource.Version.String(), resource.Source)
+			fmt.Fprintf(w, tableRowTemplate, "terraform", resource.Version.String(), resource.Source)
 		}
 		for _, resource := range mf.TerraformProviders {
-			fmt.Fprintf(w, "%s\t%s\t%s\n", resource.Name, resource.Version.String(), resource.Source)
+			fmt.Fprintf(w, tableRowTemplate, resource.Name, resource.Version.String(), resource.Source)
 		}
 		for _, resource := range mf.Binaries {
-			fmt.Fprintf(w, "%s\t%s\t%s\n", resource.Name, resource.Version, resource.Source)
+			fmt.Fprintf(w, tableRowTemplate, resource.Name, resource.Version, resource.Source)
 		}
 		w.Flush()
 		fmt.Fprintln(out)

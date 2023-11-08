@@ -90,7 +90,7 @@ func fakeBrokerpak() (string, error) {
 	}
 
 	for _, path := range exampleManifest.ServiceDefinitions {
-		if err := stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition()), stream.ToFile(dir, path)); err != nil {
+		if err := stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition("00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000")), stream.ToFile(dir, path)); err != nil {
 			return "", err
 		}
 	}

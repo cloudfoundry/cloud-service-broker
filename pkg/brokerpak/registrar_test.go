@@ -393,7 +393,7 @@ func TestRegistrar_walk(t *testing.T) {
 }
 
 func fakeDefn(name, id string) tf.TfServiceDefinitionV1 {
-	ex := tf.NewExampleTfServiceDefinition()
+	ex := tf.NewExampleTfServiceDefinition("00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000")
 	ex.ID = id
 	ex.Name = "service-" + name
 
