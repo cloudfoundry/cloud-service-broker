@@ -80,7 +80,9 @@ By using the make target `make install` you can install the CSB as a local comma
 The mimic commands are:
 - `csb create-service` - creates a service instance
 - `csb services` - lists created service instances
-- `csb update-service` - updates a serivce instance
+- `csb service` - displays information on an existing service instance
+- `csb update-service` - updates a service instance
+- `csb upgrade-service` - upgrades a service instance
 - `csb delete-service` - deletes a service instance
 - `csb create-service-key` - creates a "binding" and prints credentials
 - `csb service-keys` - lists service keys
