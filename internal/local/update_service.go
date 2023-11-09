@@ -1,7 +1,10 @@
 package local
 
 import (
+	"fmt"
 	"log"
+
+	"github.com/pivotal-cf/brokerapi/v10/domain"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 )
@@ -11,11 +14,22 @@ func UpdateService(name, plan, params, cachePath string) {
 	defer cleanup()
 
 	serviceInstance := lookupServiceInstanceByGUID(nameToID(name))
-
+	deployment, err := store().GetTerraformDeployment(fmt.Sprintf("tf:%s:", serviceInstance.GUID))
+	if err != nil {
+		log.Fatal(err)
+	}
+	tfVersion, err := deployment.TFWorkspace().StateTFVersion()
+	if err != nil {
+		log.Fatal(err)
+	}
 	broker := startBroker(pakDir)
 	defer broker.Stop()
 
-	opts := []testdrive.UpdateOption{testdrive.WithUpdateParams(params)}
+	opts := []testdrive.UpdateOption{
+		testdrive.WithUpdateParams(params),
+		testdrive.WithUpdatePreviousValues(domain.PreviousValues{MaintenanceInfo: &domain.MaintenanceInfo{Version: tfVersion.String()}}),
+	}
+
 	if plan != "" {
 		planID := lookupPlanIDByName(broker.Client, serviceInstance.ServiceOfferingGUID, plan)
 		opts = append(opts, testdrive.WithUpdatePlan(planID))
