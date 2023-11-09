@@ -14,8 +14,14 @@ func UpdateService(name, plan, params, cachePath string) {
 	defer cleanup()
 
 	serviceInstance := lookupServiceInstanceByGUID(nameToID(name))
-	deployment, _ := store().GetTerraformDeployment(fmt.Sprintf("tf:%s:", serviceInstance.GUID))
-	tfVersion, _ := deployment.TFWorkspace().StateTFVersion()
+	deployment, err := store().GetTerraformDeployment(fmt.Sprintf("tf:%s:", serviceInstance.GUID))
+	if err != nil {
+		log.Fatal(err)
+	}
+	tfVersion, err := deployment.TFWorkspace().StateTFVersion()
+	if err != nil {
+		log.Fatal(err)
+	}
 	broker := startBroker(pakDir)
 	defer broker.Stop()
 
