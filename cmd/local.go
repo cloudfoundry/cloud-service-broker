@@ -44,6 +44,16 @@ func init() {
 	}
 	rootCmd.AddCommand(servicesCmd)
 
+	serviceCmd := &cobra.Command{
+		Use:   "service",
+		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: provides information on a service instance",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			local.Service(args[0], viper.GetString(pakCachePath))
+		},
+	}
+	rootCmd.AddCommand(serviceCmd)
+
 	const planFlag = "p"
 	updateServiceCmd := &cobra.Command{
 		Use:   "update-service NAME",
