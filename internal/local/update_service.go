@@ -2,9 +2,11 @@ package local
 
 import (
 	"fmt"
-	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
-	"github.com/pivotal-cf/brokerapi/v10/domain"
 	"log"
+
+	"github.com/pivotal-cf/brokerapi/v10/domain"
+
+	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 )
 
 func UpdateService(name, plan, params, cachePath string) {
