@@ -77,6 +77,9 @@ func lookupPlanMaintenanceInfoByGUID(clnt *client.Client, serviceID, planGUID st
 		if s.ID == serviceID {
 			for _, p := range s.Plans {
 				if p.ID == planGUID {
+					if p.MaintenanceInfo == nil {
+						return domain.MaintenanceInfo{}
+					}
 					return *p.MaintenanceInfo
 				}
 			}
