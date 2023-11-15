@@ -71,9 +71,9 @@ func (client *Client) Catalog(requestID string) *BrokerResponse {
 // Provision creates a new service with the given instanceId, of type serviceId,
 // from the plan planId, with additional details provisioningDetails
 func (client *Client) Provision(instanceID, serviceID, planID, requestID string, provisioningDetails json.RawMessage) *BrokerResponse {
-	url := fmt.Sprintf("service_instances/%s?accepts_incomplete=true", instanceID)
+	provisionURL := fmt.Sprintf("service_instances/%s?accepts_incomplete=true", instanceID)
 
-	return client.makeRequest(http.MethodPut, url, requestID, domain.ProvisionDetails{
+	return client.makeRequest(http.MethodPut, provisionURL, requestID, domain.ProvisionDetails{
 		ServiceID:     serviceID,
 		PlanID:        planID,
 		RawParameters: provisioningDetails,
@@ -82,16 +82,16 @@ func (client *Client) Provision(instanceID, serviceID, planID, requestID string,
 
 // Deprovision destroys a service instance of type instanceId
 func (client *Client) Deprovision(instanceID, serviceID, planID, requestID string) *BrokerResponse {
-	url := fmt.Sprintf("service_instances/%s?accepts_incomplete=true&service_id=%s&plan_id=%s", instanceID, serviceID, planID)
+	deprovisionURL := fmt.Sprintf("service_instances/%s?accepts_incomplete=true&service_id=%s&plan_id=%s", instanceID, serviceID, planID)
 
-	return client.makeRequest(http.MethodDelete, url, requestID, nil)
+	return client.makeRequest(http.MethodDelete, deprovisionURL, requestID, nil)
 }
 
 // Bind creates an account identified by bindingId and gives it access to instanceId
 func (client *Client) Bind(instanceID, bindingID, serviceID, planID, requestID string, parameters json.RawMessage) *BrokerResponse {
-	url := fmt.Sprintf("service_instances/%s/service_bindings/%s", instanceID, bindingID)
+	bindURL := fmt.Sprintf("service_instances/%s/service_bindings/%s", instanceID, bindingID)
 
-	return client.makeRequest(http.MethodPut, url, requestID, domain.BindDetails{
+	return client.makeRequest(http.MethodPut, bindURL, requestID, domain.BindDetails{
 		ServiceID:     serviceID,
 		PlanID:        planID,
 		RawParameters: parameters,
@@ -100,16 +100,16 @@ func (client *Client) Bind(instanceID, bindingID, serviceID, planID, requestID s
 
 // Unbind destroys an account identified by bindingId
 func (client *Client) Unbind(instanceID, bindingID, serviceID, planID, requestID string) *BrokerResponse {
-	url := fmt.Sprintf("service_instances/%s/service_bindings/%s?service_id=%s&plan_id=%s", instanceID, bindingID, serviceID, planID)
+	unbindURL := fmt.Sprintf("service_instances/%s/service_bindings/%s?service_id=%s&plan_id=%s", instanceID, bindingID, serviceID, planID)
 
-	return client.makeRequest(http.MethodDelete, url, requestID, nil)
+	return client.makeRequest(http.MethodDelete, unbindURL, requestID, nil)
 }
 
 // Update sends a patch request to change the plan
 func (client *Client) Update(instanceID, serviceID, planID, requestID string, parameters json.RawMessage, previousValues domain.PreviousValues, maintenanceInfo *domain.MaintenanceInfo) *BrokerResponse {
-	url := fmt.Sprintf("service_instances/%s?accepts_incomplete=true", instanceID)
+	updateURL := fmt.Sprintf("service_instances/%s?accepts_incomplete=true", instanceID)
 
-	return client.makeRequest(http.MethodPatch, url, requestID, domain.UpdateDetails{
+	return client.makeRequest(http.MethodPatch, updateURL, requestID, domain.UpdateDetails{
 		ServiceID:       serviceID,
 		PlanID:          planID,
 		RawParameters:   parameters,
@@ -120,9 +120,9 @@ func (client *Client) Update(instanceID, serviceID, planID, requestID string, pa
 
 // LastOperation queries the status of a long-running job on the server
 func (client *Client) LastOperation(instanceID, requestID string) *BrokerResponse {
-	url := fmt.Sprintf("service_instances/%s/last_operation", instanceID)
+	lastOperationURL := fmt.Sprintf("service_instances/%s/last_operation", instanceID)
 
-	return client.makeRequest(http.MethodGet, url, requestID, nil)
+	return client.makeRequest(http.MethodGet, lastOperationURL, requestID, nil)
 }
 
 func (client *Client) makeRequest(method, path, requestID string, body any) *BrokerResponse {
@@ -144,7 +144,7 @@ func (client *Client) makeRequest(method, path, requestID string, body any) *Bro
 }
 
 func (client *Client) newRequest(method, path, requestID string, body any) (*http.Request, error) {
-	url, err := client.BaseURL.Parse(path)
+	requestURL, err := client.BaseURL.Parse(path)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (client *Client) newRequest(method, path, requestID string, body any) (*htt
 		}
 	}
 
-	request, err := http.NewRequest(method, url.String(), buffer)
+	request, err := http.NewRequest(method, requestURL.String(), buffer)
 	if err != nil {
 		return nil, err
 	}
