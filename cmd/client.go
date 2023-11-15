@@ -33,6 +33,8 @@ var (
 	instanceID     string
 	bindingID      string
 	parametersJSON string
+	oldVersion     string
+	newVersion     string
 
 	serviceName     string
 	exampleName     string
@@ -114,6 +116,12 @@ user-defined plans.
 		return client.Update(instanceID, serviceID, planID, uuid.New(), json.RawMessage(parametersJSON), domain.PreviousValues{}, nil)
 	})
 
+	upgradeCmd := newClientCommand("upgrade", "Upgrade the service instance", func(c *client.Client) *client.BrokerResponse {
+		return c.Update(instanceID, serviceID, planID, uuid.New(), json.RawMessage("{}"),
+			domain.PreviousValues{ServiceID: serviceID, PlanID: planID, MaintenanceInfo: &domain.MaintenanceInfo{Version: oldVersion}},
+			&domain.MaintenanceInfo{Version: newVersion})
+	})
+
 	examplesCmd := &cobra.Command{
 		Use:   "examples",
 		Short: "Display available examples",
@@ -150,7 +158,7 @@ user-defined plans.
 		},
 	}
 
-	clientCmd.AddCommand(clientCatalogCmd, provisionCmd, deprovisionCmd, bindCmd, unbindCmd, lastCmd, updateCmd)
+	clientCmd.AddCommand(clientCatalogCmd, provisionCmd, deprovisionCmd, bindCmd, unbindCmd, lastCmd, updateCmd, upgradeCmd)
 	if featureflags.Enabled(featureflags.EnableLegacyExamplesCommands) {
 		clientCmd.AddCommand(runExamplesCmd, examplesCmd)
 	}
@@ -162,10 +170,12 @@ user-defined plans.
 		}
 	}
 
-	bindFlag(&instanceID, "instanceid", "id of the service instance to operate on (user defined)", provisionCmd, deprovisionCmd, bindCmd, unbindCmd, lastCmd, updateCmd)
-	bindFlag(&serviceID, "serviceid", "GUID of the service instanceid references (see catalog)", provisionCmd, deprovisionCmd, bindCmd, unbindCmd, updateCmd)
-	bindFlag(&planID, "planid", "GUID of the service instanceid references (see catalog entry for the associated serviceid)", provisionCmd, deprovisionCmd, bindCmd, unbindCmd, updateCmd)
+	bindFlag(&instanceID, "instanceid", "id of the service instance to operate on (user defined)", provisionCmd, deprovisionCmd, bindCmd, unbindCmd, lastCmd, updateCmd, upgradeCmd)
+	bindFlag(&serviceID, "serviceid", "GUID of the service instanceid references (see catalog)", provisionCmd, deprovisionCmd, bindCmd, unbindCmd, updateCmd, upgradeCmd)
+	bindFlag(&planID, "planid", "GUID of the service instanceid references (see catalog entry for the associated serviceid)", provisionCmd, deprovisionCmd, bindCmd, unbindCmd, updateCmd, upgradeCmd)
 	bindFlag(&bindingID, "bindingid", "GUID of the binding to work on (user defined)", bindCmd, unbindCmd)
+	bindFlag(&oldVersion, "oldversion", "old terraform version", upgradeCmd)
+	bindFlag(&newVersion, "newversion", "new terraform version", upgradeCmd)
 
 	for _, sc := range []*cobra.Command{provisionCmd, bindCmd, updateCmd} {
 		sc.Flags().StringVarP(&parametersJSON, "params", "", "{}", "JSON string of user-defined parameters to pass to the request")
