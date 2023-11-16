@@ -89,7 +89,7 @@ func init() {
 
 	createServiceKeyCmd := &cobra.Command{
 		Use:   "create-service-key SERVICE_INSTANCE SERVICE_KEY",
-		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: create a service instance",
+		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: create a service key",
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			local.CreateServiceKey(args[0], args[1], params, viper.GetString(pakCachePath))
@@ -97,6 +97,16 @@ func init() {
 	}
 	createServiceKeyCmd.Flags().StringVarP(&params, paramsFlag, paramsFlag, "", "parameters as JSON")
 	rootCmd.AddCommand(createServiceKeyCmd)
+
+	serviceKeyCmd := &cobra.Command{
+		Use:   "service-key SERVICE_INSTANCE SERVICE_KEY",
+		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: print a service key",
+		Args:  cobra.ExactArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			local.ServiceKey(args[0], args[1])
+		},
+	}
+	rootCmd.AddCommand(serviceKeyCmd)
 
 	serviceKeysCmd := &cobra.Command{
 		Use:   "service-keys NAME",
