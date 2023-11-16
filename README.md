@@ -86,6 +86,7 @@ The mimic commands are:
 - `csb delete-service` - deletes a service instance
 - `csb create-service-key` - creates a "binding" and prints credentials
 - `csb service-keys` - lists service keys
+- `csb service-key` - prints a service key
 - `csb delete-service-key` - deletes a "binding"
 
 The mimic commands build a brokerpak, start an ephemeral CSB server and send OSBAPI

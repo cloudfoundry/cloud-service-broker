@@ -38,7 +38,9 @@ func Service(name, cachePath string) {
 	tfVersion, _ := deployment.TFWorkspace().StateTFVersion()
 
 	tp.row("")
-	tp.row("Showing upgrade status: Terraform version in state is ", tfVersion.String())
-
+	tp.row("Showing upgrade status:")
+	tp.row("Terraform version in state is ", tfVersion.String())
+	mInfo := lookupPlanMaintenanceInfoByGUID(broker.Client, instance.ServiceGUID, instance.PlanGUID)
+	tp.row("Plan version is ", mInfo.Version)
 	tp.print()
 }
