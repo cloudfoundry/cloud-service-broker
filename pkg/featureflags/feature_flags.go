@@ -14,8 +14,7 @@ const (
 	// IF YOU USE THIS, PLEASE RAISE AN ISSUE. Since the new way of running examples was added,
 	// the authors don't expect anyone to use the legacy method. Please let us know if you need
 	// the old way to stay around.
-	EnableLegacyExamplesCommands    FeatureFlagName = "legacy.examples.enabled"
-	DisableTfUpgradeProviderRenames FeatureFlagName = "brokerpak.terraform.upgrades.providerRenames.disabled"
+	EnableLegacyExamplesCommands FeatureFlagName = "legacy.examples.enabled"
 )
 
 var AllFeatureFlagEnvVars []string
@@ -26,7 +25,6 @@ func init() {
 		DynamicHCLEnabled:                "BROKERPAK_UPDATES_ENABLED",  // deprecated pattern - future variables should start CSB_
 		DisableRequestPropertyValidation: "CSB_DISABLE_REQUEST_PROPERTY_VALIDATION",
 		EnableLegacyExamplesCommands:     "CSB_ENABLE_LEGACY_EXAMPLES_COMMANDS",
-		DisableTfUpgradeProviderRenames:  "CSB_DISABLE_TF_UPGRADE_PROVIDER_RENAMES",
 	} {
 		viper.BindEnv(string(ffName), varName)
 		viper.SetDefault(string(ffName), false)
