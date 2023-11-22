@@ -19,6 +19,8 @@ terraform_binaries:
   version: 1.0.10
 - name: terraform
   version: 1.1.6
+- name: terraform
+  version: 1.5.7
   default: true
 - name: terraform-provider-random
   version: 3.5.1
@@ -30,5 +32,6 @@ terraform_upgrade_path:
 - version: 0.14.9
 - version: 1.0.10
 - version: 1.1.6
+- version: 1.5.7
 service_definitions:
 - fake-service.yml

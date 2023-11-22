@@ -10,8 +10,9 @@ import (
 
 var _ = Describe("Terraform Rename Provider", func() {
 	var (
-		brokerpak string
-		broker    *testdrive.Broker
+		brokerpak        string
+		broker           *testdrive.Broker
+		terraformVersion = "1.5.7"
 	)
 
 	BeforeEach(func() {
@@ -40,10 +41,10 @@ var _ = Describe("Terraform Rename Provider", func() {
 
 		By("running 'cf update-service'")
 		Expect(broker.UpgradeService(
-			serviceInstance, "0.13.7",
+			serviceInstance, terraformVersion,
 			testdrive.WithUpgradePreviousValues(domain.PreviousValues{
 				PlanID:          servicePlanGUID,
-				MaintenanceInfo: &domain.MaintenanceInfo{Version: "0.13.7"},
+				MaintenanceInfo: &domain.MaintenanceInfo{Version: terraformVersion},
 			}),
 			testdrive.WithUpgradeParams(`{"alpha_input":"quz"}`),
 		)).To(Succeed())

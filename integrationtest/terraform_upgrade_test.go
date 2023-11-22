@@ -17,7 +17,7 @@ var _ = Describe("Terraform Upgrade", func() {
 		serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
 		servicePlanGUID     = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
 		startingVersion     = "0.12.21"
-		endingVersion       = "1.2.3"
+		endingVersion       = "1.5.7"
 	)
 
 	var (
