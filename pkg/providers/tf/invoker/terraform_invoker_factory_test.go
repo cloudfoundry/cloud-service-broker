@@ -1,13 +1,11 @@
 package invoker_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor/executorfakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
 	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/spf13/viper"
 )
 
 var _ = Context("TerraformInvokerFactory", func() {
@@ -56,68 +54,6 @@ var _ = Context("TerraformInvokerFactory", func() {
 			).To(Equal(invoker.NewTerraformDefaultInvoker(fakeExecutor, expectedTerraformPluginDir, expectedProviderRenames)))
 			Expect(fakeBuilder.VersionedExecutorCallCount()).To(Equal(1))
 			Expect(fakeBuilder.VersionedExecutorArgsForCall(0)).To(Equal(newVersion("1.0.4")))
-		})
-	})
-
-	Context("1.2.0+", func() {
-		Context("with provider renames disabled", func() {
-			BeforeEach(func() {
-				viper.Set(string(featureflags.DisableTfUpgradeProviderRenames), true)
-
-			})
-			AfterEach(func() {
-				viper.Reset()
-			})
-
-			It("should return an invoker with renames, for terraform version 1.1.9", func() {
-				Expect(
-					invokerFactory.VersionedTerraformInvoker(newVersion("1.1.9")),
-				).To(Equal(invoker.NewTerraformDefaultInvoker(fakeExecutor, expectedTerraformPluginDir, expectedProviderRenames)))
-				Expect(fakeBuilder.VersionedExecutorCallCount()).To(Equal(1))
-				Expect(fakeBuilder.VersionedExecutorArgsForCall(0)).To(Equal(newVersion("1.1.9")))
-			})
-
-			It("should return an invoker with no renames, for terraform version 1.2.0", func() {
-				Expect(
-					invokerFactory.VersionedTerraformInvoker(newVersion("1.2.0")),
-				).To(Equal(invoker.NewTerraformDefaultInvoker(fakeExecutor, expectedTerraformPluginDir, map[string]string{})))
-				Expect(fakeBuilder.VersionedExecutorCallCount()).To(Equal(1))
-				Expect(fakeBuilder.VersionedExecutorArgsForCall(0)).To(Equal(newVersion("1.2.0")))
-			})
-
-			It("should return an invoker with no renames, for terraform version 1.4.2", func() {
-				Expect(
-					invokerFactory.VersionedTerraformInvoker(newVersion("1.4.2")),
-				).To(Equal(invoker.NewTerraformDefaultInvoker(fakeExecutor, expectedTerraformPluginDir, map[string]string{})))
-				Expect(fakeBuilder.VersionedExecutorCallCount()).To(Equal(1))
-				Expect(fakeBuilder.VersionedExecutorArgsForCall(0)).To(Equal(newVersion("1.4.2")))
-			})
-		})
-
-		Context("with provider renames enabled", func() {
-			It("should return an invoker that performs renames, for 1.2.0", func() {
-				Expect(
-					invokerFactory.VersionedTerraformInvoker(newVersion("1.2.0")),
-				).To(Equal(invoker.NewTerraformDefaultInvoker(fakeExecutor, expectedTerraformPluginDir, expectedProviderRenames)))
-				Expect(fakeBuilder.VersionedExecutorCallCount()).To(Equal(1))
-				Expect(fakeBuilder.VersionedExecutorArgsForCall(0)).To(Equal(newVersion("1.2.0")))
-			})
-
-			It("should return an invoker that performs renames, for 1.4.2", func() {
-				Expect(
-					invokerFactory.VersionedTerraformInvoker(newVersion("1.4.2")),
-				).To(Equal(invoker.NewTerraformDefaultInvoker(fakeExecutor, expectedTerraformPluginDir, expectedProviderRenames)))
-				Expect(fakeBuilder.VersionedExecutorCallCount()).To(Equal(1))
-				Expect(fakeBuilder.VersionedExecutorArgsForCall(0)).To(Equal(newVersion("1.4.2")))
-			})
-
-			It("should return an invoker with renames, for terraform version 1.1.9", func() {
-				Expect(
-					invokerFactory.VersionedTerraformInvoker(newVersion("1.1.9")),
-				).To(Equal(invoker.NewTerraformDefaultInvoker(fakeExecutor, expectedTerraformPluginDir, expectedProviderRenames)))
-				Expect(fakeBuilder.VersionedExecutorCallCount()).To(Equal(1))
-				Expect(fakeBuilder.VersionedExecutorArgsForCall(0)).To(Equal(newVersion("1.1.9")))
-			})
 		})
 	})
 })
