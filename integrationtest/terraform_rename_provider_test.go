@@ -10,10 +10,10 @@ import (
 
 var _ = Describe("Terraform Rename Provider", func() {
 	var (
-		brokerpak        string
-		broker           *testdrive.Broker
-		terraformVersion = "1.5.7"
+		brokerpak string
+		broker    *testdrive.Broker
 	)
+	const terraformVersion = "1.5.7"
 
 	BeforeEach(func() {
 		brokerpak = must(packer.BuildBrokerpak(csb, fixtures("terraform-rename-provider")))
