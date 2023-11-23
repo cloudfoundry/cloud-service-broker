@@ -15,8 +15,8 @@ terraform_binaries:
   version: 0.13.7
   default: true
 - name: terraform-provider-random
-  version: 3.1.0
-  source: https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip
+  version: 3.5.1
+  source: https://github.com/terraform-providers/terraform-provider-random/archive/v3.5.1.zip
 terraform_state_provider_replacements:
   registry.terraform.io/-/random: "registry.terraform.io/hashicorp/random"
 terraform_upgrade_path:
