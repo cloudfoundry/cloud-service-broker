@@ -10,7 +10,9 @@ platforms:
   arch: amd64
 terraform_binaries:
 - name: terraform
-  version: 0.12.21
-  source: https://github.com/hashicorp/terraform/archive/v0.12.21.zip
+  version: 1.5.7
+  source: https://github.com/hashicorp/terraform/archive/v1.4.6.zip
+- name: terraform-provider-random
+  version: 3.5.1
 service_definitions:
 - fake-service.yml
