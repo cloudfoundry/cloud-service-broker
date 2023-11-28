@@ -20,7 +20,7 @@ require (
 	github.com/pborman/uuid v1.2.1
 	github.com/pivotal-cf/brokerapi/v10 v10.1.1
 	github.com/russross/blackfriday/v2 v2.1.0
-	github.com/spf13/cast v1.5.1
+	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.17.0
 	github.com/xeipuuv/gojsonschema v1.2.0
