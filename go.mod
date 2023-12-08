@@ -22,7 +22,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.0
-	github.com/spf13/viper v1.18.0
+	github.com/spf13/viper v1.18.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	github.com/zclconf/go-cty v1.14.1
 	golang.org/x/crypto v0.16.0
