@@ -23,7 +23,7 @@ ARG CSB_VERSION=0.0.0
 RUN CGO_ENABLED=1 GOOS=linux go build -o ./build/cloud-service-broker -ldflags "-X github.com/cloudfoundry/cloud-service-broker/utils.Version=$CSB_VERSION"
 
 # Currently can't go to 3.19 due to issue: https://github.com/mattn/go-sqlite3/issues/1164#issuecomment-1848677118
-FROM alpine:3.18
+FROM alpine:3.19
 
 COPY --from=build /app/build/cloud-service-broker /bin/cloud-service-broker
 
