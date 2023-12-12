@@ -10,7 +10,7 @@ platforms:
   arch: amd64
 terraform_binaries:
 - name: terraform
-  version: 0.13.7
+  version: 1.5.7
   default: true
 - name: terraform-provider-random
   provider: "ContentSquare/random"

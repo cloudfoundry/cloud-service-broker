@@ -14,4 +14,3 @@ resource "random_integer" "priority" {
   min = 3
   max = 4
 }
-

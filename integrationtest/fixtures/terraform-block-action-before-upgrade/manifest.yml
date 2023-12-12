@@ -10,7 +10,7 @@ platforms:
   arch: amd64
 terraform_binaries:
 - name: terraform
-  version: 0.12.21
+  version: 1.4.6
 - name: terraform-provider-random
   version: 3.5.1
 service_definitions:
