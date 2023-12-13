@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.21-alpine AS build
+# Currently can't go to 3.19 due to issue: https://github.com/mattn/go-sqlite3/issues/1164#issuecomment-1848677118
+FROM golang:1.21-alpine3.18 AS build
 RUN apk update
 RUN apk upgrade
 RUN apk add --update gcc g++
