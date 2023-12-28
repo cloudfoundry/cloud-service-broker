@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Currently can't go to 3.19 due to issue: https://github.com/mattn/go-sqlite3/issues/1164#issuecomment-1848677118
-FROM golang:1.21-alpine3.18 AS build
+FROM golang:1.21-alpine3.19 AS build
 RUN apk update
 RUN apk upgrade
 RUN apk add --update gcc g++
@@ -21,9 +20,8 @@ WORKDIR /app
 ADD . /app
 
 ARG CSB_VERSION=0.0.0
-RUN CGO_ENABLED=1 GOOS=linux go build -o ./build/cloud-service-broker -ldflags "-X github.com/cloudfoundry/cloud-service-broker/utils.Version=$CSB_VERSION"
+RUN CGO_CFLAGS="-D_LARGEFILE64_SOURCE" CGO_ENABLED=1 GOOS=linux go build -o ./build/cloud-service-broker -ldflags "-X github.com/cloudfoundry/cloud-service-broker/utils.Version=$CSB_VERSION"
 
-# Currently can't go to 3.19 due to issue: https://github.com/mattn/go-sqlite3/issues/1164#issuecomment-1848677118
 FROM alpine:3.19
 
 COPY --from=build /app/build/cloud-service-broker /bin/cloud-service-broker
