@@ -1,4 +1,4 @@
-package integrationtest
+package integrationtest_test
 
 import (
 	"os"
@@ -12,18 +12,15 @@ import (
 var _ = Describe("brokerpaktestframework", func() {
 	It("works", func() {
 		By("creating a mock Terraform")
-		mockTerraform, err := brokerpaktestframework.NewTerraformMock(brokerpaktestframework.WithVersion("1.2.3"))
-		Expect(err).NotTo(HaveOccurred())
+		mockTerraform := must(brokerpaktestframework.NewTerraformMock(brokerpaktestframework.WithVersion("1.2.3")))
 
 		By("building a fake brokerpak")
-		cwd, err := os.Getwd()
-		Expect(err).NotTo(HaveOccurred())
-		broker, err := brokerpaktestframework.BuildTestInstance(
+		cwd := must(os.Getwd())
+		broker := must(brokerpaktestframework.BuildTestInstance(
 			filepath.Join(cwd, "fixtures", "brokerpaktestframework"),
 			mockTerraform,
 			GinkgoWriter,
-		)
-		Expect(err).NotTo(HaveOccurred())
+		))
 
 		By("starting the broker")
 		Expect(broker.Start(GinkgoWriter, nil)).To(Succeed())
@@ -32,16 +29,14 @@ var _ = Describe("brokerpaktestframework", func() {
 		})
 
 		By("testing catalog")
-		catalog, err := broker.Catalog()
-		Expect(err).NotTo(HaveOccurred())
+		catalog := must(broker.Catalog())
 		Expect(catalog.Services).To(HaveLen(1))
 		Expect(catalog.Services[0].Name).To(Equal("alpha-service"))
 
 		By("testing provision")
-		_, err = broker.Provision("does-not-exist", "does-not-exist", nil)
+		_, err := broker.Provision("does-not-exist", "does-not-exist", nil)
 		Expect(err).To(MatchError(`cannot find service "does-not-exist" and plan "does-not-exist" in catalog`))
-		serviceInstanceID, err := broker.Provision("alpha-service", "alpha", nil)
-		Expect(err).NotTo(HaveOccurred())
+		serviceInstanceID := must(broker.Provision("alpha-service", "alpha", nil))
 		Expect(serviceInstanceID).To(HaveLen(36))
 
 		By("testing bind")
@@ -49,8 +44,7 @@ var _ = Describe("brokerpaktestframework", func() {
 		Expect(err).To(MatchError(`cannot find service "does-not-exist" and plan "does-not-exist" in catalog`))
 		_, err = broker.Bind("alpha-service", "alpha", "does-not-exist", nil)
 		Expect(err).To(MatchError(ContainSubstring(`error retrieving service instance details: could not find service instance details for: does-not-exist`)))
-		creds, err := broker.Bind("alpha-service", "alpha", serviceInstanceID, nil)
-		Expect(err).NotTo(HaveOccurred())
+		creds := must(broker.Bind("alpha-service", "alpha", serviceInstanceID, nil))
 		Expect(creds).To(BeEmpty())
 	})
 })
