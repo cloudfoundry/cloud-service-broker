@@ -27,13 +27,11 @@ var _ = Describe("Info Endpoint", func() {
 	})
 
 	It("responds to the info endpoint", func() {
-		resp, err := http.Get(fmt.Sprintf("http://localhost:%d/info", broker.Port))
-		Expect(err).NotTo(HaveOccurred())
+		resp := must(http.Get(fmt.Sprintf("http://localhost:%d/info", broker.Port)))
 		Expect(resp).To(HaveHTTPStatus(http.StatusOK))
 
 		defer resp.Body.Close()
-		body, err := io.ReadAll(resp.Body)
-		Expect(err).NotTo(HaveOccurred())
+		body := must(io.ReadAll(resp.Body))
 		var data map[string]any
 		Expect(json.Unmarshal(body, &data)).NotTo(HaveOccurred())
 
