@@ -66,9 +66,10 @@ test: download lint test-units test-integration ## run lint and unit tests
 test-units: deps-go-binary ## run unit tests
 	$(GO) test $(PKG)/brokerapi/... $(PKG)/cmd/... $(PKG)/dbservice/... $(PKG)/internal/... $(PKG)/pkg/... $(PKG)/utils/... -tags=service_broker
 
+# Integration tests are relatively resource-hungry, so we tune down the number of processes that run in parallel
 .PHONY: test-integration
 test-integration: deps-go-binary .pak-cache ## run integration tests
-	PAK_BUILD_CACHE_PATH=$(PAK_CACHE) $(GO) run github.com/onsi/ginkgo/v2/ginkgo -p integrationtest/...
+	PAK_BUILD_CACHE_PATH=$(PAK_CACHE) $(GO) run github.com/onsi/ginkgo/v2/ginkgo --procs 4 integrationtest/...
 
 .pak-cache:
 	mkdir -p $(PAK_CACHE)
