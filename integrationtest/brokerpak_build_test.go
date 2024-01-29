@@ -38,11 +38,9 @@ var _ = Describe("Brokerpak Build", func() {
 
 			extractionPath := GinkgoT().TempDir()
 			By("unzipping the brokerpak")
-			zr, err := zippy.Open(brokerpakPath)
-			Expect(err).NotTo(HaveOccurred())
+			zr := must(zippy.Open(brokerpakPath))
 
-			err = zr.ExtractDirectory("", extractionPath)
-			Expect(err).NotTo(HaveOccurred())
+			Expect(zr.ExtractDirectory("", extractionPath)).To(Succeed())
 
 			By("checking that the expected files are there")
 			paths := []string{

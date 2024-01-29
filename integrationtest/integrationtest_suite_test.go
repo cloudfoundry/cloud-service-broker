@@ -31,15 +31,13 @@ var _ = SynchronizedBeforeSuite(
 	func() []byte {
 		// -gcflags enabled "gops", but had to be removed as this doesn't compile with Go 1.19
 		//path, err := Build("github.com/cloudfoundry/cloud-service-broker", `-gcflags="all=-N -l"`)
-		path, err := Build("github.com/cloudfoundry/cloud-service-broker")
-		Expect(err).NotTo(HaveOccurred())
+		path := must(Build("github.com/cloudfoundry/cloud-service-broker"))
 		return []byte(path)
 	},
 	func(data []byte) {
 		csb = string(data)
 
-		cwd, err := os.Getwd()
-		Expect(err).NotTo(HaveOccurred())
+		cwd := must(os.Getwd())
 		fixtures = func(name string) string {
 			return filepath.Join(cwd, "fixtures", name)
 		}
@@ -52,8 +50,7 @@ var _ = SynchronizedAfterSuite(
 )
 
 var _ = BeforeEach(func() {
-	fh, err := os.CreateTemp(os.TempDir(), "csbdb")
-	Expect(err).NotTo(HaveOccurred())
+	fh := must(os.CreateTemp(os.TempDir(), "csbdb"))
 	defer fh.Close()
 
 	database = fh.Name()
@@ -61,8 +58,7 @@ var _ = BeforeEach(func() {
 		cleanup(database)
 	})
 
-	dbConn, err = gorm.Open(sqlite.Open(database), &gorm.Config{})
-	Expect(err).NotTo(HaveOccurred())
+	dbConn = must(gorm.Open(sqlite.Open(database), &gorm.Config{}))
 })
 
 func requestID() string {

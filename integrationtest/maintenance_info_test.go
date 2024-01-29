@@ -42,8 +42,7 @@ var _ = Describe("Maintenance Info", func() {
 				Expect(catalogResponse.Error).NotTo(HaveOccurred())
 
 				var catServices apiresponses.CatalogResponse
-				err := json.Unmarshal(catalogResponse.ResponseBody, &catServices)
-				Expect(err).NotTo(HaveOccurred())
+				Expect(json.Unmarshal(catalogResponse.ResponseBody, &catServices)).To(Succeed())
 				Expect(catServices.Services[0].Plans[0].MaintenanceInfo).To(Equal(&domain.MaintenanceInfo{
 					Public:      nil,
 					Private:     "",

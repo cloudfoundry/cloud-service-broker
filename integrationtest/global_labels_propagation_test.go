@@ -48,9 +48,8 @@ var _ = Describe("Global labels propagation", Label("global-labels"), func() {
 			Outputs map[string]any `json:"outputs"`
 		}
 
-		err := dbConn.Where("id = ?", fmt.Sprintf("tf:%s:", serviceInstanceGUID)).First(&tfDeploymentReceiver).Error
+		Expect(dbConn.Where("id = ?", fmt.Sprintf("tf:%s:", serviceInstanceGUID)).First(&tfDeploymentReceiver).Error).To(Succeed())
 
-		Expect(err).NotTo(HaveOccurred())
 		Expect(json.Unmarshal(tfDeploymentReceiver.Workspace, &workspaceReceiver)).NotTo(HaveOccurred())
 		Expect(json.Unmarshal(workspaceReceiver.State, &stateReceiver)).NotTo(HaveOccurred())
 		return stateReceiver.Outputs
