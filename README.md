@@ -64,7 +64,13 @@ It supports the following sub-commands:
 ## Development
 
 `make` is used to orchestrate most development tasks. 
-`go` is required to build the broker. If you don't have `go` installed, it is possible to use a `docker` image to build and unit test the broker. If the environment variable `USE_GO_CONTAINERS` exists, `make` will use `docker` versions of the tools so you don't need to have them installed locally. 
+`go` is required to build the broker.
+If you don't have `go` installed, it is possible to use `docker` to launch an interactive shell into some supported image containing all necessary tools. For example:
+```
+# From the root of this repo run:
+docker run -it --rm -v "${PWD}:/repo" --workdir "/repo" --entrypoint "/bin/bash" cflondonservices/csb-ci-main
+make
+```
 
 There are make targets for most common dev tasks. Running make without a target will list the possible targets.
 

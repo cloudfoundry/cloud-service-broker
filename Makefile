@@ -11,15 +11,8 @@ else
 OSFAMILY=linux
 endif
 
-ifeq ($(USE_GO_CONTAINERS),)
 GO=go
 GOFMT=gofmt
-else
-UID:=$(shell id -u)
-DOCKER_OPTS=--rm -u $(UID) -v $(HOME):$(HOME) -e HOME -e USER=$(USER) -e USERNAME=$(USER) -w $(PWD)
-GO=docker run $(DOCKER_OPTS) -e GOARCH -e GOOS -e CGO_ENABLED golang:$(GO-VERSION) go
-GOFMT=docker run $(DOCKER_OPTS) -e GOARCH -e GOOS -e CGO_ENABLED golang:$(GO-VERSION) gofmt
-endif
 
 SRC = $(shell find . -name "*.go" | grep -v "_test\." )
 
