@@ -1,6 +1,6 @@
 module github.com/cloudfoundry/cloud-service-broker
 
-go 1.21
+go 1.22
 
 require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20220620130410-645eee56ecdb
@@ -18,20 +18,20 @@ require (
 	github.com/onsi/gomega v1.31.1
 	github.com/otiai10/copy v1.14.0
 	github.com/pborman/uuid v1.2.1
-	github.com/pivotal-cf/brokerapi/v10 v10.1.1
+	github.com/pivotal-cf/brokerapi/v10 v10.2.0
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	github.com/xeipuuv/gojsonschema v1.2.0
 	github.com/zclconf/go-cty v1.14.2
-	golang.org/x/crypto v0.18.0
-	golang.org/x/net v0.20.0
+	golang.org/x/crypto v0.19.0
+	golang.org/x/net v0.21.0
 	golang.org/x/tools v0.17.0
 	gopkg.in/yaml.v3 v3.0.1
-	gorm.io/driver/mysql v1.5.2
+	gorm.io/driver/mysql v1.5.4
 	gorm.io/driver/sqlite v1.4.4
-	gorm.io/gorm v1.25.6
+	gorm.io/gorm v1.25.7
 	honnef.co/go/tools v0.4.6
 )
 
@@ -51,7 +51,7 @@ require (
 	github.com/cloudfoundry/go-socks5 v0.0.0-20180221174514-54f73bdb8a8e // indirect
 	github.com/cloudfoundry/socks5-proxy v0.2.60 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/go-chi/chi/v5 v5.0.10 // indirect
+	github.com/go-chi/chi/v5 v5.0.11 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
@@ -113,7 +113,7 @@ require (
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/oauth2 v0.15.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
