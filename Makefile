@@ -11,9 +11,6 @@ else
 OSFAMILY=linux
 endif
 
-GO=go
-GOFMT=gofmt
-
 SRC = $(shell find . -name "*.go" | grep -v "_test\." )
 
 ifeq ($(VERSION),)
@@ -35,8 +32,8 @@ PKG="github.com/cloudfoundry/cloud-service-broker"
 .PHONY: deps-go-binary
 deps-go-binary:
 ifeq ($(SKIP_GO_VERSION_CHECK),)
-	@@if [ "$$($(GO) version | awk '{print $$3}')" != "${GO-VER}" ]; then \
-		echo "Go version does not match: expected: ${GO-VER}, got $$($(GO) version | awk '{print $$3}')"; \
+	@@if [ "$$(go version | awk '{print $$3}')" != "${GO-VER}" ]; then \
+		echo "Go version does not match: expected: ${GO-VER}, got $$(go version | awk '{print $$3}')"; \
 		exit 1; \
 	fi
 endif
@@ -57,53 +54,53 @@ test: download lint test-units test-integration ## run lint and unit tests
 
 .PHONY: test-units
 test-units: deps-go-binary ## run unit tests
-	$(GO) test $(PKG)/brokerapi/... $(PKG)/cmd/... $(PKG)/dbservice/... $(PKG)/internal/... $(PKG)/pkg/... $(PKG)/utils/... -tags=service_broker
+	go test $(PKG)/brokerapi/... $(PKG)/cmd/... $(PKG)/dbservice/... $(PKG)/internal/... $(PKG)/pkg/... $(PKG)/utils/... -tags=service_broker
 
 # Integration tests are relatively resource-hungry, so we tune down the number of processes that run in parallel
 .PHONY: test-integration
 test-integration: deps-go-binary .pak-cache ## run integration tests
-	PAK_BUILD_CACHE_PATH=$(PAK_CACHE) $(GO) run github.com/onsi/ginkgo/v2/ginkgo --procs 4 integrationtest/...
+	PAK_BUILD_CACHE_PATH=$(PAK_CACHE) go run github.com/onsi/ginkgo/v2/ginkgo --procs 4 integrationtest/...
 
 .pak-cache:
 	mkdir -p $(PAK_CACHE)
 
 .PHONY: test-units-coverage
 test-units-coverage: ## test-units coverage score
-	$(GO) list ./... | grep -v fake > /tmp/csb-non-fake.txt
+	go list ./... | grep -v fake > /tmp/csb-non-fake.txt
 	paste -sd "," /tmp/csb-non-fake.txt > /tmp/csb-coverage-pkgs.txt
-	$(GO) test -coverpkg=`cat /tmp/csb-coverage-pkgs.txt` -coverprofile=/tmp/csb-coverage.out `$(GO) list ./... | grep -v integrationtest`
-	$(GO) tool cover -func /tmp/csb-coverage.out | grep total
+	go test -coverpkg=`cat /tmp/csb-coverage-pkgs.txt` -coverprofile=/tmp/csb-coverage.out `go list ./... | grep -v integrationtest`
+	go tool cover -func /tmp/csb-coverage.out | grep total
 
 ###### Build ##################################################################
 
 ./build/cloud-service-broker.linux: $(SRC)
-	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux $(GO) build -o ./build/cloud-service-broker.linux -ldflags ${LDFLAGS}
+	CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o ./build/cloud-service-broker.linux -ldflags ${LDFLAGS}
 
 ./build/cloud-service-broker.darwin: $(SRC)
-	GOARCH=amd64 GOOS=darwin $(GO) build -o ./build/cloud-service-broker.darwin -ldflags ${LDFLAGS}
+	GOARCH=amd64 GOOS=darwin go build -o ./build/cloud-service-broker.darwin -ldflags ${LDFLAGS}
 
 .PHONY: build
 build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin ## build binary
 
 .PHONY: install
 install: deps-go-binary ## install as /usr/local/bin/csb
-	$(GO) build -o csb -ldflags ${LDFLAGS}
+	go build -o csb -ldflags ${LDFLAGS}
 	mv csb /usr/local/bin/csb
 
 .PHONY: generate
 generate: ## generate test fakes
-	${GO} generate ./...
+	go generate ./...
 	make format
 
 .PHONY: download
 download: ## download go module dependencies
-	${GO} mod download
+	go mod download
 
 ###### Clean ##################################################################
 
 .PHONY: clean
 clean: deps-go-binary ## clean up from previous builds
-	-$(GO) clean --modcache
+	-go clean --modcache
 	-rm -rf ./build
 	-rm -rf /tmp/csb-non-fake.txt
 	-rm -rf /tmp/csb-coverage.out
@@ -115,29 +112,29 @@ clean: deps-go-binary ## clean up from previous builds
 lint: checkformat checkimports vet staticcheck ## lint the source
 
 checkformat: ## Checks that the code is formatted correctly
-	@@if [ -n "$$(${GOFMT} -s -e -l -d .)" ]; then       \
+	@@if [ -n "$$(gofmt -s -e -l -d .)" ]; then       \
 		echo "gofmt check failed: run 'make format'"; \
 		exit 1;                                       \
 	fi
 
 checkimports: ## Checks that imports are formatted correctly
-	@@if [ -n "$$(${GO} run golang.org/x/tools/cmd/goimports -l -d .)" ]; then \
+	@@if [ -n "$$(go run golang.org/x/tools/cmd/goimports -l -d .)" ]; then \
 		echo "goimports check failed: run 'make format'";                      \
 		exit 1;                                                                \
 	fi
 
 vet: ## Runs go vet
-	${GO} vet ./...
+	go vet ./...
 
 staticcheck: ## Runs staticcheck
-	${GO} list ./... | grep -v 'fakes$$' | xargs ${GO} run honnef.co/go/tools/cmd/staticcheck
+	go list ./... | grep -v 'fakes$$' | xargs go run honnef.co/go/tools/cmd/staticcheck
 
 ###### Format #################################################################
 
 .PHONY: format
 format: ## format the source
-	${GOFMT} -s -e -l -w .
-	${GO} run golang.org/x/tools/cmd/goimports -l -w .
+	gofmt -s -e -l -w .
+	go run golang.org/x/tools/cmd/goimports -l -w .
 
 ###### Image ##################################################################
 
