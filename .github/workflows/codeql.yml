@@ -39,9 +39,9 @@ jobs:
           go-version-file: "go.mod"
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@v3.24.0
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v3.24.0
         with:
           category: "/language:${{ matrix.language }}"
