@@ -32,10 +32,16 @@ jobs:
           languages: ${{ matrix.language }}
           queries: +security-and-quality
 
+      # Install golang used by this project (https://github.com/github/codeql-action/issues/1842)
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: "go.mod"
+
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3.24.0
+        uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3.24.0
+        uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
