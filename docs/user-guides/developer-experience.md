@@ -31,13 +31,22 @@ The next command will build the CSB, and install it in your local machine with t
   go build -o csb -ldflags "-X github.com/cloudfoundry/cloud-service-broker/utils.Version=v0.14.0-1b000966"
   mv csb /usr/local/bin/csb
   ```
-If you do not have the latest version of Go, you will get an error similar to this:
+If you do not have a recent version of Go, you will get an error similar to this:
 
   ```shell
-  {▪} ~/workspace/csb/cloud-service-broker on main ✓ make install
-  Go version does not match: expected: go1.19.5, got go1.18.2
-  make: *** [Makefile:45: deps-go-binary] Error 1
+  go: errors parsing go.mod:
+  /go/cloud-service-broker/go.mod:3: invalid go version '1.22.0': must match format 1.23
   ```
+
+You can also get an error despite having a recent version of Go (>= 1.21), if `GOTOOLCHAIN=local` is set.
+
+  ```shell
+  go: go.mod requires go >= 1.22.0 (running go 1.21.7; GOTOOLCHAIN=local)
+  ```
+In such cases you may want to:
+* Set `GOTOOLCHAIN=auto` either for just one command or the entire shell session.
+* Manually download and install the latest version of Go.
+
 After installing the CSB binary, you will be ready to advance to the next step.
 
 ##### Check the installation

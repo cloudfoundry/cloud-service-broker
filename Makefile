@@ -1,6 +1,4 @@
 SHELL = /bin/bash
-GO-VERSION = 1.22.0
-GO-VER = go$(GO-VERSION)
 
 PAK_CACHE=$(PWD)/.pak-cache
 
@@ -29,15 +27,6 @@ LDFLAGS="-X github.com/cloudfoundry/cloud-service-broker/utils.Version=$(VERSION
 
 PKG="github.com/cloudfoundry/cloud-service-broker"
 
-.PHONY: deps-go-binary
-deps-go-binary:
-ifeq ($(SKIP_GO_VERSION_CHECK),)
-	@@if [ "$$(go version | awk '{print $$3}')" != "${GO-VER}" ]; then \
-		echo "Go version does not match: expected: ${GO-VER}, got $$(go version | awk '{print $$3}')"; \
-		exit 1; \
-	fi
-endif
-
 ###### Help ###################################################################
 
 .DEFAULT_GOAL = help
@@ -53,12 +42,12 @@ help: ## list Makefile targets
 test: download lint test-units test-integration ## run lint and unit tests
 
 .PHONY: test-units
-test-units: deps-go-binary ## run unit tests
+test-units: ## run unit tests
 	go test $(PKG)/brokerapi/... $(PKG)/cmd/... $(PKG)/dbservice/... $(PKG)/internal/... $(PKG)/pkg/... $(PKG)/utils/... -tags=service_broker
 
 # Integration tests are relatively resource-hungry, so we tune down the number of processes that run in parallel
 .PHONY: test-integration
-test-integration: deps-go-binary .pak-cache ## run integration tests
+test-integration: .pak-cache ## run integration tests
 	PAK_BUILD_CACHE_PATH=$(PAK_CACHE) go run github.com/onsi/ginkgo/v2/ginkgo --procs 4 integrationtest/...
 
 .pak-cache:
@@ -80,10 +69,10 @@ test-units-coverage: ## test-units coverage score
 	GOARCH=amd64 GOOS=darwin go build -o ./build/cloud-service-broker.darwin -ldflags ${LDFLAGS}
 
 .PHONY: build
-build: deps-go-binary ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin ## build binary
+build: ./build/cloud-service-broker.linux ./build/cloud-service-broker.darwin ## build binary
 
 .PHONY: install
-install: deps-go-binary ## install as /usr/local/bin/csb
+install: ## install as /usr/local/bin/csb
 	go build -o csb -ldflags ${LDFLAGS}
 	mv csb /usr/local/bin/csb
 
@@ -99,7 +88,7 @@ download: ## download go module dependencies
 ###### Clean ##################################################################
 
 .PHONY: clean
-clean: deps-go-binary ## clean up from previous builds
+clean: ## clean up from previous builds
 	-go clean --modcache
 	-rm -rf ./build
 	-rm -rf /tmp/csb-non-fake.txt
