@@ -16,6 +16,7 @@ package workspace
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/exec"
 	"path"
@@ -176,6 +177,40 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestTerrafromWorkspace_StateTFVersion(t *testing.T) {
+	t.Parallel()
+
+	t.Run("ok", func(t *testing.T) {
+		e := version.Must(version.NewVersion("1.2.3"))
+		w := &TerraformWorkspace{State: []byte(`{"terraform_version":"1.2.3"}`)}
+		v, err := w.StateTFVersion()
+		switch {
+		case err != nil:
+			t.Fatalf("unexpected error: %s", err)
+		case !v.Equal(e):
+			t.Fatalf("wrong version, expected %q, got %q", e, v)
+		}
+	})
+
+	t.Run("empty", func(t *testing.T) {
+		e := CannotReadVersionError{message: "workspace state not generated"}
+		w := &TerraformWorkspace{State: nil}
+		_, err := w.StateTFVersion()
+		if !errors.Is(err, e) {
+			t.Fatalf("wrong error type, expected: %T; got: %T", e, err)
+		}
+	})
+
+	t.Run("json", func(t *testing.T) {
+		e := CannotReadVersionError{message: "invalid workspace state unexpected end of JSON input"}
+		w := &TerraformWorkspace{State: []byte(`{"foo`)}
+		_, err := w.StateTFVersion()
+		if !errors.Is(err, e) {
+			t.Fatalf("wrong error, expected: %q %T; got: %q %T", e, e, err, err)
+		}
+	})
 }
 
 func TestCustomTerraformExecutor012(t *testing.T) {

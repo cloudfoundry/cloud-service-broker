@@ -2,15 +2,17 @@ package broker
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/pivotal-cf/brokerapi/v10/domain"
-	"github.com/pivotal-cf/brokerapi/v10/domain/apiresponses"
-
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/utils/request"
+	"github.com/pivotal-cf/brokerapi/v10/domain"
+	"github.com/pivotal-cf/brokerapi/v10/domain/apiresponses"
 )
 
 // Unbind destroys an account and credentials with access to an instance of a service.
@@ -45,7 +47,17 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	}
 
 	err = serviceProvider.CheckUpgradeAvailable(generateTFBindingID(instanceID, bindingID))
-	if err != nil {
+	switch {
+	case errors.As(err, &workspace.CannotReadVersionError{}):
+		// In the special case of not being able to read the version during unbind, we succeed immediately because:
+		// - we have had feedback that failing here creates unwanted manual work for CF admins
+		// - the Terraform state is empty or invalid, so it would be impossible for CSB to do a successful cleanup
+		broker.Logger.Info("unbind-cannot-read-version", lager.Data{"error": err})
+		if err := broker.removeBindingData(ctx, instanceID, bindingID, serviceDefinition, serviceProvider); err != nil {
+			broker.Logger.Error("unbind-cleanup", err)
+		}
+		return domain.UnbindSpec{}, nil
+	case err != nil:
 		return domain.UnbindSpec{}, fmt.Errorf("failed to unbind: %s", err.Error())
 	}
 
@@ -75,6 +87,14 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return domain.UnbindSpec{}, err
 	}
 
+	if err := broker.removeBindingData(ctx, instanceID, bindingID, serviceDefinition, serviceProvider); err != nil {
+		return domain.UnbindSpec{}, err
+	}
+
+	return domain.UnbindSpec{}, nil
+}
+
+func (broker *ServiceBroker) removeBindingData(ctx context.Context, instanceID, bindingID string, serviceDefinition *broker.ServiceDefinition, serviceProvider broker.ServiceProvider) error {
 	if broker.Credstore != nil {
 		credentialName := getCredentialName(broker.getServiceName(serviceDefinition), bindingID)
 
@@ -89,15 +109,16 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 
 	// remove binding from database
 	if err := broker.store.DeleteServiceBindingCredentials(bindingID, instanceID); err != nil {
-		return domain.UnbindSpec{}, fmt.Errorf("error soft-deleting credentials from database: %s. WARNING: these credentials will remain visible in cf. Contact your operator for cleanup", err)
+		return fmt.Errorf("error soft-deleting credentials from database: %s. WARNING: these credentials will remain visible in cf. Contact your operator for cleanup", err)
 	}
 	if err := broker.store.DeleteBindRequestDetails(bindingID, instanceID); err != nil {
-		return domain.UnbindSpec{}, fmt.Errorf("error soft-deleting bind request details from database: %s", err)
+		return fmt.Errorf("error soft-deleting bind request details from database: %s", err)
 	}
 
+	// delete the Terraform workspace from the database
 	if err := serviceProvider.DeleteBindingData(ctx, instanceID, bindingID); err != nil {
-		return domain.UnbindSpec{}, fmt.Errorf("error deleting provider binding data from database: %s", err)
+		return fmt.Errorf("error deleting provider binding data from database: %s", err)
 	}
 
-	return domain.UnbindSpec{}, nil
+	return nil
 }
