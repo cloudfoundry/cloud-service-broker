@@ -1,0 +1,22 @@
+version: 1
+name: fake-service
+id: 2f36d5c6-ccc3-11ee-a3be-cb7c74dcfe9a
+description: description
+display_name: Fake
+image_url: https://example.com/icon.jpg
+documentation_url: https://example.com
+support_url: https://example.com/support.html
+plans:
+- name: standard
+  id: 21a3e6c4-ccc3-11ee-a9dd-d74726b3c0d2
+  description: Standard plan
+  display_name: Standard
+provision:
+  template_ref: fake-provision.tf
+bind:
+  template_refs:
+    main: fake-bind.tf
+  user_inputs:
+    - field_name: foo
+      type: string
+      details: needed so that BindRequestDetails gets stored
