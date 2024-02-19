@@ -1,0 +1,20 @@
+version: 1
+name: fake-string-service
+id: cfeda8d0-cbf3-11ee-be53-73f17d1c612b
+description: description
+display_name: Fake
+image_url: https://example.com/icon.jpg
+documentation_url: https://example.com
+support_url: https://example.com/support.html
+plans:
+- name: standard
+  id: d8fbab66-cbf3-11ee-ab90-d7299e1fcf96
+  description: Standard plan
+  display_name: Standard
+provision:
+  template_refs:
+    main: fake-string-provision.tf
+  outputs:
+    - field_name: provision_output
+      type: string
+      details: provision output

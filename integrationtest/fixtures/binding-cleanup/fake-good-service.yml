@@ -1,0 +1,27 @@
+version: 1
+name: fake-good-service
+id: 7779a92a-cc0b-11ee-85c4-4b4aa590c58a
+description: description
+display_name: Fake
+image_url: https://example.com/icon.jpg
+documentation_url: https://example.com
+support_url: https://example.com/support.html
+plans:
+- name: standard
+  id: 911ce91e-cc0b-11ee-a5e8-33dbc3f841a1
+  description: Standard plan
+  display_name: Standard
+provision:
+  template_refs:
+    main: fake-provision.tf
+  outputs:
+    - field_name: provision_output
+      type: string
+      details: provision output
+bind:
+  template_refs:
+    main: fake-good-bind.tf
+  outputs:
+    - field_name: bind_output
+      type: string
+      details: bind output

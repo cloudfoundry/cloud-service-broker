@@ -1,0 +1,19 @@
+packversion: 1
+name: fake-brokerpak
+version: 0.1.0
+metadata:
+  author: noone@nowhere.com
+platforms:
+- os: linux
+  arch: amd64
+- os: darwin
+  arch: amd64
+terraform_binaries:
+- name: terraform
+  version: 1.5.7
+  source: https://github.com/hashicorp/terraform/archive/v1.5.7.zip
+- name: terraform-provider-random
+  version: 3.1.0
+service_definitions:
+- fake-good-service.yml
+- fake-bad-service.yml
