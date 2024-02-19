@@ -32,7 +32,7 @@ If using Cloud Foundry, the steps are:
 			case 0:
 				log.Fatal("missing service instance GUID")
 			case 1:
-				purge(args[0])
+				purgeServiceInstance(args[0])
 			default:
 				log.Fatal("too many arguments")
 			}
@@ -42,8 +42,8 @@ If using Cloud Foundry, the steps are:
 	rootCmd.AddCommand(purgeCmd)
 }
 
-func purge(serviceInstanceGUID string) {
-	logger := utils.NewLogger("purge")
+func purgeServiceInstance(serviceInstanceGUID string) {
+	logger := utils.NewLogger("purge-service-instance")
 	db := dbservice.New(logger)
 	encryptor := setupDBEncryption(db, logger)
 	store := storage.New(db, encryptor)
@@ -53,14 +53,8 @@ func purge(serviceInstanceGUID string) {
 		log.Fatalf("error listing bindings: %s", err)
 	}
 	for _, bindingGUID := range bindings {
-		if err := store.DeleteServiceBindingCredentials(bindingGUID, serviceInstanceGUID); err != nil {
-			log.Fatalf("error deleting binding credentials for %q: %s", bindingGUID, err)
-		}
-		if err := store.DeleteBindRequestDetails(bindingGUID, serviceInstanceGUID); err != nil {
-			log.Fatalf("error deleting binding request details for %q: %s", bindingGUID, err)
-		}
-		if err := store.DeleteTerraformDeployment(fmt.Sprintf("tf:%s:%s", serviceInstanceGUID, bindingGUID)); err != nil {
-			log.Fatalf("error deleting binding terraform deployment for %q: %s", bindingGUID, err)
+		if err := deleteServiceBindingFromStore(store, serviceInstanceGUID, bindingGUID); err != nil {
+			log.Fatalf("error deleting binding %q for service instance %q: %s", bindingGUID, serviceInstanceGUID, err)
 		}
 	}
 	if err := store.DeleteProvisionRequestDetails(serviceInstanceGUID); err != nil {
