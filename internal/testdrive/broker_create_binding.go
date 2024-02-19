@@ -35,9 +35,9 @@ func (b *Broker) CreateBinding(s ServiceInstance, opts ...CreateBindingOption) (
 	bindResponse = b.Client.Bind(s.GUID, cfg.guid, s.ServiceOfferingGUID, s.ServicePlanGUID, uuid.New(), cfg.params)
 	switch {
 	case bindResponse.Error != nil:
-		return ServiceBinding{}, bindResponse.Error
+		return ServiceBinding{GUID: cfg.guid}, bindResponse.Error
 	case bindResponse.StatusCode != http.StatusCreated:
-		return ServiceBinding{}, &UnexpectedStatusError{StatusCode: bindResponse.StatusCode, ResponseBody: bindResponse.ResponseBody}
+		return ServiceBinding{GUID: cfg.guid}, &UnexpectedStatusError{StatusCode: bindResponse.StatusCode, ResponseBody: bindResponse.ResponseBody}
 	default:
 		return ServiceBinding{
 			GUID: cfg.guid,

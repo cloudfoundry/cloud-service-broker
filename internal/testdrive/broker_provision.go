@@ -49,21 +49,19 @@ func (b *Broker) Provision(serviceOfferingGUID, servicePlanGUID string, opts ...
 			case err != nil:
 				return err
 			case state != domain.Succeeded:
-				return fmt.Errorf("provison failed with state: %s", state)
+				return fmt.Errorf("provision failed with state: %s", state)
 			default:
 				return nil
 			}
 		},
 	)
-	if err != nil {
-		return ServiceInstance{}, err
-	}
 
+	// If it fails, we still return the GUIDs for cleanup
 	return ServiceInstance{
 		GUID:                cfg.guid,
 		ServicePlanGUID:     servicePlanGUID,
 		ServiceOfferingGUID: serviceOfferingGUID,
-	}, nil
+	}, err
 }
 
 func WithProvisionParams(params any) ProvisionOption {
