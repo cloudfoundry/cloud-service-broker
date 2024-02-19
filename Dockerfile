@@ -13,6 +13,10 @@
 # limitations under the License.
 
 FROM golang:alpine AS build
+# Golang Docker images come with `GOTOOLCHAIN=local` by default which prevents downloading toolchains on-the-fly.
+# This would cause our CI to fail for a few hours when a new go version is released but golang tags are not yet up-to-date with it.
+# https://github.com/search?q=repo%3Adocker-library%2Fgolang%20GOTOOLCHAIN&type=code
+ENV GOTOOLCHAIN=
 RUN apk update
 RUN apk upgrade
 RUN apk add --update gcc g++
