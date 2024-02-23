@@ -48,8 +48,7 @@ var _ = Describe("Binding Cleanup", func() {
 		Expect(broker.DeleteBinding(instance, binding.GUID)).To(MatchError(ContainSubstring("unexpected status code 410")))
 	})
 
-	// This test captures an incorrect behavior that we want to fix
-	It("fails to clean up after a corrupted binding", func() {
+	It("successfully deletes a corrupted binding", func() {
 		By("provisioning successfully")
 		instance := must(broker.Provision(goodServiceOfferingGUID, goodServicePlanGUID))
 
@@ -65,7 +64,10 @@ var _ = Describe("Binding Cleanup", func() {
 				Error,
 		).To(Succeed())
 
-		By("failing to clean up the binding")
-		Expect(broker.DeleteBinding(instance, binding.GUID)).To(MatchError(ContainSubstring("failed to unbind: invalid workspace state unexpected end of JSON input")))
+		By("deleting the binding")
+		Expect(broker.DeleteBinding(instance, binding.GUID)).To(Succeed())
+
+		By("logging that the version could not be read")
+		Expect(broker.Stdout.String()).To(ContainSubstring("unbind-cannot-read-version"))
 	})
 })
