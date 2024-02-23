@@ -5,12 +5,6 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/lager/v3"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/brokerapi/v10/domain"
-	"github.com/pivotal-cf/brokerapi/v10/domain/apiresponses"
-	"github.com/pivotal-cf/brokerapi/v10/middlewares"
-
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
@@ -18,8 +12,14 @@ import (
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/credstore/credstorefakes"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"github.com/pivotal-cf/brokerapi/v10/domain"
+	"github.com/pivotal-cf/brokerapi/v10/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v10/middlewares"
 )
 
 var _ = Describe("Unbind", func() {
@@ -207,6 +207,37 @@ var _ = Describe("Unbind", func() {
 
 					Expect(actualVars.GetString("copyOriginatingIdentity")).To(Equal(`{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`))
 				})
+			})
+		})
+
+		When("cannot read terraform state version", func() {
+			It("should succeed anyway", func() {
+				fakeServiceProvider.CheckUpgradeAvailableReturns(workspace.CannotReadVersionError{})
+
+				_, err := serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, false)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("validating credstore delete has been called")
+				Expect(fakeCredStore.DeletePermissionCallCount()).To(Equal(1))
+				Expect(fakeCredStore.DeleteCallCount()).To(Equal(1))
+
+				By("validating storage is asked to delete binding credentials")
+				Expect(fakeStorage.DeleteServiceBindingCredentialsCallCount()).To(Equal(1))
+				actualBindingID, actualInstanceID := fakeStorage.DeleteServiceBindingCredentialsArgsForCall(0)
+				Expect(actualBindingID).To(Equal(bindingID))
+				Expect(actualInstanceID).To(Equal(instanceID))
+
+				By("validating storage is asked to delete binding request details")
+				Expect(fakeStorage.DeleteBindRequestDetailsCallCount()).To(Equal(1))
+				actualBindingID, actualInstanceID = fakeStorage.DeleteBindRequestDetailsArgsForCall(0)
+				Expect(actualBindingID).To(Equal(bindingID))
+				Expect(actualInstanceID).To(Equal(instanceID))
+
+				By("validating the provider service is asked to delete the binding data")
+				Expect(fakeServiceProvider.DeleteBindingDataCallCount()).To(Equal(1))
+				_, actualInstanceID, actualBindingID = fakeServiceProvider.DeleteBindingDataArgsForCall(0)
+				Expect(actualBindingID).To(Equal(bindingID))
+				Expect(actualInstanceID).To(Equal(instanceID))
 			})
 		})
 	})

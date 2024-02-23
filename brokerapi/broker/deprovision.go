@@ -2,16 +2,18 @@ package broker
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/pivotal-cf/brokerapi/v10/domain"
-	"github.com/pivotal-cf/brokerapi/v10/domain/apiresponses"
-
 	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/utils/request"
+	"github.com/pivotal-cf/brokerapi/v10/domain"
+	"github.com/pivotal-cf/brokerapi/v10/domain/apiresponses"
 )
 
 // Deprovision destroys an existing instance of a service.
@@ -53,7 +55,18 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return domain.DeprovisionServiceSpec{}, err
 	}
 
-	if err := serviceProvider.CheckUpgradeAvailable(deploymentID); err != nil {
+	err = serviceProvider.CheckUpgradeAvailable(deploymentID)
+	switch {
+	case errors.As(err, &workspace.CannotReadVersionError{}):
+		// In the special case of not being able to read the version during deprovision, we succeed immediately because:
+		// - we have had feedback that failing here creates unwanted manual work for CF admins
+		// - the Terraform state is empty or invalid, so it would be impossible for CSB to do a successful cleanup
+		broker.Logger.Info("deprovision-cannot-read-version")
+		if err := broker.removeServiceInstanceData(ctx, instanceID, serviceProvider); err != nil {
+			broker.Logger.Error("deprovision-cleanup", err)
+		}
+		return domain.DeprovisionServiceSpec{}, nil
+	case err != nil:
 		return domain.DeprovisionServiceSpec{}, fmt.Errorf("failed to delete: %s", err.Error())
 	}
 
@@ -87,15 +100,11 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 	}
 
 	if operationID == nil {
-		// soft-delete instance details from the db if this is a synchronous operation
-		// if it's an async operation we can't delete from the db until we're sure delete succeeded, so this is
-		// handled internally to LastOperation
-		if err := broker.store.DeleteServiceInstanceDetails(instanceID); err != nil {
-			return domain.DeprovisionServiceSpec{}, fmt.Errorf("error deleting instance details from database: %s. WARNING: this instance will remain visible in cf. Contact your operator for cleanup", err)
+		// If this is a synchronous operation, then immediately remove the service instance data from the database
+		if err := broker.removeServiceInstanceData(ctx, instanceID, serviceProvider); err != nil {
+			return domain.DeprovisionServiceSpec{}, err
 		}
-		if err := broker.store.DeleteProvisionRequestDetails(instanceID); err != nil {
-			return domain.DeprovisionServiceSpec{}, fmt.Errorf("error deleting provision request details from the database: %w", err)
-		}
+
 		return domain.DeprovisionServiceSpec{}, nil
 	}
 
@@ -110,4 +119,18 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return response, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance will remain visible in cf. Contact your operator for cleanup", err)
 	}
 	return response, nil
+}
+
+func (broker *ServiceBroker) removeServiceInstanceData(ctx context.Context, instanceID string, serviceProvider broker.ServiceProvider) error {
+	if err := broker.store.DeleteServiceInstanceDetails(instanceID); err != nil {
+		return fmt.Errorf("error deleting instance details from database: %s. WARNING: this instance will remain visible in cf. Contact your operator for cleanup", err)
+	}
+	if err := broker.store.DeleteProvisionRequestDetails(instanceID); err != nil {
+		return fmt.Errorf("error deleting provision request details from the database: %w", err)
+	}
+	if err := serviceProvider.DeleteInstanceData(ctx, instanceID); err != nil {
+		return fmt.Errorf("error deleting provider instance data from database: %s", err)
+	}
+
+	return nil
 }

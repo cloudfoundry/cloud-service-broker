@@ -11,6 +11,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
+	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
 	. "github.com/onsi/ginkgo/v2"
@@ -123,6 +124,34 @@ var _ = Describe("Deprovision", func() {
 			Expect(fakeStorage.DeleteProvisionRequestDetailsCallCount()).To(Equal(1))
 			actualInstance := fakeStorage.DeleteProvisionRequestDetailsArgsForCall(0)
 			Expect(actualInstance).To(Equal(instanceToDeleteID))
+		})
+
+		When("error reading instance version", func() {
+			It("should succeed anyway", func() {
+				deprovisionDetails = domain.DeprovisionDetails{
+					ServiceID: offeringID,
+					PlanID:    "some-non-existent-plan",
+				}
+				fakeServiceProvider.CheckUpgradeAvailableReturns(workspace.CannotReadVersionError{})
+
+				_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("validating SI details delete call")
+				Expect(fakeStorage.DeleteServiceInstanceDetailsCallCount()).To(Equal(1))
+				actualInstanceID := fakeStorage.DeleteServiceInstanceDetailsArgsForCall(0)
+				Expect(actualInstanceID).To(Equal(instanceToDeleteID))
+
+				By("validating provision parameters delete call")
+				Expect(fakeStorage.DeleteProvisionRequestDetailsCallCount()).To(Equal(1))
+				actualInstance := fakeStorage.DeleteProvisionRequestDetailsArgsForCall(0)
+				Expect(actualInstance).To(Equal(instanceToDeleteID))
+
+				By("validating the instance workspace delete call")
+				Expect(fakeServiceProvider.DeleteInstanceDataCallCount()).To(Equal(1))
+				_, actualInstanceID = fakeServiceProvider.DeleteInstanceDataArgsForCall(0)
+				Expect(actualInstanceID).To(Equal(instanceToDeleteID))
+			})
 		})
 
 		Describe("deprovision variables", func() {

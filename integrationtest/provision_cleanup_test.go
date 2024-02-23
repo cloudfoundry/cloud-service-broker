@@ -34,18 +34,19 @@ var _ = Describe("Provision Cleanup", func() {
 		})
 	})
 
-	// This test captures an incorrect behavior that we want to fix
-	It("fails to clean up after a provision failed with empty state", func() {
+	It("successfully deletes after failed provision with empty state", func() {
 		By("failing to provision")
 		instance, err := broker.Provision(serviceOfferingGUID, servicePlanGUID)
 		Expect(err).To(MatchError("provision failed with state: failed"))
 
-		By("failing to clean up")
-		Expect(broker.Deprovision(instance)).To(MatchError(ContainSubstring("failed to delete: workspace state not generated")))
+		By("deleting the service instance")
+		Expect(broker.Deprovision(instance)).To(Succeed())
+
+		By("logging that the version could not be read")
+		Expect(broker.Stdout.String()).To(ContainSubstring("deprovision-cannot-read-version"))
 	})
 
-	// This test captures an incorrect behavior that we want to fix
-	It("fails to clean up after a provision failed with corrupted state", func() {
+	It("successfully deletes after failed provision with corrupted state", func() {
 		By("failing to provision")
 		instance, err := broker.Provision(serviceOfferingGUID, servicePlanGUID)
 		Expect(err).To(MatchError("provision failed with state: failed"))
@@ -59,7 +60,10 @@ var _ = Describe("Provision Cleanup", func() {
 				Error,
 		).To(Succeed())
 
-		By("failing to clean up")
-		Expect(broker.Deprovision(instance)).To(MatchError(ContainSubstring("failed to delete: invalid workspace state unexpected end of JSON input")))
+		By("deleting the service instance")
+		Expect(broker.Deprovision(instance)).To(Succeed())
+
+		By("logging that the version could not be read")
+		Expect(broker.Stdout.String()).To(ContainSubstring("deprovision-cannot-read-version"))
 	})
 })

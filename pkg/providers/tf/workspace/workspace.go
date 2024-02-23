@@ -114,16 +114,15 @@ type TerraformWorkspace struct {
 }
 
 func (workspace *TerraformWorkspace) StateTFVersion() (*version.Version, error) {
+	if !workspace.HasState() {
+		return nil, CannotReadVersionError{message: "workspace state not generated"}
+	}
+
 	var receiver struct {
 		Version string `json:"terraform_version"`
 	}
-
-	if workspace.State == nil {
-		return nil, fmt.Errorf("workspace state not generated")
-	}
-
 	if err := json.Unmarshal(workspace.State, &receiver); err != nil {
-		return nil, fmt.Errorf("invalid workspace state %w", err)
+		return nil, CannotReadVersionError{message: fmt.Sprintf("invalid workspace state %s", err)}
 	}
 
 	return version.NewVersion(receiver.Version)

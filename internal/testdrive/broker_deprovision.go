@@ -13,7 +13,10 @@ func (b *Broker) Deprovision(s ServiceInstance) error {
 	switch {
 	case deprovisionResponse.Error != nil:
 		return deprovisionResponse.Error
-	case deprovisionResponse.StatusCode != http.StatusAccepted:
+	case deprovisionResponse.StatusCode == http.StatusOK: // ok - synchronous
+		return nil
+	case deprovisionResponse.StatusCode == http.StatusAccepted: // ok - asynchronous - poll last operation
+	default:
 		return &UnexpectedStatusError{StatusCode: deprovisionResponse.StatusCode, ResponseBody: deprovisionResponse.ResponseBody}
 	}
 
