@@ -79,7 +79,7 @@ func Parse(input []byte) (*Manifest, error) {
 func parseTerraformUpgradePath(p parser) (result []*version.Version, errs *validation.FieldError) {
 	availableTerraformVersions := make(map[string]bool)
 	for _, v := range p.TerraformResources {
-		if v.Name == "terraform" {
+		if v.Name == "tofu" {
 			availableTerraformVersions[v.Version] = v.Default
 		}
 	}
