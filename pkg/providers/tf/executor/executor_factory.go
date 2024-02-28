@@ -45,7 +45,7 @@ func (executorFactory ExecutorFactory) VersionedExecutor(tfVersion *version.Vers
 		CustomEnvironmentExecutor(
 			executorFactory.Params,
 			CustomTerraformExecutor(
-				filepath.Join(executorFactory.Dir, "versions", tfVersion.String(), "terraform"),
+				filepath.Join(executorFactory.Dir, "versions", tfVersion.String(), "tofu"),
 				executorFactory.Dir,
 				tfVersion,
 				DefaultExecutor(),

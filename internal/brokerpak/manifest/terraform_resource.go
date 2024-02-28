@@ -41,6 +41,8 @@ func (tr *TerraformResource) resourceType() terraformResourceType {
 		return invalidType
 	case tr.Name == "terraform":
 		return terraformVersion
+	case tr.Name == "tofu":
+		return terraformVersion
 	case strings.HasPrefix(tr.Name, "terraform-provider-"):
 		return terraformProvider
 	default:

@@ -320,7 +320,7 @@ func (workspace *TerraformWorkspace) Execute(ctx context.Context, terraformExecu
 	var lastExecutionOutput executor.ExecutionOutput
 
 	for _, cmd := range commands {
-		c := exec.Command("terraform", cmd.Command()...)
+		c := exec.Command("tofu", cmd.Command()...)
 		c.Env = os.Environ()
 		c.Dir = workspace.dir
 

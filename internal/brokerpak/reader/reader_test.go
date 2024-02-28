@@ -232,7 +232,7 @@ func fakeBrokerpak(opts ...option) string {
 
 func withTerraform(tfVersion string) option {
 	return func(c *config) {
-		fakeFile := filepath.Join(c.dir, tfVersion, "terraform")
+		fakeFile := filepath.Join(c.dir, tfVersion, "tofu")
 		Expect(stream.Copy(stream.FromString(tfVersion), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
 		c.manifest.TerraformVersions = append(c.manifest.TerraformVersions, manifest.TerraformVersion{

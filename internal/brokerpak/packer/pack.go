@@ -72,7 +72,7 @@ func packSources(m *manifest.Manifest, tmp string, cachePath string) error {
 	}
 
 	for _, resource := range m.TerraformVersions {
-		if err := packSource(resource.Source, "terraform"); err != nil {
+		if err := packSource(resource.Source, "tofu"); err != nil {
 			return err
 		}
 	}
