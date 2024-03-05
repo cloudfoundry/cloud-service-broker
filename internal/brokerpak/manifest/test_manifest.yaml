@@ -9,10 +9,10 @@ platforms:
   - os: darwin
     arch: amd64
 terraform_binaries:
-  - name: terraform
-    version: 1.1.4
-    source: https://github.com/hashicorp/terraform/archive/v1.1.4.zip
-    url_template: https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip
+  - name: tofu
+    version: 1.6.0
+    source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.0.zip
+    url_template: https://github.com/opentofu/opentofu/releases/download/v${version}/tofu_${version}_${os}_${arch}.zip
   - name: terraform-provider-random
     version: 3.1.0
     source: https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip

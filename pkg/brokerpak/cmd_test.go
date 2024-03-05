@@ -37,7 +37,7 @@ func fakeBrokerpak() (string, error) {
 	}
 	defer os.RemoveAll(dir)
 
-	tfSrc := filepath.Join(dir, "terraform")
+	tfSrc := filepath.Join(dir, "tofu")
 	if err := os.WriteFile(tfSrc, []byte("dummy-file"), 0644); err != nil {
 		return "", err
 	}
@@ -151,7 +151,7 @@ func TestFinfo(t *testing.T) {
 		"definitions/",                           // directory
 		"manifest.yml",                           // manifest
 		"src/terraform-provider-google-beta.zip", // file
-		"src/terraform.zip",                      // file
+		"src/tofu.zip",                           // file
 
 	}
 	actual := buf.String()

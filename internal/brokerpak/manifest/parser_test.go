@@ -36,9 +36,9 @@ var _ = Describe("Parser", func() {
 			},
 			TerraformVersions: []manifest.TerraformVersion{
 				{
-					Version:     version.Must(version.NewVersion("1.1.4")),
-					Source:      "https://github.com/hashicorp/terraform/archive/v1.1.4.zip",
-					URLTemplate: "https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip",
+					Version:     version.Must(version.NewVersion("1.6.0")),
+					Source:      "https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.0.zip",
+					URLTemplate: "https://github.com/opentofu/opentofu/releases/download/v${version}/tofu_${version}_${os}_${arch}.zip",
 				},
 			},
 			TerraformProviders: []manifest.TerraformProvider{
@@ -86,30 +86,30 @@ var _ = Describe("Parser", func() {
 		It("can parse the manifest", func() {
 			m, err := manifest.Parse(fakeManifest(
 				withAdditionalEntry("terraform_binaries", map[string]any{
-					"name":    "terraform",
-					"version": "1.1.5",
+					"name":    "tofu",
+					"version": "1.6.1",
 					"default": false,
 				}),
 				withAdditionalEntry("terraform_binaries", map[string]any{
-					"name":    "terraform",
-					"version": "1.1.6",
+					"name":    "tofu",
+					"version": "1.6.2",
 					"default": true,
 				}),
 			))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(m.TerraformVersions).To(ConsistOf(
 				manifest.TerraformVersion{
-					Version:     version.Must(version.NewVersion("1.1.4")),
-					Source:      "https://github.com/hashicorp/terraform/archive/v1.1.4.zip",
+					Version:     version.Must(version.NewVersion("1.6.0")),
+					Source:      "https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.0.zip",
 					Default:     false,
-					URLTemplate: "https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip",
+					URLTemplate: "https://github.com/opentofu/opentofu/releases/download/v${version}/tofu_${version}_${os}_${arch}.zip",
 				},
 				manifest.TerraformVersion{
-					Version: version.Must(version.NewVersion("1.1.5")),
+					Version: version.Must(version.NewVersion("1.6.1")),
 					Default: false,
 				},
 				manifest.TerraformVersion{
-					Version: version.Must(version.NewVersion("1.1.6")),
+					Version: version.Must(version.NewVersion("1.6.2")),
 					Default: true,
 				},
 			))
@@ -171,12 +171,12 @@ var _ = Describe("Parser", func() {
 		When("there are duplicate versions", func() {
 			It("fails", func() {
 				m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]any{
-					"name":    "terraform",
-					"version": "1.1.4",
+					"name":    "tofu",
+					"version": "1.6.0",
 					"default": true,
 				})))
 				Expect(m).To(BeNil())
-				Expect(err).To(MatchError("error validating manifest: duplicated value, must be unique: 1.1.4: version"))
+				Expect(err).To(MatchError("error validating manifest: duplicated value, must be unique: 1.6.0: version"))
 			})
 		})
 	})
@@ -201,21 +201,21 @@ var _ = Describe("Parser", func() {
 		It("can parse and validate the upgrade path", func() {
 			m, err := manifest.Parse(fakeManifest(
 				withAdditionalEntry("terraform_binaries", map[string]any{
-					"name":    "terraform",
-					"version": "4.5.6",
+					"name":    "tofu",
+					"version": "1.6.2",
 					"default": true,
 				}),
 				with("terraform_upgrade_path",
 					[]map[string]any{
-						{"version": "1.1.4"},
-						{"version": "4.5.6"},
+						{"version": "1.6.0"},
+						{"version": "1.6.2"},
 					},
 				),
 			))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(m.TerraformUpgradePath).To(Equal([]*version.Version{
-				version.Must(version.NewVersion("1.1.4")),
-				version.Must(version.NewVersion("4.5.6")),
+				version.Must(version.NewVersion("1.6.0")),
+				version.Must(version.NewVersion("1.6.2")),
 			}))
 		})
 
@@ -254,7 +254,7 @@ var _ = Describe("Parser", func() {
 		It("must upgrade up to the default version", func() {
 			m, err := manifest.Parse(fakeManifest(with("terraform_upgrade_path",
 				[]map[string]any{
-					{"version": "1.1.4"},
+					{"version": "1.6.0"},
 				},
 			)))
 			Expect(err).To(MatchError(ContainSubstring(`upgrade path does not terminate at default version: terraform_upgrade_path[0].version`)))

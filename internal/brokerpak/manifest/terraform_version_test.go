@@ -15,7 +15,7 @@ var _ = Describe("DefaultTerraformVersion", func() {
 
 		actualVersion, err := m.DefaultTerraformVersion()
 		Expect(err).NotTo(HaveOccurred())
-		Expect(actualVersion).To(Equal(version.Must(version.NewVersion("1.1.4"))))
+		Expect(actualVersion).To(Equal(version.Must(version.NewVersion("1.6.0"))))
 	})
 
 	It("it returns error when it can't find terraform version", func() {
@@ -29,13 +29,13 @@ var _ = Describe("DefaultTerraformVersion", func() {
 		It("returns the default version", func() {
 			m, err := manifest.Parse(fakeManifest(
 				withAdditionalEntry("terraform_binaries", map[string]any{
-					"name":    "terraform",
-					"version": "1.1.5",
+					"name":    "tofu",
+					"version": "1.6.1",
 					"default": false,
 				}),
 				withAdditionalEntry("terraform_binaries", map[string]any{
-					"name":    "terraform",
-					"version": "1.1.6",
+					"name":    "tofu",
+					"version": "1.6.2",
 					"default": true,
 				}),
 			))
@@ -43,7 +43,7 @@ var _ = Describe("DefaultTerraformVersion", func() {
 
 			actualVersion, err := m.DefaultTerraformVersion()
 			Expect(err).NotTo(HaveOccurred())
-			Expect(actualVersion).To(Equal(version.Must(version.NewVersion("1.1.6"))))
+			Expect(actualVersion).To(Equal(version.Must(version.NewVersion("1.6.2"))))
 		})
 	})
 })
