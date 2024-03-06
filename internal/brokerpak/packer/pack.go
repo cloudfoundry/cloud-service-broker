@@ -103,7 +103,8 @@ func packBinaries(m *manifest.Manifest, tmp string, cachePath string) error {
 		p := filepath.Join(tmp, "bin", platform.Os, platform.Arch)
 
 		for _, resource := range m.TerraformVersions {
-			if err := cachedFetchFile(getAny, brokerpakurl.URL("terraform", resource.Version.String(), resource.URLTemplate, platform), filepath.Join(p, resource.Version.String()), cachePath); err != nil {
+			// if the URLTemplate is set it will be used. default will point to terraform. If we don't support terraform anymore, then we should change this logic to work with opentofu
+			if err := cachedFetchFile(getAny, brokerpakurl.URL("tofu", resource.Version.String(), resource.URLTemplate, platform), filepath.Join(p, resource.Version.String()), cachePath); err != nil {
 				return err
 			}
 		}
