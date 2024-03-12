@@ -12,10 +12,18 @@ func init() {
 	var params, plan, service, example string
 	var all bool
 
+	localGroup := &cobra.Group{
+		ID:    "local",
+		Title: "Local Development",
+	}
+
+	rootCmd.AddGroup(localGroup)
+
 	marketplaceCmd := &cobra.Command{
-		Use:   "marketplace",
-		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list services and plans",
-		Args:  cobra.ExactArgs(0),
+		Use:     "marketplace",
+		GroupID: "local",
+		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list services and plans",
+		Args:    cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			local.Marketplace(viper.GetString(pakCachePath))
 		},
@@ -24,9 +32,10 @@ func init() {
 
 	const paramsFlag = "c"
 	createServiceCmd := &cobra.Command{
-		Use:   "create-service SERVICE PLAN NAME",
-		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: create a service instance",
-		Args:  cobra.ExactArgs(3),
+		Use:     "create-service SERVICE PLAN NAME",
+		GroupID: "local",
+		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: create a service instance",
+		Args:    cobra.ExactArgs(3),
 		Run: func(cmd *cobra.Command, args []string) {
 			local.CreateService(args[0], args[1], args[2], params, viper.GetString(pakCachePath))
 		},
@@ -35,9 +44,10 @@ func init() {
 	rootCmd.AddCommand(createServiceCmd)
 
 	servicesCmd := &cobra.Command{
-		Use:   "services",
-		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list service instances",
-		Args:  cobra.ExactArgs(0),
+		Use:     "services",
+		GroupID: "local",
+		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list service instances",
+		Args:    cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			local.Services(viper.GetString(pakCachePath))
 		},
@@ -45,9 +55,10 @@ func init() {
 	rootCmd.AddCommand(servicesCmd)
 
 	serviceCmd := &cobra.Command{
-		Use:   "service",
-		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: provides information on a service instance",
-		Args:  cobra.ExactArgs(1),
+		Use:     "service",
+		GroupID: "local",
+		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: provides information on a service instance",
+		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			local.Service(args[0], viper.GetString(pakCachePath))
 		},
@@ -56,9 +67,10 @@ func init() {
 
 	const planFlag = "p"
 	updateServiceCmd := &cobra.Command{
-		Use:   "update-service NAME",
-		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: update a service instance",
-		Args:  cobra.ExactArgs(1),
+		Use:     "update-service NAME",
+		GroupID: "local",
+		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: update a service instance",
+		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			local.UpdateService(args[0], plan, params, viper.GetString(pakCachePath))
 		},
@@ -68,9 +80,10 @@ func init() {
 	rootCmd.AddCommand(updateServiceCmd)
 
 	upgradeServiceCmd := &cobra.Command{
-		Use:   "upgrade-service NAME PREVIOUS_VERSION",
-		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: upgrade a service instance from PREVIOUS_VERSION to current version",
-		Args:  cobra.ExactArgs(2),
+		Use:     "upgrade-service NAME PREVIOUS_VERSION",
+		GroupID: "local",
+		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: upgrade a service instance from PREVIOUS_VERSION to current version",
+		Args:    cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			local.UpgradeService(args[0], args[1], viper.GetString(pakCachePath))
 		},
@@ -78,9 +91,10 @@ func init() {
 	rootCmd.AddCommand(upgradeServiceCmd)
 
 	deleteServiceCmd := &cobra.Command{
-		Use:   "delete-service NAME",
-		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: delete a service instance",
-		Args:  cobra.ExactArgs(1),
+		Use:     "delete-service NAME",
+		GroupID: "local",
+		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: delete a service instance",
+		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			local.DeleteService(args[0], viper.GetString(pakCachePath))
 		},
@@ -88,9 +102,10 @@ func init() {
 	rootCmd.AddCommand(deleteServiceCmd)
 
 	createServiceKeyCmd := &cobra.Command{
-		Use:   "create-service-key SERVICE_INSTANCE SERVICE_KEY",
-		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: create a service key",
-		Args:  cobra.ExactArgs(2),
+		Use:     "create-service-key SERVICE_INSTANCE SERVICE_KEY",
+		GroupID: "local",
+		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: create a service key",
+		Args:    cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			local.CreateServiceKey(args[0], args[1], params, viper.GetString(pakCachePath))
 		},
@@ -99,9 +114,10 @@ func init() {
 	rootCmd.AddCommand(createServiceKeyCmd)
 
 	serviceKeyCmd := &cobra.Command{
-		Use:   "service-key SERVICE_INSTANCE SERVICE_KEY",
-		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: print a service key",
-		Args:  cobra.ExactArgs(2),
+		Use:     "service-key SERVICE_INSTANCE SERVICE_KEY",
+		GroupID: "local",
+		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: print a service key",
+		Args:    cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			local.ServiceKey(args[0], args[1])
 		},
@@ -109,9 +125,10 @@ func init() {
 	rootCmd.AddCommand(serviceKeyCmd)
 
 	serviceKeysCmd := &cobra.Command{
-		Use:   "service-keys NAME",
-		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list service keys for a service instance",
-		Args:  cobra.ExactArgs(1),
+		Use:     "service-keys NAME",
+		GroupID: "local",
+		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list service keys for a service instance",
+		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			local.ServiceKeys(args[0])
 		},
@@ -119,9 +136,10 @@ func init() {
 	rootCmd.AddCommand(serviceKeysCmd)
 
 	deleteServiceKeyCmd := &cobra.Command{
-		Use:   "delete-service-key SERVICE_INSTANCE SERVICE_KEY",
-		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: delete a service key",
-		Args:  cobra.ExactArgs(2),
+		Use:     "delete-service-key SERVICE_INSTANCE SERVICE_KEY",
+		GroupID: "local",
+		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: delete a service key",
+		Args:    cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			local.DeleteServiceKey(args[0], args[1], viper.GetString(pakCachePath))
 		},
@@ -129,9 +147,10 @@ func init() {
 	rootCmd.AddCommand(deleteServiceKeyCmd)
 
 	listExamplesCmd := &cobra.Command{
-		Use:   "examples",
-		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list example tests",
-		Args:  cobra.ExactArgs(0),
+		Use:     "examples",
+		GroupID: "local",
+		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list example tests",
+		Args:    cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			local.ListExamples(viper.GetString(pakCachePath))
 		},
@@ -144,9 +163,10 @@ func init() {
 		allFlag     = "all"
 	)
 	runExamplesCmd := &cobra.Command{
-		Use:   "run-examples",
-		Short: "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: run example tests",
-		Args:  cobra.ExactArgs(0),
+		Use:     "run-examples",
+		GroupID: "local",
+		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: run example tests",
+		Args:    cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			if !all && service == "" && example == "" {
 				log.Fatalln("specify --service-name and/or --example-name, or --all to run all the tests")

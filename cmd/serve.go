@@ -54,8 +54,9 @@ var cfCompatibilityToggle = toggles.Features.Toggle("enable-cf-sharing", false, 
 
 func init() {
 	rootCmd.AddCommand(&cobra.Command{
-		Use:   "serve",
-		Short: "Start the service broker",
+		Use:     "serve",
+		GroupID: "broker",
+		Short:   "Start the service broker",
 		Long: `Starts the service broker listening on a port defined by the
 	PORT environment variable.`,
 		Run: func(cmd *cobra.Command, args []string) {

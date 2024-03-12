@@ -13,8 +13,9 @@ import (
 
 func init() {
 	purgeCmd := &cobra.Command{
-		Use:   "purge",
-		Short: "purge a service instance from the database",
+		Use:     "purge",
+		GroupID: "broker",
+		Short:   "purge a service instance from the database",
 		Long: `Lets you remove a service instance from the Cloud Service Broker database.
 
 It does not actually delete the service instance, it just removes all references from the database.
