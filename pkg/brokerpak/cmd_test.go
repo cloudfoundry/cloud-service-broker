@@ -37,7 +37,7 @@ func fakeBrokerpak() (string, error) {
 	}
 	defer os.RemoveAll(dir)
 
-	tfSrc := filepath.Join(dir, "terraform")
+	tfSrc := filepath.Join(dir, "tofu")
 	if err := os.WriteFile(tfSrc, []byte("dummy-file"), 0644); err != nil {
 		return "", err
 	}
@@ -75,7 +75,7 @@ func fakeBrokerpak() (string, error) {
 		},
 		ServiceDefinitions: []string{"example-service-definition.yml"},
 		Parameters: []manifest.Parameter{
-			{Name: "TEST_PARAM", Description: "An example parameter that will be injected into Terraform's environment variables."},
+			{Name: "TEST_PARAM", Description: "An example parameter that will be injected into OpenTofu's environment variables."},
 		},
 		EnvConfigMapping: map[string]string{"ENV_VAR": "env.var"},
 	}
@@ -138,20 +138,20 @@ func TestFinfo(t *testing.T) {
 		"Parameters", // heading
 		"TEST_PARAM", // value
 
-		"Dependencies",                   // heading
-		"terraform",                      // dependency
-		"terraform-provider-google-beta", // dependency
+			"Dependencies",                   // heading
+			"tofu",                           // dependency
+			"terraform-provider-google-beta", // dependency
 
 		"Services",                             // heading
 		"00000000-0000-0000-0000-000000000000", // guid
 		"example-service",                      // name
 
-		"Contents",                               // heading
-		"bin/",                                   // directory
-		"definitions/",                           // directory
-		"manifest.yml",                           // manifest
-		"src/terraform-provider-google-beta.zip", // file
-		"src/terraform.zip",                      // file
+			"Contents",                               // heading
+			"bin/",                                   // directory
+			"definitions/",                           // directory
+			"manifest.yml",                           // manifest
+			"src/terraform-provider-google-beta.zip", // file
+			"src/tofu.zip",                           // file
 
 	}
 	actual := buf.String()
