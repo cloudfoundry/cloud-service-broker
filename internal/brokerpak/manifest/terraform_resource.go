@@ -39,7 +39,7 @@ func (tr *TerraformResource) resourceType() terraformResourceType {
 	switch {
 	case tr.Name == "":
 		return invalidType
-	case tr.Name == "terraform":
+	case tr.Name == binaryName:
 		return terraformVersion
 	case strings.HasPrefix(tr.Name, "terraform-provider-"):
 		return terraformProvider

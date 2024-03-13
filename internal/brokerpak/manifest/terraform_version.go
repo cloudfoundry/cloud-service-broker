@@ -17,10 +17,10 @@ func (m *Manifest) DefaultTerraformVersion() (*version.Version, error) {
 
 	switch len(versions) {
 	case 0:
-		return &version.Version{}, fmt.Errorf("terraform not found")
+		return &version.Version{}, fmt.Errorf("tofu not found")
 	case 1:
 		return versions[0], nil
 	default:
-		return &version.Version{}, fmt.Errorf("no default terraform found")
+		return &version.Version{}, fmt.Errorf("no default tofu found")
 	}
 }

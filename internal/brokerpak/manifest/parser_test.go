@@ -82,16 +82,16 @@ var _ = Describe("Parser", func() {
 		}))
 	})
 
-	When("there are multiple Terraform versions", func() {
+	When("there are multiple Tofu versions", func() {
 		It("can parse the manifest", func() {
 			m, err := manifest.Parse(fakeManifest(
 				withAdditionalEntry("terraform_binaries", map[string]any{
-					"name":    "terraform",
+					"name":    "tofu",
 					"version": "1.1.5",
 					"default": false,
 				}),
 				withAdditionalEntry("terraform_binaries", map[string]any{
-					"name":    "terraform",
+					"name":    "tofu",
 					"version": "1.1.6",
 					"default": true,
 				}),
@@ -118,11 +118,11 @@ var _ = Describe("Parser", func() {
 		When("none are marked as default", func() {
 			It("fails", func() {
 				m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]any{
-					"name":    "terraform",
+					"name":    "tofu",
 					"version": "1.1.5",
 					"default": false,
 				})))
-				Expect(err).To(MatchError("error validating manifest: multiple Terraform versions, but none marked as default: terraform_binaries"))
+				Expect(err).To(MatchError("error validating manifest: multiple Tofu versions, but none marked as default: terraform_binaries"))
 				Expect(m).To(BeNil())
 			})
 		})
@@ -131,17 +131,17 @@ var _ = Describe("Parser", func() {
 			It("fails", func() {
 				m, err := manifest.Parse(fakeManifest(
 					withAdditionalEntry("terraform_binaries", map[string]any{
-						"name":    "terraform",
+						"name":    "tofu",
 						"version": "1.1.5",
 						"default": true,
 					}),
 					withAdditionalEntry("terraform_binaries", map[string]any{
-						"name":    "terraform",
+						"name":    "tofu",
 						"version": "1.1.6",
 						"default": true,
 					}),
 				))
-				Expect(err).To(MatchError("error validating manifest: multiple Terraform versions, and multiple marked as default: terraform_binaries"))
+				Expect(err).To(MatchError("error validating manifest: multiple Tofu versions, and multiple marked as default: terraform_binaries"))
 				Expect(m).To(BeNil())
 			})
 		})
@@ -150,20 +150,20 @@ var _ = Describe("Parser", func() {
 			It("fails", func() {
 				m, err := manifest.Parse(fakeManifest(
 					withAdditionalEntry("terraform_binaries", map[string]any{
-						"name":    "terraform",
+						"name":    "tofu",
 						"version": "1.1.5",
 					}),
 					withAdditionalEntry("terraform_binaries", map[string]any{
-						"name":    "terraform",
+						"name":    "tofu",
 						"version": "1.1.6",
 						"default": true,
 					}),
 					withAdditionalEntry("terraform_binaries", map[string]any{
-						"name":    "terraform",
+						"name":    "tofu",
 						"version": "1.1.7",
 					}),
 				))
-				Expect(err).To(MatchError("error validating manifest: default version of Terraform must be the highest version: terraform_binaries"))
+				Expect(err).To(MatchError("error validating manifest: default version of Tofu must be the highest version: terraform_binaries"))
 				Expect(m).To(BeNil())
 			})
 		})
@@ -171,7 +171,7 @@ var _ = Describe("Parser", func() {
 		When("there are duplicate versions", func() {
 			It("fails", func() {
 				m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]any{
-					"name":    "terraform",
+					"name":    "tofu",
 					"version": "1.1.4",
 					"default": true,
 				})))
@@ -201,7 +201,7 @@ var _ = Describe("Parser", func() {
 		It("can parse and validate the upgrade path", func() {
 			m, err := manifest.Parse(fakeManifest(
 				withAdditionalEntry("terraform_binaries", map[string]any{
-					"name":    "terraform",
+					"name":    "tofu",
 					"version": "4.5.6",
 					"default": true,
 				}),
@@ -361,7 +361,7 @@ var _ = Describe("Parser", func() {
 				"source":  "https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.0.zip",
 				"default": true,
 			})))
-			Expect(err).To(MatchError(ContainSubstring("This field is only valid for `terraform`: terraform_binaries[3].default")))
+			Expect(err).To(MatchError(ContainSubstring("This field is only valid for `tofu`: terraform_binaries[3].default")))
 			Expect(m).To(BeNil())
 		})
 	})
@@ -369,7 +369,7 @@ var _ = Describe("Parser", func() {
 	When("a terraform version is not valid semver", func() {
 		It("fails", func() {
 			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", map[string]any{
-				"name":    "terraform",
+				"name":    "tofu",
 				"version": "not.semver",
 				"default": true,
 			})))
