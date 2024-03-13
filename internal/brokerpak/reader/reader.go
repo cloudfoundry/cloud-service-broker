@@ -197,7 +197,7 @@ func (pak *BrokerPakReader) extractTerraform(r manifest.TerraformVersion, destin
 	versionedPath := path.Join("bin", plat.Os, plat.Arch, r.Version.String(), binaryName)
 	if pak.fileExistsInZip(versionedPath) {
 		if err := pak.contents.ExtractFile(versionedPath, filepath.Join(destination, "versions", r.Version.String())); err != nil {
-			return fmt.Errorf("error extracting versioned terraform binary: %w", err)
+			return fmt.Errorf("error extracting versioned %s binary: %w", binaryName, err)
 		}
 
 		return nil
@@ -207,13 +207,13 @@ func (pak *BrokerPakReader) extractTerraform(r manifest.TerraformVersion, destin
 	unversionedPath := path.Join("bin", plat.Os, plat.Arch, binaryName)
 	if pak.fileExistsInZip(unversionedPath) {
 		if err := pak.contents.ExtractFile(unversionedPath, filepath.Join(destination, "versions", r.Version.String())); err != nil {
-			return fmt.Errorf("error extracting terraform binary: %w", err)
+			return fmt.Errorf("error extracting %s binary: %w", binaryName, err)
 		}
 
 		return nil
 	}
 
-	return fmt.Errorf("could not find Terraform version %s in brokerpak", r.Version)
+	return fmt.Errorf("could not find %s version %s in brokerpak", binaryName, r.Version)
 }
 
 func (pak *BrokerPakReader) findFileInZip(name string) (string, error) {
