@@ -138,20 +138,20 @@ func TestFinfo(t *testing.T) {
 		"Parameters", // heading
 		"TEST_PARAM", // value
 
-			"Dependencies",                   // heading
-			"tofu",                           // dependency
-			"terraform-provider-google-beta", // dependency
+		"Dependencies",                   // heading
+		"tofu",                           // dependency
+		"terraform-provider-google-beta", // dependency
 
 		"Services",                             // heading
 		"00000000-0000-0000-0000-000000000000", // guid
 		"example-service",                      // name
 
-			"Contents",                               // heading
-			"bin/",                                   // directory
-			"definitions/",                           // directory
-			"manifest.yml",                           // manifest
-			"src/terraform-provider-google-beta.zip", // file
-			"src/tofu.zip",                           // file
+		"Contents",                               // heading
+		"bin/",                                   // directory
+		"definitions/",                           // directory
+		"manifest.yml",                           // manifest
+		"src/terraform-provider-google-beta.zip", // file
+		"src/tofu.zip",                           // file
 
 	}
 	actual := buf.String()
