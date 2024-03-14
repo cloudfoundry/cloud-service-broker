@@ -22,39 +22,20 @@ var _ = Context("TerraformInvokerFactory", func() {
 
 		invokerFactory = invoker.NewTerraformInvokerFactory(fakeBuilder, expectedTerraformPluginDir, expectedProviderRenames)
 	})
-	Context("0.12", func() {
-		It("should return invoker for 0.12, for terraform version 0.12.0", func() {
-			Expect(
-				invokerFactory.VersionedTerraformInvoker(newVersion("0.12.0")),
-			).To(Equal(invoker.NewTerraform012Invoker(fakeExecutor, expectedTerraformPluginDir)))
-			Expect(fakeBuilder.VersionedExecutorCallCount()).To(Equal(1))
-			Expect(fakeBuilder.VersionedExecutorArgsForCall(0)).To(Equal(newVersion("0.12.0")))
-		})
-
-		It("should return invoker for 0.12, for terraform version 0.12.1", func() {
-			Expect(
-				invokerFactory.VersionedTerraformInvoker(newVersion("0.12.1")),
-			).To(Equal(invoker.NewTerraform012Invoker(fakeExecutor, expectedTerraformPluginDir)))
-			Expect(fakeBuilder.VersionedExecutorCallCount()).To(Equal(1))
-			Expect(fakeBuilder.VersionedExecutorArgsForCall(0)).To(Equal(newVersion("0.12.1")))
-		})
+	It("should return default invoker, for tofu version 1.6.0", func() {
+		Expect(
+			invokerFactory.VersionedTerraformInvoker(newVersion("1.6.0")),
+		).To(Equal(invoker.NewTerraformDefaultInvoker(fakeExecutor, expectedTerraformPluginDir, expectedProviderRenames)))
+		Expect(fakeBuilder.VersionedExecutorCallCount()).To(Equal(1))
+		Expect(fakeBuilder.VersionedExecutorArgsForCall(0)).To(Equal(newVersion("1.6.0")))
 	})
-	Context("0.13+", func() {
-		It("should return default invoker, for terraform version 0.13.1", func() {
-			Expect(
-				invokerFactory.VersionedTerraformInvoker(newVersion("0.13.1")),
-			).To(Equal(invoker.NewTerraformDefaultInvoker(fakeExecutor, expectedTerraformPluginDir, expectedProviderRenames)))
-			Expect(fakeBuilder.VersionedExecutorCallCount()).To(Equal(1))
-			Expect(fakeBuilder.VersionedExecutorArgsForCall(0)).To(Equal(newVersion("0.13.1")))
-		})
 
-		It("should return default invoker, for terraform version 1.0.4", func() {
-			Expect(
-				invokerFactory.VersionedTerraformInvoker(newVersion("1.0.4")),
-			).To(Equal(invoker.NewTerraformDefaultInvoker(fakeExecutor, expectedTerraformPluginDir, expectedProviderRenames)))
-			Expect(fakeBuilder.VersionedExecutorCallCount()).To(Equal(1))
-			Expect(fakeBuilder.VersionedExecutorArgsForCall(0)).To(Equal(newVersion("1.0.4")))
-		})
+	It("should return default invoker, for tofu version 1.6.2", func() {
+		Expect(
+			invokerFactory.VersionedTerraformInvoker(newVersion("1.6.2")),
+		).To(Equal(invoker.NewTerraformDefaultInvoker(fakeExecutor, expectedTerraformPluginDir, expectedProviderRenames)))
+		Expect(fakeBuilder.VersionedExecutorCallCount()).To(Equal(1))
+		Expect(fakeBuilder.VersionedExecutorArgsForCall(0)).To(Equal(newVersion("1.6.2")))
 	})
 })
 
