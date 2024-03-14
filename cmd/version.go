@@ -24,9 +24,10 @@ import (
 
 func init() {
 	versionCmd := &cobra.Command{
-		Use:   "version",
-		Short: "Show the version info of the broker",
-		Long:  `Show the version info of the broker`,
+		Use:     "version",
+		GroupID: "broker",
+		Short:   "Show the version info of the broker",
+		Long:    `Show the version info of the broker`,
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println(utils.Version)
 		},

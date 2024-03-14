@@ -27,6 +27,11 @@ import (
 
 var cfgFile string
 
+var brokerGroup = &cobra.Group{
+	ID:    "broker",
+	Title: "Broker Operation",
+}
+
 var rootCmd = &cobra.Command{
 	Use:   "cloud-service-broker",
 	Short: "GCP Service Broker is an OSB compatible service broker",
@@ -50,6 +55,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Configuration file to be read")
+	rootCmd.AddGroup(brokerGroup)
 	viper.SetEnvPrefix(utils.EnvironmentVarPrefix)
 	viper.SetEnvKeyReplacer(utils.PropertyToEnvReplacer)
 	viper.AutomaticEnv()
