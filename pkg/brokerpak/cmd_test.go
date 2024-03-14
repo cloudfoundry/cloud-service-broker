@@ -60,7 +60,7 @@ func fakeBrokerpak() (string, error) {
 		// These resources are stubbed with a local dummy file
 		TerraformVersions: []manifest.TerraformVersion{
 			{
-				Version:     version.Must(version.NewVersion("0.12.0")),
+				Version:     version.Must(version.NewVersion("1.6.0")),
 				Source:      tfSrc,
 				URLTemplate: tfSrc,
 			},

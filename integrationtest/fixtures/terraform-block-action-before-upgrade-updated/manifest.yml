@@ -9,18 +9,20 @@ platforms:
 - os: darwin
   arch: amd64
 terraform_binaries:
-- name: terraform
-  version: 1.4.6
-- name: terraform
-  version: 1.5.7
+- name: tofu
+  version: 1.6.0
+  source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.0.zip
+  url_template: https://github.com/opentofu/opentofu/releases/download/v${version}/tofu_${version}_${os}_${arch}.zip
+- name: tofu
+  version: 1.6.2
+  source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.2.zip
+  url_template: https://github.com/opentofu/opentofu/releases/download/v${version}/tofu_${version}_${os}_${arch}.zip
   default: true
 - name: terraform-provider-random
   version: 3.5.1
   source: https://github.com/terraform-providers/terraform-provider-random/archive/v3.5.1.zip
-terraform_state_provider_replacements:
-  registry.terraform.io/-/random: "registry.terraform.io/hashicorp/random"
 terraform_upgrade_path:
-  - version: 1.4.6
-  - version: 1.5.7
+  - version: 1.6.0
+  - version: 1.6.2
 service_definitions:
 - fake-service.yml
