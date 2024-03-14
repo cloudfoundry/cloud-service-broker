@@ -32,9 +32,17 @@ const (
 func init() {
 	_ = viper.BindEnv(pakCachePath, "PAK_BUILD_CACHE_PATH")
 
+	pakGroup := &cobra.Group{
+		ID:    "pak",
+		Title: "Brokerpak Development",
+	}
+
+	rootCmd.AddGroup(pakGroup)
+
 	pakCmd := &cobra.Command{
-		Use:   "pak",
-		Short: "interact with user-defined service definition bundles",
+		Use:     "pak",
+		GroupID: "pak",
+		Short:   "interact with user-defined service definition bundles",
 		Long: `Lets you create, validate, and view service definition bundles.
 
 A service definition bundle is a zip file containing all the elements needed

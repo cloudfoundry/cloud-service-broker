@@ -13,8 +13,9 @@ import (
 
 func init() {
 	purgeCmd := &cobra.Command{
-		Use:   "purge-binding",
-		Short: "purge a service binding from the database",
+		Use:     "purge-binding",
+		GroupID: "broker",
+		Short:   "purge a service binding from the database",
 		Long: `Lets you remove a service binding (or service key) from the Cloud Service Broker database.
 
 It does not actually delete the service binding, it just removes all references from the database.

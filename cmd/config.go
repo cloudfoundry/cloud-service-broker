@@ -23,8 +23,9 @@ import (
 
 func init() {
 	configCmd := &cobra.Command{
-		Use:   "config",
-		Short: "Show system configuration",
+		Use:     "config",
+		GroupID: "broker",
+		Short:   "Show system configuration",
 		Long: `
 The GCP Service Broker can be configured using both environment variables and
 configuration files.

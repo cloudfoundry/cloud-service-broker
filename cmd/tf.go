@@ -39,9 +39,10 @@ func init() {
 	)
 
 	tfCmd := &cobra.Command{
-		Use:   "tf",
-		Short: "Interact with the Terraform backend",
-		Long:  `Interact with the Terraform backend`,
+		Use:     "tf",
+		GroupID: "broker",
+		Short:   "Interact with the Terraform backend",
+		Long:    `Interact with the Terraform backend`,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
 			logger := utils.NewLogger("tf")
 			db := dbservice.New(logger)
