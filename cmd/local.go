@@ -8,20 +8,20 @@ import (
 	"github.com/spf13/viper"
 )
 
+const localID = "local"
+
 func init() {
 	var params, plan, service, example string
 	var all bool
 
-	localGroup := &cobra.Group{
-		ID:    "local",
+	rootCmd.AddGroup(&cobra.Group{
+		ID:    localID,
 		Title: "Local Development",
-	}
-
-	rootCmd.AddGroup(localGroup)
+	})
 
 	marketplaceCmd := &cobra.Command{
 		Use:     "marketplace",
-		GroupID: "local",
+		GroupID: localID,
 		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list services and plans",
 		Args:    cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -33,7 +33,7 @@ func init() {
 	const paramsFlag = "c"
 	createServiceCmd := &cobra.Command{
 		Use:     "create-service SERVICE PLAN NAME",
-		GroupID: "local",
+		GroupID: localID,
 		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: create a service instance",
 		Args:    cobra.ExactArgs(3),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -45,7 +45,7 @@ func init() {
 
 	servicesCmd := &cobra.Command{
 		Use:     "services",
-		GroupID: "local",
+		GroupID: localID,
 		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list service instances",
 		Args:    cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -56,7 +56,7 @@ func init() {
 
 	serviceCmd := &cobra.Command{
 		Use:     "service",
-		GroupID: "local",
+		GroupID: localID,
 		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: provides information on a service instance",
 		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -68,7 +68,7 @@ func init() {
 	const planFlag = "p"
 	updateServiceCmd := &cobra.Command{
 		Use:     "update-service NAME",
-		GroupID: "local",
+		GroupID: localID,
 		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: update a service instance",
 		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -81,7 +81,7 @@ func init() {
 
 	upgradeServiceCmd := &cobra.Command{
 		Use:     "upgrade-service NAME PREVIOUS_VERSION",
-		GroupID: "local",
+		GroupID: localID,
 		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: upgrade a service instance from PREVIOUS_VERSION to current version",
 		Args:    cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -92,7 +92,7 @@ func init() {
 
 	deleteServiceCmd := &cobra.Command{
 		Use:     "delete-service NAME",
-		GroupID: "local",
+		GroupID: localID,
 		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: delete a service instance",
 		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -103,7 +103,7 @@ func init() {
 
 	createServiceKeyCmd := &cobra.Command{
 		Use:     "create-service-key SERVICE_INSTANCE SERVICE_KEY",
-		GroupID: "local",
+		GroupID: localID,
 		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: create a service key",
 		Args:    cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -115,7 +115,7 @@ func init() {
 
 	serviceKeyCmd := &cobra.Command{
 		Use:     "service-key SERVICE_INSTANCE SERVICE_KEY",
-		GroupID: "local",
+		GroupID: localID,
 		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: print a service key",
 		Args:    cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -126,7 +126,7 @@ func init() {
 
 	serviceKeysCmd := &cobra.Command{
 		Use:     "service-keys NAME",
-		GroupID: "local",
+		GroupID: localID,
 		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list service keys for a service instance",
 		Args:    cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -137,7 +137,7 @@ func init() {
 
 	deleteServiceKeyCmd := &cobra.Command{
 		Use:     "delete-service-key SERVICE_INSTANCE SERVICE_KEY",
-		GroupID: "local",
+		GroupID: localID,
 		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: delete a service key",
 		Args:    cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -148,7 +148,7 @@ func init() {
 
 	listExamplesCmd := &cobra.Command{
 		Use:     "examples",
-		GroupID: "local",
+		GroupID: localID,
 		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list example tests",
 		Args:    cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -164,7 +164,7 @@ func init() {
 	)
 	runExamplesCmd := &cobra.Command{
 		Use:     "run-examples",
-		GroupID: "local",
+		GroupID: localID,
 		Short:   "EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: run example tests",
 		Args:    cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
