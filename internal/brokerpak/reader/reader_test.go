@@ -63,10 +63,10 @@ var _ = Describe("reader", func() {
 			Expect(pakReader.ExtractPlatformBins(binOutput)).NotTo(HaveOccurred())
 
 			plat := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
-			hashicorpBinOutput := filepath.Join(binOutput, "registry.terraform.io", "hashicorp")
+			hashicorpBinOutput := filepath.Join(binOutput, "registry.opentofu.org", "hashicorp")
 			Expect(filepath.Join(hashicorpBinOutput, "google-beta", "1.19.0", plat, "terraform-provider-google-beta_v1.19.0_x4")).To(BeAnExistingFile())
 
-			otherNamespaceBinOutput := filepath.Join(binOutput, "registry.terraform.io", "other-namespace")
+			otherNamespaceBinOutput := filepath.Join(binOutput, "registry.opentofu.org", "other-namespace")
 			Expect(filepath.Join(otherNamespaceBinOutput, "google", "1.19.0", plat, "terraform-provider-google_v1.19.0_x5")).To(BeAnExistingFile())
 		})
 

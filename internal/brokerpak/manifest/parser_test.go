@@ -320,9 +320,9 @@ var _ = Describe("Parser", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(m.TerraformProviders[1].Provider.String()).To(Equal(expected))
 		},
-		Entry("empty 'provider' field", "", "registry.terraform.io/hashicorp/foo"),
-		Entry("just type", "lala", "registry.terraform.io/hashicorp/lala"),
-		Entry("type and namespace", "mycorp/lala", "registry.terraform.io/mycorp/lala"),
+		Entry("empty 'provider' field", "", "registry.opentofu.org/hashicorp/foo"),
+		Entry("just type", "lala", "registry.opentofu.org/hashicorp/lala"),
+		Entry("type and namespace", "mycorp/lala", "registry.opentofu.org/mycorp/lala"),
 		Entry("fully qualified", "mything.io/mycorp/lala", "mything.io/mycorp/lala"),
 	)
 
