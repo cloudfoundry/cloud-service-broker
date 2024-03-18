@@ -29,7 +29,7 @@ require (
 	golang.org/x/net v0.22.0
 	golang.org/x/tools v0.19.0
 	gopkg.in/yaml.v3 v3.0.1
-	gorm.io/driver/mysql v1.5.4
+	gorm.io/driver/mysql v1.5.5
 	gorm.io/driver/sqlite v1.4.4
 	gorm.io/gorm v1.25.7
 	honnef.co/go/tools v0.4.7
