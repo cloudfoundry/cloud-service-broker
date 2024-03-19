@@ -10,15 +10,26 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
 )
 
-const HashicorpURLTemplate = "https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip"
+const (
+	HashicorpURLTemplate = "https://releases.hashicorp.com/${name}/${version}/${name}_${version}_${os}_${arch}.zip"
+	TofuURLTemplate      = "https://github.com/opentofu/opentofu/releases/download/v${version}/tofu_${version}_${os}_${arch}.zip"
+)
 
-func URL(name, version, urlTemplate string, plat platform.Platform) string {
+func HashicorpURL(name, version, urlTemplate string, plat platform.Platform) string {
+	return replaceURL(name, version, urlTemplate, HashicorpURLTemplate, plat)
+}
+
+func TofuURL(name, version, urlTemplate string, plat platform.Platform) string {
+	return replaceURL(name, version, urlTemplate, TofuURLTemplate, plat)
+}
+
+func replaceURL(name, version, urlTemplate, defaultTemplate string, plat platform.Platform) string {
 	replacer := strings.NewReplacer("${name}", name, "${version}", version, "${os}", plat.Os, "${arch}", plat.Arch)
 	var template string
 
 	switch {
 	case urlTemplate == "":
-		template = HashicorpURLTemplate
+		template = defaultTemplate
 	case isURL(urlTemplate):
 		template = urlTemplate
 	default:
