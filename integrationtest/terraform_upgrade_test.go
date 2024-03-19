@@ -16,8 +16,8 @@ var _ = Describe("Terraform Upgrade", func() {
 	const (
 		serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
 		servicePlanGUID     = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
-		startingVersion     = "0.12.21"
-		endingVersion       = "1.5.7"
+		startingVersion     = "1.6.0"
+		endingVersion       = "1.6.2"
 	)
 
 	var (
@@ -99,7 +99,7 @@ var _ = Describe("Terraform Upgrade", func() {
 			Expect(bindingTerraformStateVersion(serviceInstance.GUID, secondBinding.GUID)).To(Equal(startingVersion))
 			Expect(bindingTerraformStateOutputValue(serviceInstance.GUID, secondBinding.GUID)).To(BeElementOf(1, 2))
 
-			By("running 'cf update-service'")
+			By("running 'cf upgrade-service'")
 			Expect(broker.UpgradeService(serviceInstance, endingVersion, testdrive.WithUpgradePreviousValues(domain.PreviousValues{PlanID: servicePlanGUID}))).To(Succeed())
 
 			By("observing that the instance TF state file has been updated to the latest version")

@@ -40,12 +40,14 @@ type ExecutorBuilder interface {
 	VersionedExecutor(tfVersion *version.Version) TerraformExecutor
 }
 
+const binaryName = "tofu"
+
 func (executorFactory ExecutorFactory) VersionedExecutor(tfVersion *version.Version) TerraformExecutor {
 	return CustomEnvironmentExecutor(executorFactory.EnvVars,
 		CustomEnvironmentExecutor(
 			executorFactory.Params,
 			CustomTerraformExecutor(
-				filepath.Join(executorFactory.Dir, "versions", tfVersion.String(), "terraform"),
+				filepath.Join(executorFactory.Dir, "versions", tfVersion.String(), binaryName),
 				executorFactory.Dir,
 				tfVersion,
 				DefaultExecutor(),

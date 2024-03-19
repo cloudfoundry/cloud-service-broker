@@ -19,6 +19,7 @@ import (
 )
 
 const manifestName = "manifest.yml"
+const binaryName = "tofu"
 
 func Pack(m *manifest.Manifest, base, dest, cachePath string, includeSource, compress bool) error {
 	// NOTE: we use "log" rather than Lager because this is used by the CLI and
@@ -72,7 +73,7 @@ func packSources(m *manifest.Manifest, tmp string, cachePath string) error {
 	}
 
 	for _, resource := range m.TerraformVersions {
-		if err := packSource(resource.Source, "terraform"); err != nil {
+		if err := packSource(resource.Source, binaryName); err != nil {
 			return err
 		}
 	}
@@ -103,7 +104,7 @@ func packBinaries(m *manifest.Manifest, tmp string, cachePath string) error {
 		p := filepath.Join(tmp, "bin", platform.Os, platform.Arch)
 
 		for _, resource := range m.TerraformVersions {
-			if err := cachedFetchFile(getAny, brokerpakurl.URL("terraform", resource.Version.String(), resource.URLTemplate, platform), filepath.Join(p, resource.Version.String()), cachePath); err != nil {
+			if err := cachedFetchFile(getAny, brokerpakurl.URL(binaryName, resource.Version.String(), resource.URLTemplate, platform), filepath.Join(p, resource.Version.String()), cachePath); err != nil {
 				return err
 			}
 		}

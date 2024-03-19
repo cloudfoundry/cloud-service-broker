@@ -49,7 +49,7 @@ A service definition bundle is a zip file containing all the elements needed
 to define and run a custom service.
 
 Bundles include source code (for legal compliance), service definitions, and
-Terraform/provider binaries for multiple platforms. They give you a contained
+OpenTofu/provider binaries for multiple platforms. They give you a contained
 way to deploy new services to existing brokers or augment the broker to fit
 your needs.
 
@@ -58,12 +58,12 @@ To start building a pack, create a new directory and within it run init:
 	cloud-service-broker pak init my-pak
 
 You'll get a new pack with a manifest and example service definition.
-Define the architectures and Terraform plugins you need in your manifest along
+Define the architectures and OpenTofu plugins you need in your manifest along
 with any metadata you want, and include the names of all service definition
 files.
 
 When you're done, you can build the bundle which will download the sources,
-Terraform resources, and pack them together.
+OpenTofu resources, and pack them together.
 
 	cloud-service-broker pak build my-pak
 
@@ -85,7 +85,6 @@ dependencies, services it provides, and the contents.
 			_ = cmd.Help()
 		},
 	}
-
 	rootCmd.AddCommand(pakCmd)
 
 	pakCmd.AddCommand(&cobra.Command{
@@ -111,7 +110,7 @@ dependencies, services it provides, and the contents.
 	)
 	buildCmd := &cobra.Command{
 		Use:   "build [path/to/pack/directory]",
-		Short: "bundle up the service definition files and Terraform resources into a brokerpak",
+		Short: "bundle up the service definition files and OpenTofu resources into a brokerpak",
 		Args:  cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			directory := ""

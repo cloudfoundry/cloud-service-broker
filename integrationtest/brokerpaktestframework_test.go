@@ -12,7 +12,7 @@ import (
 var _ = Describe("brokerpaktestframework", func() {
 	It("works", func() {
 		By("creating a mock Terraform")
-		mockTerraform := must(brokerpaktestframework.NewTerraformMock(brokerpaktestframework.WithVersion("1.2.3")))
+		mockTerraform := must(brokerpaktestframework.NewTerraformMock(brokerpaktestframework.WithVersion("1.6.2")))
 
 		By("building a fake brokerpak")
 		cwd := must(os.Getwd())

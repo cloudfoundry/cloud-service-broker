@@ -14,7 +14,8 @@ var _ = Describe("Terraform Module Upgrade", func() {
 	const (
 		serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
 		servicePlanGUID     = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
-		newTerraformVersion = "1.5.7"
+		newTerraformVersion = "1.6.2"
+		oldTerraformVersion = "1.6.0"
 	)
 
 	var (
@@ -42,9 +43,9 @@ var _ = Describe("Terraform Module Upgrade", func() {
 
 	Context("TF Upgrades are enabled", func() {
 		It("runs 'terraform apply' at each version in the upgrade path", func() {
-			By("provisioning a service instance at 0.12")
+			By("provisioning a service instance at an old version")
 			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID))
-			Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))
+			Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal(oldTerraformVersion))
 
 			By("creating service bindings")
 			firstBinding := must(broker.CreateBinding(serviceInstance))
@@ -61,11 +62,11 @@ var _ = Describe("Terraform Module Upgrade", func() {
 			))
 
 			By("validating old state")
-			Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal("0.12.21"))
-			Expect(bindingTerraformStateVersion(serviceInstance.GUID, firstBinding.GUID)).To(Equal("0.12.21"))
-			Expect(bindingTerraformStateVersion(serviceInstance.GUID, secondBinding.GUID)).To(Equal("0.12.21"))
+			Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal(oldTerraformVersion))
+			Expect(bindingTerraformStateVersion(serviceInstance.GUID, firstBinding.GUID)).To(Equal(oldTerraformVersion))
+			Expect(bindingTerraformStateVersion(serviceInstance.GUID, secondBinding.GUID)).To(Equal(oldTerraformVersion))
 
-			By("running 'cf update-service'")
+			By("running 'cf upgrade-service'")
 			Expect(broker.UpgradeService(serviceInstance, newTerraformVersion, testdrive.WithUpgradePreviousValues(domain.PreviousValues{PlanID: servicePlanGUID}))).To(Succeed())
 
 			By("observing that the instance TF state file has been updated to the latest version")

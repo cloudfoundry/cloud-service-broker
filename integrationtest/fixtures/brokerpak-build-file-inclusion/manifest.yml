@@ -7,12 +7,14 @@ platforms:
 - os: linux
   arch: amd64
 terraform_binaries:
-- name: terraform
-  version: 0.12.21
-  source: https://github.com/hashicorp/terraform/archive/v0.12.21.zip
-- name: terraform
-  version: 0.13.4
-  source: https://github.com/hashicorp/terraform/archive/v0.13.4.zip
+- name: tofu
+  version: 1.6.0
+  source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.0.zip
+  url_template: https://github.com/opentofu/opentofu/releases/download/v${version}/tofu_${version}_${os}_${arch}.zip
+- name: tofu
+  version: 1.6.1
+  source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.1.zip
+  url_template: https://github.com/opentofu/opentofu/releases/download/v${version}/tofu_${version}_${os}_${arch}.zip
   default: true
 - name: cloud-service-broker
   version: 0.2.6

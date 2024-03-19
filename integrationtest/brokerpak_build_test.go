@@ -44,8 +44,8 @@ var _ = Describe("Brokerpak Build", func() {
 
 			By("checking that the expected files are there")
 			paths := []string{
-				fmt.Sprintf("bin/%s/0.12.21/terraform", platform.CurrentPlatform()),
-				fmt.Sprintf("bin/%s/0.13.4/terraform", platform.CurrentPlatform()),
+				fmt.Sprintf("bin/%s/1.6.0/tofu", platform.CurrentPlatform()),
+				fmt.Sprintf("bin/%s/1.6.1/tofu", platform.CurrentPlatform()),
 				fmt.Sprintf("bin/%s/cloud-service-broker.%s", platform.CurrentPlatform(), runtime.GOOS),
 				fmt.Sprintf("bin/%s/extrafile.sh", platform.CurrentPlatform()),
 			}
