@@ -15,7 +15,7 @@ import (
 var _ = Describe("Terraform block action before upgrade", func() {
 	const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
 	const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
-	const oldTerraformVersion = "1.4.6"
+	const oldTerraformVersion = "1.6.0"
 
 	var (
 		brokerpak string

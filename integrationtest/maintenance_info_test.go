@@ -46,8 +46,8 @@ var _ = Describe("Maintenance Info", func() {
 				Expect(catServices.Services[0].Plans[0].MaintenanceInfo).To(Equal(&domain.MaintenanceInfo{
 					Public:      nil,
 					Private:     "",
-					Version:     "0.13.7",
-					Description: "This upgrade provides support for Terraform version: 0.13.7. The upgrade operation will take a while. The instance and all associated bindings will be upgraded.",
+					Version:     "1.6.1",
+					Description: "This upgrade provides support for Terraform version: 1.6.1. The upgrade operation will take a while. The instance and all associated bindings will be upgraded.",
 				}))
 			})
 		})

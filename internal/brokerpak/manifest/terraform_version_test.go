@@ -9,7 +9,7 @@ import (
 )
 
 var _ = Describe("DefaultTerraformVersion", func() {
-	It("returns terraform version", func() {
+	It("returns tofu version", func() {
 		m, err := manifest.Parse(fakeManifest())
 		Expect(err).NotTo(HaveOccurred())
 
@@ -18,23 +18,23 @@ var _ = Describe("DefaultTerraformVersion", func() {
 		Expect(actualVersion).To(Equal(version.Must(version.NewVersion("1.1.4"))))
 	})
 
-	It("it returns error when it can't find terraform version", func() {
+	It("it returns error when it can't find tofu version", func() {
 		var exampleManifest manifest.Manifest
 
 		_, err := exampleManifest.DefaultTerraformVersion()
-		Expect(err).To(MatchError("terraform not found"))
+		Expect(err).To(MatchError("tofu not found"))
 	})
 
-	When("there is more than one terraform version", func() {
+	When("there is more than one tofu version", func() {
 		It("returns the default version", func() {
 			m, err := manifest.Parse(fakeManifest(
 				withAdditionalEntry("terraform_binaries", map[string]any{
-					"name":    "terraform",
+					"name":    "tofu",
 					"version": "1.1.5",
 					"default": false,
 				}),
 				withAdditionalEntry("terraform_binaries", map[string]any{
-					"name":    "terraform",
+					"name":    "tofu",
 					"version": "1.1.6",
 					"default": true,
 				}),

@@ -21,17 +21,19 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
 )
 
+const binaryName = "tofu"
+
 var _ = Describe("reader", func() {
 	Describe("ExtractPlatformBins", func() {
 		const (
-			terraformV12 = "0.12.0"
-			terraformV13 = "0.13.0"
+			binaryV160 = "1.6.0"
+			binaryV161 = "1.6.1"
 		)
 
-		Context("providers in terraform 0.12 and lower", func() {
+		XContext("providers in terraform 0.12 and lower - need to remove functionality", func() {
 			It("extracts providers to same directory", func() {
 				pk := fakeBrokerpak(
-					withTerraform(terraformV12),
+					withTerraform(""),
 					withProvider("", "terraform-provider-google-beta", "1.19.0", "x4"),
 					withProvider("", "terraform-provider-google", "1.19.0", "x5"),
 				)
@@ -47,33 +49,31 @@ var _ = Describe("reader", func() {
 			})
 		})
 
-		Context("providers in terraform 0.13 and higher", func() {
-			It("extracts providers to a directory hierarchy", func() {
-				pk := fakeBrokerpak(
-					withTerraform(terraformV13),
-					withProvider("", "terraform-provider-google-beta", "1.19.0", "x4"),
-					withProvider("other-namespace/google", "terraform-provider-google", "1.19.0", "x5"),
-				)
+		It("extracts providers to a directory hierarchy", func() {
+			pk := fakeBrokerpak(
+				withTerraform(binaryV160),
+				withProvider("", "terraform-provider-google-beta", "1.19.0", "x4"),
+				withProvider("other-namespace/google", "terraform-provider-google", "1.19.0", "x5"),
+			)
 
-				pakReader, err := reader.OpenBrokerPak(pk)
-				Expect(err).NotTo(HaveOccurred())
+			pakReader, err := reader.OpenBrokerPak(pk)
+			Expect(err).NotTo(HaveOccurred())
 
-				binOutput := GinkgoT().TempDir()
-				Expect(pakReader.ExtractPlatformBins(binOutput)).NotTo(HaveOccurred())
+			binOutput := GinkgoT().TempDir()
+			Expect(pakReader.ExtractPlatformBins(binOutput)).NotTo(HaveOccurred())
 
-				plat := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
-				hashicorpBinOutput := filepath.Join(binOutput, "registry.terraform.io", "hashicorp")
-				Expect(filepath.Join(hashicorpBinOutput, "google-beta", "1.19.0", plat, "terraform-provider-google-beta_v1.19.0_x4")).To(BeAnExistingFile())
+			plat := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
+			hashicorpBinOutput := filepath.Join(binOutput, "registry.opentofu.org", "hashicorp")
+			Expect(filepath.Join(hashicorpBinOutput, "google-beta", "1.19.0", plat, "terraform-provider-google-beta_v1.19.0_x4")).To(BeAnExistingFile())
 
-				otherNamespaceBinOutput := filepath.Join(binOutput, "registry.terraform.io", "other-namespace")
-				Expect(filepath.Join(otherNamespaceBinOutput, "google", "1.19.0", plat, "terraform-provider-google_v1.19.0_x5")).To(BeAnExistingFile())
-			})
+			otherNamespaceBinOutput := filepath.Join(binOutput, "registry.opentofu.org", "other-namespace")
+			Expect(filepath.Join(otherNamespaceBinOutput, "google", "1.19.0", plat, "terraform-provider-google_v1.19.0_x5")).To(BeAnExistingFile())
 		})
 
-		Context("single version of terraform", func() {
+		Context("single version of tofu", func() {
 			It("extracts correctly", func() {
 				pk := fakeBrokerpak(
-					withTerraform(terraformV13),
+					withTerraform(binaryV160),
 					withProvider("", "terraform-provider-google-beta", "1.19.0", "x4"),
 				)
 
@@ -82,19 +82,19 @@ var _ = Describe("reader", func() {
 
 				binOutput := GinkgoT().TempDir()
 				Expect(pakReader.ExtractPlatformBins(binOutput)).NotTo(HaveOccurred())
-
-				data, err := os.ReadFile(filepath.Join(binOutput, "versions", terraformV13, "terraform"))
+				data, err := os.ReadFile(filepath.Join(binOutput, "versions", binaryV160, "tofu"))
 				Expect(err).NotTo(HaveOccurred())
-				Expect(data).To(Equal([]byte(terraformV13)))
+				Expect(data).To(Equal([]byte(binaryV160)))
+
 			})
 		})
 
-		Context("multiple terraform versions", func() {
-			It("extracts terraform versions into different directories", func() {
+		Context("multiple tofu versions", func() {
+			It("extracts tofu versions into different directories", func() {
 				pk := fakeBrokerpak(
-					withTerraform(terraformV12),
-					withTerraform(terraformV13),
-					withDefaultTerraform("1.1.1"),
+					withTerraform(binaryV160),
+					withTerraform(binaryV161),
+					withDefaultTerraform("1.6.2"),
 					withProvider("", "terraform-provider-google-beta", "1.19.0", "x4"),
 				)
 
@@ -104,27 +104,27 @@ var _ = Describe("reader", func() {
 				binOutput := GinkgoT().TempDir()
 				Expect(pakReader.ExtractPlatformBins(binOutput)).NotTo(HaveOccurred())
 
-				By("checking for v0.12")
-				data, err := os.ReadFile(filepath.Join(binOutput, "versions", terraformV12, "terraform"))
+				By("checking for v1.6.0")
+				data, err := os.ReadFile(filepath.Join(binOutput, "versions", binaryV160, binaryName))
 				Expect(err).NotTo(HaveOccurred())
-				Expect(data).To(Equal([]byte(terraformV12)))
+				Expect(data).To(Equal([]byte(binaryV160)))
 
-				By("checking for v0.13")
-				data, err = os.ReadFile(filepath.Join(binOutput, "versions", terraformV13, "terraform"))
+				By("checking for v1.6.1")
+				data, err = os.ReadFile(filepath.Join(binOutput, "versions", binaryV161, binaryName))
 				Expect(err).NotTo(HaveOccurred())
-				Expect(data).To(Equal([]byte(terraformV13)))
+				Expect(data).To(Equal([]byte(binaryV161)))
 
-				By("checking for v1.1.1")
-				data, err = os.ReadFile(filepath.Join(binOutput, "versions", "1.1.1", "terraform"))
+				By("checking for v1.6.2")
+				data, err = os.ReadFile(filepath.Join(binOutput, "versions", "1.6.2", binaryName))
 				Expect(err).NotTo(HaveOccurred())
-				Expect(data).To(Equal([]byte("1.1.1")))
+				Expect(data).To(Equal([]byte("1.6.2")))
 			})
 		})
 
 		Context("multiple providers share same name and version", func() {
 			It("should return an error", func() {
 				pk := fakeBrokerpak(
-					withTerraform(terraformV13),
+					withTerraform(binaryV161),
 					withProvider("", "terraform-provider-google-beta", "1.19.0", "x4"),
 					withProvider("", "terraform-provider-google-beta", "1.19.0", "x5"),
 				)
@@ -143,7 +143,7 @@ var _ = Describe("reader", func() {
 		Context("terraform provider in manifest not found in zip", func() {
 			It("should return an error", func() {
 				pk := fakeBrokerpak(
-					withTerraform(terraformV13),
+					withTerraform(binaryV161),
 					withMissingProvider("terraform-provider-google-beta", "1.19.0"),
 				)
 
@@ -232,7 +232,7 @@ func fakeBrokerpak(opts ...option) string {
 
 func withTerraform(tfVersion string) option {
 	return func(c *config) {
-		fakeFile := filepath.Join(c.dir, tfVersion, "terraform")
+		fakeFile := filepath.Join(c.dir, tfVersion, binaryName)
 		Expect(stream.Copy(stream.FromString(tfVersion), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
 		c.manifest.TerraformVersions = append(c.manifest.TerraformVersions, manifest.TerraformVersion{
@@ -245,7 +245,7 @@ func withTerraform(tfVersion string) option {
 
 func withDefaultTerraform(tfVersion string) option {
 	return func(c *config) {
-		fakeFile := filepath.Join(c.dir, tfVersion, "terraform")
+		fakeFile := filepath.Join(c.dir, tfVersion, binaryName)
 		Expect(stream.Copy(stream.FromString(tfVersion), stream.ToFile(fakeFile))).NotTo(HaveOccurred())
 
 		c.manifest.TerraformVersions = append(c.manifest.TerraformVersions, manifest.TerraformVersion{

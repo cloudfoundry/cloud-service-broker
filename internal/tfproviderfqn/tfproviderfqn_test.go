@@ -1,18 +1,22 @@
 package tfproviderfqn_test
 
 import (
+	"fmt"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/tfproviderfqn"
 )
 
+const defaultRegistrydomain = "registry.opentofu.org"
+
 var _ = Describe("TfProviderFQN", func() {
 	Context("from name", func() {
 		It("can be created from a name", func() {
 			n, err := tfproviderfqn.New("terraform-provider-mysql", "")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(n.String()).To(Equal("registry.terraform.io/hashicorp/mysql"))
+			Expect(n.String()).To(Equal(fmt.Sprintf("%s/hashicorp/mysql", defaultRegistrydomain)))
 		})
 
 		When("the name has the wrong prefix", func() {
@@ -28,13 +32,13 @@ var _ = Describe("TfProviderFQN", func() {
 		It("can be created from the type", func() {
 			n, err := tfproviderfqn.New("", "postgresql")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(n.String()).To(Equal("registry.terraform.io/hashicorp/postgresql"))
+			Expect(n.String()).To(Equal(fmt.Sprintf("%s/hashicorp/postgresql", defaultRegistrydomain)))
 		})
 
 		It("can be created from the namespace and type", func() {
 			n, err := tfproviderfqn.New("", "cyrilgdn/postgresql")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(n.String()).To(Equal("registry.terraform.io/cyrilgdn/postgresql"))
+			Expect(n.String()).To(Equal(fmt.Sprintf("%s/cyrilgdn/postgresql", defaultRegistrydomain)))
 		})
 
 		It("can be created from the registry, namespace and type", func() {

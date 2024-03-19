@@ -16,6 +16,8 @@ import (
 	cp "github.com/otiai10/copy"
 )
 
+const hclFilesFolder = "terraform"
+
 func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.Writer, brokerpakExtraFoldersToCopy ...string) (*TestInstance, error) {
 	csbBuild, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker")
 	if err != nil {
@@ -31,7 +33,7 @@ func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.W
 		return nil, err
 	}
 
-	folders := append([]string{"terraform"}, brokerpakExtraFoldersToCopy...)
+	folders := append([]string{hclFilesFolder}, brokerpakExtraFoldersToCopy...)
 	if err := copyBrokerpakFolders(brokerPackDir, workingDir, folders); err != nil {
 		return nil, err
 	}

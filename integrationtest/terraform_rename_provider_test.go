@@ -13,7 +13,7 @@ var _ = Describe("Terraform Rename Provider", func() {
 		brokerpak string
 		broker    *testdrive.Broker
 	)
-	const terraformVersion = "1.5.7"
+	const terraformVersion = "1.6.2"
 
 	BeforeEach(func() {
 		brokerpak = must(packer.BuildBrokerpak(csb, fixtures("terraform-rename-provider")))

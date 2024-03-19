@@ -223,31 +223,31 @@ func TestCustomTerraformExecutor012(t *testing.T) {
 		Expected *exec.Cmd
 	}{
 		"destroy": {
-			Input:    exec.Command("terraform", "destroy", "-auto-approve", "-no-color"),
+			Input:    exec.Command(binaryName, "destroy", "-auto-approve", "-no-color"),
 			Expected: exec.Command(customBinary, "destroy", "-auto-approve", "-no-color"),
 		},
 		"apply": {
-			Input:    exec.Command("terraform", "apply", "-auto-approve", "-no-color"),
+			Input:    exec.Command(binaryName, "apply", "-auto-approve", "-no-color"),
 			Expected: exec.Command(customBinary, "apply", "-auto-approve", "-no-color"),
 		},
 		"validate": {
-			Input:    exec.Command("terraform", "validate", "-no-color"),
+			Input:    exec.Command(binaryName, "validate", "-no-color"),
 			Expected: exec.Command(customBinary, "validate", "-no-color"),
 		},
 		"init": {
-			Input:    exec.Command("terraform", "init", "-no-color"),
+			Input:    exec.Command(binaryName, "init", "-no-color"),
 			Expected: exec.Command(customBinary, "init", pluginsFlag, "-get-plugins=false", "-no-color"),
 		},
 		"import": {
-			Input:    exec.Command("terraform", "import", "-no-color", "tf.resource", "iaas-resource"),
+			Input:    exec.Command(binaryName, "import", "-no-color", "tf.resource", "iaas-resource"),
 			Expected: exec.Command(customBinary, "import", "-no-color", "tf.resource", "iaas-resource"),
 		},
 		"show": {
-			Input:    exec.Command("terraform", "show", "-no-color"),
+			Input:    exec.Command(binaryName, "show", "-no-color"),
 			Expected: exec.Command(customBinary, "show", "-no-color"),
 		},
 		"plan": {
-			Input:    exec.Command("terraform", "plan", "-no-color"),
+			Input:    exec.Command(binaryName, "plan", "-no-color"),
 			Expected: exec.Command(customBinary, "plan", "-no-color"),
 		},
 	}
@@ -287,7 +287,7 @@ func TestCustomTerraformExecutor013(t *testing.T) {
 		Expected *exec.Cmd
 	}{
 		"init": {
-			Input:    exec.Command("terraform", "init", "-no-color"),
+			Input:    exec.Command(binaryName, "init", "-no-color"),
 			Expected: exec.Command(customBinary, "init", pluginsFlag, "-no-color"),
 		},
 	}

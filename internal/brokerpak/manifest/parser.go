@@ -29,6 +29,8 @@ type parser struct {
 	TerraformStateProviderReplacements map[string]string      `yaml:"terraform_state_provider_replacements,omitempty"`
 }
 
+const binaryName = "tofu"
+
 func Parse(input []byte) (*Manifest, error) {
 	decoder := yaml.NewDecoder(bytes.NewReader(input))
 	decoder.KnownFields(true)
@@ -79,7 +81,7 @@ func Parse(input []byte) (*Manifest, error) {
 func parseTerraformUpgradePath(p parser) (result []*version.Version, errs *validation.FieldError) {
 	availableTerraformVersions := make(map[string]bool)
 	for _, v := range p.TerraformResources {
-		if v.Name == "terraform" {
+		if v.Name == binaryName {
 			availableTerraformVersions[v.Version] = v.Default
 		}
 	}
@@ -145,7 +147,7 @@ func parseTerraformResources(p parser) (versions []TerraformVersion, providers [
 
 		if r.Default && r.resourceType() != terraformVersion {
 			errs = errs.Also((&validation.FieldError{
-				Message: "This field is only valid for `terraform`",
+				Message: "This field is only valid for `tofu`",
 				Paths:   []string{"default"},
 			}).ViaFieldIndex("terraform_binaries", i))
 		}
@@ -202,17 +204,17 @@ func parseTerraformResources(p parser) (versions []TerraformVersion, providers [
 	switch {
 	case len(versions) > 1 && len(defaultTerraformVersions) == 0:
 		errs = errs.Also(&validation.FieldError{
-			Message: "multiple Terraform versions, but none marked as default",
+			Message: "multiple Tofu versions, but none marked as default",
 			Paths:   []string{"terraform_binaries"},
 		})
 	case len(versions) > 1 && len(defaultTerraformVersions) > 1:
 		errs = errs.Also(&validation.FieldError{
-			Message: "multiple Terraform versions, and multiple marked as default",
+			Message: "multiple Tofu versions, and multiple marked as default",
 			Paths:   []string{"terraform_binaries"},
 		})
 	case len(defaultTerraformVersions) == 1 && !defaultTerraformVersions[0].Equal(highestTerraformVersion):
 		errs = errs.Also(&validation.FieldError{
-			Message: "default version of Terraform must be the highest version",
+			Message: "default version of Tofu must be the highest version",
 			Paths:   []string{"terraform_binaries"},
 		})
 	}

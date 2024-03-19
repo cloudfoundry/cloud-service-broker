@@ -22,7 +22,7 @@ func (m *Manifest) Serialize() ([]byte, error) {
 
 	for _, v := range m.TerraformVersions {
 		p.TerraformResources = append(p.TerraformResources, TerraformResource{
-			Name:        "terraform",
+			Name:        binaryName,
 			Version:     v.Version.String(),
 			Source:      v.Source,
 			URLTemplate: v.URLTemplate,

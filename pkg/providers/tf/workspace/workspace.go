@@ -34,6 +34,7 @@ import (
 // DefaultInstanceName is the default name of an instance of a particular module.
 const (
 	DefaultInstanceName = "instance"
+	binaryName          = "tofu"
 )
 
 // NewWorkspace creates a new TerraformWorkspace from a given template and variables to populate an instance of it.
@@ -320,7 +321,7 @@ func (workspace *TerraformWorkspace) Execute(ctx context.Context, terraformExecu
 	var lastExecutionOutput executor.ExecutionOutput
 
 	for _, cmd := range commands {
-		c := exec.Command("terraform", cmd.Command()...)
+		c := exec.Command(binaryName, cmd.Command()...)
 		c.Env = os.Environ()
 		c.Dir = workspace.dir
 

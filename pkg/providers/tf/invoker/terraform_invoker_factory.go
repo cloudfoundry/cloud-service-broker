@@ -16,8 +16,5 @@ type TerraformInvokerFactory struct {
 }
 
 func (factory TerraformInvokerFactory) VersionedTerraformInvoker(tfVersion *version.Version) TerraformInvoker {
-	if tfVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
-		return NewTerraform012Invoker(factory.executorBuilder.VersionedExecutor(tfVersion), factory.terraformPluginsDirectory)
-	}
 	return NewTerraformDefaultInvoker(factory.executorBuilder.VersionedExecutor(tfVersion), factory.terraformPluginsDirectory, factory.pluginRenames)
 }

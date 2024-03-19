@@ -139,8 +139,9 @@ func finfo(pack string, out io.Writer) error {
 		w := cmdTabWriter(out)
 		fmt.Fprintln(w, "NAME\tVERSION\tSOURCE")
 		const tableRowTemplate = "%s\t%s\t%s\n"
+		const binaryName = "tofu"
 		for _, resource := range mf.TerraformVersions {
-			fmt.Fprintf(w, tableRowTemplate, "terraform", resource.Version.String(), resource.Source)
+			fmt.Fprintf(w, tableRowTemplate, binaryName, resource.Version.String(), resource.Source)
 		}
 		for _, resource := range mf.TerraformProviders {
 			fmt.Fprintf(w, tableRowTemplate, resource.Name, resource.Version.String(), resource.Source)

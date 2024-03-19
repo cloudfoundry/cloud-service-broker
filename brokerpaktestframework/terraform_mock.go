@@ -29,7 +29,7 @@ func NewTerraformMock(opts ...Option) (TerraformMock, error) {
 		return TerraformMock{}, err
 	}
 
-	build, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker/brokerpaktestframework/mock-binary/terraform", "-ldflags", fmt.Sprintf("-X 'main.InvocationStore=%s'", dir))
+	build, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker/brokerpaktestframework/mock-binary/tofu", "-ldflags", fmt.Sprintf("-X 'main.InvocationStore=%s'", dir))
 	if err != nil {
 		return TerraformMock{}, err
 	}
@@ -174,7 +174,7 @@ func readTerraformVersionFromManifest() string {
 
 	switch len(parsedManifest.TerraformVersions) {
 	case 0:
-		panic("no terraform versions in manifest")
+		panic("no tofu versions in manifest")
 	case 1:
 		return parsedManifest.TerraformVersions[0].Version.String()
 	}
@@ -185,5 +185,5 @@ func readTerraformVersionFromManifest() string {
 		}
 	}
 
-	panic("unable to determine default Terraform version from manifest")
+	panic("unable to determine default Tofu version from manifest")
 }
