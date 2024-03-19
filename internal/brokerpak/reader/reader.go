@@ -24,8 +24,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/hashicorp/go-version"
-
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/fetcher"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
@@ -142,13 +140,8 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 		return fmt.Errorf("the package %q doesn't contain binaries compatible with the current platform %q", mf.Name, platform.CurrentPlatform().String())
 	}
 
-	terraformVersion, err := mf.DefaultTerraformVersion()
-	if err != nil {
-		return err
-	}
-
 	for _, r := range mf.TerraformProviders {
-		if err := pak.extractProvider(r, destination, terraformVersion); err != nil {
+		if err := pak.extractProvider(r, destination); err != nil {
 			return err
 		}
 	}
@@ -166,13 +159,13 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 	return nil
 }
 
-func (pak *BrokerPakReader) extractProvider(r manifest.TerraformProvider, destination string, terraformVersion *version.Version) error {
+func (pak *BrokerPakReader) extractProvider(r manifest.TerraformProvider, destination string) error {
 	filePath, err := pak.findFileInZip(fmt.Sprintf("%s_v%s", r.Name, r.Version))
 	if err != nil {
 		return err
 	}
 
-	if err := pak.contents.ExtractFile(filePath, providerInstallPath(terraformVersion, destination, r)); err != nil {
+	if err := pak.contents.ExtractFile(filePath, providerInstallPath(destination, r)); err != nil {
 		return fmt.Errorf("error extracting terraform-provider file: %w", err)
 	}
 
@@ -273,11 +266,7 @@ func (pak *BrokerPakReader) readBytes(name string) ([]byte, error) {
 	return data, nil
 }
 
-func providerInstallPath(terraformVersion *version.Version, destination string, tfProvider manifest.TerraformProvider) string {
-	if terraformVersion.LessThan(version.Must(version.NewVersion("0.13.0"))) {
-		return destination
-	}
-
+func providerInstallPath(destination string, tfProvider manifest.TerraformProvider) string {
 	plat := platform.CurrentPlatform()
 	return filepath.Join(
 		destination,
