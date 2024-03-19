@@ -117,9 +117,9 @@ var _ = Describe("Upgrade", func() {
 			})
 		})
 
-		It("fails if the instance TF version is < 0.12.0", func() {
+		It("fails if the instance TF version is < 1.5.0", func() {
 			tfBinContext := executor.TFBinariesContext{
-				DefaultTfVersion: newVersion("1.1.0"),
+				DefaultTfVersion: newVersion("1.6.0"),
 			}
 			instanceTFDeployment.Workspace = fakeWorkspace
 			fakeDeploymentManager.GetTerraformDeploymentReturns(instanceTFDeployment, nil)
@@ -131,17 +131,17 @@ var _ = Describe("Upgrade", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(instanceTFDeployment))
-			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("upgrade only supported for Terraform versions >= 0.12.0"))
+			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("upgrade only supported for Terraform versions >= 1.5.0"))
 			Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(0))
 		})
 
 		It("fails the upgrade, if the version of statefile does not match the default tf version, and no upgrade path is specified", func() {
 			tfBinContext := executor.TFBinariesContext{
-				DefaultTfVersion: newVersion("1.0.0"),
+				DefaultTfVersion: newVersion("1.6.0"),
 			}
 			instanceTFDeployment.Workspace = fakeWorkspace
 			fakeDeploymentManager.GetTerraformDeploymentReturns(instanceTFDeployment, nil)
-			fakeWorkspace.StateTFVersionReturns(newVersion("0.12.1"), nil)
+			fakeWorkspace.StateTFVersionReturns(newVersion("1.5.0"), nil)
 
 			provider := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
