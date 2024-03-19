@@ -20,8 +20,7 @@ func testManifest() *manifest.Manifest {
 }
 
 // TODO: can we avoid passing URL template if we change the logic in the packer?
-func testManifestTofu() *manifest.Manifest {
-	version1, _ := version.NewVersion("1.6.0")
+func fakeManifestTofu() *manifest.Manifest {
 	return &manifest.Manifest{
 		Platforms: []platform.Platform{
 			{
@@ -31,7 +30,7 @@ func testManifestTofu() *manifest.Manifest {
 		},
 		TerraformVersions: []manifest.TerraformVersion{
 			{
-				Version:     version1,
+				Version:     version.Must(version.NewVersion("1.6.0")),
 				Source:      "https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.0.zip",
 				URLTemplate: "https://github.com/opentofu/opentofu/releases/download/v${version}/tofu_${version}_${os}_${arch}.zip",
 				Default:     true,
@@ -40,9 +39,7 @@ func testManifestTofu() *manifest.Manifest {
 	}
 }
 
-func testManifestTwoTofus() *manifest.Manifest {
-	version1, _ := version.NewVersion("1.6.0")
-	version2, _ := version.NewVersion("1.6.1")
+func fakeManifestTwoTofus() *manifest.Manifest {
 	return &manifest.Manifest{
 		Platforms: []platform.Platform{
 			{
@@ -52,12 +49,12 @@ func testManifestTwoTofus() *manifest.Manifest {
 		},
 		TerraformVersions: []manifest.TerraformVersion{
 			{
-				Version:     version1,
+				Version:     version.Must(version.NewVersion("1.6.0")),
 				Source:      "https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.0.zip",
 				URLTemplate: "https://github.com/opentofu/opentofu/releases/download/v${version}/tofu_${version}_${os}_${arch}.zip",
 			},
 			{
-				Version:     version2,
+				Version:     version.Must(version.NewVersion("1.6.1")),
 				Source:      "https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.1.zip",
 				URLTemplate: "https://github.com/opentofu/opentofu/releases/download/v${version}/tofu_${version}_${os}_${arch}.zip",
 				Default:     true,
@@ -66,8 +63,7 @@ func testManifestTwoTofus() *manifest.Manifest {
 	}
 }
 
-func testManifestProviders() *manifest.Manifest {
-	version1, _ := version.NewVersion("3.6.0")
+func fakeManifestProviders() *manifest.Manifest {
 	return &manifest.Manifest{
 		Platforms: []platform.Platform{
 			{
@@ -77,13 +73,12 @@ func testManifestProviders() *manifest.Manifest {
 		},
 		TerraformProviders: []manifest.TerraformProvider{{
 			Name:    "terraform-provider-random",
-			Version: version1,
+			Version: version.Must(version.NewVersion("3.6.0")),
 			Source:  "https://github.com/terraform-providers/terraform-provider-random/archive/v3.6.0.zip",
 		}},
 	}
 }
 
-// TODO test with cache
 var _ = Describe("Pack", func() {
 	Context("packing binaries", func() {
 		It("packs empty binaries", func() {
@@ -107,7 +102,7 @@ var _ = Describe("Pack", func() {
 			zipOutputDir := GinkgoT().TempDir()
 			zipOutputFile := filepath.Join(zipOutputDir, "packdest")
 
-			err := packer.Pack(testManifestTofu(), "testmanifest", zipOutputFile, "", false, false)
+			err := packer.Pack(fakeManifestTofu(), "testmanifest", zipOutputFile, "", false, false)
 			Expect(err).ToNot(HaveOccurred())
 			reader, err := zippy.Open(zipOutputFile)
 			Expect(err).ToNot(HaveOccurred())
@@ -125,7 +120,7 @@ var _ = Describe("Pack", func() {
 			zipOutputDir := GinkgoT().TempDir()
 			zipOutputFile := filepath.Join(zipOutputDir, "packdest")
 
-			err := packer.Pack(testManifestTwoTofus(), "testmanifest", zipOutputFile, "", false, false)
+			err := packer.Pack(fakeManifestTwoTofus(), "testmanifest", zipOutputFile, "", false, false)
 			Expect(err).ToNot(HaveOccurred())
 			reader, err := zippy.Open(zipOutputFile)
 			Expect(err).ToNot(HaveOccurred())
@@ -142,7 +137,7 @@ var _ = Describe("Pack", func() {
 			zipOutputDir := GinkgoT().TempDir()
 			zipOutputFile := filepath.Join(zipOutputDir, "packdest")
 
-			err := packer.Pack(testManifestProviders(), "testmanifest", zipOutputFile, "", false, false)
+			err := packer.Pack(fakeManifestProviders(), "testmanifest", zipOutputFile, "", false, false)
 			Expect(err).ToNot(HaveOccurred())
 			reader, err := zippy.Open(zipOutputFile)
 			Expect(err).ToNot(HaveOccurred())
@@ -161,7 +156,7 @@ var _ = Describe("Pack", func() {
 			zipOutputDir := GinkgoT().TempDir()
 			zipOutputFile := filepath.Join(zipOutputDir, "packdest")
 
-			err := packer.Pack(testManifestTofu(), "testmanifest", zipOutputFile, "", true, false)
+			err := packer.Pack(fakeManifestTofu(), "testmanifest", zipOutputFile, "", true, false)
 			Expect(err).ToNot(HaveOccurred())
 			reader, err := zippy.Open(zipOutputFile)
 			Expect(err).ToNot(HaveOccurred())
@@ -173,7 +168,7 @@ var _ = Describe("Pack", func() {
 			zipOutputDir := GinkgoT().TempDir()
 			zipOutputFile := filepath.Join(zipOutputDir, "packdest")
 
-			err := packer.Pack(testManifestTwoTofus(), "testmanifest", zipOutputFile, "", true, false)
+			err := packer.Pack(fakeManifestTwoTofus(), "testmanifest", zipOutputFile, "", true, false)
 			Expect(err).ToNot(HaveOccurred())
 			reader, err := zippy.Open(zipOutputFile)
 			Expect(err).ToNot(HaveOccurred())
