@@ -19,7 +19,7 @@ import "fmt"
 func ExampleNewTfstate_good() {
 	state := `{
     "version": 4,
-    "terraform_version": "0.12.20",
+    "terraform_version": "1.6.0",
     "serial": 2,
     "outputs": {
         "hostname": {
@@ -56,7 +56,7 @@ func ExampleNewTfstate_good() {
 func ExampleNewTfstate_badVersion() {
 	state := `{
     "version": 5,
-    "terraform_version": "0.12.20",
+    "terraform_version": "1.6.0",
     "serial": 2,
     "outputs": {
         "hostname": {
@@ -85,7 +85,7 @@ func ExampleNewTfstate_badVersion() {
 func ExampleTfstate_GetOutputs() {
 	state := `{
     "version": 4,
-    "terraform_version": "0.12.20",
+    "terraform_version": "1.6.0",
     "serial": 2,
     "outputs": {
         "hostname": {

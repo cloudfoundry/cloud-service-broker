@@ -4,18 +4,6 @@ import (
 	"fmt"
 )
 
-func NewInit012(pluginDir string) TerraformCommand {
-	return init012{pluginDir: pluginDir}
-}
-
-type init012 struct {
-	pluginDir string
-}
-
-func (cmd init012) Command() []string {
-	return []string{"init", fmt.Sprintf("-plugin-dir=%s", cmd.pluginDir), "-get-plugins=false", "-no-color"}
-}
-
 func NewInit(pluginDir string) TerraformCommand {
 	return initCommand{pluginDir: pluginDir}
 }

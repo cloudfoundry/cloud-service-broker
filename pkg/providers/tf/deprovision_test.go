@@ -50,7 +50,7 @@ var _ = Describe("Deprovision", func() {
 			Workspace: &workspace.TerraformWorkspace{
 				Modules:   []workspace.ModuleDefinition{{Name: "test-module-instance"}},
 				Instances: []workspace.ModuleInstance{{ModuleName: "test-module-instance"}},
-				State:     []byte(`{"terraform_version":"0.12.20"}`),
+				State:     []byte(`{"terraform_version":"1.6.0"}`),
 			},
 		}
 	})
@@ -64,7 +64,7 @@ var _ = Describe("Deprovision", func() {
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 
 		provider := tf.NewTerraformProvider(
-			executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("0.12.20"))},
+			executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1.6.0"))},
 			fakeInvokerBuilder,
 			fakeLogger,
 			fakeServiceDefinition,
@@ -102,7 +102,7 @@ var _ = Describe("Deprovision", func() {
 		fakeDeploymentManager.UpdateWorkspaceHCLReturns(fmt.Errorf(expectedError))
 
 		provider := tf.NewTerraformProvider(
-			executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("0.12.20"))},
+			executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1.6.0"))},
 			fakeInvokerBuilder,
 			fakeLogger,
 			fakeServiceDefinition,
@@ -157,7 +157,7 @@ var _ = Describe("Deprovision", func() {
 		fakeDefaultInvoker.DestroyReturns(fmt.Errorf(expectedError))
 
 		provider := tf.NewTerraformProvider(
-			executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("0.12.20"))},
+			executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1.6.0"))},
 			fakeInvokerBuilder,
 			fakeLogger,
 			fakeServiceDefinition,
@@ -183,12 +183,12 @@ var _ = Describe("Deprovision", func() {
 				Workspace: &workspace.TerraformWorkspace{
 					Modules:   []workspace.ModuleDefinition{{Name: "test-module-instance"}},
 					Instances: []workspace.ModuleInstance{{ModuleName: "test-module-instance"}},
-					State:     []byte(`{"terraform_version":"1.4"}`),
+					State:     []byte(`{"terraform_version":"1.6.0"}`),
 				},
 			}
 
 			provider = tf.NewTerraformProvider(
-				executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1.4"))},
+				executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1.6.0"))},
 				fakeInvokerBuilder,
 				fakeLogger,
 				fakeServiceDefinition,
