@@ -104,8 +104,8 @@ func (provider *TerraformProvider) performTerraformUpgrade(ctx context.Context, 
 		return err
 	}
 
-	if currentTfVersion.LessThan(version.Must(version.NewVersion("0.12.0"))) {
-		return errors.New("upgrade only supported for Terraform versions >= 0.12.0")
+	if currentTfVersion.LessThan(version.Must(version.NewVersion("1.5.0"))) {
+		return errors.New("upgrade only supported for Terraform versions >= 1.5.0")
 	} else if currentTfVersion.LessThan(provider.tfBinContext.DefaultTfVersion) {
 		if provider.tfBinContext.TfUpgradePath == nil || len(provider.tfBinContext.TfUpgradePath) == 0 {
 			return errors.New("terraform version mismatch and no upgrade path specified")

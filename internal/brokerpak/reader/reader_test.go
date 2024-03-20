@@ -30,25 +30,6 @@ var _ = Describe("reader", func() {
 			binaryV161 = "1.6.1"
 		)
 
-		XContext("providers in terraform 0.12 and lower - need to remove functionality", func() {
-			It("extracts providers to same directory", func() {
-				pk := fakeBrokerpak(
-					withTerraform(""),
-					withProvider("", "terraform-provider-google-beta", "1.19.0", "x4"),
-					withProvider("", "terraform-provider-google", "1.19.0", "x5"),
-				)
-
-				pakReader, err := reader.OpenBrokerPak(pk)
-				Expect(err).NotTo(HaveOccurred())
-
-				binOutput := GinkgoT().TempDir()
-				Expect(pakReader.ExtractPlatformBins(binOutput)).NotTo(HaveOccurred())
-
-				Expect(filepath.Join(binOutput, "terraform-provider-google-beta_v1.19.0_x4")).To(BeAnExistingFile())
-				Expect(filepath.Join(binOutput, "terraform-provider-google_v1.19.0_x5")).To(BeAnExistingFile())
-			})
-		})
-
 		It("extracts providers to a directory hierarchy", func() {
 			pk := fakeBrokerpak(
 				withTerraform(binaryV160),

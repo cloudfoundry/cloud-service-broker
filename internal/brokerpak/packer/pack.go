@@ -104,17 +104,17 @@ func packBinaries(m *manifest.Manifest, tmp string, cachePath string) error {
 		p := filepath.Join(tmp, "bin", platform.Os, platform.Arch)
 
 		for _, resource := range m.TerraformVersions {
-			if err := cachedFetchFile(getAny, brokerpakurl.URL(binaryName, resource.Version.String(), resource.URLTemplate, platform), filepath.Join(p, resource.Version.String()), cachePath); err != nil {
+			if err := cachedFetchFile(getAny, brokerpakurl.TofuURL(binaryName, resource.Version.String(), resource.URLTemplate, platform), filepath.Join(p, resource.Version.String()), cachePath); err != nil {
 				return err
 			}
 		}
 		for _, resource := range m.TerraformProviders {
-			if err := cachedFetchFile(getAny, brokerpakurl.URL(resource.Name, resource.Version.String(), resource.URLTemplate, platform), p, cachePath); err != nil {
+			if err := cachedFetchFile(getAny, brokerpakurl.HashicorpURL(resource.Name, resource.Version.String(), resource.URLTemplate, platform), p, cachePath); err != nil {
 				return err
 			}
 		}
 		for _, resource := range m.Binaries {
-			if err := cachedFetchFile(getAny, brokerpakurl.URL(resource.Name, resource.Version, resource.URLTemplate, platform), p, cachePath); err != nil {
+			if err := cachedFetchFile(getAny, brokerpakurl.HashicorpURL(resource.Name, resource.Version, resource.URLTemplate, platform), p, cachePath); err != nil {
 				return err
 			}
 		}
