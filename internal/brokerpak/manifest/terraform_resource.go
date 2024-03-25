@@ -19,7 +19,9 @@ type TerraformResource struct {
 
 	// URLTemplate holds a custom URL template to get the release of the given tool.
 	// Parameters available are ${name}, ${version}, ${os}, and ${arch}.
-	// If non is specified HashicorpUrlTemplate is used.
+	// If non is specified for providers, HashicorpUrlTemplate is used
+	// If non is specified for tofu, TofuURLTemplate is used
+	// https://github.com/cloudfoundry/cloud-service-broker/pull/975/commits/d1bf775bebf46a5685a3f05524e0977f4ac0cd99
 	URLTemplate string `yaml:"url_template,omitempty"`
 
 	// Default is used to mark the default Terraform version when there is more than one
