@@ -20,9 +20,8 @@ import (
 	"sync"
 
 	"code.cloudfoundry.org/lager/v3"
-	"gorm.io/gorm"
-
 	_ "gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 var once sync.Once
@@ -34,6 +33,9 @@ func New(logger lager.Logger) *gorm.DB {
 		db = SetupDB(logger)
 		if err := RunMigrations(db); err != nil {
 			panic(fmt.Sprintf("Error migrating database: %s", err))
+		}
+		if err := recoverInProgressOperations(db, logger); err != nil {
+			panic(fmt.Sprintf("Error recovering in-progress operations: %s", err))
 		}
 	})
 	return db
