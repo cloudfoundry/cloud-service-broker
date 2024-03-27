@@ -1,12 +1,15 @@
 # Writing Your First Brokerpak
 
 In this tutorial, we are going to write a Brokerpak to expose a MySQL database on Amazon Web Services (“AWS”).
-Without a Brokerpak, the Cloud Service Broker doesn’t know what MySQL or AWS are. A Brokerpak tells the Cloud
+Without a Brokerpak, the Cloud Service Broker does not know what MySQL or AWS are. A Brokerpak tells the Cloud
 Service Broker what to do: it’s what makes the Cloud Service Broker useful.
 
-The Cloud Service Broker should arguably be called the Terraform Broker. It is an opinionated way of running
-Terraform to create things in the cloud. To write a Brokerpak, you therefore need to have a working knowledge
-of Terraform.
+The Cloud Service Broker should arguably be called the OpenTofu Broker. It is an opinionated way of running
+Infrastructure as Code (IaC) to create things in the cloud. To write a Brokerpak, you therefore need to have a working knowledge
+of OpenTofu.
+
+> Note: OpenTofu replaced Terraform in the CSB starting with version 1.0.0.
+> There may still be some references to Terraform in the codebase.
 
 ## Before you Start
 In order to complete this tutorial, you will need:
@@ -17,7 +20,7 @@ In order to complete this tutorial, you will need:
 
 ### AWS Permissions required to follow this guide
 
-Where you willing to create a separate IAM account for this tutorial, these are the required permissions:
+Where you're willing to create a separate IAM account for this tutorial, these are the required permissions:
 - AmazonEC2ReadOnlyAccess
 - AmazonRDSFullAccess
 
@@ -26,18 +29,18 @@ Where you willing to create a separate IAM account for this tutorial, these are 
 
 In CloudFoundry, services have a lifecycle. This is specified in the Open Service Broker API. There are two phases:
 1. **Provisioning and Deprovisioning**. These correspond to the `cf create-service` and `cf delete-service`
-   commands. Typically they involve the creation and deletion of the service. In this tutorial, provisioning
-   will create a MySQL database and deprovisioning will delete the database. From a Terraform perspective
-   they will be a `terraform apply` and a `terraform destroy` operation.
+   commands. Typically, they involve the creation and deletion of the service. In this tutorial, provisioning
+   will create a MySQL database and deprovisioning will delete the database. From a OpenTofu perspective
+   they will be a `tofu apply` and a `tofu destroy` operation.
 1. **Binding and Unbinding**. These correspond to the `cf bind-service` and `cf unbind-service` commands.
    They also correspond to the `cf create-service-key`, `cf delete-service-key` commands, because service
-   keys and service bindings are very similar from the perspective of OSBAPI. Typically they involve
+   keys and service bindings are very similar from the perspective of OSBAPI. Typically, they involve
    the creation of an account with credentials to access the service. In this tutorial, they will
-   correspond to creating and deleting an account in the MySQL database. From a Terraform perspective
-   they are also `terraform apply` and `terraform destroy` operations.
+   correspond to creating and deleting an account in the MySQL database. From a OpenTofu perspective
+   they are also `tofu apply` and `tofu destroy` operations.
 
-## Developing the Terraform
-In order to get going quickly, here are the Terraform files that we are going to use in this tutorial.
+## Developing the OpenTofu
+In order to get going quickly, here are the OpenTofu language files that we are going to use in this tutorial.
 
 Firstly, `main.tf` will define the key resources that we are going to create. In this case that’s a
 MySQL database, and the networking required to access it.
@@ -98,7 +101,7 @@ data "aws_subnets" "all" {
 }
 ```
 
-We also need to define the Terraform provider versions in use in `versions.tf`:
+We also need to define the provider versions in use in `versions.tf`:
 ```hcl
 terraform {
   required_providers {
@@ -124,7 +127,7 @@ provider "aws" {
 ```
 
 And finally in `variables.tf` we define all the variables that we have used. It’s important to
-parameterise the Terraform like this so that the values can be injected by the CSB.
+parameterise the OpenTofu language like this so that the values can be injected by the CSB.
 Anything related to a secret, a name that could clash, or a configuration of Cloud Foundry
 should be parameterized.
 ```hcl
@@ -166,13 +169,13 @@ $ tree
 
 ```
 
-We are now ready to build these Terraform files into a Brokerpak. In order to do this we will need a manifest
+We are now ready to build these files into a Brokerpak. In order to do this we will need a manifest
 file and a service definition file. The CSB can create examples of these files by running the
 `cloud-service-broker pak init` command. For this tutorial, use the examples below:
 
 First we will define the manifest. The snippet below defines the Terraform version, and also the versions
-of the Terraform providers. These must match the versions in `versions.tf`. It also defines the mapping
-between environment variables and config keys. If you're intested in reading more about what the fields
+of the providers. These must match the versions in `versions.tf`. It also defines the mapping
+between environment variables and config keys. If you're interested in reading more about what the fields
 mean, refer to the
 [Brokerpak Specification.](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/brokerpak-specification.md#manifest)
 ```yaml
@@ -183,15 +186,15 @@ platforms:
   - os: linux
     arch: amd64
 terraform_binaries:
-  - name: terraform
-    version: 1.1.9
-    source: 'https://github.com/hashicorp/terraform/archive/v1.1.9.zip'
+  - name: tofu
+    version: 1.6.1
+    source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.1.zip
   - name: terraform-provider-aws
-    version: 4.13.0
-    source: 'https://github.com/terraform-providers/terraform-provider-aws/archive/v4.13.0.zip'
+    version: 5.42.0
+    source: https://github.com/terraform-providers/terraform-provider-aws/archive/v5.42.0.zip
   - name: terraform-provider-random
-    version: 3.1.3
-    source: 'https://github.com/terraform-providers/terraform-provider-random/archive/v3.1.3.zip'
+    version: 3.6.0
+    source: https://github.com/terraform-providers/terraform-provider-random/archive/v3.6.0.zip
 service_definitions:
   - aws-mysql-tutorial.yml
 env_config_mapping:
@@ -207,16 +210,16 @@ defined in the service definition, or later as an environment variable.
 
 When defining a service and plans, the service IDs and plan IDs must be unique; ideally a UUID.
 
-This file also defines the mapping between parameters and Terraform variables. Parameters can be set
+The service definition also defines the mapping between parameters and OpenTofu/Terraform variables. Parameters can be set
 in the plan, or defined by the user. They can also be templated: you can see in the below example that
 the instance name is templated from the Cloud Foundry instance ID. This makes it easier to identify
 which resource in AWS corresponds to which Cloud Foundry instance.
 
-If you're intested in reading more about how services are specified, refer to the
+If you're interested in reading more about how services are specified, refer to the
 [Brokerpak Specification.](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/brokerpak-specification.md#services)
 
-Some variables have a default value that is specified in an interpolation language called HIL,
-for example `csb-mysql-${request.instance_id}`.
+Some variables have a default value that is specified in an interpolation language called
+HIL (small embedded language for string interpolations), for example `csb-mysql-${request.instance_id}`.
 For more information about HIL, refer to the
 [Brokerpak Specification.](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/brokerpak-specification.md#expression-language-reference)
 ```yaml
@@ -266,7 +269,7 @@ provision:
 
 This YAML should be placed into the file `aws-mysql-tutotial.yml` at the top level of the Brokerpak.
 
-Finally we need the Cloud Service Broker itself which can be downloaded from
+Finally, we need the Cloud Service Broker itself which can be downloaded from
 [the releases page](https://github.com/cloudfoundry/cloud-service-broker/releases).
 For the purpose of this tutorial, download the linux binary and place it in the Brokerpak directory
 renamed to `cloud-service-broker`. 
@@ -324,7 +327,7 @@ $ tree
 To test out the Brokerpak:
 
 1. Build the Brokerpak: `cloud-service-broker pak build`
-   Note that to build the Brokerpak you will need a CSB binary that works on your system (e.g Mac),
+   Note that to build the Brokerpak you will need a CSB binary that works on your system (e.g. Mac),
    which may be different to the CSB binary that you push to Cloud Foundry (Linux).
 
 1. Push and set credentials:
@@ -346,12 +349,12 @@ To test out the Brokerpak:
 
    - **Step by step explanation** *Skip this if you added all environment variables and credentials in a single step as described in the bullet above
       1. Push the broker: `cf push -f cf-manifest.yml`
-        1. The push step will fail becase we haven't provided values for `DB_HOST`, `DB_USERNAME` and `DB_PASSWORD` variables.
+        1. The push step will fail because we haven't provided values for `DB_HOST`, `DB_USERNAME` and `DB_PASSWORD` variables.
            - If your Cloudfoundry instance already provides a database service you can bind to:
               1. Run: `cf bind-service cloud-service-broker-tutorial <your-database-service-name>`
                  Example: `cf bind-service cloud-service-broker-tutorial csb-sql`
               1. Restage the app: `cf restage cloud-service-broker-tutorial`
-           - If you need to set this variables manually, use the `cf push --vars-file` or `cf push --var` flags instead:
+           - If you need to set these variables manually, use the `cf push --vars-file` or `cf push --var` flags instead:
               1. `cf push -f cf-manifest.yml --var DB_HOST <db-host> --var DB_USERNAME <db-username> --var DB_PASSWORD <db-password>`
 
      1. The following command requires `SECURITY_USER_NAME` and `SECURITY_USER_PASSWORD` variables to be set:
@@ -396,7 +399,7 @@ If you forgot to pass some of the variables at the right time the service might 
 `cf purge-service-instance mydb`
 
 ## Adding the Ability to Bind
-A database is only useful if you can connect to it. We saw in the Terraform files above that our MySQL is
+A database is only useful if you can connect to it. We saw in the OpenTofu files above that our MySQL is
 created with a username and password. We could expose this username and password. For some resources,
 this may be the right solution. But because this is an administrator user, it may give excessive
 privilege to users. A better solution would be to use this admin user to create non-admin users
@@ -422,7 +425,7 @@ output "status" {
 }
 ```
 
-Then we need to create Terraform files for the binding. Create a new subdirectory under `terraform`
+Then we need to create OpenTofu files for the binding. Create a new subdirectory under `terraform`
 called `bind` and add the following files. Firstly, `main.tf` which generates credentials and creates the account.
 ```hcl
 resource "random_string" "username" {
