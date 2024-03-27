@@ -82,6 +82,11 @@ type FakeWorkspace struct {
 		result1 string
 		result2 error
 	}
+	SetStateUrlStub        func(string)
+	setStateUrlMutex       sync.RWMutex
+	setStateUrlArgsForCall []struct {
+		arg1 string
+	}
 	StateTFVersionStub        func() (*version.Version, error)
 	stateTFVersionMutex       sync.RWMutex
 	stateTFVersionArgsForCall []struct {
@@ -454,6 +459,38 @@ func (fake *FakeWorkspace) SerializeReturnsOnCall(i int, result1 string, result2
 	}{result1, result2}
 }
 
+func (fake *FakeWorkspace) SetStateUrl(arg1 string) {
+	fake.setStateUrlMutex.Lock()
+	fake.setStateUrlArgsForCall = append(fake.setStateUrlArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.SetStateUrlStub
+	fake.recordInvocation("SetStateUrl", []interface{}{arg1})
+	fake.setStateUrlMutex.Unlock()
+	if stub != nil {
+		fake.SetStateUrlStub(arg1)
+	}
+}
+
+func (fake *FakeWorkspace) SetStateUrlCallCount() int {
+	fake.setStateUrlMutex.RLock()
+	defer fake.setStateUrlMutex.RUnlock()
+	return len(fake.setStateUrlArgsForCall)
+}
+
+func (fake *FakeWorkspace) SetStateUrlCalls(stub func(string)) {
+	fake.setStateUrlMutex.Lock()
+	defer fake.setStateUrlMutex.Unlock()
+	fake.SetStateUrlStub = stub
+}
+
+func (fake *FakeWorkspace) SetStateUrlArgsForCall(i int) string {
+	fake.setStateUrlMutex.RLock()
+	defer fake.setStateUrlMutex.RUnlock()
+	argsForCall := fake.setStateUrlArgsForCall[i]
+	return argsForCall.arg1
+}
+
 func (fake *FakeWorkspace) StateTFVersion() (*version.Version, error) {
 	fake.stateTFVersionMutex.Lock()
 	ret, specificReturn := fake.stateTFVersionReturnsOnCall[len(fake.stateTFVersionArgsForCall)]
@@ -586,6 +623,8 @@ func (fake *FakeWorkspace) Invocations() map[string][][]interface{} {
 	defer fake.outputsMutex.RUnlock()
 	fake.serializeMutex.RLock()
 	defer fake.serializeMutex.RUnlock()
+	fake.setStateUrlMutex.RLock()
+	defer fake.setStateUrlMutex.RUnlock()
 	fake.stateTFVersionMutex.RLock()
 	defer fake.stateTFVersionMutex.RUnlock()
 	fake.updateInstanceConfigurationMutex.RLock()

@@ -10,6 +10,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/featureflags"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
+	"github.com/cloudfoundry/cloud-service-broker/v2/tfstatebackend"
 )
 
 type DeploymentManager struct {
@@ -26,6 +27,8 @@ func NewDeploymentManager(store broker.ServiceProviderStorage, logger lager.Logg
 
 func (d *DeploymentManager) CreateAndSaveDeployment(deploymentID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error) {
 	deployment := storage.TerraformDeployment{ID: deploymentID}
+	workspace.SetStateUrl(fmt.Sprintf("http://localhost:%s/%s", tfstatebackend.StateBackendPort, deploymentID))
+
 	exists, err := d.store.ExistsTerraformDeployment(deploymentID)
 	switch {
 	case err != nil:

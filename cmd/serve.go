@@ -33,6 +33,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/brokerpak"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/server"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/toggles"
+	"github.com/cloudfoundry/cloud-service-broker/v2/tfstatebackend"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
 	"github.com/pivotal-cf/brokerapi/v11"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
@@ -42,12 +43,13 @@ import (
 )
 
 const (
-	apiUserProp         = "api.user"
-	apiPasswordProp     = "api.password"
-	apiPortProp         = "api.port"
-	apiHostProp         = "api.host"
-	encryptionPasswords = "db.encryption.passwords"
-	encryptionEnabled   = "db.encryption.enabled"
+	apiUserProp          = "api.user"
+	apiPasswordProp      = "api.password"
+	apiPortProp          = "api.port"
+	apiHostProp          = "api.host"
+	stateBackendPortProp = "state.backend.port"
+	encryptionPasswords  = "db.encryption.passwords"
+	encryptionEnabled    = "db.encryption.enabled"
 )
 
 var cfCompatibilityToggle = toggles.Features.Toggle("enable-cf-sharing", false, `Set all services to have the Sharable flag so they can be shared
@@ -76,6 +78,7 @@ func init() {
 	_ = viper.BindEnv(apiUserProp, "SECURITY_USER_NAME")
 	_ = viper.BindEnv(apiPasswordProp, "SECURITY_USER_PASSWORD")
 	_ = viper.BindEnv(apiPortProp, "PORT")
+	_ = viper.BindEnv(stateBackendPortProp, "STATE_BACKEND_PORT")
 	_ = viper.BindEnv(apiHostProp, "CSB_LISTENER_HOST")
 	_ = viper.BindEnv(encryptionPasswords, "ENCRYPTION_PASSWORDS")
 	_ = viper.BindEnv(encryptionEnabled, "ENCRYPTION_ENABLED")
@@ -97,6 +100,8 @@ func serve() {
 	if err != nil {
 		logger.Fatal("Error initializing service broker", err)
 	}
+
+	statebackend := tfstatebackend.New(storage.New(db, encryptor), logger)
 
 	credentials := brokerapi.BrokerCredentials{
 		Username: viper.GetString(apiUserProp),
@@ -124,7 +129,7 @@ func serve() {
 	if err != nil {
 		logger.Error("failed to get database connection", err)
 	}
-	startServer(cfg.Registry, sqldb, brokerAPI)
+	startServer(cfg.Registry, sqldb, brokerAPI, statebackend)
 }
 
 func serveDocs() {
@@ -135,7 +140,7 @@ func serveDocs() {
 		logger.Error("loading brokerpaks", err)
 	}
 
-	startServer(registry, nil, nil)
+	startServer(registry, nil, nil, nil)
 }
 
 func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
@@ -179,7 +184,7 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
 	return config.Encryptor
 }
 
-func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.Handler) {
+func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.Handler, statebackend *http.ServeMux) {
 	logger := utils.NewLogger("cloud-service-broker")
 
 	docsHandler := server.DocsHandler(registry)
@@ -200,6 +205,10 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 			http.NotFound(res, req)
 		}
 	})
+
+	stateBackendPort := viper.GetString(stateBackendPortProp)
+	tfstatebackend.StateBackendPort = stateBackendPort
+	go http.ListenAndServe(fmt.Sprintf("127.0.0.1:%s", stateBackendPort), statebackend)
 
 	port := viper.GetString(apiPortProp)
 	host := viper.GetString(apiHostProp)
