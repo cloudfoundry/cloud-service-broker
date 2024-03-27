@@ -36,6 +36,11 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 		return nil, err
 	}
 
+	backendport, err := freeport.Port()
+	if err != nil {
+		return nil, err
+	}
+
 	username := uuid.New()
 	password := uuid.New()
 
@@ -47,6 +52,7 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 		"DB_TYPE=sqlite3",
 		fmt.Sprintf("DB_PATH=%s", db),
 		fmt.Sprintf("PORT=%d", port),
+		fmt.Sprintf("STATE_BACKEND_PORT=%d", backendport),
 		fmt.Sprintf("SECURITY_USER_NAME=%s", username),
 		fmt.Sprintf("SECURITY_USER_PASSWORD=%s", password),
 	)

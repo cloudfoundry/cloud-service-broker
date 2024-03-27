@@ -14,6 +14,7 @@ import (
 type Workspace interface {
 	Serialize() (string, error)
 	HasState() bool
+	SetStateUrl(string)
 
 	StateTFVersion() (*version.Version, error)
 	Outputs(instance string) (map[string]any, error)

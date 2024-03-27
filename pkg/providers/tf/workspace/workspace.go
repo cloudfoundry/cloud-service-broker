@@ -20,7 +20,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"net/http"
+	"io"
 	"os/exec"
+	"io/ioutil"
 	"path"
 	"strings"
 	"sync"
@@ -112,6 +115,7 @@ type TerraformWorkspace struct {
 
 	dirLock sync.Mutex
 	dir     string
+	stateUrl string
 }
 
 func (workspace *TerraformWorkspace) StateTFVersion() (*version.Version, error) {
@@ -127,6 +131,10 @@ func (workspace *TerraformWorkspace) StateTFVersion() (*version.Version, error) 
 	}
 
 	return version.NewVersion(receiver.Version)
+}
+
+func (workspace *TerraformWorkspace) SetStateUrl(url string) {
+	workspace.stateUrl = url
 }
 
 func (workspace *TerraformWorkspace) HasState() bool {
@@ -258,7 +266,7 @@ func (workspace *TerraformWorkspace) initializeFsWithoutTerraformInit() error {
 		}
 	}
 
-	if len(workspace.Modules) == 1 && len(workspace.Modules[0].Definition) == 0 && terraformLen > 0 {
+ 	if len(workspace.Modules) == 1 && len(workspace.Modules[0].Definition) == 0 && terraformLen > 0 {
 		err = workspace.initializeFsFlat()
 	} else {
 		err = workspace.initializeFsModules()
@@ -301,6 +309,11 @@ func (workspace *TerraformWorkspace) teardownFs() error {
 // If no instance exists with the given name, it could be that Terraform pruned it due
 // to having no contents so a blank map is returned.
 func (workspace *TerraformWorkspace) Outputs(_ string) (map[string]any, error) {
+	err := workspace.RefreshState()
+	if err != nil {
+		return nil, fmt.Errorf("error refreshing TF state: %w", err)
+	}
+
 	state, err := NewTfstate(workspace.State)
 	if err != nil {
 		return nil, fmt.Errorf("error creating TF state: %w", err)
@@ -308,6 +321,21 @@ func (workspace *TerraformWorkspace) Outputs(_ string) (map[string]any, error) {
 
 	// All root project modules get put under the "root" namespace
 	return state.GetOutputs(), nil
+}
+
+func (workspace *TerraformWorkspace) RefreshState() error {
+	if workspace.stateUrl == "" {
+		return nil
+	}
+	res, err := http.Get(workspace.stateUrl)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve remote TF state: %w", err)
+	}
+	workspace.State, err = io.ReadAll(res.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read remote TF state: %w", err)
+	}
+	return nil
 }
 
 func (workspace *TerraformWorkspace) Execute(ctx context.Context, terraformExecutor executor.TerraformExecutor, commands ...command.TerraformCommand) (executor.ExecutionOutput, error) {
@@ -319,6 +347,11 @@ func (workspace *TerraformWorkspace) Execute(ctx context.Context, terraformExecu
 		return executor.ExecutionOutput{}, err
 	}
 	var lastExecutionOutput executor.ExecutionOutput
+
+	err = workspace.configureRemoteStateBackend()
+	if err != nil {
+		return executor.ExecutionOutput{}, err
+	}
 
 	for _, cmd := range commands {
 		c := exec.Command(binaryName, cmd.Command()...)
@@ -335,6 +368,18 @@ func (workspace *TerraformWorkspace) Execute(ctx context.Context, terraformExecu
 
 func (workspace *TerraformWorkspace) tfStatePath() string {
 	return path.Join(workspace.dir, "terraform.tfstate")
+}
+
+func (workspace *TerraformWorkspace) configureRemoteStateBackend() error {
+	if workspace.stateUrl == "" {
+		return nil
+	}
+	conf := `terraform {` + "\n" +
+		`  backend "http" {` + "\n" +
+		`    address = "` + workspace.stateUrl + `"` + "\n" +
+		`  }` + "\n" +
+		`}` + "\n"
+	return ioutil.WriteFile(path.Join(workspace.dir, "backend.tf"), []byte(conf), 0644)
 }
 
 func (workspace *TerraformWorkspace) UpdateInstanceConfiguration(templateVars map[string]any) error {
