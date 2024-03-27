@@ -1,27 +1,28 @@
-# Terraform upgrades
+# OpenTofu upgrades
 
-This document will explain how a terraform upgrade can be implemented and triggered.
+This document will explain how a OpenTofu upgrade can be implemented and triggered.
+
+> Note: OpenTofu replaced Terraform in the CSB starting with version 1.0.0.
+> There may still be some references to Terraform in the codebase.
 
 ### Broker Configuration
 
-In order for terraform upgrades to be carried over by the broker, this capability needs to be turned on.
+In order for OpenTofu upgrades to be carried over by the broker, this capability needs to be turned on.
 To do so, enable the relevant flags as documented in [Feature Flags Configuration](configuration.md#feature-flags-configuration)
 and restage the app. 
 
-The brokerpak manifest must also include a `terraform_upgrade_path` section and the new version of the terraform binary. See below.
+The brokerpak manifest must also include a `terraform_upgrade_path` section and the new version of the OpenTofu binary. See below.
 
 ### Brokerpak specification
 
-Each brokerpak can instruct the broker to upgrade the terraform version independently.
-The manifest needs to be updated to include a `terraform_upgrade_path` section and the new version of the terraform binary.
+Each brokerpak can instruct the broker to upgrade the OpenTofu version independently.
+The manifest needs to be updated to include a `terraform_upgrade_path` section and the new version of the OpenTofu binary.
 Optionally, the `terraform_state_provider_replacements` has to be provided. This is specially needed for the upgrade from 
-terraform 0.12 to 0.13 and it is otherwise not needed. This replacements won't be taken into account when upgrading from newer versions
-of terraform.
-For more information on these manifest sections, see [brokerpak-specification](brokerpak-specification.md#manifest-yaml-file) and [Terraform Upgrade Path object](brokerpak-specification.md#terraform-upgrade-Path-object)
+older brokerpak versions.
+For more information on these manifest sections, see [brokerpak-specification](brokerpak-specification.md#manifest-yaml-file) and [OpenTofu Upgrade Path object](brokerpak-specification.md#OpenTofu-upgrade-Path-object)
 
-> :warning: **Note:** Upgrade is only supported for Terraform versions >= 0.12.0.
-
-> **Note:** Terraform does not recommend making HCL changes at the same time that performing a terraform upgrade (see [docs](https://www.terraform.io/language/upgrade-guides/0-13#before-you-upgrade)). Hence ideally these changes should be included in a separate release of your brokerpak and all existing instances should be upgraded before installing a subsequent release.
+> **Note:** OpenTofu does not recommend making OpenTofu language changes at the same time that performing an upgrade.
+> Hence, ideally these changes should be included in a separate release of your brokerpak and all existing instances should be upgraded before installing a subsequent release.
 
 #### Example Brokerpak manifest additions
 ```
