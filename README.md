@@ -2,6 +2,8 @@
 [![test](https://github.com/cloudfoundry/cloud-service-broker/workflows/run-tests/badge.svg?branch=main)](https://github.com/cloudfoundry/cloud-service-broker/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cloudfoundry/cloud-service-broker)](https://goreportcard.com/report/github.com/cloudfoundry/cloud-service-broker)
 
+**Warning**: ***From Version 1.0.0 onwards the Cloud Service Broker only supports OpenTofu. Custom brokerpaks need to specify an OpenTofu version and the upgrade process must be followed for existing instances.***
+
 # Cloud Service Broker
 An OSBAPI-compliant service broker that uses Terraform to create service instances.
 
