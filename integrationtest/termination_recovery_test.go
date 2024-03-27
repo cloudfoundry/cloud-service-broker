@@ -39,7 +39,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 		})
 	})
 
-	It("cannot recover from a terminated create", func() {
+	It("can recover from a terminated create", func() {
 		By("starting to provision")
 		instanceGUID := uuid.New()
 		response := broker.Client.Provision(instanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), nil)
@@ -48,13 +48,17 @@ var _ = Describe("Recovery From Broker Termination", func() {
 
 		By("terminating and restarting the broker")
 		Expect(broker.Stop()).To(Succeed())
-		broker = must(testdrive.StartBroker(csb, brokerpak, database))
+		broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(stdout, stderr)))
 
-		By("INCORRECTLY reporting that an operation is still in progress")
+		By("reporting that an operation failed")
 		lastOperation, err := broker.LastOperation(instanceGUID)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(lastOperation.Description).To(Equal("provision in progress"))
-		Expect(lastOperation.State).To(BeEquivalentTo("in progress"))
+		Expect(lastOperation.Description).To(Equal("the broker restarted while the operation was in progress"))
+		Expect(lastOperation.State).To(BeEquivalentTo("failed"))
+
+		By("logging a message")
+		ws := fmt.Sprintf(`"workspace_id":"tf:%s:"`, instanceGUID)
+		Expect(string(stdout.Contents())).To(SatisfyAll(ContainSubstring("recover-in-progress-operations.mark-as-failed"), ContainSubstring(ws)))
 
 		// OSBAPI requires that HTTP 409 (Conflict) is returned
 		By("refusing to allow a duplicate instance")
@@ -62,10 +66,10 @@ var _ = Describe("Recovery From Broker Termination", func() {
 		Expect(response.Error).NotTo(HaveOccurred())
 		Expect(response.StatusCode).To(Equal(http.StatusConflict))
 
-		By("INCORRECTLY failing to allow the instance to be cleaned up")
+		By("allowing the instance to be cleaned up")
 		response = broker.Client.Deprovision(instanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New())
 		Expect(response.Error).NotTo(HaveOccurred())
-		Expect(response.StatusCode).To(Equal(http.StatusInternalServerError))
+		Expect(response.StatusCode).To(Equal(http.StatusOK))
 	})
 
 	It("can recover from a terminated update", func() {
@@ -80,13 +84,17 @@ var _ = Describe("Recovery From Broker Termination", func() {
 
 		By("terminating and restarting the broker")
 		Expect(broker.Stop()).To(Succeed())
-		broker = must(testdrive.StartBroker(csb, brokerpak, database))
+		broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(stdout, stderr)))
 
-		By("INCORRECTLY reporting that an operation is still in progress")
+		By("reporting that an operation failed")
 		lastOperation, err := broker.LastOperation(instance.GUID)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(lastOperation.Description).To(Equal("update in progress"))
-		Expect(lastOperation.State).To(BeEquivalentTo("in progress"))
+		Expect(lastOperation.Description).To(Equal("the broker restarted while the operation was in progress"))
+		Expect(lastOperation.State).To(BeEquivalentTo("failed"))
+
+		By("logging a message")
+		ws := fmt.Sprintf(`"workspace_id":"tf:%s:"`, instance.GUID)
+		Expect(string(stdout.Contents())).To(SatisfyAll(ContainSubstring("recover-in-progress-operations.mark-as-failed"), ContainSubstring(ws)))
 
 		By("allowing the operation to be restarted")
 		Expect(broker.UpdateService(instance)).To(Succeed())
@@ -104,13 +112,17 @@ var _ = Describe("Recovery From Broker Termination", func() {
 
 		By("terminating and restarting the broker")
 		Expect(broker.Stop()).To(Succeed())
-		broker = must(testdrive.StartBroker(csb, brokerpak, database))
+		broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(stdout, stderr)))
 
-		By("INCORRECTLY reporting that an operation is still in progress")
+		By("reporting that an operation failed")
 		lastOperation, err := broker.LastOperation(instance.GUID)
 		Expect(err).NotTo(HaveOccurred())
-		Expect(lastOperation.Description).To(Equal("deprovision in progress"))
-		Expect(lastOperation.State).To(BeEquivalentTo("in progress"))
+		Expect(lastOperation.Description).To(Equal("the broker restarted while the operation was in progress"))
+		Expect(lastOperation.State).To(BeEquivalentTo("failed"))
+
+		By("logging a message")
+		ws := fmt.Sprintf(`"workspace_id":"tf:%s:"`, instance.GUID)
+		Expect(string(stdout.Contents())).To(SatisfyAll(ContainSubstring("recover-in-progress-operations.mark-as-failed"), ContainSubstring(ws)))
 
 		By("allowing the operation to be restarted")
 		Expect(broker.Deprovision(instance)).To(Succeed())
@@ -129,7 +141,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 
 		By("terminating and restarting the broker")
 		Expect(broker.Stop()).To(Succeed())
-		broker = must(testdrive.StartBroker(csb, brokerpak, database))
+		broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(stdout, stderr)))
 
 		By("allowing the operation to be restarted")
 		_, err = broker.CreateBinding(instance, testdrive.WithBindingGUID(bindingGUID))
@@ -152,7 +164,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 
 		By("terminating and restarting the broker")
 		Expect(broker.Stop()).To(Succeed())
-		broker = must(testdrive.StartBroker(csb, brokerpak, database))
+		broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(stdout, stderr)))
 
 		By("allowing the operation to be restarted")
 		Expect(broker.DeleteBinding(instance, bindingGUID)).To(Succeed())
