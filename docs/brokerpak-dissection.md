@@ -1,16 +1,25 @@
 # Dissecting a Brokerpak
 
-So you want to build a brokerpak from scratch? As long as you can write some terraform to control whatever resource you're interested in controlling, and the lifecycle can be mapped into the [OSBAPI API](https://www.openservicebrokerapi.org/), you should be able to write a brokerpak to fulfill your needs.
+So you want to build a brokerpak from scratch? As long as you can write some code based on OpenTofu to control whatever
+resource you're interested in controlling, and the lifecycle can be mapped into the
+[OSBAPI API](https://www.openservicebrokerapi.org/), you should be able to write a brokerpak to fulfill your needs.
 
-Hopefully this document helps familiarize you enough with layout and details of the brokerpak specification to help you along the way.
+Hopefully this document helps familiarize you enough with layout and details of the brokerpak specification to help you
+along the way.
+
+> Note: OpenTofu replaced Terraform in the CSB starting with version 1.0.0.
+> There may still be some references to Terraform in the codebase.
 
 ## Requirements
 
 ### Talent
+
 * familiarity with [yaml](https://yaml.org/spec/1.2/spec.html) - yaml glues all the pieces together.
-* knowledge of [terraform](https://www.terraform.io/docs/index.html) - terraform scripts do the heavy lifting of managing resource lifecycle.
+* knowledge of [OpenTofu](https://opentofu.org/) - OpenTofu language scripts do the heavy lifting of managing resource
+  lifecycle.
 
 ## References
+
 * [Brokerpak Introduction](./brokerpak-intro.md)
 * [Brokerpak Specification](./brokerpak-specification.md)
 
@@ -18,7 +27,8 @@ Hopefully this document helps familiarize you enough with layout and details of 
 
 Browse the brokerpak contents [here](https://github.com/cloudfoundry/cloud-service-broker/tree/master/azure-brokerpak)
 
-Have a look at the Azure brokerpak, starting with *[manifest.yml](https://github.com/cloudfoundry/csb-brokerpak-azure/blob/master/manifest.yml)*
+Have a look at the Azure brokerpak, starting with
+*[manifest.yml](https://github.com/cloudfoundry/csb-brokerpak-azure/blob/master/manifest.yml)*
 
 The file should resemble:
 
@@ -103,7 +113,8 @@ Metadata about the brokerpak.
 | version     | version of brokerpak               |
 | metadata    | a map of metadata to add to broker |
 
-Besides *packversion* (which should always be 1,) these values are left to the brokerpak author to describe the brokerpak.
+Besides *packversion* (which should always be 1), these values are left to the brokerpak author to describe the
+brokerpak.
 
 ### Platforms
 
@@ -115,7 +126,8 @@ platforms:
   arch: amd64
 ```
 
-Describes which platforms the brokerpak should support. Typically *os: linux* is the minimum required for `cf push`ing the broker into CloudFoundry. For local development on OSX, adding *os: darwin* allows the broker to run locally.
+Describes which platforms the brokerpak should support. Typically, *os: linux* is the minimum required for `cf push`ing
+the broker into CloudFoundry. For local development on OSX, adding *os: darwin* allows the broker to run locally.
 
 ### Binaries
 
@@ -149,7 +161,8 @@ terraform_binaries:
   source: https://github.com/terraform-providers/terraform-provider-postgresql/archive/v1.5.0.zip
   ```
 
-This section defines all the binaries and terraform providers that will be bundled into the brokerpak when its built. The *os* and *arch* parameters are substituted from the platforms section above.
+This section defines all the binaries and OpenTofu providers that will be bundled into the brokerpak when its built.
+The *os* and *arch* parameters are substituted from the platforms section above.
 
 | Field        | Value                                                                                                                                           |
 |--------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -160,9 +173,12 @@ This section defines all the binaries and terraform providers that will be bundl
 
 ### Environment Config Mapping
 
-The broker can be supplied runtime configuration through environment variables and/or a configuration file. Those values can be made available for use in the brokerpak (see [here](brokerpak-specification.md#functions)) via `config("config.key")`
+The broker can be supplied runtime configuration through environment variables and/or a configuration file. Those values
+can be made available for use in the brokerpak (see [here](brokerpak-specification.md#functions))
+via `config("config.key")`
 
-To map values supplied as environment variables (often when `cf push`ing the broker) into config keys that may be referenced in the brokerpak, add them to the *environment_config_mapping* section of the manifest:
+To map values supplied as environment variables (often when `cf push`ing the broker) into config keys that may be
+referenced in the brokerpak, add them to the *environment_config_mapping* section of the manifest:
 
 ```yaml
 env_config_mapping:
@@ -172,7 +188,9 @@ env_config_mapping:
   ARM_CLIENT_SECRET: azure.client_secret
   ```
 
-These make the runtime environment variables *ARM_SUBSCRIPTION_ID*, *ARM_TENANT_ID*, *ARM_CLIENT_ID* and *ARM_CLIENT_SECRET* available as config values *azure.subscription_id*, *azure.tenant_id*, *azure.client_id*, and *azure.client_secret* respectively.
+These make the runtime environment variables *ARM_SUBSCRIPTION_ID*, *ARM_TENANT_ID*, *ARM_CLIENT_ID* and
+*ARM_CLIENT_SECRET* available as config values *azure.subscription_id*, *azure.tenant_id*, *azure.client_id*, and
+*azure.client_secret* respectively.
 
 ### Service Definitions
 
@@ -196,11 +214,12 @@ service_definitions:
 - azure-cosmosdb-sql.yml
 ```
 
-Each of theses service yml files and their requisite terraform will be bundled into the brokerpak.
+Each of these service yml files and their requisite OpenTofu language will be bundled into the brokerpak.
 
 ## A Service Definition
 
-Now lets dive into one of the service yaml files, *[azure-mssql-db.yml](https://github.com/cloudfoundry/csb-brokerpak-azure/blob/master/azure-mssql-db.yml)*
+Now lets dive into one of the service yaml files,
+*[azure-mssql-db.yml](https://github.com/cloudfoundry/csb-brokerpak-azure/blob/master/azure-mssql-db.yml)*
 
 ```yaml
 version: 1
@@ -436,19 +455,19 @@ plan_updateable: true
 
 Metadata about the service.
 
-| Field | Value |
-|-------|-------|
-| version | should always be 1 |
-| name | name of service |
-| id | a unique guid |
-| description | human readable description of service |
-| display_name | human readable name of the service |
-| provider_display_name| name of the provider of this service |
-| image_url | a link to an image that may be included in documentation |
-| documentation_url | link to external documentation that may be included in documentation |
-| support_url | link to external support site that may be included in documentation |
-| tags | list of tags that will be provided in service bindings |
-| plan_updateable | indicates if service support `cf update-service -p` |
+| Field                 | Value                                                                |
+|-----------------------|----------------------------------------------------------------------|
+| version               | should always be 1                                                   |
+| name                  | name of service                                                      |
+| id                    | a unique guid                                                        |
+| description           | human readable description of service                                |
+| display_name          | human readable name of the service                                   |
+| provider_display_name | name of the provider of this service                                 |
+| image_url             | a link to an image that may be included in documentation             |
+| documentation_url     | link to external documentation that may be included in documentation |
+| support_url           | link to external support site that may be included in documentation  |
+| tags                  | list of tags that will be provided in service bindings               |
+| plan_updateable       | indicates if service support `cf update-service -p`                  |
 
 Besides *version* (which should always be 1) these values are left to the brokerpak author to describe the service.
 
@@ -478,9 +497,10 @@ There may be zero or more plan entries.
 | display_name | human readable plan name                                                                                 |
 | properties   | list of property values for plan settings, property names must be defined in plan_inputs and user_inputs | 
 
-### Provision and Bind 
+### Provision and Bind
 
-The *provision* and *bind* sections contain the inputs, outputs and terraform for the provision and bind operation for the service. They are identical in form, the following sections apply to both.
+The *provision* and *bind* sections contain the inputs, outputs and OpenTofu code for the provision and bind
+operation for the service. They are identical in form, the following sections apply to both.
 
 ```yaml
 provision:
@@ -514,7 +534,8 @@ Configuration parameters that can only be set as part of plan description. Users
 
 > The plan input *subsume* has special meaning. It is used to designate a plan for `tf import` to take over an existing resource. When *subsume* is true, all *import_parameter_mappings* values must be provided through `cf create-service ... -c {...}` and `cf update-service ... -p subsume` is prohibited.
 
-> input fields must be declared as terraform *variables*. Failure to do so will result in failures to build brokerpak.
+> input fields must be declared as OpenTofu *variables*. Failure to do so will result in failures to build brokerpak.
+
 ### User Inputs
 
 Configuration parameters that my be set as part of a plan or set by the user through `cf create-service ... -c {...}` or `cf update-service ... -c {...}`
@@ -542,11 +563,12 @@ Configuration parameters that my be set as part of a plan or set by the user thr
 |             | `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, |
 |             | `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`.        |
 
-> input fields must be declared as terraform *variables*. Failure to do so will result in failures to build brokerpak.
+> input fields must be declared as OpenTofu *variables*. Failure to do so will result in failures to build brokerpak.
 
 ### Import Inputs
 
-In order to support `tf import` to subsume control of existing resources (instead of creating new resources) parameters that represent native resources and the terraform resources they apply to are described in the *import_inputs* section.
+In order to support `tofu import` to subsume control of existing resources (instead of creating new resources) parameters
+that represent native resources and the OpenTofu resources they apply to are described in the *import_inputs* section.
 
 ```yaml
   import_inputs:
@@ -555,18 +577,21 @@ In order to support `tf import` to subsume control of existing resources (instea
     details: Azure resource id for database to subsume
     tf_resource: azurerm_mssql_database.azure_sql_db
 ```
-| Field       | Value                                             |
-|-------------|---------------------------------------------------|
-| field_name  | name of user variable                             |
-| type        | field type                                        |
-| details     | human readable description of field               |
-| tf_resource | resource.instance of terraform resource to import |
 
-A user will provide the values through `cf create-service ... -c {...}` and the broker will use them during the `tf import` phase.
+| Field       | Value                                            |
+|-------------|--------------------------------------------------|
+| field_name  | name of user variable                            |
+| type        | field type                                       |
+| details     | human readable description of field              |
+| tf_resource | resource.instance of OpenTofu resource to import |
+
+A user will provide the values through `cf create-service ... -c {...}` and the broker will use them during
+the `tf import` phase.
 
 ### Import Parameter Mapping
 
-Once `tf import` is run to generate matching terraform for the resource, some values may need to be parameterized so that the user may modify them later through `cf update-service`  The 
+Once `tofu import` is run to generate matching OpenTofu for the resource, some values may need to be parameterized so
+that the user may modify them later through `cf update-service`  The
 
 ```yaml
   import_parameter_mappings:
@@ -574,11 +599,14 @@ Once `tf import` is run to generate matching terraform for the resource, some va
     parameter_name: var.max_storage_gb 
 ```
 
-This will cause instances of *max_size_gb = ...* in the resulting imported terraform to be replaced with *max_size_gb = var.max_storage_gb* so that it may be updated by the user with `cf update-service ...`
+This will cause instances of *max_size_gb = ...* in the resulting imported code to be replaced with
+*max_size_gb = var.max_storage_gb* so that it may be updated by the user with `cf update-service ...`
 
 ### Import Parameters to Delete
 
-`tf import` will return all current values for a resource, including those that are readonly and my not be set during `tf apply`  List those resource values in *import_parameters_to_delete* and they will be removed between `tf import` and `tf apply`
+`tofu import` will return all current values for a resource, including those that are readonly and my not be set
+during `tofu apply`. List those resource values in *import_parameters_to_delete,* and they will be removed
+between `tofu import` and `tofu apply`
 
 ```yaml
   import_parameters_to_delete: [ "azurerm_mssql_database.azure_sql_db.id", 
@@ -587,9 +615,9 @@ This will cause instances of *max_size_gb = ...* in the resulting imported terra
                                  "azurerm_mssql_database.azure_sql_db.extended_auditing_policy"]
 ```
 
-### Terraform Template References
+### OpenTofu Template References
 
-The terraform that will be executed for provision or bind is referenced in *template_refs*
+The OpenTofu language that will be executed for provision or bind is referenced in *template_refs*
 
 ```yaml
   template_refs:
@@ -604,7 +632,7 @@ See [here](./brokerpak-specification.md#template-references) for details.
 
 ### Outputs
 
-Outputs from terraform will be collected into binding credentials.
+Outputs from OpenTofu will be collected into binding credentials.
 
 ```yaml
   outputs:
@@ -619,8 +647,13 @@ Outputs from terraform will be collected into binding credentials.
 | type       | field type                                 |
 | details    | Human readable description of output field |
 
-> output fields *must* be declared as *output* variables in terraform. Failure to do so will result in failures creating brokerpak
+> output fields *must* be declared as *output* variables in OpenTofu language. Failure to do so will result in failures
+> creating brokerpak
 
-> binding credentials will contain all output variables from both the *provision* and *bind* portions of the service yaml.
+> binding credentials will contain all output variables from both the *provision* and *bind* portions of the service
+> yaml.
 
-> there is a special output parameter called *status* that may be declared in terraform, it does not need to be declared in the service manifest yaml. The *status* output value will be returned as the status message for the OSBAPI provision call and will be displayed to the user as the *message* portion of a `cf service <service name>` command. It is recommended that resource ID's and other information that may help a user identify the managed resource.
+> there is a special output parameter called *status* that may be declared in OpenTofu language, it does not need to be
+> declared in the service manifest yaml. The *status* output value will be returned as the status message for the OSBAPI
+> provision call and will be displayed to the user as the *message* portion of a `cf service <service name>` command. It
+> is recommended that resource ID's and other information that may help a user identify the managed resource.
