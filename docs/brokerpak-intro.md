@@ -40,15 +40,16 @@ Some of these tasks can be automated, but many require deeper understanding of t
 
 ### How brokerpak solves these problems
 
-The brokerpak is a (zip) package that contains bundled versions of [Terraform](https://terraform.io/intro/index.html), service definitions (as Terraform modules), Terraform providers, and (optionally) source code.
+The brokerpak is a (zip) package that contains bundled versions of [OpenTofu](https://opentofu.org/), service definitions (as OpenTofu modules),
+OpenTofu providers, and (optionally) source code.
 Brokerpaks are written as code, can be built as part of a CI/CD platform, and can be stored as build artifacts.
 Operators can build and deploy their own brokerpaks along with those provided by the platform.
 Operators can also modify the brokerpaks provided by the platform if they need to tailor the experience for their users.
 
 Together this means that operators and developers can start to collaborate on developing new services that are custom-tailored to their needs without being dependent on the application provider.
 Brokerpaks can generate their own documentation, alleviating the need to distribute diffs or caveats with official documentation.
-Because brokerpaks have a fine-grained scope and are distributed with their own version of Terraform and providers, backwards-compatibility is less of a concern.
-Because services are written with built-in test-cases, they can be used to evaluate the effects of upgrading Terraform versions, provider versions, and services.
+Because brokerpaks have a fine-grained scope and are distributed with their own version of OpenTofu and providers, backwards-compatibility is less of a concern.
+Because services are written with built-in test-cases, they can be used to evaluate the effects of upgrading OpenTofu versions, provider versions, and services.
 
 ## Best practices
 
@@ -56,7 +57,7 @@ Because services are written with built-in test-cases, they can be used to evalu
 
 Aim to keep your brokerpaks small and focused around a core idea.
 
-It may be beneficial to divide your services into brokerpaks based on any of the following factors:
+Consider segmenting your services into distinct brokerpaks based on factors such as:
 
  * The users of the service, e.g. organizational unit.
  * The stability of the backing service (alpha, beta, GA).
