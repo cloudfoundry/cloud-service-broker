@@ -3,6 +3,8 @@ package tf_test
 import (
 	"errors"
 
+	"code.cloudfoundry.org/lager/v3/lagertest"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker/brokerfakes"
@@ -26,7 +28,7 @@ var _ = Describe("DeploymentManager", func() {
 
 		BeforeEach(func() {
 			fakeStore = brokerfakes.FakeServiceProviderStorage{}
-			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+			deploymentManager = tf.NewDeploymentManager(&fakeStore, lagertest.NewTestLogger("test"))
 			ws = &workspace.TerraformWorkspace{
 				Modules: []workspace.ModuleDefinition{{
 					Name:       "fake module name",
@@ -116,7 +118,7 @@ var _ = Describe("DeploymentManager", func() {
 
 		BeforeEach(func() {
 			fakeStore = brokerfakes.FakeServiceProviderStorage{}
-			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+			deploymentManager = tf.NewDeploymentManager(&fakeStore, lagertest.NewTestLogger("test"))
 			existingDeployment = storage.TerraformDeployment{
 				ID: "tf:instance:binding",
 				Workspace: &workspace.TerraformWorkspace{
@@ -155,6 +157,7 @@ var _ = Describe("DeploymentManager", func() {
 		var (
 			fakeStore          brokerfakes.FakeServiceProviderStorage
 			deploymentManager  *tf.DeploymentManager
+			fakeLogger         *lagertest.TestLogger
 			existingDeployment storage.TerraformDeployment
 			fakeWorkspace      *workspacefakes.FakeWorkspace
 		)
@@ -171,7 +174,8 @@ var _ = Describe("DeploymentManager", func() {
 				LastOperationMessage: "test",
 			}
 			fakeStore = brokerfakes.FakeServiceProviderStorage{}
-			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+			fakeLogger = lagertest.NewTestLogger("broker")
+			deploymentManager = tf.NewDeploymentManager(&fakeStore, fakeLogger)
 		})
 
 		When("operation finished successfully", func() {
@@ -187,6 +191,7 @@ var _ = Describe("DeploymentManager", func() {
 				Expect(storedDeployment.LastOperationType).To(Equal(existingDeployment.LastOperationType))
 				Expect(storedDeployment.LastOperationState).To(Equal("succeeded"))
 				Expect(storedDeployment.LastOperationMessage).To(Equal("provision succeeded"))
+				Expect(fakeLogger.Errors).To(BeEmpty())
 			})
 
 			It("sets the last operation message from the TF output status", func() {
@@ -200,11 +205,12 @@ var _ = Describe("DeploymentManager", func() {
 				storedDeployment := fakeStore.StoreTerraformDeploymentArgsForCall(0)
 				Expect(storedDeployment.LastOperationState).To(Equal("succeeded"))
 				Expect(storedDeployment.LastOperationMessage).To(Equal("provision succeeded: apply completed successfully"))
+				Expect(fakeLogger.Logs()).To(BeEmpty())
 			})
 		})
 
 		When("operation finished with an error", func() {
-			It("sets operation state to failed and stores the error", func() {
+			It("sets operation state to failed, logs and stores the error", func() {
 				err := deploymentManager.MarkOperationFinished(&existingDeployment, errors.New("operation failed dramatically"))
 
 				Expect(err).NotTo(HaveOccurred())
@@ -216,6 +222,12 @@ var _ = Describe("DeploymentManager", func() {
 				Expect(storedDeployment.LastOperationType).To(Equal(existingDeployment.LastOperationType))
 				Expect(storedDeployment.LastOperationState).To(Equal("failed"))
 				Expect(storedDeployment.LastOperationMessage).To(Equal("provision failed: operation failed dramatically"))
+				Expect(fakeLogger.Logs()).To(HaveLen(1))
+				Expect(fakeLogger.Logs()[0].Message).To(ContainSubstring("operation-failed"))
+				Expect(fakeLogger.Logs()[0].Data).To(HaveKeyWithValue("error", Equal("operation failed dramatically")))
+				Expect(fakeLogger.Logs()[0].Data).To(HaveKeyWithValue("message", Equal("provision failed: operation failed dramatically")))
+				Expect(fakeLogger.Logs()[0].Data).To(HaveKeyWithValue("deploymentID", Equal(existingDeployment.ID)))
+
 			})
 		})
 	})
@@ -231,7 +243,7 @@ var _ = Describe("DeploymentManager", func() {
 
 		BeforeEach(func() {
 			fakeStore = brokerfakes.FakeServiceProviderStorage{}
-			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+			deploymentManager = tf.NewDeploymentManager(&fakeStore, lagertest.NewTestLogger("test"))
 		})
 
 		When("last operation has succeeded", func() {
@@ -333,7 +345,7 @@ var _ = Describe("DeploymentManager", func() {
 			By("setting up fakes", func() {
 				viper.Reset()
 				store = &brokerfakes.FakeServiceProviderStorage{}
-				deploymentManager = tf.NewDeploymentManager(store)
+				deploymentManager = tf.NewDeploymentManager(store, lagertest.NewTestLogger("test"))
 				templateVars = map[string]any{}
 			})
 
@@ -566,7 +578,7 @@ var _ = Describe("DeploymentManager", func() {
 
 		BeforeEach(func() {
 			fakeStore = brokerfakes.FakeServiceProviderStorage{}
-			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+			deploymentManager = tf.NewDeploymentManager(&fakeStore, lagertest.NewTestLogger("test"))
 			existingDeployment = storage.TerraformDeployment{
 				ID:                existingDeploymentID,
 				LastOperationType: "validation",
@@ -601,7 +613,7 @@ var _ = Describe("DeploymentManager", func() {
 
 		BeforeEach(func() {
 			fakeStore = brokerfakes.FakeServiceProviderStorage{}
-			deploymentManager = tf.NewDeploymentManager(&fakeStore)
+			deploymentManager = tf.NewDeploymentManager(&fakeStore, lagertest.NewTestLogger("test"))
 		})
 
 		It("gets all binding deployments for a service instance", func() {
