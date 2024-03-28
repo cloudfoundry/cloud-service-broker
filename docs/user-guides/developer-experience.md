@@ -149,14 +149,10 @@ csb marketplace
 
 ```shell
 {▸} ~/workspace/csb/csb-brokerpak-aws on main ✓ csb marketplace        
-2023/01/16 21:25:36 Packing brokerpak version "0.1.0" with CSB version "v0.14.0-1b000966"...
+2023/01/16 21:25:36 Packing brokerpak version "0.1.0" with CSB version "v1.0.0-1b000966"...
 2023/01/16 21:25:36 Using temp directory: /tmp/brokerpak2435728932
 2023/01/16 21:25:36 Packing binaries...
-2023/01/16 21:25:36      https://releases.hashicorp.com/terraform/0.12.30/terraform_0.12.30_linux_amd64.zip -> /tmp/brokerpak2435728932/bin/linux/amd64/0.12.30 (from cache)
-2023/01/16 21:25:36      https://releases.hashicorp.com/terraform/0.13.7/terraform_0.13.7_linux_amd64.zip -> /tmp/brokerpak2435728932/bin/linux/amd64/0.13.7 (from cache)
-2023/01/16 21:25:36      https://releases.hashicorp.com/terraform/0.14.11/terraform_0.14.11_linux_amd64.zip -> /tmp/brokerpak2435728932/bin/linux/amd64/0.14.11 (from cache)
-2023/01/16 21:25:36      https://releases.hashicorp.com/terraform/1.0.11/terraform_1.0.11_linux_amd64.zip -> /tmp/brokerpak2435728932/bin/linux/amd64/1.0.11 (from cache)
-2023/01/16 21:25:36      https://releases.hashicorp.com/terraform/1.1.9/terraform_1.1.9_linux_amd64.zip -> /tmp/brokerpak2435728932/bin/linux/amd64/1.1.9 (from cache)
+2023/01/16 21:25:36       https://github.com/opentofu/opentofu/releases/download/v1.6.1/tofu_1.6.1_darwin_amd64.zip -> /tmp/brokerpak2435728932/bin/darwin/amd64/1.6.1
 2023/01/16 21:25:36      https://releases.hashicorp.com/terraform-provider-aws/4.50.0/terraform-provider-aws_4.50.0_linux_amd64.zip -> /tmp/brokerpak2435728932/bin/linux/amd64 (from cache)
 2023/01/16 21:25:36      https://releases.hashicorp.com/terraform-provider-random/3.4.3/terraform-provider-random_3.4.3_linux_amd64.zip -> /tmp/brokerpak2435728932/bin/linux/amd64 (from cache)
 2023/01/16 21:25:36      https://releases.hashicorp.com/terraform-provider-mysql/1.9.0/terraform-provider-mysql_1.9.0_linux_amd64.zip -> /tmp/brokerpak2435728932/bin/linux/amd64 (from cache)
