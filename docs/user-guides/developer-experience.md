@@ -2,6 +2,9 @@
 
 Improve your developer experience through examples and valuable tips that make your day-to-day easy.
 
+> Note: OpenTofu replaced Terraform in the CSB starting with version 1.0.0.
+> There may still be some references to Terraform in the codebase.
+
 ### Prerequisites
 
 * Familiarity with the command line.
@@ -55,7 +58,7 @@ Explore the available commands using the command `csb help`.
 
 ```shell
 {▸} ~/workspace/csb/cloud-service-broker on main ✓ csb help              
-An OSB compatible service broker for that leverages Terraform for service brokering
+An OSB compatible service broker for that leverages OpenTofu for service brokering
 
 Usage:
   cloud-service-broker [flags]
@@ -77,7 +80,7 @@ Available Commands:
   serve-docs         Just serve the docs normally available on the broker
   service-keys       EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list service keys for a service instance
   services           EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: list service instances
-  tf                 Interact with the Terraform backend
+  tf                 Interact with the OpenTofu backend
   update-service     EXPERIMENTAL AND SUBJECT TO BREAKING CHANGE: update a service instance
   version            Show the version info of the broker
 
@@ -192,7 +195,7 @@ csb-aws-s3-bucket          default
 ```
 
 You may be thinking about what the command is doing before showing the available services and plans.
-Basically, it downloads the necessary third parties such as Terraform providers, and packs the definitions of the
+Basically, it downloads the necessary third parties such as OpenTofu providers, and packs the definitions of the
 available services.
 
 Now, you are ready to advance to the next step and create a new service on AWS.
