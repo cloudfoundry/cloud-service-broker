@@ -2,27 +2,45 @@
 
 This document will explain how a brokerpak is structured, and the schema it follows.
 
-A brokerpak is comprised of a versioned Terraform binary and providers for one
+> Note: OpenTofu replaced Terraform in the CSB starting with version 1.0.0.
+> There may still be some references to Terraform in the codebase.
+
+A brokerpak consists of a versioned OpenTofu binary and providers for one
 or more platform, a manifest, one or more service definitions, and source code.
 Here are the contents of an example brokerpak:
 
 ```
-MODE        SIZE      NAME
-drwx------  0         
-drwxr-xr-x  0         bin
-drwxr-xr-x  0         bin/linux
-drwxr-xr-x  0         bin/linux/386
--rwxrwxr-x  75669952  bin/linux/386/terraform
--rwxr-xr-x  35176256  bin/linux/386/terraform-provider-google_v1.19.0_x4
-drwxr-xr-x  0         bin/linux/amd64
--rwxrwxr-x  89397536  bin/linux/amd64/terraform
--rwxr-xr-x  41450144  bin/linux/amd64/terraform-provider-google_v1.19.0_x4
-drwx------  0         definitions
--rw-------  5810      definitions/service-0.yml
--rw-------  467       manifest.yml
-drwxr-xr-x  0         src
--rw-r--r--  8082786   src/terraform-provider-google.zip
--rw-r--r--  14418716  src/terraform.zip
+.
+├── bin
+│   └── linux
+│       └── amd64
+│           ├── 1.6.1
+│           │   ├── CHANGELOG.md
+│           │   ├── LICENSE
+│           │   ├── README.md
+│           │   └── tofu
+│           ├── LICENSE
+│           ├── README.md
+│           ├── terraform-provider-aws_v5.42.0_x5
+│           ├── terraform-provider-csbdynamodbns_v1.0.0
+│           ├── terraform-provider-csbmajorengineversion_v1.0.0
+│           ├── terraform-provider-csbmysql_v1.2.27
+│           ├── terraform-provider-csbpg_v1.2.21
+│           ├── terraform-provider-csbsqlserver_v1.0.12
+│           └── terraform-provider-random_v3.6.0_x5
+├── definitions
+│   ├── service0-csb-aws-mysql.yml
+│   ├── service1-csb-aws-redis.yml
+│   ├── service2-csb-aws-postgresql.yml
+│   ├── service3-csb-aws-s3-bucket.yml
+│   ├── service4-csb-aws-dynamodb-table.yml
+│   ├── service5-csb-aws-dynamodb-namespace.yml
+│   ├── service6-csb-aws-aurora-postgresql.yml
+│   ├── service7-csb-aws-aurora-mysql.yml
+│   ├── service8-csb-aws-mssql.yml
+│   └── service9-csb-aws-sqs.yml
+├── file.txt
+└── manifest.yml
 ```
 
 You can create, inspect, validate, document and test brokerpaks using the `pak` sub-command.
@@ -38,20 +56,20 @@ and which services it will provide.
 
 #### Manifest YAML file
 
-| Field                                 | Type                            | Description                                                                                                                                                                                                                                             |
-|---------------------------------------|---------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| packversion*                          | int                             | The version of the schema the manifest adheres to. This MUST be set to `1` to be compatible with the brokerpak specification v1.                                                                                                                        |
-| version*                              | string                          | The version of this brokerpak. It's RECOMMENDED you follow [semantic versioning](https://semver.org/) for your brokerpaks.                                                                                                                              |
-| name*                                 | string                          | The name of this brokerpak. It's RECOMMENDED that this be lower-case and include only alphanumeric characters, dashes, and underscores.                                                                                                                 |
-| metadata                              | object                          | A free-form field for key/value pairs of additional information about this brokerpak. This could include the authors, creation date, source code repository, etc.                                                                                       |
-| platforms*                            | array of platform               | The platforms this brokerpak will be executed on.                                                                                                                                                                                                       |
-| terraform_binaries*                   | array of Terraform resource     | The list of Terraform providers and Terraform that'll be bundled with the brokerpak. *The broker currently only supports terraform version v0.12.x and higher*                                                                                          |
-| service_definitions*                  | array of string                 | Each entry points to a file relative to the manifest that defines a service as part of the brokerpak.                                                                                                                                                   |
-| parameters                            | array of parameter              | These values are set as environment variables when Terraform is executed.                                                                                                                                                                               |
-| required_env_variables                | array of string                 | These are the required environment variables that will be passed through to the terraform execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution.                                        |
-| env_config_mapping                    | map[string]string               | List of mappings of environment variables into config keys, see [functions](#functions) for more information on how to use these                                                                                                                        |
-| terraform_upgrade_path                | array of Terraform Upgrade Path | List of Terraform version steps when performing upgrade in ascending order                                                                                                                                                                              |
-| terraform_state_provider_replacements | map of Terraform provider names | Map of terraform providers, where the key represents the old name of the provider and the value represents the new name of the provider. Can be used to replace the provider in the terraform state file when switching providers or upgrading to 0.13. Only used if terraform version < 1.2.0 |
+| Field                                 | Type                           | Description                                                                                                                                                                                                                                                                                   |
+|---------------------------------------|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| packversion*                          | int                            | The version of the schema the manifest adheres to. This MUST be set to `1` to be compatible with the brokerpak specification v1.                                                                                                                                                              |
+| version*                              | string                         | The version of this brokerpak. It's RECOMMENDED you follow [semantic versioning](https://semver.org/) for your brokerpaks.                                                                                                                                                                    |
+| name*                                 | string                         | The name of this brokerpak. It's RECOMMENDED that this be lower-case and include only alphanumeric characters, dashes, and underscores.                                                                                                                                                       |
+| metadata                              | object                         | A free-form field for key/value pairs of additional information about this brokerpak. This could include the authors, creation date, source code repository, etc.                                                                                                                             |
+| platforms*                            | array of platform              | The platforms this brokerpak will be executed on.                                                                                                                                                                                                                                             |
+| terraform_binaries*                   | array of OpenTofu resource     | The list of OpenTofu providers and OpenTofu binaries that'll be bundled with the brokerpak. *The broker currently only supports terraform version v0.12.x and higher*                                                                                                                         |
+| service_definitions*                  | array of string                | Each entry points to a file relative to the manifest that defines a service as part of the brokerpak.                                                                                                                                                                                         |
+| parameters                            | array of parameter             | These values are set as environment variables when OpenTofu is executed.                                                                                                                                                                                                                      |
+| required_env_variables                | array of string                | These are the required environment variables that will be passed through to the OpenTofu execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution.                                                                               |
+| env_config_mapping                    | map[string]string              | List of mappings of environment variables into config keys, see [functions](#functions) for more information on how to use these                                                                                                                                                              |
+| terraform_upgrade_path                | array of OpenTofu Upgrade Path | List of OpenTofu version steps when performing upgrade in ascending order                                                                                                                                                                                                                     |
+| terraform_state_provider_replacements | map of OpenTofu provider names | Map of OpenTofu providers, where the key represents the old name of the provider and the value represents the new name of the provider. Can be used to replace the provider in the terraform state file when switching providers or upgrading to 0.13. Only used if terraform version < 1.2.0 |
 Fields marked with `*` are required, others are optional.
 
 #### Platform object
@@ -64,23 +82,23 @@ The platform OS and architecture follow Go's naming scheme.
 | arch* | string | The architecture of the platform.     | `"386"`, `amd64`  |
 Fields marked with `*` are required, others are optional.
 
-#### Terraform resource object
+#### OpenTofu resource object
 
-This structure holds information about a specific Terraform version or Resource.
+This structure holds information about a specific OpenTofu version or Resource.
 
 | Field        | Type    | Description                                                                                                                                                                                                                           |
 |--------------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | name*        | string  | The name of this resource. e.g. `terraform-provider-google-beta`.                                                                                                                                                                     |
-| version*     | string  | The version of the resource e.g. 1.19.0. *The broker currently only supports terraform version 0.12.x*                                                                                                                                |
+| version*     | string  | The version of the resource e.g. 1.19.0.                                                                                                                                                                                              |
 | source       | string  | (optional) The URL to a zip of the source code for the resource.                                                                                                                                                                      |
 | url_template | string  | (optional) A custom URL template to get the release of the given tool. Available parameters are ${name}, ${version}, ${os}, and ${arch}. If unspecified the default Hashicorp Terraform download server is used. Can be a local file. |
 | provider     | string  | (optional) The provider in the form of `namespace/type` (e.g `cyrilgdn/postgresql`). This is required if the provider is not provided by Hashicorp. This should match the source of the provider in terraform.required_providers.     |
-| default      | boolean | (optional) Where there is more than one version of Terraform, this nominates the default version.                                                                                                                                     |
+| default      | boolean | (optional) Where there is more than one version of OpenTofu, this nominates the default version.                                                                                                                                      |
 Fields marked with `*` are required, others are optional.
 
 #### Parameter object
 
-This structure holds information about an environment variable that the user can set on the Terraform instance.
+This structure holds information about an environment variable that the user can set on the OpenTofu instance.
 These variables are first resolved from the configuration of the brokerpak then against a global set of values.
 
 | Field        | Type   | Description                                                       |
@@ -89,18 +107,17 @@ These variables are first resolved from the configuration of the brokerpak then 
 | description* | string | A human readable description of what the variable represents.     |
 Fields marked with `*` are required, others are optional.
 
-#### Terraform Upgrade Path object
+#### OpenTofu Upgrade Path object
 
-This structure holds information about a step in the Terraform upgrade process
+This structure holds information about a step in the OpenTofu upgrade process
 
-| Field    | Type | Description |
-|----------| --- | --- |
-| version* | semver | The terraform version to step through |
+| Field    | Type   | Description                          |
+|----------|--------|--------------------------------------|
+| version* | semver | The OpenTofu version to step through |
 Fields marked with `*` are required, others are optional.
 
-**Note:** Upgrade is only supported for Terraform versions >= 0.12.0.
-
-**Note:** Terraform does not recommend making HCL changes at the same time that performing a terraform upgrade (see [docs](https://www.terraform.io/language/upgrade-guides/0-13#before-you-upgrade)). Hence ideally these changes should be included in a separate release of your brokerpak and all existing instances should be upgraded before installing a subsequent release.
+**Note:** OpenTofu does not recommend making HCL changes at the same time that performing a OpenTofu upgrade.
+Hence, ideally these changes should be included in a separate release of your brokerpak and all existing instances should be upgraded before installing a subsequent release.
 
 **Note:** For upgrades to be carried over by the broker when requested, the feature flags `BROKERPAK_UPDATES_ENABLED` and `TERRAFORM_UPGRADES_ENABLED` must be set to `true`. The default is `false`.
 To trigger the upgrade of an instance, a request to `update` the instance without any parameters must be made or a `cf upgrade-service <instance_name>` has to be executed.
@@ -189,7 +206,7 @@ Fields marked with `*` are required, others are optional.
 
 #### Action object
 
-The Action object contains a Terraform template to execute as part of a
+The Action object contains a OpenTofu template to execute as part of a
 provision or bind action, and the inputs and outputs to that template.
 
 | Field                       | Type                                                                   | Description                                                                                                                                                                                                           |
@@ -201,16 +218,17 @@ provision or bind action, and the inputs and outputs to that template.
 | plan_inputs                 | array of [variable](#variable-object)                                  | Defines constraints and settings for the variables plans provide in their properties map. It is used to validate [plan objects](#plan-object) properties field.                                                       |
 | user_inputs                 | array of [variable](#variable-object)                                  | Defines constraints and defaults for the variables users provide as part of their request.                                                                                                                            |
 | computed_inputs             | array of [computed variable](#computed-variable-object)                | Defines default values or overrides that are executed before the template is run.                                                                                                                                     |
-| template                    | string                                                                 | The complete HCL of the Terraform template to execute.                                                                                                                                                                |
-| template_ref                | string                                                                 | A path to HCL of the Terraform template to execute. If present, this will be used to populate the `template` field.                                                                                                   |
-| templates                   | map                                                                    | The complete HCL of the Terraform templates to execute.                                                                                                                                                               |
-| template_refs               | map                                                                    | standard terraform file [snippet list](#template-references)                                                                                                                                                          |
-| outputs                     | array of [variable](#variable-object)                                  | Defines constraints and settings for the outputs of the Terraform template. This MUST match the Terraform outputs and the constraints WILL be used as part of integration testing.                                    |
+| template                    | string                                                                 | The complete OpenTofu language to execute.                                                                                                                                                                            |
+| template_ref                | string                                                                 | A path to OpenTofu language template to execute. If present, this will be used to populate the `template` field.                                                                                                      |
+| templates                   | map                                                                    | The complete OpenTofu language templates to execute.                                                                                                                                                                  |
+| template_refs               | map                                                                    | standard OpenTofu file [snippet list](#template-references)                                                                                                                                                           |
+| outputs                     | array of [variable](#variable-object)                                  | Defines constraints and settings for the outputs of the OpenTofu language template. This MUST match the OpenTofu outputs and the constraints WILL be used as part of integration testing.                             |
 Fields marked with `*` are required, others are optional.
 
 #### Import Input object
 
-The import input object defines the mapping of an input parameter to a terraform resource on the `tf import` command. The presence of any import input values will trigger a `tf import` before `tf apply` upon `cf create-service`
+The import input object defines the mapping of an input parameter to a OpenTofu resource on the `tofu import` command.
+The presence of any import input values will trigger a `tofu import` before `tofu apply` upon `cf create-service`
 
 | Field       | Type   | Description                                                                     |
 |-------------|--------|---------------------------------------------------------------------------------|
@@ -234,10 +252,10 @@ A create service call:
 cf create-service my-service my-plan my-instance -c '{"azure_db_id":"some-id"}'
 ```
 
-Will result in terraform import:
+Will result in OpenTofu import:
 
 ```bash
-terraform import azurerm_mssql_database.azure_sql_db some-id
+tofu import azurerm_mssql_database.azure_sql_db some-id
 ```
 
 #### Import Parameter Mapping object
@@ -248,7 +266,7 @@ The import parameter mapping object defines the tf variable to input variable ma
 
 | Field          | Type   | Description                          |
 |----------------|--------|--------------------------------------|
-| tf_variable    | string | the terraform resource variable name |
+| tf_variable    | string | the OpenTofu resource variable name |
 | parameter_name | string | the broker input variable name       |
 Fields marked with `*` are required, others are optional.
 
@@ -258,7 +276,7 @@ Given:
     parameter_name: var.service_objective 
 ```
 
-Will convert the resulting `tf import`:
+Will convert the resulting `tofu import`:
 ```tf
 resource "azurerm_mssql_database" "azure_sql_db" {
     requested_service_objective_name = S0
@@ -271,7 +289,7 @@ resource "azurerm_mssql_database" "azure_sql_db" {
     requested_service_objective_name = var.service_objective
 }
 ```
-Between running `tf import` and `tf apply`
+Between running `tofu import` and `tofu apply`
 
 So that:
 ```bash
@@ -282,7 +300,8 @@ Will successfully update the `requested_service_objective_name` for the instance
 
 #### Removing TF Values
 
-`tf import` will often return read only values that cannot be set during `tf apply`  The *import_parameters_to_delete* field is used to specify which values to remove before `tf apply` is run.
+`tofu import` will often return read only values that cannot be set during `tofu apply`.
+The *import_parameters_to_delete* field is used to specify which values to remove before `tofu apply` is run.
 
 Given:
 
@@ -290,7 +309,7 @@ Given:
 import_parameters_to_delete: [ "azurerm_mssql_database.azure_sql_db.id" ]
 ```
 
-Will convert the resulting `tf import`
+Will convert the resulting `tofu import`
 
 ```tf
 resource "azurerm_mssql_database" "azure_sql_db" {
@@ -307,11 +326,12 @@ resource "azurerm_mssql_database" "azure_sql_db" {
 }
 ```
 
-So that `tr apply` will not fail trying to set the read-only field *id*
+So that `tofu apply` will not fail trying to set the read-only field *id*
 
 #### Template References
 
-It is possible to break terraform code into sections to aid reusability and better follow [terraform best practices](https://www.terraform-best-practices.com/code-structure#getting-started-with-structuring-of-terraform-configurations). It is also required to support `tf import` as main.tf is a special case during import.
+It is possible to break OpenTofu code into sections to aid reusability and better readability.
+It is also required to support `tofu import` as main.tf is a special case during import.
 
 Given:
 ```yaml
@@ -323,14 +343,16 @@ Given:
     data: terraform/subsume-masb-mssql-db/mssql-db-data.tf
 ```
 
-Will result is a terraform workspace with the following structure:
+Will result is a OpenTofu workspace with the following structure:
 * outputs.tf gets contents of *terraform/subsume-masb-mssql-db/mssql-db-outputs.tf*
 * provider.tf gets contents of *terraform/subsume-masb-mssql-db/azure-provider.tf*
 * variables.tf gets contents of *terraform/subsume-masb-mssql-db/mssql-db-variables.tf*
 * main.tf gets contents of *terraform/subsume-masb-mssql-db/mssql-db-main.tf*
 * data.tf gets contents of *terraform/subsume-masb-mssql-db/mssql-db-data.tf*
 
-> If there are [import inputs](#import-input-object), a `tf import` will be run for each import input value before `tf apply` is run. Once all the import calls are complete, `tf show` is run to generate a new *main.tf*. So it is important not to put anything into *main.tf* that needs to be preserved. Put them in one of the other tf files.
+> If there are [import inputs](#import-input-object), a `tofu import` will be run for each import input value before
+> `tofu apply` is run. Once all the import calls are complete, `tofu show` is run to generate a new *main.tf*.
+> So it is important not to put anything into *main.tf* that needs to be preserved. Put them in one of the other tf files.
 
 #### Variable object
 
@@ -489,7 +511,7 @@ The broker makes additional variables available to be used during provision and 
 
 #### Resolution
 
-The order of combining all plan properties before invoking Terraform is as follows:
+The order of combining all plan properties before invoking OpenTofu is as follows:
 1. Operator default variables loaded from the environment.
    * `GSB_PROVISION_DEFAULTS` values first and then `GSB_SERVICE_*SERVICE_NAME*_PROVISION_DEFAULTS`. 
 1. User defined variables provided during provision/bind call.
@@ -541,8 +563,8 @@ There are three directories in the pak's root:
 * `bin/` contains binaries under `bin/{os}/{arch}` sub-directories for each supported platform.
 * `definitions/` contain the service definition YAML files.
 
-## Terraform lifecycle meta-argument `prevent_destroy`
-Terraform supports a [lifecycle meta-argument called `prevent_destroy`](https://www.terraform.io/language/meta-arguments/lifecycle#prevent_destroy)
+## OpenTofu lifecycle meta-argument `prevent_destroy`
+OpenTofu supports a [lifecycle meta-argument called `prevent_destroy`](https://opentofu.org/docs/language/meta-arguments/lifecycle/)
 that stops resources from being accidentally destroyed. For example:
 ```hcl
 resource "database" "mydatabase" {
@@ -552,7 +574,7 @@ resource "database" "mydatabase" {
   }
 }
 ```
-It might be that changing the database name would cause the Terraform to delete the
+It might be that changing the database name would cause the OpenTofu to delete the
 database and create a new one with the correct name. This can be prevented by adding
 the lifecycle meta-argument `prevent_destroy`. During the deletion of a service instance,
 Cloud Service Broker will set the `prevent_destroy` property to be `false` so that
