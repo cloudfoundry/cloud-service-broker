@@ -44,9 +44,9 @@ platforms:
 - os: darwin
   arch: amd64
 terraform_binaries:
-- name: terraform
-  version: 0.12.26
-  source: https://github.com/hashicorp/terraform/archive/v0.12.26.zip  
+- name: tofu
+  version: 1.6.1
+  source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.1.zip
 - name: terraform-provider-azurerm
   version: 2.20.0
   source: https://github.com/terraform-providers/terraform-provider-azurerm/archive/v2.20.0.zip
@@ -133,9 +133,9 @@ the broker into CloudFoundry. For local development on OSX, adding *os: darwin* 
 
 ```yaml
 terraform_binaries:
-- name: terraform
-  version: 0.12.26
-  source: https://github.com/hashicorp/terraform/archive/v0.12.26.zip  
+- name: tofu
+  version: 1.6.1
+  source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.1.zip
 - name: terraform-provider-azurerm
   version: 2.20.0
   source: https://github.com/terraform-providers/terraform-provider-azurerm/archive/v2.20.0.zip

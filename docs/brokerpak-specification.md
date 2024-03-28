@@ -63,13 +63,13 @@ and which services it will provide.
 | name*                                 | string                         | The name of this brokerpak. It's RECOMMENDED that this be lower-case and include only alphanumeric characters, dashes, and underscores.                                                                                                                                                       |
 | metadata                              | object                         | A free-form field for key/value pairs of additional information about this brokerpak. This could include the authors, creation date, source code repository, etc.                                                                                                                             |
 | platforms*                            | array of platform              | The platforms this brokerpak will be executed on.                                                                                                                                                                                                                                             |
-| terraform_binaries*                   | array of OpenTofu resource     | The list of OpenTofu providers and OpenTofu binaries that'll be bundled with the brokerpak. *The broker currently only supports terraform version v0.12.x and higher*                                                                                                                         |
+| terraform_binaries*                   | array of OpenTofu resource     | The list of OpenTofu providers and OpenTofu binaries that'll be bundled with the brokerpak. |
 | service_definitions*                  | array of string                | Each entry points to a file relative to the manifest that defines a service as part of the brokerpak.                                                                                                                                                                                         |
 | parameters                            | array of parameter             | These values are set as environment variables when OpenTofu is executed.                                                                                                                                                                                                                      |
-| required_env_variables                | array of string                | These are the required environment variables that will be passed through to the OpenTofu execution environment. Use these to make terraform platform plugin auth credentials available for terraform execution.                                                                               |
+| required_env_variables                | array of string                | These are the required environment variables that will be passed through to the OpenTofu execution environment. Use these to make OpenTofu platform plugin auth credentials available for OpenTofu execution.                                                                               |
 | env_config_mapping                    | map[string]string              | List of mappings of environment variables into config keys, see [functions](#functions) for more information on how to use these                                                                                                                                                              |
 | terraform_upgrade_path                | array of OpenTofu Upgrade Path | List of OpenTofu version steps when performing upgrade in ascending order                                                                                                                                                                                                                     |
-| terraform_state_provider_replacements | map of OpenTofu provider names | Map of OpenTofu providers, where the key represents the old name of the provider and the value represents the new name of the provider. Can be used to replace the provider in the terraform state file when switching providers or upgrading to 0.13. Only used if terraform version < 1.2.0 |
+| terraform_state_provider_replacements | map of OpenTofu provider names | Map of OpenTofu providers, where the key represents the old name of the provider and the value represents the new name of the provider. Can be used to replace the provider in the terraform state file when switching providers. |
 Fields marked with `*` are required, others are optional.
 
 #### Platform object
@@ -137,9 +137,9 @@ platforms:
 - os: linux
   arch: amd64
 terraform_binaries:
-- name: terraform
-  version: 0.12.21
-  source: https://github.com/hashicorp/terraform/archive/v0.12.21.zip
+- name: tofu
+  version: 1.6.1
+  source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.1.zip
 - name: terraform-provider-google
   version: 1.19.0
   source: https://github.com/terraform-providers/terraform-provider-google/archive/v1.19.0.zip
@@ -156,8 +156,8 @@ required_env_variables:
 env_config_mapping:
   ENV_CONFIG_VAL: env.config_val
 terraform_upgrade_path:
-- version: 0.12.21
-- version: 0.13.7
+- version: 1.6.0
+- version: 1.6.1
 terraform_state_provider_replacements:
   registry.terraform.io/-/random: "registry.terraform.io/hashicorp/random"
 ```
