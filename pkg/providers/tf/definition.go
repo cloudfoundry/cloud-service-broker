@@ -293,7 +293,7 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesCont
 		Examples:              tfb.Examples,
 		ProviderBuilder: func(logger lager.Logger, store broker.ServiceProviderStorage) broker.ServiceProvider {
 			executorFactory := executor.NewExecutorFactory(tfBinContext.Dir, tfBinContext.Params, envVars)
-			return NewTerraformProvider(tfBinContext, invoker.NewTerraformInvokerFactory(executorFactory, tfBinContext.Dir, tfBinContext.ProviderReplacements), logger, constDefn, NewDeploymentManager(store))
+			return NewTerraformProvider(tfBinContext, invoker.NewTerraformInvokerFactory(executorFactory, tfBinContext.Dir, tfBinContext.ProviderReplacements), logger, constDefn, NewDeploymentManager(store, logger))
 		},
 	}, nil
 }
