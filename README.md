@@ -5,18 +5,21 @@
 **Warning**: ***From Version 1.0.0 onwards the Cloud Service Broker only supports OpenTofu. Custom brokerpaks need to specify an OpenTofu version and the [upgrade process](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/terraform-upgrades.md) must be followed for existing instances. Only upgrades from terraform versions 1.5.x are supported ***
 
 # Cloud Service Broker
-An OSBAPI-compliant service broker that uses Terraform to create service instances.
+An OSBAPI-compliant service broker that uses OpenTofu to create service instances.
 
 This is a service broker built to be used with [Cloud Foundry](https://docs.cloudfoundry.org/services/overview.html) and Kubernetes. It adheres to the [Open Service Broker API v2.13](https://github.com/openservicebrokerapi/servicebroker/blob/v2.13/spec.md).
 
-Cloud Service Broker is a fork of the [GCP Service Broker](https://github.com/GoogleCloudPlatform/gcp-service-broker) and uses [Brokerpaks](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/brokerpak-intro.md) to expose services. As long as your target cloud has a [Terraform provider](https://www.terraform.io/docs/providers/index.html), services can be provisioned via a common interface using standard `cf` CLI commands.
+Cloud Service Broker is a fork of the [GCP Service Broker](https://github.com/GoogleCloudPlatform/gcp-service-broker)
+and uses [Brokerpaks](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/brokerpak-intro.md) to
+expose services. As long as your target cloud has a [OpenTofu provider](https://opentofu.org/docs/language/providers/),
+services can be provisioned via a common interface using standard `cf` CLI commands.
 
 Some of the benefits over traditional, IaaS-provided, service brokers include: 
 - **Easily extensible and maintainable** Less talking to far-flung teams, more getting work done. 
 - **One common broker for all brokered services.** Cloud Service Broker decouples the service broker functionality from the catalog of services that it exposes.
 - **Credhub integration out-of-the-box** CredHub encrypts and manages all the secrets associated with your usage of cloud services.
 - **Community** When you expose a service via a [Brokerpak](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/brokerpak-intro.md), you can make it available to everyone who uses CSB.
-- **Possible to migrate existing services using [TF Import](https://www.terraform.io/docs/import/index.html)**
+- **Possible to migrate existing services using [OpenTofu Import](https://opentofu.org/docs/language/import/)**
 
 ## Architecture
 ![Architecture Diagram](https://lh6.googleusercontent.com/GoNJx-4dQ51pEY6mCLkus1peKhZJbDMj4JHpdu83stfQrbcsjd45ypBPzpspfWAPPYrc63BREaawwRHS4Ht4U7m2yWAHItwaIgfuwUtn_KxfF96s6Jby7BRIliZ6BZz1HL-KhaI)
