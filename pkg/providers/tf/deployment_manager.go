@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"code.cloudfoundry.org/lager/v3"
+
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
@@ -11,12 +13,14 @@ import (
 )
 
 type DeploymentManager struct {
-	store broker.ServiceProviderStorage
+	store  broker.ServiceProviderStorage
+	logger lager.Logger
 }
 
-func NewDeploymentManager(store broker.ServiceProviderStorage) *DeploymentManager {
+func NewDeploymentManager(store broker.ServiceProviderStorage, logger lager.Logger) *DeploymentManager {
 	return &DeploymentManager{
-		store: store,
+		store:  store,
+		logger: logger,
 	}
 }
 
@@ -64,6 +68,11 @@ func (d *DeploymentManager) MarkOperationFinished(deployment *storage.TerraformD
 	} else {
 		deployment.LastOperationState = Failed
 		deployment.LastOperationMessage = fmt.Sprintf("%s %s: %s", deployment.LastOperationType, Failed, err)
+		d.logger.Error("operation-failed", err, lager.Data{
+			"deploymentID": deployment.ID,
+			"message":      deployment.LastOperationMessage,
+		})
+
 	}
 
 	return d.store.StoreTerraformDeployment(*deployment)
