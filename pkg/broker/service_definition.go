@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/pivotal-cf/brokerapi/v10/domain"
+	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"github.com/spf13/viper"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
