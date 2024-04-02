@@ -28,18 +28,16 @@ For more information on these manifest sections, see [brokerpak-specification](b
 ```
 ...
 terraform_upgrade_path:
-- version: 0.12.30
-- version: 0.13.7
+- version: 1.6.0
+- version: 1.6.2
 terraform_binaries:
-- name: terraform
-  version: 0.12.30
-  source: https://github.com/hashicorp/terraform/archive/v0.12.30.zip  
-- name: terraform
-  version: 0.13.7
-  source: https://github.com/hashicorp/terraform/archive/v0.13.7.zip
+- name: tofu
+  version: 1.6.0
+  source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.0.zip  
+- name: tofu
+  version: 1.6.2
+  source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.2.zip
   default: true
-terraform_state_provider_replacements:
-  registry.terraform.io/-/aws: "registry.terraform.io/hashicorp/aws"
 ...
 ```
 > **Note:** `terraform_upgrade_path`s must be in ascending order and one entry in the `terraform_binaries` list must be marked `default: true`.
