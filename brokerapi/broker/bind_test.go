@@ -8,9 +8,9 @@ import (
 	"code.cloudfoundry.org/lager/v3"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/brokerapi/v10/domain"
-	"github.com/pivotal-cf/brokerapi/v10/domain/apiresponses"
-	"github.com/pivotal-cf/brokerapi/v10/middlewares"
+	"github.com/pivotal-cf/brokerapi/v11/domain"
+	"github.com/pivotal-cf/brokerapi/v11/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v11/middlewares"
 
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/brokerapi/broker/brokerfakes"

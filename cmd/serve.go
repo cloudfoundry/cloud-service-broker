@@ -18,6 +18,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -33,8 +34,8 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/server"
 	"github.com/cloudfoundry/cloud-service-broker/pkg/toggles"
 	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/pivotal-cf/brokerapi/v10"
-	"github.com/pivotal-cf/brokerapi/v10/domain"
+	"github.com/pivotal-cf/brokerapi/v11"
+	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
@@ -117,7 +118,7 @@ func serve() {
 		logger.Info("service catalog", lager.Data{"catalog": displaycatalog.DisplayCatalog(services)})
 	}
 
-	brokerAPI := brokerapi.New(serviceBroker, logger, credentials)
+	brokerAPI := brokerapi.New(serviceBroker, slog.New(lager.NewHandler(logger)), credentials)
 
 	sqldb, err := db.DB()
 	if err != nil {
