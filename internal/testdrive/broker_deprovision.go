@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/pborman/uuid"
-	"github.com/pivotal-cf/brokerapi/v10/domain"
+	"github.com/pivotal-cf/brokerapi/v11/domain"
 )
 
 func (b *Broker) Deprovision(s ServiceInstance) error {

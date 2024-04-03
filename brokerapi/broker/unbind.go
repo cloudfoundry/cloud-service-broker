@@ -11,8 +11,8 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/utils/request"
-	"github.com/pivotal-cf/brokerapi/v10/domain"
-	"github.com/pivotal-cf/brokerapi/v10/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v11/domain"
+	"github.com/pivotal-cf/brokerapi/v11/domain/apiresponses"
 )
 
 // Unbind destroys an account and credentials with access to an instance of a service.

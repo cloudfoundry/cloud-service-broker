@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/pivotal-cf/brokerapi/v10/domain"
-	"github.com/pivotal-cf/brokerapi/v10/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v11/domain"
+	"github.com/pivotal-cf/brokerapi/v11/domain/apiresponses"
 
 	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
 )

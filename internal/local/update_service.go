@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/pivotal-cf/brokerapi/v10/domain"
+	"github.com/pivotal-cf/brokerapi/v11/domain"
 
 	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
 )
