@@ -39,7 +39,7 @@ func DefaultExecutor() TerraformExecutor {
 type defaultExecutor struct{}
 
 func (defaultExecutor) Execute(ctx context.Context, c *exec.Cmd) (ExecutionOutput, error) {
-	logger := utils.NewLogger("terraform@" + c.Dir).WithData(correlation.ID(ctx))
+	logger := utils.NewLogger("tofu@" + c.Dir).WithData(correlation.ID(ctx))
 
 	logger.Info("starting process", lager.Data{
 		"path": c.Path,
@@ -49,16 +49,16 @@ func (defaultExecutor) Execute(ctx context.Context, c *exec.Cmd) (ExecutionOutpu
 
 	stderr, err := c.StderrPipe()
 	if err != nil {
-		return ExecutionOutput{}, fmt.Errorf("failed to get stderr pipe for terraform execution: %v", err)
+		return ExecutionOutput{}, fmt.Errorf("failed to get stderr pipe for tofu execution: %v", err)
 	}
 
 	stdout, err := c.StdoutPipe()
 	if err != nil {
-		return ExecutionOutput{}, fmt.Errorf("failed to get stdout pipe for terraform execution: %v", err)
+		return ExecutionOutput{}, fmt.Errorf("failed to get stdout pipe for tofu execution: %v", err)
 	}
 
 	if err := c.Start(); err != nil {
-		return ExecutionOutput{}, fmt.Errorf("failed to execute terraform: %v", err)
+		return ExecutionOutput{}, fmt.Errorf("failed to execute tofu: %v", err)
 	}
 
 	output, _ := io.ReadAll(stdout)
@@ -68,13 +68,13 @@ func (defaultExecutor) Execute(ctx context.Context, c *exec.Cmd) (ExecutionOutpu
 
 	if err != nil ||
 		len(errors) > 0 {
-		logger.Error("terraform execution failed", err, lager.Data{
+		logger.Error("tofu execution failed", err, lager.Data{
 			"errors": string(errors),
 		})
 	}
 
 	logger.Info("finished process")
-	logger.Debug("terraform output", lager.Data{
+	logger.Debug("tofu output", lager.Data{
 		"output": string(output),
 	})
 
