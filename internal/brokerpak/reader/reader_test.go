@@ -35,6 +35,7 @@ var _ = Describe("reader", func() {
 				withTerraform(binaryV160),
 				withProvider("", "terraform-provider-google-beta", "1.19.0", "x4"),
 				withProvider("other-namespace/google", "terraform-provider-google", "1.19.0", "x5"),
+				withProvider("custom.registry.org/other-namespace/custom", "terraform-provider-custom", "1.19.0", "x5"),
 			)
 
 			pakReader, err := reader.OpenBrokerPak(pk)
@@ -44,11 +45,15 @@ var _ = Describe("reader", func() {
 			Expect(pakReader.ExtractPlatformBins(binOutput)).NotTo(HaveOccurred())
 
 			plat := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
-			hashicorpBinOutput := filepath.Join(binOutput, "registry.opentofu.org", "hashicorp")
+			hashicorpBinOutput := filepath.Join(binOutput, "registry.terraform.io", "hashicorp")
 			Expect(filepath.Join(hashicorpBinOutput, "google-beta", "1.19.0", plat, "terraform-provider-google-beta_v1.19.0_x4")).To(BeAnExistingFile())
 
-			otherNamespaceBinOutput := filepath.Join(binOutput, "registry.opentofu.org", "other-namespace")
+			otherNamespaceBinOutput := filepath.Join(binOutput, "registry.terraform.io", "other-namespace")
 			Expect(filepath.Join(otherNamespaceBinOutput, "google", "1.19.0", plat, "terraform-provider-google_v1.19.0_x5")).To(BeAnExistingFile())
+
+			customDomainBinOutput := filepath.Join(binOutput, "custom.registry.org", "other-namespace")
+			Expect(filepath.Join(customDomainBinOutput, "custom", "1.19.0", plat, "terraform-provider-custom_v1.19.0_x5")).To(BeAnExistingFile())
+
 		})
 
 		Context("single version of tofu", func() {

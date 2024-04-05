@@ -21,6 +21,7 @@ provision:
   import_parameters_to_delete: [ "random_uuid.random.id" , "random_uuid.random.result" ]
   template_refs:
     main: fake-uuid-provision.tf
+    versions: versions.tf
   outputs:
     - field_name: provision_output
       type: string
