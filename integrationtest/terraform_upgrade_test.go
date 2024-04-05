@@ -73,7 +73,7 @@ var _ = Describe("Terraform Upgrade", func() {
 
 	Context("TF Upgrades are enabled", func() {
 		It("runs 'terraform apply' at each version in the upgrade path", func() {
-			By("provisioning a service instance at 0.13")
+			By("provisioning a service instance at 1.6.0")
 			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID))
 			Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal(startingVersion))
 
@@ -125,7 +125,7 @@ var _ = Describe("Terraform Upgrade", func() {
 
 	Context("TF Upgrades are disabled", func() {
 		It("does not upgrade the instance", func() {
-			By("provisioning a service instance at 0.13")
+			By("provisioning a service instance at 1.6.0")
 			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID))
 			Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal(startingVersion))
 
