@@ -91,10 +91,30 @@ This structure holds information about a specific OpenTofu version or Resource.
 | name*        | string  | The name of this resource. e.g. `terraform-provider-google-beta`.                                                                                                                                                                     |
 | version*     | string  | The version of the resource e.g. 1.19.0.                                                                                                                                                                                              |
 | source       | string  | (optional) The URL to a zip of the source code for the resource.                                                                                                                                                                      |
-| url_template | string  | (optional) A custom URL template to get the release of the given tool. Available parameters are ${name}, ${version}, ${os}, and ${arch}. If unspecified the default Hashicorp Terraform download server is used. Can be a local file. |
+| url_template | string  | (optional) A custom URL template to get the release of the given tool. Available parameters are ${name}, ${version}, ${os}, and ${arch}. If unspecified, the default Hashicorp Terraform download server is used for providers and the Opentofu URL for the tofu binary. Can be a local file. |
 | provider     | string  | (optional) The provider in the form of `namespace/type` (e.g `cyrilgdn/postgresql`). This is required if the provider is not provided by Hashicorp. This should match the source of the provider in terraform.required_providers.     |
 | default      | boolean | (optional) Where there is more than one version of OpenTofu, this nominates the default version.                                                                                                                                      |
 Fields marked with `*` are required, others are optional.
+
+##### Example
+
+
+```yaml
+terraform_binaries:
+- name: tofu
+  version: 1.6.1
+  source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.1.zip
+  url_template: https://github.com/opentofu/opentofu/releases/download/v${version}/tofu_${version}_${os}_${arch}.zip
+  default: true
+- name: terraform-provider-google
+  version: 1.19.0
+  source: https://github.com/terraform-providers/terraform-provider-google/archive/v1.19.0.zip  
+- name: terraform-provider-random
+  version: v3.6.0
+  source: https://github.com/opentofu/terraform-provider-random/archive/v3.6.0.zip   
+  url_template: https://registry.opentofu.org/hashicorp/${name}/${version}/${arch}  // TODO
+...
+```
 
 #### Parameter object
 
@@ -107,7 +127,7 @@ These variables are first resolved from the configuration of the brokerpak then 
 | description* | string | A human readable description of what the variable represents.     |
 Fields marked with `*` are required, others are optional.
 
-#### OpenTofu Upgrade Path object
+#### Upgrade Path object
 
 This structure holds information about a step in the OpenTofu upgrade process
 
@@ -142,7 +162,7 @@ terraform_binaries:
   source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.1.zip
 - name: terraform-provider-google
   version: 1.19.0
-  source: https://github.com/terraform-providers/terraform-provider-google/archive/v1.19.0.zip
+  source: https://github.com/terraform-providers/terraform-provider-google/archive/v1.19.0.zip  
 service_definitions:
 - custom-cloud-storage.yml
 - custom-redis.yml
@@ -166,7 +186,7 @@ terraform_state_provider_replacements:
 
 ### Schemas
 
-#### Service YAML flie
+#### Service YAML files
 
 | Field                 | Type                                  | Description                                                                                                                                                                                                                                                                                                     |
 |-----------------------|---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
