@@ -27,6 +27,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/dbservice"
 	"github.com/cloudfoundry/cloud-service-broker/internal/displaycatalog"
 	"github.com/cloudfoundry/cloud-service-broker/internal/encryption"
+	"github.com/cloudfoundry/cloud-service-broker/internal/httpsmiddleware"
 	"github.com/cloudfoundry/cloud-service-broker/internal/infohandler"
 	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
 	pakBroker "github.com/cloudfoundry/cloud-service-broker/pkg/broker"
@@ -46,6 +47,7 @@ const (
 	apiPasswordProp     = "api.password"
 	apiPortProp         = "api.port"
 	apiHostProp         = "api.host"
+	apiAllowHTTP        = "api.allow.http" // Disables the middleware that redirects http traffic to https
 	encryptionPasswords = "db.encryption.passwords"
 	encryptionEnabled   = "db.encryption.enabled"
 )
@@ -79,6 +81,7 @@ func init() {
 	_ = viper.BindEnv(apiHostProp, "CSB_LISTENER_HOST")
 	_ = viper.BindEnv(encryptionPasswords, "ENCRYPTION_PASSWORDS")
 	_ = viper.BindEnv(encryptionEnabled, "ENCRYPTION_ENABLED")
+	_ = viper.BindEnv(apiAllowHTTP, "CSB_LISTENER_ALLOW_HTTP")
 }
 
 func serve() {
@@ -201,10 +204,11 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 		}
 	})
 
+	allowHTTP := len(viper.GetString(apiAllowHTTP)) != 0
 	port := viper.GetString(apiPortProp)
 	host := viper.GetString(apiHostProp)
 	logger.Info("Serving", lager.Data{"port": port})
-	_ = http.ListenAndServe(fmt.Sprintf("%s:%s", host, port), router)
+	_ = http.ListenAndServe(fmt.Sprintf("%s:%s", host, port), httpsmiddleware.EnsureHTTPS(router, logger, allowHTTP))
 }
 
 func labelName(label string) string {
