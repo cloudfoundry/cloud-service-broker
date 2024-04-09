@@ -19,7 +19,7 @@ import (
 const hclFilesFolder = "terraform"
 
 func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.Writer, brokerpakExtraFoldersToCopy ...string) (*TestInstance, error) {
-	csbBuild, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker")
+	csbBuild, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker/v2")
 	if err != nil {
 		return nil, err
 	}

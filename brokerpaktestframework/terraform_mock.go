@@ -29,7 +29,7 @@ func NewTerraformMock(opts ...Option) (TerraformMock, error) {
 		return TerraformMock{}, err
 	}
 
-	build, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker/brokerpaktestframework/mock-binary/tofu", "-ldflags", fmt.Sprintf("-X 'main.InvocationStore=%s'", dir))
+	build, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker/v2/brokerpaktestframework/mock-binary/tofu", "-ldflags", fmt.Sprintf("-X 'main.InvocationStore=%s'", dir))
 	if err != nil {
 		return TerraformMock{}, err
 	}
