@@ -136,7 +136,7 @@ var _ = Describe("Terraform Upgrade", func() {
 			broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(GinkgoWriter, GinkgoWriter)))
 
 			By("seeing 'cf update-service' fail")
-			Expect(broker.UpdateService(serviceInstance)).To(MatchError(ContainSubstring("terraform version check failed: operation attempted with newer version of Terraform than current state, upgrade the service before retrying operation")))
+			Expect(broker.UpdateService(serviceInstance)).To(MatchError(ContainSubstring("tofu version check failed: operation attempted with newer version of OpenTofu than current state, upgrade the service before retrying operation")))
 
 			By("observing that the TF version remains the same in the state file")
 			Expect(instanceTerraformStateVersion(serviceInstance.GUID)).To(Equal(startingVersion))
