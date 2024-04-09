@@ -6,7 +6,7 @@ import (
 
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
 )
 
 func UpdateService(name, plan, params, cachePath string) {

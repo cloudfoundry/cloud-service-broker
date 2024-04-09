@@ -5,10 +5,10 @@ import (
 	"context"
 	"sync"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
 )
 
 type FakeServiceProvider struct {

@@ -4,8 +4,8 @@ package manifest
 import (
 	"github.com/hashicorp/go-version"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
-	"github.com/cloudfoundry/cloud-service-broker/internal/tfproviderfqn"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/tfproviderfqn"
 )
 
 // Manifest is the internal model for the brokerpak manifest

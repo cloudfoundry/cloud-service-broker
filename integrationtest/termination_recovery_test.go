@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
-	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
+	"github.com/cloudfoundry/cloud-service-broker/v2/integrationtest/packer"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"

@@ -3,7 +3,7 @@ package local
 import (
 	"log"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
 )
 
 func CreateService(service, plan, name, params, cachePath string) {

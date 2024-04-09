@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"code.cloudfoundry.org/lager/v3/lagertest"
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

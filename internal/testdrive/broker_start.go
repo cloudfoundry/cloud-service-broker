@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
-	"github.com/cloudfoundry/cloud-service-broker/utils/freeport"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
+	"github.com/cloudfoundry/cloud-service-broker/v2/utils/freeport"
 	"github.com/pborman/uuid"
 )
 

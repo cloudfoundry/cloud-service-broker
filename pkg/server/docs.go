@@ -21,8 +21,8 @@ import (
 
 	"github.com/russross/blackfriday/v2"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/generator"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/generator"
 )
 
 var pageTemplate = template.Must(template.New("docs-page").Parse(`

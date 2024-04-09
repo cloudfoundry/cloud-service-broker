@@ -5,8 +5,8 @@ import (
 	"os"
 	"sort"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v11/domain"

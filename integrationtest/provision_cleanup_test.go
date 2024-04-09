@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
-	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v2/integrationtest/packer"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

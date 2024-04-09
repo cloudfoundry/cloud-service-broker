@@ -8,8 +8,8 @@ import (
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"github.com/pivotal-cf/brokerapi/v11/domain/apiresponses"
 
-	"github.com/cloudfoundry/cloud-service-broker/integrationtest/packer"
-	"github.com/cloudfoundry/cloud-service-broker/internal/testdrive"
+	"github.com/cloudfoundry/cloud-service-broker/v2/integrationtest/packer"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
 )
 
 var _ = Describe("Maintenance Info", func() {

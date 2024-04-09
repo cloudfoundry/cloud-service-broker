@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/cloudfoundry/cloud-service-broker/utils/stream"
+	"github.com/cloudfoundry/cloud-service-broker/v2/utils/stream"
 )
 
 func Archive(sourceDirectory, destinationZip string, compress bool) error {

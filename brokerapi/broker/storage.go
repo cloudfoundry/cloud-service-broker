@@ -1,9 +1,9 @@
 package broker
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate

@@ -24,14 +24,14 @@ import (
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"github.com/spf13/viper"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/serviceimage"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
-	"github.com/cloudfoundry/cloud-service-broker/utils"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/serviceimage"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/invoker"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
 )
 
 // NewExampleTfServiceDefinition creates a new service definition with sample

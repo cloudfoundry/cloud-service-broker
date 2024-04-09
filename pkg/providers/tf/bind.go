@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
-	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
 )
 
 // Bind creates a new backing Terraform job and executes it, waiting on the result.

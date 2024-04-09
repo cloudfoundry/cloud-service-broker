@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/client"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
 )
 
 func ListExamples(cachePath string) {

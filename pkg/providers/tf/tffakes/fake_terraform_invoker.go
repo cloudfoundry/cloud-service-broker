@@ -5,9 +5,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/invoker"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
 )
 
 type FakeTerraformInvoker struct {

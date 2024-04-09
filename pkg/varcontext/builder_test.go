@@ -22,7 +22,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
 )
 
 func TestContextBuilder(t *testing.T) {

@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cloudfoundry/cloud-service-broker/brokerpaktestframework"
+	"github.com/cloudfoundry/cloud-service-broker/v2/brokerpaktestframework"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

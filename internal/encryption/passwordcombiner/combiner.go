@@ -9,9 +9,9 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 	"gorm.io/gorm"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/gcmencryptor"
-	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/passwordparser"
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/gcmencryptor"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/passwordparser"
 )
 
 func Combine(db *gorm.DB, parsed []passwordparser.PasswordEntry, storedPassMetadata []models.PasswordMetadata) (CombinedPasswords, error) {

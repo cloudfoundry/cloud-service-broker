@@ -25,7 +25,7 @@ endif
 
 LDFLAGS="-X github.com/cloudfoundry/cloud-service-broker/utils.Version=$(VERSION)"
 
-PKG="github.com/cloudfoundry/cloud-service-broker"
+PKG="github.com/cloudfoundry/cloud-service-broker/v2"
 
 ###### Help ###################################################################
 

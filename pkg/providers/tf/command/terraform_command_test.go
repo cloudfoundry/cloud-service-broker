@@ -1,7 +1,7 @@
 package command_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/command"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/command"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

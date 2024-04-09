@@ -15,7 +15,7 @@
 package main
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/cmd"
+	"github.com/cloudfoundry/cloud-service-broker/v2/cmd"
 )
 
 func main() {

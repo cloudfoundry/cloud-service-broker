@@ -6,10 +6,10 @@ import (
 
 	"code.cloudfoundry.org/lager/v3"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/featureflags"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
 )
 
 type DeploymentManager struct {

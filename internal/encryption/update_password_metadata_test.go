@@ -6,8 +6,8 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/internal/encryption"
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption"
 )
 
 var _ = Describe("ParseConfiguration()", func() {

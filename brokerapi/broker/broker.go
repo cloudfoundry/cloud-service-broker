@@ -22,9 +22,9 @@ import (
 
 	"code.cloudfoundry.org/lager/v3"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/credstore"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/featureflags"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/credstore"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/featureflags"
 )
 
 const credhubClientIdentifier = "csb"

@@ -6,15 +6,15 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/internal/steps"
-	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/invoker"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
-	"github.com/cloudfoundry/cloud-service-broker/utils"
-	"github.com/cloudfoundry/cloud-service-broker/utils/correlation"
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/steps"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/invoker"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
 )
 
 // ImportResource represents TF resource to IaaS resource ID mapping for import

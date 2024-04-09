@@ -19,8 +19,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/brokerpak"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/brokerpak"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

@@ -3,7 +3,7 @@ package tf
 import (
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 )
 
 func (provider *TerraformProvider) CheckOperationConstraints(deploymentID string, operationType string) error {

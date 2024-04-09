@@ -3,10 +3,10 @@ package invoker
 import (
 	"context"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/workspace"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/command"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/command"
 )
 
 func NewTerraformDefaultInvoker(executor executor.TerraformExecutor, pluginDirectory string, pluginRenames map[string]string) TerraformInvoker {
