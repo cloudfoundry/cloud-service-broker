@@ -10,8 +10,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/manifest"
-	"github.com/cloudfoundry/cloud-service-broker/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/platform"
 	"github.com/onsi/gomega/gexec"
 	cp "github.com/otiai10/copy"
 )

@@ -24,10 +24,10 @@ import (
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"github.com/spf13/viper"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/paramparser"
-	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
-	"github.com/cloudfoundry/cloud-service-broker/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
 )
 
 func ExampleServiceDefinition_UserDefinedPlansProperty() {

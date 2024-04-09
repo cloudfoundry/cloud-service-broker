@@ -3,7 +3,7 @@ package encryption
 import (
 	"gorm.io/gorm"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 )
 
 func DeletePasswordMetadata(db *gorm.DB, labels []string) error {

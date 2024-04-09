@@ -1,7 +1,7 @@
 package invoker
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
 	"github.com/hashicorp/go-version"
 )
 

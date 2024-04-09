@@ -3,7 +3,7 @@ package steps_test
 import (
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/steps"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/steps"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

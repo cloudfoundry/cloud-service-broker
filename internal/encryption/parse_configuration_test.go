@@ -6,11 +6,11 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/internal/encryption"
-	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/compoundencryptor"
-	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/gcmencryptor"
-	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/noopencryptor"
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/compoundencryptor"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/gcmencryptor"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/noopencryptor"
 )
 
 var _ = Describe("ParseConfiguration()", func() {

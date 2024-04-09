@@ -5,12 +5,12 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/compoundencryptor"
-	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/noopencryptor"
-	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/passwordcombiner"
-	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/passwordparser"
-	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/compoundencryptor"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/noopencryptor"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/passwordcombiner"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/passwordparser"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 )
 
 type Configuration struct {
