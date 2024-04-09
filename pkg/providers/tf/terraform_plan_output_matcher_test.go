@@ -14,7 +14,7 @@ var _ = Context("CheckTerraformPlanOutput", func() {
 An execution plan has been generated and is shown below.
 Resource actions are indicated with the following symbols:
 
-Tofu will perform the following actions:
+OpenTofu will perform the following actions:
 
 Plan: 0 to add, 0 to change, 0 to destroy.
 
@@ -31,7 +31,7 @@ Changes to Outputs:
 An execution plan has been generated and is shown below.
 Resource actions are indicated with the following symbols:
 
-Tofu will perform the following actions:
+OpenTofu will perform the following actions:
 
 Plan: 5 to add, 0 to change, 0 to destroy.
 
@@ -48,7 +48,7 @@ Changes to Outputs:
 An execution plan has been generated and is shown below.
 Resource actions are indicated with the following symbols:
 
-Tofu will perform the following actions:
+OpenTofu will perform the following actions:
 
 Plan: 0 to add, 6 to change, 0 to destroy.
 
@@ -65,7 +65,7 @@ Changes to Outputs:
 An execution plan has been generated and is shown below.
 Resource actions are indicated with the following symbols:
 
-Tofu will perform the following actions:
+OpenTofu will perform the following actions:
 
 Plan: 0 to add, 0 to change, 1 to destroy.
 
