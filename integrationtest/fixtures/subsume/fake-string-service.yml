@@ -24,6 +24,7 @@ provision:
   import_parameters_to_delete: [ "random_string.random.id", "random_string.random.result" ]
   template_refs:
     main: fake-string-provision.tf
+    versions: versions.tf
   outputs:
     - field_name: provision_output
       type: string

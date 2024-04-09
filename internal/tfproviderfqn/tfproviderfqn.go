@@ -5,7 +5,7 @@ import "fmt"
 
 const (
 	prefix           = "terraform-provider-"
-	defaultRegistry  = "registry.opentofu.org"
+	defaultRegistry  = "registry.terraform.io"
 	defaultNamespace = "hashicorp"
 )
 
