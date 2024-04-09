@@ -100,7 +100,7 @@ func parseTerraformUpgradePath(p parser) (result []*version.Version, errs *valid
 			}).ViaFieldIndex("terraform_upgrade_path", i))
 		case !available:
 			errs = errs.Also((&validation.FieldError{
-				Message: fmt.Sprintf("no corresponding terrafom resource for terraform version %q", v.Version),
+				Message: fmt.Sprintf("no corresponding terrafom resource for tofu version %q", v.Version),
 				Paths:   []string{"version"},
 			}).ViaFieldIndex("terraform_upgrade_path", i))
 		case i == len(p.TerraformUpgradePath)-1 && !isDefault:

@@ -28,7 +28,7 @@ func (provider *TerraformProvider) checkTerraformVersion(workspace workspace.Wor
 		return err
 	}
 	if currentTfVersion.LessThan(provider.tfBinContext.DefaultTfVersion) {
-		return errors.New("operation attempted with newer version of Terraform than current state, upgrade the service before retrying operation")
+		return errors.New("operation attempted with newer version of OpenTofu than current state, upgrade the service before retrying operation")
 	}
 	return nil
 }

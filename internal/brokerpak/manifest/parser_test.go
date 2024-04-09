@@ -247,7 +247,7 @@ var _ = Describe("Parser", func() {
 					{"version": "1.2.3"},
 				},
 			)))
-			Expect(err).To(MatchError(ContainSubstring(`no corresponding terrafom resource for terraform version "1.2.3": terraform_upgrade_path[0].version`)))
+			Expect(err).To(MatchError(ContainSubstring(`no corresponding terrafom resource for tofu version "1.2.3": terraform_upgrade_path[0].version`)))
 			Expect(m).To(BeNil())
 		})
 

@@ -135,7 +135,7 @@ var _ = Describe("Unbind", func() {
 		Expect(err).To(MatchError(expectedError))
 	})
 
-	It("returns an error if terraform destroy fails", func() {
+	It("returns an error if tofu destroy fails", func() {
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		fakeDeploymentManager.MarkOperationStartedReturns(nil)
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)

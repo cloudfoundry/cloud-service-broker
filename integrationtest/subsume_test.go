@@ -44,6 +44,6 @@ var _ = Describe("Subsume", func() {
 		Expect(provisionResponse.Error).NotTo(HaveOccurred())
 		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted), string(provisionResponse.ResponseBody))
 		Expect(broker.LastOperationFinalState(serviceInstanceGUID)).To(Equal(domain.Failed))
-		Expect(must(broker.LastOperation(serviceInstanceGUID)).Description).To(Equal("provision failed: terraform plan shows that resources would be destroyed - cancelling subsume"))
+		Expect(must(broker.LastOperation(serviceInstanceGUID)).Description).To(Equal("provision failed: tofu plan shows that resources would be destroyed - cancelling subsume"))
 	})
 })

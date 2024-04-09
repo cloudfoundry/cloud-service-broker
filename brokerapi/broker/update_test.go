@@ -306,7 +306,7 @@ var _ = Describe("Update", func() {
 				fakeServiceProvider.CheckUpgradeAvailableReturns(errors.New("cannot use this tf version"))
 
 				_, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
-				Expect(err).To(MatchError("terraform version check failed: cannot use this tf version"))
+				Expect(err).To(MatchError("tofu version check failed: cannot use this tf version"))
 
 				By("validate it does not update")
 				Expect(fakeServiceProvider.UpdateCallCount()).To(Equal(0))
