@@ -471,7 +471,7 @@ var _ = Describe("DeploymentManager", func() {
 
 				It("returns the error", func() {
 					err := deploymentManager.UpdateWorkspaceHCL(id, updatedProvisionSettings, templateVars)
-					Expect(err).To(MatchError("terraform provider create failed: fake error"))
+					Expect(err).To(MatchError("deployment storing failed: fake error"))
 				})
 			})
 		})
@@ -552,7 +552,7 @@ var _ = Describe("DeploymentManager", func() {
 
 				It("returns the error", func() {
 					err := deploymentManager.UpdateWorkspaceHCL(id, updatedProvisionSettings, templateVars)
-					Expect(err).To(MatchError("terraform provider create failed: fake error"))
+					Expect(err).To(MatchError("deployment storing failed: fake error"))
 				})
 			})
 		})

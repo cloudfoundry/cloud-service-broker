@@ -117,7 +117,7 @@ func (d *DeploymentManager) UpdateWorkspaceHCL(deploymentID string, serviceDefin
 
 	deployment.Workspace = newWorkspace
 	if err := d.store.StoreTerraformDeployment(deployment); err != nil {
-		return fmt.Errorf("terraform provider create failed: %w", err)
+		return fmt.Errorf("deployment storing failed: %w", err)
 	}
 
 	return nil

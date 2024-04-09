@@ -130,7 +130,7 @@ var _ = Describe("Provision", func() {
 
 			_, err := provider.Provision(context.TODO(), provisionContext)
 
-			Expect(err).To(MatchError("terraform provider create failed: cant save now"))
+			Expect(err).To(MatchError("deployment create failed: cant save now"))
 		})
 
 		It("fails, when it errors marking the operation as started", func() {
@@ -309,7 +309,7 @@ var _ = Describe("Provision", func() {
 
 			_, err := provider.Provision(context.TODO(), provisionContext)
 
-			Expect(err).To(MatchError("terraform provider create failed: cant save now"))
+			Expect(err).To(MatchError("deployment create failed: cant save now"))
 		})
 
 		It("fails, when it errors marking the operation as started", func() {

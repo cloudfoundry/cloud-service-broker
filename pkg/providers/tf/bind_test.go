@@ -138,7 +138,7 @@ var _ = Describe("Bind", func() {
 
 		_, err := provider.Bind(context.TODO(), bindContext)
 
-		Expect(err).To(MatchError("error from provider bind: terraform provider create failed: cant save now"))
+		Expect(err).To(MatchError("error from provider bind: deployment create failed: cant save now"))
 	})
 
 	It("fails, when unable to mark the operation as started", func() {
