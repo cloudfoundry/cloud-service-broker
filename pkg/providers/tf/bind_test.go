@@ -151,16 +151,16 @@ var _ = Describe("Bind", func() {
 		Expect(err).To(MatchError("error from provider bind: error marking job started: couldnt do this now"))
 	})
 
-	It("returns the error in last operation, if terraform apply fails", func() {
+	It("returns the error in last operation, if tofu apply fails", func() {
 		fakeDeploymentManager.CreateAndSaveDeploymentReturns(deployment, nil)
-		fakeDeploymentManager.OperationStatusReturns(true, "operation failed", fmt.Errorf("terraform apply failed"))
+		fakeDeploymentManager.OperationStatusReturns(true, "operation failed", fmt.Errorf("tofu apply failed"))
 		fakeDeploymentManager.MarkOperationFinishedReturns(errors.New("couldnt do this now"))
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 		fakeDefaultInvoker.ApplyReturns(errors.New("some TF issue happened"))
 		provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
 		_, err := provider.Bind(context.TODO(), bindContext)
-		Expect(err).To(MatchError("error waiting for result: terraform apply failed"))
+		Expect(err).To(MatchError("error waiting for result: tofu apply failed"))
 
 		By("checking TF apply has been called")
 		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))

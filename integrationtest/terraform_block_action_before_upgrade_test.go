@@ -61,7 +61,7 @@ var _ = Describe("Terraform block action before upgrade", func() {
 
 				By("creating a binding")
 				_, err := broker.CreateBinding(serviceInstance)
-				Expect(err).To(MatchError(ContainSubstring("operation attempted with newer version of Terraform than current state, upgrade the service before retrying operation")))
+				Expect(err).To(MatchError(ContainSubstring("operation attempted with newer version of OpenTofu than current state, upgrade the service before retrying operation")))
 				Expect(broker.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Succeeded))
 				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTerraformVersion))
 			})
@@ -86,7 +86,7 @@ var _ = Describe("Terraform block action before upgrade", func() {
 
 				By("deleting the instance binding")
 				err := broker.DeleteBinding(serviceInstance, binding.GUID)
-				Expect(err).To(MatchError(ContainSubstring("operation attempted with newer version of Terraform than current state, upgrade the service before retrying operation")))
+				Expect(err).To(MatchError(ContainSubstring("operation attempted with newer version of OpenTofu than current state, upgrade the service before retrying operation")))
 				Expect(broker.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Succeeded))
 				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTerraformVersion))
 			})
@@ -108,7 +108,7 @@ var _ = Describe("Terraform block action before upgrade", func() {
 
 				By("deleting the service instance")
 				err := broker.Deprovision(serviceInstance)
-				Expect(err).To(MatchError(ContainSubstring("operation attempted with newer version of Terraform than current state, upgrade the service before retrying operation")))
+				Expect(err).To(MatchError(ContainSubstring("operation attempted with newer version of OpenTofu than current state, upgrade the service before retrying operation")))
 				Expect(broker.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Succeeded))
 				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTerraformVersion))
 			})
