@@ -59,6 +59,7 @@ func (show) Command() []string {
 }
 
 func (cmd show) Env() []string {
+	// workaround for bug introduced by https://github.com/opentofu/opentofu/issues/1139
 	return []string{"OPENTOFU_STATEFILE_PROVIDER_ADDRESS_TRANSLATION=0"}
 }
 
