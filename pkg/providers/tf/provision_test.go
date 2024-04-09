@@ -143,7 +143,7 @@ var _ = Describe("Provision", func() {
 			Expect(err).To(MatchError("error marking job started: couldnt do this now"))
 		})
 
-		It("return the error in last operation, if terraform apply fails", func() {
+		It("return the error in last operation, if tofu apply fails", func() {
 			fakeDeploymentManager.CreateAndSaveDeploymentReturns(deployment, nil)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 			fakeDefaultInvoker.ApplyReturns(errors.New("some TF issue happened"))
@@ -323,7 +323,7 @@ var _ = Describe("Provision", func() {
 		})
 
 		Describe("failures on TF operations", func() {
-			It("return the error in last operation, if terraform import fails", func() {
+			It("return the error in last operation, if tofu import fails", func() {
 				fakeDeploymentManager.CreateAndSaveDeploymentReturns(deployment, nil)
 				fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 				fakeDefaultInvoker.ImportReturns(errors.New("some TF import issue happened"))
@@ -341,7 +341,7 @@ var _ = Describe("Provision", func() {
 				Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("some TF import issue happened"))
 			})
 
-			It("return the error in last operation, if terraform show fails", func() {
+			It("return the error in last operation, if tofu show fails", func() {
 				fakeDeploymentManager.CreateAndSaveDeploymentReturns(deployment, nil)
 				fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 				fakeDefaultInvoker.ShowReturns("", errors.New("some TF show issue happened"))
@@ -358,7 +358,7 @@ var _ = Describe("Provision", func() {
 				Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("some TF show issue happened"))
 			})
 
-			It("return the error in last operation, if terraform plan fails", func() {
+			It("return the error in last operation, if tofu plan fails", func() {
 				fakeDeploymentManager.CreateAndSaveDeploymentReturns(deployment, nil)
 				fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 				fakeDefaultInvoker.PlanReturns(executor.ExecutionOutput{}, errors.New("some TF plan issue happened"))
@@ -374,7 +374,7 @@ var _ = Describe("Provision", func() {
 				Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("some TF plan issue happened"))
 			})
 
-			It("return the error in last operation, if terraform apply fails", func() {
+			It("return the error in last operation, if tofu apply fails", func() {
 				fakeDeploymentManager.CreateAndSaveDeploymentReturns(deployment, nil)
 				fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 				fakeDefaultInvoker.ApplyReturns(errors.New("some TF apply issue happened"))
