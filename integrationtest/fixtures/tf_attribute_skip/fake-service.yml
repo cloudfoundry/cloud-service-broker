@@ -20,6 +20,7 @@ plans:
 provision:
   template_refs:
     main: fake-provision.tf
+    versions: versions.tf
   user_inputs:
     - field_name: skip
       type: boolean
