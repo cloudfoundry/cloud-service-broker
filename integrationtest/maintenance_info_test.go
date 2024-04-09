@@ -37,7 +37,7 @@ var _ = Describe("Maintenance Info", func() {
 				))
 			})
 
-			It("should match the default Terraform version", func() {
+			It("should match the default OpenTofu version", func() {
 				catalogResponse := broker.Client.Catalog(requestID())
 				Expect(catalogResponse.Error).NotTo(HaveOccurred())
 
@@ -47,7 +47,7 @@ var _ = Describe("Maintenance Info", func() {
 					Public:      nil,
 					Private:     "",
 					Version:     "1.6.1",
-					Description: "This upgrade provides support for Terraform version: 1.6.1. The upgrade operation will take a while. The instance and all associated bindings will be upgraded.",
+					Description: "This upgrade provides support for OpenTofu version: 1.6.1. The upgrade operation will take a while. The instance and all associated bindings will be upgraded.",
 				}))
 			})
 		})

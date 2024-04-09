@@ -43,7 +43,7 @@ var _ = Describe("CheckUpgradeAvailable", func() {
 
 	})
 
-	When("default terraform version greater than one in state", func() {
+	When("default tofu version greater than one in state", func() {
 		BeforeEach(func() {
 			deployment = storage.TerraformDeployment{
 				ID: deploymentID,
@@ -58,11 +58,11 @@ var _ = Describe("CheckUpgradeAvailable", func() {
 			provider := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
 			err := provider.CheckUpgradeAvailable(tfInstanceID)
-			Expect(err).To(MatchError("operation attempted with newer version of Terraform than current state, upgrade the service before retrying operation"))
+			Expect(err).To(MatchError("operation attempted with newer version of OpenTofu than current state, upgrade the service before retrying operation"))
 		})
 	})
 
-	When("default terraform version matches version in state", func() {
+	When("default tofu version matches version in state", func() {
 		BeforeEach(func() {
 			deployment = storage.TerraformDeployment{
 				ID: deploymentID,
@@ -82,7 +82,7 @@ var _ = Describe("CheckUpgradeAvailable", func() {
 
 	})
 
-	When("unable to get the terraform version from a deployment", func() {
+	When("unable to get the tofu version from a deployment", func() {
 		BeforeEach(func() {
 			deployment = storage.TerraformDeployment{
 				ID: deploymentID,

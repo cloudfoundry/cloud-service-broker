@@ -87,7 +87,7 @@ var _ = Describe("Update", func() {
 		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
 	})
 
-	It("returns the error in last operation, if terraform apply fails", func() {
+	It("returns the error in last operation, if tofu apply fails", func() {
 		deployment.Workspace = fakeWorkspace
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		tfVersion := "1.1"

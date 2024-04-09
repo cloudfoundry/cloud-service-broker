@@ -20,7 +20,7 @@ func CheckTerraformPlanOutput(logger lager.Logger, output executor.ExecutionOutp
 		logger.Info("no-destroyed")
 	default:
 		logger.Info("cancelling-destroy", lager.Data{"stdout": output.StdOut, "stderr": output.StdErr})
-		return fmt.Errorf("terraform plan shows that resources would be destroyed - cancelling subsume")
+		return fmt.Errorf("tofu plan shows that resources would be destroyed - cancelling subsume")
 	}
 	return nil
 }

@@ -77,7 +77,7 @@ func (r *Registrar) Register(registry broker.BrokerRegistry) error {
 		if featureflags.Enabled(featureflags.TfUpgradeEnabled) {
 			maintenanceInfo = &domain.MaintenanceInfo{
 				Version:     tfBinariesContext.DefaultTfVersion.String(),
-				Description: fmt.Sprintf(`This upgrade provides support for Terraform version: %s. The upgrade operation will take a while. The instance and all associated bindings will be upgraded.`, tfBinariesContext.DefaultTfVersion.String()),
+				Description: fmt.Sprintf(`This upgrade provides support for OpenTofu version: %s. The upgrade operation will take a while. The instance and all associated bindings will be upgraded.`, tfBinariesContext.DefaultTfVersion.String()),
 			}
 		}
 

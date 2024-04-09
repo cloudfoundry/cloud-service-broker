@@ -149,7 +149,7 @@ var _ = Describe("Upgrade", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(instanceTFDeployment))
-			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("terraform version mismatch and no upgrade path specified"))
+			Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError("tofu version mismatch and no upgrade path specified"))
 			Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(0))
 		})
 

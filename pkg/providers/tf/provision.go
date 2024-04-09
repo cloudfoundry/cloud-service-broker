@@ -76,8 +76,8 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 
 	deployment, err := provider.CreateAndSaveDeployment(tfID, newWorkspace)
 	if err != nil {
-		provider.logger.Error("terraform provider create failed", err)
-		return tfID, fmt.Errorf("terraform provider create failed: %w", err)
+		provider.logger.Error("deployment create failed", err)
+		return tfID, fmt.Errorf("deployment create failed: %w", err)
 	}
 
 	if err := provider.MarkOperationStarted(&deployment, models.ProvisionOperationType); err != nil {
