@@ -31,7 +31,8 @@ var _ = Describe("Subsume", func() {
 	It("can subsume a resource", func() {
 		const serviceOfferingGUID = "547cad88-fa93-11eb-9f44-97feefe52547"
 		const servicePlanGUID = "59624c68-fa93-11eb-9081-e79b0e1ab5ae"
-		broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(`{"value":"a97fd57a-fa94-11eb-8256-930255607a99"}`))
+		_, err := broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(`{"value":"a97fd57a-fa94-11eb-8256-930255607a99"}`))
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	It("cancels a subsume operation when a resource would be deleted", func() {

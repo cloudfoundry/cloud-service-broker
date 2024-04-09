@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     random = {
-      source = "ContentSquare/random"
+      source = "registry.terraform.io/ContentSquare/random"
       version = "3.1.0"
     }
   }

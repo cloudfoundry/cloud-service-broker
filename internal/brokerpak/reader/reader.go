@@ -19,6 +19,7 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -268,6 +269,11 @@ func (pak *BrokerPakReader) readBytes(name string) ([]byte, error) {
 
 func providerInstallPath(destination string, tfProvider manifest.TerraformProvider) string {
 	plat := platform.CurrentPlatform()
+	log.Println("ProviderInstallPath:", filepath.Join(
+		destination,
+		tfProvider.Provider.String(),
+		tfProvider.Version.String(),
+		fmt.Sprintf("%s_%s", plat.Os, plat.Arch)))
 	return filepath.Join(
 		destination,
 		tfProvider.Provider.String(),

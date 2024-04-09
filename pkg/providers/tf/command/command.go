@@ -3,4 +3,5 @@ package command
 
 type TerraformCommand interface {
 	Command() []string
+	Env() []string
 }

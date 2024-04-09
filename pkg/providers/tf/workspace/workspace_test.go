@@ -213,6 +213,46 @@ func TestTerrafromWorkspace_StateTFVersion(t *testing.T) {
 	})
 }
 
+func TestTerrafromWorkspace_Execute(t *testing.T) {
+	t.Parallel()
+
+	t.Run("custom command env", func(t *testing.T) {
+		const definitionTfContents = "variable azure_tenant_id { type = string }"
+		ws, err := NewWorkspace(map[string]any{}, definitionTfContents, map[string]string{}, []ParameterMapping{}, []string{}, []ParameterMapping{})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		tExecutor := newTestExecutor(func(ctx context.Context, cmd *exec.Cmd) (executor.ExecutionOutput, error) {
+			if cmd.Env[len(cmd.Env)-1] != "OPENTOFU_STATEFILE_PROVIDER_ADDRESS_TRANSLATION=0" {
+				t.Fatalf("Custom command environment variable not set. Expected `OPENTOFU_STATEFILE_PROVIDER_ADDRESS_TRANSLATION=0` got %s", cmd.Env[len(cmd.Env)-1])
+			}
+			return executor.ExecutionOutput{}, nil
+		})
+
+		ws.Execute(context.TODO(), tExecutor, command.NewShow())
+
+	})
+
+	t.Run("empty command env", func(t *testing.T) {
+		const definitionTfContents = "variable azure_tenant_id { type = string }"
+		ws, err := NewWorkspace(map[string]any{}, definitionTfContents, map[string]string{}, []ParameterMapping{}, []string{}, []ParameterMapping{})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		tExecutor := newTestExecutor(func(ctx context.Context, cmd *exec.Cmd) (executor.ExecutionOutput, error) {
+			if !reflect.DeepEqual(cmd.Env, os.Environ()) {
+				t.Fatalf("Unexpected env variable set. Expected %s got %s", os.Environ(), cmd.Env)
+			}
+			return executor.ExecutionOutput{}, nil
+		})
+
+		ws.Execute(context.TODO(), tExecutor, command.NewApply())
+
+	})
+}
+
 func TestCustomEnvironmentExecutor(t *testing.T) {
 	c := exec.Command("/path/to/terraform", "apply")
 	c.Env = []string{"ORIGINAL=value"}
