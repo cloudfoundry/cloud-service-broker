@@ -15,7 +15,7 @@ import (
 var _ = Describe("Terraform block action before upgrade", func() {
 	const serviceOfferingGUID = "df2c1512-3013-11ec-8704-2fbfa9c8a802"
 	const servicePlanGUID = "e59773ce-3013-11ec-9bbb-9376b4f72d14"
-	const oldTerraformVersion = "1.6.0"
+	const oldTofuVersion = "1.6.0"
 
 	var (
 		brokerpak string
@@ -51,7 +51,7 @@ var _ = Describe("Terraform block action before upgrade", func() {
 			It("returns an error", func() {
 				By("provisioning a service instance at an older version of terraform")
 				serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID))
-				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTerraformVersion))
+				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTofuVersion))
 
 				By("updating the brokerpak and restarting the broker")
 				Expect(broker.Stop()).To(Succeed())
@@ -63,7 +63,7 @@ var _ = Describe("Terraform block action before upgrade", func() {
 				_, err := broker.CreateBinding(serviceInstance)
 				Expect(err).To(MatchError(ContainSubstring("operation attempted with newer version of OpenTofu than current state, upgrade the service before retrying operation")))
 				Expect(broker.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Succeeded))
-				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTerraformVersion))
+				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTofuVersion))
 			})
 		})
 	})
@@ -73,7 +73,7 @@ var _ = Describe("Terraform block action before upgrade", func() {
 			It("returns an error", func() {
 				By("provisioning a service instance at an old terraform version")
 				serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID))
-				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTerraformVersion))
+				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTofuVersion))
 
 				By("creating a binding")
 				binding := must(broker.CreateBinding(serviceInstance))
@@ -88,7 +88,7 @@ var _ = Describe("Terraform block action before upgrade", func() {
 				err := broker.DeleteBinding(serviceInstance, binding.GUID)
 				Expect(err).To(MatchError(ContainSubstring("operation attempted with newer version of OpenTofu than current state, upgrade the service before retrying operation")))
 				Expect(broker.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Succeeded))
-				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTerraformVersion))
+				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTofuVersion))
 			})
 		})
 	})
@@ -98,7 +98,7 @@ var _ = Describe("Terraform block action before upgrade", func() {
 			It("returns an error", func() {
 				By("provisioning a service instance at an old terraform version")
 				serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID))
-				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTerraformVersion))
+				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTofuVersion))
 
 				By("updating the brokerpak and restarting the broker")
 				Expect(broker.Stop()).To(Succeed())
@@ -110,7 +110,7 @@ var _ = Describe("Terraform block action before upgrade", func() {
 				err := broker.Deprovision(serviceInstance)
 				Expect(err).To(MatchError(ContainSubstring("operation attempted with newer version of OpenTofu than current state, upgrade the service before retrying operation")))
 				Expect(broker.LastOperationFinalState(serviceInstance.GUID)).To(Equal(domain.Succeeded))
-				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTerraformVersion))
+				Expect(terraformStateVersion(serviceInstance.GUID)).To(Equal(oldTofuVersion))
 			})
 		})
 	})

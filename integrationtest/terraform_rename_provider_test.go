@@ -13,7 +13,7 @@ var _ = Describe("Terraform Rename Provider", func() {
 		brokerpak string
 		broker    *testdrive.Broker
 	)
-	const terraformVersion = "1.6.2"
+	const tofuVersion = "1.6.2"
 
 	BeforeEach(func() {
 		brokerpak = must(packer.BuildBrokerpak(csb, fixtures("terraform-rename-provider")))
@@ -41,10 +41,10 @@ var _ = Describe("Terraform Rename Provider", func() {
 
 		By("running 'cf update-service'")
 		Expect(broker.UpgradeService(
-			serviceInstance, terraformVersion,
+			serviceInstance, tofuVersion,
 			testdrive.WithUpgradePreviousValues(domain.PreviousValues{
 				PlanID:          servicePlanGUID,
-				MaintenanceInfo: &domain.MaintenanceInfo{Version: terraformVersion},
+				MaintenanceInfo: &domain.MaintenanceInfo{Version: tofuVersion},
 			}),
 			testdrive.WithUpgradeParams(`{"alpha_input":"quz"}`),
 		)).To(Succeed())
