@@ -3,7 +3,7 @@ package storage
 import (
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 )
 
 type ServiceBindingCredentials struct {

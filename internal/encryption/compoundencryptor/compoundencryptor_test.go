@@ -6,9 +6,9 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/encryption/compoundencryptor"
-	"github.com/cloudfoundry/cloud-service-broker/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/internal/storage/storagefakes"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/compoundencryptor"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage/storagefakes"
 )
 
 var _ = Describe("CompoundEncryptor", func() {

@@ -3,7 +3,7 @@ package cmd
 import (
 	"log"
 
-	"github.com/cloudfoundry/cloud-service-broker/internal/local"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/local"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

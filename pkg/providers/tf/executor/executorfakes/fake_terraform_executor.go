@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"sync"
 
-	"github.com/cloudfoundry/cloud-service-broker/pkg/providers/tf/executor"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
 )
 
 type FakeTerraformExecutor struct {

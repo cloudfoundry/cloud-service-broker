@@ -15,7 +15,7 @@
 package broker
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/pkg/validation"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 )
 
