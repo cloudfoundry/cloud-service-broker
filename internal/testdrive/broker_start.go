@@ -2,6 +2,7 @@ package testdrive
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -18,10 +19,13 @@ import (
 type StartBrokerOption func(config *startBrokerConfig)
 
 type startBrokerConfig struct {
-	env    []string
-	stdout io.Writer
-	stderr io.Writer
+	env           []string
+	stdout        io.Writer
+	stderr        io.Writer
+	redirectHTTPS bool
 }
+
+var errRedirectError = fmt.Errorf("detected a redirect")
 
 func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, error) {
 	var stdout, stderr bytes.Buffer
@@ -65,6 +69,10 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 		cmd.Stderr = io.MultiWriter(&stderr, cfg.stderr)
 	}
 
+	if !cfg.redirectHTTPS {
+		cmd.Env = append(cmd.Env, "CSB_LISTENER_ALLOW_HTTP=true")
+	}
+
 	clnt, err := client.New(username, password, "localhost", port)
 	if err != nil {
 		return nil, err
@@ -83,8 +91,16 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 
 	start := time.Now()
 	for {
-		response, err := http.Head(fmt.Sprintf("http://localhost:%d", port))
+		client := http.Client{
+			CheckRedirect: func(*http.Request, []*http.Request) error {
+				return errRedirectError
+			},
+		}
+		response, err := client.Head(fmt.Sprintf("http://localhost:%d", port))
+
 		switch {
+		case errors.Is(err, errRedirectError):
+			return &broker, nil // broker is up and is redirecting HTTP to HTTPS
 		case err == nil && response.StatusCode == http.StatusOK:
 			return &broker, nil
 		case time.Since(start) > time.Minute:
@@ -127,6 +143,12 @@ func WithOutputs(stdout, stderr io.Writer) StartBrokerOption {
 	return func(cfg *startBrokerConfig) {
 		cfg.stdout = stdout
 		cfg.stderr = stderr
+	}
+}
+
+func WithHTTPRedirect() StartBrokerOption {
+	return func(cfg *startBrokerConfig) {
+		cfg.redirectHTTPS = true
 	}
 }
 
