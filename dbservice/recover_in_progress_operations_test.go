@@ -1,83 +1,60 @@
 package dbservice
 
 import (
-	"strings"
-	"testing"
-
 	"code.cloudfoundry.org/lager/v3/lagertest"
 	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-func TestRecoverInProgressOperations(t *testing.T) {
-	// Setup
-	db, err := gorm.Open(sqlite.Open(":memory:"), nil)
-	if err != nil {
-		t.Errorf("failed to create test database: %s", err)
-	}
+var _ = Describe("RecoverInProgressOperations()", func() {
+	It("recovers the expected operations", func() {
+		const (
+			recoverID = "fake-id-to-recover"
+			okID      = "fake-id-that-does-not-need-to-be-recovered"
+		)
 
-	if err = db.Migrator().CreateTable(&models.TerraformDeployment{}); err != nil {
-		t.Errorf("failed to create test table: %s", err)
-	}
+		// Setup
+		db, err := gorm.Open(sqlite.Open(":memory:"), nil)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(db.Migrator().CreateTable(&models.TerraformDeployment{})).To(Succeed())
 
-	const recoverID = "fake-id-to-recover"
-	err = db.Create(&models.TerraformDeployment{
-		ID:                   recoverID,
-		LastOperationType:    "fake-type",
-		LastOperationState:   "in progress",
-		LastOperationMessage: "fake-type in progress",
-	}).Error
-	if err != nil {
-		t.Errorf("failed to create test database data: %s", err)
-	}
-	const okID = "fake-id-that-does-not-need-to-be-recovered"
-	err = db.Create(&models.TerraformDeployment{
-		ID:                   okID,
-		LastOperationType:    "fake-type",
-		LastOperationState:   "succeeded",
-		LastOperationMessage: "fake-type succeeded",
-	}).Error
-	if err != nil {
-		t.Errorf("failed to create test database data: %s", err)
-	}
+		Expect(db.Create(&models.TerraformDeployment{
+			ID:                   recoverID,
+			LastOperationType:    "fake-type",
+			LastOperationState:   "in progress",
+			LastOperationMessage: "fake-type in progress",
+		}).Error).To(Succeed())
+		Expect(db.Create(&models.TerraformDeployment{
+			ID:                   okID,
+			LastOperationType:    "fake-type",
+			LastOperationState:   "succeeded",
+			LastOperationMessage: "fake-type succeeded",
+		}).Error).To(Succeed())
 
-	// Call the function
-	logger := lagertest.NewTestLogger("test")
-	recoverInProgressOperations(db, logger)
+		// Call the function
+		logger := lagertest.NewTestLogger("test")
+		recoverInProgressOperations(db, logger)
 
-	// It marks the in-progress operation as failed
-	var r1 models.TerraformDeployment
-	err = db.Where("id = ?", recoverID).First(&r1).Error
-	if err != nil {
-		t.Errorf("failed to load updated test data: %s", err)
-	}
+		// Behaviors
+		By("marking the in-progress operation as failed")
+		var r1 models.TerraformDeployment
+		Expect(db.Where("id = ?", recoverID).First(&r1).Error).To(Succeed())
+		Expect(r1.LastOperationState).To(Equal("failed"))
+		Expect(r1.LastOperationMessage).To(Equal("the broker restarted while the operation was in progress"))
 
-	const expState = "failed"
-	if r1.LastOperationState != expState {
-		t.Errorf("LastOperationState, expected %q, got %q", expState, r1.LastOperationState)
-	}
+		By("no updating other operations")
+		var r2 models.TerraformDeployment
+		Expect(db.Where("id = ?", okID).First(&r2).Error).To(Succeed())
+		Expect(r2.LastOperationState).To(Equal("succeeded"))
+		Expect(r2.LastOperationMessage).To(Equal("fake-type succeeded"))
 
-	const expMessage = "the broker restarted while the operation was in progress"
-	if r1.LastOperationMessage != expMessage {
-		t.Errorf("LastOperationMessage, expected %q, got %q", expMessage, r1.LastOperationMessage)
-	}
-
-	// It does not update other operations
-	var r2 models.TerraformDeployment
-	err = db.Where("id = ?", okID).First(&r2).Error
-	if err != nil {
-		t.Errorf("failed to load updated test data: %s", err)
-	}
-	if r2.LastOperationState != "succeeded" || r2.LastOperationMessage != "fake-type succeeded" {
-		t.Error("row corruption")
-	}
-
-	// It logs the expected message
-	const expLog1 = `"message":"test.recover-in-progress-operations.mark-as-failed"`
-	const expLog2 = `"workspace_id":"fake-id-to-recover"`
-	logMessage := string(logger.Buffer().Contents())
-	if !strings.Contains(logMessage, expLog1) || !strings.Contains(logMessage, expLog2) {
-		t.Errorf("log, expected to contain %q and %q, got %q", expLog1, expLog2, logMessage)
-	}
-}
+		By("logging the expected message")
+		Expect(logger.Buffer().Contents()).To(SatisfyAll(
+			ContainSubstring(`"message":"test.recover-in-progress-operations.mark-as-failed"`),
+			ContainSubstring(`"workspace_id":"fake-id-to-recover"`),
+		))
+	})
+})

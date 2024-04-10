@@ -15,11 +15,11 @@
 package dbservice
 
 import (
-	"errors"
 	"fmt"
 	"os"
-	"testing"
 
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 	"github.com/spf13/viper"
 )
 
@@ -61,17 +61,15 @@ func ExampleUseVcapServices() {
 	// service_instance_db
 }
 
-func TestParseVcapServices(t *testing.T) {
-	cases := map[string]struct {
-		VcapServiceData string
-		ExpectedError   error
-	}{
-		"empty vcap service": {
-			VcapServiceData: "",
-			ExpectedError:   errors.New("error unmarshalling VCAP_SERVICES: unexpected end of JSON input"),
-		},
-		"google-cloud vcap-service": {
-			VcapServiceData: `{
+var _ = Describe("VCAP", func() {
+	Describe("parsing VCAP_SERVICES", func() {
+		It("fails when VCAP_SERVICES is empty", func() {
+			_, err := ParseVcapServices("")
+			Expect(err).To(MatchError("error unmarshalling VCAP_SERVICES: unexpected end of JSON input"))
+		})
+
+		It("parses VCAP_SERVICES for Google Cloud", func() {
+			_, err := ParseVcapServices(`{
   "google-cloudsql-mysql": [
     {
       "binding_name": "testbinding",
@@ -106,11 +104,12 @@ func TestParseVcapServices(t *testing.T) {
       }
     }
   ]
-}`,
-			ExpectedError: nil,
-		},
-		"pivotal vcap service": {
-			VcapServiceData: `{
+}`)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("parses VCAP_SERVICES for 'p.mysql' tile", func() {
+			_, err := ParseVcapServices(`{
   "p.mysql": [
     {
       "label": "p.mysql",
@@ -133,12 +132,12 @@ func TestParseVcapServices(t *testing.T) {
       "volume_mounts": []
     }
   ]
-}
-`,
-			ExpectedError: nil,
-		},
-		"invalid vcap service - more than one mysql tag": {
-			VcapServiceData: `{
+}`)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("fails when VCAP_SERVICES has more than one MySQL tag", func() {
+			_, err := ParseVcapServices(`{
   "google-cloudsql-mysql": [
     {
       "binding_name": "testbinding",
@@ -193,11 +192,12 @@ func TestParseVcapServices(t *testing.T) {
       "volume_mounts": []
     }
   ]
-}`,
-			ExpectedError: errors.New("error finding MySQL tag: the variable VCAP_SERVICES must have one VCAP service with a tag of 'mysql'. There are currently 2 VCAP services with the tag 'mysql'"),
-		},
-		"invalid vcap service - zero mysql tags": {
-			VcapServiceData: `{
+}`)
+			Expect(err).To(MatchError("error finding MySQL tag: the variable VCAP_SERVICES must have one VCAP service with a tag of 'mysql'. There are currently 2 VCAP services with the tag 'mysql'"))
+		})
+
+		It("fails when VCAP_SERVICES has zero MySQL tag", func() {
+			_, err := ParseVcapServices(`{
   "p.mysql": [
     {
       "label": "p.mysql",
@@ -221,34 +221,18 @@ func TestParseVcapServices(t *testing.T) {
     }
   ]
 }
-`,
-			ExpectedError: errors.New("error finding MySQL tag: the variable VCAP_SERVICES must have one VCAP service with a tag of 'mysql'. There are currently 0 VCAP services with the tag 'mysql'"),
-		},
-	}
-
-	for tn, tc := range cases {
-		t.Run(tn, func(t *testing.T) {
-			vcapService, err := ParseVcapServices(tc.VcapServiceData)
-			if err == nil {
-				fmt.Printf("\n%#v\n", vcapService)
-			}
-			expectError(t, tc.ExpectedError, err)
+`)
+			Expect(err).To(MatchError("error finding MySQL tag: the variable VCAP_SERVICES must have one VCAP service with a tag of 'mysql'. There are currently 0 VCAP services with the tag 'mysql'"))
 		})
-	}
+	})
 
-}
+	Describe("setting database credentials", func() {
+		It("succeeds when the parsed VCAP_SERVICES is empty", func() {
+			Expect(SetDatabaseCredentials(VcapService{})).To(Succeed())
+		})
 
-func TestSetDatabaseCredentials(t *testing.T) {
-	cases := map[string]struct {
-		VcapService   VcapService
-		ExpectedError error
-	}{
-		"empty vcap service": {
-			VcapService:   VcapService{},
-			ExpectedError: nil,
-		},
-		"valid gcp vcap service": {
-			VcapService: VcapService{
+		It("succeeds when the parsed VCAP_SERVICES represents a valid Google Cloud service", func() {
+			vs := VcapService{
 				BindingName:  "testbinding",
 				InstanceName: "testinstance",
 				Name:         "kf-binding-tt2-mystorage",
@@ -275,11 +259,12 @@ func TestSetDatabaseCredentials(t *testing.T) {
 					"region":                   "",
 					"uri":                      "mysql://newuseraccount:Ukd7QEmrfC7xMRqNmTzHCbNnmBtNceys1olOzLoSm4k@104.154.90.3/service_broker?ssl_mode=required",
 				},
-			},
-			ExpectedError: nil,
-		},
-		"valid pivotal vcap service": {
-			VcapService: VcapService{
+			}
+			Expect(SetDatabaseCredentials(vs)).To(Succeed())
+		})
+
+		It("succeeds when the parsed VCAP_SERVICES represents a valid 'p.mysql' tile service", func() {
+			vs := VcapService{
 				BindingName:  "",
 				InstanceName: "",
 				Name:         "my-instance",
@@ -295,11 +280,12 @@ func TestSetDatabaseCredentials(t *testing.T) {
 					"uri":      "mysql://fefcbe8360854a18a7994b870e7b0bf5:z9z6eskdbs1rhtxt@10.0.0.20:3306/service_instance_db?reconnect=true",
 					"username": "fefcbe8360854a18a7994b870e7b0bf5",
 				},
-			},
-			ExpectedError: nil,
-		},
-		"invalid vcap service - malformed uri": {
-			VcapService: VcapService{
+			}
+			Expect(SetDatabaseCredentials(vs)).To(Succeed())
+		})
+
+		It("fails when there is an malformed URI", func() {
+			vs := VcapService{
 				BindingName:  "",
 				InstanceName: "",
 				Name:         "my-instance",
@@ -315,33 +301,8 @@ func TestSetDatabaseCredentials(t *testing.T) {
 					"uri":      "mys@!ql://fefcbe8360854a18a7994b870e7b0bf5:z9z6eskdbs1rhtxt@10.0.0.20:3306/service_instance_db?reconnect=true",
 					"username": "fefcbe8360854a18a7994b870e7b0bf5",
 				},
-			},
-			ExpectedError: errors.New(`error parsing credentials uri field: parse "mys@!ql://fefcbe8360854a18a7994b870e7b0bf5:z9z6eskdbs1rhtxt@10.0.0.20:3306/service_instance_db?reconnect=true": first path segment in URL cannot contain colon`),
-		},
-	}
-
-	for tn, tc := range cases {
-		t.Run(tn, func(t *testing.T) {
-			err := SetDatabaseCredentials(tc.VcapService)
-			expectError(t, tc.ExpectedError, err)
+			}
+			Expect(SetDatabaseCredentials(vs)).To(MatchError(`error parsing credentials uri field: parse "mys@!ql://fefcbe8360854a18a7994b870e7b0bf5:z9z6eskdbs1rhtxt@10.0.0.20:3306/service_instance_db?reconnect=true": first path segment in URL cannot contain colon`))
 		})
-	}
-
-}
-
-func expectError(t *testing.T, expected, actual error) {
-	t.Helper()
-	expectedErr := expected != nil
-	gotErr := actual != nil
-
-	switch {
-	case expectedErr && gotErr:
-		if expected.Error() != actual.Error() {
-			t.Fatalf("Expected: %v, got: %v", expected, actual)
-		}
-	case expectedErr && !gotErr:
-		t.Fatalf("Expected: %v, got: %v", expected, actual)
-	case !expectedErr && gotErr:
-		t.Fatalf("Expected no error but got: %v", actual)
-	}
-}
+	})
+})
