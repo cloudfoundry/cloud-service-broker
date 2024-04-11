@@ -12,8 +12,8 @@ type Broker struct {
 	Port     int
 	Client   *client.Client
 	runner   *runner
-	username string
-	password string
+	Username string
+	Password string
 	Stdout   *bytes.Buffer
 	Stderr   *bytes.Buffer
 }

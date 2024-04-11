@@ -17,9 +17,12 @@ package cmd
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"code.cloudfoundry.org/lager/v3"
@@ -31,10 +34,12 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	pakBroker "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/brokerpak"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/server"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/toggles"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
 	"github.com/pivotal-cf/brokerapi/v11"
+	"github.com/pivotal-cf/brokerapi/v11/auth"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -124,7 +129,7 @@ func serve() {
 	if err != nil {
 		logger.Error("failed to get database connection", err)
 	}
-	startServer(cfg.Registry, sqldb, brokerAPI)
+	startServer(cfg.Registry, sqldb, brokerAPI, storage.New(db, encryptor), credentials)
 }
 
 func serveDocs() {
@@ -135,7 +140,7 @@ func serveDocs() {
 		logger.Error("loading brokerpaks", err)
 	}
 
-	startServer(registry, nil, nil)
+	startServer(registry, nil, nil, nil, brokerapi.BrokerCredentials{})
 }
 
 func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
@@ -179,7 +184,7 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
 	return config.Encryptor
 }
 
-func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.Handler) {
+func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.Handler, store *storage.Storage, credentials brokerapi.BrokerCredentials) {
 	logger := utils.NewLogger("cloud-service-broker")
 
 	docsHandler := server.DocsHandler(registry)
@@ -189,6 +194,7 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 	router.HandleFunc("/examples", server.NewExampleHandler(registry))
 	server.AddHealthHandler(router, db)
 	router.HandleFunc("/info", infohandler.NewDefault())
+	router.Handle("/import_state/{guid}", auth.NewWrapper(credentials.Username, credentials.Password).Wrap(importStateHandler(store)))
 
 	router.HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {
 		switch {
@@ -214,4 +220,43 @@ func labelName(label string) string {
 	default:
 		return label
 	}
+}
+
+func importStateHandler(store *storage.Storage) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		guid := r.PathValue("guid")
+		if !regexp.MustCompile(`^[0-9a-f-]{36}$`).MatchString(guid) {
+			http.Error(w, "not a valid GUID", http.StatusBadRequest)
+			return
+		}
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to read body: %s", err), http.StatusBadRequest)
+			return
+		}
+		var b any
+		if err := json.Unmarshal(body, &b); err != nil {
+			http.Error(w, fmt.Sprintf("problem parsing body as JSON: %s", err), http.StatusBadRequest)
+			return
+		}
+
+		tfID := fmt.Sprintf("tf:%s:", guid)
+		deployment, err := store.GetTerraformDeployment(tfID)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("could not find TF ID: %s", tfID), http.StatusNotFound)
+			return
+		}
+
+		tfw, ok := deployment.Workspace.(*workspace.TerraformWorkspace)
+		if !ok {
+			http.Error(w, "failed cast to *workspace.TerraformWorkspace", http.StatusInternalServerError)
+			return
+		}
+
+		tfw.State = body
+		if err := store.StoreTerraformDeployment(deployment); err != nil {
+			http.Error(w, fmt.Sprintf("failed to store deployment: %s", err), http.StatusInternalServerError)
+			return
+		}
+	})
 }
