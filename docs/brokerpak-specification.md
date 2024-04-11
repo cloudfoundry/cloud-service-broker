@@ -109,10 +109,10 @@ terraform_binaries:
 - name: terraform-provider-google
   version: 1.19.0
   source: https://github.com/terraform-providers/terraform-provider-google/archive/v1.19.0.zip  
-- name: terraform-provider-random
-  version: v3.6.0
-  source: https://github.com/opentofu/terraform-provider-random/archive/v3.6.0.zip   
-  url_template: https://registry.opentofu.org/hashicorp/${name}/${version}/${arch}  // TODO
+- name: terraform-provider-csbmajorengineversion
+  version: 1.0.0
+  provider: cloudfoundry.org/cloud-service-broker/csbmajorengineversion
+  url_template: ./providers/build/cloudfoundry.org/cloud-service-broker/csbmajorengineversion/${version}/${os}_${arch}/${name}_v${version}  
 ...
 ```
 
