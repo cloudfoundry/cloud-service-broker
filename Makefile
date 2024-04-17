@@ -23,7 +23,7 @@ ifeq ($(VERSION),)
 	endif
 endif
 
-LDFLAGS="-X github.com/cloudfoundry/cloud-service-broker/utils.Version=$(VERSION)"
+LDFLAGS="-X github.com/cloudfoundry/cloud-service-broker/v2/utils.Version=$(VERSION)"
 
 PKG="github.com/cloudfoundry/cloud-service-broker/v2"
 
