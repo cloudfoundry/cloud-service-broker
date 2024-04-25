@@ -1,4 +1,4 @@
-package dbservice_test
+package dbservice
 
 import (
 	"testing"
