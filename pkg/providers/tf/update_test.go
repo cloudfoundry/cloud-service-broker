@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/broker"
-
 	"github.com/cloudfoundry/cloud-service-broker/v3/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/executor"
@@ -101,23 +99,6 @@ var _ = Describe("Update", func() {
 
 		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
 		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(MatchError(genericError))
-	})
-
-	When("update called on subsume plan", func() {
-		It("fails", func() {
-			varContext, err := varcontext.Builder().MergeMap(map[string]any{"tf_id": "567c6af0-d68a-11ec-a5b6-367dda7ea869", "var": "value", "subsume": true}).Build()
-			Expect(err).NotTo(HaveOccurred())
-			fakeServiceDefinition.ProvisionSettings.PlanInputs = []broker.BrokerVariable{
-				{
-					FieldName: "subsume",
-				},
-			}
-
-			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
-
-			_, err = provider.Update(context.TODO(), varContext)
-			Expect(err).To(MatchError("cannot update to subsume plan\n\nFor OpsMan Tile users see documentation here: https://via.vmw.com/ENs4\n\nFor Open Source users deployed via 'cf push' see documentation here:  https://via.vmw.com/ENw4"))
-		})
 	})
 
 	When("update context is missing tf_id", func() {

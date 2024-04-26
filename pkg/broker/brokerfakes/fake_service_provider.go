@@ -89,22 +89,6 @@ type FakeServiceProvider struct {
 		result1 *string
 		result2 error
 	}
-	GetImportedPropertiesStub        func(context.Context, string, []broker.BrokerVariable, map[string]any) (map[string]any, error)
-	getImportedPropertiesMutex       sync.RWMutex
-	getImportedPropertiesArgsForCall []struct {
-		arg1 context.Context
-		arg2 string
-		arg3 []broker.BrokerVariable
-		arg4 map[string]any
-	}
-	getImportedPropertiesReturns struct {
-		result1 map[string]any
-		result2 error
-	}
-	getImportedPropertiesReturnsOnCall map[int]struct {
-		result1 map[string]any
-		result2 error
-	}
 	GetTerraformOutputsStub        func(context.Context, string) (storage.JSONObject, error)
 	getTerraformOutputsMutex       sync.RWMutex
 	getTerraformOutputsArgsForCall []struct {
@@ -587,78 +571,6 @@ func (fake *FakeServiceProvider) DeprovisionReturnsOnCall(i int, result1 *string
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) GetImportedProperties(arg1 context.Context, arg2 string, arg3 []broker.BrokerVariable, arg4 map[string]any) (map[string]any, error) {
-	var arg3Copy []broker.BrokerVariable
-	if arg3 != nil {
-		arg3Copy = make([]broker.BrokerVariable, len(arg3))
-		copy(arg3Copy, arg3)
-	}
-	fake.getImportedPropertiesMutex.Lock()
-	ret, specificReturn := fake.getImportedPropertiesReturnsOnCall[len(fake.getImportedPropertiesArgsForCall)]
-	fake.getImportedPropertiesArgsForCall = append(fake.getImportedPropertiesArgsForCall, struct {
-		arg1 context.Context
-		arg2 string
-		arg3 []broker.BrokerVariable
-		arg4 map[string]any
-	}{arg1, arg2, arg3Copy, arg4})
-	stub := fake.GetImportedPropertiesStub
-	fakeReturns := fake.getImportedPropertiesReturns
-	fake.recordInvocation("GetImportedProperties", []interface{}{arg1, arg2, arg3Copy, arg4})
-	fake.getImportedPropertiesMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2, arg3, arg4)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeServiceProvider) GetImportedPropertiesCallCount() int {
-	fake.getImportedPropertiesMutex.RLock()
-	defer fake.getImportedPropertiesMutex.RUnlock()
-	return len(fake.getImportedPropertiesArgsForCall)
-}
-
-func (fake *FakeServiceProvider) GetImportedPropertiesCalls(stub func(context.Context, string, []broker.BrokerVariable, map[string]any) (map[string]any, error)) {
-	fake.getImportedPropertiesMutex.Lock()
-	defer fake.getImportedPropertiesMutex.Unlock()
-	fake.GetImportedPropertiesStub = stub
-}
-
-func (fake *FakeServiceProvider) GetImportedPropertiesArgsForCall(i int) (context.Context, string, []broker.BrokerVariable, map[string]any) {
-	fake.getImportedPropertiesMutex.RLock()
-	defer fake.getImportedPropertiesMutex.RUnlock()
-	argsForCall := fake.getImportedPropertiesArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
-}
-
-func (fake *FakeServiceProvider) GetImportedPropertiesReturns(result1 map[string]any, result2 error) {
-	fake.getImportedPropertiesMutex.Lock()
-	defer fake.getImportedPropertiesMutex.Unlock()
-	fake.GetImportedPropertiesStub = nil
-	fake.getImportedPropertiesReturns = struct {
-		result1 map[string]any
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeServiceProvider) GetImportedPropertiesReturnsOnCall(i int, result1 map[string]any, result2 error) {
-	fake.getImportedPropertiesMutex.Lock()
-	defer fake.getImportedPropertiesMutex.Unlock()
-	fake.GetImportedPropertiesStub = nil
-	if fake.getImportedPropertiesReturnsOnCall == nil {
-		fake.getImportedPropertiesReturnsOnCall = make(map[int]struct {
-			result1 map[string]any
-			result2 error
-		})
-	}
-	fake.getImportedPropertiesReturnsOnCall[i] = struct {
-		result1 map[string]any
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeServiceProvider) GetTerraformOutputs(arg1 context.Context, arg2 string) (storage.JSONObject, error) {
 	fake.getTerraformOutputsMutex.Lock()
 	ret, specificReturn := fake.getTerraformOutputsReturnsOnCall[len(fake.getTerraformOutputsArgsForCall)]
@@ -1134,8 +1046,6 @@ func (fake *FakeServiceProvider) Invocations() map[string][][]interface{} {
 	defer fake.deleteInstanceDataMutex.RUnlock()
 	fake.deprovisionMutex.RLock()
 	defer fake.deprovisionMutex.RUnlock()
-	fake.getImportedPropertiesMutex.RLock()
-	defer fake.getImportedPropertiesMutex.RUnlock()
 	fake.getTerraformOutputsMutex.RLock()
 	defer fake.getTerraformOutputsMutex.RUnlock()
 	fake.pollInstanceMutex.RLock()
