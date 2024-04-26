@@ -24,12 +24,12 @@ import (
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"github.com/spf13/viper"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/toggles"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/paramparser"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/toggles"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/validation"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils"
 )
 
 var enableCatalogSchemas = toggles.Features.Toggle("enable-catalog-schemas", false, `Enable generating JSONSchema for the service catalog.`)

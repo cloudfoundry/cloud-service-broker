@@ -20,7 +20,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/validation"
 )
 
 // CurrentPlatform returns the platform defined by GOOS and GOARCH.

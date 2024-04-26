@@ -8,7 +8,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/steps"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/steps"
 	cp "github.com/otiai10/copy"
 )
 

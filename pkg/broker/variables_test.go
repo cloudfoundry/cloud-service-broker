@@ -19,7 +19,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/validation"
 )
 
 func TestBrokerVariable_ToSchema(t *testing.T) {

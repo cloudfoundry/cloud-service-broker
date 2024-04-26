@@ -15,16 +15,16 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/net/context"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	pkgBroker "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/featureflags"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.com/cloudfoundry/cloud-service-broker/v3/brokerapi/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v3/brokerapi/broker/brokerfakes"
+	"github.com/cloudfoundry/cloud-service-broker/v3/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/storage"
+	pkgBroker "github.com/cloudfoundry/cloud-service-broker/v3/pkg/broker"
+	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/v3/pkg/broker/brokerfakes"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/featureflags"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils"
 )
 
 var _ = Describe("Update", func() {

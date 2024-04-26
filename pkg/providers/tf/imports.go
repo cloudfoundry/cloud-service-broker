@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/hclparser"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/hclparser"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils/correlation"
 )
 
 func (provider *TerraformProvider) GetImportedProperties(ctx context.Context, instanceGUID string, inputVariables []broker.BrokerVariable, initialProperties map[string]any) (map[string]any, error) {

@@ -26,7 +26,7 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils"
 )
 
 // Features is the default set of flags for enabling different features.

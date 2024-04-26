@@ -1,8 +1,8 @@
 package tf_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/executor"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v11/domain"

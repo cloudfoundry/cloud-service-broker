@@ -20,7 +20,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v3/dbservice/models"
 )
 
 const numMigrations = 16

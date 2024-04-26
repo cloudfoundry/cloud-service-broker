@@ -19,10 +19,10 @@ import (
 
 	"code.cloudfoundry.org/lager/v3"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/brokerpak"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/config"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/credstore"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/brokerpak"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/config"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/credstore"
 )
 
 type BrokerConfig struct {

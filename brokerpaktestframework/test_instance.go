@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/testdrive"
 	"github.com/google/uuid"
 	"github.com/pivotal-cf/brokerapi/v11/domain/apiresponses"
 )

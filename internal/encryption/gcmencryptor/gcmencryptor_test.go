@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/gcmencryptor"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/encryption/gcmencryptor"
 )
 
 var _ = Describe("GCMEncryptor", func() {

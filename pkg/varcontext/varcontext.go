@@ -22,7 +22,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cast"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils"
 )
 
 type VarContext struct {

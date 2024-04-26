@@ -3,10 +3,10 @@ package tf_test
 import (
 	"testing"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/workspace"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/tffakes"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/tffakes"
 	"github.com/hashicorp/go-version"
 
 	. "github.com/onsi/ginkgo/v2"

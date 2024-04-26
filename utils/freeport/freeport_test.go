@@ -1,7 +1,7 @@
 package freeport_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/freeport"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils/freeport"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

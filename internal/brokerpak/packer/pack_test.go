@@ -4,13 +4,13 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/platform"
 
 	"github.com/hashicorp/go-version"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/manifest"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/packer"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/zippy"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/packer"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/zippy"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

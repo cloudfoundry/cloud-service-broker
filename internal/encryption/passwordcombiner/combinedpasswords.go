@@ -1,6 +1,6 @@
 package passwordcombiner
 
-import "github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/gcmencryptor"
+import "github.com/cloudfoundry/cloud-service-broker/v3/internal/encryption/gcmencryptor"
 
 type CombinedPassword struct {
 	Label             string

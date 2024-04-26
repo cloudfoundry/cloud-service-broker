@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/tfproviderfqn"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/tfproviderfqn"
 )
 
 const defaultRegistryDomain = "registry.terraform.io"

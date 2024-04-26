@@ -6,9 +6,9 @@ import (
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"golang.org/x/net/context"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.com/cloudfoundry/cloud-service-broker/v3/brokerapi/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v3/brokerapi/broker/brokerfakes"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils"
 )
 
 var _ = Describe("GetBinding", func() {

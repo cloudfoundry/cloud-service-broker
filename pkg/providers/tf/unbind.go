@@ -3,11 +3,11 @@ package tf
 import (
 	"context"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v3/dbservice/models"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils/correlation"
 )
 
 // Unbind performs a terraform destroy on the binding.

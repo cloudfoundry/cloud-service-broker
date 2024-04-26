@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/paramparser"
 )
 
 var _ = Describe("ParseProvisionDetails", func() {

@@ -2,7 +2,7 @@ package dbservice
 
 import (
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v3/dbservice/models"
 	"gorm.io/gorm"
 )
 

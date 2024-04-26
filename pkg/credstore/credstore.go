@@ -23,7 +23,7 @@ import (
 	"code.cloudfoundry.org/credhub-cli/credhub/auth"
 	"code.cloudfoundry.org/credhub-cli/credhub/permissions"
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/config"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/config"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate

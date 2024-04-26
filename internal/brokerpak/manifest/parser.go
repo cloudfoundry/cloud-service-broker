@@ -7,9 +7,9 @@ import (
 	"github.com/hashicorp/go-version"
 	"gopkg.in/yaml.v3"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/platform"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/tfproviderfqn"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/tfproviderfqn"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/validation"
 )
 
 // parser is used to parse the brokerpak manifest.

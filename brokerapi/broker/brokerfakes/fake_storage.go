@@ -4,8 +4,8 @@ package brokerfakes
 import (
 	"sync"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/v3/brokerapi/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/storage"
 )
 
 type FakeStorage struct {

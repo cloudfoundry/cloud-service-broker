@@ -22,9 +22,9 @@ import (
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"github.com/pivotal-cf/brokerapi/v11/domain/apiresponses"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/request"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/paramparser"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils/correlation"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils/request"
 )
 
 // Provision creates a new instance of a service.

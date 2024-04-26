@@ -9,8 +9,8 @@ import (
 
 	"github.com/onsi/gomega/gexec"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/manifest"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/workspace"
 )
 
 func NewTerraformMock(opts ...Option) (TerraformMock, error) {
@@ -29,7 +29,7 @@ func NewTerraformMock(opts ...Option) (TerraformMock, error) {
 		return TerraformMock{}, err
 	}
 
-	build, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker/v2/brokerpaktestframework/mock-binary/tofu", "-ldflags", fmt.Sprintf("-X 'main.InvocationStore=%s'", dir))
+	build, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker/v3/brokerpaktestframework/mock-binary/tofu", "-ldflags", fmt.Sprintf("-X 'main.InvocationStore=%s'", dir))
 	if err != nil {
 		return TerraformMock{}, err
 	}

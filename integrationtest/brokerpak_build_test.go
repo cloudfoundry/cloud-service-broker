@@ -5,9 +5,9 @@ import (
 	"path"
 	"runtime"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/integrationtest/packer"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/platform"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/zippy"
+	"github.com/cloudfoundry/cloud-service-broker/v3/integrationtest/packer"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/zippy"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

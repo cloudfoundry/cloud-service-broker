@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/manifest"
 )
 
 var _ = Describe("TerraformResource", func() {
