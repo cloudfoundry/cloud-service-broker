@@ -84,7 +84,7 @@ func init() {
 func serve() {
 	logger := utils.NewLogger("cloud-service-broker")
 	logger.Info("starting", lager.Data{"version": utils.Version})
-	db := dbservice.New(logger)
+	db := dbservice.NewWithMigrations(logger)
 	encryptor := setupDBEncryption(db, logger)
 
 	// init broker

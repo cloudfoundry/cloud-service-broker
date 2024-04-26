@@ -26,8 +26,17 @@ import (
 
 var once sync.Once
 
-// New instantiates the db connection and runs migrations
+// New instantiates the db connection without running migrations
 func New(logger lager.Logger) *gorm.DB {
+	var db *gorm.DB
+	once.Do(func() {
+		db = SetupDB(logger)
+	})
+	return db
+}
+
+// NewWithMigrations instantiates the db connection and runs migrations
+func NewWithMigrations(logger lager.Logger) *gorm.DB {
 	var db *gorm.DB
 	once.Do(func() {
 		db = SetupDB(logger)
