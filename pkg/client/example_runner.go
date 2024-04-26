@@ -24,7 +24,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/broker"
 	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 )

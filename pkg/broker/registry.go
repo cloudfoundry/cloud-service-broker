@@ -20,10 +20,10 @@ import (
 
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/validation"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/toggles"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/toggles"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils"
 )
 
 var (

@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/serviceimage"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/serviceimage"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

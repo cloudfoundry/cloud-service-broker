@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/request"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils/request"
 	"github.com/pivotal-cf/brokerapi/v11/middlewares"
 )
 

@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/platform"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/validation"
 )
 
 func ExamplePlatform_String() {

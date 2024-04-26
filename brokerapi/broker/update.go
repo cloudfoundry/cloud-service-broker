@@ -11,14 +11,14 @@ import (
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"github.com/pivotal-cf/brokerapi/v11/domain/apiresponses"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/decider"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/request"
+	"github.com/cloudfoundry/cloud-service-broker/v3/brokerapi/broker/decider"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/paramparser"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils/correlation"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils/request"
 )
 
 var ErrNonUpdatableParameter = apiresponses.NewFailureResponse(errors.New("attempt to update parameter that may result in service instance re-creation and data loss"), http.StatusBadRequest, "prohibited")

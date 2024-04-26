@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/go-version"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils/correlation"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate

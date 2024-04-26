@@ -1,7 +1,7 @@
 // Package compoundencryptor allows encryptors to be combined
 package compoundencryptor
 
-import "github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
+import "github.com/cloudfoundry/cloud-service-broker/v3/internal/storage"
 
 func New(encryptor storage.Encryptor, decryptors ...storage.Encryptor) storage.Encryptor {
 	return CompoundEncryptor{

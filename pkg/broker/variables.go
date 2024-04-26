@@ -22,9 +22,9 @@ import (
 
 	"errors"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext/interpolation"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/validation"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/varcontext/interpolation"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils"
 	"github.com/hashicorp/go-multierror"
 	"github.com/xeipuuv/gojsonschema"
 )

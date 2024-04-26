@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/manifest"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/brokerpak"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/featureflags"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/brokerpak"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/featureflags"
 )
 
 func passThroughEnvs() []string {

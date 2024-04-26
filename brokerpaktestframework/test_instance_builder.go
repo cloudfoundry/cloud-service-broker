@@ -10,8 +10,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/manifest"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/platform"
 	"github.com/onsi/gomega/gexec"
 	cp "github.com/otiai10/copy"
 )
@@ -19,7 +19,7 @@ import (
 const hclFilesFolder = "terraform"
 
 func BuildTestInstance(brokerPackDir string, provider TerraformMock, logger io.Writer, brokerpakExtraFoldersToCopy ...string) (*TestInstance, error) {
-	csbBuild, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker/v2")
+	csbBuild, err := gexec.Build("github.com/cloudfoundry/cloud-service-broker/v3")
 	if err != nil {
 		return nil, err
 	}

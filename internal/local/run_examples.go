@@ -3,7 +3,7 @@ package local
 import (
 	"log"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/client"
 )
 
 func RunExamples(serviceOfferingName, exampleName, cachePath string) {

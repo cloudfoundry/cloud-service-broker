@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/steps"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/steps"
 	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 )
