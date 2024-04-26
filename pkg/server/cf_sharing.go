@@ -22,7 +22,7 @@ import (
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
-//counterfeiter:generate -o ./fakes/servicebroker.go github.com/pivotal-cf/brokerapi/v10/domain.ServiceBroker
+//counterfeiter:generate -o ./fakes/servicebroker.go github.com/pivotal-cf/brokerapi/v11/domain.ServiceBroker
 
 // CfSharingWrapper enables the Shareable flag for every service provided by the broker.
 type CfSharingWrapper struct {
