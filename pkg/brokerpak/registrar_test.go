@@ -23,14 +23,14 @@ import (
 
 	"github.com/hashicorp/go-version"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/executor"
 
 	"github.com/spf13/viper"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/manifest"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/broker"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/varcontext"
 )
 
 func TestNewRegistrar(t *testing.T) {

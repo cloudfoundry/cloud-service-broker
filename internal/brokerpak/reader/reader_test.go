@@ -11,14 +11,14 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/manifest"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/packer"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/platform"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/reader"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/tfproviderfqn"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/zippy"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/stream"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/packer"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/reader"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/tfproviderfqn"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/zippy"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils/stream"
 )
 
 const binaryName = "tofu"

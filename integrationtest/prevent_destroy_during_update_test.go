@@ -3,8 +3,8 @@ package integrationtest_test
 import (
 	"net/http"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/integrationtest/packer"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
+	"github.com/cloudfoundry/cloud-service-broker/v3/integrationtest/packer"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/testdrive"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v11/domain"

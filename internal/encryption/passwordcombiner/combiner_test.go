@@ -6,10 +6,10 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/gcmencryptor"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/passwordcombiner"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/passwordparser"
+	"github.com/cloudfoundry/cloud-service-broker/v3/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/encryption/gcmencryptor"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/encryption/passwordcombiner"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/encryption/passwordparser"
 )
 
 var _ = Describe("Combine()", func() {

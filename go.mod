@@ -1,4 +1,4 @@
-module github.com/cloudfoundry/cloud-service-broker/v2
+module github.com/cloudfoundry/cloud-service-broker/v3
 
 go 1.23.2
 

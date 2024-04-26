@@ -31,7 +31,7 @@ var _ = SynchronizedBeforeSuite(
 	func() []byte {
 		// -gcflags enabled "gops", but had to be removed as this doesn't compile with Go 1.19
 		// path, err := Build("github.com/cloudfoundry/cloud-service-broker", `-gcflags="all=-N -l"`)
-		path := must(Build("github.com/cloudfoundry/cloud-service-broker/v2"))
+		path := must(Build("github.com/cloudfoundry/cloud-service-broker/v3"))
 		return []byte(path)
 	},
 	func(data []byte) {

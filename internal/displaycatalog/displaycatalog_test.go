@@ -1,7 +1,7 @@
 package displaycatalog_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/displaycatalog"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/displaycatalog"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v11/domain"

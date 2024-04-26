@@ -1,7 +1,7 @@
 package workspace_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/workspace"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

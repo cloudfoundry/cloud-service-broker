@@ -18,9 +18,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
+	"github.com/cloudfoundry/cloud-service-broker/v3/dbservice/models"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/varcontext"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate

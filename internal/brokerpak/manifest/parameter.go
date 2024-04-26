@@ -1,6 +1,6 @@
 package manifest
 
-import "github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
+import "github.com/cloudfoundry/cloud-service-broker/v3/pkg/validation"
 
 type Parameter struct {
 	Name        string `yaml:"name"`

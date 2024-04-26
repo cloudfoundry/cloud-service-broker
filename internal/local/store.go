@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/encryption/noopencryptor"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
+	"github.com/cloudfoundry/cloud-service-broker/v3/dbservice"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/encryption/noopencryptor"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/storage"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/testdrive"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

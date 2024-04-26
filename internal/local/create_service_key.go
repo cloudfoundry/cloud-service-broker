@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/testdrive"
 )
 
 func CreateServiceKey(serviceName, keyName, params, cachePath string) {

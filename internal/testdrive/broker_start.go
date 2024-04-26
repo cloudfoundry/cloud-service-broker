@@ -21,8 +21,8 @@ import (
 	//lint:ignore ST1001 we do not care because this is a test helper
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/freeport"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/client"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils/freeport"
 	"github.com/google/uuid"
 )
 

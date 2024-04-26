@@ -1,8 +1,8 @@
 package invoker_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor/executorfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/invoker"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/executor/executorfakes"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/invoker"
 	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

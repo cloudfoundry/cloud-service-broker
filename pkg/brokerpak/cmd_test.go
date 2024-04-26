@@ -22,11 +22,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/manifest"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/platform"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/stream"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/manifest"
+	"github.com/cloudfoundry/cloud-service-broker/v3/internal/brokerpak/platform"
+	"github.com/cloudfoundry/cloud-service-broker/v3/utils/stream"
 	"github.com/hashicorp/go-version"
 )
 

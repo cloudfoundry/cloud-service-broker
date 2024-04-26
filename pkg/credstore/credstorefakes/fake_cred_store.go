@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"code.cloudfoundry.org/credhub-cli/credhub/permissions"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/credstore"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/credstore"
 )
 
 type FakeCredStore struct {
