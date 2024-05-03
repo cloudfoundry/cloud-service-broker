@@ -238,8 +238,6 @@ plans:
   id: fd07d12b-94f8-4f69-bd5b-e2c4e84fafc1
   description: 'SQL Server latest version. Instance properties: General Purpose - Serverless ; 0.5 - 2 cores ; Max Memory: 6gb ; 50 GB storage ; auto-pause enabled after 1 hour of inactivity'
   display_name: "Small"
-  properties:
-    subsume: false
 - name: medium
   id: 3ee14bce-33e8-4d02-9850-023a66bfe120
   description: 'SQL Server latest version. Instance properties: General Purpose - Provisioned ; Provisioned Capacity ; 8 cores ; 200 GB storage'
@@ -247,7 +245,6 @@ plans:
   properties:
     cores: 8
     max_storage_gb: 200
-    subsume: false
 - name: large
   id: 8f1c9c7b-80b2-49c3-9365-a3a059df9907
   description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 32 cores ; 500 GB storage'
@@ -255,7 +252,6 @@ plans:
   properties:
     cores: 32
     max_storage_gb: 500
-    subsume: false
 - name: extra-large
   id: 09096759-58a8-41d0-96bf-39b02a0e4104
   description: 'SQL Server latest version. Instance properties: Business Critical ; Provisioned Capacity ; 80 cores ; 1 TB storage'
@@ -263,36 +259,7 @@ plans:
   properties:
     cores: 80
     max_storage_gb: 1024
-    subsume: false
-- name: subsume
-  id: 7781fa41-f486-447a-942c-ded8cccb8299
-  description: 'Subsume control of an existing SQL Database'
-  display_name: "Subsume"
-  properties:
-    subsume: true
 provision:
-  import_inputs:
-  - field_name: azure_db_id
-    type: string
-    details: Azure resource id for database to subsume
-    tf_resource: azurerm_mssql_database.azure_sql_db
-  import_parameter_mappings:
-  - tf_variable: sku_name
-    parameter_name: local.sku_name
-  - tf_variable: max_size_gb
-    parameter_name: var.max_storage_gb 
-  - tf_variable: tags
-    parameter_name: var.labels
-  - tf_variable: retention_days
-    parameter_name: var.short_term_retention_days
-  import_parameters_to_delete: [ "azurerm_mssql_database.azure_sql_db.id", 
-                                 "azurerm_mssql_database.azure_sql_db.min_capacity",
-                                 "azurerm_mssql_database.azure_sql_db.long_term_retention_policy",
-                                 "azurerm_mssql_database.azure_sql_db.extended_auditing_policy"]
-  plan_inputs:
-  - field_name: subsume
-    type: boolean
-    details: Subsume existing DB
   user_inputs:
   - field_name: cores
     type: number
@@ -481,8 +448,6 @@ plans:
   id: fd07d12b-94f8-4f69-bd5b-e2c4e84fafc1
   description: 'SQL Server latest version. Instance properties: General Purpose - Serverless ; 0.5 - 2 cores ; Max Memory: 6gb ; 50 GB storage ; auto-pause enabled after 1 hour of inactivity'
   display_name: "Small"
-  properties:
-    subsume: false
 - name: medium
   ...
 ```
@@ -521,9 +486,9 @@ Configuration parameters that can only be set as part of plan description. Users
 
 ```yaml
   plan_inputs:
-  - field_name: subsume
-    type: boolean
-    details: Subsume existing DB
+  - field_name: cores
+    type: integer
+    details: Number of cores
 ```
 
 | Field      | Value                               |
@@ -531,8 +496,6 @@ Configuration parameters that can only be set as part of plan description. Users
 | field_name | name of plan variable               |
 | type       | field type                          |
 | details    | human readable description of field |
-
-> The plan input *subsume* has special meaning. It is used to designate a plan for `tf import` to take over an existing resource. When *subsume* is true, all *import_parameter_mappings* values must be provided through `cf create-service ... -c {...}` and `cf update-service ... -p subsume` is prohibited.
 
 > input fields must be declared as OpenTofu *variables*. Failure to do so will result in failures to build brokerpak.
 
@@ -564,56 +527,6 @@ Configuration parameters that my be set as part of a plan or set by the user thr
 |             | `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`.        |
 
 > input fields must be declared as OpenTofu *variables*. Failure to do so will result in failures to build brokerpak.
-
-### Import Inputs
-
-In order to support `tofu import` to subsume control of existing resources (instead of creating new resources) parameters
-that represent native resources and the OpenTofu resources they apply to are described in the *import_inputs* section.
-
-```yaml
-  import_inputs:
-  - field_name: azure_db_id
-    type: string
-    details: Azure resource id for database to subsume
-    tf_resource: azurerm_mssql_database.azure_sql_db
-```
-
-| Field       | Value                                            |
-|-------------|--------------------------------------------------|
-| field_name  | name of user variable                            |
-| type        | field type                                       |
-| details     | human readable description of field              |
-| tf_resource | resource.instance of OpenTofu resource to import |
-
-A user will provide the values through `cf create-service ... -c {...}` and the broker will use them during
-the `tf import` phase.
-
-### Import Parameter Mapping
-
-Once `tofu import` is run to generate matching OpenTofu for the resource, some values may need to be parameterized so
-that the user may modify them later through `cf update-service`  The
-
-```yaml
-  import_parameter_mappings:
-  - tf_variable: max_size_gb
-    parameter_name: var.max_storage_gb 
-```
-
-This will cause instances of *max_size_gb = ...* in the resulting imported code to be replaced with
-*max_size_gb = var.max_storage_gb* so that it may be updated by the user with `cf update-service ...`
-
-### Import Parameters to Delete
-
-`tofu import` will return all current values for a resource, including those that are readonly and my not be set
-during `tofu apply`. List those resource values in *import_parameters_to_delete,* and they will be removed
-between `tofu import` and `tofu apply`
-
-```yaml
-  import_parameters_to_delete: [ "azurerm_mssql_database.azure_sql_db.id", 
-                                 "azurerm_mssql_database.azure_sql_db.min_capacity",
-                                 "azurerm_mssql_database.azure_sql_db.long_term_retention_policy",
-                                 "azurerm_mssql_database.azure_sql_db.extended_auditing_policy"]
-```
 
 ### OpenTofu Template References
 

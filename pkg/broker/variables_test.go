@@ -76,18 +76,14 @@ func TestBrokerVariable_ToSchema(t *testing.T) {
 				Constraints: map[string]any{
 					"examples": []string{"SAMPLEA", "SAMPLEB"},
 				},
-				TFAttribute:     "test.fake.field",
-				TFAttributeSkip: "existing",
 			},
 			map[string]any{
-				"title":             "Full Test Field Name",
-				"default":           "some-value",
-				"type":              JSONTypeString,
-				"description":       "more information",
-				"enum":              []any{"a", "b"},
-				"examples":          []string{"SAMPLEA", "SAMPLEB"},
-				"tf_attribute":      "test.fake.field",
-				"tf_attribute_skip": "existing",
+				"title":       "Full Test Field Name",
+				"default":     "some-value",
+				"type":        JSONTypeString,
+				"description": "more information",
+				"enum":        []any{"a", "b"},
+				"examples":    []string{"SAMPLEA", "SAMPLEB"},
 			},
 		},
 		"prohibit update is copied": {
@@ -256,10 +252,9 @@ func TestBrokerVariable_Validate(t *testing.T) {
 	}{
 		"valid fields": {
 			Variable: BrokerVariable{
-				FieldName:   "test",
-				Details:     "test variable",
-				Type:        JSONTypeInteger,
-				TFAttribute: "type.name.attribute",
+				FieldName: "test",
+				Details:   "test variable",
+				Type:      JSONTypeInteger,
 			},
 			Expected: nil,
 		},
@@ -277,15 +272,6 @@ func TestBrokerVariable_Validate(t *testing.T) {
 				Type:      "map",
 			},
 			Expected: errors.New("field must match '^(|object|boolean|array|number|string|integer)$': type"),
-		},
-		"invalid tf_attribute": {
-			Variable: BrokerVariable{
-				FieldName:   "test",
-				Details:     "test variable",
-				Type:        JSONTypeInteger,
-				TFAttribute: "thisisnot.validtfattribute",
-			},
-			Expected: errors.New("field must match '^([-a-zA-Z0-9_-]*\\.[-a-zA-Z0-9_-]*){2}': tf_attribute"),
 		},
 	}
 

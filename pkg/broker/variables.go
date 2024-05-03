@@ -58,10 +58,8 @@ type BrokerVariable struct {
 	// Keys are valid JSON Schema validation keywords, and values are their
 	// associated values.
 	// http://json-schema.org/latest/json-schema-validation.html
-	Constraints     map[string]any `yaml:"constraints,omitempty"`
-	ProhibitUpdate  bool           `yaml:"prohibit_update,omitempty"`
-	TFAttribute     string         `yaml:"tf_attribute,omitempty"`
-	TFAttributeSkip string         `yaml:"tf_attribute_skip,omitempty"`
+	Constraints    map[string]any `yaml:"constraints,omitempty"`
+	ProhibitUpdate bool           `yaml:"prohibit_update,omitempty"`
 }
 
 // ImportVariable Variable definition for TF import support
@@ -76,12 +74,6 @@ var _ validation.Validatable = (*ServiceDefinition)(nil)
 
 // Validate implements validation.Validatable.
 func (bv *BrokerVariable) Validate() (errs *validation.FieldError) {
-	if bv.TFAttribute != "" {
-		errs = errs.Also(
-			validation.ErrIfNotTerraformAttributePath(bv.TFAttribute, "tf_attribute"),
-		)
-	}
-
 	return errs.Also(
 		validation.ErrIfBlank(bv.FieldName, "field_name"),
 		validation.ErrIfNotJSONSchemaType(string(bv.Type), "type"),
@@ -145,14 +137,6 @@ func (bv *BrokerVariable) ToSchema() map[string]any {
 
 	if bv.ProhibitUpdate {
 		schema[validation.KeyProhibitUpdate] = bv.ProhibitUpdate
-	}
-
-	if bv.TFAttribute != "" {
-		schema[validation.KeyTFAttribute] = bv.TFAttribute
-	}
-
-	if bv.TFAttributeSkip != "" {
-		schema[validation.KeyTFAttributeSkip] = bv.TFAttributeSkip
 	}
 
 	return schema

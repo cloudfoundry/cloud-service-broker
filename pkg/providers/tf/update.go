@@ -2,7 +2,6 @@ package tf
 
 import (
 	"context"
-	"fmt"
 
 	"code.cloudfoundry.org/lager/v3"
 
@@ -16,10 +15,6 @@ func (provider *TerraformProvider) Update(ctx context.Context, updateContext *va
 	provider.logger.Debug("update", correlation.ID(ctx), lager.Data{
 		"context": updateContext.ToMap(),
 	})
-
-	if provider.serviceDefinition.ProvisionSettings.IsTfImport(updateContext) {
-		return models.ServiceInstanceDetails{}, fmt.Errorf("cannot update to subsume plan\n\nFor OpsMan Tile users see documentation here: https://via.vmw.com/ENs4\n\nFor Open Source users deployed via 'cf push' see documentation here:  https://via.vmw.com/ENw4")
-	}
 
 	tfID := updateContext.GetString("tf_id")
 	if err := updateContext.Error(); err != nil {

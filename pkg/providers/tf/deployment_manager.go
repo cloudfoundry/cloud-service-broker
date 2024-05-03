@@ -108,7 +108,7 @@ func (d *DeploymentManager) UpdateWorkspaceHCL(deploymentID string, serviceDefin
 		return err
 	}
 
-	newWorkspace, err := workspace.NewWorkspace(templateVars, serviceDefinitionAction.Template, serviceDefinitionAction.Templates, []workspace.ParameterMapping{}, []string{}, []workspace.ParameterMapping{})
+	newWorkspace, err := workspace.NewWorkspace(templateVars, serviceDefinitionAction.Template, serviceDefinitionAction.Templates)
 	if err != nil {
 		return err
 	}

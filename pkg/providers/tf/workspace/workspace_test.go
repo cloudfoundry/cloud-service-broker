@@ -48,7 +48,7 @@ func TestTerraformWorkspace_Invariants(t *testing.T) {
 		t.Run(tn, func(t *testing.T) {
 			// construct workspace
 			const definitionTfContents = "variable azure_tenant_id { type = string }"
-			ws, err := NewWorkspace(map[string]any{}, definitionTfContents, map[string]string{}, []ParameterMapping{}, []string{}, []ParameterMapping{})
+			ws, err := NewWorkspace(map[string]any{}, definitionTfContents, map[string]string{})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -123,7 +123,7 @@ func TestTerraformWorkspace_InvariantsFlat(t *testing.T) {
 		t.Run(tn, func(t *testing.T) {
 			// construct workspace
 			const variablesTfContents = "variable azure_tenant_id { type = string }"
-			ws, err := NewWorkspace(map[string]any{}, ``, map[string]string{"variables": variablesTfContents}, []ParameterMapping{}, []string{}, []ParameterMapping{})
+			ws, err := NewWorkspace(map[string]any{}, ``, map[string]string{"variables": variablesTfContents})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -218,7 +218,7 @@ func TestTerrafromWorkspace_Execute(t *testing.T) {
 
 	t.Run("custom command env", func(t *testing.T) {
 		const definitionTfContents = "variable azure_tenant_id { type = string }"
-		ws, err := NewWorkspace(map[string]any{}, definitionTfContents, map[string]string{}, []ParameterMapping{}, []string{}, []ParameterMapping{})
+		ws, err := NewWorkspace(map[string]any{}, definitionTfContents, map[string]string{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -236,7 +236,7 @@ func TestTerrafromWorkspace_Execute(t *testing.T) {
 
 	t.Run("empty command env", func(t *testing.T) {
 		const definitionTfContents = "variable azure_tenant_id { type = string }"
-		ws, err := NewWorkspace(map[string]any{}, definitionTfContents, map[string]string{}, []ParameterMapping{}, []string{}, []ParameterMapping{})
+		ws, err := NewWorkspace(map[string]any{}, definitionTfContents, map[string]string{})
 		if err != nil {
 			t.Fatal(err)
 		}

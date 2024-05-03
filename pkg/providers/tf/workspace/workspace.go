@@ -41,10 +41,7 @@ const (
 // The created instance will have the name specified by the DefaultInstanceName constant.
 func NewWorkspace(templateVars map[string]any,
 	terraformTemplate string,
-	terraformTemplates map[string]string,
-	importParameterMappings []ParameterMapping,
-	parametersToRemove []string,
-	parametersToAdd []ParameterMapping) (*TerraformWorkspace, error) {
+	terraformTemplates map[string]string) (*TerraformWorkspace, error) {
 	tfModule := ModuleDefinition{
 		Name:        "brokertemplate",
 		Definition:  terraformTemplate,
@@ -69,11 +66,6 @@ func NewWorkspace(templateVars map[string]any,
 				InstanceName:  DefaultInstanceName,
 				Configuration: limitedConfig,
 			},
-		},
-		Transformer: TfTransformer{
-			ParameterMappings:  importParameterMappings,
-			ParametersToRemove: parametersToRemove,
-			ParametersToAdd:    parametersToAdd,
 		},
 	}
 
@@ -107,8 +99,6 @@ type TerraformWorkspace struct {
 	Modules   []ModuleDefinition `json:"modules"`
 	Instances []ModuleInstance   `json:"instances"`
 	State     []byte             `json:"tfstate"`
-
-	Transformer TfTransformer `json:"transform"`
 
 	dirLock sync.Mutex
 	dir     string

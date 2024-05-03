@@ -74,7 +74,7 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 		return "", err
 	}
 
-	newWorkspace, err := workspace.NewWorkspace(vars.ToMap(), action.Template, action.Templates, []workspace.ParameterMapping{}, []string{}, []workspace.ParameterMapping{})
+	newWorkspace, err := workspace.NewWorkspace(vars.ToMap(), action.Template, action.Templates)
 	if err != nil {
 		return tfID, fmt.Errorf("error creating workspace: %w", err)
 	}

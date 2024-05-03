@@ -37,8 +37,6 @@ const (
 	KeyRequired         = "required"
 	KeyPropertyNames    = "propertyNames"
 	KeyProhibitUpdate   = "prohibitUpdate"
-	KeyTFAttribute      = "tf_attribute"
-	KeyTFAttributeSkip  = "tf_attribute_skip"
 )
 
 // NewConstraintBuilder creates a builder for JSON Schema compliant constraint

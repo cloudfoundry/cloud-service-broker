@@ -5,14 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/workspace/workspacefakes"
-
-	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/workspace"
-
 	"github.com/cloudfoundry/cloud-service-broker/v3/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/executor"
 	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/tffakes"
+	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/providers/tf/workspace/workspacefakes"
 	"github.com/cloudfoundry/cloud-service-broker/v3/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/v3/utils"
 	. "github.com/onsi/ginkgo/v2"
@@ -88,9 +85,6 @@ var _ = Describe("Bind", func() {
 			Expect(actualWorkspace.Modules[0].Definition).To(Equal(fakeServiceDefinition.BindSettings.Template))
 			Expect(actualWorkspace.Modules[0].Definitions).To(Equal(fakeServiceDefinition.BindSettings.Templates))
 			Expect(actualWorkspace.Instances[0].Configuration).To(Equal(map[string]any{"username": "some-user"}))
-			Expect(actualWorkspace.Transformer.ParameterMappings).To(Equal([]workspace.ParameterMapping{}))
-			Expect(actualWorkspace.Transformer.ParametersToRemove).To(Equal([]string{}))
-			Expect(actualWorkspace.Transformer.ParametersToAdd).To(Equal([]workspace.ParameterMapping{}))
 
 			By("checking that provision is marked as started")
 			Expect(fakeDeploymentManager.MarkOperationStartedCallCount()).To(Equal(1))

@@ -280,7 +280,6 @@ func (tfb *TfServiceDefinitionV1) ToService(tfBinContext executor.TFBinariesCont
 		Plans:               rawPlans,
 
 		ProvisionInputVariables: tfb.ProvisionSettings.UserInputs,
-		ImportInputVariables:    tfb.ProvisionSettings.ImportVariables,
 		ProvisionComputedVariables: append(tfb.ProvisionSettings.Computed, varcontext.DefaultVariable{
 			Name:      "tf_id",
 			Default:   "tf:${request.instance_id}:",
@@ -349,31 +348,17 @@ func (plan *TfServiceDefinitionV1Plan) ToPlan(maintenanceInfo *domain.Maintenanc
 // TfServiceDefinitionV1Action holds information needed to process user inputs
 // for a single provision or bind call.
 type TfServiceDefinitionV1Action struct {
-	PlanInputs               []broker.BrokerVariable      `yaml:"plan_inputs"`
-	UserInputs               []broker.BrokerVariable      `yaml:"user_inputs"`
-	Computed                 []varcontext.DefaultVariable `yaml:"computed_inputs"`
-	Template                 string                       `yaml:"template"`
-	TemplateRef              string                       `yaml:"template_ref"`
-	Outputs                  []broker.BrokerVariable      `yaml:"outputs"`
-	Templates                map[string]string            `yaml:"templates"`
-	TemplateRefs             map[string]string            `yaml:"template_refs"`
-	ImportVariables          []broker.ImportVariable      `yaml:"import_inputs"`
-	ImportParameterMappings  []ImportParameterMapping     `yaml:"import_parameter_mappings"`
-	ImportParametersToDelete []string                     `yaml:"import_parameters_to_delete"`
-	ImportParametersToAdd    []ImportParameterMapping     `yaml:"import_parameters_to_add"`
+	PlanInputs   []broker.BrokerVariable      `yaml:"plan_inputs"`
+	UserInputs   []broker.BrokerVariable      `yaml:"user_inputs"`
+	Computed     []varcontext.DefaultVariable `yaml:"computed_inputs"`
+	Template     string                       `yaml:"template"`
+	TemplateRef  string                       `yaml:"template_ref"`
+	Outputs      []broker.BrokerVariable      `yaml:"outputs"`
+	Templates    map[string]string            `yaml:"templates"`
+	TemplateRefs map[string]string            `yaml:"template_refs"`
 }
 
 var _ validation.Validatable = (*TfServiceDefinitionV1Action)(nil)
-
-func (action *TfServiceDefinitionV1Action) IsTfImport(provisionContext *varcontext.VarContext) bool {
-	const subsume = "subsume"
-	for _, planInput := range action.PlanInputs {
-		if planInput.FieldName == subsume && provisionContext.HasKey(subsume) && provisionContext.GetBool(subsume) {
-			return true
-		}
-	}
-	return false
-}
 
 func loadTemplate(templatePath string) (string, error) {
 	if templatePath == "" {
