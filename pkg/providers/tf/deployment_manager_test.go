@@ -360,8 +360,7 @@ var _ = Describe("DeploymentManager", func() {
 						ModuleName:   "fake module name",
 						InstanceName: "fake instance name",
 					}},
-					Transformer: workspace.TfTransformer{},
-					State:       []byte(terraformState),
+					State: []byte(terraformState),
 				}
 
 				store.GetTerraformDeploymentReturns(storage.TerraformDeployment{
@@ -430,11 +429,6 @@ var _ = Describe("DeploymentManager", func() {
 							"resourceGroup": nil,
 						},
 					}},
-					Transformer: workspace.TfTransformer{
-						ParameterMappings:  []workspace.ParameterMapping{},
-						ParametersToRemove: []string{},
-						ParametersToAdd:    []workspace.ParameterMapping{},
-					},
 					State: []byte(terraformState),
 				}
 				Expect(actualTerraformDeployment.Workspace).To(Equal(expectedWorkspace))
@@ -511,11 +505,6 @@ var _ = Describe("DeploymentManager", func() {
 							"resourceGroup": nil,
 						},
 					}},
-					Transformer: workspace.TfTransformer{
-						ParameterMappings:  []workspace.ParameterMapping{},
-						ParametersToRemove: []string{},
-						ParametersToAdd:    []workspace.ParameterMapping{},
-					},
 					State: []byte(terraformState),
 				}
 				Expect(actualTerraformDeployment.Workspace).To(Equal(expectedWorkspace))

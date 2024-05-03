@@ -510,10 +510,9 @@ var _ = Describe("Update", func() {
 			})
 		})
 
-		Describe("passing variables on provision, import and update", func() {
+		Describe("passing variables on provision and update", func() {
 			BeforeEach(func() {
 				fakeStorage.GetProvisionRequestDetailsReturns(map[string]any{"foo": "bar", "baz": "quz"}, nil)
-				fakeServiceProvider.GetImportedPropertiesReturns(map[string]any{"foo": "quz", "guz": "muz", "laz": "taz"}, nil)
 			})
 
 			It("should merge all variables", func() {
@@ -533,7 +532,7 @@ var _ = Describe("Update", func() {
 						},
 					},
 					RawContext:    json.RawMessage(fmt.Sprintf(`{"organization_guid":%q, "space_guid": %q}`, orgID, spaceID)),
-					RawParameters: json.RawMessage(`{"guz":"duz"}`),
+					RawParameters: json.RawMessage(`{"baz":"muz","guz":"duz"}`),
 				}
 
 				_, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
@@ -541,20 +540,18 @@ var _ = Describe("Update", func() {
 
 				By("validating provision and import variables are retrieved")
 				Expect(fakeStorage.GetProvisionRequestDetailsCallCount()).To(Equal(1))
-				Expect(fakeServiceProvider.GetImportedPropertiesCallCount()).To(Equal(1))
 
 				By("validating provider update has been called")
 				Expect(fakeServiceProvider.UpdateCallCount()).To(Equal(1))
 				_, actualVars := fakeServiceProvider.UpdateArgsForCall(0)
-				Expect(actualVars.GetString("foo")).To(Equal("quz"))
+				Expect(actualVars.GetString("foo")).To(Equal("bar"))
 				Expect(actualVars.GetString("guz")).To(Equal("duz"))
-				Expect(actualVars.GetString("baz")).To(Equal("quz"))
-				Expect(actualVars.GetString("laz")).To(Equal("taz"))
+				Expect(actualVars.GetString("baz")).To(Equal("muz"))
 
 				By("validating provision details have been stored")
 				Expect(fakeStorage.StoreProvisionRequestDetailsCallCount()).To(Equal(1))
 				_, actualRequestVars := fakeStorage.StoreProvisionRequestDetailsArgsForCall(0)
-				Expect(actualRequestVars).To(Equal(storage.JSONObject{"baz": "quz", "foo": "quz", "guz": "duz", "laz": "taz"}))
+				Expect(actualRequestVars).To(Equal(storage.JSONObject{"baz": "muz", "foo": "bar", "guz": "duz"}))
 			})
 		})
 

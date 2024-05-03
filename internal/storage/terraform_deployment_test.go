@@ -58,7 +58,7 @@ var _ = Describe("TerraformDeployments", func() {
 			var receiver models.TerraformDeployment
 			Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
 			Expect(receiver.ID).To(Equal("fake-id"))
-			Expect(receiver.Workspace).To(Equal([]byte(`{"encrypted":{"modules":[{"Name":"first","Definition":"","Definitions":null}],"instances":null,"tfstate":null,"transform":{"parameter_mappings":null,"parameters_to_remove":null,"parameters_to_add":null}}}`)))
+			Expect(receiver.Workspace).To(Equal([]byte(`{"encrypted":{"modules":[{"Name":"first","Definition":"","Definitions":null}],"instances":null,"tfstate":null}}`)))
 			Expect(receiver.LastOperationType).To(Equal("create"))
 			Expect(receiver.LastOperationState).To(Equal("succeeded"))
 			Expect(receiver.LastOperationMessage).To(Equal("yes!!"))
@@ -97,7 +97,7 @@ var _ = Describe("TerraformDeployments", func() {
 				var receiver models.TerraformDeployment
 				Expect(db.Where(`id = "fake-id-2"`).Find(&receiver).Error).NotTo(HaveOccurred())
 				Expect(receiver.ID).To(Equal("fake-id-2"))
-				Expect(receiver.Workspace).To(Equal([]byte(`{"encrypted":{"modules":[{"Name":"first","Definition":"","Definitions":null}],"instances":null,"tfstate":null,"transform":{"parameter_mappings":null,"parameters_to_remove":null,"parameters_to_add":null}}}`)))
+				Expect(receiver.Workspace).To(Equal([]byte(`{"encrypted":{"modules":[{"Name":"first","Definition":"","Definitions":null}],"instances":null,"tfstate":null}}`)))
 				Expect(receiver.LastOperationType).To(Equal("create"))
 				Expect(receiver.LastOperationState).To(Equal("succeeded"))
 				Expect(receiver.LastOperationMessage).To(Equal("yes!!"))

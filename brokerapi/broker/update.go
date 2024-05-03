@@ -84,16 +84,7 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return domain.UpdateServiceSpec{}, fmt.Errorf("error retrieving provision request details for %q: %w", instanceID, err)
 	}
 
-	initialProperties, err := mergeJSON(provisionDetails, parsedDetails.RequestParams, plan.GetServiceProperties())
-	if err != nil {
-		return domain.UpdateServiceSpec{}, err
-	}
-	importedParams, err := serviceProvider.GetImportedProperties(ctx, instance.GUID, serviceDefinition.ProvisionInputVariables, initialProperties)
-	if err != nil {
-		return domain.UpdateServiceSpec{}, fmt.Errorf("error retrieving expected parameters for %q: %w", instanceID, err)
-	}
-
-	mergedDetails, err := mergeJSON(provisionDetails, importedParams, parsedDetails.RequestParams)
+	mergedDetails, err := mergeJSON(provisionDetails, parsedDetails.RequestParams)
 	if err != nil {
 		return domain.UpdateServiceSpec{}, fmt.Errorf("error merging update and provision details: %w", err)
 	}

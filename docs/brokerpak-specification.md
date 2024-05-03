@@ -231,10 +231,6 @@ provision or bind action, and the inputs and outputs to that template.
 
 | Field                       | Type                                                                   | Description                                                                                                                                                                                                           |
 |-----------------------------|------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| import_inputs               | array of [import-input](#import-input-object)                          | Defines the variables that will be passed to tf import command                                                                                                                                                        |
-| import_parameter_mappings   | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines how tf resource variables will be replaced with broker variables between `tf import` and `tf apply`                                                                                                           |
-| import_parameters_to_delete | array of string                                                        | list of `tf import` discovered values to remove before `tf apply`. `tf import` will return read-only values that cannot be set during `tf apply` so they should be listed here to be removed between import and apply |
-| import_parameters_to_add    | array of [import-parameter-mappings](#import-parameter-mapping-object) | Defines tf resource variables to add between `tf import` and `tf apply`                                                                                                                                               |
 | plan_inputs                 | array of [variable](#variable-object)                                  | Defines constraints and settings for the variables plans provide in their properties map. It is used to validate [plan objects](#plan-object) properties field.                                                       |
 | user_inputs                 | array of [variable](#variable-object)                                  | Defines constraints and defaults for the variables users provide as part of their request.                                                                                                                            |
 | computed_inputs             | array of [computed variable](#computed-variable-object)                | Defines default values or overrides that are executed before the template is run.                                                                                                                                     |
@@ -245,134 +241,26 @@ provision or bind action, and the inputs and outputs to that template.
 | outputs                     | array of [variable](#variable-object)                                  | Defines constraints and settings for the outputs of the OpenTofu language template. This MUST match the OpenTofu outputs and the constraints WILL be used as part of integration testing.                             |
 Fields marked with `*` are required, others are optional.
 
-#### Import Input object
-
-The import input object defines the mapping of an input parameter to a OpenTofu resource on the `tofu import` command.
-The presence of any import input values will trigger a `tofu import` before `tofu apply` upon `cf create-service`
-
-| Field       | Type   | Description                                                                     |
-|-------------|--------|---------------------------------------------------------------------------------|
-| field_name  | string | the name of the user input variable to use                                      |
-| type        | string | The JSON type of the field. This MUST be a valid JSONSchema type excepting null |
-| details     | string | A description of what this field is                                             |
-| tf_resource | string | The tf resource to import given this value.                                     |
-Fields marked with `*` are required, others are optional.
-
-Given:
-```yaml
-  import_inputs:
-  - field_name: azure_db_id
-    type: string
-    details: Azure resource id for database to subsume
-    tf_resource: azurerm_mssql_database.azure_sql_db
-```
-
-A create service call:
-```bash
-cf create-service my-service my-plan my-instance -c '{"azure_db_id":"some-id"}'
-```
-
-Will result in OpenTofu import:
-
-```bash
-tofu import azurerm_mssql_database.azure_sql_db some-id
-```
-
-#### Import Parameter Mapping object
-
-The import parameter mapping object defines the tf variable to input variable mapping that will occur between `tf import` and `tf apply`
-
-`tf import` will return current values for all variables for the service instance. In order to allow user configuration of these values to support `cf update-service`, it is necessary to enumerate the terraform resource variables that should be parameterized with broker input variables.
-
-| Field          | Type   | Description                          |
-|----------------|--------|--------------------------------------|
-| tf_variable    | string | the OpenTofu resource variable name |
-| parameter_name | string | the broker input variable name       |
-Fields marked with `*` are required, others are optional.
-
-Given:
-```yaml
-  - tf_variable: requested_service_objective_name
-    parameter_name: var.service_objective 
-```
-
-Will convert the resulting `tofu import`:
-```tf
-resource "azurerm_mssql_database" "azure_sql_db" {
-    requested_service_objective_name = S0
-}
-```
-
-Into:
-```tf
-resource "azurerm_mssql_database" "azure_sql_db" {
-    requested_service_objective_name = var.service_objective
-}
-```
-Between running `tofu import` and `tofu apply`
-
-So that:
-```bash
-cf update-service my-instance -c '{"service_objective":"S1"}'
-```
-
-Will successfully update the `requested_service_objective_name` for the instance.
-
-#### Removing TF Values
-
-`tofu import` will often return read only values that cannot be set during `tofu apply`.
-The *import_parameters_to_delete* field is used to specify which values to remove before `tofu apply` is run.
-
-Given:
-
-```yaml
-import_parameters_to_delete: [ "azurerm_mssql_database.azure_sql_db.id" ]
-```
-
-Will convert the resulting `tofu import`
-
-```tf
-resource "azurerm_mssql_database" "azure_sql_db" {
-    id = "/subscriptions/899bf076-632b-4143-b015-43da8179e53f/resourceGroups/broker-cf-test/providers/Microsoft.Sql/servers/masb-subsume-test-server"
-    requested_service_objective_name = S0
-}
-```
-
-into
-
-```tf
-resource "azurerm_mssql_database" "azure_sql_db" {
-    requested_service_objective_name = S0
-}
-```
-
-So that `tofu apply` will not fail trying to set the read-only field *id*
-
 #### Template References
 
 It is possible to break OpenTofu code into sections to aid reusability and better readability.
-It is also required to support `tofu import` as main.tf is a special case during import.
 
 Given:
 ```yaml
   template_refs:
-    outputs: terraform/subsume-masb-mssql-db/mssql-db-outputs.tf
-    provider: terraform/subsume-masb-mssql-db/azure-provider.tf
-    variables: terraform/subsume-masb-mssql-db/mssql-db-variables.tf
-    main: terraform/subsume-masb-mssql-db/mssql-db-main.tf
-    data: terraform/subsume-masb-mssql-db/mssql-db-data.tf
+    outputs: terraform/masb-mssql-db/mssql-db-outputs.tf
+    provider: terraform/masb-mssql-db/azure-provider.tf
+    variables: terraform/masb-mssql-db/mssql-db-variables.tf
+    main: terraform/masb-mssql-db/mssql-db-main.tf
+    data: terraform/masb-mssql-db/mssql-db-data.tf
 ```
 
 Will result is a OpenTofu workspace with the following structure:
-* outputs.tf gets contents of *terraform/subsume-masb-mssql-db/mssql-db-outputs.tf*
-* provider.tf gets contents of *terraform/subsume-masb-mssql-db/azure-provider.tf*
-* variables.tf gets contents of *terraform/subsume-masb-mssql-db/mssql-db-variables.tf*
-* main.tf gets contents of *terraform/subsume-masb-mssql-db/mssql-db-main.tf*
-* data.tf gets contents of *terraform/subsume-masb-mssql-db/mssql-db-data.tf*
-
-> If there are [import inputs](#import-input-object), a `tofu import` will be run for each import input value before
-> `tofu apply` is run. Once all the import calls are complete, `tofu show` is run to generate a new *main.tf*.
-> So it is important not to put anything into *main.tf* that needs to be preserved. Put them in one of the other tf files.
+* outputs.tf gets contents of *terraform/masb-mssql-db/mssql-db-outputs.tf*
+* provider.tf gets contents of *terraform/masb-mssql-db/azure-provider.tf*
+* variables.tf gets contents of *terraform/masb-mssql-db/mssql-db-variables.tf*
+* main.tf gets contents of *terraform/masb-mssql-db/mssql-db-main.tf*
+* data.tf gets contents of *terraform/masb-mssql-db/mssql-db-data.tf*
 
 #### Variable object
 
@@ -390,8 +278,6 @@ Outputs are _only_ validated on integration tests.
 | default           | any               | The default value for this field. If `null`, the field MUST be marked as required. If a string, it will be executed as a HIL expression and cast to the appropriate type described in the `type` field. See the [Expression language reference](#expression-language-reference) section for more information about what's available.                                                                  |
 | enum              | map of any:string | Valid values for the field and their human-readable descriptions suitable for displaying in a drop-down list.                                                                                                                                                                                                                                                                                         |
 | constraints       | map of string:any | Holds additional JSONSchema validation for the field. Feature flag `enable-catalog-schemas` controls whether to serve Json schemas in catalog. The following keys are supported: `examples`, `const`, `multipleOf`, `minimum`, `maximum`, `exclusiveMaximum`, `exclusiveMinimum`, `maxLength`, `minLength`, `pattern`, `maxItems`, `minItems`, `maxProperties`, `minProperties`, and `propertyNames`. |
-| tf_attribute      | string            | The tf resource attribute from which the value of this field can be extracted from (e.g. `azurerm_mssql_database.azure_sql_db.name`). To be specified for subsume use cases only.                                                                                                                                                                                                                     |
-| tf_attribute_skip | string            | A reference to another field, which if true, the reading of `tf_attribute` should be skipped. To be specified only for subsume use cases where a resource may optionally not exist.                                                                                                                                                                                                                   |
 | prohibit_update   | boolean           | Defines if the field value can be updated on update operation.                                                                                                                                                                                                                                                                                                                                        |
 Fields marked with `*` are required, others are optional.
 
@@ -443,7 +329,6 @@ provision:
     field_name: username
     type: string
     details: The username to create
-    tf_attribute: resourceType.resourceName.user
   computed_inputs: []
   template: |-
     variable domain {type = string}
