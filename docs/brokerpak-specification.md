@@ -555,10 +555,10 @@ The order of combining all plan properties before invoking OpenTofu is as follow
 * `request.plan_id` - _string_ The ID of the requested plan. Plan IDs are unique within an instance.
 * `request.instance_id` - _string_ The ID of the requested instance. Instance IDs are unique within a service.
 * `request.default_labels` - _map[string]string_ A map of labels that should be applied to the created infrastructure for billing/accounting/tracking purposes. 
-   * `request.default_labels.pcf-organization-guid` - _string_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) `organization_guid`
-   * `request.default_labels.pcf-space-guid` - _string_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) `space_guid`
-   * `request.default_labels.pcf-instance-id` - _string_ Mapped from the ID of the requested instance. 
-* `request.context` - _map[string]any_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object).
+   * `request.default_labels.pcf-organization-guid` - _string_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) `organization_guid` (provision only).
+   * `request.default_labels.pcf-space-guid` - _string_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) `space_guid` (provision only).
+   * `request.default_labels.pcf-instance-id` - _string_ Mapped from the ID of the requested instance.
+* `request.context` - _map[string]any_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) (provision only).
 * `request.x_broker_api_originating_identity` - _map[string]any_ Mapped from [cloudfoundry `x_broker_api_originating_identity` header](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#originating-identity-header)
    
 #### Bind/Unbind
@@ -568,9 +568,11 @@ The order of combining all plan properties before invoking OpenTofu is as follow
 * `request.service_id` - _string_ The GUID of the service this binding is for.
 * `request.plan_id` - _string_ The ID of plan the instance was created with.
 * `request.plan_properties` - _map[string]string_ A map of properties set in the service's plan.
-* `request.app_guid` - _string_ The ID of the application this binding is for.
+* `request.app_guid` - _string_ The ID of the application this binding is for. (bind only)
 * `instance.name` - _string_ The name of the instance.
 * `instance.details` - _map[string]any_ Output variables of the instance as specified by ProvisionOutputVariables.
+* `request.context` - _map[string]any_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) (bind only).
+* `request.x_broker_api_originating_identity` - _map[string]any_ Mapped from [cloudfoundry `x_broker_api_originating_identity` header](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#originating-identity-header)
 
 ## File format
 
