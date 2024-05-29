@@ -3,11 +3,11 @@ package testdrive
 import (
 	"net/http"
 
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 )
 
 func (b *Broker) DeleteBinding(s ServiceInstance, serviceBindingGUID string) error {
-	unbindResponse := b.Client.Unbind(s.GUID, serviceBindingGUID, s.ServiceOfferingGUID, s.ServicePlanGUID, uuid.New())
+	unbindResponse := b.Client.Unbind(s.GUID, serviceBindingGUID, s.ServiceOfferingGUID, s.ServicePlanGUID, uuid.NewString())
 	switch {
 	case unbindResponse.Error != nil:
 		return unbindResponse.Error
