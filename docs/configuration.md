@@ -90,7 +90,6 @@ Feature flags can be toggled through the following configuration values. See als
 | Environment Variable | Config File Value | Type | Description | Default |
 |----------------------|------|-------------|------------------|----------|
 | <tt>GSB_COMPATIBILITY_ENABLE_BUILTIN_BROKERPAKS</tt> <b>*</b> | compatibility.enable_builtin_brokerpaks | Boolean | <p>Load brokerpaks that are built-in to the software.</p>| "true" |
-| <tt>GSB_COMPATIBILITY_ENABLE_BUILTIN_SERVICES</tt> <b>*</b> | compatibility.enable_builtin_services | Boolean | <p>Enable services that are built in to the broker i.e. not brokerpaks.</p>| "true" |
 | <tt>GSB_COMPATIBILITY_ENABLE_CATALOG_SCHEMAS</tt> <b>*</b> | compatibility.enable_catalog_schemas | Boolean | <p>Enable generating JSONSchema for the service catalog.</p>| "false" |
 | <tt>GSB_COMPATIBILITY_ENABLE_CF_SHARING</tt> <b>*</b> | compatibility.enable_cf_sharing | Boolean | <p>Set all services to have the Sharable flag so they can be shared</p>| "false" |
 | <tt>GSB_COMPATIBILITY_ENABLE_EOL_SERVICES</tt> <b>*</b> | compatibility.enable_eol_services | Boolean | <p>Enable broker services that are end of life.</p>| "false" |
