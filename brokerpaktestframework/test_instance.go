@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"github.com/pivotal-cf/brokerapi/v11/domain/apiresponses"
 )
 
@@ -36,7 +36,7 @@ func (instance *TestInstance) Start(logger io.Writer, config []string) error {
 
 func (instance *TestInstance) Catalog() (*apiresponses.CatalogResponse, error) {
 	resp := &apiresponses.CatalogResponse{}
-	catalogResponse := instance.broker.Client.Catalog(uuid.New())
+	catalogResponse := instance.broker.Client.Catalog(uuid.NewString())
 	switch {
 	case catalogResponse.Error != nil:
 		return nil, catalogResponse.Error
@@ -61,7 +61,7 @@ func (instance *TestInstance) withCatalogLookup(serviceName, planName string, cb
 }
 
 func (instance *TestInstance) Provision(serviceName string, planName string, params map[string]any) (string, error) {
-	instanceID := uuid.New()
+	instanceID := uuid.NewString()
 
 	err := instance.withCatalogLookup(serviceName, planName, func(serviceID, planID string) error {
 		_, err := instance.broker.Provision(serviceID, planID, testdrive.WithProvisionServiceInstanceGUID(instanceID), testdrive.WithProvisionParams(params))

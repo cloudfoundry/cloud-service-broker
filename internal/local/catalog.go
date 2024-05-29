@@ -7,12 +7,12 @@ import (
 	"net/http"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 )
 
 func catalog(clnt *client.Client) []domain.Service {
-	catalogResponse := clnt.Catalog(uuid.New())
+	catalogResponse := clnt.Catalog(uuid.NewString())
 	switch {
 	case catalogResponse.Error != nil:
 		log.Fatal(catalogResponse.Error)

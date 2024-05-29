@@ -6,10 +6,10 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
-	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 )
 
@@ -41,8 +41,8 @@ var _ = Describe("Recovery From Broker Termination", func() {
 
 	It("can recover from a terminated create", func() {
 		By("starting to provision")
-		instanceGUID := uuid.New()
-		response := broker.Client.Provision(instanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), nil)
+		instanceGUID := uuid.NewString()
+		response := broker.Client.Provision(instanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.NewString(), nil)
 		Expect(response.Error).NotTo(HaveOccurred())
 		Expect(response.StatusCode).To(Equal(http.StatusAccepted))
 
@@ -62,12 +62,12 @@ var _ = Describe("Recovery From Broker Termination", func() {
 
 		// OSBAPI requires that HTTP 409 (Conflict) is returned
 		By("refusing to allow a duplicate instance")
-		response = broker.Client.Provision(instanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), nil)
+		response = broker.Client.Provision(instanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.NewString(), nil)
 		Expect(response.Error).NotTo(HaveOccurred())
 		Expect(response.StatusCode).To(Equal(http.StatusConflict))
 
 		By("allowing the instance to be cleaned up")
-		response = broker.Client.Deprovision(instanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New())
+		response = broker.Client.Deprovision(instanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.NewString())
 		Expect(response.Error).NotTo(HaveOccurred())
 		Expect(response.StatusCode).To(Equal(http.StatusOK))
 	})
@@ -78,7 +78,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("starting to update")
-		response := broker.Client.Update(instance.GUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), nil, domain.PreviousValues{}, nil)
+		response := broker.Client.Update(instance.GUID, serviceOfferingGUID, servicePlanGUID, uuid.NewString(), nil, domain.PreviousValues{}, nil)
 		Expect(response.Error).NotTo(HaveOccurred())
 		Expect(response.StatusCode).To(Equal(http.StatusAccepted))
 
@@ -106,7 +106,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("starting to delete")
-		response := broker.Client.Deprovision(instance.GUID, serviceOfferingGUID, servicePlanGUID, uuid.New())
+		response := broker.Client.Deprovision(instance.GUID, serviceOfferingGUID, servicePlanGUID, uuid.NewString())
 		Expect(response.Error).NotTo(HaveOccurred())
 		Expect(response.StatusCode).To(Equal(http.StatusAccepted))
 
@@ -134,7 +134,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("starting to bind")
-		bindingGUID := uuid.New()
+		bindingGUID := uuid.NewString()
 		go broker.CreateBinding(instance, testdrive.WithBindingGUID(bindingGUID))
 
 		Eventually(stdout).Should(Say(fmt.Sprintf(`"cloud-service-broker.Binding".*"binding_id":"%s"`, bindingGUID)))
@@ -153,7 +153,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 		instance, err := broker.Provision(serviceOfferingGUID, servicePlanGUID)
 		Expect(err).NotTo(HaveOccurred())
 
-		bindingGUID := uuid.New()
+		bindingGUID := uuid.NewString()
 		_, err = broker.CreateBinding(instance, testdrive.WithBindingGUID(bindingGUID))
 		Expect(err).NotTo(HaveOccurred())
 

@@ -12,7 +12,7 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils/freeport"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 )
 
 type StartBrokerOption func(config *startBrokerConfig)
@@ -36,8 +36,8 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 		return nil, err
 	}
 
-	username := uuid.New()
-	password := uuid.New()
+	username := uuid.NewString()
+	password := uuid.NewString()
 
 	cmd := exec.Command(csbPath, "serve")
 	cmd.Dir = bpk
