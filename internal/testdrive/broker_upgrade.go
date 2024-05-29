@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/steps"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 )
 
@@ -29,7 +29,7 @@ func (b *Broker) UpgradeService(s ServiceInstance, version string, opts ...Upgra
 
 	return steps.RunSequentially(
 		func() error {
-			updateResponse := b.Client.Update(s.GUID, s.ServiceOfferingGUID, s.ServicePlanGUID, uuid.New(), cfg.params, cfg.previousValues, &maintenanceInfo)
+			updateResponse := b.Client.Update(s.GUID, s.ServiceOfferingGUID, s.ServicePlanGUID, uuid.NewString(), cfg.params, cfg.previousValues, &maintenanceInfo)
 			switch {
 			case updateResponse.Error != nil:
 				return updateResponse.Error

@@ -6,9 +6,9 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
 
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 )
 
@@ -39,8 +39,8 @@ var _ = Describe("Subsume", func() {
 		// This test relies on a behaviour in the random string resource where it gets re-created after being imported
 		const serviceOfferingGUID = "76c5725c-b246-11eb-871f-ffc97563fbd0"
 		const servicePlanGUID = "8b52a460-b246-11eb-a8f5-d349948e2481"
-		serviceInstanceGUID := uuid.New()
-		provisionResponse := broker.Client.Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.New(), []byte(`{"value":"thisisnotrandomatall"}`))
+		serviceInstanceGUID := uuid.NewString()
+		provisionResponse := broker.Client.Provision(serviceInstanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.NewString(), []byte(`{"value":"thisisnotrandomatall"}`))
 		Expect(provisionResponse.Error).NotTo(HaveOccurred())
 		Expect(provisionResponse.StatusCode).To(Equal(http.StatusAccepted), string(provisionResponse.ResponseBody))
 		Expect(broker.LastOperationFinalState(serviceInstanceGUID)).To(Equal(domain.Failed))

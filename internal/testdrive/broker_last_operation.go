@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 )
 
 func (b *Broker) LastOperation(serviceInstanceGUID string) (domain.LastOperation, error) {
-	lastOperationResponse := b.Client.LastOperation(serviceInstanceGUID, uuid.New())
+	lastOperationResponse := b.Client.LastOperation(serviceInstanceGUID, uuid.NewString())
 	switch {
 	case lastOperationResponse.Error != nil:
 		return domain.LastOperation{}, lastOperationResponse.Error

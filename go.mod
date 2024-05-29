@@ -7,6 +7,7 @@ require (
 	code.cloudfoundry.org/lager/v3 v3.0.3
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/google/gops v0.3.28
+	github.com/google/uuid v1.4.0
 	github.com/hashicorp/go-getter v1.7.4
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.7.0
@@ -17,7 +18,6 @@ require (
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1
 	github.com/otiai10/copy v1.14.0
-	github.com/pborman/uuid v1.2.1
 	github.com/pivotal-cf/brokerapi/v11 v11.0.0
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.6.0
@@ -61,7 +61,6 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/pprof v0.0.0-20240424215950-a892ee059fd6 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
-	github.com/google/uuid v1.4.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
@@ -83,6 +82,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.0 // indirect
 	github.com/openzipkin/zipkin-go v0.4.2 // indirect
+	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect

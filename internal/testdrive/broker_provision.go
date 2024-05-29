@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/steps"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 )
 
@@ -24,7 +24,7 @@ type provisionConfig struct {
 type ProvisionOption func(*provisionConfig) error
 
 func (b *Broker) Provision(serviceOfferingGUID, servicePlanGUID string, opts ...ProvisionOption) (ServiceInstance, error) {
-	cfg := provisionConfig{guid: uuid.New()}
+	cfg := provisionConfig{guid: uuid.NewString()}
 	for _, o := range opts {
 		if err := o(&cfg); err != nil {
 			return ServiceInstance{}, err
@@ -33,7 +33,7 @@ func (b *Broker) Provision(serviceOfferingGUID, servicePlanGUID string, opts ...
 
 	err := steps.RunSequentially(
 		func() error {
-			provisionResponse := b.Client.Provision(cfg.guid, serviceOfferingGUID, servicePlanGUID, uuid.New(), cfg.params)
+			provisionResponse := b.Client.Provision(cfg.guid, serviceOfferingGUID, servicePlanGUID, uuid.NewString(), cfg.params)
 			switch {
 			case provisionResponse.Error != nil:
 				return provisionResponse.Error

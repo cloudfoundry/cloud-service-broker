@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 )
 
@@ -268,8 +268,8 @@ func newExampleExecutor(logger *exampleLogger, id string, client *Client, servic
 		Name:       fmt.Sprintf("%s/%s", serviceExample.ServiceName, serviceExample.ServiceExample.Name),
 		ServiceID:  serviceExample.ServiceID,
 		PlanID:     serviceExample.ServiceExample.PlanID,
-		InstanceID: uuid.New(),
-		BindingID:  uuid.New(),
+		InstanceID: uuid.NewString(),
+		BindingID:  uuid.NewString(),
 
 		ProvisionParams: provisionParams,
 		BindParams:      bindParams,
@@ -300,7 +300,7 @@ type exampleExecutor struct {
 // If the response is an async result, Provision will attempt to wait until
 // the Provision is complete.
 func (ee *exampleExecutor) Provision() error {
-	requestID := uuid.New()
+	requestID := uuid.NewString()
 	ee.logger.Printf("Provisioning %s (id: %s)\n", ee.Name, requestID)
 
 	resp := ee.client.Provision(ee.InstanceID, ee.ServiceID, ee.PlanID, requestID, ee.ProvisionParams)
@@ -322,7 +322,7 @@ func (ee *exampleExecutor) Provision() error {
 
 func (ee *exampleExecutor) pollUntilFinished() error {
 	return retry(45*time.Minute, 30*time.Second, func() (bool, error) {
-		requestID := uuid.New()
+		requestID := uuid.NewString()
 		ee.logger.Printf("Polling for async job (id: %s)\n", requestID)
 
 		resp := ee.client.LastOperation(ee.InstanceID, requestID)
@@ -356,7 +356,7 @@ func (ee *exampleExecutor) pollUntilFinished() error {
 
 // Deprovision destroys the instance created by a call to Provision.
 func (ee *exampleExecutor) Deprovision() error {
-	requestID := uuid.New()
+	requestID := uuid.NewString()
 	ee.logger.Printf("Deprovisioning %s (id: %s)\n", ee.Name, requestID)
 	resp := ee.client.Deprovision(ee.InstanceID, ee.ServiceID, ee.PlanID, requestID)
 
@@ -378,7 +378,7 @@ func (ee *exampleExecutor) Deprovision() error {
 // Unbind unbinds the exact binding created by a call to Bind.
 func (ee *exampleExecutor) Unbind() error {
 	return retry(15*time.Minute, 15*time.Second, func() (bool, error) {
-		requestID := uuid.New()
+		requestID := uuid.NewString()
 		ee.logger.Printf("Unbinding %s (id: %s)\n", ee.Name, requestID)
 		resp := ee.client.Unbind(ee.InstanceID, ee.BindingID, ee.ServiceID, ee.PlanID, requestID)
 
@@ -399,7 +399,7 @@ func (ee *exampleExecutor) Unbind() error {
 // once successfully as subsequent binds will attempt to create bindings with
 // the same ID.
 func (ee *exampleExecutor) Bind() (json.RawMessage, error) {
-	requestID := uuid.New()
+	requestID := uuid.NewString()
 	ee.logger.Printf("Binding %s (id: %s)\n", ee.Name, requestID)
 	resp := ee.client.Bind(ee.InstanceID, ee.BindingID, ee.ServiceID, ee.PlanID, requestID, ee.BindParams)
 

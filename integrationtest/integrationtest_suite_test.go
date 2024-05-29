@@ -9,10 +9,10 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-	"github.com/pborman/uuid"
 )
 
 func TestIntegration(t *testing.T) {
@@ -62,7 +62,7 @@ var _ = BeforeEach(func() {
 })
 
 func requestID() string {
-	return uuid.New()
+	return uuid.NewString()
 }
 
 func must[A any](a A, err error) A {
