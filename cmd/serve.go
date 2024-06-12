@@ -17,6 +17,7 @@ package cmd
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -139,21 +140,33 @@ func serveDocs() {
 }
 
 func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
-	config, err := encryption.ParseConfiguration(db, viper.GetBool(encryptionEnabled), viper.GetString(encryptionPasswords))
+	encryptionPasswordsPropertyValue := viper.Get(encryptionPasswords)
+	passwordsString := ""
+	switch v := encryptionPasswordsPropertyValue.(type) {
+	case string:
+		passwordsString = v
+	default:
+		bytes, err := json.Marshal(v)
+		if err != nil {
+			logger.Fatal("couldn't parse encryption.passwords", err)
+		}
+		passwordsString = string(bytes)
+	}
+	config, err := encryption.ParseConfiguration(db, viper.GetBool(encryptionEnabled), passwordsString)
 	if err != nil {
 		logger.Fatal("Error parsing encryption configuration", err)
 	}
 
 	if config.Changed {
-		if err := storage.New(db, config.RotationEncryptor).CheckAllRecords(); err != nil {
+		if err = storage.New(db, config.RotationEncryptor).CheckAllRecords(); err != nil {
 			logger.Fatal("refusing to encrypt the database as some fields cannot be successfully read", err)
 		}
 
 		logger.Info("rotating-database-encryption", lager.Data{"previous-primary": labelName(config.StoredPrimaryLabel), "new-primary": labelName(config.ConfiguredPrimaryLabel)})
-		if err := storage.New(db, config.RotationEncryptor).UpdateAllRecords(); err != nil {
+		if err = storage.New(db, config.RotationEncryptor).UpdateAllRecords(); err != nil {
 			logger.Fatal("Error rotating database encryption", err)
 		}
-		if err := encryption.UpdatePasswordMetadata(db, config.ConfiguredPrimaryLabel); err != nil {
+		if err = encryption.UpdatePasswordMetadata(db, config.ConfiguredPrimaryLabel); err != nil {
 			logger.Fatal("Error updating password metadata", err)
 		}
 	}

@@ -142,6 +142,17 @@ var _ = Describe("Database Encryption", func() {
 		return err
 	}
 
+	startBrokerWithConfig := func(config map[string]interface{}) {
+
+		broker = must(testdrive.StartBroker(
+			csb,
+			brokerpak,
+			database,
+			testdrive.WithOutputs(GinkgoWriter, GinkgoWriter),
+			testdrive.WithConfig(config),
+		))
+	}
+
 	startBroker := func(encryptionEnabled bool, encryptionPasswords string) {
 		broker = must(testdrive.StartBroker(
 			csb,
@@ -228,6 +239,61 @@ var _ = Describe("Database Encryption", func() {
 		})
 	})
 
+	When("encryption is turned on and config is via a config file", func() {
+		BeforeEach(func() {
+			startBrokerWithConfig(map[string]interface{}{
+				"db": map[string]interface{}{
+					"encryption": map[string]interface{}{
+						"enabled": true,
+						"passwords": []map[string]interface{}{
+							{
+								"primary": true,
+								"label":   "my-password",
+								"password": map[string]interface{}{
+									"secret": "supersecretcoolpassword",
+								},
+							},
+						},
+					},
+				},
+			})
+		})
+
+		It("encrypts sensitive fields", func() {
+			serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID, testdrive.WithProvisionParams(provisionParams)))
+			By("checking the provision fields")
+			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionParams)
+			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionOutput)
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(haveAnyPlaintextServiceTerraformState)
+
+			By("checking the binding fields")
+			serviceBinding := must(broker.CreateBinding(serviceInstance, testdrive.WithBindingParams(bindParams)))
+			Expect(persistedBindRequestDetails(serviceBinding.GUID)).NotTo(bePlaintextBindParams)
+			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(bePlaintextBindingDetails)
+			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).NotTo(haveAnyPlaintextBindingTerraformState)
+
+			By("checking how update persists service instance fields")
+			Expect(broker.UpdateService(serviceInstance, testdrive.WithUpdateParams(updateParams))).To(Succeed())
+			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(Equal(mergedParams))
+			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(Equal(updateOutput))
+			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(SatisfyAny(
+				ContainSubstring(provisionOutputStateValue),
+				ContainSubstring(updateOutputStateValue),
+				ContainSubstring(tfStateKey),
+			))
+
+			By("checking the binding fields after unbind")
+			Expect(broker.DeleteBinding(serviceInstance, serviceBinding.GUID)).To(Succeed())
+			expectServiceBindingDetailsToNotExist(serviceInstance.GUID)
+			expectBindRequestDetailsToNotExist(serviceBinding.GUID)
+			expectBindTerraformWorkspaceToNotExist(serviceInstance.GUID, serviceBinding.GUID)
+
+			By("checking the service instance fields after deprovision")
+			Expect(broker.Deprovision(serviceInstance)).To(Succeed())
+			expectServiceInstanceDetailsToNotExist(serviceInstance.GUID)
+			expectServiceInstanceTerraformWorkspaceToNotExist(serviceInstance.GUID)
+		})
+	})
 	When("encryption is turned on", func() {
 		BeforeEach(func() {
 			const encryptionPasswords = `[{"primary":true,"label":"my-password","password":{"secret":"supersecretcoolpassword"}}]`

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -13,12 +14,14 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils/freeport"
 	"github.com/google/uuid"
+	"gopkg.in/yaml.v3"
 )
 
 type StartBrokerOption func(config *startBrokerConfig)
 
 type startBrokerConfig struct {
 	env    []string
+	args   []string
 	stdout io.Writer
 	stderr io.Writer
 }
@@ -50,6 +53,7 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 		fmt.Sprintf("SECURITY_USER_NAME=%s", username),
 		fmt.Sprintf("SECURITY_USER_PASSWORD=%s", password),
 	)
+	cmd.Args = append(cmd.Args, cfg.args...)
 
 	switch cfg.stdout {
 	case nil:
@@ -98,7 +102,21 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 		time.Sleep(100 * time.Millisecond)
 	}
 }
-
+func WithConfig(config map[string]interface{}) StartBrokerOption {
+	return func(cfg *startBrokerConfig) {
+		bytes, err := yaml.Marshal(config)
+		if err != nil {
+			log.Fatal(err)
+		}
+		file, err := os.CreateTemp("", `*.yml`)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+		file.Write(bytes)
+		cfg.args = append(cfg.args, "--config", file.Name())
+	}
+}
 func WithEnv(extraEnv ...string) StartBrokerOption {
 	return func(cfg *startBrokerConfig) {
 		cfg.env = append(cfg.env, extraEnv...)
