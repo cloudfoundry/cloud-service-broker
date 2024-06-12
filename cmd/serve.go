@@ -139,7 +139,7 @@ func serveDocs() {
 }
 
 func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
-	config, err := encryption.ParseConfiguration(db, viper.GetBool(encryptionEnabled), viper.GetString(encryptionPasswords))
+	config, err := encryption.ParseConfiguration(db, viper.GetBool(encryptionEnabled), viper.Get(encryptionPasswords))
 	if err != nil {
 		logger.Fatal("Error parsing encryption configuration", err)
 	}

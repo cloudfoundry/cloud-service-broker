@@ -5,30 +5,27 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"code.cloudfoundry.org/jsonry"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
 )
 
 type PasswordEntry struct {
-	Label   string
-	Secret  string
-	Primary bool
+	Label   string `jsonry:"label"`
+	Secret  string `jsonry:"password.secret"`
+	Primary bool   `jsonry:"primary"`
 }
 
-func Parse(input string) ([]PasswordEntry, error) {
-	if len(input) == 0 {
-		return nil, nil
-	}
+// UnmarshalJSON is implemented because JSONry doesn't currently support slices of structs
+// so we unmarshal each struct individually
+func (p *PasswordEntry) UnmarshalJSON(input []byte) error {
+	return jsonry.Unmarshal(input, p)
+}
 
-	var r receiver
-	if err := json.Unmarshal([]byte(input), &r); err != nil {
-		return nil, fmt.Errorf("password configuration could not be parsed as JSON: %w", err)
+func Parse(input any) ([]PasswordEntry, error) {
+	result, err := parsePasswords(input)
+	if err != nil {
+		return nil, fmt.Errorf("password reading error: %w", err)
 	}
-
-	if len(r) == 0 {
-		return nil, nil
-	}
-
-	result := convert(r)
 
 	if err := validate(result); err != nil {
 		return nil, fmt.Errorf("password configuration error: %w", err)
@@ -37,25 +34,42 @@ func Parse(input string) ([]PasswordEntry, error) {
 	return result, nil
 }
 
-type receiver []struct {
-	Label    string `json:"label"`
-	Primary  bool   `json:"primary"`
-	Password struct {
-		Secret string `json:"secret"`
-	} `json:"password"`
+func parsePasswords(input any) ([]PasswordEntry, error) {
+	switch v := input.(type) {
+	case nil:
+		return nil, nil
+	case string:
+		return parsePasswordsFromString(v)
+	case []any:
+		return parsePasswordsFromMapSlice(v)
+	default:
+		return nil, fmt.Errorf("password configuration type error, expected string or object array, got %T", input)
+	}
 }
 
-func convert(r receiver) []PasswordEntry {
-	var result []PasswordEntry
-	for _, p := range r {
-		result = append(result, PasswordEntry{
-			Label:   p.Label,
-			Secret:  p.Password.Secret,
-			Primary: p.Primary,
-		})
+func parsePasswordsFromString(input string) ([]PasswordEntry, error) {
+	if len(input) == 0 {
+		return nil, nil
 	}
 
-	return result
+	var receiver []PasswordEntry
+	if err := json.Unmarshal([]byte(input), &receiver); err != nil {
+		return nil, fmt.Errorf("password configuration string could not be parsed as JSON: %w", err)
+	}
+
+	return receiver, nil
+}
+
+func parsePasswordsFromMapSlice(input []any) ([]PasswordEntry, error) {
+	if len(input) == 0 {
+		return nil, nil
+	}
+
+	asJSON, err := json.Marshal(input)
+	if err != nil {
+		return nil, fmt.Errorf("error coding passowrds as JSON: %w", err)
+	}
+	return parsePasswordsFromString(string(asJSON))
 }
 
 func validate(passwordEntries []PasswordEntry) (errs *validation.FieldError) {
