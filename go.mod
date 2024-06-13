@@ -4,6 +4,7 @@ go 1.22.4
 
 require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20220620130410-645eee56ecdb
+	code.cloudfoundry.org/jsonry v1.1.4
 	code.cloudfoundry.org/lager/v3 v3.0.3
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/google/gops v0.3.28

@@ -12,19 +12,29 @@ import (
 var _ = Describe("Parser", func() {
 	DescribeTable(
 		"correct",
-		func(input string, expected any) {
+		func(input any, expected any) {
 			output, err := passwordparser.Parse(input)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(output).To(Equal(expected))
 		},
 		Entry(
-			"empty",
+			"empty string",
 			``,
 			[]passwordparser.PasswordEntry(nil),
 		),
 		Entry(
-			"empty list",
+			"empty list string",
 			`[]`,
+			[]passwordparser.PasswordEntry{},
+		),
+		Entry(
+			"empty slice",
+			[]any{},
+			[]passwordparser.PasswordEntry(nil),
+		),
+		Entry(
+			"nil",
+			nil,
 			[]passwordparser.PasswordEntry(nil),
 		),
 		Entry(
@@ -102,11 +112,27 @@ var _ = Describe("Parser", func() {
 				},
 			},
 		),
+		Entry(
+			"object",
+			[]any{map[string]any{"label": "barfoo", "password": map[string]any{"secret": "veryverysecretpassword"}, "primary": true}, map[string]any{"label": "barbaz", "password": map[string]any{"secret": "anotherveryverysecretpassword"}, "primary": false}},
+			[]passwordparser.PasswordEntry{
+				{
+					Label:   "barfoo",
+					Secret:  "veryverysecretpassword",
+					Primary: true,
+				},
+				{
+					Label:   "barbaz",
+					Secret:  "anotherveryverysecretpassword",
+					Primary: false,
+				},
+			},
+		),
 	)
 
 	DescribeTable(
 		"errors",
-		func(input string, expected any) {
+		func(input any, expected any) {
 			output, err := passwordparser.Parse(input)
 			Expect(output).To(BeEmpty())
 			Expect(err).To(MatchError(expected), err.Error())
@@ -114,7 +140,7 @@ var _ = Describe("Parser", func() {
 		Entry(
 			"bad JSON",
 			`[{"stuf"`,
-			`password configuration could not be parsed as JSON: unexpected end of JSON input`,
+			`password reading error: password configuration string could not be parsed as JSON: unexpected end of JSON input`,
 		),
 		Entry(
 			"password length too short",
@@ -146,5 +172,6 @@ var _ = Describe("Parser", func() {
 			`[{"label":"barfoo","password":{"secret":"veryverysecretpassword"},"primary":true},{"label":"barbaz","password":{"secret":"anotherveryverysecretpassword"}},{"label":"bazquz","password":{"secret":"yetanotherveryverysecretpassword"},"primary":true}]`,
 			`password configuration error: expected exactly one primary, got multiple; mark one password as primary and others as non-primary but do not remove them: [].primary`,
 		),
+		Entry("invalid type", true, `password reading error: password configuration type error, expected string or object array, got bool`),
 	)
 })
