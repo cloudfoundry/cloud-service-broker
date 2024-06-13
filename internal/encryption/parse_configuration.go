@@ -22,7 +22,7 @@ type Configuration struct {
 	ToDeleteLabels         []string
 }
 
-func ParseConfiguration(db *gorm.DB, enabled bool, passwords string) (Configuration, error) {
+func ParseConfiguration(db *gorm.DB, enabled bool, passwords any) (Configuration, error) {
 	configured, err := passwordparser.Parse(passwords)
 	if err != nil {
 		return Configuration{}, err
