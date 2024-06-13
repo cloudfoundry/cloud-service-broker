@@ -67,7 +67,7 @@ func parsePasswordsFromMapSlice(input []any) ([]PasswordEntry, error) {
 
 	asJSON, err := json.Marshal(input)
 	if err != nil {
-		return nil, fmt.Errorf("error coding passowrds as JSON: %w", err)
+		return nil, fmt.Errorf("error coding passwords as JSON: %w", err)
 	}
 	return parsePasswordsFromString(string(asJSON))
 }
