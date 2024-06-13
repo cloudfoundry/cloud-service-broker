@@ -152,19 +152,52 @@ func (svc *ServiceDefinition) ProvisionDefaultOverrideProperty() string {
 // ProvisionDefaultOverrides returns the deserialized JSON object for the
 // operator-provided property overrides.
 func (svc *ServiceDefinition) ProvisionDefaultOverrides() (map[string]any, error) {
-	return unmarshalViper(svc.ProvisionDefaultOverrideProperty())
+	return unmarshalViperMap(svc.ProvisionDefaultOverrideProperty())
 }
 
 func ProvisionGlobalDefaults() (map[string]any, error) {
-	return unmarshalViper(GlobalProvisionDefaults)
+	return unmarshalViperMap(GlobalProvisionDefaults)
 }
 
-func unmarshalViper(key string) (map[string]any, error) {
+// Some config values were historically expected to be provided as a string.
+// That is because these values were sourced from ENV Vars. But these values can
+// be provided via a config file.
+// E.g. consider the value .service.x.plans which would need to be a string in the config,
+// file even though it would be more readable as a list of objects.
+func unmarshalViperList(key string) ([]map[string]any, error) {
+	vals := []map[string]any{}
+	if viper.IsSet(key) {
+		val := viper.Get(key)
+
+		switch v := val.(type) {
+		case string:
+			if err := json.Unmarshal([]byte(v), &vals); err != nil {
+				return nil, fmt.Errorf("failed unmarshaling config value %s: %w", key, err)
+			}
+		case []map[string]any:
+			vals = v
+		}
+	}
+	return vals, nil
+}
+
+// Some config values were historically expected to be provided as a string.
+// That is because these values were sourced from ENV Vars. But these values can
+// be provided via a config file.
+// E.g. consider the value .service.x.provision.defaults which would need to be a
+// string in the config file even though it would be more readable as a map object.
+func unmarshalViperMap(key string) (map[string]any, error) {
 	vals := make(map[string]any)
 	if viper.IsSet(key) {
-		val := viper.GetString(key)
-		if err := json.Unmarshal([]byte(val), &vals); err != nil {
-			return nil, fmt.Errorf("failed unmarshaling config value %s", key)
+
+		val := viper.Get(key)
+		switch v := val.(type) {
+		case string:
+			if err := json.Unmarshal([]byte(v), &vals); err != nil {
+				return nil, fmt.Errorf("failed unmarshaling config value %s", key)
+			}
+		case map[string]interface{}:
+			vals = v
 		}
 	}
 	return vals, nil
@@ -270,13 +303,19 @@ func (svc *ServiceDefinition) UserDefinedPlans(maintenanceInfo *domain.Maintenan
 	// but we need [{"id":"1234", "name":"foo", "service_properties":{"A": 1, "B": 2}}]
 	// Go doesn't support this natively so we do it manually here.
 	rawPlans := []json.RawMessage{}
-
 	// Unmarshal the plans from the viper configuration which is just a JSON list
 	// of plans
-	if userPlanJSON := viper.GetString(svc.UserDefinedPlansProperty()); userPlanJSON != "" {
-		if err := json.Unmarshal([]byte(userPlanJSON), &rawPlans); err != nil {
-			return []ServicePlan{}, err
-		}
+
+	userPlan, err := unmarshalViperList(svc.UserDefinedPlansProperty())
+	if err != nil {
+		return []ServicePlan{}, err
+	}
+	bytes, err := json.Marshal(userPlan)
+	if err != nil {
+		return []ServicePlan{}, err
+	}
+	if err := json.Unmarshal(bytes, &rawPlans); err != nil {
+		return []ServicePlan{}, err
 	}
 
 	// Unmarshal tile plans if they're included, which are a JSON object where
@@ -385,10 +424,7 @@ func (svc *ServiceDefinition) bindDefaults() []varcontext.DefaultVariable {
 // For example, to create a default database name based on a user-provided instance name.
 // Therefore, they get executed conditionally if a user-provided variable does not exist.
 // Computed variables get executed either unconditionally or conditionally for greater flexibility.
-func (svc *ServiceDefinition) variables(
-	constants map[string]any,
-	userProvidedParameters map[string]any,
-	plan ServicePlan) (*varcontext.VarContext, error) {
+func (svc *ServiceDefinition) variables(constants map[string]any, userProvidedParameters map[string]any, plan ServicePlan) (*varcontext.VarContext, error) {
 
 	globalDefaults, err := ProvisionGlobalDefaults()
 	if err != nil {
