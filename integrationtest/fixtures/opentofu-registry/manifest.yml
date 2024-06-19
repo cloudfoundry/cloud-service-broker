@@ -1,0 +1,20 @@
+packversion: 1
+name: fake-brokerpak
+version: 0.1.0
+metadata:
+  author: noone@nowhere.com
+platforms:
+- os: linux
+  arch: amd64
+- os: darwin
+  arch: amd64
+terraform_binaries:
+- name: tofu
+  version: 1.6.0
+  source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.0.zip
+- name: terraform-provider-random
+  version: 3.6.2
+  provider: registry.opentofu.org/hashicorp/random
+  url_template: https://github.com/opentofu/${name}/releases/download/v${version}/${name}_${version}_${os}_${arch}.zip
+service_definitions:
+- fake-uuid-service.yml
