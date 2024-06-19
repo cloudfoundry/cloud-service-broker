@@ -161,25 +161,49 @@ func (pak *BrokerPakReader) ExtractPlatformBins(destination string) error {
 }
 
 func (pak *BrokerPakReader) extractProvider(r manifest.TerraformProvider, destination string) error {
-	filePath, err := pak.findFileInZip(fmt.Sprintf("%s_v%s", r.Name, r.Version))
-	if err != nil {
-		return err
+	extract := func(filePath string) error {
+		if err := pak.contents.ExtractFile(filePath, providerInstallPath(destination, r)); err != nil {
+			return fmt.Errorf("error extracting terraform-provider file: %w", err)
+		}
+		return nil
 	}
 
-	if err := pak.contents.ExtractFile(filePath, providerInstallPath(destination, r)); err != nil {
-		return fmt.Errorf("error extracting terraform-provider file: %w", err)
+	// Check for binary that matches name AND version
+	versionedBasename := fmt.Sprintf("%s_v%s", r.Name, r.Version)
+	matches := pak.findFilesInZip(versionedBasename)
+	switch len(matches) {
+	case 0:
+		// Ok, fall through to just checking name
+	case 1:
+		return extract(matches[0])
+	default:
+		return fmt.Errorf("multiple files found for this platform with prefix %q: %s", versionedBasename, strings.Join(matches, ", "))
 	}
 
-	return nil
+	// Check for binary that just matches name
+	matches = pak.findFilesInZip(r.Name)
+	switch len(matches) {
+	case 0:
+		return fmt.Errorf("file with prefix %q for this platform not found in zip", r.Name)
+	case 1:
+		return extract(matches[0])
+	default:
+		return fmt.Errorf("multiple files found for this platform with prefix %q: %s", versionedBasename, strings.Join(matches, ", "))
+	}
 }
 
 func (pak *BrokerPakReader) extractBinary(r manifest.Binary, destination string) error {
-	filePath, err := pak.findFileInZip(r.Name)
-	if err != nil {
-		return err
+	matches := pak.findFilesInZip(r.Name)
+	switch len(matches) {
+	case 1:
+		// Ok
+	case 0:
+		return fmt.Errorf("file with prefix %q not found in zip", r.Name)
+	default:
+		return fmt.Errorf("multiple files found with prefix %q: %s", r.Name, strings.Join(matches, ", "))
 	}
 
-	if err := pak.contents.ExtractFile(filePath, destination); err != nil {
+	if err := pak.contents.ExtractFile(matches[0], destination); err != nil {
 		return fmt.Errorf("error extracting binary file: %w", err)
 	}
 
@@ -210,7 +234,7 @@ func (pak *BrokerPakReader) extractTerraform(r manifest.TerraformVersion, destin
 	return fmt.Errorf("could not find %s version %s in brokerpak", binaryName, r.Version)
 }
 
-func (pak *BrokerPakReader) findFileInZip(name string) (string, error) {
+func (pak *BrokerPakReader) findFilesInZip(name string) []string {
 	plat := platform.CurrentPlatform()
 	prefix := path.Join("bin", plat.Os, plat.Arch, name)
 	var found []string
@@ -221,14 +245,7 @@ func (pak *BrokerPakReader) findFileInZip(name string) (string, error) {
 		}
 	}
 
-	switch len(found) {
-	case 1:
-		return found[0], nil
-	case 0:
-		return "", fmt.Errorf("file with prefix %q not found in zip", prefix)
-	default:
-		return "", fmt.Errorf("multiple files found with prefix %q: %s", prefix, strings.Join(found, ", "))
-	}
+	return found
 }
 
 func (pak *BrokerPakReader) fileExistsInZip(path string) bool {
