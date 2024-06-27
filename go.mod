@@ -19,7 +19,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1
 	github.com/otiai10/copy v1.14.0
-	github.com/pivotal-cf/brokerapi/v11 v11.0.0
+	github.com/pivotal-cf/brokerapi/v11 v11.0.1
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.6.0
 	github.com/spf13/cobra v1.8.1
@@ -54,7 +54,7 @@ require (
 	github.com/cloudfoundry/socks5-proxy v0.2.60 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/go-chi/chi/v5 v5.0.12 // indirect
+	github.com/go-chi/chi/v5 v5.0.14 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
@@ -85,9 +85,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.0 // indirect
 	github.com/openzipkin/zipkin-go v0.4.2 // indirect
-	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/prometheus/client_golang v1.11.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
