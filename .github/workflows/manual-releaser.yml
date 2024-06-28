@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs: 
       tag: 
-        default: 'v2.10.0'
+        default: 'v2.1.0'
       
 jobs:
   manual-releaser:
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          ref: ${{ github.event.inputs.tag }} 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
