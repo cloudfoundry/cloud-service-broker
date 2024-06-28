@@ -2,6 +2,9 @@ name: manual-releaser
 
 on:
   workflow_dispatch:
+    inputs: 
+      tag: 
+        default: 'v2.10.0'
       
 jobs:
   manual-releaser:
