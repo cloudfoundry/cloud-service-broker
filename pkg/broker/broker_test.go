@@ -230,6 +230,12 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 		GlobalDefaults     string         // 6
 		ExpectedError      error
 		ExpectedContext    map[string]any
+
+		// Some config values were historically expected to be provided as a string.
+		// That is because these values were sourced from ENV Vars. But these values can
+		// be provided via a config file. This flag is used to test the behavior of the
+		// service definition when the config values are provided as a JSON object instead of a string.
+		IsJSONFormat bool
 	}{
 		"empty": {
 			UserParams:        "",
@@ -396,16 +402,28 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 			},
 			ExpectedError: fmt.Errorf("failed unmarshaling config value provision.defaults"),
 		},
+		"provision_overrides override user params and global_defaults but not computed defaults using JSON objects": {
+			ServiceProperties:  map[string]any{},                 // 2
+			ProvisionOverrides: map[string]any{"location": "eu"}, // 3
+			UserParams:         `{"location":"us"}`,              // 4
+			DefaultOverride:    "{}",                             // 5
+			GlobalDefaults:     `{"location":"az"}`,              // 6
+			ExpectedContext: map[string]any{
+				"location":            "eu",
+				"name":                "name-eu",
+				"maybe-missing":       "default",
+				"osb_context":         map[string]any{},
+				"originatingIdentity": map[string]any{},
+			},
+			IsJSONFormat: true,
+		},
 	}
 
 	for tn, tc := range cases {
 		t.Run(tn, func(t *testing.T) {
-			if len(tc.DefaultOverride) > 0 {
-				viper.Set(service.ProvisionDefaultOverrideProperty(), tc.DefaultOverride)
-			}
-			if len(tc.GlobalDefaults) > 0 {
-				viper.Set(GlobalProvisionDefaults, tc.GlobalDefaults)
-			}
+			setViperConfig(service.ProvisionDefaultOverrideProperty(), tc.DefaultOverride, tc.IsJSONFormat)
+			setViperConfig(GlobalProvisionDefaults, tc.GlobalDefaults, tc.IsJSONFormat)
+
 			defer viper.Reset()
 
 			details := paramparser.ProvisionDetails{
@@ -422,6 +440,19 @@ func TestServiceDefinition_ProvisionVariables(t *testing.T) {
 				t.Errorf("Expected context: %v got %v", tc.ExpectedContext, vars.ToMap())
 			}
 		})
+	}
+}
+
+// Function to set viper configuration based on JSON format flag.
+func setViperConfig(propertyName string, value string, isJSONFormat bool) {
+	if len(value) == 0 {
+		return
+	}
+
+	if isJSONFormat {
+		viper.Set(propertyName, mustUnmarshal(value))
+	} else {
+		viper.Set(propertyName, value)
 	}
 }
 

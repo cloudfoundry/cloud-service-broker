@@ -1,6 +1,7 @@
 package broker_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
@@ -411,6 +412,47 @@ var _ = Describe("ServiceDefinition", func() {
 					provisionOverrides, err := service.ProvisionDefaultOverrides()
 					Expect(err).To(Not(HaveOccurred()))
 					Expect(provisionOverrides).To(Equal(map[string]interface{}{"test": `value`}))
+				})
+			})
+
+			When("a plan with provision defaults is provided in configuration as a string", func() {
+				BeforeEach(func() {
+					fakeServicePlanConfigObject := []map[string]interface{}{
+						{
+							"name":                fakePlanName,
+							"id":                  fakePlanID,
+							"description":         fakePlanDescription,
+							"additional_property": fakePlanProperty,
+						},
+						{
+							"name":                fmt.Sprintf("fake-string-format-%s", fakePlanName),
+							"id":                  fmt.Sprintf("fake-string-format-%s", fakePlanID),
+							"description":         fmt.Sprintf("fake-string-format-%s", fakePlanDescription),
+							"additional_property": fmt.Sprintf("fake-string-format-%s", fakePlanProperty),
+						},
+					}
+
+					viper.Set("service.fake-service.provision.defaults", `{"test": "value", "object": {"key": "value"}}`)
+					bytes, err := json.Marshal(fakeServicePlanConfigObject)
+					Expect(err).To(Not(HaveOccurred()))
+					viper.Set("service.fake-service.plans", string(bytes))
+				})
+
+				It("should work", func() {
+					plan, err := service.UserDefinedPlans(maintenanceInfo)
+					Expect(err).To(Not(HaveOccurred()))
+					Expect(plan[0].Name).To(Equal(fakePlanName))
+					Expect(plan[1].Name).To(Equal(fmt.Sprintf("fake-string-format-%s", fakePlanName)))
+					provisionOverrides, err := service.ProvisionDefaultOverrides()
+					Expect(err).To(Not(HaveOccurred()))
+					Expect(provisionOverrides).To(
+						Equal(
+							map[string]any{
+								"test":   `value`,
+								"object": map[string]any{"key": "value"},
+							},
+						),
+					)
 				})
 			})
 
