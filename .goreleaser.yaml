@@ -7,7 +7,7 @@ builds:
   - linux
   - darwin
   ldflags:
-  - -X github.com/cloudfoundry/cloud-service-broker/utils.Version={{.Version}}
+  - -X github.com/cloudfoundry/cloud-service-broker/v2/utils.Version={{.Version}}
 archives:
 - name_template: "{{ .ProjectName }}.{{ .Os }}"
   format: binary
