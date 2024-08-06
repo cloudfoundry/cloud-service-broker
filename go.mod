@@ -21,7 +21,7 @@ require (
 	github.com/otiai10/copy v1.14.0
 	github.com/pivotal-cf/brokerapi/v11 v11.0.5
 	github.com/russross/blackfriday/v2 v2.1.0
-	github.com/spf13/cast v1.6.0
+	github.com/spf13/cast v1.7.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/xeipuuv/gojsonschema v1.2.0
