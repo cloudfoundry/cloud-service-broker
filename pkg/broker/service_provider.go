@@ -72,6 +72,8 @@ type ServiceProvider interface {
 
 //counterfeiter:generate . ServiceProviderStorage
 type ServiceProviderStorage interface {
+	RecordInProgress(id string)
+	ClearInProgress(id string)
 	StoreTerraformDeployment(t storage.TerraformDeployment) error
 	GetTerraformDeployment(id string) (storage.TerraformDeployment, error)
 	DeleteTerraformDeployment(id string) error

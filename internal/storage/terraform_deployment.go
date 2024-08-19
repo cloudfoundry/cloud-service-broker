@@ -32,6 +32,14 @@ func (deployment *TerraformDeployment) TFWorkspace() *workspace.TerraformWorkspa
 	return deployment.Workspace.(*workspace.TerraformWorkspace)
 }
 
+func (s *Storage) RecordInProgress(id string) {
+	s.InProgress[id] = true
+}
+
+func (s *Storage) ClearInProgress(id string) {
+	delete(s.InProgress, id)
+}
+
 func (s *Storage) StoreTerraformDeployment(t TerraformDeployment) error {
 	encoded, err := s.encodeJSON(t.Workspace)
 	if err != nil {

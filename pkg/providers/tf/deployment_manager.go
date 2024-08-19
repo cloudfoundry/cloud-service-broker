@@ -47,6 +47,8 @@ func (d *DeploymentManager) MarkOperationStarted(deployment *storage.TerraformDe
 	deployment.LastOperationState = InProgress
 	deployment.LastOperationMessage = fmt.Sprintf("%s %s", operationType, InProgress)
 
+	d.store.RecordInProgress(deployment.ID)
+
 	if err := d.store.StoreTerraformDeployment(*deployment); err != nil {
 		return err
 	}
@@ -74,7 +76,7 @@ func (d *DeploymentManager) MarkOperationFinished(deployment *storage.TerraformD
 		})
 
 	}
-
+	d.store.ClearInProgress(deployment.ID)
 	return d.store.StoreTerraformDeployment(*deployment)
 }
 
