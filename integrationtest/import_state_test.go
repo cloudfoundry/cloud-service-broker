@@ -11,9 +11,9 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/pborman/uuid"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 )
 
@@ -71,7 +71,7 @@ var _ = Describe("Import State", func() {
 		Expect(w.State).To(MatchJSON(stateToImport))
 
 		By("performing a no-op update to trigger an Apply")
-		updateResponse := broker.Client.Update(instance.GUID, instance.ServiceOfferingGUID, servicePlanGUID, uuid.New(), nil, domain.PreviousValues{}, nil)
+		updateResponse := broker.Client.Update(instance.GUID, instance.ServiceOfferingGUID, servicePlanGUID, uuid.NewString(), nil, domain.PreviousValues{}, nil)
 		Expect(updateResponse.Error).NotTo(HaveOccurred())
 		Expect(updateResponse.StatusCode).To(Equal(http.StatusAccepted))
 		state, err := broker.LastOperationFinalValue(instance.GUID)
