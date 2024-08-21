@@ -49,14 +49,15 @@ var _ = Describe("Import State", func() {
 
 		By("checking that the state is empty")
 		var d models.TerraformDeployment
-		Expect(dbConn.Where("id = ?", fmt.Sprintf("tf:%s:", instance.GUID)).First(&d).Error).To(Succeed())
+		terraformDeploymentID := fmt.Sprintf("tf:%s:", instance.GUID)
+		Expect(dbConn.Where("id = ?", terraformDeploymentID).First(&d).Error).To(Succeed())
 		var w workspace.TerraformWorkspace
 		Expect(json.Unmarshal(d.Workspace, &w)).To(Succeed())
 		Expect(w.State).To(MatchJSON(`{"version":4}`))
 
 		By("checking that the `vacant` parameter was not stored")
 		var i models.ProvisionRequestDetails
-		Expect(dbConn.Where("service_instance_id = ?", fmt.Sprintf(instance.GUID)).First(&i).Error).To(Succeed())
+		Expect(dbConn.Where("service_instance_id = ?", instance.GUID).First(&i).Error).To(Succeed())
 		Expect(i.RequestDetails).To(MatchJSON(`{}`))
 
 		By("importing state into the vacant service instance")
@@ -66,7 +67,7 @@ var _ = Describe("Import State", func() {
 		Expect(importResponse).To(HaveHTTPStatus(http.StatusOK))
 
 		By("checking that the state was imported into the database")
-		Expect(dbConn.Where("id = ?", fmt.Sprintf("tf:%s:", instance.GUID)).First(&d).Error).To(Succeed())
+		Expect(dbConn.Where("id = ?", terraformDeploymentID).First(&d).Error).To(Succeed())
 		Expect(json.Unmarshal(d.Workspace, &w)).To(Succeed())
 		Expect(w.State).To(MatchJSON(stateToImport))
 
