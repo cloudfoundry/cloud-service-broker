@@ -99,6 +99,7 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	}
 
 	// save provision request details
+	delete(parsedDetails.RequestParams, "vacant")
 	if err := broker.store.StoreProvisionRequestDetails(instanceID, parsedDetails.RequestParams); err != nil {
 		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
 	}
