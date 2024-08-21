@@ -1,0 +1,25 @@
+version: 1
+name: fake-uuid-service
+id: 5b4f6244-f7ee-11ee-b5b3-3389c8712346
+description: description
+display_name: Fake
+image_url: https://example.com/icon.jpg
+documentation_url: https://example.com
+support_url: https://example.com/support.html
+plans:
+- name: default
+  id: 5b50951a-f7ee-11ee-b564-6b989de50807
+  description: default plan
+  display_name: default
+provision:
+  template_refs:
+    main: fake-uuid-provision.tf
+    versions: versions.tf
+  outputs:
+    - field_name: provision_output
+      type: string
+      details: provision output
+  user_inputs:
+    - field_name: value
+      type: string
+      details: input

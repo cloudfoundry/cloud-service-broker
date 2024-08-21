@@ -86,7 +86,9 @@ func validateNoPlanParametersOverrides(params map[string]any, plan *broker.Servi
 }
 
 func validateDefinedParams(params map[string]any, validUserInputFields []broker.BrokerVariable, validImportFields []broker.ImportVariable) error {
-	validParams := make(map[string]struct{})
+	validParams := map[string]struct{}{
+		"vacant": {},
+	}
 	for _, field := range validUserInputFields {
 		validParams[field.FieldName] = struct{}{}
 	}
