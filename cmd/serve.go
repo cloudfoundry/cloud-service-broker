@@ -22,7 +22,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"regexp"
 	"strings"
 
 	"code.cloudfoundry.org/lager/v3"
@@ -38,6 +37,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/server"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/toggles"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.com/google/uuid"
 	"github.com/pivotal-cf/brokerapi/v11"
 	"github.com/pivotal-cf/brokerapi/v11/auth"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
@@ -225,7 +225,11 @@ func labelName(label string) string {
 func importStateHandler(store *storage.Storage) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		guid := r.PathValue("guid")
-		if !regexp.MustCompile(`^[0-9a-f-]{36}$`).MatchString(guid) {
+		if guid == "" {
+			http.Error(w, "GUID is required", http.StatusBadRequest)
+			return
+		}
+		if err := uuid.Validate(guid); err != nil {
 			http.Error(w, "not a valid GUID", http.StatusBadRequest)
 			return
 		}
