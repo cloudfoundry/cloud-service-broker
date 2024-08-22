@@ -19,7 +19,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.20.1
 	github.com/onsi/gomega v1.34.1
 	github.com/otiai10/copy v1.14.0
-	github.com/pivotal-cf/brokerapi/v11 v11.0.6
+	github.com/pivotal-cf/brokerapi/v11 v11.0.7
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.7.0
 	github.com/spf13/cobra v1.8.1
