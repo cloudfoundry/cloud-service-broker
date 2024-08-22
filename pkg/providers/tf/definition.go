@@ -205,7 +205,7 @@ func (tfb *TfServiceDefinitionV1) resolveEnvVars() (map[string]string, error) {
 	for _, v := range tfb.RequiredEnvVars {
 		_ = viper.BindEnv(v, v)
 		if !viper.IsSet(v) {
-			return vars, fmt.Errorf(fmt.Sprintf("missing required env var %s", v))
+			return vars, fmt.Errorf("missing required env var %s", v)
 		}
 		vars[v] = viper.GetString(v)
 	}

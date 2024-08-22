@@ -2,6 +2,7 @@ package tf_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/go-version"
@@ -99,7 +100,7 @@ var _ = Describe("Deprovision", func() {
 	})
 
 	It("fails, when unable to update the workspace HCL", func() {
-		fakeDeploymentManager.UpdateWorkspaceHCLReturns(fmt.Errorf(expectedError))
+		fakeDeploymentManager.UpdateWorkspaceHCLReturns(errors.New(expectedError))
 
 		provider := tf.NewTerraformProvider(
 			executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1.6.0"))},
@@ -116,7 +117,7 @@ var _ = Describe("Deprovision", func() {
 	})
 
 	It("fails, when unable to get the Terraform deployment", func() {
-		fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, fmt.Errorf(expectedError))
+		fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New(expectedError))
 
 		provider := tf.NewTerraformProvider(
 			executor.TFBinariesContext{},
@@ -134,7 +135,7 @@ var _ = Describe("Deprovision", func() {
 
 	It("fails, when unable to mark operation as started", func() {
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
-		fakeDeploymentManager.MarkOperationStartedReturns(fmt.Errorf(expectedError))
+		fakeDeploymentManager.MarkOperationStartedReturns(errors.New(expectedError))
 
 		provider := tf.NewTerraformProvider(
 			executor.TFBinariesContext{},
@@ -154,7 +155,7 @@ var _ = Describe("Deprovision", func() {
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		fakeDeploymentManager.MarkOperationStartedReturns(nil)
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
-		fakeDefaultInvoker.DestroyReturns(fmt.Errorf(expectedError))
+		fakeDefaultInvoker.DestroyReturns(errors.New(expectedError))
 
 		provider := tf.NewTerraformProvider(
 			executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1.6.0"))},
