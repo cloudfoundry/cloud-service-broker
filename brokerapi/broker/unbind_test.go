@@ -2,6 +2,7 @@ package broker_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"code.cloudfoundry.org/lager/v3"
@@ -345,7 +346,7 @@ var _ = Describe("Unbind", func() {
 			const deleteError = "credential-delete-error"
 
 			BeforeEach(func() {
-				fakeStorage.DeleteServiceBindingCredentialsReturns(fmt.Errorf(deleteError))
+				fakeStorage.DeleteServiceBindingCredentialsReturns(errors.New(deleteError))
 			})
 
 			It("should error", func() {
@@ -359,7 +360,7 @@ var _ = Describe("Unbind", func() {
 			const deleteError = "bind-details-delete-error"
 
 			BeforeEach(func() {
-				fakeStorage.DeleteBindRequestDetailsReturns(fmt.Errorf(deleteError))
+				fakeStorage.DeleteBindRequestDetailsReturns(errors.New(deleteError))
 			})
 
 			It("should error", func() {
@@ -373,7 +374,7 @@ var _ = Describe("Unbind", func() {
 			const deleteError = "bind-provider-details-delete-error"
 
 			BeforeEach(func() {
-				fakeServiceProvider.DeleteBindingDataReturns(fmt.Errorf(deleteError))
+				fakeServiceProvider.DeleteBindingDataReturns(errors.New(deleteError))
 			})
 
 			It("should error", func() {

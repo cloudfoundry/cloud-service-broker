@@ -3,6 +3,7 @@ package broker_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"code.cloudfoundry.org/lager/v3"
@@ -322,7 +323,7 @@ var _ = Describe("Bind", func() {
 			const saveError = "credential-save-error"
 
 			BeforeEach(func() {
-				fakeStorage.CreateServiceBindingCredentialsReturns(fmt.Errorf(saveError))
+				fakeStorage.CreateServiceBindingCredentialsReturns(errors.New(saveError))
 			})
 
 			It("should error", func() {
@@ -336,7 +337,7 @@ var _ = Describe("Bind", func() {
 			const saveBindRequestError = "bind-request-save-error"
 
 			BeforeEach(func() {
-				fakeStorage.StoreBindRequestDetailsReturns(fmt.Errorf(saveBindRequestError))
+				fakeStorage.StoreBindRequestDetailsReturns(errors.New(saveBindRequestError))
 			})
 
 			It("should error", func() {
@@ -350,7 +351,7 @@ var _ = Describe("Bind", func() {
 			const credstoreError = "credstore-error"
 
 			BeforeEach(func() {
-				fakeCredStore.PutReturns(nil, fmt.Errorf(credstoreError))
+				fakeCredStore.PutReturns(nil, errors.New(credstoreError))
 			})
 
 			It("should error", func() {
@@ -364,7 +365,7 @@ var _ = Describe("Bind", func() {
 			const credstorePermissionError = "credstore-error-permissions"
 
 			BeforeEach(func() {
-				fakeCredStore.AddPermissionReturns(nil, fmt.Errorf(credstorePermissionError))
+				fakeCredStore.AddPermissionReturns(nil, errors.New(credstorePermissionError))
 			})
 
 			It("should error", func() {
