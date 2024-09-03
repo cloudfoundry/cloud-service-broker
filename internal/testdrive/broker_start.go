@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	//lint:ignore ST1001 we do not care because this is a test helper
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
