@@ -2,13 +2,23 @@ package testdrive
 
 import (
 	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
 	"fmt"
 	"io"
+	"math/big"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
+
+	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils/freeport"
@@ -83,7 +93,16 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 
 	start := time.Now()
 	for {
-		response, err := http.Head(fmt.Sprintf("http://localhost:%d", port))
+		scheme := "http"
+		for _, envVar := range cmd.Env {
+			if strings.HasPrefix(envVar, "TLS_") {
+				http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+				scheme = "https"
+				break
+			}
+		}
+
+		response, err := http.Head(fmt.Sprintf("%s://localhost:%d", scheme, port))
 		switch {
 		case err == nil && response.StatusCode == http.StatusOK:
 			return &broker, nil
@@ -96,6 +115,95 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 			return nil, fmt.Errorf("failed to start broker: %w\n%s\n%s", broker.runner.err, stdout.String(), stderr.String())
 		}
 		time.Sleep(100 * time.Millisecond)
+	}
+}
+
+func createCAKeyPair(msg string) (*x509.Certificate, []byte, *rsa.PrivateKey) {
+	ca := &x509.Certificate{
+		SerialNumber: big.NewInt(2019),
+		Subject: pkix.Name{
+			Country: []string{msg},
+		},
+		IsCA:                  true,
+		NotBefore:             time.Now(),
+		NotAfter:              time.Now().AddDate(10, 0, 0),
+		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+		BasicConstraintsValid: true,
+	}
+
+	caPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	Expect(err).NotTo(HaveOccurred())
+
+	caBytes, err := x509.CreateCertificate(rand.Reader, ca, ca, &caPrivKey.PublicKey, caPrivKey)
+	Expect(err).NotTo(HaveOccurred())
+
+	caPEM, _ := encodeKeyPair(caBytes, x509.MarshalPKCS1PrivateKey(caPrivKey))
+
+	return ca, caPEM, caPrivKey
+}
+
+func createKeyPairSignedByCA(ca *x509.Certificate, caPrivKey *rsa.PrivateKey) ([]byte, []byte) {
+	cert := &x509.Certificate{
+		SerialNumber: big.NewInt(1658),
+		Subject: pkix.Name{
+			Country: []string{"GB"},
+		},
+		DNSNames:    []string{"localhost"},
+		IPAddresses: []net.IP{net.IPv4(127, 0, 0, 1)},
+		NotBefore:   time.Now(),
+		NotAfter:    time.Now().AddDate(10, 0, 0),
+		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		KeyUsage:    x509.KeyUsageDigitalSignature,
+	}
+
+	certPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	Expect(err).NotTo(HaveOccurred())
+
+	certBytes, err := x509.CreateCertificate(rand.Reader, cert, ca, &certPrivKey.PublicKey, caPrivKey)
+	Expect(err).NotTo(HaveOccurred())
+
+	certPEM, certPrivKeyPEM := encodeKeyPair(certBytes, x509.MarshalPKCS1PrivateKey(certPrivKey))
+	return certPEM, certPrivKeyPEM
+}
+
+func encodeKeyPair(caBytes, caPrivKeyBytes []byte) ([]byte, []byte) {
+	caPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: caBytes,
+	})
+
+	caPrivKeyPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: caPrivKeyBytes,
+	})
+
+	return caPEM, caPrivKeyPEM
+}
+
+func WithTLSConfig(isValid bool) StartBrokerOption {
+	return func(cfg *startBrokerConfig) {
+		ca, _, caPrivKey := createCAKeyPair("US")
+
+		serverCert, serverPrivKey := createKeyPairSignedByCA(ca, caPrivKey)
+
+		certFileBuf, err := os.CreateTemp("", "")
+		Expect(err).NotTo(HaveOccurred())
+		defer certFileBuf.Close()
+
+		privKeyFileBuf, err := os.CreateTemp("", "")
+		Expect(err).NotTo(HaveOccurred())
+		defer privKeyFileBuf.Close()
+
+		if !isValid {
+			serverPrivKey[10] = 'a'
+		}
+
+		Expect(os.WriteFile(privKeyFileBuf.Name(), serverPrivKey, 0644)).To(Succeed())
+
+		Expect(os.WriteFile(certFileBuf.Name(), serverCert, 0644)).To(Succeed())
+
+		cfg.env = append(cfg.env, fmt.Sprintf("TLS_CERT_CHAIN=%s", certFileBuf.Name()))
+		cfg.env = append(cfg.env, fmt.Sprintf("TLS_PRIVATE_KEY=%s", privKeyFileBuf.Name()))
 	}
 }
 

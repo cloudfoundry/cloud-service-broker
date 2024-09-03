@@ -51,6 +51,8 @@ const (
 	apiPasswordProp     = "api.password"
 	apiPortProp         = "api.port"
 	apiHostProp         = "api.host"
+	tlsCertCaBundleProp = "api.certCaBundle"
+	tlsKeyProp          = "api.tlsKey"
 	encryptionPasswords = "db.encryption.passwords"
 	encryptionEnabled   = "db.encryption.enabled"
 )
@@ -84,6 +86,8 @@ func init() {
 	_ = viper.BindEnv(apiHostProp, "CSB_LISTENER_HOST")
 	_ = viper.BindEnv(encryptionPasswords, "ENCRYPTION_PASSWORDS")
 	_ = viper.BindEnv(encryptionEnabled, "ENCRYPTION_ENABLED")
+	_ = viper.BindEnv(tlsCertCaBundleProp, "TLS_CERT_CHAIN")
+	_ = viper.BindEnv(tlsKeyProp, "TLS_PRIVATE_KEY")
 }
 
 func serve() {
@@ -210,7 +214,26 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 	port := viper.GetString(apiPortProp)
 	host := viper.GetString(apiHostProp)
 	logger.Info("Serving", lager.Data{"port": port})
-	_ = http.ListenAndServe(fmt.Sprintf("%s:%s", host, port), router)
+
+	tlsCertCaBundle := viper.GetString(tlsCertCaBundleProp)
+	tlsKey := viper.GetString(tlsKeyProp)
+
+	logger.Info("tlsCertCaBundle", lager.Data{"tlsCertCaBundle": tlsCertCaBundle})
+	logger.Info("tlsKey", lager.Data{"tlsKey": tlsKey})
+
+	httpServer := &http.Server{
+		Addr:    fmt.Sprintf("%s:%s", host, port),
+		Handler: router,
+	}
+
+	if tlsCertCaBundle != "" && tlsKey != "" {
+		err := httpServer.ListenAndServeTLS(tlsCertCaBundle, tlsKey)
+		if err != nil {
+			logger.Fatal("Failed to start broker", err)
+		}
+	} else {
+		_ = httpServer.ListenAndServe()
+	}
 }
 
 func labelName(label string) string {
