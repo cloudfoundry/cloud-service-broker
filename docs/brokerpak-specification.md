@@ -558,7 +558,7 @@ The order of combining all plan properties before invoking OpenTofu is as follow
    * `request.default_labels.pcf-organization-guid` - _string_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) `organization_guid` (provision only).
    * `request.default_labels.pcf-space-guid` - _string_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) `space_guid` (provision only).
    * `request.default_labels.pcf-instance-id` - _string_ Mapped from the ID of the requested instance.
-* `request.context` - _map[string]any_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) (provision only).
+* `request.context` - _map[string]any_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) (provision only). Does not include `organization_annotation` and `space_annotation` keys; see [issue](https://github.com/cloudfoundry/cloud-service-broker/issues/1086).
 * `request.x_broker_api_originating_identity` - _map[string]any_ Mapped from [cloudfoundry `x_broker_api_originating_identity` header](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#originating-identity-header)
    
 #### Bind/Unbind
@@ -571,7 +571,7 @@ The order of combining all plan properties before invoking OpenTofu is as follow
 * `request.app_guid` - _string_ The ID of the application this binding is for. (bind only)
 * `instance.name` - _string_ The name of the instance.
 * `instance.details` - _map[string]any_ Output variables of the instance as specified by ProvisionOutputVariables.
-* `request.context` - _map[string]any_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) (bind only).
+* `request.context` - _map[string]any_ Mapped from [cloudfoundry context](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#cloud-foundry-context-object) (bind only). Does not include `organization_annotation` and `space_annotation` keys; see [issue](https://github.com/cloudfoundry/cloud-service-broker/issues/1086).
 * `request.x_broker_api_originating_identity` - _map[string]any_ Mapped from [cloudfoundry `x_broker_api_originating_identity` header](https://github.com/openservicebrokerapi/servicebroker/blob/master/profile.md#originating-identity-header)
 
 ## File format

@@ -104,4 +104,46 @@ var _ = Describe("ParseProvisionDetails", func() {
 			Expect(pd.SpaceGUID).To(Equal("fake-space-guid-1"))
 		})
 	})
+
+	When("a cloudfoundry context contains space_annotations or organization_annotations keys", func() {
+		ctx := `{"platform": "cloudfoundry", "space_guid": "fake-space-guid", "space_annotations": {"a": "b"}, "organization_guid": "fake-org-guid", "organization_annotations": {"a": "b"}}`
+		It("removes the annotation keys", func() {
+			pd, err := paramparser.ParseProvisionDetails(domain.ProvisionDetails{
+				RawContext: []byte(ctx),
+			})
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(pd.RequestContext).ToNot(HaveKey("organization_annotations"))
+			Expect(pd.RequestContext).ToNot(HaveKey("space_annotations"))
+		})
+
+		It("ignores all other keys and their values", func() {
+			pd, err := paramparser.ParseProvisionDetails(domain.ProvisionDetails{
+				RawContext: []byte(ctx),
+			})
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(pd.RequestContext).To(HaveKey("platform"))
+			Expect(pd.RequestContext["platform"]).To(Equal("cloudfoundry"))
+			Expect(pd.RequestContext).To(HaveKey("space_guid"))
+			Expect(pd.RequestContext["space_guid"]).To(Equal("fake-space-guid"))
+			Expect(pd.RequestContext).To(HaveKey("organization_guid"))
+			Expect(pd.RequestContext["organization_guid"]).To(Equal("fake-org-guid"))
+		})
+	})
+
+	When("non-cloudfoundry context contains space_annotations or organization_annotations keys", func() {
+		ctx := `{"platform": "kubernetes", "space_guid": "fake-space-guid", "space_annotations": {"a": "b"}, "organization_guid": "fake-org-guid", "organization_annotations": {"a": "b"}}`
+		It("ignores the annotation keys and their values", func() {
+			pd, err := paramparser.ParseProvisionDetails(domain.ProvisionDetails{
+				RawContext: []byte(ctx),
+			})
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(pd.RequestContext).To(HaveKey("organization_annotations"))
+			Expect(pd.RequestContext["organization_annotations"]).To(HaveKey("a"))
+			Expect(pd.RequestContext).To(HaveKey("space_annotations"))
+			Expect(pd.RequestContext["space_annotations"]).To(HaveKey("a"))
+		})
+	})
 })

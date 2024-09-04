@@ -36,6 +36,16 @@ func ParseProvisionDetails(input domain.ProvisionDetails) (ProvisionDetails, err
 		}
 	}
 
+	// Special case: These two values are maps and must be removed so the HIL parser
+	// can access the rest of the values, which are strings.
+	// See: https://github.com/cloudfoundry/cloud-service-broker/issues/1086
+	if s, ok := result.RequestContext["platform"].(string); ok {
+		if s == "cloudfoundry" {
+			delete(result.RequestContext, "organization_annotations")
+			delete(result.RequestContext, "space_annotations")
+		}
+	}
+
 	if s, ok := result.RequestContext["organization_guid"].(string); ok {
 		result.OrganizationGUID = s
 	}
