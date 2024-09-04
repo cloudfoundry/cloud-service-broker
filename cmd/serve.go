@@ -22,7 +22,11 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	"code.cloudfoundry.org/lager/v3"
 	osbapiBroker "github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
@@ -55,6 +59,8 @@ const (
 	tlsKeyProp          = "api.tlsKey"
 	encryptionPasswords = "db.encryption.passwords"
 	encryptionEnabled   = "db.encryption.enabled"
+
+	shutdownTimeout = time.Hour
 )
 
 var cfCompatibilityToggle = toggles.Features.Toggle("enable-cf-sharing", false, `Set all services to have the Sharable flag so they can be shared
@@ -102,7 +108,8 @@ func serve() {
 		logger.Fatal("Error initializing service broker config", err)
 	}
 	var serviceBroker domain.ServiceBroker
-	serviceBroker, err = osbapiBroker.New(cfg, storage.New(db, encryptor), logger)
+	csbStore := storage.New(db, encryptor)
+	serviceBroker, err = osbapiBroker.New(cfg, csbStore, logger)
 	if err != nil {
 		logger.Fatal("Error initializing service broker", err)
 	}
@@ -226,13 +233,50 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 		Handler: router,
 	}
 
-	if tlsCertCaBundle != "" && tlsKey != "" {
-		err := httpServer.ListenAndServeTLS(tlsCertCaBundle, tlsKey)
-		if err != nil {
-			logger.Fatal("Failed to start broker", err)
+	go func() {
+		var err error
+		if tlsCertCaBundle != "" && tlsKey != "" {
+			err = httpServer.ListenAndServeTLS(tlsCertCaBundle, tlsKey)
+		} else {
+			err = httpServer.ListenAndServe()
 		}
-	} else {
-		_ = httpServer.ListenAndServe()
+		if err == http.ErrServerClosed {
+			logger.Info("shutting down csb")
+		}
+	}()
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGKILL, syscall.SIGTERM)
+
+	signalReceived := <-sigChan
+
+	switch signalReceived {
+
+	case syscall.SIGTERM:
+		logger.Info("received SIGTERM, server is shutting down gracefully allowing for in flight work to finish")
+
+		shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer shutdownRelease()
+		for {
+			if store.LockFilesExist() {
+				logger.Info("draining csb instance")
+				time.Sleep(time.Second * 1)
+				break
+			}
+		}
+		logger.Info("draining complete")
+		if err := httpServer.Shutdown(shutdownCtx); err != nil {
+			logger.Fatal("shutdown error: %v", err)
+		}
+
+		logger.Info("shutdown complete")
+	case syscall.SIGKILL:
+		logger.Info("received SIGKILL, server is shutting down immediately. In flight operations will not finish and their state is potentially lost.")
+		if err := httpServer.Close(); err != nil {
+			logger.Error("shutdown", err)
+		}
+	default:
+		logger.Info("csb does not handle the interrupt signal")
 	}
 }
 
