@@ -12,4 +12,4 @@ k8s/
 scripts/
 .github/
 
-
+!pkg/brokerpak/examples/manifest.yml
