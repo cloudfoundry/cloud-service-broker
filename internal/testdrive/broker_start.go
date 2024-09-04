@@ -196,6 +196,8 @@ func WithTLSConfig(isValid bool) StartBrokerOption {
 		defer privKeyFileBuf.Close()
 
 		if !isValid {
+		       // If the isValid parameter is false, the server private key is intentionally corrupted
+		       // by modifying one of its bytes.
 			serverPrivKey[10] = 'a'
 		}
 
