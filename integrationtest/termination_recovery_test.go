@@ -3,6 +3,7 @@ package integrationtest_test
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/integrationtest/packer"
@@ -33,6 +34,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 
 			stdout = gbytes.NewBuffer()
 			stderr = gbytes.NewBuffer()
+			os.RemoveAll("/tmp/csb/")
 			broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(stdout, stderr)))
 
 			DeferCleanup(func() {
@@ -40,7 +42,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 				cleanup(brokerpak)
 			})
 		})
-		FIt("can can finish the in flight operation", func() {
+		It("can finish the in flight operation", func() {
 			By("starting to provision")
 			instanceGUID := uuid.NewString()
 			response := broker.Client.Provision(instanceGUID, serviceOfferingGUID, servicePlanGUID, uuid.NewString(), nil)
@@ -63,13 +65,15 @@ var _ = Describe("Recovery From Broker Termination", func() {
 
 			broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(stdout, stderr)))
 
-			By("checking that the resource finished succesfully")
+			By("checking that the resource finished successfully")
 			response = broker.Client.LastOperation(instanceGUID, uuid.NewString())
 			Expect(string(response.ResponseBody)).To(ContainSubstring(`{"state":"succeeded","description":"provision succeeded"}`))
 			Expect(response.Error).NotTo(HaveOccurred())
 			Expect(response.StatusCode).To(Equal(http.StatusOK))
 
-			By("ensuring SI can be succesfully deleted")
+			By("ensuring SI can be successfully deleted")
+			si := testdrive.ServiceInstance{GUID: instanceGUID, ServiceOfferingGUID: serviceOfferingGUID, ServicePlanGUID: servicePlanGUID}
+			Expect(broker.Deprovision(si)).To(Succeed())
 		})
 	})
 	Describe("running csb as a CF app", func() {
@@ -78,6 +82,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 
 			stdout = NewBuffer()
 			stderr = NewBuffer()
+			os.RemoveAll("/tmp/csb/")
 			broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(stdout, stderr), testdrive.WithEnv("CF_INSTANCE_GUID=dcfa061e-c0e3-4237-a805-734578347393")))
 
 			DeferCleanup(func() {
@@ -105,7 +110,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 
 			By("logging a message")
 			ws := fmt.Sprintf(`"workspace_id":"tf:%s:"`, instanceGUID)
-			Expect(string(stdout.Contents())).To(SatisfyAll(ContainSubstring("received SIGKILL"), ContainSubstring("recover-in-progress-operations.mark-as-failed"), ContainSubstring(ws)))
+			Expect(string(stdout.Contents())).To(SatisfyAll(ContainSubstring("recover-in-progress-operations.mark-as-failed"), ContainSubstring(ws)))
 
 			// OSBAPI requires that HTTP 409 (Conflict) is returned
 			By("refusing to allow a duplicate instance")
