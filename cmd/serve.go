@@ -253,19 +253,17 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 	switch signalReceived {
 
 	case syscall.SIGTERM:
-		logger.Info("received SIGTERM, server is shutting down gracefully allowing for in flight work to finish")
-
 		shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), shutdownTimeout)
+		if err := httpServer.Shutdown(shutdownCtx); err != nil {
+			logger.Fatal("shutdown error: %v", err)
+		}
+		logger.Info("received SIGTERM, server is shutting down gracefully allowing for in flight work to finish")
 		defer shutdownRelease()
 		for store.LockFilesExist() {
 			logger.Info("draining csb instance")
 			time.Sleep(time.Second * 1)
 		}
 		logger.Info("draining complete")
-		if err := httpServer.Shutdown(shutdownCtx); err != nil {
-			logger.Fatal("shutdown error: %v", err)
-		}
-
 		logger.Info("shutdown complete")
 	case syscall.SIGKILL:
 		logger.Info("received SIGKILL, server is shutting down immediately. In flight operations will not finish and their state is potentially lost.")

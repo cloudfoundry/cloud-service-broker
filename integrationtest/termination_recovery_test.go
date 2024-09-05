@@ -51,17 +51,20 @@ var _ = Describe("Recovery From Broker Termination", func() {
 			Expect(response.StatusCode).To(Equal(http.StatusAccepted))
 			Eventually(stdout, time.Second*5).Should(gbytes.Say(`tofu","apply","-auto-approve"`))
 			By("gracefully stopping the broker")
+			// Stop seems to be blocking, so run it in a routine so we can check that the broker actually rejects requests until it's fully stopped.
+			go func() {
+				Expect(broker.Stop()).To(Succeed())
+			}()
 
-			Expect(broker.Stop()).To(Succeed())
+			By("logging a message")
+			Eventually(stdout).Should(gbytes.Say("received SIGTERM"))
 
 			By("ensuring  that the broker rejects requests")
 			Expect(broker.Client.LastOperation(instanceGUID, uuid.NewString()).Error).To(HaveOccurred())
 
-			By("logging a message")
-			Expect(string(stdout.Contents())).To(ContainSubstring("received SIGTERM"))
-			Expect(string(stdout.Contents())).To(ContainSubstring("draining csb"))
-			Expect(string(stdout.Contents())).To(ContainSubstring("draining complete"))
-			Expect(string(stdout.Contents())).ToNot(ContainSubstring("shutdown error"))
+			Eventually(stdout, time.Minute).Should(Say("draining csb"))
+			Eventually(stdout, time.Minute).Should(Say("draining complete"))
+			Eventually(stdout, time.Minute).ShouldNot(Say("shutdown error"))
 
 			broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(stdout, stderr)))
 
