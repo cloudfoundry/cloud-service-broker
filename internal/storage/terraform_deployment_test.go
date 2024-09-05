@@ -206,6 +206,23 @@ var _ = Describe("TerraformDeployments", func() {
 			Expect(store.DeleteTerraformDeployment("not-there")).NotTo(HaveOccurred())
 		})
 	})
+
+	Describe("LockFileExists", func() {
+		FIt("reports correct status", func() {
+			Expect(store.WriteLockFile("1234")).To(Succeed())
+			Expect(store.WriteLockFile("5678")).To(Succeed())
+
+			Expect(store.LockFilesExist()).To(BeTrue())
+
+			Expect(store.RemoveLockFile("1234")).To(Succeed())
+
+			Expect(store.LockFilesExist()).To(BeTrue())
+
+			Expect(store.RemoveLockFile("5678")).To(Succeed())
+
+			Expect(store.LockFilesExist()).To(BeFalse())
+		})
+	})
 })
 
 func addFakeTerraformDeployments() {

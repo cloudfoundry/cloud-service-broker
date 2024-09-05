@@ -161,7 +161,7 @@ func (s *Storage) loadTerraformDeploymentIfExists(id string, receiver any) error
 
 func (s *Storage) LockFilesExist() bool {
 	entries, _ := os.ReadDir(s.lockFileDir)
-	return len(entries) == 0
+	return len(entries) != 0
 }
 
 func (s *Storage) WriteLockFile(deploymentID string) error {
