@@ -257,12 +257,9 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 
 		shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer shutdownRelease()
-		for {
-			if store.LockFilesExist() {
-				logger.Info("draining csb instance")
-				time.Sleep(time.Second * 1)
-				break
-			}
+		for store.LockFilesExist() {
+			logger.Info("draining csb instance")
+			time.Sleep(time.Second * 1)
 		}
 		logger.Info("draining complete")
 		if err := httpServer.Shutdown(shutdownCtx); err != nil {
