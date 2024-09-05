@@ -93,8 +93,9 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 	}
 
 	start := time.Now()
+
+	scheme := "http"
 	for {
-		scheme := "http"
 		for _, envVar := range cmd.Env {
 			if strings.HasPrefix(envVar, "TLS_") {
 				http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
@@ -119,7 +120,7 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 	}
 }
 
-func createCAKeyPair(msg string) (*x509.Certificate, []byte, *rsa.PrivateKey) {
+func createCAKeyPair(msg string) (*x509.Certificate, *rsa.PrivateKey) {
 	ca := &x509.Certificate{
 		SerialNumber: big.NewInt(2019),
 		Subject: pkix.Name{
@@ -135,12 +136,7 @@ func createCAKeyPair(msg string) (*x509.Certificate, []byte, *rsa.PrivateKey) {
 	caPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	Expect(err).NotTo(HaveOccurred())
 
-	caBytes, err := x509.CreateCertificate(rand.Reader, ca, ca, &caPrivKey.PublicKey, caPrivKey)
-	Expect(err).NotTo(HaveOccurred())
-
-	caPEM, _ := encodeKeyPair(caBytes, x509.MarshalPKCS1PrivateKey(caPrivKey))
-
-	return ca, caPEM, caPrivKey
+	return ca, caPrivKey
 }
 
 func createKeyPairSignedByCA(ca *x509.Certificate, caPrivKey *rsa.PrivateKey) ([]byte, []byte) {
@@ -163,8 +159,7 @@ func createKeyPairSignedByCA(ca *x509.Certificate, caPrivKey *rsa.PrivateKey) ([
 	certBytes, err := x509.CreateCertificate(rand.Reader, cert, ca, &certPrivKey.PublicKey, caPrivKey)
 	Expect(err).NotTo(HaveOccurred())
 
-	certPEM, certPrivKeyPEM := encodeKeyPair(certBytes, x509.MarshalPKCS1PrivateKey(certPrivKey))
-	return certPEM, certPrivKeyPEM
+	return encodeKeyPair(certBytes, x509.MarshalPKCS1PrivateKey(certPrivKey))
 }
 
 func encodeKeyPair(caBytes, caPrivKeyBytes []byte) ([]byte, []byte) {
@@ -183,7 +178,7 @@ func encodeKeyPair(caBytes, caPrivKeyBytes []byte) ([]byte, []byte) {
 
 func WithTLSConfig(isValid bool) StartBrokerOption {
 	return func(cfg *startBrokerConfig) {
-		ca, _, caPrivKey := createCAKeyPair("US")
+		ca, caPrivKey := createCAKeyPair("US")
 
 		serverCert, serverPrivKey := createKeyPairSignedByCA(ca, caPrivKey)
 
@@ -196,14 +191,14 @@ func WithTLSConfig(isValid bool) StartBrokerOption {
 		defer privKeyFileBuf.Close()
 
 		if !isValid {
-		       // If the isValid parameter is false, the server private key is intentionally corrupted
-		       // by modifying one of its bytes.
+			// If the isValid parameter is false, the server private key is intentionally corrupted
+			// by modifying one of its bytes.
 			serverPrivKey[10] = 'a'
 		}
 
-		Expect(os.WriteFile(privKeyFileBuf.Name(), serverPrivKey, 0644)).To(Succeed())
+		Expect(os.WriteFile(privKeyFileBuf.Name(), serverPrivKey, 0o644)).To(Succeed())
 
-		Expect(os.WriteFile(certFileBuf.Name(), serverCert, 0644)).To(Succeed())
+		Expect(os.WriteFile(certFileBuf.Name(), serverCert, 0o644)).To(Succeed())
 
 		cfg.env = append(cfg.env, fmt.Sprintf("TLS_CERT_CHAIN=%s", certFileBuf.Name()))
 		cfg.env = append(cfg.env, fmt.Sprintf("TLS_PRIVATE_KEY=%s", privKeyFileBuf.Name()))

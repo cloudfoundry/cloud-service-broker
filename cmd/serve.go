@@ -215,24 +215,25 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 	host := viper.GetString(apiHostProp)
 	logger.Info("Serving", lager.Data{"port": port})
 
-	tlsCertCaBundle := viper.GetString(tlsCertCaBundleProp)
-	tlsKey := viper.GetString(tlsKeyProp)
+	tlsCertCaBundleFilePath := viper.GetString(tlsCertCaBundleProp)
+	tlsKeyFilePath := viper.GetString(tlsKeyProp)
 
-	logger.Info("tlsCertCaBundle", lager.Data{"tlsCertCaBundle": tlsCertCaBundle})
-	logger.Info("tlsKey", lager.Data{"tlsKey": tlsKey})
+	logger.Info("tlsCertCaBundle", lager.Data{"tlsCertCaBundle": tlsCertCaBundleFilePath})
+	logger.Info("tlsKey", lager.Data{"tlsKey": tlsKeyFilePath})
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf("%s:%s", host, port),
 		Handler: router,
 	}
-
-	if tlsCertCaBundle != "" && tlsKey != "" {
-		err := httpServer.ListenAndServeTLS(tlsCertCaBundle, tlsKey)
-		if err != nil {
-			logger.Fatal("Failed to start broker", err)
-		}
+	var err error
+	if tlsCertCaBundleFilePath != "" && tlsKeyFilePath != "" {
+		err = httpServer.ListenAndServeTLS(tlsCertCaBundleFilePath, tlsKeyFilePath)
 	} else {
-		_ = httpServer.ListenAndServe()
+		err = httpServer.ListenAndServe()
+	}
+	// when the server is receiving a signal, we probably do not want to panic.
+	if err != http.ErrServerClosed {
+		logger.Fatal("Failed to start broker", err)
 	}
 }
 
