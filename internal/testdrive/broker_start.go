@@ -95,16 +95,22 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 	start := time.Now()
 
 	scheme := "http"
-	for {
-		for _, envVar := range cmd.Env {
-			if strings.HasPrefix(envVar, "TLS_") {
-				http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-				scheme = "https"
-				break
-			}
-		}
 
-		response, err := http.Head(fmt.Sprintf("%s://localhost:%d", scheme, port))
+	for _, envVar := range cmd.Env {
+		if strings.HasPrefix(envVar, "TLS_") {
+
+			ignoreSelfSignedCerts := &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			}
+			broker.Client.BaseURL.Scheme = "https"
+			broker.Client.Transport = ignoreSelfSignedCerts
+			scheme = "https"
+			break
+		}
+	}
+
+	for {
+		response, err := broker.Client.Head(fmt.Sprintf("%s://localhost:%d", scheme, port))
 		switch {
 		case err == nil && response.StatusCode == http.StatusOK:
 			return &broker, nil
@@ -176,33 +182,43 @@ func encodeKeyPair(caBytes, caPrivKeyBytes []byte) ([]byte, []byte) {
 	return caPEM, caPrivKeyPEM
 }
 
-func WithTLSConfig(isValid bool) StartBrokerOption {
+func WithInvalidTLSConfig() StartBrokerOption {
 	return func(cfg *startBrokerConfig) {
-		ca, caPrivKey := createCAKeyPair("US")
-
-		serverCert, serverPrivKey := createKeyPairSignedByCA(ca, caPrivKey)
-
-		certFileBuf, err := os.CreateTemp("", "")
-		Expect(err).NotTo(HaveOccurred())
-		defer certFileBuf.Close()
-
-		privKeyFileBuf, err := os.CreateTemp("", "")
-		Expect(err).NotTo(HaveOccurred())
-		defer privKeyFileBuf.Close()
-
-		if !isValid {
-			// If the isValid parameter is false, the server private key is intentionally corrupted
-			// by modifying one of its bytes.
-			serverPrivKey[10] = 'a'
-		}
-
-		Expect(os.WriteFile(privKeyFileBuf.Name(), serverPrivKey, 0o644)).To(Succeed())
-
-		Expect(os.WriteFile(certFileBuf.Name(), serverCert, 0o644)).To(Succeed())
-
-		cfg.env = append(cfg.env, fmt.Sprintf("TLS_CERT_CHAIN=%s", certFileBuf.Name()))
-		cfg.env = append(cfg.env, fmt.Sprintf("TLS_PRIVATE_KEY=%s", privKeyFileBuf.Name()))
+		tlsConfig(cfg, false)
 	}
+}
+
+func WithTLSConfig() StartBrokerOption {
+	return func(cfg *startBrokerConfig) {
+		tlsConfig(cfg, true)
+	}
+}
+
+func tlsConfig(cfg *startBrokerConfig, valid bool) {
+	ca, caPrivKey := createCAKeyPair("US")
+
+	serverCert, serverPrivKey := createKeyPairSignedByCA(ca, caPrivKey)
+
+	certFileBuf, err := os.CreateTemp("", "")
+	Expect(err).NotTo(HaveOccurred())
+	defer certFileBuf.Close()
+
+	privKeyFileBuf, err := os.CreateTemp("", "")
+	Expect(err).NotTo(HaveOccurred())
+	defer privKeyFileBuf.Close()
+
+	if !valid {
+		// If the isValid parameter is false, the server private key is intentionally corrupted
+		// by modifying one of its bytes.
+		serverPrivKey[10] = 'a'
+	}
+
+	Expect(os.WriteFile(privKeyFileBuf.Name(), serverPrivKey, 0o644)).To(Succeed())
+
+	Expect(os.WriteFile(certFileBuf.Name(), serverCert, 0o644)).To(Succeed())
+
+	cfg.env = append(cfg.env, fmt.Sprintf("TLS_CERT_CHAIN=%s", certFileBuf.Name()))
+	cfg.env = append(cfg.env, fmt.Sprintf("TLS_PRIVATE_KEY=%s", privKeyFileBuf.Name()))
 }
 
 func WithEnv(extraEnv ...string) StartBrokerOption {

@@ -28,19 +28,17 @@ var _ = Describe("Starting Server", func() {
 	When("TLS data is provided", func() {
 		When("Valid data exists", func() {
 			It("Should accept HTTPS requests", func() {
-				isValid := true
-				broker, err := testdrive.StartBroker(csb, brokerpak, database, testdrive.WithTLSConfig(isValid), testdrive.WithEnv(fmt.Sprintf("GSB_SERVICE_ALPHA_SERVICE_PLANS=%s", userProvidedPlan)), testdrive.WithOutputs(GinkgoWriter, GinkgoWriter))
+				broker, err := testdrive.StartBroker(csb, brokerpak, database, testdrive.WithTLSConfig(), testdrive.WithEnv(fmt.Sprintf("GSB_SERVICE_ALPHA_SERVICE_PLANS=%s", userProvidedPlan)), testdrive.WithOutputs(GinkgoWriter, GinkgoWriter))
 				Expect(err).NotTo(HaveOccurred())
 
-				_, err = http.Get(fmt.Sprintf("https://localhost:%d", broker.Port))
+				_, err = broker.Client.Get(fmt.Sprintf("https://localhost:%d", broker.Port))
 				Expect(err).NotTo(HaveOccurred())
 			})
 		})
 
 		When("Invalid data exists", func() {
 			It("Should fail to start", func() {
-				notValid := false
-				_, err := testdrive.StartBroker(csb, brokerpak, database, testdrive.WithTLSConfig(notValid), testdrive.WithEnv(fmt.Sprintf("GSB_SERVICE_ALPHA_SERVICE_PLANS=%s", userProvidedPlan)), testdrive.WithOutputs(GinkgoWriter, GinkgoWriter))
+				_, err := testdrive.StartBroker(csb, brokerpak, database, testdrive.WithInvalidTLSConfig(), testdrive.WithEnv(fmt.Sprintf("GSB_SERVICE_ALPHA_SERVICE_PLANS=%s", userProvidedPlan)), testdrive.WithOutputs(GinkgoWriter, GinkgoWriter))
 				Expect(err).To(HaveOccurred())
 			})
 		})
