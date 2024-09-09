@@ -1,6 +1,6 @@
 module github.com/cloudfoundry/cloud-service-broker/v2
 
-go 1.23.0
+go 1.23.1
 
 require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20220620130410-645eee56ecdb
@@ -19,15 +19,15 @@ require (
 	github.com/onsi/ginkgo/v2 v2.20.2
 	github.com/onsi/gomega v1.34.2
 	github.com/otiai10/copy v1.14.0
-	github.com/pivotal-cf/brokerapi/v11 v11.0.7
+	github.com/pivotal-cf/brokerapi/v11 v11.0.8
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.7.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	github.com/zclconf/go-cty v1.15.0
-	golang.org/x/crypto v0.26.0
-	golang.org/x/net v0.28.0
+	golang.org/x/crypto v0.27.0
+	golang.org/x/net v0.29.0
 	golang.org/x/tools v0.24.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.5.7
@@ -119,8 +119,8 @@ require (
 	golang.org/x/mod v0.20.0 // indirect
 	golang.org/x/oauth2 v0.18.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.24.0 // indirect
-	golang.org/x/text v0.17.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/text v0.18.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/api v0.171.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
