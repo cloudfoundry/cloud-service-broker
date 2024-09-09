@@ -146,3 +146,10 @@ Brokerpak configuration values:
 |<tt>GSB_SERVICE_*SERVICE_NAME*_PLANS</tt>|service.*service-name*.plans| string | JSON plan collection to augment plans for *service-name*|
 
 
+## CLI Configuration
+
+The `cloud-service-broker pak` command supports the following configuration values:
+
+| Environment Variable | Config File Value | Type | Description |
+| - | - | - | - |
+| <tt>PAK_BUILD_CACHE_PATH</tt> | pak.cache_path | string | Set to a non-empty file system path to use a cache when `csb pak build` downloads binaries |
