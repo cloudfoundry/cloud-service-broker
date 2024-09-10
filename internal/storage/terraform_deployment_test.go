@@ -208,7 +208,7 @@ var _ = Describe("TerraformDeployments", func() {
 	})
 
 	Describe("LockFileExists", func() {
-		FIt("reports correct status", func() {
+		It("reports correct status", func() {
 			Expect(store.WriteLockFile("1234")).To(Succeed())
 			Expect(store.WriteLockFile("5678")).To(Succeed())
 
