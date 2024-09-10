@@ -83,6 +83,8 @@ Broker service configuration values:
 | <tt>SECURITY_USER_NAME</tt> <b>*</b> | api.user | string | <p>Broker authentication username</p>|
 | <tt>SECURITY_USER_PASSWORD</tt> <b>*</b> | api.password | string | <p>Broker authentication password</p>|
 | <tt>PORT</tt> | api.port | string | <p>Port to bind broker to</p>|
+| <tt>TLS_CERT_CHAIN</tt> | api.certCaBundle | string | <p>File path to a pem encoded certificate chain</p>|
+| <tt>TLS_PRIVATE_KEY</tt> | api.tlsKey | string | <p>File path to a pem encoded private key</p>|
 
 ## Feature flags Configuration
 
