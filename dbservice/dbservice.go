@@ -17,7 +17,6 @@ package dbservice
 
 import (
 	"fmt"
-	"os"
 	"sync"
 
 	"code.cloudfoundry.org/lager/v3"
@@ -43,15 +42,6 @@ func NewWithMigrations(logger lager.Logger) *gorm.DB {
 		db = SetupDB(logger)
 		if err := RunMigrations(db); err != nil {
 			panic(fmt.Sprintf("Error migrating database: %s", err))
-		}
-		// We only wan't to fail interrupted service instances if we detect that we run as a CF APP.
-		// VM based csb instances implement a drain mechanism and should need this. Additionally VM
-		// based csb deployments are scalable horizontally and the below would fail in flight instances
-		// of another csb process.
-		if os.Getenv("CF_INSTANCE_GUID") != "" {
-			if err := recoverInProgressOperations(db, logger); err != nil {
-				panic(fmt.Sprintf("Error recovering in-progress operations: %s", err))
-			}
 		}
 	})
 	return db

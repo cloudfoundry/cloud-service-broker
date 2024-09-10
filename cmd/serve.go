@@ -109,6 +109,8 @@ func serve() {
 	}
 	var serviceBroker domain.ServiceBroker
 	csbStore := storage.New(db, encryptor)
+	csbStore.RecoverInProgressOperations(logger)
+
 	serviceBroker, err = osbapiBroker.New(cfg, csbStore, logger)
 	if err != nil {
 		logger.Fatal("Error initializing service broker", err)
@@ -140,7 +142,7 @@ func serve() {
 	if err != nil {
 		logger.Error("failed to get database connection", err)
 	}
-	startServer(cfg.Registry, sqldb, brokerAPI, storage.New(db, encryptor), credentials)
+	startServer(cfg.Registry, sqldb, brokerAPI, csbStore, credentials)
 }
 
 func serveDocs() {

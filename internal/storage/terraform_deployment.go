@@ -172,6 +172,24 @@ func (s *Storage) RemoveLockFile(deploymentID string) error {
 	return os.Remove(fmt.Sprintf("%s/%s", s.lockFileDir, sanitizeFileName(deploymentID)))
 }
 
+func (s *Storage) GetLockFileNames() ([]string, error) {
+	entries, err := os.ReadDir(s.lockFileDir)
+	var names []string
+	for _, entry := range entries {
+		names = append(names, entry.Name())
+	}
+	return names, err
+}
+
+func (s *Storage) LockedDeploymentIds() ([]string, error) {
+	entries, err := os.ReadDir(s.lockFileDir)
+	var names []string
+	for _, entry := range entries {
+		names = append(names, strings.ReplaceAll(entry.Name(), "_", ":"))
+	}
+	return names, err
+}
+
 func sanitizeFileName(name string) string {
 	return strings.ReplaceAll(name, ":", "_")
 }

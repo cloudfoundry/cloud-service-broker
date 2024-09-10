@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/hashicorp/go-version"
@@ -35,6 +36,7 @@ var _ = Describe("TerraformDeployments", func() {
 			},
 		}
 
+		os.RemoveAll("/tmp/csb/")
 		store = storage.New(db, encryptor)
 	})
 
@@ -221,6 +223,34 @@ var _ = Describe("TerraformDeployments", func() {
 			Expect(store.RemoveLockFile("5678")).To(Succeed())
 
 			Expect(store.LockFilesExist()).To(BeFalse())
+		})
+	})
+
+	Describe("GetLockFileNames", func() {
+		FIt("returns correct names", func() {
+			names, err := store.GetLockFileNames()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(names).To(BeEmpty())
+
+			Expect(store.WriteLockFile("1234")).To(Succeed())
+			Expect(store.WriteLockFile("5678")).To(Succeed())
+
+			names, err = store.GetLockFileNames()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(names).To(ContainElements("1234", "5678"))
+
+			Expect(store.RemoveLockFile("1234")).To(Succeed())
+
+			names, err = store.GetLockFileNames()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(names).To(ContainElements("5678"))
+			Expect(names).ToNot(ContainElements("1234"))
+
+			Expect(store.RemoveLockFile("5678")).To(Succeed())
+
+			names, err = store.GetLockFileNames()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(names).To(BeEmpty())
 		})
 	})
 })
