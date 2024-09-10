@@ -63,7 +63,7 @@ var _ = Describe("Import State", func() {
 		By("importing state into the vacant service instance")
 		req := must(http.NewRequest(http.MethodPatch, fmt.Sprintf("http://localhost:%d/import_state/%s", broker.Port, instance.GUID), bytes.NewReader(stateToImport)))
 		req.SetBasicAuth(broker.Username, broker.Password)
-		importResponse := must(http.DefaultClient.Do(req))
+		importResponse := must(broker.Client.Do(req))
 		Expect(importResponse).To(HaveHTTPStatus(http.StatusOK))
 
 		By("checking that the state was imported into the database")

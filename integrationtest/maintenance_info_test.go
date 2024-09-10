@@ -33,6 +33,7 @@ var _ = Describe("Maintenance Info", func() {
 				broker = must(testdrive.StartBroker(
 					csb, brokerpak, database,
 					testdrive.WithOutputs(GinkgoWriter, GinkgoWriter),
+					testdrive.WithTLSConfig(),
 					testdrive.WithEnv("TERRAFORM_UPGRADES_ENABLED=true"),
 				))
 			})

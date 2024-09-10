@@ -60,6 +60,7 @@ func New(username, password, hostname string, port int) (*Client, error) {
 }
 
 type Client struct {
+	http.Client
 	BaseURL *url.URL
 }
 
@@ -135,7 +136,7 @@ func (client *Client) makeRequest(method, path, requestID string, body any) *Bro
 		return &br
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 
 	br.UpdateResponse(resp)
 	br.UpdateError(err)
