@@ -108,7 +108,13 @@ func serve() {
 		logger.Fatal("Error initializing service broker config", err)
 	}
 	var serviceBroker domain.ServiceBroker
-	serviceBroker, err = osbapiBroker.New(cfg, storage.New(db, encryptor), logger)
+	csbStore := storage.New(db, encryptor)
+	err = csbStore.RecoverInProgressOperations(logger)
+	if err != nil {
+		logger.Fatal("Error recovering in-progress operations", err)
+	}
+
+	serviceBroker, err = osbapiBroker.New(cfg, csbStore, logger)
 	if err != nil {
 		logger.Fatal("Error initializing service broker", err)
 	}
@@ -139,7 +145,6 @@ func serve() {
 	if err != nil {
 		logger.Error("failed to get database connection", err)
 	}
-	csbStore := storage.New(db, encryptor)
 	httpServer := startServer(cfg.Registry, sqldb, brokerAPI, csbStore, credentials)
 
 	listenForShutdownSignal(httpServer, logger, csbStore)
