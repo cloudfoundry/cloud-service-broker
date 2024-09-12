@@ -115,7 +115,7 @@ func StartBroker(csbPath, bpk, db string, opts ...StartBrokerOption) (*Broker, e
 		case err == nil && response.StatusCode == http.StatusOK:
 			return &broker, nil
 		case time.Since(start) > time.Minute:
-			if err := broker.runner.stop(); err != nil {
+			if err := broker.runner.forceStop(); err != nil {
 				return nil, err
 			}
 			return nil, fmt.Errorf("timed out after %s waiting for broker to start: %s\n%s", time.Since(start), stdout.String(), stderr.String())

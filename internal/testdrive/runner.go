@@ -2,6 +2,7 @@ package testdrive
 
 import (
 	"os/exec"
+	"syscall"
 	"time"
 )
 
@@ -26,12 +27,29 @@ func (r *runner) error(err error) *runner {
 	return r
 }
 
-func (r *runner) stop() error {
+func (r *runner) gracefullStop() error {
 	if r.exited {
 		return nil
 	}
 	if r.cmd != nil && r.cmd.Process != nil {
-		if err := r.cmd.Process.Kill(); err != nil {
+		if err := r.cmd.Process.Signal(syscall.SIGTERM); err != nil {
+			return err
+		}
+	}
+
+	for !r.exited {
+		time.Sleep(time.Millisecond)
+	}
+
+	return nil
+}
+
+func (r *runner) forceStop() error {
+	if r.exited {
+		return nil
+	}
+	if r.cmd != nil && r.cmd.Process != nil {
+		if err := r.cmd.Process.Signal(syscall.SIGKILL); err != nil {
 			return err
 		}
 	}
