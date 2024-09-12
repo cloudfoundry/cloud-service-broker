@@ -30,11 +30,11 @@ var _ = Describe("Recovery From Broker Termination", func() {
 
 	BeforeEach(func() {
 		brokerpak = must(packer.BuildBrokerpak(csb, fixtures("termination-recovery")))
-	})
-	BeforeEach(func() {
+
 		stdout = NewBuffer()
 		stderr = NewBuffer()
 	})
+
 	Describe("running csb on a VM", func() {
 		Describe("when a vm broker properly drains", func() {
 			BeforeEach(func() {
@@ -56,6 +56,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 				By("gracefully stopping the broker")
 				// Stop seems to be blocking, so run it in a routine so we can check that the broker actually rejects requests until it's fully stopped.
 				go func() {
+					defer GinkgoRecover()
 					Expect(broker.Stop()).To(Succeed())
 				}()
 
@@ -107,6 +108,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 				By("forcefully stopping the broker")
 				// Stop seems to be blocking, so run it in a routine so we can check that the broker actually rejects requests until it's fully stopped.
 				go func() {
+					defer GinkgoRecover()
 					Expect(broker.Terminate()).To(Succeed())
 				}()
 

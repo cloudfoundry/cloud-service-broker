@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -165,22 +166,26 @@ func (s *Storage) LockFilesExist() bool {
 }
 
 func (s *Storage) WriteLockFile(deploymentID string) error {
-	return os.WriteFile(fmt.Sprintf("%s/%s", s.lockFileDir, sanitizeFileName(deploymentID)), []byte{}, 0o644)
+	return os.WriteFile(filepath.Join(s.lockFileDir, fileNameFromDeploymentID(deploymentID)), []byte{}, 0o644)
 }
 
 func (s *Storage) RemoveLockFile(deploymentID string) error {
-	return os.Remove(fmt.Sprintf("%s/%s", s.lockFileDir, sanitizeFileName(deploymentID)))
+	return os.Remove(filepath.Join(s.lockFileDir, fileNameFromDeploymentID(deploymentID)))
 }
 
 func (s *Storage) GetLockedDeploymentIds() ([]string, error) {
 	entries, err := os.ReadDir(s.lockFileDir)
 	var names []string
 	for _, entry := range entries {
-		names = append(names, strings.ReplaceAll(entry.Name(), "_", ":"))
+		names = append(names, deploymentIDFromFileName(entry.Name()))
 	}
 	return names, err
 }
 
-func sanitizeFileName(name string) string {
-	return strings.ReplaceAll(name, ":", "_")
+func fileNameFromDeploymentID(deploymentID string) string {
+	return strings.ReplaceAll(deploymentID, ":", "_")
+}
+
+func deploymentIDFromFileName(fileName string) string {
+	return strings.ReplaceAll(fileName, "_", ":")
 }
