@@ -51,7 +51,7 @@ func (d *DeploymentManager) MarkOperationStarted(deployment *storage.TerraformDe
 		return err
 	}
 
-	return nil
+	return d.store.WriteLockFile(deployment.ID)
 }
 
 func (d *DeploymentManager) MarkOperationFinished(deployment *storage.TerraformDeployment, err error) error {
@@ -74,8 +74,16 @@ func (d *DeploymentManager) MarkOperationFinished(deployment *storage.TerraformD
 		})
 
 	}
-
-	return d.store.StoreTerraformDeployment(*deployment)
+	err = d.store.StoreTerraformDeployment(*deployment)
+	if err != nil {
+		d.logger.Error("store-state", err, lager.Data{
+			"deploymentID": deployment.ID,
+			"message":      deployment.LastOperationMessage,
+		})
+	} else {
+		d.logger.Info(fmt.Sprintf("successfully stored state for %s", deployment.ID))
+	}
+	return d.store.RemoveLockFile(deployment.ID)
 }
 
 func (d *DeploymentManager) OperationStatus(deploymentID string) (bool, string, error) {
