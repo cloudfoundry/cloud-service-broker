@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"code.cloudfoundry.org/lager/v3/lagertest"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"gorm.io/driver/sqlite"
@@ -19,6 +20,7 @@ var (
 	db        *gorm.DB
 	encryptor *storagefakes.FakeEncryptor
 	store     *storage.Storage
+	logger    *lagertest.TestLogger
 )
 
 func TestStorage(t *testing.T) {

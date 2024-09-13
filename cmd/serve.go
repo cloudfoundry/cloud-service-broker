@@ -22,7 +22,11 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	"code.cloudfoundry.org/lager/v3"
 	osbapiBroker "github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
@@ -55,6 +59,8 @@ const (
 	tlsKeyProp          = "api.tlsKey"
 	encryptionPasswords = "db.encryption.passwords"
 	encryptionEnabled   = "db.encryption.enabled"
+
+	shutdownTimeout = time.Hour
 )
 
 var cfCompatibilityToggle = toggles.Features.Toggle("enable-cf-sharing", false, `Set all services to have the Sharable flag so they can be shared
@@ -102,7 +108,13 @@ func serve() {
 		logger.Fatal("Error initializing service broker config", err)
 	}
 	var serviceBroker domain.ServiceBroker
-	serviceBroker, err = osbapiBroker.New(cfg, storage.New(db, encryptor), logger)
+	csbStore := storage.New(db, encryptor)
+	err = csbStore.RecoverInProgressOperations(logger)
+	if err != nil {
+		logger.Fatal("Error recovering in-progress operations", err)
+	}
+
+	serviceBroker, err = osbapiBroker.New(cfg, csbStore, logger)
 	if err != nil {
 		logger.Fatal("Error initializing service broker", err)
 	}
@@ -133,7 +145,9 @@ func serve() {
 	if err != nil {
 		logger.Error("failed to get database connection", err)
 	}
-	startServer(cfg.Registry, sqldb, brokerAPI, storage.New(db, encryptor), credentials)
+	httpServer := startServer(cfg.Registry, sqldb, brokerAPI, csbStore, credentials)
+
+	listenForShutdownSignal(httpServer, logger, csbStore)
 }
 
 func serveDocs() {
@@ -188,7 +202,7 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
 	return config.Encryptor
 }
 
-func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.Handler, store *storage.Storage, credentials brokerapi.BrokerCredentials) {
+func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.Handler, store *storage.Storage, credentials brokerapi.BrokerCredentials) *http.Server {
 	logger := utils.NewLogger("cloud-service-broker")
 
 	docsHandler := server.DocsHandler(registry)
@@ -225,24 +239,44 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 		Addr:    fmt.Sprintf("%s:%s", host, port),
 		Handler: router,
 	}
-	var err error
-	if tlsCertCaBundleFilePath != "" && tlsKeyFilePath != "" {
-		err = httpServer.ListenAndServeTLS(tlsCertCaBundleFilePath, tlsKeyFilePath)
-	} else {
-		err = httpServer.ListenAndServe()
-	}
-	// when the server is receiving a signal, we probably do not want to panic.
-	if err != http.ErrServerClosed {
-		logger.Fatal("Failed to start broker", err)
-	}
+	go func() {
+		var err error
+		if tlsCertCaBundleFilePath != "" && tlsKeyFilePath != "" {
+			err = httpServer.ListenAndServeTLS(tlsCertCaBundleFilePath, tlsKeyFilePath)
+		} else {
+			err = httpServer.ListenAndServe()
+		}
+		if err == http.ErrServerClosed {
+			logger.Info("shutting down csb")
+		} else {
+			logger.Fatal("Failed to start broker", err)
+		}
+	}()
+	return httpServer
 }
 
-func labelName(label string) string {
-	switch label {
-	case "":
-		return "none"
+func listenForShutdownSignal(httpServer *http.Server, logger lager.Logger, store *storage.Storage) {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGTERM)
+
+	signalReceived := <-sigChan
+
+	switch signalReceived {
+
+	case syscall.SIGTERM:
+		shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), shutdownTimeout)
+		if err := httpServer.Shutdown(shutdownCtx); err != nil {
+			logger.Fatal("shutdown error: %v", err)
+		}
+		logger.Info("received SIGTERM, server is shutting down gracefully allowing for in flight work to finish")
+		defer shutdownRelease()
+		for store.LockFilesExist() {
+			logger.Info("draining csb in progress")
+			time.Sleep(time.Second * 1)
+		}
+		logger.Info("draining complete")
 	default:
-		return label
+		logger.Info(fmt.Sprintf("csb does not handle the %s interrupt signal", signalReceived))
 	}
 }
 
@@ -287,4 +321,13 @@ func importStateHandler(store *storage.Storage) http.Handler {
 			return
 		}
 	})
+}
+
+func labelName(label string) string {
+	switch label {
+	case "":
+		return "none"
+	default:
+		return label
+	}
 }

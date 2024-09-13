@@ -197,6 +197,17 @@ type FakeStorage struct {
 		result1 storage.TerraformDeployment
 		result2 error
 	}
+	RemoveLockFileStub        func(string) error
+	removeLockFileMutex       sync.RWMutex
+	removeLockFileArgsForCall []struct {
+		arg1 string
+	}
+	removeLockFileReturns struct {
+		result1 error
+	}
+	removeLockFileReturnsOnCall map[int]struct {
+		result1 error
+	}
 	StoreBindRequestDetailsStub        func(storage.BindRequestDetails) error
 	storeBindRequestDetailsMutex       sync.RWMutex
 	storeBindRequestDetailsArgsForCall []struct {
@@ -240,6 +251,17 @@ type FakeStorage struct {
 		result1 error
 	}
 	storeTerraformDeploymentReturnsOnCall map[int]struct {
+		result1 error
+	}
+	WriteLockFileStub        func(string) error
+	writeLockFileMutex       sync.RWMutex
+	writeLockFileArgsForCall []struct {
+		arg1 string
+	}
+	writeLockFileReturns struct {
+		result1 error
+	}
+	writeLockFileReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
@@ -1193,6 +1215,67 @@ func (fake *FakeStorage) GetTerraformDeploymentReturnsOnCall(i int, result1 stor
 	}{result1, result2}
 }
 
+func (fake *FakeStorage) RemoveLockFile(arg1 string) error {
+	fake.removeLockFileMutex.Lock()
+	ret, specificReturn := fake.removeLockFileReturnsOnCall[len(fake.removeLockFileArgsForCall)]
+	fake.removeLockFileArgsForCall = append(fake.removeLockFileArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.RemoveLockFileStub
+	fakeReturns := fake.removeLockFileReturns
+	fake.recordInvocation("RemoveLockFile", []interface{}{arg1})
+	fake.removeLockFileMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeStorage) RemoveLockFileCallCount() int {
+	fake.removeLockFileMutex.RLock()
+	defer fake.removeLockFileMutex.RUnlock()
+	return len(fake.removeLockFileArgsForCall)
+}
+
+func (fake *FakeStorage) RemoveLockFileCalls(stub func(string) error) {
+	fake.removeLockFileMutex.Lock()
+	defer fake.removeLockFileMutex.Unlock()
+	fake.RemoveLockFileStub = stub
+}
+
+func (fake *FakeStorage) RemoveLockFileArgsForCall(i int) string {
+	fake.removeLockFileMutex.RLock()
+	defer fake.removeLockFileMutex.RUnlock()
+	argsForCall := fake.removeLockFileArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeStorage) RemoveLockFileReturns(result1 error) {
+	fake.removeLockFileMutex.Lock()
+	defer fake.removeLockFileMutex.Unlock()
+	fake.RemoveLockFileStub = nil
+	fake.removeLockFileReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeStorage) RemoveLockFileReturnsOnCall(i int, result1 error) {
+	fake.removeLockFileMutex.Lock()
+	defer fake.removeLockFileMutex.Unlock()
+	fake.RemoveLockFileStub = nil
+	if fake.removeLockFileReturnsOnCall == nil {
+		fake.removeLockFileReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.removeLockFileReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeStorage) StoreBindRequestDetails(arg1 storage.BindRequestDetails) error {
 	fake.storeBindRequestDetailsMutex.Lock()
 	ret, specificReturn := fake.storeBindRequestDetailsReturnsOnCall[len(fake.storeBindRequestDetailsArgsForCall)]
@@ -1438,6 +1521,67 @@ func (fake *FakeStorage) StoreTerraformDeploymentReturnsOnCall(i int, result1 er
 	}{result1}
 }
 
+func (fake *FakeStorage) WriteLockFile(arg1 string) error {
+	fake.writeLockFileMutex.Lock()
+	ret, specificReturn := fake.writeLockFileReturnsOnCall[len(fake.writeLockFileArgsForCall)]
+	fake.writeLockFileArgsForCall = append(fake.writeLockFileArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.WriteLockFileStub
+	fakeReturns := fake.writeLockFileReturns
+	fake.recordInvocation("WriteLockFile", []interface{}{arg1})
+	fake.writeLockFileMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeStorage) WriteLockFileCallCount() int {
+	fake.writeLockFileMutex.RLock()
+	defer fake.writeLockFileMutex.RUnlock()
+	return len(fake.writeLockFileArgsForCall)
+}
+
+func (fake *FakeStorage) WriteLockFileCalls(stub func(string) error) {
+	fake.writeLockFileMutex.Lock()
+	defer fake.writeLockFileMutex.Unlock()
+	fake.WriteLockFileStub = stub
+}
+
+func (fake *FakeStorage) WriteLockFileArgsForCall(i int) string {
+	fake.writeLockFileMutex.RLock()
+	defer fake.writeLockFileMutex.RUnlock()
+	argsForCall := fake.writeLockFileArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeStorage) WriteLockFileReturns(result1 error) {
+	fake.writeLockFileMutex.Lock()
+	defer fake.writeLockFileMutex.Unlock()
+	fake.WriteLockFileStub = nil
+	fake.writeLockFileReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeStorage) WriteLockFileReturnsOnCall(i int, result1 error) {
+	fake.writeLockFileMutex.Lock()
+	defer fake.writeLockFileMutex.Unlock()
+	fake.WriteLockFileStub = nil
+	if fake.writeLockFileReturnsOnCall == nil {
+		fake.writeLockFileReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.writeLockFileReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeStorage) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -1471,6 +1615,8 @@ func (fake *FakeStorage) Invocations() map[string][][]interface{} {
 	defer fake.getServiceInstanceDetailsMutex.RUnlock()
 	fake.getTerraformDeploymentMutex.RLock()
 	defer fake.getTerraformDeploymentMutex.RUnlock()
+	fake.removeLockFileMutex.RLock()
+	defer fake.removeLockFileMutex.RUnlock()
 	fake.storeBindRequestDetailsMutex.RLock()
 	defer fake.storeBindRequestDetailsMutex.RUnlock()
 	fake.storeProvisionRequestDetailsMutex.RLock()
@@ -1479,6 +1625,8 @@ func (fake *FakeStorage) Invocations() map[string][][]interface{} {
 	defer fake.storeServiceInstanceDetailsMutex.RUnlock()
 	fake.storeTerraformDeploymentMutex.RLock()
 	defer fake.storeTerraformDeploymentMutex.RUnlock()
+	fake.writeLockFileMutex.RLock()
+	defer fake.writeLockFileMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

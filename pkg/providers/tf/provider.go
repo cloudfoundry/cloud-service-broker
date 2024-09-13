@@ -96,7 +96,10 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 		} else {
 			err = provider.DefaultInvoker().Apply(ctx, newWorkspace)
 		}
-		_ = provider.MarkOperationFinished(&deployment, err)
+		err = provider.MarkOperationFinished(&deployment, err)
+		if err != nil {
+			provider.logger.Error("MarkOperationFinished", err)
+		}
 	}()
 
 	return tfID, nil

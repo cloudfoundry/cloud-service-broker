@@ -30,7 +30,7 @@ var (
 var _ = SynchronizedBeforeSuite(
 	func() []byte {
 		// -gcflags enabled "gops", but had to be removed as this doesn't compile with Go 1.19
-		//path, err := Build("github.com/cloudfoundry/cloud-service-broker", `-gcflags="all=-N -l"`)
+		// path, err := Build("github.com/cloudfoundry/cloud-service-broker", `-gcflags="all=-N -l"`)
 		path := must(Build("github.com/cloudfoundry/cloud-service-broker/v2"))
 		return []byte(path)
 	},
@@ -45,8 +45,18 @@ var _ = SynchronizedBeforeSuite(
 )
 
 var _ = SynchronizedAfterSuite(
-	func() {},
-	func() { CleanupBuildArtifacts() },
+	func() {
+	},
+	func() {
+		CleanupBuildArtifacts()
+		files, err := filepath.Glob("/tmp/brokerpak*")
+		Expect(err).ToNot(HaveOccurred())
+		for _, f := range files {
+			if err := os.RemoveAll(f); err != nil {
+				Expect(err).ToNot(HaveOccurred())
+			}
+		}
+	},
 )
 
 var _ = BeforeEach(func() {

@@ -31,7 +31,7 @@ var _ = Describe("Import State", func() {
 		broker = must(testdrive.StartBroker(csb, brokerpak, database))
 
 		DeferCleanup(func() {
-			Expect(broker.Stop()).To(Succeed())
+			Expect(broker.Terminate()).To(Succeed())
 			cleanup(brokerpak)
 		})
 	})

@@ -77,4 +77,6 @@ type ServiceProviderStorage interface {
 	DeleteTerraformDeployment(id string) error
 	ExistsTerraformDeployment(id string) (bool, error)
 	GetServiceBindingIDsForServiceInstance(serviceInstanceID string) ([]string, error)
+	WriteLockFile(guid string) error
+	RemoveLockFile(guid string) error
 }
