@@ -206,10 +206,54 @@ var _ = Describe("TerraformDeployments", func() {
 			Expect(store.DeleteTerraformDeployment("not-there")).NotTo(HaveOccurred())
 		})
 	})
+
+	Describe("LockFileExists", func() {
+		It("reports correct status", func() {
+			Expect(store.WriteLockFile("1234")).To(Succeed())
+			Expect(store.WriteLockFile("5678")).To(Succeed())
+
+			Expect(store.LockFilesExist()).To(BeTrue())
+
+			Expect(store.RemoveLockFile("1234")).To(Succeed())
+
+			Expect(store.LockFilesExist()).To(BeTrue())
+
+			Expect(store.RemoveLockFile("5678")).To(Succeed())
+
+			Expect(store.LockFilesExist()).To(BeFalse())
+		})
+	})
+
+	Describe("GetLockedDeploymentIds", func() {
+		It("returns correct names", func() {
+			names, err := store.GetLockedDeploymentIds()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(names).To(BeEmpty())
+
+			Expect(store.WriteLockFile("tf:1234:")).To(Succeed())
+			Expect(store.WriteLockFile("tf:5678:9123")).To(Succeed())
+
+			names, err = store.GetLockedDeploymentIds()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(names).To(ContainElements("tf:1234:", "tf:5678:9123"))
+
+			Expect(store.RemoveLockFile("tf:1234:")).To(Succeed())
+
+			names, err = store.GetLockedDeploymentIds()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(names).To(ContainElements("tf:5678:9123"))
+			Expect(names).ToNot(ContainElements("tf:1234:"))
+
+			Expect(store.RemoveLockFile("tf:5678:9123")).To(Succeed())
+
+			names, err = store.GetLockedDeploymentIds()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(names).To(BeEmpty())
+		})
+	})
 })
 
 func addFakeTerraformDeployments() {
-
 	Expect(db.Create(&models.TerraformDeployment{
 		ID:                   "fake-id-1",
 		Workspace:            fakeWorkspace("fake-1", "1.2.3"),

@@ -2,6 +2,9 @@ package storage
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-version"
@@ -155,4 +158,34 @@ func (s *Storage) loadTerraformDeploymentIfExists(id string, receiver any) error
 	}
 
 	return s.db.Where("id = ?", id).First(receiver).Error
+}
+
+func (s *Storage) LockFilesExist() bool {
+	entries, _ := os.ReadDir(s.lockFileDir)
+	return len(entries) != 0
+}
+
+func (s *Storage) WriteLockFile(deploymentID string) error {
+	return os.WriteFile(filepath.Join(s.lockFileDir, fileNameFromDeploymentID(deploymentID)), []byte{}, 0o644)
+}
+
+func (s *Storage) RemoveLockFile(deploymentID string) error {
+	return os.Remove(filepath.Join(s.lockFileDir, fileNameFromDeploymentID(deploymentID)))
+}
+
+func (s *Storage) GetLockedDeploymentIds() ([]string, error) {
+	entries, err := os.ReadDir(s.lockFileDir)
+	var names []string
+	for _, entry := range entries {
+		names = append(names, deploymentIDFromFileName(entry.Name()))
+	}
+	return names, err
+}
+
+func fileNameFromDeploymentID(deploymentID string) string {
+	return strings.ReplaceAll(deploymentID, ":", "_")
+}
+
+func deploymentIDFromFileName(fileName string) string {
+	return strings.ReplaceAll(fileName, "_", ":")
 }

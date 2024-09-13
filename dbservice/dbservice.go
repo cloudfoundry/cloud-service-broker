@@ -43,9 +43,6 @@ func NewWithMigrations(logger lager.Logger) *gorm.DB {
 		if err := RunMigrations(db); err != nil {
 			panic(fmt.Sprintf("Error migrating database: %s", err))
 		}
-		if err := recoverInProgressOperations(db, logger); err != nil {
-			panic(fmt.Sprintf("Error recovering in-progress operations: %s", err))
-		}
 	})
 	return db
 }
