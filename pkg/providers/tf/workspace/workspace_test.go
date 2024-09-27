@@ -17,6 +17,7 @@ package workspace
 import (
 	"context"
 	"errors"
+	"maps"
 	"os"
 	"os/exec"
 	"path"
@@ -280,4 +281,93 @@ type testExecutor struct {
 
 func (exec testExecutor) Execute(ctx context.Context, c *exec.Cmd) (executor.ExecutionOutput, error) {
 	return exec.function(ctx, c)
+}
+
+func TestNewWorkspace(t *testing.T) {
+	// NewWorkspace creates deep copies of data which is read from static service definitions.
+
+	t.Parallel()
+
+	t.Run("deep copy terraformTemplates", func(t *testing.T) {
+
+		in := map[string]string{
+			"main.tf": "variable domain {type = string}\nvariable username {type = string}\noutput email {value = \"${var.username}@${var.domain}\"}",
+		}
+
+		inCopy := make(map[string]string)
+		maps.Copy(inCopy, in)
+
+		ws, err := NewWorkspace(nil, "", in, nil, nil, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		ws.Modules[0].Definitions["main.tf"] = ""
+
+		if !reflect.DeepEqual(in, inCopy) {
+			t.Error("Expected NewWorkspace to create deep copy of terraformTemplates")
+		}
+	})
+
+	t.Run("deep copy importParameterMappings", func(t *testing.T) {
+		in := []ParameterMapping{
+			{
+				TfVariable:    "aws_s3_bucket.this.bucket",
+				ParameterName: "bucket_name",
+			},
+		}
+
+		inCopy := make([]ParameterMapping, len(in))
+		copy(inCopy, in)
+
+		ws, err := NewWorkspace(nil, "", nil, in, nil, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		ws.Transformer.ParameterMappings[0] = ParameterMapping{}
+
+		if !reflect.DeepEqual(in, inCopy) {
+			t.Error("Expected NewWorkspace to create deep copy of importParameterMappings")
+		}
+	})
+
+	t.Run("deep copy parametersToRemove", func(t *testing.T) {
+		in := []string{
+			"aws_s3_bucket.this.id",
+		}
+
+		inCopy := make([]string, len(in))
+		copy(inCopy, in)
+
+		ws, err := NewWorkspace(nil, "", nil, nil, in, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		ws.Transformer.ParametersToRemove[0] = ""
+
+		if !reflect.DeepEqual(in, inCopy) {
+			t.Error("Expected NewWorkspace to create deep copy of parametersToRemove")
+		}
+	})
+
+	t.Run("deep copy parametersToAdd", func(t *testing.T) {
+		in := []ParameterMapping{
+			{
+				TfVariable:    "aws_s3_bucket.this.bucket_domain_name",
+				ParameterName: "domain_name",
+			},
+		}
+
+		inCopy := make([]ParameterMapping, len(in))
+		copy(inCopy, in)
+
+		ws, err := NewWorkspace(nil, "", nil, nil, nil, in)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		ws.Transformer.ParametersToAdd[0] = ParameterMapping{}
+
+		if !reflect.DeepEqual(in, inCopy) {
+			t.Error("Expected NewWorkspace to create deep copy of ParametersToAdd")
+		}
+	})
 }

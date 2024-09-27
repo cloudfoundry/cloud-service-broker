@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
 	"os/exec"
 	"path"
@@ -45,10 +46,14 @@ func NewWorkspace(templateVars map[string]any,
 	importParameterMappings []ParameterMapping,
 	parametersToRemove []string,
 	parametersToAdd []ParameterMapping) (*TerraformWorkspace, error) {
+
+	terraformTemplatesCopy := make(map[string]string)
+	maps.Copy(terraformTemplatesCopy, terraformTemplates)
+
 	tfModule := ModuleDefinition{
 		Name:        "brokertemplate",
 		Definition:  terraformTemplate,
-		Definitions: terraformTemplates,
+		Definitions: terraformTemplatesCopy,
 	}
 
 	inputList, err := tfModule.Inputs()
@@ -61,6 +66,13 @@ func NewWorkspace(templateVars map[string]any,
 		limitedConfig[name] = templateVars[name]
 	}
 
+	parameterMappingsCopy := make([]ParameterMapping, len(importParameterMappings))
+	copy(parameterMappingsCopy, importParameterMappings)
+	parametersToRemoveCopy := make([]string, len(parametersToRemove))
+	copy(parametersToRemoveCopy, parametersToRemove)
+	parametersToAddCopy := make([]ParameterMapping, len(parametersToAdd))
+	copy(parametersToAddCopy, parametersToAdd)
+
 	workspace := TerraformWorkspace{
 		Modules: []ModuleDefinition{tfModule},
 		Instances: []ModuleInstance{
@@ -71,9 +83,9 @@ func NewWorkspace(templateVars map[string]any,
 			},
 		},
 		Transformer: TfTransformer{
-			ParameterMappings:  importParameterMappings,
-			ParametersToRemove: parametersToRemove,
-			ParametersToAdd:    parametersToAdd,
+			ParameterMappings:  parameterMappingsCopy,
+			ParametersToRemove: parametersToRemoveCopy,
+			ParametersToAdd:    parametersToAddCopy,
 		},
 	}
 
