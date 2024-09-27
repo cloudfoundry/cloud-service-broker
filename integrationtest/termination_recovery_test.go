@@ -95,7 +95,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 				By("ensuring that the expected lockdir exists")
 
 				dirDefault, _ = os.MkdirTemp("/tmp/", "lockfiles")
-				broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(stdout, stderr), testdrive.WithEnv(fmt.Sprintf("CSB_LOCKFILE_DIR=%s", dirDefault))))
+				broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(stdout, stderr), testdrive.WithEnv(fmt.Sprintf("GSB_LOCKFILEDIR=%s", dirDefault))))
 			})
 
 			It("fails service instances that have a lockfile on start", func() {
@@ -112,7 +112,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 					Expect(broker.Terminate()).To(Succeed())
 				}()
 
-				broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(stdout, stderr), testdrive.WithEnv(fmt.Sprintf("CSB_LOCKFILE_DIR=%s", dirDefault))))
+				broker = must(testdrive.StartBroker(csb, brokerpak, database, testdrive.WithOutputs(stdout, stderr), testdrive.WithEnv(fmt.Sprintf("GSB_LOCKFILEDIR=%s", dirDefault))))
 				lastOperation, err := broker.LastOperation(instanceGUID)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(lastOperation.Description).To(Equal("the broker restarted while the operation was in progress"))

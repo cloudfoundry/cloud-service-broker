@@ -18,6 +18,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -51,6 +52,7 @@ import (
 )
 
 const (
+	lockfileDir         = "lockfiledir"
 	apiUserProp         = "api.user"
 	apiPasswordProp     = "api.password"
 	apiPortProp         = "api.port"
@@ -86,6 +88,7 @@ func init() {
 		},
 	})
 
+	_ = viper.BindEnv(lockfileDir, "GSB_LOCKFILEDIR")
 	_ = viper.BindEnv(apiUserProp, "SECURITY_USER_NAME")
 	_ = viper.BindEnv(apiPasswordProp, "SECURITY_USER_PASSWORD")
 	_ = viper.BindEnv(apiPortProp, "PORT")
@@ -241,17 +244,19 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 	}
 	go func() {
 		var err error
-		if tlsCertCaBundleFilePath != "" && tlsKeyFilePath != "" {
+		switch {
+		case tlsCertCaBundleFilePath != "" && tlsKeyFilePath != "":
 			err = httpServer.ListenAndServeTLS(tlsCertCaBundleFilePath, tlsKeyFilePath)
-		} else {
+		default:
 			err = httpServer.ListenAndServe()
 		}
-		if err == http.ErrServerClosed {
-			logger.Info("shutting down csb")
-		} else {
+
+		if !errors.Is(err, http.ErrServerClosed) {
 			logger.Fatal("Failed to start broker", err)
 		}
+		logger.Info("shutting down csb")
 	}()
+
 	return httpServer
 }
 
@@ -259,24 +264,27 @@ func listenForShutdownSignal(httpServer *http.Server, logger lager.Logger, store
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGTERM)
 
-	signalReceived := <-sigChan
+	select {
+	case sig := <-sigChan:
+		ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
 
-	switch signalReceived {
-
-	case syscall.SIGTERM:
-		shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), shutdownTimeout)
-		if err := httpServer.Shutdown(shutdownCtx); err != nil {
+		if err := httpServer.Shutdown(ctx); err != nil {
 			logger.Fatal("shutdown error: %v", err)
 		}
-		logger.Info("received SIGTERM, server is shutting down gracefully allowing for in flight work to finish")
-		defer shutdownRelease()
-		for store.LockFilesExist() {
+		logger.Info("server is shutting down gracefully allowing for in flight work to finish", lager.Data{"signal": sig})
+
+		ticker := time.NewTicker(time.Second * 5)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			if !store.LockFilesExist() {
+				break
+			}
 			logger.Info("draining csb in progress")
-			time.Sleep(time.Second * 1)
 		}
+
 		logger.Info("draining complete")
-	default:
-		logger.Info(fmt.Sprintf("csb does not handle the %s interrupt signal", signalReceived))
 	}
 }
 
