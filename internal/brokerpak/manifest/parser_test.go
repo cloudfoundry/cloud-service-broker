@@ -288,6 +288,44 @@ var _ = Describe("Parser", func() {
 		Entry("arch", "platforms[2].arch", map[string]any{"os": "linux"}),
 	)
 
+	DescribeTable("valid platform object",
+		func(value platform.Platform) {
+			m, err := manifest.Parse(fakeManifest(with("platforms", []platform.Platform{value})))
+
+			Expect(err).To(BeNil())
+			Expect(m).ToNot(BeNil())
+		},
+
+		Entry("darwin/amd64", platform.Platform{Os: "darwin", Arch: "amd64"}),
+		Entry("darwin/arm64", platform.Platform{Os: "darwin", Arch: "arm64"}),
+		Entry("freebsd/386", platform.Platform{Os: "freebsd", Arch: "386"}),
+		Entry("freebsd/amd64", platform.Platform{Os: "freebsd", Arch: "amd64"}),
+		Entry("freebsd/arm", platform.Platform{Os: "freebsd", Arch: "arm"}),
+		Entry("linux/386", platform.Platform{Os: "linux", Arch: "386"}),
+		Entry("linux/amd64", platform.Platform{Os: "linux", Arch: "amd64"}),
+		Entry("linux/arm", platform.Platform{Os: "linux", Arch: "arm"}),
+		Entry("linux/arm64", platform.Platform{Os: "linux", Arch: "arm64"}),
+		Entry("openbsd/386", platform.Platform{Os: "openbsd", Arch: "386"}),
+		Entry("openbsd/amd64", platform.Platform{Os: "openbsd", Arch: "amd64"}),
+		Entry("solaris/amd64", platform.Platform{Os: "solaris", Arch: "amd64"}),
+		Entry("windows/386", platform.Platform{Os: "windows", Arch: "386"}),
+		Entry("windows/amd64", platform.Platform{Os: "windows", Arch: "amd64"}),
+	)
+
+	DescribeTable("invalid platform object",
+		func(value platform.Platform) {
+			m, err := manifest.Parse(fakeManifest(with("platforms", []platform.Platform{value})))
+
+			Expect(err).To(MatchError(ContainSubstring(fmt.Sprintf("invalid value: %v/%v: platforms[0]", value.Os, value.Arch))))
+			Expect(m).To(BeNil())
+		},
+
+		Entry("darwin/386", platform.Platform{Os: "darwin", Arch: "386"}),
+		Entry("freebsd/arm64", platform.Platform{Os: "freebsd", Arch: "arm64"}),
+		Entry("linux/amd", platform.Platform{Os: "linux", Arch: "amd"}),
+		Entry("windows/arm", platform.Platform{Os: "windows", Arch: "arm64"}),
+	)
+
 	DescribeTable("missing terraform binary data",
 		func(insert string, value map[string]any) {
 			m, err := manifest.Parse(fakeManifest(withAdditionalEntry("terraform_binaries", value)))
