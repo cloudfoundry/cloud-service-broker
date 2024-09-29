@@ -30,8 +30,4 @@ func New(db *gorm.DB, encryptor Encryptor) *Storage {
 	}
 }
 
-func (s *Storage) SetLockFileDir(dir string) {
-	s.lockFileDir = dir
-}
-
 type JSONObject map[string]any
