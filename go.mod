@@ -1,6 +1,6 @@
 module github.com/cloudfoundry/cloud-service-broker/v2
 
-go 1.23.1
+go 1.23.2
 
 require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20220620130410-645eee56ecdb
