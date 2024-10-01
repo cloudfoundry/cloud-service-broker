@@ -74,12 +74,12 @@ Fields marked with `*` are required, others are optional.
 
 #### Platform object
 
-The platform OS and architecture follow Go's naming scheme.
+The platform OS and architecture follow Go's naming scheme. Combinations of OS and architecture for which there is an [OpenTofu release](https://github.com/opentofu/opentofu/releases) are valid.
 
-| Field | Type   | Description                           | Valid Values      |
-|-------|--------|---------------------------------------|-------------------|
-| os*   | string | The operating system of the platform. | `linux`, `darwin` |
-| arch* | string | The architecture of the platform.     | `"386"`, `amd64`  |
+| Field | Type   | Description                           | Valid Values                                                   |
+|-------|--------|---------------------------------------|----------------------------------------------------------------|
+| os*   | string | The operating system of the platform. | `darwin`, `freebsd`, `linux`, `openbsd`, `solaris`, `windows`  |
+| arch* | string | The architecture of the platform.     | `386`, `amd64`, `arm`, `arm64`                                 |
 Fields marked with `*` are required, others are optional.
 
 #### OpenTofu resource object

@@ -52,12 +52,41 @@ type Platform struct {
 
 var _ validation.Validatable = (*Platform)(nil)
 
+// allowed OS/Arch combinations
+//
+//	must be possible value for $GOOS and $GOARCH (https://go.dev/doc/install/source#environment)
+//	there must be an OpenTofu release for the respective OS/ARCH (see brokerpakurl.go)
+var (
+	darwinAmd64  = Platform{Os: "darwin", Arch: "amd64"}
+	darwinArm64  = Platform{Os: "darwin", Arch: "arm64"}
+	freebsd386   = Platform{Os: "freebsd", Arch: "386"}
+	freebsdAmd64 = Platform{Os: "freebsd", Arch: "amd64"}
+	freebsdArm   = Platform{Os: "freebsd", Arch: "arm"}
+	linux386     = Platform{Os: "linux", Arch: "386"}
+	linuxAmd64   = Platform{Os: "linux", Arch: "amd64"}
+	linuxArm     = Platform{Os: "linux", Arch: "arm"}
+	linuxArm64   = Platform{Os: "linux", Arch: "arm64"}
+	openbsd386   = Platform{Os: "openbsd", Arch: "386"}
+	openbsdAmd64 = Platform{Os: "openbsd", Arch: "amd64"}
+	solarisAmd64 = Platform{Os: "solaris", Arch: "amd64"}
+	windows386   = Platform{Os: "windows", Arch: "386"}
+	windowsAmd64 = Platform{Os: "windows", Arch: "amd64"}
+)
+
 // Validate implements validation.Validatable.
 func (p Platform) Validate() (errs *validation.FieldError) {
-	return errs.Also(
-		validation.ErrIfBlank(p.Os, "os"),
-		validation.ErrIfBlank(p.Arch, "arch"),
-	)
+
+	if errs := errs.Also(validation.ErrIfBlank(p.Os, "os"), validation.ErrIfBlank(p.Arch, "arch")); errs != nil {
+		return errs
+	}
+
+	switch p {
+	case darwinAmd64, darwinArm64, freebsd386, freebsdAmd64, freebsdArm, linux386, linuxAmd64, linuxArm, linuxArm64, openbsd386, openbsdAmd64, solarisAmd64, windows386, windowsAmd64:
+	default:
+		return validation.ErrInvalidValue(p, "")
+	}
+
+	return nil
 }
 
 // String formats the platform as an os/arch pair.
