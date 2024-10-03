@@ -18,10 +18,12 @@ func (provider *TerraformProvider) Bind(ctx context.Context, bindContext *varcon
 		"context": bindContext.ToMap(),
 	})
 
-	tfID, err := provider.create(ctx, bindContext, provider.serviceDefinition.BindSettings, models.BindOperationType)
+	err := provider.create(ctx, bindContext, provider.serviceDefinition.BindSettings, models.BindOperationType)
 	if err != nil {
 		return nil, fmt.Errorf("error from provider bind: %w", err)
 	}
+
+	tfID := bindContext.GetString("tf_id")
 
 	if err := provider.Wait(ctx, tfID); err != nil {
 		return nil, fmt.Errorf("error waiting for result: %w", err)

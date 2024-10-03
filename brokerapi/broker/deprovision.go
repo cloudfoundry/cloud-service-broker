@@ -104,8 +104,6 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		OperationData: *operationID,
 	}
 
-	instance.OperationType = models.DeprovisionOperationType
-	instance.OperationGUID = *operationID
 	if err := broker.store.StoreServiceInstanceDetails(instance); err != nil {
 		return response, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance will remain visible in cf. Contact your operator for cleanup", err)
 	}

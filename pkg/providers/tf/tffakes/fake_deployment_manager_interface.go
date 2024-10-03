@@ -85,7 +85,7 @@ type FakeDeploymentManagerInterface struct {
 	markOperationStartedReturnsOnCall map[int]struct {
 		result1 error
 	}
-	OperationStatusStub        func(string) (bool, string, error)
+	OperationStatusStub        func(string) (bool, string, string, error)
 	operationStatusMutex       sync.RWMutex
 	operationStatusArgsForCall []struct {
 		arg1 string
@@ -93,12 +93,25 @@ type FakeDeploymentManagerInterface struct {
 	operationStatusReturns struct {
 		result1 bool
 		result2 string
-		result3 error
+		result3 string
+		result4 error
 	}
 	operationStatusReturnsOnCall map[int]struct {
 		result1 bool
 		result2 string
-		result3 error
+		result3 string
+		result4 error
+	}
+	ResetOperationTypeStub        func(string) error
+	resetOperationTypeMutex       sync.RWMutex
+	resetOperationTypeArgsForCall []struct {
+		arg1 string
+	}
+	resetOperationTypeReturns struct {
+		result1 error
+	}
+	resetOperationTypeReturnsOnCall map[int]struct {
+		result1 error
 	}
 	UpdateWorkspaceHCLStub        func(string, tf.TfServiceDefinitionV1Action, map[string]any) error
 	updateWorkspaceHCLMutex       sync.RWMutex
@@ -495,7 +508,7 @@ func (fake *FakeDeploymentManagerInterface) MarkOperationStartedReturnsOnCall(i 
 	}{result1}
 }
 
-func (fake *FakeDeploymentManagerInterface) OperationStatus(arg1 string) (bool, string, error) {
+func (fake *FakeDeploymentManagerInterface) OperationStatus(arg1 string) (bool, string, string, error) {
 	fake.operationStatusMutex.Lock()
 	ret, specificReturn := fake.operationStatusReturnsOnCall[len(fake.operationStatusArgsForCall)]
 	fake.operationStatusArgsForCall = append(fake.operationStatusArgsForCall, struct {
@@ -509,9 +522,9 @@ func (fake *FakeDeploymentManagerInterface) OperationStatus(arg1 string) (bool, 
 		return stub(arg1)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2, ret.result3
+		return ret.result1, ret.result2, ret.result3, ret.result4
 	}
-	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3, fakeReturns.result4
 }
 
 func (fake *FakeDeploymentManagerInterface) OperationStatusCallCount() int {
@@ -520,7 +533,7 @@ func (fake *FakeDeploymentManagerInterface) OperationStatusCallCount() int {
 	return len(fake.operationStatusArgsForCall)
 }
 
-func (fake *FakeDeploymentManagerInterface) OperationStatusCalls(stub func(string) (bool, string, error)) {
+func (fake *FakeDeploymentManagerInterface) OperationStatusCalls(stub func(string) (bool, string, string, error)) {
 	fake.operationStatusMutex.Lock()
 	defer fake.operationStatusMutex.Unlock()
 	fake.OperationStatusStub = stub
@@ -533,18 +546,19 @@ func (fake *FakeDeploymentManagerInterface) OperationStatusArgsForCall(i int) st
 	return argsForCall.arg1
 }
 
-func (fake *FakeDeploymentManagerInterface) OperationStatusReturns(result1 bool, result2 string, result3 error) {
+func (fake *FakeDeploymentManagerInterface) OperationStatusReturns(result1 bool, result2 string, result3 string, result4 error) {
 	fake.operationStatusMutex.Lock()
 	defer fake.operationStatusMutex.Unlock()
 	fake.OperationStatusStub = nil
 	fake.operationStatusReturns = struct {
 		result1 bool
 		result2 string
-		result3 error
-	}{result1, result2, result3}
+		result3 string
+		result4 error
+	}{result1, result2, result3, result4}
 }
 
-func (fake *FakeDeploymentManagerInterface) OperationStatusReturnsOnCall(i int, result1 bool, result2 string, result3 error) {
+func (fake *FakeDeploymentManagerInterface) OperationStatusReturnsOnCall(i int, result1 bool, result2 string, result3 string, result4 error) {
 	fake.operationStatusMutex.Lock()
 	defer fake.operationStatusMutex.Unlock()
 	fake.OperationStatusStub = nil
@@ -552,14 +566,77 @@ func (fake *FakeDeploymentManagerInterface) OperationStatusReturnsOnCall(i int, 
 		fake.operationStatusReturnsOnCall = make(map[int]struct {
 			result1 bool
 			result2 string
-			result3 error
+			result3 string
+			result4 error
 		})
 	}
 	fake.operationStatusReturnsOnCall[i] = struct {
 		result1 bool
 		result2 string
-		result3 error
-	}{result1, result2, result3}
+		result3 string
+		result4 error
+	}{result1, result2, result3, result4}
+}
+
+func (fake *FakeDeploymentManagerInterface) ResetOperationType(arg1 string) error {
+	fake.resetOperationTypeMutex.Lock()
+	ret, specificReturn := fake.resetOperationTypeReturnsOnCall[len(fake.resetOperationTypeArgsForCall)]
+	fake.resetOperationTypeArgsForCall = append(fake.resetOperationTypeArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.ResetOperationTypeStub
+	fakeReturns := fake.resetOperationTypeReturns
+	fake.recordInvocation("ResetOperationType", []interface{}{arg1})
+	fake.resetOperationTypeMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeDeploymentManagerInterface) ResetOperationTypeCallCount() int {
+	fake.resetOperationTypeMutex.RLock()
+	defer fake.resetOperationTypeMutex.RUnlock()
+	return len(fake.resetOperationTypeArgsForCall)
+}
+
+func (fake *FakeDeploymentManagerInterface) ResetOperationTypeCalls(stub func(string) error) {
+	fake.resetOperationTypeMutex.Lock()
+	defer fake.resetOperationTypeMutex.Unlock()
+	fake.ResetOperationTypeStub = stub
+}
+
+func (fake *FakeDeploymentManagerInterface) ResetOperationTypeArgsForCall(i int) string {
+	fake.resetOperationTypeMutex.RLock()
+	defer fake.resetOperationTypeMutex.RUnlock()
+	argsForCall := fake.resetOperationTypeArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeDeploymentManagerInterface) ResetOperationTypeReturns(result1 error) {
+	fake.resetOperationTypeMutex.Lock()
+	defer fake.resetOperationTypeMutex.Unlock()
+	fake.ResetOperationTypeStub = nil
+	fake.resetOperationTypeReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeDeploymentManagerInterface) ResetOperationTypeReturnsOnCall(i int, result1 error) {
+	fake.resetOperationTypeMutex.Lock()
+	defer fake.resetOperationTypeMutex.Unlock()
+	fake.ResetOperationTypeStub = nil
+	if fake.resetOperationTypeReturnsOnCall == nil {
+		fake.resetOperationTypeReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.resetOperationTypeReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCL(arg1 string, arg2 tf.TfServiceDefinitionV1Action, arg3 map[string]any) error {
@@ -642,6 +719,8 @@ func (fake *FakeDeploymentManagerInterface) Invocations() map[string][][]interfa
 	defer fake.markOperationStartedMutex.RUnlock()
 	fake.operationStatusMutex.RLock()
 	defer fake.operationStatusMutex.RUnlock()
+	fake.resetOperationTypeMutex.RLock()
+	defer fake.resetOperationTypeMutex.RUnlock()
 	fake.updateWorkspaceHCLMutex.RLock()
 	defer fake.updateWorkspaceHCLMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

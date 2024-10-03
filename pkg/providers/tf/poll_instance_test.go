@@ -17,13 +17,14 @@ var _ = Describe("PollInstance", func() {
 		fakeInvokerBuilder := &tffakes.FakeTerraformInvokerBuilder{}
 		fakeLogger := utils.NewLogger("test")
 
-		fakeDeploymentManager.OperationStatusReturns(true, "LO message", nil)
+		fakeDeploymentManager.OperationStatusReturns(true, "LO message", "update", nil)
 		provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, tf.TfServiceDefinitionV1{}, fakeDeploymentManager)
 
-		finished, message, err := provider.PollInstance(context.TODO(), "instance-guid")
+		finished, message, operationType, err := provider.PollInstance(context.TODO(), "instance-guid")
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(finished).To(BeTrue())
+		Expect(operationType).To(Equal("update"))
 		Expect(message).To(Equal("LO message"))
 
 		Expect(fakeDeploymentManager.OperationStatusCallCount()).To(Equal(1))

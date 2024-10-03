@@ -7,7 +7,6 @@ import (
 	"code.cloudfoundry.org/lager/v3"
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker/brokerfakes"
@@ -79,8 +78,10 @@ var _ = Describe("Deprovision", func() {
 			GUID:             instanceToDeleteID,
 			SpaceGUID:        "test-space",
 			OrganizationGUID: "test-org",
-			OperationType:    "provision",
-			OperationGUID:    operationID,
+		}, nil)
+		fakeStorage.GetTerraformDeploymentReturns(storage.TerraformDeployment{
+			ID:                instanceToDeleteID,
+			LastOperationType: "provision",
 		}, nil)
 
 		serviceBroker = must(broker.New(brokerConfig, fakeStorage, utils.NewLogger("brokers-test")))
@@ -110,8 +111,6 @@ var _ = Describe("Deprovision", func() {
 		Expect(fakeStorage.StoreServiceInstanceDetailsCallCount()).To(Equal(1))
 		actualSIDetails := fakeStorage.StoreServiceInstanceDetailsArgsForCall(0)
 		Expect(actualSIDetails.GUID).To(Equal(instanceToDeleteID))
-		Expect(actualSIDetails.OperationType).To(Equal(models.DeprovisionOperationType))
-		Expect(actualSIDetails.OperationGUID).To(Equal(operationID))
 	})
 
 	When("provider deprovision errors", func() {
@@ -139,11 +138,14 @@ var _ = Describe("Deprovision", func() {
 	When("offering does not exists", func() {
 		BeforeEach(func() {
 			fakeStorage.GetServiceInstanceDetailsReturns(storage.ServiceInstanceDetails{
-				ServiceGUID:   "non-existent-offering",
-				PlanGUID:      planID,
-				GUID:          instanceToDeleteID,
-				OperationType: "provision",
-				OperationGUID: "opGUID",
+				ServiceGUID: "non-existent-offering",
+				PlanGUID:    planID,
+				GUID:        instanceToDeleteID,
+			}, nil)
+
+			fakeStorage.GetTerraformDeploymentReturns(storage.TerraformDeployment{
+				LastOperationType: "provision",
+				ID:                instanceToDeleteID,
 			}, nil)
 		})
 

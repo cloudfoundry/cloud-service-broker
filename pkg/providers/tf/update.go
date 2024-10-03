@@ -12,33 +12,33 @@ import (
 )
 
 // Update makes necessary updates to resources, so they match new desired configuration
-func (provider *TerraformProvider) Update(ctx context.Context, updateContext *varcontext.VarContext) (models.ServiceInstanceDetails, error) {
+func (provider *TerraformProvider) Update(ctx context.Context, updateContext *varcontext.VarContext) error {
 	provider.logger.Debug("update", correlation.ID(ctx), lager.Data{
 		"context": updateContext.ToMap(),
 	})
 
 	if provider.serviceDefinition.ProvisionSettings.IsTfImport(updateContext) {
-		return models.ServiceInstanceDetails{}, fmt.Errorf("cannot update to subsume plan\n\nFor OpsMan Tile users see documentation here: https://via.vmw.com/ENs4\n\nFor Open Source users deployed via 'cf push' see documentation here:  https://via.vmw.com/ENw4")
+		return fmt.Errorf("cannot update to subsume plan\n\nFor OpsMan Tile users see documentation here: https://via.vmw.com/ENs4\n\nFor Open Source users deployed via 'cf push' see documentation here:  https://via.vmw.com/ENw4")
 	}
 
 	tfID := updateContext.GetString("tf_id")
 	if err := updateContext.Error(); err != nil {
-		return models.ServiceInstanceDetails{}, err
+		return err
 	}
 
 	if err := provider.UpdateWorkspaceHCL(tfID, provider.serviceDefinition.ProvisionSettings, updateContext.ToMap()); err != nil {
-		return models.ServiceInstanceDetails{}, err
+		return err
 	}
 
 	deployment, err := provider.GetTerraformDeployment(tfID)
 	if err != nil {
-		return models.ServiceInstanceDetails{}, err
+		return err
 	}
 
 	workspace := deployment.Workspace
 
 	if err := provider.MarkOperationStarted(&deployment, models.UpdateOperationType); err != nil {
-		return models.ServiceInstanceDetails{}, err
+		return err
 	}
 
 	go func() {
@@ -52,8 +52,5 @@ func (provider *TerraformProvider) Update(ctx context.Context, updateContext *va
 		_ = provider.MarkOperationFinished(&deployment, err)
 	}()
 
-	return models.ServiceInstanceDetails{
-		OperationID:   tfID,
-		OperationType: models.UpdateOperationType,
-	}, nil
+	return nil
 }

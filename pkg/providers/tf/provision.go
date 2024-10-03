@@ -8,7 +8,6 @@ import (
 	"code.cloudfoundry.org/lager/v3"
 	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/steps"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/invoker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
@@ -25,42 +24,36 @@ type ImportResource struct {
 
 // Provision creates the necessary resources that an instance of this service
 // needs to operate.
-func (provider *TerraformProvider) Provision(ctx context.Context, provisionContext *varcontext.VarContext) (storage.ServiceInstanceDetails, error) {
+func (provider *TerraformProvider) Provision(ctx context.Context, provisionContext *varcontext.VarContext) error {
 	provider.logger.Debug("terraform-provision", correlation.ID(ctx), lager.Data{
 		"context": provisionContext.ToMap(),
 	})
 
-	var (
-		tfID string
-		err  error
-	)
+	var err error
 
 	switch provider.serviceDefinition.ProvisionSettings.IsTfImport(provisionContext) {
 	case true:
-		tfID, err = provider.importCreate(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
+		err = provider.importCreate(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings)
 	default:
-		tfID, err = provider.create(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings, models.ProvisionOperationType)
+		err = provider.create(ctx, provisionContext, provider.serviceDefinition.ProvisionSettings, models.ProvisionOperationType)
 	}
 	if err != nil {
-		return storage.ServiceInstanceDetails{}, err
+		return err
 	}
 
-	return storage.ServiceInstanceDetails{
-		OperationGUID: tfID,
-		OperationType: models.ProvisionOperationType,
-	}, nil
+	return nil
 }
 
-func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) (string, error) {
+func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action) error {
 	varsMap := vars.ToMap()
 	importParams, err := validateImportParams(action.ImportVariables, varsMap)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	tfID := vars.GetString("tf_id")
 	if err := vars.Error(); err != nil {
-		return "", err
+		return err
 	}
 
 	newWorkspace, err := workspace.NewWorkspace(
@@ -71,17 +64,17 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 		action.ImportParametersToDelete,
 		evaluateParametersToAdd(action.ImportParametersToAdd))
 	if err != nil {
-		return tfID, fmt.Errorf("error creating workspace: %w", err)
+		return fmt.Errorf("error creating workspace: %w", err)
 	}
 
 	deployment, err := provider.CreateAndSaveDeployment(tfID, newWorkspace)
 	if err != nil {
 		provider.logger.Error("deployment create failed", err)
-		return tfID, fmt.Errorf("deployment create failed: %w", err)
+		return fmt.Errorf("deployment create failed: %w", err)
 	}
 
 	if err := provider.MarkOperationStarted(&deployment, models.ProvisionOperationType); err != nil {
-		return tfID, fmt.Errorf("error marking job started: %w", err)
+		return fmt.Errorf("error marking job started: %w", err)
 	}
 
 	go func() {
@@ -122,7 +115,7 @@ func (provider *TerraformProvider) importCreate(ctx context.Context, vars *varco
 		}
 	}()
 
-	return tfID, nil
+	return nil
 }
 
 func validateImportParams(importVariables []broker.ImportVariable, varsMap map[string]any) ([]ImportResource, error) {

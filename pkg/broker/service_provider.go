@@ -18,7 +18,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
 )
@@ -33,10 +32,10 @@ import (
 type ServiceProvider interface {
 	// Provision creates the necessary resources that an instance of this service
 	// needs to operate.
-	Provision(ctx context.Context, provisionContext *varcontext.VarContext) (storage.ServiceInstanceDetails, error)
+	Provision(ctx context.Context, provisionContext *varcontext.VarContext) error
 
 	// Update makes necessary updates to resources so they match new desired configuration
-	Update(ctx context.Context, updateContext *varcontext.VarContext) (models.ServiceInstanceDetails, error)
+	Update(ctx context.Context, updateContext *varcontext.VarContext) error
 
 	UpgradeInstance(ctx context.Context, instanceContext *varcontext.VarContext) (*sync.WaitGroup, error)
 	UpgradeBindings(ctx context.Context, instanceContext *varcontext.VarContext, bindingContexts []*varcontext.VarContext) error
@@ -57,13 +56,15 @@ type ServiceProvider interface {
 	// If no error and no operationId are returned, then the deprovision is expected to have been completed successfully.
 	Deprovision(ctx context.Context, instanceGUID string, vc *varcontext.VarContext) (*string, error)
 
-	PollInstance(ctx context.Context, instanceGUID string) (bool, string, error)
+	PollInstance(ctx context.Context, instanceGUID string) (bool, string, string, error)
 
 	GetTerraformOutputs(ctx context.Context, instanceGUID string) (storage.JSONObject, error)
 
 	DeleteInstanceData(ctx context.Context, instanceGUID string) error
 
 	DeleteBindingData(ctx context.Context, instanceGUID, bindingID string) error
+
+	ClearOperationType(ctx context.Context, instanceGUID string) error
 
 	CheckUpgradeAvailable(deploymentID string) error
 

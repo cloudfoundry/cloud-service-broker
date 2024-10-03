@@ -162,6 +162,31 @@ func (ServiceInstanceDetailsV3) TableName() string {
 	return "service_instance_details"
 }
 
+// ServiceInstanceDetailsV4 holds information about provisioned services.
+type ServiceInstanceDetailsV4 struct {
+	ID        string `gorm:"primary_key;type:varchar(255);not null"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
+
+	Name         string
+	Location     string
+	URL          string
+	OtherDetails []byte `gorm:"type:blob"`
+
+	ServiceID        string
+	PlanID           string
+	SpaceGUID        string
+	OrganizationGUID string
+}
+
+// TableName returns a consistent table name for
+// gorm so multiple structs from different versions of the database all operate
+// on the same table.
+func (ServiceInstanceDetailsV4) TableName() string {
+	return "service_instance_details"
+}
+
 // ProvisionRequestDetailsV1 holds user-defined properties passed to a call
 // to provision a service.
 type ProvisionRequestDetailsV1 struct {

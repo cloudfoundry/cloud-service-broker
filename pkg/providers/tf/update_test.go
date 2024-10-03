@@ -63,7 +63,7 @@ var _ = Describe("Update", func() {
 
 		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-		_, err := provider.Update(context.TODO(), varContext)
+		err := provider.Update(context.TODO(), varContext)
 		Expect(err).NotTo(HaveOccurred())
 		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
 		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
@@ -81,7 +81,7 @@ var _ = Describe("Update", func() {
 		fakeWorkspace.OutputsReturns(map[string]any{"status": "status from terraform"}, nil)
 
 		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
-		_, err := provider.Update(context.TODO(), varContext)
+		err := provider.Update(context.TODO(), varContext)
 		Expect(err).To(Succeed())
 		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
 		Expect(operationWasFinishedWithError(fakeDeploymentManager)()).To(BeNil())
@@ -96,7 +96,7 @@ var _ = Describe("Update", func() {
 		fakeDefaultInvoker.ApplyReturns(genericError)
 
 		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
-		_, err := provider.Update(context.TODO(), varContext)
+		err := provider.Update(context.TODO(), varContext)
 		Expect(err).To(Succeed())
 
 		Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))
@@ -115,7 +115,7 @@ var _ = Describe("Update", func() {
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err = provider.Update(context.TODO(), varContext)
+			err = provider.Update(context.TODO(), varContext)
 			Expect(err).To(MatchError("cannot update to subsume plan\n\nFor OpsMan Tile users see documentation here: https://via.vmw.com/ENs4\n\nFor Open Source users deployed via 'cf push' see documentation here:  https://via.vmw.com/ENw4"))
 		})
 	})
@@ -127,7 +127,7 @@ var _ = Describe("Update", func() {
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err = provider.Update(context.TODO(), varContext)
+			err = provider.Update(context.TODO(), varContext)
 			Expect(err).To(MatchError(`1 error(s) occurred: missing value for key "tf_id"`))
 		})
 	})
@@ -138,7 +138,7 @@ var _ = Describe("Update", func() {
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err := provider.Update(context.TODO(), varContext)
+			err := provider.Update(context.TODO(), varContext)
 			Expect(err).To(MatchError(genericError))
 		})
 	})
@@ -148,7 +148,7 @@ var _ = Describe("Update", func() {
 			fakeDeploymentManager.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, genericError)
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err := provider.Update(context.TODO(), varContext)
+			err := provider.Update(context.TODO(), varContext)
 			Expect(err).To(MatchError(genericError))
 		})
 	})
@@ -159,7 +159,7 @@ var _ = Describe("Update", func() {
 			fakeDeploymentManager.MarkOperationStartedReturns(genericError)
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err := provider.Update(context.TODO(), varContext)
+			err := provider.Update(context.TODO(), varContext)
 
 			Expect(err).To(MatchError(genericError))
 		})
@@ -175,7 +175,7 @@ var _ = Describe("Update", func() {
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: newVersion(tfVersion)}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err := provider.Update(context.TODO(), varContext)
+			err := provider.Update(context.TODO(), varContext)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(operationWasFinishedForDeployment(fakeDeploymentManager)).Should(Equal(deployment))

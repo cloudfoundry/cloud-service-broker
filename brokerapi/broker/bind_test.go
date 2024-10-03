@@ -15,7 +15,6 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker/brokerfakes"
@@ -61,8 +60,6 @@ var _ = Describe("Bind", func() {
 			PlanGUID:         planID,
 			SpaceGUID:        spaceID,
 			OrganizationGUID: orgID,
-			OperationType:    models.ProvisionOperationType,
-			OperationGUID:    "provision-operation-GUID",
 			Outputs:          map[string]any{"fakeInstanceOutput": "fakeInstanceValue"},
 		}, nil)
 

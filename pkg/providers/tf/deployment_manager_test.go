@@ -5,6 +5,7 @@ import (
 
 	"code.cloudfoundry.org/lager/v3/lagertest"
 
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker/brokerfakes"
@@ -257,10 +258,11 @@ var _ = Describe("DeploymentManager", func() {
 				}
 				fakeStore.GetTerraformDeploymentReturns(existingDeployment, nil)
 
-				completed, lastOpMessage, err := deploymentManager.OperationStatus(existingDeploymentID)
+				completed, lastOpMessage, operationType, err := deploymentManager.OperationStatus(existingDeploymentID)
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(completed).To(BeTrue())
+				Expect(operationType).To(Equal("update"))
 				Expect(lastOpMessage).To(Equal("great update"))
 			})
 		})
@@ -275,10 +277,11 @@ var _ = Describe("DeploymentManager", func() {
 				}
 				fakeStore.GetTerraformDeploymentReturns(existingDeployment, nil)
 
-				completed, lastOpMessage, err := deploymentManager.OperationStatus(existingDeploymentID)
+				completed, lastOpMessage, operationType, err := deploymentManager.OperationStatus(existingDeploymentID)
 
 				Expect(err).To(MatchError("not so great update"))
 				Expect(completed).To(BeTrue())
+				Expect(operationType).To(Equal("update"))
 				Expect(lastOpMessage).To(Equal("not so great update"))
 			})
 		})
@@ -292,10 +295,11 @@ var _ = Describe("DeploymentManager", func() {
 				}
 				fakeStore.GetTerraformDeploymentReturns(existingDeployment, nil)
 
-				completed, lastOpMessage, err := deploymentManager.OperationStatus(existingDeploymentID)
+				completed, lastOpMessage, operationType, err := deploymentManager.OperationStatus(existingDeploymentID)
 
 				Expect(err).NotTo(HaveOccurred())
 				Expect(completed).To(BeFalse())
+				Expect(operationType).To(Equal("update"))
 				Expect(lastOpMessage).To(Equal("still doing stuff"))
 			})
 		})
@@ -303,7 +307,7 @@ var _ = Describe("DeploymentManager", func() {
 		It("fails, when it errors getting the deployment", func() {
 			fakeStore.GetTerraformDeploymentReturns(storage.TerraformDeployment{}, errors.New("cant get it now"))
 
-			_, _, err := deploymentManager.OperationStatus(existingDeploymentID)
+			_, _, _, err := deploymentManager.OperationStatus(existingDeploymentID)
 
 			Expect(err).To(MatchError("cant get it now"))
 		})
@@ -601,6 +605,36 @@ var _ = Describe("DeploymentManager", func() {
 			_, err := deploymentManager.GetTerraformDeployment(existingDeploymentID)
 
 			Expect(err).To(MatchError("cant get it now"))
+		})
+	})
+
+	Describe("ResetOperationType", func() {
+		var (
+			fakeStore          brokerfakes.FakeServiceProviderStorage
+			deploymentManager  *tf.DeploymentManager
+			existingDeployment storage.TerraformDeployment
+		)
+
+		const existingDeploymentID = "tf:instance:binding"
+
+		BeforeEach(func() {
+			fakeStore = brokerfakes.FakeServiceProviderStorage{}
+			deploymentManager = tf.NewDeploymentManager(&fakeStore, lagertest.NewTestLogger("test"))
+			existingDeployment = storage.TerraformDeployment{
+				ID:                existingDeploymentID,
+				LastOperationType: "validation",
+			}
+		})
+
+		It("it clears the operation type", func() {
+			fakeStore.GetTerraformDeploymentReturns(existingDeployment, nil)
+
+			err := deploymentManager.ResetOperationType(existingDeploymentID)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(fakeStore.StoreTerraformDeploymentCallCount()).To(Equal(1))
+			actualDeployment := fakeStore.StoreTerraformDeploymentArgsForCall(0)
+			Expect(actualDeployment.LastOperationType).To(Equal(models.ClearOperationType))
 		})
 	})
 

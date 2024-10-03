@@ -22,8 +22,6 @@ var _ = Describe("ServiceInstanceDetails", func() {
 				PlanGUID:         "fake-plan-guid",
 				SpaceGUID:        "fake-space-guid",
 				OrganizationGUID: "fake-org-guid",
-				OperationType:    "fake-operation-type",
-				OperationGUID:    "fake-operation-guid",
 			})
 			Expect(err).NotTo(HaveOccurred())
 
@@ -38,8 +36,6 @@ var _ = Describe("ServiceInstanceDetails", func() {
 			Expect(receiver.PlanID).To(Equal("fake-plan-guid"))
 			Expect(receiver.SpaceGUID).To(Equal("fake-space-guid"))
 			Expect(receiver.OrganizationGUID).To(Equal("fake-org-guid"))
-			Expect(receiver.OperationType).To(Equal("fake-operation-type"))
-			Expect(receiver.OperationID).To(Equal("fake-operation-guid"))
 		})
 
 		When("encoding fails", func() {
@@ -67,8 +63,6 @@ var _ = Describe("ServiceInstanceDetails", func() {
 					PlanGUID:         "fake-plan-guid",
 					SpaceGUID:        "fake-space-guid",
 					OrganizationGUID: "fake-org-guid",
-					OperationType:    "fake-operation-type",
-					OperationGUID:    "fake-operation-guid",
 				})
 				Expect(err).NotTo(HaveOccurred())
 
@@ -83,8 +77,6 @@ var _ = Describe("ServiceInstanceDetails", func() {
 				Expect(receiver.PlanID).To(Equal("fake-plan-guid"))
 				Expect(receiver.SpaceGUID).To(Equal("fake-space-guid"))
 				Expect(receiver.OrganizationGUID).To(Equal("fake-org-guid"))
-				Expect(receiver.OperationType).To(Equal("fake-operation-type"))
-				Expect(receiver.OperationID).To(Equal("fake-operation-guid"))
 			})
 		})
 	})
@@ -106,8 +98,6 @@ var _ = Describe("ServiceInstanceDetails", func() {
 			Expect(r.PlanGUID).To(Equal("fake-plan-id-2"))
 			Expect(r.SpaceGUID).To(Equal("fake-space-guid-2"))
 			Expect(r.OrganizationGUID).To(Equal("fake-org-guid-2"))
-			Expect(r.OperationType).To(Equal("fake-operation-type-2"))
-			Expect(r.OperationGUID).To(Equal("fake-operation-id-2"))
 		})
 
 		When("decoding fails", func() {
@@ -211,8 +201,6 @@ func addFakeServiceInstanceDetails() {
 		PlanID:           "fake-plan-id-1",
 		SpaceGUID:        "fake-space-guid-1",
 		OrganizationGUID: "fake-org-guid-1",
-		OperationType:    "fake-operation-type-1",
-		OperationID:      "fake-operation-id-1",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.ServiceInstanceDetails{
 		ID:               "fake-id-2",
@@ -224,8 +212,6 @@ func addFakeServiceInstanceDetails() {
 		PlanID:           "fake-plan-id-2",
 		SpaceGUID:        "fake-space-guid-2",
 		OrganizationGUID: "fake-org-guid-2",
-		OperationType:    "fake-operation-type-2",
-		OperationID:      "fake-operation-id-2",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.ServiceInstanceDetails{
 		ID:               "fake-id-3",
@@ -237,7 +223,5 @@ func addFakeServiceInstanceDetails() {
 		PlanID:           "fake-plan-id-3",
 		SpaceGUID:        "fake-space-guid-3",
 		OrganizationGUID: "fake-org-guid-3",
-		OperationType:    "fake-operation-type-3",
-		OperationID:      "fake-operation-id-3",
 	}).Error).NotTo(HaveOccurred())
 }

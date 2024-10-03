@@ -173,7 +173,7 @@ func (broker *ServiceBroker) doUpdate(ctx context.Context, serviceProvider broke
 		return domain.UpdateServiceSpec{}, fmt.Errorf("tofu version check failed: %s", err.Error())
 	}
 
-	instanceDetails, err := serviceProvider.Update(ctx, vars)
+	err = serviceProvider.Update(ctx, vars)
 	if err != nil {
 		return domain.UpdateServiceSpec{}, err
 	}
@@ -183,8 +183,6 @@ func (broker *ServiceBroker) doUpdate(ctx context.Context, serviceProvider broke
 		instance.PlanGUID = parsedDetails.PlanID
 	}
 
-	instance.OperationType = instanceDetails.OperationType
-	instance.OperationGUID = instanceDetails.OperationID
 	if err := broker.store.StoreServiceInstanceDetails(instance); err != nil {
 		return domain.UpdateServiceSpec{}, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance cannot be deprovisioned through cf. Contact your operator for cleanup", err)
 	}
@@ -197,7 +195,7 @@ func (broker *ServiceBroker) doUpdate(ctx context.Context, serviceProvider broke
 	return domain.UpdateServiceSpec{
 		IsAsync:       true,
 		DashboardURL:  "",
-		OperationData: instanceDetails.OperationID,
+		OperationData: generateTFInstanceID(instance.GUID),
 	}, nil
 }
 
