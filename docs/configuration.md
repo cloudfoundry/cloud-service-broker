@@ -78,6 +78,7 @@ no longer marked as primary.
 ## Broker Service Configuration
 
 Broker service configuration values:
+
 | Environment Variable | Config File Value | Type | Description |
 |----------------------|------|-------------|------------------|
 | <tt>SECURITY_USER_NAME</tt> <b>*</b> | api.user | string | <p>Broker authentication username</p>|
@@ -86,9 +87,18 @@ Broker service configuration values:
 | <tt>TLS_CERT_CHAIN</tt> | api.certCaBundle | string | <p>File path to a pem encoded certificate chain</p>|
 | <tt>TLS_PRIVATE_KEY</tt> | api.tlsKey | string | <p>File path to a pem encoded private key</p>|
 
+
+## Debugging
+Values for debugging:
+
+| Environment Variable                   | Config File Value         | Type | Description                                                                                     |
+|----------------------------------------|---------------------------|------|-------------------------------------------------------------------------------------------------|
+| <tt>CSB_DEBUG_LEAVE_WORKSPACE_DIR</tt> | debug.leave_workspace_dir | bool | Disables the cleanup of workspace directories, so you can inspect the files and run tf commands |
+
 ## Feature flags Configuration
 
 Feature flags can be toggled through the following configuration values. See also [source code occurences of "toggles.Features.Toggle"](https://github.com/cloudfoundry/cloud-service-broker/search?q=toggles.Features.Toggle&type=code)
+
 | Environment Variable | Config File Value | Type | Description | Default |
 |----------------------|------|-------------|------------------|----------|
 | <tt>GSB_COMPATIBILITY_ENABLE_BUILTIN_BROKERPAKS</tt> <b>*</b> | compatibility.enable_builtin_brokerpaks | Boolean | <p>Load brokerpaks that are built-in to the software.</p>| "true" |

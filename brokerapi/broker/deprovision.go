@@ -101,15 +101,6 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return domain.DeprovisionServiceSpec{}, err
 	}
 
-	if operationID == nil {
-		// If this is a synchronous operation, then immediately remove the service instance data from the database
-		if err := broker.removeServiceInstanceData(ctx, instanceID, serviceProvider); err != nil {
-			return domain.DeprovisionServiceSpec{}, err
-		}
-
-		return domain.DeprovisionServiceSpec{}, nil
-	}
-
 	response := domain.DeprovisionServiceSpec{
 		IsAsync:       true,
 		OperationData: *operationID,
