@@ -17,8 +17,6 @@ type ServiceInstanceDetails struct {
 	PlanGUID         string
 	SpaceGUID        string
 	OrganizationGUID string
-	OperationType    string
-	OperationGUID    string
 }
 
 func (s *Storage) StoreServiceInstanceDetails(d ServiceInstanceDetails) error {
@@ -40,8 +38,6 @@ func (s *Storage) StoreServiceInstanceDetails(d ServiceInstanceDetails) error {
 	m.PlanID = d.PlanGUID
 	m.SpaceGUID = d.SpaceGUID
 	m.OrganizationGUID = d.OrganizationGUID
-	m.OperationType = d.OperationType
-	m.OperationID = d.OperationGUID
 
 	switch m.ID {
 	case "":
@@ -95,8 +91,6 @@ func (s *Storage) GetServiceInstanceDetails(guid string) (ServiceInstanceDetails
 		PlanGUID:         receiver.PlanID,
 		SpaceGUID:        receiver.SpaceGUID,
 		OrganizationGUID: receiver.OrganizationGUID,
-		OperationType:    receiver.OperationType,
-		OperationGUID:    receiver.OperationID,
 	}, nil
 }
 

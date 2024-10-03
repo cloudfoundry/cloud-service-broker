@@ -67,11 +67,9 @@ var _ = Describe("Provision", func() {
 			fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			actualInstanceDetails, err := provider.Provision(context.TODO(), provisionContext)
+			err := provider.Provision(context.TODO(), provisionContext)
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(actualInstanceDetails.OperationGUID).To(Equal(expectedTfID))
-			Expect(actualInstanceDetails.OperationType).To(Equal("provision"))
 
 			By("checking the new saved deployment")
 			Expect(fakeDeploymentManager.CreateAndSaveDeploymentCallCount()).To(Equal(1))
@@ -104,7 +102,7 @@ var _ = Describe("Provision", func() {
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err = provider.Provision(context.TODO(), provisionContext)
+			err = provider.Provision(context.TODO(), provisionContext)
 
 			Expect(err.Error()).To(ContainSubstring(`missing value for key "tf_id"`))
 		})
@@ -119,7 +117,7 @@ var _ = Describe("Provision", func() {
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err := provider.Provision(context.TODO(), provisionContext)
+			err := provider.Provision(context.TODO(), provisionContext)
 
 			Expect(err).To(MatchError(`error creating workspace: :1,17-17: Invalid block definition; Either a quoted string block label or an opening brace ("{") is expected here.`))
 		})
@@ -128,7 +126,7 @@ var _ = Describe("Provision", func() {
 			fakeDeploymentManager.CreateAndSaveDeploymentReturns(storage.TerraformDeployment{}, errors.New("cant save now"))
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err := provider.Provision(context.TODO(), provisionContext)
+			err := provider.Provision(context.TODO(), provisionContext)
 
 			Expect(err).To(MatchError("deployment create failed: cant save now"))
 		})
@@ -138,7 +136,7 @@ var _ = Describe("Provision", func() {
 			fakeDeploymentManager.MarkOperationStartedReturns(errors.New("couldnt do this now"))
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err := provider.Provision(context.TODO(), provisionContext)
+			err := provider.Provision(context.TODO(), provisionContext)
 
 			Expect(err).To(MatchError("error marking job started: couldnt do this now"))
 		})
@@ -149,7 +147,7 @@ var _ = Describe("Provision", func() {
 			fakeDefaultInvoker.ApplyReturns(errors.New("some TF issue happened"))
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err := provider.Provision(context.TODO(), provisionContext)
+			err := provider.Provision(context.TODO(), provisionContext)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("checking TF apply has been called")
@@ -206,11 +204,9 @@ var _ = Describe("Provision", func() {
 			fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			actualInstanceDetails, err := provider.Provision(context.TODO(), provisionContext)
+			err := provider.Provision(context.TODO(), provisionContext)
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(actualInstanceDetails.OperationGUID).To(Equal(expectedTfID))
-			Expect(actualInstanceDetails.OperationType).To(Equal("provision"))
 
 			By("checking the new saved deployment")
 			Expect(fakeDeploymentManager.CreateAndSaveDeploymentCallCount()).To(Equal(1))
@@ -249,7 +245,7 @@ var _ = Describe("Provision", func() {
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err = provider.Provision(context.TODO(), pc)
+			err = provider.Provision(context.TODO(), pc)
 
 			Expect(err).To(MatchError("must provide values for all import parameters: import_input"))
 		})
@@ -260,7 +256,7 @@ var _ = Describe("Provision", func() {
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err = provider.Provision(context.TODO(), pc)
+			err = provider.Provision(context.TODO(), pc)
 
 			Expect(err.Error()).To(ContainSubstring(`missing value for key "tf_id"`))
 		})
@@ -298,7 +294,7 @@ var _ = Describe("Provision", func() {
 
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, sd, fakeDeploymentManager)
 
-			_, err := provider.Provision(context.TODO(), provisionContext)
+			err := provider.Provision(context.TODO(), provisionContext)
 
 			Expect(err.Error()).To(ContainSubstring(`error creating workspace: :1,17-17: Invalid block definition; Either a quoted string block label or an opening brace ("{") is expected here.`))
 		})
@@ -307,7 +303,7 @@ var _ = Describe("Provision", func() {
 			fakeDeploymentManager.CreateAndSaveDeploymentReturns(storage.TerraformDeployment{}, errors.New("cant save now"))
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err := provider.Provision(context.TODO(), provisionContext)
+			err := provider.Provision(context.TODO(), provisionContext)
 
 			Expect(err).To(MatchError("deployment create failed: cant save now"))
 		})
@@ -317,7 +313,7 @@ var _ = Describe("Provision", func() {
 			fakeDeploymentManager.MarkOperationStartedReturns(errors.New("couldnt do this now"))
 			provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-			_, err := provider.Provision(context.TODO(), provisionContext)
+			err := provider.Provision(context.TODO(), provisionContext)
 
 			Expect(err).To(MatchError("error marking job started: couldnt do this now"))
 		})
@@ -329,7 +325,7 @@ var _ = Describe("Provision", func() {
 				fakeDefaultInvoker.ImportReturns(errors.New("some TF import issue happened"))
 				provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-				_, err := provider.Provision(context.TODO(), provisionContext)
+				err := provider.Provision(context.TODO(), provisionContext)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("checking TF import has been called")
@@ -347,7 +343,7 @@ var _ = Describe("Provision", func() {
 				fakeDefaultInvoker.ShowReturns("", errors.New("some TF show issue happened"))
 				provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-				_, err := provider.Provision(context.TODO(), provisionContext)
+				err := provider.Provision(context.TODO(), provisionContext)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("checking TF show has been called")
@@ -364,7 +360,7 @@ var _ = Describe("Provision", func() {
 				fakeDefaultInvoker.PlanReturns(executor.ExecutionOutput{}, errors.New("some TF plan issue happened"))
 				provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-				_, err := provider.Provision(context.TODO(), provisionContext)
+				err := provider.Provision(context.TODO(), provisionContext)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("checking TF plan has been called")
@@ -380,7 +376,7 @@ var _ = Describe("Provision", func() {
 				fakeDefaultInvoker.ApplyReturns(errors.New("some TF apply issue happened"))
 				provider := tf.NewTerraformProvider(executor.TFBinariesContext{}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
-				_, err := provider.Provision(context.TODO(), provisionContext)
+				err := provider.Provision(context.TODO(), provisionContext)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("checking TF apply has been called")

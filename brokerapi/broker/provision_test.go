@@ -16,7 +16,6 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker/brokerfakes"
@@ -32,7 +31,7 @@ var _ = Describe("Provision", func() {
 		planID        = "test-plan-id"
 		offeringID    = "test-service-id"
 		newInstanceID = "test-instance-id"
-		operationID   = "test-operation-id"
+		operationID   = "tf:test-instance-id:"
 	)
 
 	var (
@@ -45,10 +44,7 @@ var _ = Describe("Provision", func() {
 
 	BeforeEach(func() {
 		fakeServiceProvider = &pkgBrokerFakes.FakeServiceProvider{}
-		fakeServiceProvider.ProvisionReturns(storage.ServiceInstanceDetails{
-			OperationType: models.ProvisionOperationType,
-			OperationGUID: operationID,
-		}, nil)
+		fakeServiceProvider.ProvisionReturns(nil)
 
 		providerBuilder := func(logger lager.Logger, store pkgBroker.ServiceProviderStorage) pkgBroker.ServiceProvider {
 			return fakeServiceProvider
@@ -255,7 +251,7 @@ var _ = Describe("Provision", func() {
 
 	When("provider provision errors", func() {
 		BeforeEach(func() {
-			fakeServiceProvider.ProvisionReturns(storage.ServiceInstanceDetails{}, errors.New("cannot provision right now"))
+			fakeServiceProvider.ProvisionReturns(errors.New("cannot provision right now"))
 		})
 
 		It("should error", func() {

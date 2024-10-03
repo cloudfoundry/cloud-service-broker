@@ -31,12 +31,11 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 
 	_, serviceProvider, err := broker.getDefinitionAndProvider(instance.ServiceGUID)
 	if err != nil {
+		broker.Logger.Info("XXXX getDefinitionAndProvider", correlation.ID(ctx), lager.Data{"err": err})
 		return domain.LastOperation{}, err
 	}
 
-	lastOperationType := instance.OperationType
-
-	done, message, err := serviceProvider.PollInstance(ctx, instance.GUID)
+	done, message, lastOperationType, err := serviceProvider.PollInstance(ctx, instance.GUID)
 	if err != nil {
 		return domain.LastOperation{State: domain.Failed, Description: err.Error()}, nil
 	}
@@ -84,10 +83,13 @@ func (broker *ServiceBroker) updateStateOnOperationCompletion(ctx context.Contex
 	}
 
 	details.Outputs = outs
-	details.OperationGUID = ""
-	details.OperationType = models.ClearOperationType
 	if err := broker.store.StoreServiceInstanceDetails(details); err != nil {
 		return fmt.Errorf("error saving instance details to database %v", err)
+	}
+
+	err = service.ClearOperationType(ctx, instanceID)
+	if err != nil {
+		return fmt.Errorf("error clearing operation type from database %v", err)
 	}
 
 	return nil

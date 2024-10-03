@@ -35,7 +35,7 @@ var _ = Describe("Update", func() {
 		offeringID        = "test-service-id"
 		newPlanID         = "new-test-plan-id"
 		instanceID        = "test-instance-id"
-		updateOperationID = "update-operation-id"
+		updateOperationID = "tf:test-instance-id:"
 	)
 
 	var (
@@ -129,8 +129,11 @@ var _ = Describe("Update", func() {
 			PlanGUID:         originalPlanID,
 			SpaceGUID:        spaceID,
 			OrganizationGUID: orgID,
-			OperationType:    models.ProvisionOperationType,
-			OperationGUID:    "provision-operation-GUID",
+		}, nil)
+		fakeStorage.GetTerraformDeploymentReturns(storage.TerraformDeployment{
+			ID:                 updateOperationID,
+			LastOperationType:  models.ProvisionOperationType,
+			LastOperationState: "GOOG",
 		}, nil)
 
 		serviceBroker = must(broker.New(brokerConfig, fakeStorage, utils.NewLogger("brokers-test")))
@@ -157,10 +160,8 @@ var _ = Describe("Update", func() {
 	Describe("update", func() {
 		When("no plan or parameter changes are requested", func() {
 			BeforeEach(func() {
-				fakeServiceProvider.UpdateReturns(models.ServiceInstanceDetails{
-					OperationType: models.UpdateOperationType,
-					OperationID:   updateOperationID,
-				}, nil)
+				fakeServiceProvider.UpdateReturns(nil)
+				fakeServiceProvider.PollInstanceReturns(true, "a message", models.UpdateOperationType, nil)
 			})
 
 			It("should complete changing the instance operation type", func() {
@@ -196,10 +197,7 @@ var _ = Describe("Update", func() {
 
 		When("plan change is requested", func() {
 			BeforeEach(func() {
-				fakeServiceProvider.UpdateReturns(models.ServiceInstanceDetails{
-					OperationType: models.UpdateOperationType,
-					OperationID:   updateOperationID,
-				}, nil)
+				fakeServiceProvider.UpdateReturns(nil)
 			})
 
 			It("should do update async and not change planID", func() {
@@ -230,10 +228,7 @@ var _ = Describe("Update", func() {
 
 		When("parameter change is requested", func() {
 			BeforeEach(func() {
-				fakeServiceProvider.UpdateReturns(models.ServiceInstanceDetails{
-					OperationType: models.UpdateOperationType,
-					OperationID:   updateOperationID,
-				}, nil)
+				fakeServiceProvider.UpdateReturns(nil)
 
 				updateDetails = domain.UpdateDetails{
 					ServiceID: offeringID,
@@ -286,7 +281,7 @@ var _ = Describe("Update", func() {
 
 		When("provider update errors", func() {
 			BeforeEach(func() {
-				fakeServiceProvider.UpdateReturns(models.ServiceInstanceDetails{}, errors.New("cannot update right now"))
+				fakeServiceProvider.UpdateReturns(errors.New("cannot update right now"))
 			})
 
 			It("should error and not update the provision variables", func() {
@@ -799,8 +794,6 @@ func expectOperationTypeToBeUpdated(
 ) {
 	Expect(fakeStorage.StoreServiceInstanceDetailsCallCount()).To(Equal(1))
 	actualServiceInstanceDetails := fakeStorage.StoreServiceInstanceDetailsArgsForCall(0)
-	Expect(actualServiceInstanceDetails.OperationType).To(Equal("update"))
-	Expect(actualServiceInstanceDetails.OperationGUID).To(Equal(operationGUID))
 	Expect(actualServiceInstanceDetails.GUID).To(Equal(instanceID))
 	Expect(actualServiceInstanceDetails.ServiceGUID).To(Equal(offeringID))
 	Expect(actualServiceInstanceDetails.PlanGUID).To(Equal(newPlanID))

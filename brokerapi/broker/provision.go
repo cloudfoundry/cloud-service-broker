@@ -23,6 +23,7 @@ import (
 	"github.com/pivotal-cf/brokerapi/v11/domain/apiresponses"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils/request"
 )
@@ -82,17 +83,19 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 	}
 
 	// get instance details
-	instanceDetails, err := serviceProvider.Provision(ctx, vars)
+	err = serviceProvider.Provision(ctx, vars)
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err
 	}
 
 	// save instance details
-	instanceDetails.ServiceGUID = parsedDetails.ServiceID
-	instanceDetails.GUID = instanceID
-	instanceDetails.PlanGUID = parsedDetails.PlanID
-	instanceDetails.SpaceGUID = parsedDetails.SpaceGUID
-	instanceDetails.OrganizationGUID = parsedDetails.OrganizationGUID
+	instanceDetails := storage.ServiceInstanceDetails{
+		ServiceGUID:      parsedDetails.ServiceID,
+		GUID:             instanceID,
+		PlanGUID:         parsedDetails.PlanID,
+		SpaceGUID:        parsedDetails.SpaceGUID,
+		OrganizationGUID: parsedDetails.OrganizationGUID,
+	}
 
 	if err := broker.store.StoreServiceInstanceDetails(instanceDetails); err != nil {
 		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance cannot be deprovisioned through cf. Contact your operator for cleanup", err)
@@ -104,5 +107,7 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
 	}
 
-	return domain.ProvisionedServiceSpec{IsAsync: true, DashboardURL: "", OperationData: instanceDetails.OperationGUID}, nil
+	operationId := generateTFInstanceID(instanceDetails.GUID)
+
+	return domain.ProvisionedServiceSpec{IsAsync: true, DashboardURL: "", OperationData: operationId}, nil
 }

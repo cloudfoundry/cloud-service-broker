@@ -42,7 +42,7 @@ var _ = Describe("LastInstanceOperation", func() {
 		fakeServiceProvider = &pkgBrokerFakes.FakeServiceProvider{}
 		expectedTFOutput = storage.JSONObject{"output": "value"}
 		fakeServiceProvider.GetTerraformOutputsReturns(expectedTFOutput, nil)
-		fakeServiceProvider.PollInstanceReturns(true, "operation complete", nil)
+		fakeServiceProvider.PollInstanceReturns(true, "operation complete", models.ProvisionOperationType, nil)
 
 		providerBuilder := func(logger lager.Logger, store pkgBroker.ServiceProviderStorage) pkgBroker.ServiceProvider {
 			return fakeServiceProvider
@@ -69,8 +69,6 @@ var _ = Describe("LastInstanceOperation", func() {
 		fakeStorage.GetServiceInstanceDetailsReturns(
 			storage.ServiceInstanceDetails{
 				GUID:             instanceID,
-				OperationType:    models.ProvisionOperationType,
-				OperationGUID:    operationID,
 				PlanGUID:         planID,
 				ServiceGUID:      offeringID,
 				SpaceGUID:        spaceID,
@@ -89,7 +87,7 @@ var _ = Describe("LastInstanceOperation", func() {
 	Describe("operation complete", func() {
 		Describe("provision", func() {
 			BeforeEach(func() {
-				fakeServiceProvider.PollInstanceReturns(true, "operation complete", nil)
+				fakeServiceProvider.PollInstanceReturns(true, "operation complete", models.ProvisionOperationType, nil)
 			})
 
 			It("should complete provision", func() {
@@ -114,12 +112,16 @@ var _ = Describe("LastInstanceOperation", func() {
 				actualSIDetails := fakeStorage.StoreServiceInstanceDetailsArgsForCall(0)
 				Expect(actualSIDetails.GUID).To(Equal(instanceID))
 				Expect(actualSIDetails.Outputs).To(Equal(expectedTFOutput))
-				Expect(actualSIDetails.OperationGUID).To(BeEmpty())
-				Expect(actualSIDetails.OperationType).To(BeEmpty())
 				Expect(actualSIDetails.ServiceGUID).To(Equal(offeringID))
 				Expect(actualSIDetails.PlanGUID).To(Equal(planID))
 				Expect(actualSIDetails.SpaceGUID).To(Equal(spaceID))
 				Expect(actualSIDetails.OrganizationGUID).To(Equal(orgID))
+
+				By("validating that the operation type is cleared")
+				Expect(fakeServiceProvider.ClearOperationTypeCallCount()).To(Equal(1))
+				actualContext, actualInstanceID = fakeServiceProvider.ClearOperationTypeArgsForCall(0)
+				Expect(actualContext.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
+				Expect(actualInstanceID).To(Equal(instanceID))
 			})
 		})
 
@@ -128,15 +130,13 @@ var _ = Describe("LastInstanceOperation", func() {
 				fakeStorage.GetServiceInstanceDetailsReturns(
 					storage.ServiceInstanceDetails{
 						GUID:             instanceID,
-						OperationType:    models.DeprovisionOperationType,
-						OperationGUID:    operationID,
 						PlanGUID:         planID,
 						ServiceGUID:      offeringID,
 						SpaceGUID:        spaceID,
 						OrganizationGUID: orgID,
 					}, nil)
 
-				fakeServiceProvider.PollInstanceReturns(true, "operation complete", nil)
+				fakeServiceProvider.PollInstanceReturns(true, "operation complete", models.DeprovisionOperationType, nil)
 			})
 
 			It("should complete deprovision", func() {
@@ -179,7 +179,7 @@ var _ = Describe("LastInstanceOperation", func() {
 
 	Describe("operation in progress", func() {
 		BeforeEach(func() {
-			fakeServiceProvider.PollInstanceReturns(false, "operation in progress still", nil)
+			fakeServiceProvider.PollInstanceReturns(false, "operation in progress still", models.ProvisionOperationType, nil)
 		})
 
 		It("should not update the service instance", func() {
@@ -204,7 +204,7 @@ var _ = Describe("LastInstanceOperation", func() {
 
 	Describe("operation failed", func() {
 		BeforeEach(func() {
-			fakeServiceProvider.PollInstanceReturns(false, "there was an error", errors.New("some error happened"))
+			fakeServiceProvider.PollInstanceReturns(false, "there was an error", models.ProvisionOperationType, errors.New("some error happened"))
 		})
 
 		It("should set operation to failed", func() {
@@ -256,11 +256,11 @@ var _ = Describe("LastInstanceOperation", func() {
 			BeforeEach(func() {
 				fakeStorage.GetServiceInstanceDetailsReturns(
 					storage.ServiceInstanceDetails{
-						GUID:          instanceID,
-						OperationType: models.DeprovisionOperationType,
-						ServiceGUID:   offeringID,
+						GUID:        instanceID,
+						ServiceGUID: offeringID,
 					}, nil)
 				fakeStorage.DeleteServiceInstanceDetailsReturns(errors.New("failed to delete SI details"))
+				fakeServiceProvider.PollInstanceReturns(true, "operation complete", models.DeprovisionOperationType, nil)
 			})
 
 			It("should error", func() {
@@ -275,11 +275,11 @@ var _ = Describe("LastInstanceOperation", func() {
 			BeforeEach(func() {
 				fakeStorage.GetServiceInstanceDetailsReturns(
 					storage.ServiceInstanceDetails{
-						GUID:          instanceID,
-						OperationType: models.DeprovisionOperationType,
-						ServiceGUID:   offeringID,
+						GUID:        instanceID,
+						ServiceGUID: offeringID,
 					}, nil)
 				fakeStorage.DeleteProvisionRequestDetailsReturns(errors.New("failed to delete provision params"))
+				fakeServiceProvider.PollInstanceReturns(true, "operation complete", models.DeprovisionOperationType, nil)
 			})
 
 			It("should error", func() {
@@ -296,11 +296,11 @@ var _ = Describe("LastInstanceOperation", func() {
 			BeforeEach(func() {
 				fakeStorage.GetServiceInstanceDetailsReturns(
 					storage.ServiceInstanceDetails{
-						GUID:          instanceID,
-						OperationType: models.DeprovisionOperationType,
-						ServiceGUID:   offeringID,
+						GUID:        instanceID,
+						ServiceGUID: offeringID,
 					}, nil)
 				fakeServiceProvider.DeleteInstanceDataReturns(errors.New("failed to delete provider instance data"))
+				fakeServiceProvider.PollInstanceReturns(true, "operation complete", models.DeprovisionOperationType, nil)
 			})
 
 			It("should error", func() {
