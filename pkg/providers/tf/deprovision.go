@@ -2,7 +2,6 @@ package tf
 
 import (
 	"context"
-	"fmt"
 
 	"code.cloudfoundry.org/lager/v3"
 
@@ -13,8 +12,6 @@ import (
 
 // Deprovision performs a terraform destroy on the instance.
 func (provider *TerraformProvider) Deprovision(ctx context.Context, instanceGUID string, vc *varcontext.VarContext) (*string, error) {
-	fmt.Println("XXXXX YO")
-
 	provider.logger.Debug("terraform-deprovision", correlation.ID(ctx), lager.Data{
 		"instance": instanceGUID,
 	})
@@ -25,7 +22,6 @@ func (provider *TerraformProvider) Deprovision(ctx context.Context, instanceGUID
 		return nil, err
 	}
 
-	fmt.Println("provider.destror")
 	if err := provider.destroy(ctx, tfID, vc.ToMap(), models.DeprovisionOperationType); err != nil {
 		return nil, err
 	}

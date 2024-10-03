@@ -82,7 +82,6 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 		return domain.ProvisionedServiceSpec{}, err
 	}
 
-	// get instance details
 	err = serviceProvider.Provision(ctx, vars)
 	if err != nil {
 		return domain.ProvisionedServiceSpec{}, err

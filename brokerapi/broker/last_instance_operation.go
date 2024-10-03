@@ -43,7 +43,6 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 
 	_, serviceProvider, err := broker.getDefinitionAndProvider(instance.ServiceGUID)
 	if err != nil {
-		broker.Logger.Info("XXXX getDefinitionAndProvider", correlation.ID(ctx), lager.Data{"err": err})
 		return domain.LastOperation{}, err
 	}
 
