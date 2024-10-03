@@ -106,7 +106,7 @@ func (broker *ServiceBroker) Provision(ctx context.Context, instanceID string, d
 		return domain.ProvisionedServiceSpec{}, fmt.Errorf("error saving provision request details to database: %s. Services relying on async provisioning will not be able to complete provisioning", err)
 	}
 
-	operationId := generateTFInstanceID(instanceDetails.GUID)
+	operationID := generateTFInstanceID(instanceDetails.GUID)
 
-	return domain.ProvisionedServiceSpec{IsAsync: true, DashboardURL: "", OperationData: operationId}, nil
+	return domain.ProvisionedServiceSpec{IsAsync: true, DashboardURL: "", OperationData: operationID}, nil
 }

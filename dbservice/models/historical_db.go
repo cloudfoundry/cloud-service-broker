@@ -162,7 +162,7 @@ func (ServiceInstanceDetailsV3) TableName() string {
 	return "service_instance_details"
 }
 
-// ServiceInstanceDetailsV3 holds information about provisioned services.
+// ServiceInstanceDetailsV4 holds information about provisioned services.
 type ServiceInstanceDetailsV4 struct {
 	ID        string `gorm:"primary_key;type:varchar(255);not null"`
 	CreatedAt time.Time
