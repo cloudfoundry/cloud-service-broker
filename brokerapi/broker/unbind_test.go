@@ -8,7 +8,6 @@ import (
 	"code.cloudfoundry.org/lager/v3"
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker/brokerfakes"
@@ -57,8 +56,6 @@ var _ = Describe("Unbind", func() {
 			PlanGUID:         planID,
 			SpaceGUID:        spaceID,
 			OrganizationGUID: orgID,
-			OperationType:    models.ProvisionOperationType,
-			OperationGUID:    "provision-operation-GUID",
 		}, nil)
 		fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{"foo": "bar"}, nil)
 
@@ -114,8 +111,6 @@ var _ = Describe("Unbind", func() {
 				PlanGUID:         planID,
 				SpaceGUID:        spaceID,
 				OrganizationGUID: orgID,
-				OperationType:    models.ProvisionOperationType,
-				OperationGUID:    "provision-operation-GUID",
 			}, nil)
 			fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{"foo": "bar"}, nil)
 		})

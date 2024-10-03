@@ -34,7 +34,7 @@ const (
 type ServiceBindingCredentials ServiceBindingCredentialsV2
 
 // ServiceInstanceDetails holds information about provisioned services.
-type ServiceInstanceDetails ServiceInstanceDetailsV3
+type ServiceInstanceDetails ServiceInstanceDetailsV4
 
 // ProvisionRequestDetails holds user-defined properties passed to a call
 // to provision a service.
