@@ -66,6 +66,7 @@ var _ = Describe("LastInstanceOperation", func() {
 		}
 
 		fakeStorage = &brokerfakes.FakeStorage{}
+		fakeStorage.ExistsServiceInstanceDetailsReturns(true, nil)
 		fakeStorage.GetServiceInstanceDetailsReturns(
 			storage.ServiceInstanceDetails{
 				GUID:             instanceID,
@@ -75,7 +76,9 @@ var _ = Describe("LastInstanceOperation", func() {
 				ServiceGUID:      offeringID,
 				SpaceGUID:        spaceID,
 				OrganizationGUID: orgID,
-			}, nil)
+			},
+			nil,
+		)
 
 		serviceBroker = must(broker.New(brokerConfig, fakeStorage, utils.NewLogger("brokers-test")))
 
@@ -228,6 +231,17 @@ var _ = Describe("LastInstanceOperation", func() {
 	})
 
 	Describe("storage errors", func() {
+		Context("storage error when checking whether SI exists", func() {
+			BeforeEach(func() {
+				fakeStorage.ExistsServiceInstanceDetailsReturns(false, errors.New("failed to check whether SI exists"))
+			})
+
+			It("should error", func() {
+				_, err := serviceBroker.LastOperation(context.TODO(), instanceID, pollDetails)
+				Expect(err).To(MatchError("database error checking for existing instance: failed to check whether SI exists"))
+			})
+		})
+
 		Context("storage errors when getting SI details", func() {
 			BeforeEach(func() {
 				fakeStorage.GetServiceInstanceDetailsReturns(storage.ServiceInstanceDetails{}, errors.New("failed to get SI details"))
@@ -235,7 +249,7 @@ var _ = Describe("LastInstanceOperation", func() {
 
 			It("should error", func() {
 				_, err := serviceBroker.LastOperation(context.TODO(), instanceID, pollDetails)
-				Expect(err).To(MatchError("instance does not exist"))
+				Expect(err).To(MatchError("error getting service instance details: failed to get SI details"))
 			})
 		})
 
@@ -291,7 +305,7 @@ var _ = Describe("LastInstanceOperation", func() {
 		})
 	})
 
-	Describe("Service provider error", func() {
+	Describe("service provider error", func() {
 		Context("service provider errors when deleting provider instance data", func() {
 			BeforeEach(func() {
 				fakeStorage.GetServiceInstanceDetailsReturns(
@@ -314,7 +328,7 @@ var _ = Describe("LastInstanceOperation", func() {
 
 	Describe("service instance does not exist", func() {
 		BeforeEach(func() {
-			fakeStorage.GetServiceInstanceDetailsReturns(storage.ServiceInstanceDetails{}, errors.New("does not exist"))
+			fakeStorage.ExistsServiceInstanceDetailsReturns(false, nil)
 		})
 
 		It("should return HTTP 410 as per OSBAPI spec", func() {
