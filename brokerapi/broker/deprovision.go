@@ -94,8 +94,6 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return domain.DeprovisionServiceSpec{}, err
 	}
 
-	fmt.Println("serviceProvider Deprovsion")
-
 	operationID, err := serviceProvider.Deprovision(ctx, instance.GUID, vars)
 	if err != nil {
 		return domain.DeprovisionServiceSpec{}, err
