@@ -90,8 +90,16 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 	}
 
 	go func() {
-		err := provider.DefaultInvoker().Apply(ctx, newWorkspace)
-		_ = provider.MarkOperationFinished(&deployment, err)
+		var err error
+		if vars.HasKey("vacant") && vars.GetBool("vacant") {
+			newWorkspace.State = []byte(`{"version":4}`) // Minimum state required for anything to work
+		} else {
+			err = provider.DefaultInvoker().Apply(ctx, newWorkspace)
+		}
+		err = provider.MarkOperationFinished(&deployment, err)
+		if err != nil {
+			provider.logger.Error("MarkOperationFinished", err)
+		}
 	}()
 
 	return tfID, nil

@@ -1,18 +1,19 @@
-name: goreleaser
+name: manual-releaser
 
 on:
-  push:
-    tags:
-    - 'v*'
-
+  workflow_dispatch:
+    inputs: 
+      tag: 
+        default: 'v2.1.0'
+      
 jobs:
-  goreleaser:
+  manual-releaser:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          ref: ${{ github.event.inputs.tag }} 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:

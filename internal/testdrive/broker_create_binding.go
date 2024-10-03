@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 )
 
 type ServiceBinding struct {
@@ -23,7 +23,7 @@ type CreateBindingOption func(*createBindingConfig) error
 func (b *Broker) CreateBinding(s ServiceInstance, opts ...CreateBindingOption) (ServiceBinding, error) {
 	var bindResponse *client.BrokerResponse
 	cfg := createBindingConfig{
-		guid: uuid.New(),
+		guid: uuid.NewString(),
 	}
 
 	for _, o := range opts {
@@ -32,7 +32,7 @@ func (b *Broker) CreateBinding(s ServiceInstance, opts ...CreateBindingOption) (
 		}
 	}
 
-	bindResponse = b.Client.Bind(s.GUID, cfg.guid, s.ServiceOfferingGUID, s.ServicePlanGUID, uuid.New(), cfg.params)
+	bindResponse = b.Client.Bind(s.GUID, cfg.guid, s.ServiceOfferingGUID, s.ServicePlanGUID, uuid.NewString(), cfg.params)
 	switch {
 	case bindResponse.Error != nil:
 		return ServiceBinding{GUID: cfg.guid}, bindResponse.Error

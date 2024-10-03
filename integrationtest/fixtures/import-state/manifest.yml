@@ -14,7 +14,5 @@ terraform_binaries:
   source: https://github.com/opentofu/opentofu/archive/refs/tags/v1.6.0.zip
 - name: terraform-provider-random
   version: 3.1.0
-- name: terraform-provider-null
-  version: 3.2.2
 service_definitions:
 - fake-uuid-service.yml

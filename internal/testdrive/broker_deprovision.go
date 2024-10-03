@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 )
 
 func (b *Broker) Deprovision(s ServiceInstance) error {
-	deprovisionResponse := b.Client.Deprovision(s.GUID, s.ServiceOfferingGUID, s.ServicePlanGUID, uuid.New())
+	deprovisionResponse := b.Client.Deprovision(s.GUID, s.ServiceOfferingGUID, s.ServicePlanGUID, uuid.NewString())
 	switch {
 	case deprovisionResponse.Error != nil:
 		return deprovisionResponse.Error

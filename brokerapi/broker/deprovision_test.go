@@ -11,14 +11,12 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"github.com/pivotal-cf/brokerapi/v11/domain/apiresponses"
-	"github.com/pivotal-cf/brokerapi/v11/middlewares"
 	"golang.org/x/net/context"
 )
 
@@ -93,138 +91,27 @@ var _ = Describe("Deprovision", func() {
 		}
 	})
 
-	Describe("successful sync deletion", func() {
-		BeforeEach(func() {
-			fakeServiceProvider.DeprovisionReturns(nil, nil)
-		})
+	It("should return operationID and not remove the instance", func() {
+		response, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
+		Expect(err).ToNot(HaveOccurred())
 
-		It("deletes the instance", func() {
-			expectedHeader := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
-			newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, expectedHeader)
+		By("validating response")
+		Expect(response.IsAsync).To(BeTrue())
+		Expect(response.OperationData).To(Equal(operationID))
 
-			response, err := serviceBroker.Deprovision(newContext, instanceToDeleteID, deprovisionDetails, true)
-			Expect(err).ToNot(HaveOccurred())
+		By("validating call to deprovision")
+		Expect(fakeServiceProvider.DeprovisionCallCount()).To(Equal(1))
 
-			By("validating response")
-			Expect(response.IsAsync).To(BeFalse())
-			Expect(response.OperationData).To(BeEmpty())
+		By("validating delete calls have not happen")
+		Expect(fakeStorage.DeleteServiceInstanceDetailsCallCount()).To(Equal(0))
+		Expect(fakeStorage.DeleteProvisionRequestDetailsCallCount()).To(Equal(0))
 
-			By("validating call to deprovision")
-			Expect(fakeServiceProvider.DeprovisionCallCount()).To(Equal(1))
-			actualCtx, instanceID, _ := fakeServiceProvider.DeprovisionArgsForCall(0)
-			Expect(actualCtx.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
-			Expect(instanceID).To(Equal(instanceToDeleteID))
-
-			By("validating SI details delete call")
-			Expect(fakeStorage.DeleteServiceInstanceDetailsCallCount()).To(Equal(1))
-			actualInstanceID := fakeStorage.DeleteServiceInstanceDetailsArgsForCall(0)
-			Expect(actualInstanceID).To(Equal(instanceToDeleteID))
-
-			By("validating provision parameters delete call")
-			Expect(fakeStorage.DeleteProvisionRequestDetailsCallCount()).To(Equal(1))
-			actualInstance := fakeStorage.DeleteProvisionRequestDetailsArgsForCall(0)
-			Expect(actualInstance).To(Equal(instanceToDeleteID))
-		})
-
-		When("error reading instance version", func() {
-			It("should succeed anyway", func() {
-				deprovisionDetails = domain.DeprovisionDetails{
-					ServiceID: offeringID,
-					PlanID:    "some-non-existent-plan",
-				}
-				fakeServiceProvider.CheckUpgradeAvailableReturns(workspace.CannotReadVersionError{})
-
-				_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
-				Expect(err).NotTo(HaveOccurred())
-
-				By("validating SI details delete call")
-				Expect(fakeStorage.DeleteServiceInstanceDetailsCallCount()).To(Equal(1))
-				actualInstanceID := fakeStorage.DeleteServiceInstanceDetailsArgsForCall(0)
-				Expect(actualInstanceID).To(Equal(instanceToDeleteID))
-
-				By("validating provision parameters delete call")
-				Expect(fakeStorage.DeleteProvisionRequestDetailsCallCount()).To(Equal(1))
-				actualInstance := fakeStorage.DeleteProvisionRequestDetailsArgsForCall(0)
-				Expect(actualInstance).To(Equal(instanceToDeleteID))
-
-				By("validating the instance workspace delete call")
-				Expect(fakeServiceProvider.DeleteInstanceDataCallCount()).To(Equal(1))
-				_, actualInstanceID = fakeServiceProvider.DeleteInstanceDataArgsForCall(0)
-				Expect(actualInstanceID).To(Equal(instanceToDeleteID))
-			})
-		})
-
-		Describe("deprovision variables", func() {
-			When("there were provision variables during provision or update", func() {
-				BeforeEach(func() {
-					fakeStorage.GetProvisionRequestDetailsReturns(map[string]any{"foo": "something", "import_field_1": "hello"}, nil)
-				})
-
-				It("should use the provision variables", func() {
-					_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
-					Expect(err).ToNot(HaveOccurred())
-
-					By("validating provider provision has been called with the right vars")
-					Expect(fakeServiceProvider.DeprovisionCallCount()).To(Equal(1))
-					_, _, actualVars := fakeServiceProvider.DeprovisionArgsForCall(0)
-					Expect(actualVars.GetString("foo")).To(Equal("something"))
-					Expect(actualVars.GetString("import_field_1")).To(Equal("hello"))
-				})
-			})
-
-			Describe("provision computed variables", func() {
-				It("passes computed variables to deprovision", func() {
-					header := "cloudfoundry eyANCiAgInVzZXJfaWQiOiAiNjgzZWE3NDgtMzA5Mi00ZmY0LWI2NTYtMzljYWNjNGQ1MzYwIg0KfQ=="
-					newContext := context.WithValue(context.Background(), middlewares.OriginatingIdentityKey, header)
-
-					_, err := serviceBroker.Deprovision(newContext, instanceToDeleteID, deprovisionDetails, true)
-					Expect(err).ToNot(HaveOccurred())
-
-					By("validating provider provision has been called with the right vars")
-					Expect(fakeServiceProvider.DeprovisionCallCount()).To(Equal(1))
-					_, _, actualVars := fakeServiceProvider.DeprovisionArgsForCall(0)
-
-					Expect(actualVars.GetString("copyOriginatingIdentity")).To(Equal(`{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`))
-					Expect(actualVars.GetString("labels")).To(Equal(`{"pcf-instance-id":"test-instance-id","pcf-organization-guid":"","pcf-space-guid":""}`))
-				})
-			})
-
-			It("passes plan provided service properties", func() {
-				_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
-				Expect(err).ToNot(HaveOccurred())
-
-				By("validating provider provision has been called with the right vars")
-				Expect(fakeServiceProvider.DeprovisionCallCount()).To(Equal(1))
-				_, _, actualVars := fakeServiceProvider.DeprovisionArgsForCall(0)
-				Expect(actualVars.GetString("plan-defined-key")).To(Equal("plan-defined-value"))
-				Expect(actualVars.GetString("other-plan-defined-key")).To(Equal("other-plan-defined-value"))
-			})
-		})
-	})
-
-	Describe("async deletion", func() {
-		It("should return operationID and not remove the instance", func() {
-			response, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
-			Expect(err).ToNot(HaveOccurred())
-
-			By("validating response")
-			Expect(response.IsAsync).To(BeTrue())
-			Expect(response.OperationData).To(Equal(operationID))
-
-			By("validating call to deprovision")
-			Expect(fakeServiceProvider.DeprovisionCallCount()).To(Equal(1))
-
-			By("validating delete calls have not happen")
-			Expect(fakeStorage.DeleteServiceInstanceDetailsCallCount()).To(Equal(0))
-			Expect(fakeStorage.DeleteProvisionRequestDetailsCallCount()).To(Equal(0))
-
-			By("validating SI details storing call")
-			Expect(fakeStorage.StoreServiceInstanceDetailsCallCount()).To(Equal(1))
-			actualSIDetails := fakeStorage.StoreServiceInstanceDetailsArgsForCall(0)
-			Expect(actualSIDetails.GUID).To(Equal(instanceToDeleteID))
-			Expect(actualSIDetails.OperationType).To(Equal(models.DeprovisionOperationType))
-			Expect(actualSIDetails.OperationGUID).To(Equal(operationID))
-		})
+		By("validating SI details storing call")
+		Expect(fakeStorage.StoreServiceInstanceDetailsCallCount()).To(Equal(1))
+		actualSIDetails := fakeStorage.StoreServiceInstanceDetailsArgsForCall(0)
+		Expect(actualSIDetails.GUID).To(Equal(instanceToDeleteID))
+		Expect(actualSIDetails.OperationType).To(Equal(models.DeprovisionOperationType))
+		Expect(actualSIDetails.OperationGUID).To(Equal(operationID))
 	})
 
 	When("provider deprovision errors", func() {
@@ -353,30 +240,6 @@ var _ = Describe("Deprovision", func() {
 			It("should error", func() {
 				_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
 				Expect(err).To(MatchError("error saving instance details to database: failed to store SI details. WARNING: this instance will remain visible in cf. Contact your operator for cleanup"))
-			})
-		})
-
-		When("storage errors when deleting service instance details", func() {
-			BeforeEach(func() {
-				fakeServiceProvider.DeprovisionReturns(nil, nil)
-				fakeStorage.DeleteServiceInstanceDetailsReturns(errors.New("failed to delete SI details"))
-			})
-
-			It("should error", func() {
-				_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
-				Expect(err).To(MatchError("error deleting instance details from database: failed to delete SI details. WARNING: this instance will remain visible in cf. Contact your operator for cleanup"))
-			})
-		})
-
-		When("storage errors when deleting service provision params", func() {
-			BeforeEach(func() {
-				fakeServiceProvider.DeprovisionReturns(nil, nil)
-				fakeStorage.DeleteProvisionRequestDetailsReturns(errors.New("failed to delete provision params"))
-			})
-
-			It("should error", func() {
-				_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
-				Expect(err).To(MatchError("error deleting provision request details from the database: failed to delete provision params"))
 			})
 		})
 	})

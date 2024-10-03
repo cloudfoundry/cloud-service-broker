@@ -12,8 +12,8 @@ type Broker struct {
 	Port     int
 	Client   *client.Client
 	runner   *runner
-	username string
-	password string
+	Username string
+	Password string
 	Stdout   *bytes.Buffer
 	Stderr   *bytes.Buffer
 }
@@ -23,6 +23,15 @@ func (b *Broker) Stop() error {
 	case b == nil, b.runner == nil:
 		return nil
 	default:
-		return b.runner.stop()
+		return b.runner.gracefullStop()
+	}
+}
+
+func (b *Broker) Terminate() error {
+	switch {
+	case b == nil, b.runner == nil:
+		return nil
+	default:
+		return b.runner.forceStop()
 	}
 }

@@ -23,7 +23,7 @@ import (
 	"path/filepath"
 	"text/tabwriter"
 
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/manifest"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/packer"
@@ -48,7 +48,7 @@ func Init(directory string) error {
 		return err
 	}
 
-	if err := stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition(uuid.New(), uuid.New())),
+	if err := stream.Copy(stream.FromYaml(tf.NewExampleTfServiceDefinition(uuid.NewString(), uuid.NewString())),
 		stream.ToFile(directory, "example-service-definition.yml")); err != nil {
 		return err
 	}

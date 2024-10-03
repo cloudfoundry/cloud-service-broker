@@ -17,10 +17,16 @@ package cmd
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	"code.cloudfoundry.org/lager/v3"
 	osbapiBroker "github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
@@ -31,10 +37,13 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	pakBroker "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/brokerpak"
+	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/server"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/toggles"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.com/google/uuid"
 	"github.com/pivotal-cf/brokerapi/v11"
+	"github.com/pivotal-cf/brokerapi/v11/auth"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -46,8 +55,12 @@ const (
 	apiPasswordProp     = "api.password"
 	apiPortProp         = "api.port"
 	apiHostProp         = "api.host"
+	tlsCertCaBundleProp = "api.certCaBundle"
+	tlsKeyProp          = "api.tlsKey"
 	encryptionPasswords = "db.encryption.passwords"
 	encryptionEnabled   = "db.encryption.enabled"
+
+	shutdownTimeout = time.Hour
 )
 
 var cfCompatibilityToggle = toggles.Features.Toggle("enable-cf-sharing", false, `Set all services to have the Sharable flag so they can be shared
@@ -79,6 +92,8 @@ func init() {
 	_ = viper.BindEnv(apiHostProp, "CSB_LISTENER_HOST")
 	_ = viper.BindEnv(encryptionPasswords, "ENCRYPTION_PASSWORDS")
 	_ = viper.BindEnv(encryptionEnabled, "ENCRYPTION_ENABLED")
+	_ = viper.BindEnv(tlsCertCaBundleProp, "TLS_CERT_CHAIN")
+	_ = viper.BindEnv(tlsKeyProp, "TLS_PRIVATE_KEY")
 }
 
 func serve() {
@@ -93,7 +108,13 @@ func serve() {
 		logger.Fatal("Error initializing service broker config", err)
 	}
 	var serviceBroker domain.ServiceBroker
-	serviceBroker, err = osbapiBroker.New(cfg, storage.New(db, encryptor), logger)
+	csbStore := storage.New(db, encryptor)
+	err = csbStore.RecoverInProgressOperations(logger)
+	if err != nil {
+		logger.Fatal("Error recovering in-progress operations", err)
+	}
+
+	serviceBroker, err = osbapiBroker.New(cfg, csbStore, logger)
 	if err != nil {
 		logger.Fatal("Error initializing service broker", err)
 	}
@@ -124,7 +145,9 @@ func serve() {
 	if err != nil {
 		logger.Error("failed to get database connection", err)
 	}
-	startServer(cfg.Registry, sqldb, brokerAPI)
+	httpServer := startServer(cfg.Registry, sqldb, brokerAPI, csbStore, credentials)
+
+	listenForShutdownSignal(httpServer, logger, csbStore)
 }
 
 func serveDocs() {
@@ -135,11 +158,11 @@ func serveDocs() {
 		logger.Error("loading brokerpaks", err)
 	}
 
-	startServer(registry, nil, nil)
+	startServer(registry, nil, nil, nil, brokerapi.BrokerCredentials{})
 }
 
 func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
-	config, err := encryption.ParseConfiguration(db, viper.GetBool(encryptionEnabled), viper.GetString(encryptionPasswords))
+	config, err := encryption.ParseConfiguration(db, viper.GetBool(encryptionEnabled), viper.Get(encryptionPasswords))
 	if err != nil {
 		logger.Fatal("Error parsing encryption configuration", err)
 	}
@@ -179,7 +202,7 @@ func setupDBEncryption(db *gorm.DB, logger lager.Logger) storage.Encryptor {
 	return config.Encryptor
 }
 
-func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.Handler) {
+func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.Handler, store *storage.Storage, credentials brokerapi.BrokerCredentials) *http.Server {
 	logger := utils.NewLogger("cloud-service-broker")
 
 	docsHandler := server.DocsHandler(registry)
@@ -189,6 +212,7 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 	router.HandleFunc("/examples", server.NewExampleHandler(registry))
 	server.AddHealthHandler(router, db)
 	router.HandleFunc("/info", infohandler.NewDefault())
+	router.Handle("/import_state/{guid}", auth.NewWrapper(credentials.Username, credentials.Password).Wrap(importStateHandler(store)))
 
 	router.HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {
 		switch {
@@ -204,7 +228,99 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 	port := viper.GetString(apiPortProp)
 	host := viper.GetString(apiHostProp)
 	logger.Info("Serving", lager.Data{"port": port})
-	_ = http.ListenAndServe(fmt.Sprintf("%s:%s", host, port), router)
+
+	tlsCertCaBundleFilePath := viper.GetString(tlsCertCaBundleProp)
+	tlsKeyFilePath := viper.GetString(tlsKeyProp)
+
+	logger.Info("tlsCertCaBundle", lager.Data{"tlsCertCaBundle": tlsCertCaBundleFilePath})
+	logger.Info("tlsKey", lager.Data{"tlsKey": tlsKeyFilePath})
+
+	httpServer := &http.Server{
+		Addr:    fmt.Sprintf("%s:%s", host, port),
+		Handler: router,
+	}
+	go func() {
+		var err error
+		if tlsCertCaBundleFilePath != "" && tlsKeyFilePath != "" {
+			err = httpServer.ListenAndServeTLS(tlsCertCaBundleFilePath, tlsKeyFilePath)
+		} else {
+			err = httpServer.ListenAndServe()
+		}
+		if err == http.ErrServerClosed {
+			logger.Info("shutting down csb")
+		} else {
+			logger.Fatal("Failed to start broker", err)
+		}
+	}()
+	return httpServer
+}
+
+func listenForShutdownSignal(httpServer *http.Server, logger lager.Logger, store *storage.Storage) {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGTERM)
+
+	signalReceived := <-sigChan
+
+	switch signalReceived {
+
+	case syscall.SIGTERM:
+		shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), shutdownTimeout)
+		if err := httpServer.Shutdown(shutdownCtx); err != nil {
+			logger.Fatal("shutdown error: %v", err)
+		}
+		logger.Info("received SIGTERM, server is shutting down gracefully allowing for in flight work to finish")
+		defer shutdownRelease()
+		for store.LockFilesExist() {
+			logger.Info("draining csb in progress")
+			time.Sleep(time.Second * 1)
+		}
+		logger.Info("draining complete")
+	default:
+		logger.Info(fmt.Sprintf("csb does not handle the %s interrupt signal", signalReceived))
+	}
+}
+
+func importStateHandler(store *storage.Storage) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		guid := r.PathValue("guid")
+		if guid == "" {
+			http.Error(w, "GUID is required", http.StatusBadRequest)
+			return
+		}
+		if err := uuid.Validate(guid); err != nil {
+			http.Error(w, "not a valid GUID", http.StatusBadRequest)
+			return
+		}
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to read body: %s", err), http.StatusBadRequest)
+			return
+		}
+		var b any
+		if err := json.Unmarshal(body, &b); err != nil {
+			http.Error(w, fmt.Sprintf("problem parsing body as JSON: %s", err), http.StatusBadRequest)
+			return
+		}
+
+		tfID := fmt.Sprintf("tf:%s:", guid)
+		deployment, err := store.GetTerraformDeployment(tfID)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("could not find TF ID: %s", tfID), http.StatusNotFound)
+			return
+		}
+
+		tfw, ok := deployment.Workspace.(*workspace.TerraformWorkspace)
+		if !ok {
+			http.Error(w, "failed cast to *workspace.TerraformWorkspace", http.StatusInternalServerError)
+			return
+		}
+
+		tfw.State = body
+		if err := store.StoreTerraformDeployment(deployment); err != nil {
+			http.Error(w, fmt.Sprintf("failed to store deployment: %s", err), http.StatusInternalServerError)
+			return
+		}
+	})
 }
 
 func labelName(label string) string {

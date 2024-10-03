@@ -22,7 +22,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/featureflags"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/server"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
-	"github.com/pborman/uuid"
+	"github.com/google/uuid"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"github.com/spf13/cobra"
 )
@@ -89,35 +89,35 @@ user-defined plans.
 	rootCmd.AddCommand(clientCmd)
 
 	clientCatalogCmd := newClientCommand("catalog", "Show the service catalog", func(client *client.Client) *client.BrokerResponse {
-		return client.Catalog(uuid.New())
+		return client.Catalog(uuid.NewString())
 	})
 
 	provisionCmd := newClientCommand("provision", "Provision a service", func(client *client.Client) *client.BrokerResponse {
-		return client.Provision(instanceID, serviceID, planID, uuid.New(), json.RawMessage(parametersJSON))
+		return client.Provision(instanceID, serviceID, planID, uuid.NewString(), json.RawMessage(parametersJSON))
 	})
 
 	deprovisionCmd := newClientCommand("deprovision", "Deprovision a service", func(client *client.Client) *client.BrokerResponse {
-		return client.Deprovision(instanceID, serviceID, planID, uuid.New())
+		return client.Deprovision(instanceID, serviceID, planID, uuid.NewString())
 	})
 
 	bindCmd := newClientCommand("bind", "Bind to a service", func(client *client.Client) *client.BrokerResponse {
-		return client.Bind(instanceID, bindingID, serviceID, planID, uuid.New(), json.RawMessage(parametersJSON))
+		return client.Bind(instanceID, bindingID, serviceID, planID, uuid.NewString(), json.RawMessage(parametersJSON))
 	})
 
 	unbindCmd := newClientCommand("unbind", "Unbind a service", func(client *client.Client) *client.BrokerResponse {
-		return client.Unbind(instanceID, bindingID, serviceID, planID, uuid.New())
+		return client.Unbind(instanceID, bindingID, serviceID, planID, uuid.NewString())
 	})
 
 	lastCmd := newClientCommand("last", "Get the status of the last operation", func(client *client.Client) *client.BrokerResponse {
-		return client.LastOperation(instanceID, uuid.New())
+		return client.LastOperation(instanceID, uuid.NewString())
 	})
 
 	updateCmd := newClientCommand("update", "Update the instance details", func(client *client.Client) *client.BrokerResponse {
-		return client.Update(instanceID, serviceID, planID, uuid.New(), json.RawMessage(parametersJSON), domain.PreviousValues{}, nil)
+		return client.Update(instanceID, serviceID, planID, uuid.NewString(), json.RawMessage(parametersJSON), domain.PreviousValues{}, nil)
 	})
 
 	upgradeCmd := newClientCommand("upgrade", "Upgrade the service instance", func(c *client.Client) *client.BrokerResponse {
-		return c.Update(instanceID, serviceID, planID, uuid.New(), json.RawMessage("{}"),
+		return c.Update(instanceID, serviceID, planID, uuid.NewString(), json.RawMessage("{}"),
 			domain.PreviousValues{ServiceID: serviceID, PlanID: planID, MaintenanceInfo: &domain.MaintenanceInfo{Version: oldVersion}},
 			&domain.MaintenanceInfo{Version: newVersion})
 	})

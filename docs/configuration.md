@@ -84,6 +84,8 @@ Broker service configuration values:
 | <tt>SECURITY_USER_NAME</tt> <b>*</b> | api.user | string | <p>Broker authentication username</p>|
 | <tt>SECURITY_USER_PASSWORD</tt> <b>*</b> | api.password | string | <p>Broker authentication password</p>|
 | <tt>PORT</tt> | api.port | string | <p>Port to bind broker to</p>|
+| <tt>TLS_CERT_CHAIN</tt> | api.certCaBundle | string | <p>File path to a pem encoded certificate chain</p>|
+| <tt>TLS_PRIVATE_KEY</tt> | api.tlsKey | string | <p>File path to a pem encoded private key</p>|
 
 
 ## Debugging
@@ -100,7 +102,6 @@ Feature flags can be toggled through the following configuration values. See als
 | Environment Variable | Config File Value | Type | Description | Default |
 |----------------------|------|-------------|------------------|----------|
 | <tt>GSB_COMPATIBILITY_ENABLE_BUILTIN_BROKERPAKS</tt> <b>*</b> | compatibility.enable_builtin_brokerpaks | Boolean | <p>Load brokerpaks that are built-in to the software.</p>| "true" |
-| <tt>GSB_COMPATIBILITY_ENABLE_BUILTIN_SERVICES</tt> <b>*</b> | compatibility.enable_builtin_services | Boolean | <p>Enable services that are built in to the broker i.e. not brokerpaks.</p>| "true" |
 | <tt>GSB_COMPATIBILITY_ENABLE_CATALOG_SCHEMAS</tt> <b>*</b> | compatibility.enable_catalog_schemas | Boolean | <p>Enable generating JSONSchema for the service catalog.</p>| "false" |
 | <tt>GSB_COMPATIBILITY_ENABLE_CF_SHARING</tt> <b>*</b> | compatibility.enable_cf_sharing | Boolean | <p>Set all services to have the Sharable flag so they can be shared</p>| "false" |
 | <tt>GSB_COMPATIBILITY_ENABLE_EOL_SERVICES</tt> <b>*</b> | compatibility.enable_eol_services | Boolean | <p>Enable broker services that are end of life.</p>| "false" |
@@ -157,3 +158,10 @@ Brokerpak configuration values:
 |<tt>GSB_SERVICE_*SERVICE_NAME*_PLANS</tt>|service.*service-name*.plans| string | JSON plan collection to augment plans for *service-name*|
 
 
+## CLI Configuration
+
+The `cloud-service-broker pak` command supports the following configuration values:
+
+| Environment Variable | Config File Value | Type | Description |
+| - | - | - | - |
+| <tt>PAK_BUILD_CACHE_PATH</tt> | pak.cache_path | string | Set to a non-empty file system path to use a cache when `csb pak build` downloads binaries |
