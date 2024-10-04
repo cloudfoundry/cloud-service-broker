@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace/workspacefakes"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
@@ -69,7 +70,7 @@ var _ = Describe("Bind", func() {
 		It("returns the binding output", func() {
 			fakeDeploymentManager.CreateAndSaveDeploymentReturns(deployment, nil)
 			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
-			fakeDeploymentManager.OperationStatusReturns(true, "operation succeeded", nil)
+			fakeDeploymentManager.OperationStatusReturns(true, "operation succeeded", models.BindOperationType, nil)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 			fakeDefaultInvoker.ApplyReturns(nil)
 			fakeTerraformWorkspace.OutputsReturns(map[string]any{"username": "some-user"}, nil)
@@ -153,7 +154,7 @@ var _ = Describe("Bind", func() {
 
 	It("returns the error in last operation, if tofu apply fails", func() {
 		fakeDeploymentManager.CreateAndSaveDeploymentReturns(deployment, nil)
-		fakeDeploymentManager.OperationStatusReturns(true, "operation failed", fmt.Errorf("tofu apply failed"))
+		fakeDeploymentManager.OperationStatusReturns(true, "operation failed", models.BindOperationType, fmt.Errorf("tofu apply failed"))
 		fakeDeploymentManager.MarkOperationFinishedReturns(errors.New("couldnt do this now"))
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 		fakeDefaultInvoker.ApplyReturns(errors.New("some TF issue happened"))

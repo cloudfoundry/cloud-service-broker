@@ -23,7 +23,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 )
 
-const numMigrations = 16
+const numMigrations = 17
 
 // RunMigrations runs schema migrations on the provided service broker database to get it up to date
 func RunMigrations(db *gorm.DB) error {
@@ -126,6 +126,19 @@ func RunMigrations(db *gorm.DB) error {
 
 	migrations[15] = func() error {
 		return autoMigrateTables(db, &models.BindRequestDetailsV1{})
+	}
+
+	migrations[16] = func() error {
+		if err := db.Migrator().DropColumn(&models.ServiceInstanceDetailsV4{}, "operation_type"); err != nil {
+			return err
+		}
+		if err := db.Migrator().DropColumn(&models.ServiceInstanceDetailsV4{}, "operation_id"); err != nil {
+			return err
+		}
+		if err := db.Migrator().DropColumn(&models.ServiceInstanceDetailsV4{}, "location"); err != nil {
+			return err
+		}
+		return db.Migrator().DropColumn(&models.ServiceInstanceDetailsV4{}, "url")
 	}
 
 	var lastMigrationNumber = -1

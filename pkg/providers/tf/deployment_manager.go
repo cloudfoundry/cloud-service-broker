@@ -6,6 +6,7 @@ import (
 
 	"code.cloudfoundry.org/lager/v3"
 
+	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/featureflags"
@@ -86,19 +87,19 @@ func (d *DeploymentManager) MarkOperationFinished(deployment *storage.TerraformD
 	return d.store.RemoveLockFile(deployment.ID)
 }
 
-func (d *DeploymentManager) OperationStatus(deploymentID string) (bool, string, error) {
+func (d *DeploymentManager) OperationStatus(deploymentID string) (bool, string, string, error) {
 	deployment, err := d.store.GetTerraformDeployment(deploymentID)
 	if err != nil {
-		return true, "", err
+		return true, "", "", err
 	}
 
 	switch deployment.LastOperationState {
 	case Succeeded:
-		return true, deployment.LastOperationMessage, nil
+		return true, deployment.LastOperationMessage, deployment.LastOperationType, nil
 	case Failed:
-		return true, deployment.LastOperationMessage, errors.New(deployment.LastOperationMessage)
+		return true, deployment.LastOperationMessage, deployment.LastOperationType, errors.New(deployment.LastOperationMessage)
 	default:
-		return false, deployment.LastOperationMessage, nil
+		return false, deployment.LastOperationMessage, deployment.LastOperationType, nil
 	}
 }
 
@@ -156,4 +157,14 @@ func (d *DeploymentManager) GetBindingDeployments(deploymentID string) ([]storag
 		bindingDeployments = append(bindingDeployments, bindingDeployment)
 	}
 	return bindingDeployments, nil
+}
+
+func (d *DeploymentManager) ResetOperationType(deploymentID string) error {
+	deployment, err := d.store.GetTerraformDeployment(deploymentID)
+	if err != nil {
+		return err
+	}
+
+	deployment.LastOperationType = models.ClearOperationType
+	return d.store.StoreTerraformDeployment(deployment)
 }

@@ -68,25 +68,25 @@ func (provider *TerraformProvider) VersionedInvoker(version *version.Version) in
 	return provider.VersionedTerraformInvoker(version)
 }
 
-func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action, operationType string) (string, error) {
+func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.VarContext, action TfServiceDefinitionV1Action, operationType string) error {
 	tfID := vars.GetString("tf_id")
 	if err := vars.Error(); err != nil {
-		return "", err
+		return err
 	}
 
 	newWorkspace, err := workspace.NewWorkspace(vars.ToMap(), action.Template, action.Templates, []workspace.ParameterMapping{}, []string{}, []workspace.ParameterMapping{})
 	if err != nil {
-		return tfID, fmt.Errorf("error creating workspace: %w", err)
+		return fmt.Errorf("error creating workspace: %w", err)
 	}
 
 	deployment, err := provider.CreateAndSaveDeployment(tfID, newWorkspace)
 	if err != nil {
 		provider.logger.Error("deployment create failed", err)
-		return tfID, fmt.Errorf("deployment create failed: %w", err)
+		return fmt.Errorf("deployment create failed: %w", err)
 	}
 
 	if err := provider.MarkOperationStarted(&deployment, operationType); err != nil {
-		return tfID, fmt.Errorf("error marking job started: %w", err)
+		return fmt.Errorf("error marking job started: %w", err)
 	}
 
 	go func() {
@@ -102,7 +102,7 @@ func (provider *TerraformProvider) create(ctx context.Context, vars *varcontext.
 		}
 	}()
 
-	return tfID, nil
+	return nil
 }
 
 func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID string, templateVars map[string]any, operationType string) error {
@@ -129,6 +129,7 @@ func (provider *TerraformProvider) destroy(ctx context.Context, deploymentID str
 
 	tfWorkspace.Instances[0].Configuration = limitedConfig
 
+	fmt.Println("provider.MarkOperationStarted")
 	if err := provider.MarkOperationStarted(&deployment, operationType); err != nil {
 		return err
 	}
@@ -148,7 +149,7 @@ func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 			return nil
 
 		case <-time.After(1 * time.Second):
-			isDone, _, err := provider.OperationStatus(id)
+			isDone, _, _, err := provider.OperationStatus(id)
 			if isDone {
 				return err
 			}
@@ -163,8 +164,9 @@ type DeploymentManagerInterface interface {
 	CreateAndSaveDeployment(deploymentID string, workspace *workspace.TerraformWorkspace) (storage.TerraformDeployment, error)
 	MarkOperationStarted(deployment *storage.TerraformDeployment, operationType string) error
 	MarkOperationFinished(deployment *storage.TerraformDeployment, err error) error
-	OperationStatus(deploymentID string) (bool, string, error)
+	OperationStatus(deploymentID string) (bool, string, string, error)
 	UpdateWorkspaceHCL(deploymentID string, serviceDefinitionAction TfServiceDefinitionV1Action, templateVars map[string]any) error
 	GetBindingDeployments(deploymentID string) ([]storage.TerraformDeployment, error)
 	DeleteTerraformDeployment(deploymentID string) error
+	ResetOperationType(deploymentID string) error
 }
