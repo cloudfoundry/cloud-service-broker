@@ -170,8 +170,6 @@ type ServiceInstanceDetailsV4 struct {
 	DeletedAt *time.Time
 
 	Name         string
-	Location     string
-	URL          string
 	OtherDetails []byte `gorm:"type:blob"`
 
 	ServiceID        string

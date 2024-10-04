@@ -15,8 +15,6 @@ var _ = Describe("ServiceInstanceDetails", func() {
 			err := store.StoreServiceInstanceDetails(storage.ServiceInstanceDetails{
 				GUID:             "fake-guid",
 				Name:             "fake-name",
-				Location:         "fake-location",
-				URL:              "fake-url",
 				Outputs:          map[string]any{"foo": "bar"},
 				ServiceGUID:      "fake-service-guid",
 				PlanGUID:         "fake-plan-guid",
@@ -29,8 +27,6 @@ var _ = Describe("ServiceInstanceDetails", func() {
 			Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
 			Expect(receiver.ID).To(Equal("fake-guid"))
 			Expect(receiver.Name).To(Equal("fake-name"))
-			Expect(receiver.Location).To(Equal("fake-location"))
-			Expect(receiver.URL).To(Equal("fake-url"))
 			Expect(receiver.OtherDetails).To(Equal([]byte(`{"encrypted":{"foo":"bar"}}`)))
 			Expect(receiver.ServiceID).To(Equal("fake-service-guid"))
 			Expect(receiver.PlanID).To(Equal("fake-plan-guid"))
@@ -56,8 +52,6 @@ var _ = Describe("ServiceInstanceDetails", func() {
 				err := store.StoreServiceInstanceDetails(storage.ServiceInstanceDetails{
 					GUID:             "fake-id-1",
 					Name:             "fake-name",
-					Location:         "fake-location",
-					URL:              "fake-url",
 					Outputs:          map[string]any{"foo": "bar"},
 					ServiceGUID:      "fake-service-guid",
 					PlanGUID:         "fake-plan-guid",
@@ -70,8 +64,6 @@ var _ = Describe("ServiceInstanceDetails", func() {
 				Expect(db.Where(`id = "fake-id-1"`).Find(&receiver).Error).NotTo(HaveOccurred())
 				Expect(receiver.ID).To(Equal("fake-id-1"))
 				Expect(receiver.Name).To(Equal("fake-name"))
-				Expect(receiver.Location).To(Equal("fake-location"))
-				Expect(receiver.URL).To(Equal("fake-url"))
 				Expect(receiver.OtherDetails).To(Equal([]byte(`{"encrypted":{"foo":"bar"}}`)))
 				Expect(receiver.ServiceID).To(Equal("fake-service-guid"))
 				Expect(receiver.PlanID).To(Equal("fake-plan-guid"))
@@ -91,8 +83,6 @@ var _ = Describe("ServiceInstanceDetails", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Expect(r.GUID).To(Equal("fake-id-2"))
-			Expect(r.Location).To(Equal("fake-location-2"))
-			Expect(r.URL).To(Equal("fake-url-2"))
 			Expect(r.Outputs).To(Equal(storage.JSONObject{"decrypted": map[string]any{"foo": "bar-2"}}))
 			Expect(r.ServiceGUID).To(Equal("fake-service-id-2"))
 			Expect(r.PlanGUID).To(Equal("fake-plan-id-2"))
@@ -194,8 +184,6 @@ func addFakeServiceInstanceDetails() {
 	Expect(db.Create(&models.ServiceInstanceDetails{
 		ID:               "fake-id-1",
 		Name:             "fake-name-1",
-		Location:         "fake-location-1",
-		URL:              "fake-url-1",
 		OtherDetails:     []byte(`{"foo":"bar-1"}`),
 		ServiceID:        "fake-service-id-1",
 		PlanID:           "fake-plan-id-1",
@@ -205,8 +193,6 @@ func addFakeServiceInstanceDetails() {
 	Expect(db.Create(&models.ServiceInstanceDetails{
 		ID:               "fake-id-2",
 		Name:             "fake-name-2",
-		Location:         "fake-location-2",
-		URL:              "fake-url-2",
 		OtherDetails:     []byte(`{"foo":"bar-2"}`),
 		ServiceID:        "fake-service-id-2",
 		PlanID:           "fake-plan-id-2",
@@ -216,8 +202,6 @@ func addFakeServiceInstanceDetails() {
 	Expect(db.Create(&models.ServiceInstanceDetails{
 		ID:               "fake-id-3",
 		Name:             "fake-name-3",
-		Location:         "fake-location-3",
-		URL:              "fake-url-3",
 		OtherDetails:     []byte(`{"foo":"bar-3"}`),
 		ServiceID:        "fake-service-id-3",
 		PlanID:           "fake-plan-id-3",
