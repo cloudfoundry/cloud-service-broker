@@ -56,6 +56,7 @@ func fakeBrokerpak() (string, error) {
 		Platforms: []platform.Platform{
 			{Os: "linux", Arch: "amd64"},
 			{Os: "darwin", Arch: "amd64"},
+			{Os: "darwin", Arch: "arm64"},
 		},
 		// These resources are stubbed with a local dummy file
 		TerraformVersions: []manifest.TerraformVersion{

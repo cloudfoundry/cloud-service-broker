@@ -189,6 +189,7 @@ func fakeBrokerpak(opts ...option) string {
 		Platforms: []platform.Platform{
 			{Os: "linux", Arch: "amd64"},
 			{Os: "darwin", Arch: "amd64"},
+			{Os: "darwin", Arch: "arm64"},
 		},
 		ServiceDefinitions: []string{"example-service-definition.yml"},
 		Parameters: []manifest.Parameter{
