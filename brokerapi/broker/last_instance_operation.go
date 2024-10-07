@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"code.cloudfoundry.org/lager/v3"
-	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"github.com/pivotal-cf/brokerapi/v11/domain/apiresponses"
 
+	"code.cloudfoundry.org/lager/v3"
 	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
+	"github.com/pivotal-cf/brokerapi/v11/domain"
 )
 
 // LastOperation fetches last operation state for a service instance.
@@ -24,9 +24,21 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 		"operation_data": details.OperationData,
 	})
 
+	// make sure that instance actually exists
+	// Technically according to OSBAPI we should return HTTP 410 Gone only if the operation is a Deprovision,
+	// and for Provision or Update we should return an HTTP 404 Not Found, but we do not do this, and the
+	// pivotal-cf/brokerapi/apiresponses package does not provide the required error to do this.
+	exists, err := broker.store.ExistsServiceInstanceDetails(instanceID)
+	switch {
+	case err != nil:
+		return domain.LastOperation{}, fmt.Errorf("database error checking for existing instance: %s", err)
+	case !exists:
+		return domain.LastOperation{}, apiresponses.ErrInstanceDoesNotExist
+	}
+
 	instance, err := broker.store.GetServiceInstanceDetails(instanceID)
 	if err != nil {
-		return domain.LastOperation{}, apiresponses.ErrInstanceDoesNotExist
+		return domain.LastOperation{}, fmt.Errorf("error getting service instance details: %w", err)
 	}
 
 	_, serviceProvider, err := broker.getDefinitionAndProvider(instance.ServiceGUID)
@@ -34,9 +46,7 @@ func (broker *ServiceBroker) LastOperation(ctx context.Context, instanceID strin
 		return domain.LastOperation{}, err
 	}
 
-	lastOperationType := instance.OperationType
-
-	done, message, err := serviceProvider.PollInstance(ctx, instance.GUID)
+	done, message, lastOperationType, err := serviceProvider.PollInstance(ctx, instance.GUID)
 	if err != nil {
 		return domain.LastOperation{State: domain.Failed, Description: err.Error()}, nil
 	}
@@ -84,10 +94,13 @@ func (broker *ServiceBroker) updateStateOnOperationCompletion(ctx context.Contex
 	}
 
 	details.Outputs = outs
-	details.OperationGUID = ""
-	details.OperationType = models.ClearOperationType
 	if err := broker.store.StoreServiceInstanceDetails(details); err != nil {
 		return fmt.Errorf("error saving instance details to database %v", err)
+	}
+
+	err = service.ClearOperationType(ctx, instanceID)
+	if err != nil {
+		return fmt.Errorf("error clearing operation type from database %v", err)
 	}
 
 	return nil

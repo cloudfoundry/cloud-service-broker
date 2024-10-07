@@ -99,22 +99,11 @@ func (broker *ServiceBroker) Deprovision(ctx context.Context, instanceID string,
 		return domain.DeprovisionServiceSpec{}, err
 	}
 
-	if operationID == nil {
-		// If this is a synchronous operation, then immediately remove the service instance data from the database
-		if err := broker.removeServiceInstanceData(ctx, instanceID, serviceProvider); err != nil {
-			return domain.DeprovisionServiceSpec{}, err
-		}
-
-		return domain.DeprovisionServiceSpec{}, nil
-	}
-
 	response := domain.DeprovisionServiceSpec{
 		IsAsync:       true,
 		OperationData: *operationID,
 	}
 
-	instance.OperationType = models.DeprovisionOperationType
-	instance.OperationGUID = *operationID
 	if err := broker.store.StoreServiceInstanceDetails(instance); err != nil {
 		return response, fmt.Errorf("error saving instance details to database: %s. WARNING: this instance will remain visible in cf. Contact your operator for cleanup", err)
 	}

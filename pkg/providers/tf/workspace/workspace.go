@@ -26,17 +26,26 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/spf13/viper"
+
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/command"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
 
 	"github.com/hashicorp/go-version"
 )
 
-// DefaultInstanceName is the default name of an instance of a particular module.
 const (
-	DefaultInstanceName = "instance"
-	binaryName          = "tofu"
+	// DefaultInstanceName is the default name of an instance of a particular module.
+	DefaultInstanceName              = "instance"
+	binaryName                       = "tofu"
+	leaveWorkspaceDirectoryConfigKey = "debug.leave_workspace_dir"
+	leaveWorkspaceDirectoryEnvVar    = "CSB_DEBUG_LEAVE_WORKSPACE_DIR"
 )
+
+func init() {
+	viper.BindEnv(leaveWorkspaceDirectoryConfigKey, leaveWorkspaceDirectoryEnvVar)
+	viper.SetDefault(leaveWorkspaceDirectoryConfigKey, false)
+}
 
 // NewWorkspace creates a new TerraformWorkspace from a given template and variables to populate an instance of it.
 // The created instance will have the name specified by the DefaultInstanceName constant.
@@ -299,8 +308,10 @@ func (workspace *TerraformWorkspace) teardownFs() error {
 
 	workspace.State = bytes
 
-	if err := os.RemoveAll(workspace.dir); err != nil {
-		return err
+	if !viper.GetBool(leaveWorkspaceDirectoryConfigKey) {
+		if err := os.RemoveAll(workspace.dir); err != nil {
+			return err
+		}
 	}
 
 	workspace.dir = ""

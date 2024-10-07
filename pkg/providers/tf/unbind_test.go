@@ -79,7 +79,7 @@ var _ = Describe("Unbind", func() {
 	It("destroys the binding", func() {
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 		fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
-		fakeDeploymentManager.OperationStatusReturns(true, "operation succeeded", nil)
+		fakeDeploymentManager.OperationStatusReturns(true, "operation succeeded", "bind", nil)
 
 		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1"))}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
@@ -141,7 +141,7 @@ var _ = Describe("Unbind", func() {
 		fakeDeploymentManager.MarkOperationStartedReturns(nil)
 		fakeInvokerBuilder.VersionedTerraformInvokerReturns(fakeDefaultInvoker)
 		fakeDefaultInvoker.DestroyReturns(errors.New(expectedError))
-		fakeDeploymentManager.OperationStatusReturns(true, "", errors.New(expectedError))
+		fakeDeploymentManager.OperationStatusReturns(true, "", "destroy", errors.New(expectedError))
 
 		provider := tf.NewTerraformProvider(executor.TFBinariesContext{DefaultTfVersion: version.Must(version.NewVersion("1"))}, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 

@@ -10,15 +10,11 @@ import (
 type ServiceInstanceDetails struct {
 	GUID             string
 	Name             string
-	Location         string
-	URL              string
 	Outputs          JSONObject
 	ServiceGUID      string
 	PlanGUID         string
 	SpaceGUID        string
 	OrganizationGUID string
-	OperationType    string
-	OperationGUID    string
 }
 
 func (s *Storage) StoreServiceInstanceDetails(d ServiceInstanceDetails) error {
@@ -33,15 +29,11 @@ func (s *Storage) StoreServiceInstanceDetails(d ServiceInstanceDetails) error {
 	}
 
 	m.Name = d.Name
-	m.Location = d.Location
-	m.URL = d.URL
 	m.OtherDetails = encoded
 	m.ServiceID = d.ServiceGUID
 	m.PlanID = d.PlanGUID
 	m.SpaceGUID = d.SpaceGUID
 	m.OrganizationGUID = d.OrganizationGUID
-	m.OperationType = d.OperationType
-	m.OperationID = d.OperationGUID
 
 	switch m.ID {
 	case "":
@@ -88,15 +80,11 @@ func (s *Storage) GetServiceInstanceDetails(guid string) (ServiceInstanceDetails
 	return ServiceInstanceDetails{
 		GUID:             guid,
 		Name:             receiver.Name,
-		Location:         receiver.Location,
-		URL:              receiver.URL,
 		Outputs:          decoded,
 		ServiceGUID:      receiver.ServiceID,
 		PlanGUID:         receiver.PlanID,
 		SpaceGUID:        receiver.SpaceGUID,
 		OrganizationGUID: receiver.OrganizationGUID,
-		OperationType:    receiver.OperationType,
-		OperationGUID:    receiver.OperationID,
 	}, nil
 }
 
