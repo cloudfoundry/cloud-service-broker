@@ -434,11 +434,6 @@ var _ = Describe("DeploymentManager", func() {
 							"resourceGroup": nil,
 						},
 					}},
-					Transformer: workspace.TfTransformer{
-						ParameterMappings:  []workspace.ParameterMapping{},
-						ParametersToRemove: []string{},
-						ParametersToAdd:    []workspace.ParameterMapping{},
-					},
 					State: []byte(terraformState),
 				}
 				Expect(actualTerraformDeployment.Workspace).To(Equal(expectedWorkspace))
@@ -515,11 +510,6 @@ var _ = Describe("DeploymentManager", func() {
 							"resourceGroup": nil,
 						},
 					}},
-					Transformer: workspace.TfTransformer{
-						ParameterMappings:  []workspace.ParameterMapping{},
-						ParametersToRemove: []string{},
-						ParametersToAdd:    []workspace.ParameterMapping{},
-					},
 					State: []byte(terraformState),
 				}
 				Expect(actualTerraformDeployment.Workspace).To(Equal(expectedWorkspace))
