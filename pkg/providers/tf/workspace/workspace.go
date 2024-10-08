@@ -56,8 +56,11 @@ func NewWorkspace(templateVars map[string]any,
 	parametersToRemove []string,
 	parametersToAdd []ParameterMapping) (*TerraformWorkspace, error) {
 
-	terraformTemplatesCopy := make(map[string]string)
-	maps.Copy(terraformTemplatesCopy, terraformTemplates)
+	var terraformTemplatesCopy map[string]string
+	if len(terraformTemplates) > 0 {
+		terraformTemplatesCopy = make(map[string]string)
+		maps.Copy(terraformTemplatesCopy, terraformTemplates)
+	}
 
 	tfModule := ModuleDefinition{
 		Name:        "brokertemplate",
@@ -75,12 +78,23 @@ func NewWorkspace(templateVars map[string]any,
 		limitedConfig[name] = templateVars[name]
 	}
 
-	parameterMappingsCopy := make([]ParameterMapping, len(importParameterMappings))
-	copy(parameterMappingsCopy, importParameterMappings)
-	parametersToRemoveCopy := make([]string, len(parametersToRemove))
-	copy(parametersToRemoveCopy, parametersToRemove)
-	parametersToAddCopy := make([]ParameterMapping, len(parametersToAdd))
-	copy(parametersToAddCopy, parametersToAdd)
+	var parameterMappingsCopy []ParameterMapping
+	if len(importParameterMappings) > 0 {
+		parameterMappingsCopy = make([]ParameterMapping, len(importParameterMappings))
+		copy(parameterMappingsCopy, importParameterMappings)
+	}
+
+	var parametersToRemoveCopy []string
+	if len(parametersToRemove) > 0 {
+		parametersToRemoveCopy = make([]string, len(parametersToRemove))
+		copy(parametersToRemoveCopy, parametersToRemove)
+	}
+
+	var parametersToAddCopy []ParameterMapping
+	if len(parametersToAdd) > 0 {
+		parametersToAddCopy = make([]ParameterMapping, len(parametersToAdd))
+		copy(parametersToAddCopy, parametersToAdd)
+	}
 
 	workspace := TerraformWorkspace{
 		Modules: []ModuleDefinition{tfModule},

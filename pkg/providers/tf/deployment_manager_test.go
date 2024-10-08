@@ -424,9 +424,8 @@ var _ = Describe("DeploymentManager", func() {
 				By("checking that the modules and instances are updated, but the state remains the same")
 				expectedWorkspace := &workspace.TerraformWorkspace{
 					Modules: []workspace.ModuleDefinition{{
-						Name:        "brokertemplate",
-						Definition:  template,
-						Definitions: map[string]string{},
+						Name:       "brokertemplate",
+						Definition: template,
 					}},
 					Instances: []workspace.ModuleInstance{{
 						ModuleName:   "brokertemplate",
@@ -506,9 +505,8 @@ var _ = Describe("DeploymentManager", func() {
 				By("checking that the modules and instances are updated, but the state remains the same")
 				expectedWorkspace := &workspace.TerraformWorkspace{
 					Modules: []workspace.ModuleDefinition{{
-						Name:        "brokertemplate",
-						Definition:  template,
-						Definitions: map[string]string{},
+						Name:       "brokertemplate",
+						Definition: template,
 					}},
 					Instances: []workspace.ModuleInstance{{
 						ModuleName:   "brokertemplate",
