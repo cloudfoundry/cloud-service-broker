@@ -11,7 +11,7 @@ import (
 const lockfileDir = "lockfiledir"
 
 func init() {
-	viper.BindEnv(lockfileDir, "CSB_LOCKFILEDIR")
+	viper.BindEnv(lockfileDir, "CSB_LOCKFILE_DIR")
 }
 
 type Storage struct {
