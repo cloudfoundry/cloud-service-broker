@@ -224,6 +224,79 @@ var _ = Describe("VCAP", func() {
 `)
 			Expect(err).To(MatchError("error finding MySQL tag: the variable VCAP_SERVICES must have one VCAP service with a tag of 'mysql'. There are currently 0 VCAP services with the tag 'mysql'"))
 		})
+
+		It("succeeds when VCAP_SERVICES has multiple lists but only one with a MySQL tag", func() {
+			_, err := ParseVcapServices(`{
+  "google-cloudsql-mysql": [
+    {
+      "binding_name": "testbinding",
+      "instance_name": "testinstance",
+      "name": "kf-binding-tt2-mystorage",
+      "label": "google-storage",
+      "tags": [
+        "gcp",
+        "cloudsql"
+      ],
+      "plan": "nearline",
+      "credentials": {
+				"CaCert": "-truncated-",
+				"ClientCert": "-truncated-",
+				"ClientKey": "-truncated-",
+				"Email": "pcf-binding-testbind@test-gsb.iam.gserviceaccount.com",
+        "Name": "pcf-binding-testbind",
+        "Password": "PASSWORD",
+        "PrivateKeyData": "PRIVATEKEY",
+        "ProjectId": "test-gsb",
+        "Sha1Fingerprint": "aa3bade266136f733642ebdb4992b89eb05f83c4",
+        "UniqueId": "108868434450972082663",
+        "UriPrefix": "",
+        "Username": "newuseraccount",
+        "database_name": "service_broker",
+        "host": "127.0.0.1",
+        "instance_name": "pcf-sb-1-1561406852899716453",
+        "last_master_operation_id": "",
+        "region": "",
+        "uri": "mysql://newuseraccount:PASSWORD@127.0.0.1/service_broker?ssl_mode=required"
+      }
+    }
+  ],
+  "user-provided": [
+  	{
+      "binding_name": "testbinding",
+      "instance_name": "testinstance",
+      "name": "kf-binding-tt2-mystorage",
+      "label": "google-storage",
+      "tags": [
+        "gcp",
+        "cloudsql",
+        "mysql"
+      ],
+      "plan": "nearline",
+      "credentials": {
+				"CaCert": "-truncated-",
+				"ClientCert": "-truncated-",
+				"ClientKey": "-truncated-",
+				"Email": "pcf-binding-testbind@test-gsb.iam.gserviceaccount.com",
+        "Name": "pcf-binding-testbind",
+        "Password": "PASSWORD",
+        "PrivateKeyData": "PRIVATEKEY",
+        "ProjectId": "test-gsb",
+        "Sha1Fingerprint": "aa3bade266136f733642ebdb4992b89eb05f83c4",
+        "UniqueId": "108868434450972082663",
+        "UriPrefix": "",
+        "Username": "newuseraccount",
+        "database_name": "service_broker",
+        "host": "127.0.0.1",
+        "instance_name": "pcf-sb-1-1561406852899716453",
+        "last_master_operation_id": "",
+        "region": "",
+        "uri": "mysql://newuseraccount:PASSWORD@127.0.0.1/service_broker?ssl_mode=required"
+      }
+    }
+  ]
+}`)
+			Expect(err).NotTo(HaveOccurred())
+		})
 	})
 
 	Describe("setting database credentials", func() {

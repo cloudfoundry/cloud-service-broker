@@ -100,15 +100,16 @@ func ParseVcapServices(vcapServicesData string) (VcapService, error) {
 		return VcapService{}, fmt.Errorf("error unmarshalling VCAP_SERVICES: %s", err)
 	}
 
-	for _, vcapArray := range vcapMap {
-		vcapService, err := findMySQLTag(vcapArray, "mysql")
-		if err != nil {
-			return VcapService{}, fmt.Errorf("error finding MySQL tag: %s", err)
-		}
-		return vcapService, nil
+	flatVCAPServices := []VcapService{}
+	for _, v := range vcapMap {
+		flatVCAPServices = append(flatVCAPServices, v...)
 	}
 
-	return VcapService{}, fmt.Errorf("error parsing VCAP_SERVICES")
+	service, err := findMySQLTag(flatVCAPServices, "mysql")
+	if err != nil {
+		return VcapService{}, fmt.Errorf("error finding MySQL tag: %s", err)
+	}
+	return service, nil
 }
 
 // whether a given string array arr contains string key
