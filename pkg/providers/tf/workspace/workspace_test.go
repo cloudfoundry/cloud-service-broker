@@ -370,4 +370,76 @@ func TestNewWorkspace(t *testing.T) {
 			t.Error("Expected NewWorkspace to create deep copy of ParametersToAdd")
 		}
 	})
+	t.Run("returns empty map for empty templateVars", func(t *testing.T) {
+		ws, err := NewWorkspace(nil, "", nil, nil, nil, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		got := ws.Instances[0].Configuration
+		expect := make(map[string]any)
+		if !reflect.DeepEqual(expect, got) {
+			t.Errorf("expected %v, got %v", expect, got)
+		}
+	})
+
+	t.Run("returns zero-value for empty terraformTemplate", func(t *testing.T) {
+		ws, err := NewWorkspace(nil, "", nil, nil, nil, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		got := ws.Modules[0].Definition
+		var expect string
+		if !reflect.DeepEqual(expect, got) {
+			t.Errorf("expected %v, got %v", expect, got)
+		}
+	})
+
+	t.Run("returns zero-value for empty terraformTemplates", func(t *testing.T) {
+		ws, err := NewWorkspace(nil, "", nil, nil, nil, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		got := ws.Modules[0].Definitions
+		var expect map[string]string
+		if !reflect.DeepEqual(expect, got) {
+			t.Errorf("expected %v, got %v", expect, got)
+		}
+	})
+
+	t.Run("returns zero-value for empty importParameterMappings", func(t *testing.T) {
+		ws, err := NewWorkspace(nil, "", nil, nil, nil, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		got := ws.Transformer.ParameterMappings
+		var expect []ParameterMapping
+		if !reflect.DeepEqual(expect, got) {
+			t.Errorf("expected %v, got %v", expect, got)
+		}
+	})
+
+	t.Run("returns zero-value for empty importParametersToRemove", func(t *testing.T) {
+		ws, err := NewWorkspace(nil, "", nil, nil, nil, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		got := ws.Transformer.ParametersToRemove
+		var expect []string
+		if !reflect.DeepEqual(expect, got) {
+			t.Errorf("expected %v, got %v", expect, got)
+		}
+	})
+
+	t.Run("returns zero-value for empty importParametersToAdd", func(t *testing.T) {
+		ws, err := NewWorkspace(nil, "", nil, nil, nil, nil)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		got := ws.Transformer.ParametersToAdd
+		var expect []ParameterMapping
+		if !reflect.DeepEqual(expect, got) {
+			t.Errorf("expected %v, got %v", expect, got)
+		}
+	})
+
 }
