@@ -52,7 +52,6 @@ import (
 )
 
 const (
-	lockfileDir         = "lockfiledir"
 	apiUserProp         = "api.user"
 	apiPasswordProp     = "api.password"
 	apiPortProp         = "api.port"
@@ -88,7 +87,6 @@ func init() {
 		},
 	})
 
-	_ = viper.BindEnv(lockfileDir, "GSB_LOCKFILEDIR")
 	_ = viper.BindEnv(apiUserProp, "SECURITY_USER_NAME")
 	_ = viper.BindEnv(apiPasswordProp, "SECURITY_USER_PASSWORD")
 	_ = viper.BindEnv(apiPortProp, "PORT")

@@ -8,6 +8,12 @@ import (
 	"gorm.io/gorm"
 )
 
+const lockfileDir = "lockfiledir"
+
+func init() {
+	viper.BindEnv(lockfileDir, "CSB_LOCKFILEDIR")
+}
+
 type Storage struct {
 	db          *gorm.DB
 	encryptor   Encryptor
@@ -19,7 +25,7 @@ func New(db *gorm.DB, encryptor Encryptor) *Storage {
 	// but not every environment will opt for using VM based deployments. So detect if the lockfile
 	// director is present.
 
-	dirDefault := viper.GetString("lockfiledir")
+	dirDefault := viper.GetString(lockfileDir)
 	if _, err := os.Stat(dirDefault); err != nil {
 		dirDefault, _ = os.MkdirTemp("/tmp/", "lockfiles")
 	}
