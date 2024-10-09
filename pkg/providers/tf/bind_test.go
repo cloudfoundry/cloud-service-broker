@@ -8,8 +8,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace/workspacefakes"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
-
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
@@ -89,9 +87,9 @@ var _ = Describe("Bind", func() {
 			Expect(actualWorkspace.Modules[0].Definition).To(Equal(fakeServiceDefinition.BindSettings.Template))
 			Expect(actualWorkspace.Modules[0].Definitions).To(Equal(fakeServiceDefinition.BindSettings.Templates))
 			Expect(actualWorkspace.Instances[0].Configuration).To(Equal(map[string]any{"username": "some-user"}))
-			Expect(actualWorkspace.Transformer.ParameterMappings).To(Equal([]workspace.ParameterMapping{}))
-			Expect(actualWorkspace.Transformer.ParametersToRemove).To(Equal([]string{}))
-			Expect(actualWorkspace.Transformer.ParametersToAdd).To(Equal([]workspace.ParameterMapping{}))
+			Expect(actualWorkspace.Transformer.ParameterMappings).To(BeZero())
+			Expect(actualWorkspace.Transformer.ParametersToRemove).To(BeZero())
+			Expect(actualWorkspace.Transformer.ParametersToAdd).To(BeZero())
 
 			By("checking that provision is marked as started")
 			Expect(fakeDeploymentManager.MarkOperationStartedCallCount()).To(Equal(1))
