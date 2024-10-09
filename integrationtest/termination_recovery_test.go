@@ -53,19 +53,15 @@ var _ = Describe("Recovery From Broker Termination", func() {
 				Expect(response.Error).NotTo(HaveOccurred())
 				Expect(response.StatusCode).To(Equal(http.StatusAccepted))
 				Eventually(stdout, time.Second*5).Should(Say(`tofu","apply","-auto-approve"`))
+
 				By("gracefully stopping the broker")
-				// Stop seems to be blocking, so run it in a routine so we can check that the broker actually rejects requests until it's fully stopped.
-				go func() {
-					defer GinkgoRecover()
-					Expect(broker.Stop()).To(Succeed())
-				}()
+				Expect(broker.RequestStop()).To(Succeed())
 
-				By("logging a message")
-				Eventually(stdout).Should(Say("received SIGTERM"))
-				Eventually(stdout).Should(Say("draining csb in progress"))
+				By("checking that the broker logged a message")
+				Eventually(stdout).Should(Say("server is shutting down gracefully allowing for in flight work to finish"))
 
-				By("ensuring  that the broker rejects requests")
-				Expect(broker.Client.LastOperation(instanceGUID, uuid.NewString()).Error).To(HaveOccurred())
+				By("ensuring  that the broker rejects subsequent requests")
+				Expect(broker.Client.LastOperation(instanceGUID, uuid.NewString()).Error).To(MatchError(ContainSubstring("connect: connection refused")))
 
 				// Fun stuff, do not optimize this with a SatisfyAll().. The relevant part of the docs is:
 				// When Say succeeds, it fast forwards the gbytes.Buffer's read cursor to just after the successful match.
@@ -89,6 +85,7 @@ var _ = Describe("Recovery From Broker Termination", func() {
 				Expect(broker.Deprovision(si)).To(Succeed())
 			})
 		})
+
 		Describe("when a vm broker did not properly drain", func() {
 			var dirDefault string
 			BeforeEach(func() {
