@@ -262,28 +262,26 @@ func listenForShutdownSignal(httpServer *http.Server, logger lager.Logger, store
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGTERM)
 
-	select {
-	case sig := <-sigChan:
-		ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
-		defer cancel()
+	sig := <-sigChan
+	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer cancel()
 
-		if err := httpServer.Shutdown(ctx); err != nil {
-			logger.Fatal("shutdown error: %v", err)
-		}
-		logger.Info("server is shutting down gracefully allowing for in flight work to finish", lager.Data{"signal": sig})
-
-		ticker := time.NewTicker(time.Second * 5)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if !store.LockFilesExist() {
-				break
-			}
-			logger.Info("draining csb in progress")
-		}
-
-		logger.Info("draining complete")
+	if err := httpServer.Shutdown(ctx); err != nil {
+		logger.Fatal("shutdown error: %v", err)
 	}
+	logger.Info("server is shutting down gracefully allowing for in flight work to finish", lager.Data{"signal": sig})
+
+	ticker := time.NewTicker(time.Second * 5)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		if !store.LockFilesExist() {
+			break
+		}
+		logger.Info("draining csb in progress")
+	}
+
+	logger.Info("draining complete")
 }
 
 func importStateHandler(store *storage.Storage) http.Handler {
