@@ -40,7 +40,7 @@ func BuildBrokerpak(csbPath, sourcePath string, opts ...BuildBrokerpakOption) (s
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, csbPath, "pak", "build", "--target", "current", sourcePath)
+	cmd := exec.CommandContext(ctx, csbPath, "pak", "build", "--target=current", "--compress=false", sourcePath)
 	cmd.Dir = cfg.dir
 
 	output, err := cmd.CombinedOutput()
