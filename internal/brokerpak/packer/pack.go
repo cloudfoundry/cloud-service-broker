@@ -4,7 +4,6 @@ package packer
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -22,13 +21,13 @@ const manifestName = "manifest.yml"
 const binaryName = "tofu"
 
 func Pack(m *manifest.Manifest, base, dest, cachePath string, includeSource, compress bool) error {
-	// NOTE: we use "log" rather than Lager because this is used by the CLI and
+	// NOTE: we use "fmt" rather than Lager because this is used by the CLI and
 	// needs to be human-readable rather than JSON.
 	switch base {
 	case "":
-		log.Printf("Packing brokerpak version %q with CSB version %q...\n", m.Version, utils.Version)
+		Printf("Packing brokerpak version %q with CSB version %q...\n", m.Version, utils.Version)
 	default:
-		log.Printf("Packing %q version %q with CSB version %q...\n", base, m.Version, utils.Version)
+		Printf("Packing %q version %q with CSB version %q...\n", base, m.Version, utils.Version)
 	}
 
 	dir, err := os.MkdirTemp("", "brokerpak")
@@ -38,26 +37,26 @@ func Pack(m *manifest.Manifest, base, dest, cachePath string, includeSource, com
 	defer func(path string) {
 		_ = os.RemoveAll(path)
 	}(dir) // clean up
-	log.Println("Using temp directory:", dir)
+	Println("Using temp directory:", dir)
 
 	if includeSource {
-		log.Println("Packing sources...")
+		Println("Packing sources...")
 		if err := packSources(m, dir, cachePath); err != nil {
 			return err
 		}
 	}
 
-	log.Println("Packing binaries...")
+	Println("Packing binaries...")
 	if err := packBinaries(m, dir, cachePath); err != nil {
 		return err
 	}
 
-	log.Println("Packing definitions...")
+	Println("Packing definitions...")
 	if err := packDefinitions(m, dir, base); err != nil {
 		return err
 	}
 
-	log.Println("Creating archive:", dest)
+	Println("Creating archive:", dest)
 	return zippy.Archive(dir, dest, compress)
 }
 
@@ -68,7 +67,7 @@ func packSources(m *manifest.Manifest, tmp string, cachePath string) error {
 		}
 		destination := filepath.Join(tmp, "src", name+".zip")
 
-		log.Println("\t", source, "->", destination)
+		Println("\t", source, "->", destination)
 		return cachedFetchFile(fetcher.FetchArchive, source, destination, cachePath)
 	}
 
@@ -159,7 +158,7 @@ func packDefinitions(m *manifest.Manifest, tmp, base string) error {
 		clearRefs(&defn.BindSettings)
 
 		packedName := fmt.Sprintf("service%d-%s.yml", i, defn.Name)
-		log.Printf("\t%s/%s -> %s/definitions/%s\n", base, sd, tmp, packedName)
+		Printf("\t%s/%s -> %s/definitions/%s\n", base, sd, tmp, packedName)
 		if err := stream.Copy(stream.FromYaml(defn), stream.ToFile(tmp, "definitions", packedName)); err != nil {
 			return err
 		}
