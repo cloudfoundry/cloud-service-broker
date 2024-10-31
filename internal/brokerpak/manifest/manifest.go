@@ -10,14 +10,13 @@ import (
 
 // Manifest is the internal model for the brokerpak manifest
 type Manifest struct {
-	PackVersion        int
-	Name               string
-	Version            string
-	Metadata           map[string]string
-	Platforms          []platform.Platform
-	TerraformVersions  []TerraformVersion
-	TerraformProviders []TerraformProvider
-	// TODO - Binaries array will be empty - Remove it - There are not brokerpaks with this configuration - Check internal/brokerpak/manifest/terraform_resource.go:37
+	PackVersion                        int
+	Name                               string
+	Version                            string
+	Metadata                           map[string]string
+	Platforms                          []platform.Platform
+	TerraformVersions                  []TerraformVersion
+	TerraformProviders                 []TerraformProvider
 	Binaries                           []Binary
 	ServiceDefinitions                 []string
 	Parameters                         []Parameter
