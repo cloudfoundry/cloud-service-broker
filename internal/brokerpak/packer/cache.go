@@ -16,16 +16,16 @@ func cachedFetchFile(getter func(source string, destination string) error, sourc
 
 	switch {
 	case cachePath == "":
-		Println("\t", source, "->", destination, "(no cache)")
+		logger.Println("\t", source, "->", destination, "(no cache)")
 		return getter(source, destination)
 	case exists(source):
-		Println("\t", source, "->", destination, "(local file)")
+		logger.Println("\t", source, "->", destination, "(local file)")
 		return copyLocalFile(source, destination)
 	case cacheDirHasContents(cacheKey):
-		Println("\t", source, "->", destination, "(from cache)")
+		logger.Println("\t", source, "->", destination, "(from cache)")
 		return cp.Copy(cacheKey, destination)
 	default:
-		Println("\t", source, "->", destination, "(stored to cache)")
+		logger.Println("\t", source, "->", destination, "(stored to cache)")
 		return getAndCache(getter, source, destination, cacheKey)
 	}
 }
