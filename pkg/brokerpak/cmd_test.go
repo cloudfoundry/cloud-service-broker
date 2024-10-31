@@ -16,7 +16,6 @@ package brokerpak
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -99,21 +98,17 @@ func fakeBrokerpak() (string, error) {
 	return Pack(dir, "", true, false, platform.Platform{})
 }
 
-func ExampleValidate() {
+func TestValidate(t *testing.T) {
 	pk, err := fakeBrokerpak()
 	defer os.Remove(pk)
 
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	if err := Validate(pk); err != nil {
-		panic(err)
-	} else {
-		fmt.Println("ok!")
+		t.Fatal(err)
 	}
-
-	// Output: ok!
 }
 
 func TestFinfo(t *testing.T) {
