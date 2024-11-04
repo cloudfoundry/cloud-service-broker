@@ -217,7 +217,7 @@ func tlsConfig(cfg *startBrokerConfig, valid bool) {
 
 	Expect(os.WriteFile(certFileBuf.Name(), serverCert, 0o644)).To(Succeed())
 
-	cfg.env = append(cfg.env, fmt.Sprintf("TLS_CERT_CHAIN=%s", certFileBuf.Name()))
+	cfg.env = append(cfg.env, fmt.Sprintf("TLS_CERT=%s", certFileBuf.Name()))
 	cfg.env = append(cfg.env, fmt.Sprintf("TLS_PRIVATE_KEY=%s", privKeyFileBuf.Name()))
 }
 

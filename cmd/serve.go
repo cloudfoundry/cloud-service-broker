@@ -56,7 +56,7 @@ const (
 	apiPasswordProp     = "api.password"
 	apiPortProp         = "api.port"
 	apiHostProp         = "api.host"
-	tlsCertCaBundleProp = "api.certCaBundle"
+	tlsCertProp         = "api.tlsCert"
 	tlsKeyProp          = "api.tlsKey"
 	encryptionPasswords = "db.encryption.passwords"
 	encryptionEnabled   = "db.encryption.enabled"
@@ -93,7 +93,7 @@ func init() {
 	_ = viper.BindEnv(apiHostProp, "CSB_LISTENER_HOST")
 	_ = viper.BindEnv(encryptionPasswords, "ENCRYPTION_PASSWORDS")
 	_ = viper.BindEnv(encryptionEnabled, "ENCRYPTION_ENABLED")
-	_ = viper.BindEnv(tlsCertCaBundleProp, "TLS_CERT_CHAIN")
+	_ = viper.BindEnv(tlsCertProp, "TLS_CERT")
 	_ = viper.BindEnv(tlsKeyProp, "TLS_PRIVATE_KEY")
 }
 
@@ -230,10 +230,10 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 	host := viper.GetString(apiHostProp)
 	logger.Info("Serving", lager.Data{"port": port})
 
-	tlsCertCaBundleFilePath := viper.GetString(tlsCertCaBundleProp)
+	tlsCertFilePath := viper.GetString(tlsCertProp)
 	tlsKeyFilePath := viper.GetString(tlsKeyProp)
 
-	logger.Info("tlsCertCaBundle", lager.Data{"tlsCertCaBundle": tlsCertCaBundleFilePath})
+	logger.Info("tlsCert", lager.Data{"tlsCert": tlsCertFilePath})
 	logger.Info("tlsKey", lager.Data{"tlsKey": tlsKeyFilePath})
 
 	httpServer := &http.Server{
@@ -243,8 +243,8 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 	go func() {
 		var err error
 		switch {
-		case tlsCertCaBundleFilePath != "" && tlsKeyFilePath != "":
-			err = httpServer.ListenAndServeTLS(tlsCertCaBundleFilePath, tlsKeyFilePath)
+		case tlsCertFilePath != "" && tlsKeyFilePath != "":
+			err = httpServer.ListenAndServeTLS(tlsCertFilePath, tlsKeyFilePath)
 		default:
 			err = httpServer.ListenAndServe()
 		}
