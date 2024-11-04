@@ -230,10 +230,10 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 	host := viper.GetString(apiHostProp)
 	logger.Info("Serving", lager.Data{"port": port})
 
-	tlsCertCaBundleFilePath := viper.GetString(tlsCertProp)
+	tlsCertFilePath := viper.GetString(tlsCertProp)
 	tlsKeyFilePath := viper.GetString(tlsKeyProp)
 
-	logger.Info("tlsCertCaBundle", lager.Data{"tlsCertCaBundle": tlsCertCaBundleFilePath})
+	logger.Info("tlsCert", lager.Data{"tlsCert": tlsCertFilePath})
 	logger.Info("tlsKey", lager.Data{"tlsKey": tlsKeyFilePath})
 
 	httpServer := &http.Server{
@@ -243,8 +243,8 @@ func startServer(registry pakBroker.BrokerRegistry, db *sql.DB, brokerapi http.H
 	go func() {
 		var err error
 		switch {
-		case tlsCertCaBundleFilePath != "" && tlsKeyFilePath != "":
-			err = httpServer.ListenAndServeTLS(tlsCertCaBundleFilePath, tlsKeyFilePath)
+		case tlsCertFilePath != "" && tlsKeyFilePath != "":
+			err = httpServer.ListenAndServeTLS(tlsCertFilePath, tlsKeyFilePath)
 		default:
 			err = httpServer.ListenAndServe()
 		}
