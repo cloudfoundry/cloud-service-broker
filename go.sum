@@ -188,8 +188,8 @@ code.cloudfoundry.org/credhub-cli v0.0.0-20220620130410-645eee56ecdb h1:GMTtbWzk
 code.cloudfoundry.org/credhub-cli v0.0.0-20220620130410-645eee56ecdb/go.mod h1:xafx8lXMrUrrSTA5V49Ja3YDvxGksV53FwI5AT4fH7Q=
 code.cloudfoundry.org/jsonry v1.1.4 h1:P9N7IlH1/4aRCLcXLgLFj1hkcBmV7muijJzY+K6U4hE=
 code.cloudfoundry.org/jsonry v1.1.4/go.mod h1:6aKilShQP7w/Ez76h1El2/n9y2OkHuU56nKSBB9Gp0A=
-code.cloudfoundry.org/lager/v3 v3.14.0 h1:W6W1VhS4df8TvXCVo0lj5ve/hjF6YarmU0hsjA/phg4=
-code.cloudfoundry.org/lager/v3 v3.14.0/go.mod h1:beQQaqGk0JSc5Nl/CZFGPCY05lm/wIRa+RoJh7Hz7jI=
+code.cloudfoundry.org/lager/v3 v3.15.0 h1:n31lbeh9krwuQLCRUWNEVZBk/BFEtyhQBwDZxFauPw4=
+code.cloudfoundry.org/lager/v3 v3.15.0/go.mod h1:x5XGPsP6QF0HMW/FpRilBHu4gy+cWRur8/fiZEyj6z8=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
