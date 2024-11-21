@@ -16,10 +16,10 @@ require (
 	github.com/hashicorp/hil v0.0.0-20210521165536-27a72121fd40
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.10.0
-	github.com/onsi/ginkgo/v2 v2.21.0
+	github.com/onsi/ginkgo/v2 v2.22.0
 	github.com/onsi/gomega v1.35.1
 	github.com/otiai10/copy v1.14.0
-	github.com/pivotal-cf/brokerapi/v11 v11.0.13
+	github.com/pivotal-cf/brokerapi/v11 v11.0.14
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.7.0
 	github.com/spf13/cobra v1.8.1
