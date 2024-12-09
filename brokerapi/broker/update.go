@@ -2,9 +2,7 @@ package broker
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"net/http"
 
 	"code.cloudfoundry.org/lager/v3"
 	"github.com/hashicorp/go-version"
@@ -20,8 +18,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils/request"
 )
-
-var ErrNonUpdatableParameter = apiresponses.NewFailureResponse(errors.New("attempt to update parameter that may result in service instance re-creation and data loss"), http.StatusBadRequest, "prohibited")
 
 // Update a service instance plan.
 // This functionality is not implemented and will return an error indicating that plan changes are not supported.
