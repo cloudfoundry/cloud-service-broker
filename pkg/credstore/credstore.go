@@ -59,16 +59,8 @@ func NewCredhubStore(credStoreConfig *config.CredStoreConfig, logger lager.Logge
 		credhub.AuthURL(credStoreConfig.UaaURL),
 	}
 
-	if credStoreConfig.CaCertFile != "" {
-		dat, err := os.ReadFile(credStoreConfig.CaCertFile)
-		if err != nil {
-			return nil, err
-		}
-
-		if dat == nil {
-			return nil, fmt.Errorf("CredHub certificate is not valid: %s", credStoreConfig.CaCertFile)
-		}
-		options = append(options, credhub.CaCerts(string(dat)))
+	if credStoreConfig.CACert != "" {
+		options = append(options, credhub.CaCerts(credStoreConfig.CACert))
 	}
 
 	ch, err := credhub.New(credStoreConfig.CredHubURL, options...)

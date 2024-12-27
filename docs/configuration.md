@@ -123,8 +123,7 @@ The broker supports passing credentials to apps via [credhub references](https:/
 | CH_UAA_CLIENT_NAME        |credhub.uaa_client_name| string | uaa username - usually `credhub_admin_client`|
 | CH_UAA_CLIENT_SECRET      |credhub.uaa_client_secret| string | uaa client secret - "*Credhub Admin Client Credentials*" from *Operations Manager > PAS > Credentials* tab. |
 | CH_SKIP_SSL_VALIDATION    |credhub.skip_ssl_validation| boolean | skip SSL validation if true | 
-| CH_CA_CERT_FILE           |credhub.ca_cert_file| path | path to cert file |
-
+| CH_CA_CERT                |credhub.ca_cert| string | CA cert |
 ### Credhub Config Example (Azure) 
 ```
 azure:
