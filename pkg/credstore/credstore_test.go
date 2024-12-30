@@ -17,7 +17,6 @@ package credstore_test
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 
 	"code.cloudfoundry.org/lager/v3"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/config"
@@ -54,7 +53,7 @@ var _ = Describe("Credhub Store", func() {
 			UaaClientName:        "my-client",
 			UaaClientSecret:      "my-secret",
 			SkipSSLValidation:    true,
-			CaCertFile:           "",
+			CACert:               "",
 			StoreBindCredentials: false,
 		}
 		chStore, err := credstore.NewCredhubStore(credStoreConfig, logger)
@@ -72,7 +71,7 @@ var _ = Describe("Credhub Store", func() {
 	})
 
 	It("sanity check cert file (class under test is mostly just a wrapper", func() {
-		content := []byte(`-----BEGIN CERTIFICATE-----
+		content := `-----BEGIN CERTIFICATE-----
 MIICsDCCAZgCCQDi7u3xz4OO2TANBgkqhkiG9w0BAQsFADAaMRgwFgYDVQQDDA93
 d3cuZXhhbXBsZS5jb20wHhcNMTkxMDI0MTkyNzEyWhcNMjkxMDIxMTkyNzEyWjAa
 MRgwFgYDVQQDDA93d3cuZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IB
@@ -88,14 +87,7 @@ WiaQqAkK41aqRSDOzUV4worM5HEeFGmSowrLRJOk1Wf1EGw8fD51pO3Zl4hv+PxN
 /hSSD7b12tEf59WnppMDXEvXbVVUbc1bQKrUBdbqRRAIvdVXkQQVKd11JAcsTi/T
 DLgHJRgZ5Bkp6yhm2RRzuQeMbozry9wXJg9MN14aLjfUNkB08+BX7kDk4H7ZgQ4S
 GqdyaKP2/eZ04RHn1TYI/UGRnzk=
------END CERTIFICATE-----`)
-		tmpfile, err := os.CreateTemp("", ".pem")
-		Expect(err).NotTo(HaveOccurred())
-
-		_, err = tmpfile.Write(content)
-		Expect(err).NotTo(HaveOccurred())
-		err = tmpfile.Close()
-		Expect(err).NotTo(HaveOccurred())
+-----END CERTIFICATE-----`
 
 		credStoreConfig := &config.CredStoreConfig{
 			CredHubURL:           chTestServer.URL,
@@ -103,7 +95,7 @@ GqdyaKP2/eZ04RHn1TYI/UGRnzk=
 			UaaClientName:        "my-client",
 			UaaClientSecret:      "my-secret",
 			SkipSSLValidation:    true,
-			CaCertFile:           tmpfile.Name(),
+			CACert:               content,
 			StoreBindCredentials: false,
 		}
 		chStore, err := credstore.NewCredhubStore(credStoreConfig, logger)
@@ -119,7 +111,5 @@ GqdyaKP2/eZ04RHn1TYI/UGRnzk=
 		Expect(chRequest).NotTo(BeNil())
 		chRequest.ParseForm()
 		Expect(chRequest.Form["name"]).To(Equal([]string{"/foo/bar/baz"}))
-
-		os.Remove(tmpfile.Name())
 	})
 })

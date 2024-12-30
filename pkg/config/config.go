@@ -25,7 +25,7 @@ const (
 	credhubUaaClientName        = "credhub.uaa_client_name"
 	credhubUaaClientSecret      = "credhub.uaa_client_secret"
 	credhubSkipSSLValidation    = "credhub.skip_ssl_validation"
-	credhubCaCertFile           = "credhub.ca_cert_file"
+	credhubCACert               = "credhub.ca_cert"
 	credhubStoreBindCredentials = "credhub.store_bind_credentials"
 )
 
@@ -35,8 +35,8 @@ type CredStoreConfig struct {
 	UaaClientName        string `mapstructure:"uaa_client_name"`
 	UaaClientSecret      string `mapstructure:"uaa_client_secret"`
 	SkipSSLValidation    bool   `mapstructure:"skip_ssl_validation"`
-	CaCertFile           string `mapstructure:"ca_cert_file"`
 	StoreBindCredentials bool   `mapstructure:"store_bind_credentials"`
+	CACert               string `mapstructure:"ca_cert"`
 }
 
 type Config struct {
@@ -50,8 +50,8 @@ func Parse() (*Config, error) {
 	viper.BindEnv(credhubUaaClientName, "CH_UAA_CLIENT_NAME")
 	viper.BindEnv(credhubUaaClientSecret, "CH_UAA_CLIENT_SECRET")
 	viper.BindEnv(credhubSkipSSLValidation, "CH_SKIP_SSL_VALIDATION")
-	viper.BindEnv(credhubCaCertFile, "CH_CA_CERT_FILE")
 	viper.BindEnv(credhubStoreBindCredentials, "CH_STORE_BIND_CREDENTIALS")
+	viper.BindEnv(credhubCACert, "CH_CA_CERT")
 
 	err := viper.Unmarshal(&c)
 	if err != nil {
