@@ -26,7 +26,7 @@ ADD . /app
 ARG CSB_VERSION=0.0.0
 RUN CGO_CFLAGS="-D_LARGEFILE64_SOURCE" CGO_ENABLED=1 GOOS=linux go build -o ./build/cloud-service-broker -ldflags "-X github.com/cloudfoundry/cloud-service-broker/utils.Version=$CSB_VERSION"
 
-FROM alpine:3.20
+FROM alpine:3.21
 
 COPY --from=build /app/build/cloud-service-broker /bin/cloud-service-broker
 
