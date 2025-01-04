@@ -17,38 +17,66 @@ import (
 var _ = Describe("ServiceDefinition", func() {
 
 	Describe("CatalogEntry", func() {
-		Context("Metadata", func() {
-			var serviceDefinition broker.ServiceDefinition
 
+		var serviceDefinition broker.ServiceDefinition
+
+		BeforeEach(func() {
+			serviceDefinition = broker.ServiceDefinition{
+				ID:                  "fa6334bc-5314-4b63-8a74-c0e4b638c950",
+				Name:                "test-def",
+				Description:         "test-def-desc",
+				DisplayName:         "test-def-display-name",
+				ImageURL:            "image-url",
+				DocumentationURL:    "docs-url",
+				ProviderDisplayName: "provider-display-name",
+				SupportURL:          "support-url",
+				Tags:                []string{"Beta", "Tag"},
+				PlanUpdateable:      true,
+				Plans:               nil,
+			}
+		})
+		It("includes all metadata in the catalog", func() {
+			catalogEntry := serviceDefinition.CatalogEntry()
+			Expect(catalogEntry.Name).To(Equal("test-def"))
+			Expect(catalogEntry.Description).To(Equal("test-def-desc"))
+			Expect(catalogEntry.Metadata.DisplayName).To(Equal("test-def-display-name"))
+			Expect(catalogEntry.Metadata.ImageUrl).To(Equal("image-url"))
+			Expect(catalogEntry.Metadata.LongDescription).To(Equal("test-def-desc"))
+			Expect(catalogEntry.Metadata.DocumentationUrl).To(Equal("docs-url"))
+			Expect(catalogEntry.Metadata.ProviderDisplayName).To(Equal("provider-display-name"))
+			Expect(catalogEntry.Metadata.SupportUrl).To(Equal("support-url"))
+			Expect(catalogEntry.Tags).To(ConsistOf("Beta", "Tag"))
+		})
+
+		It("includes instances_retrievable: true", func() {
+			catalogEntry := serviceDefinition.CatalogEntry()
+			Expect(catalogEntry.InstancesRetrievable).To(BeTrue())
+		})
+
+		When("service offering is not bindable", func() {
 			BeforeEach(func() {
-				serviceDefinition = broker.ServiceDefinition{
-					ID:                  "fa6334bc-5314-4b63-8a74-c0e4b638c950",
-					Name:                "test-def",
-					Description:         "test-def-desc",
-					DisplayName:         "test-def-display-name",
-					ImageURL:            "image-url",
-					DocumentationURL:    "docs-url",
-					ProviderDisplayName: "provider-display-name",
-					SupportURL:          "support-url",
-					Tags:                []string{"Beta", "Tag"},
-					Bindable:            true,
-					PlanUpdateable:      true,
-					Plans:               nil,
-				}
+				serviceDefinition.Bindable = false
 			})
-			It("includes all metadata in the catalog", func() {
+			It("includes bindable: false", func() {
 				catalogEntry := serviceDefinition.CatalogEntry()
-
-				Expect(catalogEntry.Name).To(Equal("test-def"))
-				Expect(catalogEntry.Description).To(Equal("test-def-desc"))
-				Expect(catalogEntry.Metadata.DisplayName).To(Equal("test-def-display-name"))
-				Expect(catalogEntry.Metadata.ImageUrl).To(Equal("image-url"))
-				Expect(catalogEntry.Metadata.LongDescription).To(Equal("test-def-desc"))
-				Expect(catalogEntry.Metadata.DocumentationUrl).To(Equal("docs-url"))
-				Expect(catalogEntry.Metadata.ProviderDisplayName).To(Equal("provider-display-name"))
-				Expect(catalogEntry.Metadata.SupportUrl).To(Equal("support-url"))
-				Expect(catalogEntry.Tags).To(ConsistOf("Beta", "Tag"))
-
+				Expect(catalogEntry.Bindable).To(BeFalse())
+			})
+			It("includes binding_retrievable: false", func() {
+				catalogEntry := serviceDefinition.CatalogEntry()
+				Expect(catalogEntry.BindingsRetrievable).To(BeFalse())
+			})
+		})
+		When("service offering is bindable", func() {
+			BeforeEach(func() {
+				serviceDefinition.Bindable = true
+			})
+			It("includes bindable: true", func() {
+				catalogEntry := serviceDefinition.CatalogEntry()
+				Expect(catalogEntry.Bindable).To(BeTrue())
+			})
+			It("includes binding_retrievable: true", func() {
+				catalogEntry := serviceDefinition.CatalogEntry()
+				Expect(catalogEntry.BindingsRetrievable).To(BeTrue())
 			})
 		})
 
