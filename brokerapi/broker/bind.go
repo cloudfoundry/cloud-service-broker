@@ -2,9 +2,7 @@ package broker
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"net/http"
 
 	"code.cloudfoundry.org/lager/v3"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
@@ -16,11 +14,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils/request"
 	"github.com/pivotal-cf/brokerapi/v11/domain"
 	"github.com/pivotal-cf/brokerapi/v11/domain/apiresponses"
-)
-
-var (
-	invalidUserInputMsg = "User supplied parameters must be in the form of a valid JSON map."
-	ErrInvalidUserInput = apiresponses.NewFailureResponse(errors.New(invalidUserInputMsg), http.StatusBadRequest, "parsing-user-request")
 )
 
 // Bind creates an account with credentials to access an instance of a service.
