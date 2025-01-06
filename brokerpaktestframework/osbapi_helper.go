@@ -3,8 +3,8 @@ package brokerpaktestframework
 import (
 	"fmt"
 
-	"github.com/pivotal-cf/brokerapi/v11/domain"
-	"github.com/pivotal-cf/brokerapi/v11/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v12/domain"
+	"github.com/pivotal-cf/brokerapi/v12/domain/apiresponses"
 )
 
 func FindService(catalog *apiresponses.CatalogResponse, s string) domain.Service {
