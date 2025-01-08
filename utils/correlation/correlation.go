@@ -5,7 +5,7 @@ import (
 	"context"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/pivotal-cf/brokerapi/v11/middlewares"
+	"github.com/pivotal-cf/brokerapi/v12/middlewares"
 )
 
 func ID(ctx context.Context) lager.Data {

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/pivotal-cf/brokerapi/v11/domain"
+	"github.com/pivotal-cf/brokerapi/v12/domain"
 )
 
 func (b *Broker) LastOperation(serviceInstanceGUID string) (domain.LastOperation, error) {

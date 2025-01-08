@@ -7,7 +7,7 @@ import (
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/steps"
 	"github.com/google/uuid"
-	"github.com/pivotal-cf/brokerapi/v11/domain"
+	"github.com/pivotal-cf/brokerapi/v12/domain"
 )
 
 type upgradeConfig struct {

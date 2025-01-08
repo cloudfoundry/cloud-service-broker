@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/brokerapi/v11/domain/apiresponses"
+	"github.com/pivotal-cf/brokerapi/v12/domain/apiresponses"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/decider"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
