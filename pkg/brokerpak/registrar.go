@@ -20,7 +20,7 @@ import (
 	"os"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/pivotal-cf/brokerapi/v11/domain"
+	"github.com/pivotal-cf/brokerapi/v12/domain"
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 
