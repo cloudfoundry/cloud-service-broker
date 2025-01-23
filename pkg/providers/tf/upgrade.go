@@ -104,14 +104,19 @@ func (provider *TerraformProvider) performTerraformUpgrade(ctx context.Context, 
 		return err
 	}
 
+	// Because an upgrade can fail, and when it fails we still record the higher TF version in the state, we
+	// need to perform the upgrade to the current TF version before performing the upgrade on higher versions.
+	// This allows failures to be re-tried. We could add code to try and keep track of the failures, but
+	// because TF is idempotent, it's cleaner to just run Apply at the current version, which will be a
+	// no-op for success cases.
 	if currentTfVersion.LessThan(version.Must(version.NewVersion("1.5.0"))) {
 		return errors.New("upgrade only supported for Terraform versions >= 1.5.0")
-	} else if currentTfVersion.LessThan(provider.tfBinContext.DefaultTfVersion) {
+	} else if currentTfVersion.LessThanOrEqual(provider.tfBinContext.DefaultTfVersion) {
 		if len(provider.tfBinContext.TfUpgradePath) == 0 {
 			return errors.New("tofu version mismatch and no upgrade path specified")
 		}
 		for _, targetTfVersion := range provider.tfBinContext.TfUpgradePath {
-			if currentTfVersion.LessThan(targetTfVersion) {
+			if currentTfVersion.LessThanOrEqual(targetTfVersion) {
 				err = provider.VersionedInvoker(targetTfVersion).Apply(ctx, workspace)
 				if err != nil {
 					return err

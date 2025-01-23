@@ -1,0 +1,31 @@
+version: 1
+name: fake-service
+id: 10557d15-dd47-40e6-ab4f-53fbe81e3022
+description: description
+display_name: Fake
+image_url: https://example.com/icon.jpg
+documentation_url: https://example.com
+support_url: https://example.com/support.html
+plans:
+- name: first
+  id: e328fdae-d97c-43b1-a1a7-0f8e961d1d0c
+  description: First plan
+  display_name: First
+provision:
+  template_refs:
+    main: fake-provision.tf
+  user_inputs:
+    - field_name: max
+      type: number
+      details: provision input
+  outputs:
+    - field_name: provision_output
+      type: integer
+      details: provision output
+bind:
+  template_refs:
+    main: fake-bind.tf
+  outputs:
+    - field_name: provision_output
+      type: integer
+      details: provision output
