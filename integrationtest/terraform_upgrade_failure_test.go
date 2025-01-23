@@ -120,23 +120,6 @@ var _ = Describe("TF Upgrade Failure", func() {
 		Expect(instanceTFStateVersion(serviceInstance.GUID)).To(Equal(endingVersion))
 		Expect(bindingTFStateVersion(serviceInstance.GUID, binding.GUID)).To(Equal(endingVersion))
 
-		// It looks like after the first failure, the upgrade reports success, but does not actually do the upgrade again
-		// This is not an ideal behaviour
-		By("observing the instance output not in the updated range")
-		Expect(instanceTFStateOutputValue(serviceInstance.GUID)).To(BeElementOf(1, 2))
-		// This is the behaviour that we should see
-		//Expect(instanceTFStateOutputValue(serviceInstance.GUID)).To(BeElementOf(3, 4))
-
-		By("observing the binding output is in the updated range")
-		Expect(bindingTFStateOutputValue(serviceInstance.GUID, binding.GUID)).To(BeElementOf(3, 4))
-
-		By("updating the service after the upgrade")
-		Expect(broker.UpdateService(
-			serviceInstance,
-			testdrive.WithUpdateParams(`{}`),
-			testdrive.WithUpdatePreviousValues(domain.PreviousValues{MaintenanceInfo: &domain.MaintenanceInfo{Version: endingVersion}}),
-		)).To(Succeed())
-
 		By("observing the instance and binding output are in the updated range")
 		Expect(instanceTFStateOutputValue(serviceInstance.GUID)).To(BeElementOf(3, 4))
 		Expect(bindingTFStateOutputValue(serviceInstance.GUID, binding.GUID)).To(BeElementOf(3, 4))
