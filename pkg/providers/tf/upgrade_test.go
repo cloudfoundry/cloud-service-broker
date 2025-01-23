@@ -72,6 +72,7 @@ var _ = Describe("Upgrade", func() {
 			BeforeEach(func() {
 				fakeInvoker1 = &tffakes.FakeTerraformInvoker{}
 				fakeInvoker2 = &tffakes.FakeTerraformInvoker{}
+				fakeDefaultInvoker = &tffakes.FakeTerraformInvoker{}
 
 				instanceTFDeployment.Workspace = fakeWorkspace
 				fakeDeploymentManager.GetTerraformDeploymentReturns(instanceTFDeployment, nil)
@@ -105,9 +106,13 @@ var _ = Describe("Upgrade", func() {
 				Expect(fakeInvoker2.ApplyCallCount()).To(Equal(1))
 				Expect(getWorkspace(fakeInvoker2, 0)).To(Equal(fakeWorkspace))
 
-				Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(2))
-				Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(0)).To(Equal(newVersion("3.0.0")))
-				Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(1)).To(Equal(newVersion("4.0.0")))
+				Expect(fakeDefaultInvoker.ApplyCallCount()).To(Equal(1))
+				Expect(getWorkspace(fakeDefaultInvoker, 0)).To(Equal(fakeWorkspace))
+
+				Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(3))
+				Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(0)).To(Equal(newVersion("2.0.0")))
+				Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(1)).To(Equal(newVersion("3.0.0")))
+				Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(2)).To(Equal(newVersion("4.0.0")))
 
 				Expect(fakeDeploymentManager.UpdateWorkspaceHCLCallCount()).To(Equal(1))
 				actualDeploymentID, actualAction, actualUpgradeContext := fakeDeploymentManager.UpdateWorkspaceHCLArgsForCall(0)
@@ -250,29 +255,50 @@ var _ = Describe("Upgrade", func() {
 	})
 
 	Describe("UpgradeBindings", func() {
+		const (
+			firstBindingID  = "firstBindingID"
+			secondBindingID = "secondBindingID"
+		)
+
 		var (
-			firstBindingID          = "firstBindingID"
-			secondBindingID         = "secondBindingID"
-			firstBindingWorkspace   = &workspacefakes.FakeWorkspace{}
-			firstBindingDeployment  = storage.TerraformDeployment{ID: instanceDeploymentID + firstBindingID, Workspace: firstBindingWorkspace}
-			secondBindingWorkspace  = &workspacefakes.FakeWorkspace{}
+			firstBindingWorkspace   *workspacefakes.FakeWorkspace
+			firstBindingDeployment  storage.TerraformDeployment
+			secondBindingWorkspace  *workspacefakes.FakeWorkspace
+			secondBindingDeployment storage.TerraformDeployment
+
+			bindingDeployments  []storage.TerraformDeployment
+			firstBindingVars    map[string]any
+			secondBindingVars   map[string]any
+			bindingsVarContexts []*varcontext.VarContext
+
+			fakeInvoker1 *tffakes.FakeTerraformInvoker
+			fakeInvoker2 *tffakes.FakeTerraformInvoker
+			fakeInvoker3 *tffakes.FakeTerraformInvoker
+			fakeInvoker4 *tffakes.FakeTerraformInvoker
+			fakeInvoker5 *tffakes.FakeTerraformInvoker
+			fakeInvoker6 *tffakes.FakeTerraformInvoker
+		)
+
+		BeforeEach(func() {
+			firstBindingWorkspace = &workspacefakes.FakeWorkspace{}
+			firstBindingDeployment = storage.TerraformDeployment{ID: instanceDeploymentID + firstBindingID, Workspace: firstBindingWorkspace}
+			secondBindingWorkspace = &workspacefakes.FakeWorkspace{}
 			secondBindingDeployment = storage.TerraformDeployment{ID: instanceDeploymentID + secondBindingID, Workspace: secondBindingWorkspace}
 
 			bindingDeployments = []storage.TerraformDeployment{
 				firstBindingDeployment,
 				secondBindingDeployment,
 			}
-			firstBindingVars    = map[string]any{"tf_id": instanceDeploymentID + firstBindingID, "first-binding-var": "first-binding-value"}
-			secondBindingVars   = map[string]any{"tf_id": instanceDeploymentID + secondBindingID, "second-binding-var": "second-binding-value"}
-			bindingsVarContexts []*varcontext.VarContext
+			firstBindingVars = map[string]any{"tf_id": instanceDeploymentID + firstBindingID, "first-binding-var": "first-binding-value"}
+			secondBindingVars = map[string]any{"tf_id": instanceDeploymentID + secondBindingID, "second-binding-var": "second-binding-value"}
 
 			fakeInvoker1 = &tffakes.FakeTerraformInvoker{}
 			fakeInvoker2 = &tffakes.FakeTerraformInvoker{}
 			fakeInvoker3 = &tffakes.FakeTerraformInvoker{}
 			fakeInvoker4 = &tffakes.FakeTerraformInvoker{}
-		)
+			fakeInvoker5 = &tffakes.FakeTerraformInvoker{}
+			fakeInvoker6 = &tffakes.FakeTerraformInvoker{}
 
-		BeforeEach(func() {
 			instanceTFDeployment.Workspace = fakeWorkspace
 			fakeDeploymentManager.GetTerraformDeploymentReturns(instanceTFDeployment, nil)
 
@@ -284,6 +310,8 @@ var _ = Describe("Upgrade", func() {
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(1, fakeInvoker2)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(2, fakeInvoker3)
 			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(3, fakeInvoker4)
+			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(4, fakeInvoker5)
+			fakeInvokerBuilder.VersionedTerraformInvokerReturnsOnCall(5, fakeInvoker6)
 
 			firstBindingWorkspace.StateTFVersionReturns(newVersion("2.0.0"), nil)
 			firstBindingWorkspace.ModuleInstancesReturns([]workspace.ModuleInstance{{ModuleName: "first-binding-moduleName"}})
@@ -327,7 +355,6 @@ var _ = Describe("Upgrade", func() {
 			actualSecondBindingDeployment, _ := fakeDeploymentManager.MarkOperationFinishedArgsForCall(1)
 			Expect(actualSecondBindingDeployment.ID).To(Equal(secondBindingDeployment.ID))
 
-			By("checking the invoker was called for the service instance with correct workspace")
 			By("checking the invoker was called for the first binding with correct workspace")
 			Expect(fakeInvoker1.ApplyCallCount()).To(Equal(1))
 			Expect(getWorkspace(fakeInvoker1, 0)).To(Equal(firstBindingWorkspace))
@@ -335,18 +362,26 @@ var _ = Describe("Upgrade", func() {
 			Expect(fakeInvoker2.ApplyCallCount()).To(Equal(1))
 			Expect(getWorkspace(fakeInvoker2, 0)).To(Equal(firstBindingWorkspace))
 
-			By("checking the invoker was called for the second binding with correct workspace")
 			Expect(fakeInvoker3.ApplyCallCount()).To(Equal(1))
-			Expect(getWorkspace(fakeInvoker3, 0)).To(Equal(secondBindingWorkspace))
+			Expect(getWorkspace(fakeInvoker3, 0)).To(Equal(firstBindingWorkspace))
 
+			By("checking the invoker was called for the second binding with correct workspace")
 			Expect(fakeInvoker4.ApplyCallCount()).To(Equal(1))
 			Expect(getWorkspace(fakeInvoker4, 0)).To(Equal(secondBindingWorkspace))
 
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(4))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(0)).To(Equal(newVersion("3.0.0")))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(1)).To(Equal(newVersion("4.0.0")))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(2)).To(Equal(newVersion("3.0.0")))
-			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(3)).To(Equal(newVersion("4.0.0")))
+			Expect(fakeInvoker5.ApplyCallCount()).To(Equal(1))
+			Expect(getWorkspace(fakeInvoker5, 0)).To(Equal(secondBindingWorkspace))
+
+			Expect(fakeInvoker6.ApplyCallCount()).To(Equal(1))
+			Expect(getWorkspace(fakeInvoker6, 0)).To(Equal(secondBindingWorkspace))
+
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerCallCount()).To(Equal(6))
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(0)).To(Equal(newVersion("2.0.0")))
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(1)).To(Equal(newVersion("3.0.0")))
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(2)).To(Equal(newVersion("4.0.0")))
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(3)).To(Equal(newVersion("2.0.0")))
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(4)).To(Equal(newVersion("3.0.0")))
+			Expect(fakeInvokerBuilder.VersionedTerraformInvokerArgsForCall(5)).To(Equal(newVersion("4.0.0")))
 
 			By("ensuring the HCL was updated")
 			Expect(fakeDeploymentManager.UpdateWorkspaceHCLCallCount()).To(Equal(2))
