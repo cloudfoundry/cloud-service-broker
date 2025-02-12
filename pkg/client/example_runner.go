@@ -346,7 +346,7 @@ func (ee *exampleExecutor) pollUntilFinished() error {
 
 		if state == string(domain.Failed) {
 			ee.logger.Printf("Last operation for %q was %q: %s\n", ee.InstanceID, state, responseBody["description"])
-			return false, fmt.Errorf(responseBody["description"])
+			return false, errors.New(responseBody["description"])
 		}
 
 		ee.logger.Printf("Last operation for %q was %q\n", ee.InstanceID, state)
