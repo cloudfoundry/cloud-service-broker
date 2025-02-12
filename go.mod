@@ -1,6 +1,6 @@
 module github.com/cloudfoundry/cloud-service-broker/v2
 
-go 1.23.6
+go 1.24.0
 
 require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20250127140616-09d802d47c27
@@ -142,3 +142,5 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	rsc.io/goversion v1.2.0 // indirect
 )
+
+tool github.com/onsi/ginkgo/v2/ginkgo
