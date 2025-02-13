@@ -142,3 +142,5 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	rsc.io/goversion v1.2.0 // indirect
 )
+
+tool github.com/onsi/ginkgo/v2/ginkgo
