@@ -107,7 +107,7 @@ checkformat: ## Checks that the code is formatted correctly
 	fi
 
 checkimports: ## Checks that imports are formatted correctly
-	@@if [ -n "$$(go run golang.org/x/tools/cmd/goimports -l -d .)" ]; then \
+	@@if [ -n "$$(go tool goimports -l -d .)" ]; then \
 		echo "goimports check failed: run 'make format'";                      \
 		exit 1;                                                                \
 	fi
@@ -116,14 +116,14 @@ vet: ## Runs go vet
 	go vet ./...
 
 staticcheck: ## Runs staticcheck
-	go list ./... | grep -v 'fakes$$' | xargs go run honnef.co/go/tools/cmd/staticcheck
+	go list ./... | grep -v 'fakes$$' | xargs go tool staticcheck
 
 ###### Format #################################################################
 
 .PHONY: format
 format: ## format the source
 	gofmt -s -e -l -w .
-	go run golang.org/x/tools/cmd/goimports -l -w .
+	go tool goimports -l -w .
 
 ###### Image ##################################################################
 
