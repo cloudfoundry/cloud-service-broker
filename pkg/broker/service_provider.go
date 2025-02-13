@@ -22,7 +22,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//go:generate go tool counterfeiter -generate
 //counterfeiter:generate . ServiceProvider
 
 // ServiceProvider performs the actual provisoning/deprovisioning part of a service broker request.
