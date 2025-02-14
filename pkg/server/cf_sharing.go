@@ -21,8 +21,8 @@ import (
 	"github.com/pivotal-cf/brokerapi/v12/domain"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
-//counterfeiter:generate -o ./fakes/servicebroker.go github.com/pivotal-cf/brokerapi/v11/domain.ServiceBroker
+//go:generate go tool counterfeiter -generate
+//counterfeiter:generate -o ./fakes/servicebroker.go github.com/pivotal-cf/brokerapi/v12/domain.ServiceBroker
 
 // CfSharingWrapper enables the Shareable flag for every service provided by the broker.
 type CfSharingWrapper struct {

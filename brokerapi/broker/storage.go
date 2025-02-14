@@ -6,7 +6,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//go:generate go tool counterfeiter -generate
 //counterfeiter:generate . Storage
 
 type Storage interface {

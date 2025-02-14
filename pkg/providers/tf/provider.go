@@ -157,7 +157,7 @@ func (provider *TerraformProvider) Wait(ctx context.Context, id string) error {
 	}
 }
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//go:generate go tool counterfeiter -generate
 //counterfeiter:generate . DeploymentManagerInterface
 type DeploymentManagerInterface interface {
 	GetTerraformDeployment(deploymentID string) (storage.TerraformDeployment, error)

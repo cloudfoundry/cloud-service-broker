@@ -33,7 +33,7 @@ type ExecutorFactory struct {
 	EnvVars          map[string]string
 }
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//go:generate go tool counterfeiter -generate
 //counterfeiter:generate . ExecutorBuilder
 
 type ExecutorBuilder interface {
