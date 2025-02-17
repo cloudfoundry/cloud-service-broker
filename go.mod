@@ -22,7 +22,7 @@ require (
 	github.com/pivotal-cf/brokerapi/v12 v12.0.1
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.7.1
-	github.com/spf13/cobra v1.8.1
+	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	github.com/zclconf/go-cty v1.16.2
