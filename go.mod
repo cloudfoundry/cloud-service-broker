@@ -5,7 +5,7 @@ go 1.23.6
 require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20250127140616-09d802d47c27
 	code.cloudfoundry.org/jsonry v1.1.4
-	code.cloudfoundry.org/lager/v3 v3.26.0
+	code.cloudfoundry.org/lager/v3 v3.27.0
 	github.com/go-sql-driver/mysql v1.9.0
 	github.com/google/gops v0.3.28
 	github.com/google/uuid v1.6.0
@@ -67,7 +67,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20250208200701-d0013a598941 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
