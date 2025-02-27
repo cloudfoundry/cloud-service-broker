@@ -614,6 +614,8 @@ cloud.google.com/go/workflows v1.7.0/go.mod h1:JhSrZuVZWuiDfKEFxU0/F1PQjmpnpcoIS
 cloud.google.com/go/workflows v1.8.0/go.mod h1:ysGhmEajwZxGn1OhGOGKsTXc5PyxOc0vfKf5Af+to4M=
 cloud.google.com/go/workflows v1.9.0/go.mod h1:ZGkj1aFIOd9c8Gerkjjq7OW7I5+l6cSvT3ujaO/WwSA=
 cloud.google.com/go/workflows v1.10.0/go.mod h1:fZ8LmRmZQWacon9UCX1r/g/DfAXx5VcPALq2CxzdePw=
+code.cloudfoundry.org/brokerapi/v13 v13.0.0 h1:mfQwr65EGoHmxr6ou+NED0SZkyAC6BHxiuTml3vLnBA=
+code.cloudfoundry.org/brokerapi/v13 v13.0.0/go.mod h1:QAz6OebAZMP6+PyCldpKErbCRkV+0PTdV/zg6SFJPY8=
 code.cloudfoundry.org/credhub-cli v0.0.0-20250127140616-09d802d47c27 h1:wl6iB1bdgEsX6rEXBjnDz86jy0y2+AQmDsuY2nh7cA0=
 code.cloudfoundry.org/credhub-cli v0.0.0-20250127140616-09d802d47c27/go.mod h1:sSMYERJFXAVaZzt5jtnC78LNObDAk1wzs0QZycF7U2g=
 code.cloudfoundry.org/jsonry v1.1.4 h1:P9N7IlH1/4aRCLcXLgLFj1hkcBmV7muijJzY+K6U4hE=
@@ -1003,8 +1005,6 @@ github.com/phpdave11/gofpdf v1.4.2/go.mod h1:zpO6xFn9yxo3YLyMvW8HcKWVdbNqgIfOOp2
 github.com/phpdave11/gofpdi v1.0.12/go.mod h1:vBmVV0Do6hSBHC8uKUQ71JGW+ZGQq74llk/7bXwjDoI=
 github.com/phpdave11/gofpdi v1.0.13/go.mod h1:vBmVV0Do6hSBHC8uKUQ71JGW+ZGQq74llk/7bXwjDoI=
 github.com/pierrec/lz4/v4 v4.1.15/go.mod h1:gZWDp/Ze/IJXGXf23ltt2EXimqmTUXEy0GFuRQyBid4=
-github.com/pivotal-cf/brokerapi/v12 v12.0.1 h1:xCXgWqgkte+KA1j15zQMHO3hpag+R0s6K7z/+QRMuz4=
-github.com/pivotal-cf/brokerapi/v12 v12.0.1/go.mod h1:wKmh9o08HHHpchY8j7WyyHQj+lCaQ43/0lpYS1L2G+0=
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=

@@ -18,12 +18,12 @@ import (
 	"encoding/json"
 	"log"
 
+	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/featureflags"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/server"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
 	"github.com/google/uuid"
-	"github.com/pivotal-cf/brokerapi/v12/domain"
 	"github.com/spf13/cobra"
 )
 

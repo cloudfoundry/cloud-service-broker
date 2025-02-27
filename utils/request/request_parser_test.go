@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"testing"
 
+	"code.cloudfoundry.org/brokerapi/v13/middlewares"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils/request"
-	"github.com/pivotal-cf/brokerapi/v12/middlewares"
 )
 
 func TestDecodeOriginatingIdentityHeader(t *testing.T) {

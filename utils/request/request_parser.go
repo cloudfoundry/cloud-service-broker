@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/pivotal-cf/brokerapi/v12/middlewares"
+	"code.cloudfoundry.org/brokerapi/v13/middlewares"
 )
 
 func DecodeOriginatingIdentityHeader(ctx context.Context) map[string]any {

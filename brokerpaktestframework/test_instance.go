@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"os"
 
+	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
 	"github.com/google/uuid"
-	"github.com/pivotal-cf/brokerapi/v12/domain/apiresponses"
 )
 
 type TestInstance struct {
