@@ -6,10 +6,10 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/integrationtest/packer"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
 
+	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/brokerapi/v12/domain"
 )
 
 var _ = Describe("Subsume", func() {
