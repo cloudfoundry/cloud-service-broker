@@ -23,7 +23,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/pivotal-cf/brokerapi/v12/domain"
+	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"github.com/spf13/viper"
 )
 

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/steps"
 	"github.com/google/uuid"
-	"github.com/pivotal-cf/brokerapi/v12/domain"
 )
 
 type upgradeConfig struct {

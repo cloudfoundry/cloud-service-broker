@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"github.com/hashicorp/go-version"
-	"github.com/pivotal-cf/brokerapi/v12/domain"
 )
 
 type UpdateDetails struct {

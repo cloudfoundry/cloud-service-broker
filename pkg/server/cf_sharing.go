@@ -17,8 +17,8 @@ package server
 import (
 	"context"
 
-	"github.com/pivotal-cf/brokerapi/v12"
-	"github.com/pivotal-cf/brokerapi/v12/domain"
+	"code.cloudfoundry.org/brokerapi/v13"
+	"code.cloudfoundry.org/brokerapi/v13/domain"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate

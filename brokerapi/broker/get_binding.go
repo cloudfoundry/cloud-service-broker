@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/pivotal-cf/brokerapi/v12/domain"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
 )

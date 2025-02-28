@@ -5,7 +5,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/pivotal-cf/brokerapi/v12/domain"
+	"code.cloudfoundry.org/brokerapi/v13/domain"
 )
 
 type FakeServiceBroker struct {

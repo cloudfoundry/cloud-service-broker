@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/pivotal-cf/brokerapi/v12/domain"
 )
 
 // Services lists services in the broker's catalog.

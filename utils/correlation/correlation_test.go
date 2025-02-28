@@ -3,10 +3,10 @@ package correlation_test
 import (
 	"context"
 
+	"code.cloudfoundry.org/brokerapi/v13/middlewares"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/brokerapi/v12/middlewares"
 )
 
 var _ = Describe("Correlation", func() {

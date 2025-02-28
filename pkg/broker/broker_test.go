@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/pivotal-cf/brokerapi/v12/domain"
+	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"github.com/spf13/viper"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"

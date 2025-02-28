@@ -1,11 +1,11 @@
 package tf_test
 
 import (
+	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf/brokerapi/v12/domain"
 )
 
 var _ = Describe("Definition", func() {
