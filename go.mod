@@ -6,7 +6,7 @@ require (
 	code.cloudfoundry.org/brokerapi/v13 v13.0.0
 	code.cloudfoundry.org/credhub-cli v0.0.0-20250303140637-bae947e8c288
 	code.cloudfoundry.org/jsonry v1.1.4
-	code.cloudfoundry.org/lager/v3 v3.27.0
+	code.cloudfoundry.org/lager/v3 v3.28.0
 	github.com/go-sql-driver/mysql v1.9.0
 	github.com/google/gops v0.3.28
 	github.com/google/uuid v1.6.0
