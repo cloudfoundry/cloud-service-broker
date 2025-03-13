@@ -616,8 +616,8 @@ cloud.google.com/go/workflows v1.9.0/go.mod h1:ZGkj1aFIOd9c8Gerkjjq7OW7I5+l6cSvT
 cloud.google.com/go/workflows v1.10.0/go.mod h1:fZ8LmRmZQWacon9UCX1r/g/DfAXx5VcPALq2CxzdePw=
 code.cloudfoundry.org/brokerapi/v13 v13.0.1 h1:6bgS5dXgjyTJxTV+lzpzwdqOhMZYRp5RvlHwmaHkHhI=
 code.cloudfoundry.org/brokerapi/v13 v13.0.1/go.mod h1:UWRzZt51vOvg/7nTOcde1qeER7rIjheQi46uU8V4aCc=
-code.cloudfoundry.org/credhub-cli v0.0.0-20250303140637-bae947e8c288 h1:4WkrjPFmNYC3sJfUM4T58FA4aGKtLsV2CPf1WX/bZXY=
-code.cloudfoundry.org/credhub-cli v0.0.0-20250303140637-bae947e8c288/go.mod h1:UrHMUIojrfRSNPEMaB2UTNfsqwzPxUagYPZhSgxCZrE=
+code.cloudfoundry.org/credhub-cli v0.0.0-20250310131029-ea50fd1cfd0a h1:zJFoPFYsMRzkKouoUfT3ELuztIvvd3rBcE8dlsZKfG8=
+code.cloudfoundry.org/credhub-cli v0.0.0-20250310131029-ea50fd1cfd0a/go.mod h1:vhljZP8up+8iGKrUMEuOixnT6+0zNQas5YkXhUlhXJQ=
 code.cloudfoundry.org/jsonry v1.1.4 h1:P9N7IlH1/4aRCLcXLgLFj1hkcBmV7muijJzY+K6U4hE=
 code.cloudfoundry.org/jsonry v1.1.4/go.mod h1:6aKilShQP7w/Ez76h1El2/n9y2OkHuU56nKSBB9Gp0A=
 code.cloudfoundry.org/lager/v3 v3.29.0 h1:i+ZL7xoY0QnY90T0SlaAuWXyh068AlAVq6+vLC4A+Vo=
@@ -679,8 +679,8 @@ github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMn
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cloudfoundry/go-socks5 v0.0.0-20240831012420-2590b55236ee h1:88ruSYvCUKX2YcF2CMYVTmPGITvNdRbzaBRk2c/iMds=
 github.com/cloudfoundry/go-socks5 v0.0.0-20240831012420-2590b55236ee/go.mod h1:72EEm1oq5oXqGfu9XGtaRPWEcAFYd/P10cMNln0QhA8=
-github.com/cloudfoundry/socks5-proxy v0.2.144 h1:URs7jUatRFFGdHktWPiUFwtCQWrGfQOkSmVj1e+B5vQ=
-github.com/cloudfoundry/socks5-proxy v0.2.144/go.mod h1:7B8CZY+9yy1HHm+0GVuoFts/hWeaqJQTygN8wm335d4=
+github.com/cloudfoundry/socks5-proxy v0.2.145 h1:cnGyzkQq1xShLAtviPPWkn7E73F3R+76spKY6ENXlos=
+github.com/cloudfoundry/socks5-proxy v0.2.145/go.mod h1:+O1GDwzIaN0ceAtkFymiZUfXmPsUJNuAMhMA2Hvw3HQ=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
 github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
 github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
