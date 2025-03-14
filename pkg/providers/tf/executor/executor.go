@@ -15,7 +15,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//go:generate go tool counterfeiter -generate
 //counterfeiter:generate . TerraformExecutor
 
 // TerraformExecutor is the function that shells out to Terraform.

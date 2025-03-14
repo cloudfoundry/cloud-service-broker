@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/go-version"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//go:generate go tool counterfeiter -generate
 //counterfeiter:generate . Workspace
 type Workspace interface {
 	Serialize() (string, error)

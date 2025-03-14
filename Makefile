@@ -48,7 +48,7 @@ test-units: ## run unit tests
 # Integration tests are relatively resource-hungry, so we tune down the number of processes that run in parallel
 .PHONY: test-integration
 test-integration: .pak-cache ## run integration tests
-	PAK_BUILD_CACHE_PATH=$(PAK_CACHE) go run github.com/onsi/ginkgo/v2/ginkgo --procs 4 integrationtest/...
+	PAK_BUILD_CACHE_PATH=$(PAK_CACHE) go tool ginkgo --procs 4 integrationtest/...
 
 .pak-cache:
 	mkdir -p $(PAK_CACHE)
@@ -107,7 +107,7 @@ checkformat: ## Checks that the code is formatted correctly
 	fi
 
 checkimports: ## Checks that imports are formatted correctly
-	@@if [ -n "$$(go run golang.org/x/tools/cmd/goimports -l -d .)" ]; then \
+	@@if [ -n "$$(go tool goimports -l -d .)" ]; then \
 		echo "goimports check failed: run 'make format'";                      \
 		exit 1;                                                                \
 	fi
@@ -116,14 +116,14 @@ vet: ## Runs go vet
 	go vet ./...
 
 staticcheck: ## Runs staticcheck
-	go list ./... | grep -v 'fakes$$' | xargs go run honnef.co/go/tools/cmd/staticcheck
+	go list ./... | grep -v 'fakes$$' | xargs go tool staticcheck
 
 ###### Format #################################################################
 
 .PHONY: format
 format: ## format the source
 	gofmt -s -e -l -w .
-	go run golang.org/x/tools/cmd/goimports -l -w .
+	go tool goimports -l -w .
 
 ###### Image ##################################################################
 
