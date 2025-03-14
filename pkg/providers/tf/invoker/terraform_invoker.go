@@ -10,13 +10,13 @@ import (
 	"github.com/hashicorp/go-version"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//go:generate go tool counterfeiter -generate
 //counterfeiter:generate . TerraformInvokerBuilder
 type TerraformInvokerBuilder interface {
 	VersionedTerraformInvoker(version *version.Version) TerraformInvoker
 }
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+//go:generate go tool counterfeiter -generate
 //counterfeiter:generate . TerraformInvoker
 type TerraformInvoker interface {
 	Destroy(ctx context.Context, workspace workspace.Workspace) error
