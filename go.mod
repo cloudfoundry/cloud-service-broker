@@ -1,7 +1,6 @@
 module github.com/cloudfoundry/cloud-service-broker/v2
 
 go 1.24.1
-
 require (
 	code.cloudfoundry.org/brokerapi/v13 v13.0.1
 	code.cloudfoundry.org/credhub-cli v0.0.0-20250310131029-ea50fd1cfd0a
@@ -25,7 +24,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	github.com/zclconf/go-cty v1.16.2
 	golang.org/x/crypto v0.36.0
-	golang.org/x/net v0.37.0
+	golang.org/x/net v0.38.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/driver/sqlite v1.5.7
