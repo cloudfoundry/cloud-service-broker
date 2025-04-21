@@ -614,8 +614,8 @@ cloud.google.com/go/workflows v1.7.0/go.mod h1:JhSrZuVZWuiDfKEFxU0/F1PQjmpnpcoIS
 cloud.google.com/go/workflows v1.8.0/go.mod h1:ysGhmEajwZxGn1OhGOGKsTXc5PyxOc0vfKf5Af+to4M=
 cloud.google.com/go/workflows v1.9.0/go.mod h1:ZGkj1aFIOd9c8Gerkjjq7OW7I5+l6cSvT3ujaO/WwSA=
 cloud.google.com/go/workflows v1.10.0/go.mod h1:fZ8LmRmZQWacon9UCX1r/g/DfAXx5VcPALq2CxzdePw=
-code.cloudfoundry.org/brokerapi/v13 v13.0.3 h1:+g6OwToS16XOtHxXSAavwwoDyd3MvJ9471lvN/wWfg0=
-code.cloudfoundry.org/brokerapi/v13 v13.0.3/go.mod h1:x9lN4AQb24623rcKzXt2o57F5jVBn+UDMpl1Ms8+Yv0=
+code.cloudfoundry.org/brokerapi/v13 v13.0.4 h1:46I9Bbo5OumlKjjeZIDUM73iQQUTiIYYscbCQc/gcOA=
+code.cloudfoundry.org/brokerapi/v13 v13.0.4/go.mod h1:2Jd9gH5kHUfUupSWwklx3I/Ih1HvqNPvInyYbgLs9iM=
 code.cloudfoundry.org/credhub-cli v0.0.0-20250310131029-ea50fd1cfd0a h1:zJFoPFYsMRzkKouoUfT3ELuztIvvd3rBcE8dlsZKfG8=
 code.cloudfoundry.org/credhub-cli v0.0.0-20250310131029-ea50fd1cfd0a/go.mod h1:vhljZP8up+8iGKrUMEuOixnT6+0zNQas5YkXhUlhXJQ=
 code.cloudfoundry.org/jsonry v1.1.4 h1:P9N7IlH1/4aRCLcXLgLFj1hkcBmV7muijJzY+K6U4hE=
