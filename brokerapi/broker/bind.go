@@ -124,7 +124,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 		}
 	}
 
-	return *binding, nil
+	return binding, nil
 }
 
 func validateBindParameters(params map[string]any, validUserInputFields []broker.BrokerVariable) error {
@@ -142,14 +142,14 @@ func validateBindParameters(params map[string]any, validUserInputFields []broker
 
 // BuildInstanceCredentials combines the bind credentials with the connection
 // information in the instance details to get a full set of connection details.
-func buildInstanceCredentials(credentials map[string]any, outputs storage.JSONObject) (*domain.Binding, error) {
+func buildInstanceCredentials(credentials map[string]any, outputs storage.JSONObject) (domain.Binding, error) {
 	vc, err := varcontext.Builder().
 		MergeMap(outputs).
 		MergeMap(credentials).
 		Build()
 	if err != nil {
-		return nil, err
+		return domain.Binding{}, err
 	}
 
-	return &domain.Binding{Credentials: vc.ToMap()}, nil
+	return domain.Binding{Credentials: vc.ToMap()}, nil
 }
