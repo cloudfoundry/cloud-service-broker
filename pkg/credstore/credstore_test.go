@@ -48,13 +48,12 @@ var _ = Describe("Credhub Store", func() {
 
 	It("sanity check (class under test is mostly just a wrapper)", func() {
 		credStoreConfig := &config.CredStoreConfig{
-			CredHubURL:           chTestServer.URL,
-			UaaURL:               uaaTestServer.URL,
-			UaaClientName:        "my-client",
-			UaaClientSecret:      "my-secret",
-			SkipSSLValidation:    true,
-			CACert:               "",
-			StoreBindCredentials: false,
+			CredHubURL:        chTestServer.URL,
+			UaaURL:            uaaTestServer.URL,
+			UaaClientName:     "my-client",
+			UaaClientSecret:   "my-secret",
+			SkipSSLValidation: true,
+			CACert:            "",
 		}
 		chStore, err := credstore.NewCredhubStore(credStoreConfig, logger)
 		Expect(err).To(BeNil())
@@ -90,13 +89,12 @@ GqdyaKP2/eZ04RHn1TYI/UGRnzk=
 -----END CERTIFICATE-----`
 
 		credStoreConfig := &config.CredStoreConfig{
-			CredHubURL:           chTestServer.URL,
-			UaaURL:               uaaTestServer.URL,
-			UaaClientName:        "my-client",
-			UaaClientSecret:      "my-secret",
-			SkipSSLValidation:    true,
-			CACert:               content,
-			StoreBindCredentials: false,
+			CredHubURL:        chTestServer.URL,
+			UaaURL:            uaaTestServer.URL,
+			UaaClientName:     "my-client",
+			UaaClientSecret:   "my-secret",
+			SkipSSLValidation: true,
+			CACert:            content,
 		}
 		chStore, err := credstore.NewCredhubStore(credStoreConfig, logger)
 
