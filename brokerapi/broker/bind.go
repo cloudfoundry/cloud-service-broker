@@ -106,22 +106,10 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 		return domain.Binding{}, fmt.Errorf("error building credentials: %w", err)
 	}
 
-	if broker.Credstore != nil {
-		credentialName := getCredentialName(broker.getServiceName(serviceDefinition), bindingID)
-
-		_, err := broker.Credstore.Put(credentialName, binding.Credentials)
-		if err != nil {
-			return domain.Binding{}, fmt.Errorf("bind failure: unable to put credentials in Credstore: %w", err)
-		}
-
-		_, err = broker.Credstore.AddPermission(credentialName, "mtls-app:"+parsedDetails.AppGUID, []string{"read"})
-		if err != nil {
-			return domain.Binding{}, fmt.Errorf("bind failure: unable to add Credstore permissions to app: %w", err)
-		}
-
-		binding.Credentials = map[string]any{
-			"credhub-ref": credentialName,
-		}
+	// Optionally store the actual credential in CredHub, and return a CredHub reference
+	binding.Credentials, err = broker.Credstore.Store(binding.Credentials, broker.getServiceName(serviceDefinition), bindingID, parsedDetails.AppGUID)
+	if err != nil {
+		return domain.Binding{}, fmt.Errorf("bind failure: %w", err)
 	}
 
 	return binding, nil
