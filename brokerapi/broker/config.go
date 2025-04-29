@@ -18,7 +18,7 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/lager/v3"
-
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokercredstore"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/brokerpak"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/config"
@@ -27,7 +27,7 @@ import (
 
 type BrokerConfig struct {
 	Registry  broker.BrokerRegistry
-	Credstore credstore.CredStore
+	Credstore brokercredstore.BrokerCredstore
 }
 
 func NewBrokerConfigFromEnv(logger lager.Logger) (*BrokerConfig, error) {
@@ -53,6 +53,6 @@ func NewBrokerConfigFromEnv(logger lager.Logger) (*BrokerConfig, error) {
 
 	return &BrokerConfig{
 		Registry:  registry,
-		Credstore: cs,
+		Credstore: brokercredstore.NewBrokerCredstore(cs),
 	}, nil
 }

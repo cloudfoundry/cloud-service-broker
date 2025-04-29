@@ -10,17 +10,16 @@ import (
 	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
 	"code.cloudfoundry.org/brokerapi/v13/middlewares"
 	"code.cloudfoundry.org/lager/v3"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokercredstore/brokercredstorefakes"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/credstore/credstorefakes"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Bind", func() {
@@ -41,7 +40,7 @@ var _ = Describe("Bind", func() {
 
 		fakeStorage         *brokerfakes.FakeStorage
 		fakeServiceProvider *pkgBrokerFakes.FakeServiceProvider
-		fakeCredStore       *credstorefakes.FakeCredStore
+		fakeCredStore       *brokercredstorefakes.FakeBrokerCredstore
 
 		brokerConfig *broker.BrokerConfig
 	)
@@ -63,7 +62,8 @@ var _ = Describe("Bind", func() {
 			Outputs:          map[string]any{"fakeInstanceOutput": "fakeInstanceValue"},
 		}, nil)
 
-		fakeCredStore = &credstorefakes.FakeCredStore{}
+		fakeCredStore = &brokercredstorefakes.FakeBrokerCredstore{}
+		fakeCredStore.StoreReturns(map[string]any{"fake-ref": "fake-value"}, nil)
 
 		providerBuilder := func(logger lager.Logger, store pkgBroker.ServiceProviderStorage) pkgBroker.ServiceProvider {
 			return fakeServiceProvider
@@ -128,7 +128,7 @@ var _ = Describe("Bind", func() {
 				IsAsync:       false,
 				AlreadyExists: false,
 				Credentials: map[string]any{
-					"credhub-ref": "/c/csb/test-service/test-binding-id/secrets-and-services",
+					"fake-ref": "fake-value",
 				},
 			}))
 
@@ -138,8 +138,7 @@ var _ = Describe("Bind", func() {
 			Expect(actualContext.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
 
 			By("validating credstore delete has been called")
-			Expect(fakeCredStore.PutCallCount()).To(Equal(1))
-			Expect(fakeCredStore.AddPermissionCallCount()).To(Equal(1))
+			Expect(fakeCredStore.StoreCallCount()).To(Equal(1))
 
 			By("validating storage is asked to store binding credentials")
 			Expect(fakeStorage.StoreBindRequestDetailsCallCount()).To(Equal(1))
@@ -151,26 +150,6 @@ var _ = Describe("Bind", func() {
 					"bind_field_1": "bind_value_1",
 				},
 			}))
-		})
-
-		When("credstore disabled", func() {
-			BeforeEach(func() {
-				brokerConfig.Credstore = nil
-				serviceBroker = must(broker.New(brokerConfig, fakeStorage, utils.NewLogger("bind-test-no-credstore")))
-			})
-
-			It("does not add the credentials to the credstore", func() {
-				response, err := serviceBroker.Bind(context.TODO(), instanceID, bindingID, bindDetails, false)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(response).To(Equal(domain.Binding{
-					IsAsync:       false,
-					AlreadyExists: false,
-					Credentials:   map[string]any{"fakeInstanceOutput": "fakeInstanceValue", "fakeOutput": "fakeValue"},
-				}))
-
-				Expect(fakeCredStore.PutCallCount()).To(Equal(0))
-				Expect(fakeCredStore.AddPermissionCallCount()).To(Equal(0))
-			})
 		})
 
 		Describe("bind variables", func() {
@@ -344,31 +323,17 @@ var _ = Describe("Bind", func() {
 			})
 		})
 
-		When("credstore fails to save key", func() {
+		When("credstore fails", func() {
 			const credstoreError = "credstore-error"
 
 			BeforeEach(func() {
-				fakeCredStore.PutReturns(nil, errors.New(credstoreError))
+				fakeCredStore.StoreReturns(nil, errors.New(credstoreError))
 			})
 
 			It("should error", func() {
 				_, err := serviceBroker.Bind(context.TODO(), instanceID, bindingID, bindDetails, false)
 
-				Expect(err).To(MatchError(fmt.Sprintf(`bind failure: unable to put credentials in Credstore: %s`, credstoreError)))
-			})
-		})
-
-		When("credstore fails to add permissions to app", func() {
-			const credstorePermissionError = "credstore-error-permissions"
-
-			BeforeEach(func() {
-				fakeCredStore.AddPermissionReturns(nil, errors.New(credstorePermissionError))
-			})
-
-			It("should error", func() {
-				_, err := serviceBroker.Bind(context.TODO(), instanceID, bindingID, bindDetails, false)
-
-				Expect(err).To(MatchError(fmt.Sprintf(`bind failure: unable to add Credstore permissions to app: %s`, credstorePermissionError)))
+				Expect(err).To(MatchError(fmt.Sprintf(`bind failure: %s`, credstoreError)))
 			})
 		})
 	})

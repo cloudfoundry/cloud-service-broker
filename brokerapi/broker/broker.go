@@ -21,18 +21,15 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager/v3"
-
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokercredstore"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/credstore"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/featureflags"
 )
-
-const credhubClientIdentifier = "csb"
 
 // ServiceBroker is a brokerapi.ServiceBroker that can be used to generate an OSB compatible service broker.
 type ServiceBroker struct {
 	registry  broker.BrokerRegistry
-	Credstore credstore.CredStore
+	Credstore brokercredstore.BrokerCredstore
 
 	store  Storage
 	Logger lager.Logger

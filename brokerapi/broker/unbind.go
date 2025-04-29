@@ -95,17 +95,8 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 }
 
 func (broker *ServiceBroker) removeBindingData(ctx context.Context, instanceID, bindingID string, serviceDefinition *broker.ServiceDefinition, serviceProvider broker.ServiceProvider) error {
-	if broker.Credstore != nil {
-		credentialName := getCredentialName(broker.getServiceName(serviceDefinition), bindingID)
-
-		if err := broker.Credstore.DeletePermission(credentialName); err != nil {
-			broker.Logger.Error(fmt.Sprintf("failed to delete permissions on the CredHub key %s", credentialName), err)
-		}
-
-		if err := broker.Credstore.Delete(credentialName); err != nil {
-			broker.Logger.Error(fmt.Sprintf("failed to delete CredHub key %s", credentialName), err)
-		}
-	}
+	// remove the credential from CredHub
+	broker.Credstore.Delete(broker.Logger, broker.getServiceName(serviceDefinition), bindingID)
 
 	// remove binding from database
 	if err := broker.store.DeleteServiceBindingCredentials(bindingID, instanceID); err != nil {
