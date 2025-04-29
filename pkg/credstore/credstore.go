@@ -26,9 +26,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/config"
 )
 
-//go:generate go tool counterfeiter -generate
-//counterfeiter:generate . CredStore
-
 type CredStore interface {
 	Put(key string, credentials any) (any, error)
 	PutValue(key string, credentials any) (any, error)

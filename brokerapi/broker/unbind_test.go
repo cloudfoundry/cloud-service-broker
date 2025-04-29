@@ -11,10 +11,10 @@ import (
 	"code.cloudfoundry.org/lager/v3"
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokercredstore/brokercredstorefakes"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/credstore/credstorefakes"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
@@ -39,7 +39,7 @@ var _ = Describe("Unbind", func() {
 
 		fakeStorage         *brokerfakes.FakeStorage
 		fakeServiceProvider *pkgBrokerFakes.FakeServiceProvider
-		fakeCredStore       *credstorefakes.FakeCredStore
+		fakeCredStore       *brokercredstorefakes.FakeBrokerCredstore
 
 		brokerConfig *broker.BrokerConfig
 	)
@@ -59,7 +59,7 @@ var _ = Describe("Unbind", func() {
 		}, nil)
 		fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{"foo": "bar"}, nil)
 
-		fakeCredStore = &credstorefakes.FakeCredStore{}
+		fakeCredStore = &brokercredstorefakes.FakeBrokerCredstore{}
 
 		providerBuilder := func(logger lager.Logger, store pkgBroker.ServiceProviderStorage) pkgBroker.ServiceProvider {
 			return fakeServiceProvider
@@ -136,7 +136,6 @@ var _ = Describe("Unbind", func() {
 			Expect(actualInstanceID).To(Equal(instanceID))
 
 			By("validating credstore delete has been called")
-			Expect(fakeCredStore.DeletePermissionCallCount()).To(Equal(1))
 			Expect(fakeCredStore.DeleteCallCount()).To(Equal(1))
 
 			By("validating storage is asked to delete binding credentials")
@@ -156,21 +155,6 @@ var _ = Describe("Unbind", func() {
 			_, actualInstanceID, actualBindingID = fakeServiceProvider.DeleteBindingDataArgsForCall(0)
 			Expect(actualBindingID).To(Equal(bindingID))
 			Expect(actualInstanceID).To(Equal(instanceID))
-		})
-
-		When("credstore disabled", func() {
-			BeforeEach(func() {
-				brokerConfig.Credstore = nil
-				serviceBroker = must(broker.New(brokerConfig, fakeStorage, utils.NewLogger("unbind-test-no-credstore")))
-			})
-
-			It("does not remove the credentials from the credstore", func() {
-				response, err := serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, false)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(response).To(BeZero())
-
-				Expect(fakeCredStore.DeletePermissionCallCount()).To(Equal(0))
-			})
 		})
 
 		Describe("unbind variables", func() {
@@ -214,7 +198,6 @@ var _ = Describe("Unbind", func() {
 				Expect(err).NotTo(HaveOccurred())
 
 				By("validating credstore delete has been called")
-				Expect(fakeCredStore.DeletePermissionCallCount()).To(Equal(1))
 				Expect(fakeCredStore.DeleteCallCount()).To(Equal(1))
 
 				By("validating storage is asked to delete binding credentials")
@@ -376,19 +359,6 @@ var _ = Describe("Unbind", func() {
 				_, err := serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, false)
 
 				Expect(err).To(MatchError(fmt.Sprintf(`error deleting provider binding data from database: %s`, deleteError)))
-			})
-		})
-
-		When("credstore fails to delete key", func() {
-			BeforeEach(func() {
-				fakeCredStore.DeleteReturns(fmt.Errorf("credstore-error"))
-			})
-
-			// If creds no longer exist in CredHub, we don't want to force users to add them back in order to unbind
-			It("should succeed", func() {
-				_, err := serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, false)
-
-				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 	})

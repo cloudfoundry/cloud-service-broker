@@ -2,7 +2,6 @@ package broker
 
 import (
 	"context"
-	"fmt"
 
 	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
@@ -37,8 +36,4 @@ func (broker *ServiceBroker) getDefinitionAndProvider(serviceID string) (*broker
 
 func (broker *ServiceBroker) getServiceName(def *broker.ServiceDefinition) string {
 	return def.Name
-}
-
-func getCredentialName(serviceName, bindingID string) string {
-	return fmt.Sprintf("/c/%s/%s/%s/secrets-and-services", credhubClientIdentifier, serviceName, bindingID)
 }
