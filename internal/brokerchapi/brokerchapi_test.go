@@ -2,6 +2,7 @@ package brokerchapi_test
 
 import (
 	"crypto/tls"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -23,8 +24,8 @@ const (
 	fakeUAAAccessToken  = "fake-uaa-access-token"
 	fakeUAAIDToken      = "fake-uaa-id-token"
 	fakeUAARefreshToken = "fake-uaa-refresh-token"
-	fakeAppGUID         = "fake-app-guid"
-	fakeCredentialName  = "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services"
+	fakeActor           = "mtls-app:fake-app-guid"
+	fakeCredentialPath  = "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services"
 	fakeUUID            = "1fed7e7a-28ed-47ac-8b1b-ac35cc6f0406"
 )
 
@@ -69,7 +70,7 @@ var _ = Describe("Broker CredHub API", func() {
 
 		It("performs the correct API calls", func() {
 			By("calling the Store() method")
-			err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+			err := store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("checking that a UAA login was performed")
@@ -98,7 +99,7 @@ var _ = Describe("Broker CredHub API", func() {
 			})
 
 			It("returns an error", func() {
-				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				err := store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).To(MatchError("unexpected status code 401, expecting 200, body: not allowed"))
 			})
 		})
@@ -109,7 +110,7 @@ var _ = Describe("Broker CredHub API", func() {
 			})
 
 			It("returns an error", func() {
-				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				err := store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).To(MatchError(`failed to store credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400, expecting [200], body: bad request`))
 			})
 		})
@@ -120,7 +121,7 @@ var _ = Describe("Broker CredHub API", func() {
 			})
 
 			It("returns an error", func() {
-				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				err := store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).To(MatchError(`failed to set permission on credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400, expecting [201], body: request bad`))
 			})
 		})
@@ -133,18 +134,18 @@ var _ = Describe("Broker CredHub API", func() {
 
 			fakeCredHubServer = ghttp.NewServer()
 			fakeCredHubServer.RouteToHandler(http.MethodGet, "/api/v1/permissions", ghttp.CombineHandlers(
-				ghttp.VerifyRequest(http.MethodGet, "/api/v1/permissions", fmt.Sprintf("credential_name=%s", fakeCredentialName)),
+				ghttp.VerifyRequest(http.MethodGet, "/api/v1/permissions", fmt.Sprintf("credential_name=%s", fakeCredentialPath)),
 				ghttp.VerifyContentType("application/json"),
 				ghttp.VerifyHeaderKV("Authorization", "Bearer "+fakeUAAAccessToken),
 				ghttp.RespondWith(http.StatusOK, `{"credential_name":"/some-credential-name","permissions":[{"actor":"some-actor","path":"some-path","operations":["read"]}]}`),
 			))
 			fakeCredHubServer.RouteToHandler(http.MethodDelete, "/api/v1/data", ghttp.CombineHandlers(
-				ghttp.VerifyRequest(http.MethodDelete, "/api/v1/data", fmt.Sprintf("name=%s", fakeCredentialName)),
+				ghttp.VerifyRequest(http.MethodDelete, "/api/v1/data", fmt.Sprintf("name=%s", fakeCredentialPath)),
 				ghttp.VerifyHeaderKV("Authorization", "Bearer "+fakeUAAAccessToken),
 				ghttp.RespondWith(http.StatusNoContent, nil),
 			))
 			fakeCredHubServer.RouteToHandler(http.MethodGet, "/api/v2/permissions", ghttp.CombineHandlers(
-				ghttp.VerifyRequest(http.MethodGet, "/api/v2/permissions", fmt.Sprintf("actor=some-actor&path=%s", fakeCredentialName)),
+				ghttp.VerifyRequest(http.MethodGet, "/api/v2/permissions", fmt.Sprintf("actor=some-actor&path=%s", fakeCredentialPath)),
 				ghttp.VerifyContentType("application/json"),
 				ghttp.VerifyHeaderKV("Authorization", "Bearer "+fakeUAAAccessToken),
 				ghttp.RespondWith(http.StatusOK, fmt.Sprintf(`{"path":"/some-path/*","operations":["read","write"],"actor":"some-actor","uuid":"%s"}`, fakeUUID)),
@@ -158,7 +159,7 @@ var _ = Describe("Broker CredHub API", func() {
 
 		It("performs the correct API calls", func() {
 			By("calling the Delete() method")
-			err := store.Delete(fakeCredentialName)
+			err := store.Delete(fakeCredentialPath)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("checking that a UAA login was performed")
@@ -199,7 +200,7 @@ var _ = Describe("Broker CredHub API", func() {
 			})
 
 			It("returns an error", func() {
-				err := store.Delete(fakeCredentialName)
+				err := store.Delete(fakeCredentialPath)
 				Expect(err).To(MatchError("unexpected status code 401, expecting 200, body: not allowed"))
 			})
 		})
@@ -210,7 +211,7 @@ var _ = Describe("Broker CredHub API", func() {
 			})
 
 			It("returns an error", func() {
-				err := store.Delete(fakeCredentialName)
+				err := store.Delete(fakeCredentialPath)
 				Expect(err).To(MatchError(`failed to list permissions for credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400, expecting [200], body: request bad`))
 			})
 		})
@@ -221,7 +222,7 @@ var _ = Describe("Broker CredHub API", func() {
 			})
 
 			It("returns an error", func() {
-				err := store.Delete(fakeCredentialName)
+				err := store.Delete(fakeCredentialPath)
 				Expect(err).To(MatchError(`failed to get permission "some-actor" for credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400, expecting [200], body: request is bad`))
 			})
 		})
@@ -232,7 +233,7 @@ var _ = Describe("Broker CredHub API", func() {
 			})
 
 			It("returns an error", func() {
-				err := store.Delete(fakeCredentialName)
+				err := store.Delete(fakeCredentialPath)
 				Expect(err).To(MatchError(`failed to delete permission ID "1fed7e7a-28ed-47ac-8b1b-ac35cc6f0406": unexpected status code 400, expecting [204], body: bad req`))
 			})
 		})
@@ -243,7 +244,7 @@ var _ = Describe("Broker CredHub API", func() {
 			})
 
 			It("returns an error", func() {
-				err := store.Delete(fakeCredentialName)
+				err := store.Delete(fakeCredentialPath)
 				Expect(err).To(MatchError(`failed to delete credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400, expecting [204], body: bad request`))
 			})
 		})
@@ -263,11 +264,11 @@ var _ = Describe("Broker CredHub API", func() {
 
 			It("does not reauthenticate", func() {
 				By("calling the Store() method multiple times")
-				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				err := store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).NotTo(HaveOccurred())
-				err = store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				err = store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).NotTo(HaveOccurred())
-				err = store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				err = store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).NotTo(HaveOccurred())
 
 				By("checking that a UAA login was performed only once")
@@ -291,12 +292,12 @@ var _ = Describe("Broker CredHub API", func() {
 
 			It("re-authenticates", func() {
 				By("calling the Store() method once, triggering authentication")
-				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				err := store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(fakeUAAServer.ReceivedRequests()).Should(HaveLen(1))
 
 				By("calling the Store() method again, triggering re-authentication")
-				err = store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				err = store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(fakeUAAServer.ReceivedRequests()).Should(HaveLen(2))
 			})
@@ -314,7 +315,7 @@ var _ = Describe("Broker CredHub API", func() {
 			})
 
 			It("fails with TLS validation errors", func() {
-				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				err := store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).To(MatchError(ContainSubstring("tls: failed to verify certificate: x509:")))
 			})
 		})
@@ -329,7 +330,7 @@ var _ = Describe("Broker CredHub API", func() {
 			})
 
 			It("fails with TLS validation errors", func() {
-				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				err := store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).To(MatchError(ContainSubstring("tls: failed to verify certificate: x509:")))
 			})
 		})
@@ -344,7 +345,7 @@ var _ = Describe("Broker CredHub API", func() {
 			})
 
 			It("fails with TLS validation errors", func() {
-				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				err := store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).To(MatchError(ContainSubstring("tls: failed to verify certificate: x509:")))
 			})
 		})
@@ -361,7 +362,7 @@ var _ = Describe("Broker CredHub API", func() {
 			})
 
 			It("succeeds", func() {
-				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				err := store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).NotTo(HaveOccurred())
 
 				// Check the servers did actually get the requests
@@ -390,7 +391,7 @@ var _ = Describe("Broker CredHub API", func() {
 
 		When("CA cert is not provided", func() {
 			It("fails to validate the server certificate", func() {
-				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				err := store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).To(MatchError(ContainSubstring("tls: failed to verify certificate: x509:")))
 			})
 		})
@@ -401,7 +402,7 @@ var _ = Describe("Broker CredHub API", func() {
 			})
 
 			It("successfully validates the server certificate", func() {
-				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				err := store.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).NotTo(HaveOccurred())
 
 				// Check the servers did actually get the requests
@@ -456,7 +457,7 @@ func appendStoreHandlers(fakeCredHubServer *ghttp.Server) {
 		ghttp.VerifyRequest(http.MethodPost, "/api/v2/permissions", ""),
 		ghttp.VerifyContentType("application/json"),
 		ghttp.VerifyHeaderKV("Authorization", "Bearer "+fakeUAAAccessToken),
-		ghttp.VerifyJSON(fmt.Sprintf(`{"actor":"mtls-app:fake-app-guid","operations":["read"],"path":"%s"}`, fakeCredentialName)),
+		ghttp.VerifyJSON(fmt.Sprintf(`{"actor":"mtls-app:fake-app-guid","operations":["read"],"path":"%s"}`, fakeCredentialPath)),
 		ghttp.RespondWith(http.StatusCreated, `{"path":"/some-path/*","operations":["read","write"],"actor":"some-actor","uuid":"d8863f92-f364-4a8e-afcc-d44bf1b453eb"}`),
 	))
 }
