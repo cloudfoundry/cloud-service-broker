@@ -5,6 +5,9 @@
     },
     {
       "pattern": "opensource.org/license/apache-2"
+    },
+    {
+      "pattern": "github.com/cloudfoundry/cloud-service-broker/search"
     }
   ]
 }
