@@ -91,6 +91,39 @@ var _ = Describe("Broker CredHub API", func() {
 				})),
 			))
 		})
+
+		When("UAA auth fails", func() {
+			BeforeEach(func() {
+				fakeUAAServer.SetHandler(0, ghttp.RespondWith(http.StatusUnauthorized, `not allowed`))
+			})
+
+			It("returns an error", func() {
+				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				Expect(err).To(MatchError("unexpected status code 401, expecting 200, body: not allowed"))
+			})
+		})
+
+		When("create credential request fails", func() {
+			BeforeEach(func() {
+				fakeCredHubServer.RouteToHandler(http.MethodPut, "/api/v1/data", ghttp.RespondWith(http.StatusBadRequest, `bad request`))
+			})
+
+			It("returns an error", func() {
+				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				Expect(err).To(MatchError(`failed to store credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400, expecting [200], body: bad request`))
+			})
+		})
+
+		When("create permission request fails", func() {
+			BeforeEach(func() {
+				fakeCredHubServer.RouteToHandler(http.MethodPost, "/api/v2/permissions", ghttp.RespondWith(http.StatusBadRequest, `request bad`))
+			})
+
+			It("returns an error", func() {
+				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				Expect(err).To(MatchError(`failed to set permission on credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400, expecting [201], body: request bad`))
+			})
+		})
 	})
 
 	Describe("Delete()", func() {
@@ -158,6 +191,61 @@ var _ = Describe("Broker CredHub API", func() {
 					})),
 				})),
 			))
+		})
+
+		When("UAA auth fails", func() {
+			BeforeEach(func() {
+				fakeUAAServer.SetHandler(0, ghttp.RespondWith(http.StatusUnauthorized, `not allowed`))
+			})
+
+			It("returns an error", func() {
+				err := store.Delete(fakeCredentialName)
+				Expect(err).To(MatchError("unexpected status code 401, expecting 200, body: not allowed"))
+			})
+		})
+
+		When("list permissions request fails", func() {
+			BeforeEach(func() {
+				fakeCredHubServer.RouteToHandler(http.MethodGet, "/api/v1/permissions", ghttp.RespondWith(http.StatusBadRequest, `request bad`))
+			})
+
+			It("returns an error", func() {
+				err := store.Delete(fakeCredentialName)
+				Expect(err).To(MatchError(`failed to list permissions for credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400, expecting [200], body: request bad`))
+			})
+		})
+
+		When("get permission request fails", func() {
+			BeforeEach(func() {
+				fakeCredHubServer.RouteToHandler(http.MethodGet, "/api/v2/permissions", ghttp.RespondWith(http.StatusBadRequest, `request is bad`))
+			})
+
+			It("returns an error", func() {
+				err := store.Delete(fakeCredentialName)
+				Expect(err).To(MatchError(`failed to get permission "some-actor" for credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400, expecting [200], body: request is bad`))
+			})
+		})
+
+		When("delete permission request fails", func() {
+			BeforeEach(func() {
+				fakeCredHubServer.RouteToHandler(http.MethodDelete, fmt.Sprintf("/api/v2/permissions/%s", fakeUUID), ghttp.RespondWith(http.StatusBadRequest, `bad req`))
+			})
+
+			It("returns an error", func() {
+				err := store.Delete(fakeCredentialName)
+				Expect(err).To(MatchError(`failed to delete permission ID "1fed7e7a-28ed-47ac-8b1b-ac35cc6f0406": unexpected status code 400, expecting [204], body: bad req`))
+			})
+		})
+
+		When("delete credential request fails", func() {
+			BeforeEach(func() {
+				fakeCredHubServer.RouteToHandler(http.MethodDelete, "/api/v1/data", ghttp.RespondWith(http.StatusBadRequest, `bad request`))
+			})
+
+			It("returns an error", func() {
+				err := store.Delete(fakeCredentialName)
+				Expect(err).To(MatchError(`failed to delete credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400, expecting [204], body: bad request`))
+			})
 		})
 	})
 
@@ -319,6 +407,15 @@ var _ = Describe("Broker CredHub API", func() {
 				// Check the servers did actually get the requests
 				Expect(fakeUAAServer.ReceivedRequests()).Should(HaveLen(1))
 				Expect(fakeCredHubServer.ReceivedRequests()).ShouldNot(BeEmpty())
+			})
+		})
+
+		When("CA cert is invalid", func() {
+			It("fails to create the resource", func() {
+				_, err := brokerchapi.New(brokerchapi.Config{
+					CACert: `not**valid  as CA**** cert`,
+				})
+				Expect(err).To(MatchError("failed to add CA cert to pool"))
 			})
 		})
 	})

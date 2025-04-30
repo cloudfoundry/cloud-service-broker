@@ -70,7 +70,7 @@ func (s *Store) Save(cred any, name, appGUID string) error {
 	}
 
 	if err := s.credHubClient().do(http.MethodPost, "/api/v2/permissions", permsRequestBody, nil, http.StatusCreated); err != nil {
-		return fmt.Errorf("failed to store credential %q: %w", name, err)
+		return fmt.Errorf("failed to set permission on credential %q: %w", name, err)
 	}
 
 	return nil
