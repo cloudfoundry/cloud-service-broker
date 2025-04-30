@@ -17,12 +17,11 @@ package broker
 import (
 	"fmt"
 
-	"code.cloudfoundry.org/lager/v3"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerchapi"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokercredstore"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/brokerpak"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/config"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/credstore"
 )
 
 type BrokerConfig struct {
@@ -30,7 +29,7 @@ type BrokerConfig struct {
 	Credstore brokercredstore.BrokerCredstore
 }
 
-func NewBrokerConfigFromEnv(logger lager.Logger) (*BrokerConfig, error) {
+func NewBrokerConfigFromEnv() (*BrokerConfig, error) {
 	registry := broker.BrokerRegistry{}
 	if err := brokerpak.RegisterAll(registry); err != nil {
 		return nil, fmt.Errorf("error loading brokerpaks: %v", err)
@@ -41,18 +40,24 @@ func NewBrokerConfigFromEnv(logger lager.Logger) (*BrokerConfig, error) {
 		return nil, fmt.Errorf("failed loading config: %v", err)
 	}
 
-	var cs credstore.CredStore
-
+	var credHubStore *brokerchapi.Store
 	if envConfig.CredStoreConfig.HasCredHubConfig() {
 		var err error
-		cs, err = credstore.NewCredhubStore(&envConfig.CredStoreConfig, logger)
+		credHubStore, err = brokerchapi.New(brokerchapi.Config{
+			CredHubURL:            envConfig.CredStoreConfig.CredHubURL,
+			CACert:                envConfig.CredStoreConfig.CACert,
+			UAAURL:                envConfig.CredStoreConfig.UaaURL,
+			UAAClientName:         envConfig.CredStoreConfig.UaaClientName,
+			UAAClientSecret:       envConfig.CredStoreConfig.UaaClientSecret,
+			InsecureSkipTLSVerify: envConfig.CredStoreConfig.SkipSSLValidation,
+		})
 		if err != nil {
-			return nil, fmt.Errorf("failed creating credstore: %v", err)
+			return nil, err
 		}
 	}
 
 	return &BrokerConfig{
 		Registry:  registry,
-		Credstore: brokercredstore.NewBrokerCredstore(cs),
+		Credstore: brokercredstore.NewBrokerCredstore(credHubStore),
 	}, nil
 }
