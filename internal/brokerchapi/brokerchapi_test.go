@@ -1,4 +1,4 @@
-package brokercredstore_test
+package brokerchapi_test
 
 import (
 	"encoding/json"
@@ -6,24 +6,20 @@ import (
 	"net/http"
 	"net/url"
 
-	"code.cloudfoundry.org/lager/v3/lagertest"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerchapi"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokercredstore"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/onsi/gomega/gstruct"
 )
 
-var _ = Describe("CredHub API", func() {
+var _ = Describe("Broker CredHub API", func() {
 	const (
 		fakeUAAClientName   = "fake-uaa-client-name"
 		fakeUAAClientSecret = "fake-uaa-client-secret"
 		fakeUAAAccessToken  = "fake-uaa-access-token"
 		fakeUAAIDToken      = "fake-uaa-id-token"
 		fakeUAARefreshToken = "fake-uaa-refresh-token"
-		fakeServiceName     = "my-lovely-service"
-		fakeBindingID       = "fake-binding-id"
 		fakeAppGUID         = "fake-app-guid"
 		fakeCredentialName  = "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services"
 		fakeUUID            = "1fed7e7a-28ed-47ac-8b1b-ac35cc6f0406"
@@ -32,8 +28,7 @@ var _ = Describe("CredHub API", func() {
 	var (
 		fakeUAAServer     *ghttp.Server
 		fakeCredHubServer *ghttp.Server
-		fakeLogger        *lagertest.TestLogger
-		credHubStore      brokercredstore.BrokerCredstore
+		store             *brokerchapi.Store
 	)
 
 	BeforeEach(func() {
@@ -55,21 +50,18 @@ var _ = Describe("CredHub API", func() {
 				"id_token":      fakeUAAIDToken,
 				"refresh_token": fakeUAARefreshToken,
 				"token_type":    "bearer",
+				"expires_in":    3600,
 			}))),
 		))
 
 		fakeCredHubServer = ghttp.NewServer()
 
-		fakeLogger = lagertest.NewTestLogger("credhub-test")
-
-		credHubStore = brokercredstore.NewBrokerCredstore(must(brokerchapi.New(brokerchapi.Config{
-			CredHubURL:            fakeCredHubServer.URL(),
-			UAAURL:                fakeUAAServer.URL(),
-			UAAClientName:         fakeUAAClientName,
-			UAAClientSecret:       fakeUAAClientSecret,
-			CACert:                "",
-			InsecureSkipTLSVerify: false,
-		})))
+		store = must(brokerchapi.New(brokerchapi.Config{
+			CredHubURL:      fakeCredHubServer.URL(),
+			UAAURL:          fakeUAAServer.URL(),
+			UAAClientName:   fakeUAAClientName,
+			UAAClientSecret: fakeUAAClientSecret,
+		}))
 	})
 
 	AfterEach(func() {
@@ -79,26 +71,12 @@ var _ = Describe("CredHub API", func() {
 
 	Describe("Store()", func() {
 		BeforeEach(func() {
-			fakeCredHubServer.RouteToHandler(http.MethodGet, "/info", ghttp.CombineHandlers(
-				ghttp.VerifyRequest(http.MethodGet, "/info", ""),
-				ghttp.VerifyContentType("application/json"),
-				ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{
-					"auth-server": map[string]any{"url": fakeUAAServer.URL()},
-					"app":         map[string]any{"name": "CredHub"},
-				}),
-			))
-			fakeCredHubServer.RouteToHandler(http.MethodGet, "/version", ghttp.CombineHandlers(
-				ghttp.VerifyRequest(http.MethodGet, "/version", ""),
-				ghttp.VerifyContentType("application/json"),
-				ghttp.VerifyHeaderKV("Authorization", "Bearer "+fakeUAAAccessToken),
-				ghttp.RespondWith(http.StatusOK, `{"version":"2.13.0"}`),
-			))
 			fakeCredHubServer.RouteToHandler(http.MethodPut, "/api/v1/data", ghttp.CombineHandlers(
 				ghttp.VerifyRequest(http.MethodPut, "/api/v1/data", ""),
 				ghttp.VerifyContentType("application/json"),
 				ghttp.VerifyHeaderKV("Authorization", "Bearer "+fakeUAAAccessToken),
 				ghttp.VerifyJSON(`{"name":"/c/csb/my-lovely-service/fake-binding-id/secrets-and-services","type":"json","value":{"foo":"bar"}}`),
-				ghttp.RespondWith(http.StatusOK, `{"type" : "json","version_created_at" : "2019-02-01T20:37:52Z","id":"25e00859-efc3-4a77-8822-2313ac127aa2","name":"/c/csb/my-lovely-service/fake-binding-id/secrets-and-services","metadata":{"description":"example metadata"},"value":{"foo":"bar"}}`),
+				ghttp.RespondWith(http.StatusOK, `{"type":"json","version_created_at":"2019-02-01T20:37:52Z","id":"25e00859-efc3-4a77-8822-2313ac127aa2","name":"/c/csb/my-lovely-service/fake-binding-id/secrets-and-services","metadata":{"description":"examplemetadata"},"value":{"foo":"bar"}}`),
 			))
 			fakeCredHubServer.RouteToHandler(http.MethodPost, "/api/v2/permissions", ghttp.CombineHandlers(
 				ghttp.VerifyRequest(http.MethodPost, "/api/v2/permissions", ""),
@@ -111,9 +89,8 @@ var _ = Describe("CredHub API", func() {
 
 		It("performs the correct API calls", func() {
 			By("calling the Store() method")
-			ref, err := credHubStore.Store(map[string]any{"foo": "bar"}, fakeServiceName, fakeBindingID, fakeAppGUID)
+			err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(ref).To(Equal(map[string]any{"credhub-ref": fakeCredentialName}))
 
 			By("checking that a UAA login was performed")
 			Expect(fakeUAAServer.ReceivedRequests()).Should(HaveLen(1))
@@ -138,20 +115,6 @@ var _ = Describe("CredHub API", func() {
 
 	Describe("Delete()", func() {
 		BeforeEach(func() {
-			fakeCredHubServer.RouteToHandler(http.MethodGet, "/info", ghttp.CombineHandlers(
-				ghttp.VerifyRequest(http.MethodGet, "/info", ""),
-				ghttp.VerifyContentType("application/json"),
-				ghttp.RespondWithJSONEncoded(http.StatusOK, map[string]any{
-					"auth-server": map[string]any{"url": fakeUAAServer.URL()},
-					"app":         map[string]any{"name": "CredHub"},
-				}),
-			))
-			fakeCredHubServer.RouteToHandler(http.MethodGet, "/version", ghttp.CombineHandlers(
-				ghttp.VerifyRequest(http.MethodGet, "/version", ""),
-				ghttp.VerifyContentType("application/json"),
-				ghttp.VerifyHeaderKV("Authorization", "Bearer "+fakeUAAAccessToken),
-				ghttp.RespondWith(http.StatusOK, `{"version":"2.13.0"}`),
-			))
 			fakeCredHubServer.RouteToHandler(http.MethodGet, "/api/v1/permissions", ghttp.CombineHandlers(
 				ghttp.VerifyRequest(http.MethodGet, "/api/v1/permissions", fmt.Sprintf("credential_name=%s", fakeCredentialName)),
 				ghttp.VerifyContentType("application/json"),
@@ -178,7 +141,8 @@ var _ = Describe("CredHub API", func() {
 
 		It("performs the correct API calls", func() {
 			By("calling the Delete() method")
-			credHubStore.Delete(fakeLogger, fakeServiceName, fakeBindingID)
+			err := store.Delete(fakeCredentialName)
+			Expect(err).NotTo(HaveOccurred())
 
 			By("checking that a UAA login was performed")
 			Expect(fakeUAAServer.ReceivedRequests()).Should(HaveLen(1))
@@ -210,6 +174,65 @@ var _ = Describe("CredHub API", func() {
 					})),
 				})),
 			))
+		})
+	})
+
+	Describe("token expiry", func() {
+		BeforeEach(func() {
+			fakeCredHubServer.RouteToHandler(http.MethodPut, "/api/v1/data", ghttp.CombineHandlers(
+				ghttp.VerifyRequest(http.MethodPut, "/api/v1/data", ""),
+				ghttp.VerifyContentType("application/json"),
+				ghttp.VerifyHeaderKV("Authorization", "Bearer "+fakeUAAAccessToken),
+				ghttp.RespondWith(http.StatusOK, `{"type" : "json","version_created_at" : "2019-02-01T20:37:52Z","id":"25e00859-efc3-4a77-8822-2313ac127aa2","name":"/c/csb/my-lovely-service/fake-binding-id/secrets-and-services","metadata":{"description":"example metadata"},"value":{"foo":"bar"}}`),
+			))
+			fakeCredHubServer.RouteToHandler(http.MethodPost, "/api/v2/permissions", ghttp.CombineHandlers(
+				ghttp.VerifyRequest(http.MethodPost, "/api/v2/permissions", ""),
+				ghttp.VerifyContentType("application/json"),
+				ghttp.VerifyHeaderKV("Authorization", "Bearer "+fakeUAAAccessToken),
+				ghttp.RespondWith(http.StatusCreated, `{"path":"/some-path/*","operations":["read","write"],"actor":"some-actor","uuid":"d8863f92-f364-4a8e-afcc-d44bf1b453eb"}`),
+			))
+		})
+
+		When("the token is valid", func() {
+			It("does not reauthenticate", func() {
+				By("calling the Store() method multiple times")
+				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				Expect(err).NotTo(HaveOccurred())
+				err = store.Save(map[string]any{"bar": "baz"}, fakeCredentialName, fakeAppGUID)
+				Expect(err).NotTo(HaveOccurred())
+				err = store.Save(map[string]any{"baz": "quz"}, fakeCredentialName, fakeAppGUID)
+				Expect(err).NotTo(HaveOccurred())
+
+				By("checking that a UAA login was performed only once")
+				Expect(fakeUAAServer.ReceivedRequests()).Should(HaveLen(1))
+			})
+		})
+
+		When("the token has expired", func() {
+			BeforeEach(func() {
+				fakeUAAServer.Reset()
+				fakeUAAServer.RouteToHandler(http.MethodPost, "/oauth/token", ghttp.CombineHandlers(
+					ghttp.RespondWith(http.StatusOK, must(json.Marshal(map[string]any{
+						"access_token":  fakeUAAAccessToken,
+						"id_token":      fakeUAAIDToken,
+						"refresh_token": fakeUAARefreshToken,
+						"token_type":    "bearer",
+						"expires_in":    -10, // already expired
+					}))),
+				))
+			})
+
+			It("re-authenticates", func() {
+				By("calling the Store() method once, triggering authentication")
+				err := store.Save(map[string]any{"foo": "bar"}, fakeCredentialName, fakeAppGUID)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(fakeUAAServer.ReceivedRequests()).Should(HaveLen(1))
+
+				By("calling the Store() method again, triggering re-authentication")
+				err = store.Save(map[string]any{"bar": "baz"}, fakeCredentialName, fakeAppGUID)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(fakeUAAServer.ReceivedRequests()).Should(HaveLen(2))
+			})
 		})
 	})
 })

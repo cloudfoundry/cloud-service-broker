@@ -3,13 +3,12 @@ package brokercredstore
 import (
 	"fmt"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/credstore"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerchapi"
 )
 
 type credHubStore struct {
-	credstore credstore.CredStore
+	store *brokerchapi.Store
 }
 
 // Store saves the actual credential in CredHub, replacing the binding credential with the CredHub
@@ -18,14 +17,8 @@ type credHubStore struct {
 func (c credHubStore) Store(credentials any, serviceName, bindingID, appGUID string) (any, error) {
 	credentialName := computeCredHubReference(serviceName, bindingID)
 
-	_, err := c.credstore.Put(credentialName, credentials)
-	if err != nil {
-		return domain.Binding{}, fmt.Errorf("unable to put credentials in Credstore: %w", err)
-	}
-
-	_, err = c.credstore.AddPermission(credentialName, "mtls-app:"+appGUID, []string{"read"})
-	if err != nil {
-		return domain.Binding{}, fmt.Errorf("unable to add Credstore permissions to app: %w", err)
+	if err := c.store.Save(credentials, credentialName, appGUID); err != nil {
+		return nil, fmt.Errorf("failed to save credential %q in CredHub: %w", credentialName, err)
 	}
 
 	return map[string]any{"credhub-ref": credentialName}, nil
@@ -38,12 +31,8 @@ func (c credHubStore) Store(credentials any, serviceName, bindingID, appGUID str
 func (c credHubStore) Delete(logger lager.Logger, serviceName, bindingID string) {
 	credentialName := computeCredHubReference(serviceName, bindingID)
 
-	if err := c.credstore.DeletePermission(credentialName); err != nil {
-		logger.Error(fmt.Sprintf("failed to delete permissions on the CredHub key %s", credentialName), err)
-	}
-
-	if err := c.credstore.Delete(credentialName); err != nil {
-		logger.Error(fmt.Sprintf("failed to delete CredHub key %s", credentialName), err)
+	if err := c.store.Delete(credentialName); err != nil {
+		logger.Error(fmt.Sprintf("failed to delete credential %q from CredHub", credentialName), err)
 	}
 }
 

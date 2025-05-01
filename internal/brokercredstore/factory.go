@@ -3,7 +3,7 @@ package brokercredstore
 
 import (
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/credstore"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerchapi"
 )
 
 //go:generate go tool counterfeiter -generate
@@ -13,11 +13,11 @@ type BrokerCredstore interface {
 	Delete(logger lager.Logger, serviceName, bindingID string)
 }
 
-func NewBrokerCredstore(credstore credstore.CredStore) BrokerCredstore {
-	switch credstore {
+func NewBrokerCredstore(store *brokerchapi.Store) BrokerCredstore {
+	switch store {
 	case nil:
 		return noopStore{}
 	default:
-		return credHubStore{credstore: credstore}
+		return credHubStore{store: store}
 	}
 }
