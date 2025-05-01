@@ -15,7 +15,8 @@ var _ = Describe("ParseBindDetails", func() {
 			PlanID:    "fake-plan-id",
 			ServiceID: "fake-service-id",
 			BindResource: &domain.BindResource{
-				AppGuid: "fake-bind-app-guid",
+				AppGuid:            "fake-bind-app-guid",
+				CredentialClientID: "fake-credential-client-id",
 			},
 			RawContext:    []byte(`{"foo": "bar"}`),
 			RawParameters: []byte(`{"baz": "quz"}`),
@@ -25,12 +26,13 @@ var _ = Describe("ParseBindDetails", func() {
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(bindDetails).To(Equal(paramparser.BindDetails{
-			AppGUID:        "fake-app-guid",
-			PlanID:         "fake-plan-id",
-			ServiceID:      "fake-service-id",
-			BindAppGUID:    "fake-bind-app-guid",
-			RequestParams:  map[string]any{"baz": "quz"},
-			RequestContext: map[string]any{"foo": "bar"},
+			AppGUID:            "fake-app-guid",
+			CredentialClientID: "fake-credential-client-id",
+			PlanID:             "fake-plan-id",
+			ServiceID:          "fake-service-id",
+			BindAppGUID:        "fake-bind-app-guid",
+			RequestParams:      map[string]any{"baz": "quz"},
+			RequestContext:     map[string]any{"foo": "bar"},
 		}))
 	})
 
@@ -44,9 +46,10 @@ var _ = Describe("ParseBindDetails", func() {
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(bindDetails).To(Equal(paramparser.BindDetails{
-				AppGUID:   "fake-app-guid",
-				PlanID:    "fake-plan-id",
-				ServiceID: "fake-service-id",
+				AppGUID:            "fake-app-guid",
+				PlanID:             "fake-plan-id",
+				ServiceID:          "fake-service-id",
+				CredentialClientID: "",
 			}))
 		})
 	})
