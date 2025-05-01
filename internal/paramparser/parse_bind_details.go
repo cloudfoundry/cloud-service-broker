@@ -8,12 +8,13 @@ import (
 )
 
 type BindDetails struct {
-	AppGUID        string
-	PlanID         string
-	ServiceID      string
-	BindAppGUID    string
-	RequestParams  map[string]any
-	RequestContext map[string]any
+	AppGUID            string
+	CredentialClientID string
+	PlanID             string
+	ServiceID          string
+	BindAppGUID        string
+	RequestParams      map[string]any
+	RequestContext     map[string]any
 }
 
 func ParseBindDetails(input domain.BindDetails) (BindDetails, error) {
@@ -25,6 +26,7 @@ func ParseBindDetails(input domain.BindDetails) (BindDetails, error) {
 
 	if input.BindResource != nil {
 		result.BindAppGUID = input.BindResource.AppGuid
+		result.CredentialClientID = input.BindResource.CredentialClientID
 	}
 
 	if len(input.RawParameters) > 0 {
