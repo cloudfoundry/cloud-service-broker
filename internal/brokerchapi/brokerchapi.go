@@ -46,31 +46,31 @@ func New(cfg Config) (*Store, error) {
 }
 
 // Save will add a credential to CredHub and give the specified app permissions to see the credential
-func (s *Store) Save(cred any, name, appGUID string) error {
+func (s *Store) Save(path string, cred any, actor string) error {
 	if err := s.ensureToken(); err != nil {
 		return err
 	}
 
 	// Set the credential value
 	setRequestBody := map[string]any{
-		"name":  name,
+		"name":  path,
 		"type":  "json",
 		"value": cred,
 	}
 
 	if err := s.credHubClient().do(http.MethodPut, "/api/v1/data", setRequestBody, nil, http.StatusOK); err != nil {
-		return fmt.Errorf("failed to store credential %q: %w", name, err)
+		return fmt.Errorf("failed to store credential %q: %w", path, err)
 	}
 
 	// Update permissions for the credential
 	permsRequestBody := map[string]any{
-		"path":       name,
-		"actor":      fmt.Sprintf("mtls-app:%s", appGUID),
+		"path":       path,
+		"actor":      actor,
 		"operations": []string{"read"},
 	}
 
 	if err := s.credHubClient().do(http.MethodPost, "/api/v2/permissions", permsRequestBody, nil, http.StatusCreated); err != nil {
-		return fmt.Errorf("failed to set permission on credential %q: %w", name, err)
+		return fmt.Errorf("failed to set permission on credential %q: %w", path, err)
 	}
 
 	return nil
@@ -78,7 +78,7 @@ func (s *Store) Save(cred any, name, appGUID string) error {
 
 // Delete will remove a credential and all its permissions from CredHub
 // It is idempotent so does not fail if the credential does not exist
-func (s *Store) Delete(name string) error {
+func (s *Store) Delete(path string) error {
 	if err := s.ensureToken(); err != nil {
 		return err
 	}
@@ -94,14 +94,14 @@ func (s *Store) Delete(name string) error {
 		} `json:"permissions"`
 	}
 
-	if err := s.credHubClient().do(http.MethodGet, fmt.Sprintf("/api/v1/permissions?credential_name=%s", name), nil, &listPermissionsResponseBody, http.StatusOK); err != nil {
-		return fmt.Errorf("failed to list permissions for credential %q: %w", name, err)
+	if err := s.credHubClient().do(http.MethodGet, fmt.Sprintf("/api/v1/permissions?credential_name=%s", path), nil, &listPermissionsResponseBody, http.StatusOK); err != nil {
+		return fmt.Errorf("failed to list permissions for credential %q: %w", path, err)
 	}
 
 	for _, p := range listPermissionsResponseBody.Permissions {
 		query := url.Values{
 			"actor": []string{p.Actor},
-			"path":  []string{name},
+			"path":  []string{path},
 		}.Encode()
 
 		var getPermissionResponseBody struct {
@@ -109,7 +109,7 @@ func (s *Store) Delete(name string) error {
 		}
 
 		if err := s.credHubClient().do(http.MethodGet, fmt.Sprintf("/api/v2/permissions?%s", query), nil, &getPermissionResponseBody, http.StatusOK); err != nil {
-			return fmt.Errorf("failed to get permission %q for credential %q: %w", p.Actor, name, err)
+			return fmt.Errorf("failed to get permission %q for credential %q: %w", p.Actor, path, err)
 		}
 
 		if err := s.credHubClient().do(http.MethodDelete, fmt.Sprintf("/api/v2/permissions/%s", getPermissionResponseBody.UUID), nil, nil, http.StatusNoContent); err != nil {
@@ -118,8 +118,8 @@ func (s *Store) Delete(name string) error {
 	}
 
 	// Delete the credential
-	if err := s.credHubClient().do(http.MethodDelete, fmt.Sprintf("/api/v1/data?name=%s", name), nil, nil, http.StatusNoContent); err != nil {
-		return fmt.Errorf("failed to delete credential %q: %w", name, err)
+	if err := s.credHubClient().do(http.MethodDelete, fmt.Sprintf("/api/v1/data?name=%s", path), nil, nil, http.StatusNoContent); err != nil {
+		return fmt.Errorf("failed to delete credential %q: %w", path, err)
 	}
 	return nil
 }
