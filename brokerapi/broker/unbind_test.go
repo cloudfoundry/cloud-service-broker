@@ -11,7 +11,6 @@ import (
 	"code.cloudfoundry.org/lager/v3"
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokercredstore/brokercredstorefakes"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker/brokerfakes"
@@ -39,7 +38,7 @@ var _ = Describe("Unbind", func() {
 
 		fakeStorage         *brokerfakes.FakeStorage
 		fakeServiceProvider *pkgBrokerFakes.FakeServiceProvider
-		fakeCredStore       *brokercredstorefakes.FakeBrokerCredstore
+		fakeCredStore       *brokerfakes.FakeCredStore
 
 		brokerConfig *broker.BrokerConfig
 	)
@@ -59,7 +58,7 @@ var _ = Describe("Unbind", func() {
 		}, nil)
 		fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{"foo": "bar"}, nil)
 
-		fakeCredStore = &brokercredstorefakes.FakeBrokerCredstore{}
+		fakeCredStore = &brokerfakes.FakeCredStore{}
 
 		providerBuilder := func(logger lager.Logger, store pkgBroker.ServiceProviderStorage) pkgBroker.ServiceProvider {
 			return fakeServiceProvider
@@ -90,7 +89,7 @@ var _ = Describe("Unbind", func() {
 					ProviderBuilder: providerBuilder,
 				},
 			},
-			Credstore: fakeCredStore,
+			CredStore: fakeCredStore,
 		}
 
 		serviceBroker = must(broker.New(brokerConfig, fakeStorage, utils.NewLogger("unbind-test-with-credstore")))
