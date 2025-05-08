@@ -507,7 +507,7 @@ func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDeta
 		// the duplicate sending of fields is likely to be removed.
 		"request.plan_id":         instance.PlanGUID,
 		"request.service_id":      instance.ServiceGUID,
-		"request.app_guid":        details.BindAppGUID,
+		"request.app_guid":        details.AppGUID,
 		"request.plan_properties": plan.GetServiceProperties(),
 
 		// specified by the existing instance
