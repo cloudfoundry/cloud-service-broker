@@ -12,7 +12,6 @@ type BindDetails struct {
 	CredentialClientID string
 	PlanID             string
 	ServiceID          string
-	BindAppGUID        string
 	RequestParams      map[string]any
 	RequestContext     map[string]any
 }
@@ -25,7 +24,7 @@ func ParseBindDetails(input domain.BindDetails) (BindDetails, error) {
 	}
 
 	if input.BindResource != nil {
-		result.BindAppGUID = input.BindResource.AppGuid
+		result.AppGUID = input.BindResource.AppGuid
 		result.CredentialClientID = input.BindResource.CredentialClientID
 	}
 

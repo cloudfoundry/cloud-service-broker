@@ -11,11 +11,11 @@ import (
 var _ = Describe("ParseBindDetails", func() {
 	It("can parse bind details", func() {
 		fakeDomainBindDetails := domain.BindDetails{
-			AppGUID:   "fake-app-guid",
+			AppGUID:   "fake-app-guid-in-deprecated-location",
 			PlanID:    "fake-plan-id",
 			ServiceID: "fake-service-id",
 			BindResource: &domain.BindResource{
-				AppGuid:            "fake-bind-app-guid",
+				AppGuid:            "fake-app-guid",
 				CredentialClientID: "fake-credential-client-id",
 			},
 			RawContext:    []byte(`{"foo": "bar"}`),
@@ -30,13 +30,12 @@ var _ = Describe("ParseBindDetails", func() {
 			CredentialClientID: "fake-credential-client-id",
 			PlanID:             "fake-plan-id",
 			ServiceID:          "fake-service-id",
-			BindAppGUID:        "fake-bind-app-guid",
 			RequestParams:      map[string]any{"baz": "quz"},
 			RequestContext:     map[string]any{"foo": "bar"},
 		}))
 	})
 
-	When("no bind_resource is instantiated", func() {
+	When("no bind_resource is present", func() {
 		It("succeeds", func() {
 			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
 				AppGUID:   "fake-app-guid",
@@ -51,6 +50,21 @@ var _ = Describe("ParseBindDetails", func() {
 				ServiceID:          "fake-service-id",
 				CredentialClientID: "",
 			}))
+		})
+	})
+
+	// Having the app guid at the top level is deprecated in favour of the app guid in bind_resource
+	// In practice it's always present in both locations, but this could change in the future
+	When("app guid is only present in bind_resource", func() {
+		It("succeeds", func() {
+			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
+				BindResource: &domain.BindResource{
+					AppGuid: "fake-app-guid",
+				},
+			})
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(bindDetails.AppGUID).To(Equal("fake-app-guid"))
 		})
 	})
 
