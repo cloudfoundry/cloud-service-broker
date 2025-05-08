@@ -1,4 +1,4 @@
-package brokerchapi_test
+package credhubrepo_test
 
 import (
 	"os"
@@ -14,7 +14,7 @@ import (
 
 func TestBrokerCHAPI(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Broker CredHub API Suite")
+	RunSpecs(t, "CredHub Repository Suite")
 }
 
 var fakeCertsPath string
@@ -23,7 +23,7 @@ var _ = SynchronizedBeforeSuite(
 	func() []byte {
 		path := GinkgoT().TempDir()
 
-		cmd := exec.Command("bash", filepath.Join(must(os.Getwd()), "generateFakeCerts.sh"))
+		cmd := exec.Command("bash", filepath.Join(must(os.Getwd()), "generate_fake_certs.sh"))
 		cmd.Dir = path
 		session := must(gexec.Start(cmd, GinkgoWriter, GinkgoWriter))
 		Eventually(session).WithTimeout(time.Minute).WithPolling(time.Second).Should(gexec.Exit(0))
