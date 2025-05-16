@@ -933,8 +933,11 @@ func TestServiceDefinition_BindVariables(t *testing.T) {
 			viper.Set(service.BindDefaultOverrideProperty(), tc.DefaultOverride)
 			defer viper.Reset()
 
-			details := domain.BindDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext)}
-			parsedDetails, _ := paramparser.ParseBindDetails(details)
+			details := domain.BindDetails{RawParameters: json.RawMessage(tc.UserParams), RawContext: json.RawMessage(tc.RawContext), AppGUID: "fake-app-guid"}
+			parsedDetails, err := paramparser.ParseBindDetails(details)
+			if err != nil {
+				t.Fatalf("failed to parse binding details: %s", err)
+			}
 			instance := storage.ServiceInstanceDetails{Outputs: tc.InstanceVars}
 
 			service.Plans[0].BindOverrides = tc.BindOverrides
