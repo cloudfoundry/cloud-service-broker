@@ -72,7 +72,7 @@ var _ = Describe("CredHub Repository", func() {
 		})
 
 		It("performs the correct API calls", func() {
-			By("calling the Repo() method")
+			By("calling the Save() method")
 			ref, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(ref).To(SatisfyAny(HaveLen(1), HaveKeyWithValue("credhub-ref", fakeCredentialPath)))
