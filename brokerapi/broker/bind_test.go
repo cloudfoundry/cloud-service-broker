@@ -12,7 +12,6 @@ import (
 	"code.cloudfoundry.org/lager/v3"
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokercredstore/brokercredstorefakes"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	pkgBroker "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker/brokerfakes"
@@ -40,7 +39,7 @@ var _ = Describe("Bind", func() {
 
 		fakeStorage         *brokerfakes.FakeStorage
 		fakeServiceProvider *pkgBrokerFakes.FakeServiceProvider
-		fakeCredStore       *brokercredstorefakes.FakeBrokerCredstore
+		fakeCredStore       *brokerfakes.FakeCredStore
 
 		brokerConfig *broker.BrokerConfig
 	)
@@ -62,8 +61,8 @@ var _ = Describe("Bind", func() {
 			Outputs:          map[string]any{"fakeInstanceOutput": "fakeInstanceValue"},
 		}, nil)
 
-		fakeCredStore = &brokercredstorefakes.FakeBrokerCredstore{}
-		fakeCredStore.StoreReturns(map[string]any{"fake-ref": "fake-value"}, nil)
+		fakeCredStore = &brokerfakes.FakeCredStore{}
+		fakeCredStore.SaveReturns(map[string]any{"fake-ref": "fake-value"}, nil)
 
 		providerBuilder := func(logger lager.Logger, store pkgBroker.ServiceProviderStorage) pkgBroker.ServiceProvider {
 			return fakeServiceProvider
@@ -102,7 +101,7 @@ var _ = Describe("Bind", func() {
 					ProviderBuilder: providerBuilder,
 				},
 			},
-			Credstore: fakeCredStore,
+			CredStore: fakeCredStore,
 		}
 
 		serviceBroker = must(broker.New(brokerConfig, fakeStorage, utils.NewLogger("bind-test-with-credstore")))
@@ -138,7 +137,7 @@ var _ = Describe("Bind", func() {
 			Expect(actualContext.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
 
 			By("validating credstore delete has been called")
-			Expect(fakeCredStore.StoreCallCount()).To(Equal(1))
+			Expect(fakeCredStore.SaveCallCount()).To(Equal(1))
 
 			By("validating storage is asked to store binding credentials")
 			Expect(fakeStorage.StoreBindRequestDetailsCallCount()).To(Equal(1))
@@ -327,7 +326,7 @@ var _ = Describe("Bind", func() {
 			const credstoreError = "credstore-error"
 
 			BeforeEach(func() {
-				fakeCredStore.StoreReturns(nil, errors.New(credstoreError))
+				fakeCredStore.SaveReturns(nil, errors.New(credstoreError))
 			})
 
 			It("should error", func() {
