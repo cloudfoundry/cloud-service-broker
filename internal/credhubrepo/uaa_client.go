@@ -1,4 +1,4 @@
-package brokerchapi
+package credhubrepo
 
 import (
 	"encoding/json"

@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokercredstore"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/featureflags"
 )
@@ -29,7 +28,7 @@ import (
 // ServiceBroker is a brokerapi.ServiceBroker that can be used to generate an OSB compatible service broker.
 type ServiceBroker struct {
 	registry  broker.BrokerRegistry
-	Credstore brokercredstore.BrokerCredstore
+	credStore CredStore
 
 	store  Storage
 	Logger lager.Logger
@@ -42,7 +41,7 @@ type TFDeploymentGUID string
 func New(cfg *BrokerConfig, store Storage, logger lager.Logger) (*ServiceBroker, error) {
 	return &ServiceBroker{
 		registry:  cfg.Registry,
-		Credstore: cfg.Credstore,
+		credStore: cfg.CredStore,
 		Logger:    logger,
 		store:     store,
 	}, nil

@@ -17,16 +17,21 @@ package broker
 import (
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerchapi"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokercredstore"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/credhubrepo"
+
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/brokerpak"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/config"
 )
 
+//counterfeiter:generate . CredStore
+type CredStore interface {
+	Save(path string, cred any, actor string) (any, error)
+	Delete(path string) error
+}
 type BrokerConfig struct {
 	Registry  broker.BrokerRegistry
-	Credstore brokercredstore.BrokerCredstore
+	CredStore CredStore
 }
 
 func NewBrokerConfigFromEnv() (*BrokerConfig, error) {
@@ -40,17 +45,10 @@ func NewBrokerConfigFromEnv() (*BrokerConfig, error) {
 		return nil, fmt.Errorf("failed loading config: %v", err)
 	}
 
-	var credHubStore *brokerchapi.Store
+	var credStore CredStore = NoopCredStore{}
 	if envConfig.CredStoreConfig.HasCredHubConfig() {
 		var err error
-		credHubStore, err = brokerchapi.New(brokerchapi.Config{
-			CredHubURL:            envConfig.CredStoreConfig.CredHubURL,
-			CACert:                envConfig.CredStoreConfig.CACert,
-			UAAURL:                envConfig.CredStoreConfig.UaaURL,
-			UAAClientName:         envConfig.CredStoreConfig.UaaClientName,
-			UAAClientSecret:       envConfig.CredStoreConfig.UaaClientSecret,
-			InsecureSkipTLSVerify: envConfig.CredStoreConfig.SkipSSLValidation,
-		})
+		credStore, err = credhubrepo.New(envConfig.CredStoreConfig)
 		if err != nil {
 			return nil, err
 		}
@@ -58,6 +56,16 @@ func NewBrokerConfigFromEnv() (*BrokerConfig, error) {
 
 	return &BrokerConfig{
 		Registry:  registry,
-		Credstore: brokercredstore.NewBrokerCredstore(credHubStore),
+		CredStore: credStore,
 	}, nil
+}
+
+type NoopCredStore struct{}
+
+func (NoopCredStore) Save(path string, cred any, actor string) (any, error) {
+	return cred, nil
+}
+
+func (NoopCredStore) Delete(path string) error {
+	return nil
 }
