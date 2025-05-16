@@ -107,7 +107,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 	}
 
 	// Optionally store the actual credential in CredHub, and return a CredHub reference
-	binding.Credentials, err = broker.credStore.Save(ctx, computeCredHubPath(broker.getServiceName(serviceDefinition), bindingID), binding.Credentials, fmt.Sprintf("mtls-app:%s", parsedDetails.AppGUID))
+	binding.Credentials, err = broker.credStore.Save(ctx, computeCredHubPath(broker.getServiceName(serviceDefinition), bindingID), binding.Credentials, parsedDetails.CredHubActor)
 	if err != nil {
 		return domain.Binding{}, fmt.Errorf("bind failure: %w", err)
 	}

@@ -2,6 +2,7 @@ package paramparser
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"code.cloudfoundry.org/brokerapi/v13/domain"
@@ -12,6 +13,7 @@ type BindDetails struct {
 	CredentialClientID string
 	PlanID             string
 	ServiceID          string
+	CredHubActor       string
 	RequestParams      map[string]any
 	RequestContext     map[string]any
 }
@@ -24,8 +26,20 @@ func ParseBindDetails(input domain.BindDetails) (BindDetails, error) {
 	}
 
 	if input.BindResource != nil {
-		result.AppGUID = input.BindResource.AppGuid
 		result.CredentialClientID = input.BindResource.CredentialClientID
+
+		if input.BindResource.AppGuid != "" {
+			result.AppGUID = input.BindResource.AppGuid
+		}
+	}
+
+	switch {
+	case result.AppGUID != "":
+		result.CredHubActor = fmt.Sprintf("mtls-app:%s", result.AppGUID)
+	case result.CredentialClientID != "":
+		result.CredHubActor = fmt.Sprintf("uaa-client:%s", result.CredentialClientID)
+	default:
+		return BindDetails{}, errors.New("no app GUID or credential client ID were provided in the binding request")
 	}
 
 	if len(input.RawParameters) > 0 {

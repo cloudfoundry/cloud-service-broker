@@ -136,8 +136,15 @@ var _ = Describe("Bind", func() {
 			actualContext, _ := fakeServiceProvider.BindArgsForCall(0)
 			Expect(actualContext.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
 
-			By("validating credstore delete has been called")
+			By("validating credstore has been called")
 			Expect(fakeCredStore.SaveCallCount()).To(Equal(1))
+			_, actualPath, actualCred, actualActor := fakeCredStore.SaveArgsForCall(0)
+			Expect(actualPath).To(Equal("/c/csb/test-service/test-binding-id/secrets-and-services"))
+			Expect(actualCred).To(Equal(map[string]any{
+				"fakeInstanceOutput": "fakeInstanceValue",
+				"fakeOutput":         "fakeValue",
+			}))
+			Expect(actualActor).To(Equal("mtls-app:test-app-guid"))
 
 			By("validating storage is asked to store binding credentials")
 			Expect(fakeStorage.StoreBindRequestDetailsCallCount()).To(Equal(1))

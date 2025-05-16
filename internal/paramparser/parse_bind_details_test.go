@@ -30,6 +30,7 @@ var _ = Describe("ParseBindDetails", func() {
 			CredentialClientID: "fake-credential-client-id",
 			PlanID:             "fake-plan-id",
 			ServiceID:          "fake-service-id",
+			CredHubActor:       "mtls-app:fake-app-guid",
 			RequestParams:      map[string]any{"baz": "quz"},
 			RequestContext:     map[string]any{"foo": "bar"},
 		}))
@@ -49,6 +50,7 @@ var _ = Describe("ParseBindDetails", func() {
 				PlanID:             "fake-plan-id",
 				ServiceID:          "fake-service-id",
 				CredentialClientID: "",
+				CredHubActor:       "mtls-app:fake-app-guid",
 			}))
 		})
 	})
@@ -68,9 +70,20 @@ var _ = Describe("ParseBindDetails", func() {
 		})
 	})
 
+	When("bind_resource is present without an app guid", func() {
+		It("uses the app guid from the top level", func() {
+			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
+				AppGUID:      "fake-app-guid",
+				BindResource: &domain.BindResource{}, // present, but empty
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(bindDetails.AppGUID).To(Equal("fake-app-guid"))
+		})
+	})
+
 	When("context is not valid JSON", func() {
 		It("returns an error", func() {
-			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{BindResource: &domain.BindResource{}, RawContext: []byte("not-json")})
+			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{AppGUID: "fake-app-guid", RawContext: []byte("not-json")})
 
 			Expect(err).To(MatchError(`error parsing request context: invalid character 'o' in literal null (expecting 'u')`))
 			Expect(bindDetails).To(BeZero())
@@ -79,19 +92,45 @@ var _ = Describe("ParseBindDetails", func() {
 
 	When("params are not valid JSON", func() {
 		It("returns an error", func() {
-			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{BindResource: &domain.BindResource{}, RawParameters: []byte("not-json")})
+			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{AppGUID: "fake-app-guid", RawParameters: []byte("not-json")})
 
 			Expect(err).To(MatchError(`error parsing request parameters: invalid character 'o' in literal null (expecting 'u')`))
 			Expect(bindDetails).To(BeZero())
 		})
 	})
 
-	When("input is empty", func() {
-		It("succeeds with an empty result", func() {
-			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{BindResource: &domain.BindResource{}})
+	Describe("CredHubActor", func() {
+		When("there's an app guid and client credential ID present", func() {
+			It("uses the app guid", func() {
+				bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
+					AppGUID: "fake-app-guid",
+					BindResource: &domain.BindResource{
+						CredentialClientID: "fake-credential-client-id",
+					},
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(bindDetails.CredHubActor).To(Equal("mtls-app:fake-app-guid"))
+			})
+		})
 
-			Expect(err).NotTo(HaveOccurred())
-			Expect(bindDetails).To(BeZero())
+		When("there's a client credential ID but no app guid present", func() {
+			It("uses the client credential ID", func() {
+				bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
+					BindResource: &domain.BindResource{
+						CredentialClientID: "fake-credential-client-id",
+					},
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(bindDetails.CredHubActor).To(Equal("uaa-client:fake-credential-client-id"))
+			})
+		})
+
+		When("neither is present", func() {
+			It("returns an error", func() {
+				bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{})
+				Expect(err).To(MatchError("no app GUID or credential client ID were provided in the binding request"))
+				Expect(bindDetails).To(BeZero())
+			})
 		})
 	})
 })
