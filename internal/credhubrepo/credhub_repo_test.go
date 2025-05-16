@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/credhubrepo"
@@ -257,7 +258,7 @@ var _ = Describe("CredHub Repository", func() {
 		})
 	})
 
-	Describe("token expiry", func() {
+	Describe("token caching and expiry", func() {
 		When("the token is valid", func() {
 			BeforeEach(func() {
 				fakeUAAServer = ghttp.NewServer()
@@ -267,14 +268,21 @@ var _ = Describe("CredHub Repository", func() {
 				appendStoreHandlers(fakeCredHubServer)
 			})
 
-			It("does not reauthenticate", func() {
-				By("calling the Repo() method multiple times")
-				_, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
-				Expect(err).NotTo(HaveOccurred())
-				_, err = repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
-				Expect(err).NotTo(HaveOccurred())
-				_, err = repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
-				Expect(err).NotTo(HaveOccurred())
+			It("it only fetches the token once", func() {
+				const calls = 5
+				var wg sync.WaitGroup
+				wg.Add(calls)
+
+				By("calling the Save() method multiple times")
+				for range calls {
+					go func() {
+						defer GinkgoRecover()
+						defer wg.Done()
+						_, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+						Expect(err).NotTo(HaveOccurred())
+					}()
+				}
+				wg.Wait()
 
 				By("checking that a UAA login was performed only once")
 				Expect(fakeUAAServer.ReceivedRequests()).Should(HaveLen(1))
