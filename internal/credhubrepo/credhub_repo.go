@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"sync"
 	"time"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/config"
@@ -20,7 +21,8 @@ type Repo struct {
 	credHubURL string
 	httpClient *http.Client
 	uaaClient  uaaClient
-	token      token
+	token      token // should only be used in loadToken() and fetchToken() that use the tokenLock mutex
+	tokenLock  sync.Mutex
 }
 
 // New creates a new CredHub repo
@@ -114,12 +116,9 @@ func (r *Repo) Delete(path string) error {
 }
 
 func (r *Repo) http(method, path string, requestBody, responseBody any, okCodes ...int) error {
-	// Fetch a new token unless we think the cached on is ok
-	cachedTokenExpired := r.token.expired()
-	if cachedTokenExpired {
-		if err := r.updateToken(); err != nil {
-			return err
-		}
+	tok, cachedToken, err := r.loadToken()
+	if err != nil {
+		return err
 	}
 
 	// Process request body
@@ -133,7 +132,7 @@ func (r *Repo) http(method, path string, requestBody, responseBody any, okCodes 
 	}
 
 	// Do the HTTP request
-	request, err := r.newHTTPRequest(method, path, requestBodyReader)
+	request, err := r.newHTTPRequest(method, path, tok, requestBodyReader)
 	if err != nil {
 		return err
 	}
@@ -146,12 +145,12 @@ func (r *Repo) http(method, path string, requestBody, responseBody any, okCodes 
 	// If we used a cached token, and we got an authorization error, then try
 	// to get another UAA token and retry the request. There's no point retrying
 	// if we only just fetched the token.
-	if !cachedTokenExpired && response.StatusCode == http.StatusUnauthorized {
-		if err := r.updateToken(); err != nil {
+	if cachedToken && response.StatusCode == http.StatusUnauthorized {
+		if tok, err = r.fetchToken(); err != nil {
 			return err
 		}
 
-		request, err = r.newHTTPRequest(method, path, requestBodyReader)
+		request, err = r.newHTTPRequest(method, path, tok, requestBodyReader)
 		if err != nil {
 			return err
 		}
@@ -181,23 +180,51 @@ func (r *Repo) http(method, path string, requestBody, responseBody any, okCodes 
 	return nil
 }
 
-func (r *Repo) updateToken() error {
+// loadToken will return an existing unexpired token if there is one, and otherwise will
+// fetch a new token (compare with fetchToken())
+//
+// Why do we use sync.Mutex and not sync.RWMutex? While a RWMutex is arguably more correct
+// because simultaneous reading of the token should not be problematic, in practice
+// it results in an implementation that's more complicated, and there's no reason to think
+// it would result in a performance advantage in actual usage.
+func (r *Repo) loadToken() (string, bool, error) {
+	r.tokenLock.Lock()
+	defer r.tokenLock.Unlock()
+
+	if !r.token.expired() {
+		return r.token.value, true, nil
+	}
+
 	tok, err := r.uaaClient.oauthToken()
 	if err != nil {
-		return err
+		return "", false, err
+	}
+	r.token = tok
+
+	return tok.value, false, nil
+}
+
+// fetchToken will always try to get a new token (compare to loadToken())
+func (r *Repo) fetchToken() (string, error) {
+	r.tokenLock.Lock()
+	defer r.tokenLock.Unlock()
+
+	tok, err := r.uaaClient.oauthToken()
+	if err != nil {
+		return "", err
 	}
 
 	r.token = tok
-	return nil
+	return tok.value, nil
 }
 
-func (r *Repo) newHTTPRequest(method, path string, body io.Reader) (*http.Request, error) {
+func (r *Repo) newHTTPRequest(method, path, tok string, body io.Reader) (*http.Request, error) {
 	request, err := http.NewRequest(method, r.credHubURL+path, body)
 	if err != nil {
 		return nil, fmt.Errorf("error creating http request: %w", err)
 	}
 
-	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", r.token.value))
+	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tok))
 
 	// In theory this is only needed when there's a request body, but the previous implementation always added it
 	request.Header.Add("Content-Type", "application/json")
