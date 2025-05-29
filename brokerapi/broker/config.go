@@ -15,10 +15,11 @@
 package broker
 
 import (
+	"context"
 	"fmt"
 
+	"code.cloudfoundry.org/lager/v3"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/credhubrepo"
-
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/brokerpak"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/config"
@@ -26,15 +27,15 @@ import (
 
 //counterfeiter:generate . CredStore
 type CredStore interface {
-	Save(path string, cred any, actor string) (any, error)
-	Delete(path string) error
+	Save(ctx context.Context, path string, cred any, actor string) (any, error)
+	Delete(ctx context.Context, path string) error
 }
 type BrokerConfig struct {
 	Registry  broker.BrokerRegistry
 	CredStore CredStore
 }
 
-func NewBrokerConfigFromEnv() (*BrokerConfig, error) {
+func NewBrokerConfigFromEnv(logger lager.Logger) (*BrokerConfig, error) {
 	registry := broker.BrokerRegistry{}
 	if err := brokerpak.RegisterAll(registry); err != nil {
 		return nil, fmt.Errorf("error loading brokerpaks: %v", err)
@@ -47,8 +48,9 @@ func NewBrokerConfigFromEnv() (*BrokerConfig, error) {
 
 	var credStore CredStore = NoopCredStore{}
 	if envConfig.CredStoreConfig.HasCredHubConfig() {
+		logger.Info("using-credhub")
 		var err error
-		credStore, err = credhubrepo.New(envConfig.CredStoreConfig)
+		credStore, err = credhubrepo.New(logger, envConfig.CredStoreConfig)
 		if err != nil {
 			return nil, err
 		}
@@ -62,10 +64,10 @@ func NewBrokerConfigFromEnv() (*BrokerConfig, error) {
 
 type NoopCredStore struct{}
 
-func (NoopCredStore) Save(path string, cred any, actor string) (any, error) {
+func (NoopCredStore) Save(ctx context.Context, path string, cred any, actor string) (any, error) {
 	return cred, nil
 }
 
-func (NoopCredStore) Delete(path string) error {
+func (NoopCredStore) Delete(ctx context.Context, path string) error {
 	return nil
 }
