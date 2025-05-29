@@ -1,6 +1,7 @@
 package credhubrepo
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,6 +9,9 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"code.cloudfoundry.org/lager/v3"
+	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
 )
 
 type uaaClient struct {
@@ -15,16 +19,18 @@ type uaaClient struct {
 	url        string
 	name       string
 	secret     string
+	logger     lager.Logger
 }
 
-func (u uaaClient) oauthToken() (token, error) {
+func (u uaaClient) oauthToken(ctx context.Context) (token, error) {
 	requestBody := make(url.Values)
 	requestBody.Add("client_id", u.name)
 	requestBody.Add("client_secret", u.secret)
 	requestBody.Add("grant_type", "client_credentials")
 	requestBody.Add("response_type", "token")
 
-	request, err := http.NewRequest(http.MethodPost, u.url+"/oauth/token", strings.NewReader(requestBody.Encode()))
+	const path = "/oauth/token"
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, u.url+path, strings.NewReader(requestBody.Encode()))
 	if err != nil {
 		return token{}, fmt.Errorf("error creating http request: %w", err)
 	}
@@ -32,10 +38,12 @@ func (u uaaClient) oauthToken() (token, error) {
 	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	request.Header.Add("Accept", "application/json")
 
+	u.logger.Debug("http-request-uaa", correlation.ID(ctx), lager.Data{"path": path})
 	response, err := u.httpClient.Do(request)
 	if err != nil {
 		return token{}, fmt.Errorf("error performing http request: %w", err)
 	}
+	u.logger.Debug("response-code-uaa", correlation.ID(ctx), lager.Data{"code": response.Status})
 
 	defer response.Body.Close()
 	responseBody, err := io.ReadAll(response.Body)

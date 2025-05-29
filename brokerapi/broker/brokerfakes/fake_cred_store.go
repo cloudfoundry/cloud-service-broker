@@ -2,16 +2,18 @@
 package brokerfakes
 
 import (
+	"context"
 	"sync"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
 )
 
 type FakeCredStore struct {
-	DeleteStub        func(string) error
+	DeleteStub        func(context.Context, string) error
 	deleteMutex       sync.RWMutex
 	deleteArgsForCall []struct {
-		arg1 string
+		arg1 context.Context
+		arg2 string
 	}
 	deleteReturns struct {
 		result1 error
@@ -19,12 +21,13 @@ type FakeCredStore struct {
 	deleteReturnsOnCall map[int]struct {
 		result1 error
 	}
-	SaveStub        func(string, any, string) (any, error)
+	SaveStub        func(context.Context, string, any, string) (any, error)
 	saveMutex       sync.RWMutex
 	saveArgsForCall []struct {
-		arg1 string
-		arg2 any
-		arg3 string
+		arg1 context.Context
+		arg2 string
+		arg3 any
+		arg4 string
 	}
 	saveReturns struct {
 		result1 any
@@ -38,18 +41,19 @@ type FakeCredStore struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeCredStore) Delete(arg1 string) error {
+func (fake *FakeCredStore) Delete(arg1 context.Context, arg2 string) error {
 	fake.deleteMutex.Lock()
 	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
 	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
-		arg1 string
-	}{arg1})
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
 	stub := fake.DeleteStub
 	fakeReturns := fake.deleteReturns
-	fake.recordInvocation("Delete", []interface{}{arg1})
+	fake.recordInvocation("Delete", []interface{}{arg1, arg2})
 	fake.deleteMutex.Unlock()
 	if stub != nil {
-		return stub(arg1)
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -63,17 +67,17 @@ func (fake *FakeCredStore) DeleteCallCount() int {
 	return len(fake.deleteArgsForCall)
 }
 
-func (fake *FakeCredStore) DeleteCalls(stub func(string) error) {
+func (fake *FakeCredStore) DeleteCalls(stub func(context.Context, string) error) {
 	fake.deleteMutex.Lock()
 	defer fake.deleteMutex.Unlock()
 	fake.DeleteStub = stub
 }
 
-func (fake *FakeCredStore) DeleteArgsForCall(i int) string {
+func (fake *FakeCredStore) DeleteArgsForCall(i int) (context.Context, string) {
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
 	argsForCall := fake.deleteArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeCredStore) DeleteReturns(result1 error) {
@@ -99,20 +103,21 @@ func (fake *FakeCredStore) DeleteReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeCredStore) Save(arg1 string, arg2 any, arg3 string) (any, error) {
+func (fake *FakeCredStore) Save(arg1 context.Context, arg2 string, arg3 any, arg4 string) (any, error) {
 	fake.saveMutex.Lock()
 	ret, specificReturn := fake.saveReturnsOnCall[len(fake.saveArgsForCall)]
 	fake.saveArgsForCall = append(fake.saveArgsForCall, struct {
-		arg1 string
-		arg2 any
-		arg3 string
-	}{arg1, arg2, arg3})
+		arg1 context.Context
+		arg2 string
+		arg3 any
+		arg4 string
+	}{arg1, arg2, arg3, arg4})
 	stub := fake.SaveStub
 	fakeReturns := fake.saveReturns
-	fake.recordInvocation("Save", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("Save", []interface{}{arg1, arg2, arg3, arg4})
 	fake.saveMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -126,17 +131,17 @@ func (fake *FakeCredStore) SaveCallCount() int {
 	return len(fake.saveArgsForCall)
 }
 
-func (fake *FakeCredStore) SaveCalls(stub func(string, any, string) (any, error)) {
+func (fake *FakeCredStore) SaveCalls(stub func(context.Context, string, any, string) (any, error)) {
 	fake.saveMutex.Lock()
 	defer fake.saveMutex.Unlock()
 	fake.SaveStub = stub
 }
 
-func (fake *FakeCredStore) SaveArgsForCall(i int) (string, any, string) {
+func (fake *FakeCredStore) SaveArgsForCall(i int) (context.Context, string, any, string) {
 	fake.saveMutex.RLock()
 	defer fake.saveMutex.RUnlock()
 	argsForCall := fake.saveArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeCredStore) SaveReturns(result1 any, result2 error) {
