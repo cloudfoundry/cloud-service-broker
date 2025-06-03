@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
+	"net/http"
 
 	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
@@ -258,7 +260,19 @@ var _ = Describe("Bind", func() {
 			It("should error", func() {
 				_, err := serviceBroker.Bind(context.TODO(), instanceID, bindingID, bindDetails, false)
 
-				Expect(err).To(MatchError(broker.ErrInvalidUserInput))
+				Expect(err).To(MatchError(`error parsing request parameters: invalid character 's' looking for beginning of value`))
+				Expect(err).To(BeAssignableToTypeOf(&apiresponses.FailureResponse{}))
+				Expect(err.(*apiresponses.FailureResponse).ValidatedStatusCode(slog.Default())).To(Equal(http.StatusBadRequest))
+			})
+		})
+
+		When("neither 'app_guid' nor 'credential_client_id' were provided", func() {
+			It("returns an error with HTTP status 422", func() {
+				_, err := serviceBroker.Bind(context.TODO(), instanceID, bindingID, domain.BindDetails{}, false)
+
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(BeAssignableToTypeOf(&apiresponses.FailureResponse{}))
+				Expect(err.(*apiresponses.FailureResponse).ValidatedStatusCode(slog.Default())).To(Equal(http.StatusUnprocessableEntity))
 			})
 		})
 

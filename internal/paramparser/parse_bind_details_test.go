@@ -128,7 +128,7 @@ var _ = Describe("ParseBindDetails", func() {
 		When("neither is present", func() {
 			It("returns an error", func() {
 				bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{})
-				Expect(err).To(MatchError("no app GUID or credential client ID were provided in the binding request"))
+				Expect(err).To(MatchError(paramparser.ErrNoAppGUIDOrCredentialClient))
 				Expect(bindDetails).To(BeZero())
 			})
 		})

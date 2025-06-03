@@ -52,7 +52,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 
 	parsedDetails, err := paramparser.ParseBindDetails(details)
 	if err != nil {
-		return domain.Binding{}, ErrInvalidUserInput
+		return domain.Binding{}, err
 	}
 
 	// verify the service exists and the plan exists
