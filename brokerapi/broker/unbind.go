@@ -96,7 +96,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 
 func (broker *ServiceBroker) removeBindingData(ctx context.Context, instanceID, bindingID string, serviceDefinition *broker.ServiceDefinition, serviceProvider broker.ServiceProvider) error {
 	// remove the credential from CredHub
-	if err := broker.credStore.Delete(computeCredHubPath(broker.getServiceName(serviceDefinition), bindingID)); err != nil {
+	if err := broker.credStore.Delete(ctx, computeCredHubPath(broker.getServiceName(serviceDefinition), bindingID)); err != nil {
 		broker.Logger.Error("errors removing credential from CredHub", err)
 	}
 
