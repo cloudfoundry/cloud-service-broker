@@ -1,6 +1,7 @@
 package credhubrepo_test
 
 import (
+	"context"
 	"crypto/tls"
 	_ "embed"
 	"encoding/json"
@@ -13,9 +14,9 @@ import (
 	"sync"
 	"time"
 
+	"code.cloudfoundry.org/lager/v3/lagertest"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/credhubrepo"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/config"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
@@ -43,7 +44,7 @@ var _ = Describe("CredHub Repository", func() {
 	)
 
 	JustBeforeEach(func() {
-		repo = must(credhubrepo.New(config.CredStoreConfig{
+		repo = must(credhubrepo.New(lagertest.NewTestLogger("test"), config.CredStoreConfig{
 			CredHubURL:        localhost(fakeCredHubServer.URL()),
 			UaaURL:            localhost(fakeUAAServer.URL()),
 			UaaClientName:     fakeUAAClientName,
@@ -74,7 +75,7 @@ var _ = Describe("CredHub Repository", func() {
 
 		It("performs the correct API calls", func() {
 			By("calling the Save() method")
-			ref, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+			ref, err := repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(ref).To(SatisfyAny(HaveLen(1), HaveKeyWithValue("credhub-ref", fakeCredentialPath)))
 
@@ -104,7 +105,7 @@ var _ = Describe("CredHub Repository", func() {
 			})
 
 			It("returns an error", func() {
-				ref, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+				ref, err := repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).To(MatchError(`failed to store credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 401, expecting 200, body: not allowed`))
 				Expect(ref).To(BeNil())
 			})
@@ -116,7 +117,7 @@ var _ = Describe("CredHub Repository", func() {
 			})
 
 			It("returns an error", func() {
-				ref, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+				ref, err := repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).To(MatchError(`failed to store credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400 for CredHub endpoint "/api/v1/data", expecting [200], body: bad request`))
 				Expect(ref).To(BeNil())
 			})
@@ -128,7 +129,7 @@ var _ = Describe("CredHub Repository", func() {
 			})
 
 			It("returns an error", func() {
-				ref, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+				ref, err := repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).To(MatchError(`failed to set permission on credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400 for CredHub endpoint "/api/v2/permissions", expecting [201], body: request bad`))
 				Expect(ref).To(BeNil())
 			})
@@ -167,7 +168,7 @@ var _ = Describe("CredHub Repository", func() {
 
 		It("performs the correct API calls", func() {
 			By("calling the Delete() method")
-			err := repo.Delete(fakeCredentialPath)
+			err := repo.Delete(context.TODO(), fakeCredentialPath)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("checking that a UAA login was performed")
@@ -208,7 +209,7 @@ var _ = Describe("CredHub Repository", func() {
 			})
 
 			It("returns an error", func() {
-				err := repo.Delete(fakeCredentialPath)
+				err := repo.Delete(context.TODO(), fakeCredentialPath)
 				Expect(err).To(MatchError(`failed to list permissions for credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 401, expecting 200, body: not allowed`))
 			})
 		})
@@ -219,7 +220,7 @@ var _ = Describe("CredHub Repository", func() {
 			})
 
 			It("returns an error", func() {
-				err := repo.Delete(fakeCredentialPath)
+				err := repo.Delete(context.TODO(), fakeCredentialPath)
 				Expect(err).To(MatchError(`failed to list permissions for credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400 for CredHub endpoint "/api/v1/permissions?credential_name=/c/csb/my-lovely-service/fake-binding-id/secrets-and-services", expecting [200], body: request bad`))
 			})
 		})
@@ -230,7 +231,7 @@ var _ = Describe("CredHub Repository", func() {
 			})
 
 			It("returns an error", func() {
-				err := repo.Delete(fakeCredentialPath)
+				err := repo.Delete(context.TODO(), fakeCredentialPath)
 				Expect(err).To(MatchError(`failed to get permission "some-actor" for credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400 for CredHub endpoint "/api/v2/permissions?actor=some-actor&path=%2Fc%2Fcsb%2Fmy-lovely-service%2Ffake-binding-id%2Fsecrets-and-services", expecting [200], body: request is bad`))
 			})
 		})
@@ -241,7 +242,7 @@ var _ = Describe("CredHub Repository", func() {
 			})
 
 			It("returns an error", func() {
-				err := repo.Delete(fakeCredentialPath)
+				err := repo.Delete(context.TODO(), fakeCredentialPath)
 				Expect(err).To(MatchError(`failed to delete permission ID "1fed7e7a-28ed-47ac-8b1b-ac35cc6f0406": unexpected status code 400 for CredHub endpoint "/api/v2/permissions/1fed7e7a-28ed-47ac-8b1b-ac35cc6f0406", expecting [200], body: bad req`))
 			})
 		})
@@ -252,7 +253,7 @@ var _ = Describe("CredHub Repository", func() {
 			})
 
 			It("returns an error", func() {
-				err := repo.Delete(fakeCredentialPath)
+				err := repo.Delete(context.TODO(), fakeCredentialPath)
 				Expect(err).To(MatchError(`failed to delete credential "/c/csb/my-lovely-service/fake-binding-id/secrets-and-services": unexpected status code 400 for CredHub endpoint "/api/v1/data?name=/c/csb/my-lovely-service/fake-binding-id/secrets-and-services", expecting [204], body: bad request`))
 			})
 		})
@@ -278,7 +279,7 @@ var _ = Describe("CredHub Repository", func() {
 					go func() {
 						defer GinkgoRecover()
 						defer wg.Done()
-						_, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+						_, err := repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 						Expect(err).NotTo(HaveOccurred())
 					}()
 				}
@@ -308,7 +309,7 @@ var _ = Describe("CredHub Repository", func() {
 
 			It("re-authenticates", func() {
 				By("calling the Save() method once, triggering authentication")
-				_, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+				_, err := repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(fakeUAAServer.ReceivedRequests()).Should(HaveLen(1))
 
@@ -316,7 +317,7 @@ var _ = Describe("CredHub Repository", func() {
 				time.Sleep(1100 * time.Millisecond) // 1.1 seconds
 
 				By("calling the Save() method again, triggering re-authentication")
-				_, err = repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+				_, err = repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(fakeUAAServer.ReceivedRequests()).Should(HaveLen(2))
 			})
@@ -385,13 +386,13 @@ var _ = Describe("CredHub Repository", func() {
 
 			It("re-authenticates", func() {
 				By("calling Save() a first time which fetches and caches a token")
-				_, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+				_, err := repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(fakeUAAServer.ReceivedRequests()).Should(HaveLen(1))
 				Expect(fakeCredHubServer.ReceivedRequests()).Should(HaveLen(2))
 
 				By("calling Save() a second time, which finds the token doesn't work and fetches another one")
-				_, err = repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+				_, err = repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(fakeUAAServer.ReceivedRequests()).Should(HaveLen(2))
 				Expect(fakeCredHubServer.ReceivedRequests()).Should(HaveLen(5))
@@ -410,7 +411,7 @@ var _ = Describe("CredHub Repository", func() {
 			})
 
 			It("fails with TLS validation errors", func() {
-				_, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+				_, err := repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).To(MatchError(ContainSubstring("tls: failed to verify certificate: x509:")))
 			})
 		})
@@ -425,7 +426,7 @@ var _ = Describe("CredHub Repository", func() {
 			})
 
 			It("fails with TLS validation errors", func() {
-				_, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+				_, err := repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).To(MatchError(ContainSubstring("tls: failed to verify certificate: x509:")))
 			})
 		})
@@ -440,7 +441,7 @@ var _ = Describe("CredHub Repository", func() {
 			})
 
 			It("fails with TLS validation errors", func() {
-				_, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+				_, err := repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).To(MatchError(ContainSubstring("tls: failed to verify certificate: x509:")))
 			})
 		})
@@ -457,7 +458,7 @@ var _ = Describe("CredHub Repository", func() {
 			})
 
 			It("succeeds", func() {
-				_, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+				_, err := repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).NotTo(HaveOccurred())
 
 				// Check the servers did actually get the requests
@@ -486,7 +487,7 @@ var _ = Describe("CredHub Repository", func() {
 
 		When("CA cert file is not provided", func() {
 			It("fails to validate the server certificate", func() {
-				_, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+				_, err := repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).To(MatchError(ContainSubstring("tls: failed to verify certificate: x509:")))
 			})
 		})
@@ -497,7 +498,7 @@ var _ = Describe("CredHub Repository", func() {
 			})
 
 			It("successfully validates the server certificate", func() {
-				_, err := repo.Save(fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
+				_, err := repo.Save(context.TODO(), fakeCredentialPath, map[string]any{"foo": "bar"}, fakeActor)
 				Expect(err).NotTo(HaveOccurred())
 
 				// Check the servers did actually get the requests
@@ -509,7 +510,7 @@ var _ = Describe("CredHub Repository", func() {
 		When("CA cert file is not valid", func() {
 			It("fails to create the resource", func() {
 				const invalidData = `not**valid  as CA**** cert`
-				_, err := credhubrepo.New(config.CredStoreConfig{
+				_, err := credhubrepo.New(lagertest.NewTestLogger("test"), config.CredStoreConfig{
 					CACert: invalidData,
 				})
 				Expect(err).To(MatchError("failed to add CA cert to pool"))

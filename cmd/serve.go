@@ -104,7 +104,7 @@ func serve() {
 	encryptor := setupDBEncryption(db, logger)
 
 	// init broker
-	cfg, err := osbapiBroker.NewBrokerConfigFromEnv()
+	cfg, err := osbapiBroker.NewBrokerConfigFromEnv(logger)
 	if err != nil {
 		logger.Fatal("Error initializing service broker config", err)
 	}

@@ -16,10 +16,12 @@ package broker
 
 import (
 	"testing"
+
+	"code.cloudfoundry.org/lager/v3/lagertest"
 )
 
 func TestNewBrokerConfigFromEnv(t *testing.T) {
-	_, err := NewBrokerConfigFromEnv()
+	_, err := NewBrokerConfigFromEnv(lagertest.NewTestLogger("test"))
 	if err != nil {
 		t.Fatal(err)
 	}
