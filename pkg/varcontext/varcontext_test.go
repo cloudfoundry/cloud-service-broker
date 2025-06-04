@@ -163,7 +163,7 @@ func TestVarContext_GetStringMapString(t *testing.T) {
 	}{
 		"single map": {"single", map[string]string{"foo": "bar"}, ""},
 		"json map":   {"json", map[string]string{"foo": "bar"}, ""},
-		"string":     {"aString", map[string]string{}, `value for "aString" must be a map[string]string`},
+		"string":     {"aString", map[string]string(nil), `value for "aString" must be a map[string]string`},
 	}
 
 	for tn, tc := range tests {
