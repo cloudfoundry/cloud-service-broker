@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
+	"net/http"
 
 	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
@@ -136,8 +138,15 @@ var _ = Describe("Bind", func() {
 			actualContext, _ := fakeServiceProvider.BindArgsForCall(0)
 			Expect(actualContext.Value(middlewares.OriginatingIdentityKey)).To(Equal(expectedHeader))
 
-			By("validating credstore delete has been called")
+			By("validating credstore has been called")
 			Expect(fakeCredStore.SaveCallCount()).To(Equal(1))
+			_, actualPath, actualCred, actualActor := fakeCredStore.SaveArgsForCall(0)
+			Expect(actualPath).To(Equal("/c/csb/test-service/test-binding-id/secrets-and-services"))
+			Expect(actualCred).To(Equal(map[string]any{
+				"fakeInstanceOutput": "fakeInstanceValue",
+				"fakeOutput":         "fakeValue",
+			}))
+			Expect(actualActor).To(Equal("mtls-app:test-app-guid"))
 
 			By("validating storage is asked to store binding credentials")
 			Expect(fakeStorage.StoreBindRequestDetailsCallCount()).To(Equal(1))
@@ -251,7 +260,19 @@ var _ = Describe("Bind", func() {
 			It("should error", func() {
 				_, err := serviceBroker.Bind(context.TODO(), instanceID, bindingID, bindDetails, false)
 
-				Expect(err).To(MatchError(broker.ErrInvalidUserInput))
+				Expect(err).To(MatchError(`error parsing request parameters: invalid character 's' looking for beginning of value`))
+				Expect(err).To(BeAssignableToTypeOf(&apiresponses.FailureResponse{}))
+				Expect(err.(*apiresponses.FailureResponse).ValidatedStatusCode(slog.Default())).To(Equal(http.StatusBadRequest))
+			})
+		})
+
+		When("neither 'app_guid' nor 'credential_client_id' were provided", func() {
+			It("returns an error with HTTP status 422", func() {
+				_, err := serviceBroker.Bind(context.TODO(), instanceID, bindingID, domain.BindDetails{}, false)
+
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(BeAssignableToTypeOf(&apiresponses.FailureResponse{}))
+				Expect(err.(*apiresponses.FailureResponse).ValidatedStatusCode(slog.Default())).To(Equal(http.StatusUnprocessableEntity))
 			})
 		})
 
