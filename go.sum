@@ -618,8 +618,8 @@ code.cloudfoundry.org/brokerapi/v13 v13.0.4 h1:46I9Bbo5OumlKjjeZIDUM73iQQUTiIYYs
 code.cloudfoundry.org/brokerapi/v13 v13.0.4/go.mod h1:2Jd9gH5kHUfUupSWwklx3I/Ih1HvqNPvInyYbgLs9iM=
 code.cloudfoundry.org/jsonry v1.1.4 h1:P9N7IlH1/4aRCLcXLgLFj1hkcBmV7muijJzY+K6U4hE=
 code.cloudfoundry.org/jsonry v1.1.4/go.mod h1:6aKilShQP7w/Ez76h1El2/n9y2OkHuU56nKSBB9Gp0A=
-code.cloudfoundry.org/lager/v3 v3.39.0 h1:axxT3QTIu7ZWNyV7IKtNrSP4xmtMPbgbIJ5lY3ixYU8=
-code.cloudfoundry.org/lager/v3 v3.39.0/go.mod h1:xcAxUZal+NkRwwF40JEY/rouQB/IaIfzjf5wi3jSYUs=
+code.cloudfoundry.org/lager/v3 v3.40.0 h1:Dtg0RgxELbiw5t+26jFNCzeZNhzwBJQsUf8z+JxFdrA=
+code.cloudfoundry.org/lager/v3 v3.40.0/go.mod h1:35Ji1Bqm7Hnzi8H1uxcEc2xPnO/lTOAi3WFkD5Z6W4A=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
@@ -843,8 +843,8 @@ github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38/go.mod h1:kpwsk12EmLe
 github.com/google/pprof v0.0.0-20210601050228-01bbb1931b22/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
 github.com/google/pprof v0.0.0-20210609004039-a478d1d731e9/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
 github.com/google/pprof v0.0.0-20210720184732-4bb14d4b1be1/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
-github.com/google/pprof v0.0.0-20250607225305-033d6d78b36a h1://KbezygeMJZCSHH+HgUZiTeSoiuFspbMg1ge+eFj18=
-github.com/google/pprof v0.0.0-20250607225305-033d6d78b36a/go.mod h1:5hDyRhoBCxViHszMt12TnOpEI4VVi+U8Gm9iphldiMA=
+github.com/google/pprof v0.0.0-20250630185457-6e76a2b096b5 h1:xhMrHhTJ6zxu3gA4enFM9MLn9AY7613teCdFnlUVbSQ=
+github.com/google/pprof v0.0.0-20250630185457-6e76a2b096b5/go.mod h1:5hDyRhoBCxViHszMt12TnOpEI4VVi+U8Gm9iphldiMA=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
 github.com/google/s2a-go v0.1.9 h1:LGD7gtMgezd8a/Xak7mEWL0PjoTQFvpRudN895yqKW0=
 github.com/google/s2a-go v0.1.9/go.mod h1:YA0Ei2ZQL3acow2O62kdp9UlnvMmU7kA6Eutn0dXayM=
