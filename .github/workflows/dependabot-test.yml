@@ -22,7 +22,7 @@ jobs:
           script: |
             var pr_number = ${{ inputs.pr_number }}
             
-            await github.pulls.createReview({
+            await github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: pr_number,
