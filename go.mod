@@ -3,7 +3,7 @@ module github.com/cloudfoundry/cloud-service-broker/v2
 go 1.25.0
 
 require (
-	code.cloudfoundry.org/brokerapi/v13 v13.0.6
+	code.cloudfoundry.org/brokerapi/v13 v13.0.7
 	code.cloudfoundry.org/jsonry v1.1.4
 	code.cloudfoundry.org/lager/v3 v3.44.0
 	github.com/go-sql-driver/mysql v1.9.3
@@ -117,7 +117,6 @@ require (
 	golang.org/x/text v0.28.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 	golang.org/x/tools v0.36.0 // indirect
-	golang.org/x/tools/go/expect v0.1.1-deprecated // indirect
 	google.golang.org/api v0.228.0 // indirect
 	google.golang.org/genproto v0.0.0-20250409194420-de1ac958c67a // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250409194420-de1ac958c67a // indirect
