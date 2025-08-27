@@ -618,8 +618,8 @@ code.cloudfoundry.org/brokerapi/v13 v13.0.7 h1:ZNdZAxmwsjekJ+4oZFht3kUmdf1qiqhCt
 code.cloudfoundry.org/brokerapi/v13 v13.0.7/go.mod h1:RKj2NdkGT0TJtyYvmojvq2C7br6dLNaQZwVKLtqN1pk=
 code.cloudfoundry.org/jsonry v1.1.4 h1:P9N7IlH1/4aRCLcXLgLFj1hkcBmV7muijJzY+K6U4hE=
 code.cloudfoundry.org/jsonry v1.1.4/go.mod h1:6aKilShQP7w/Ez76h1El2/n9y2OkHuU56nKSBB9Gp0A=
-code.cloudfoundry.org/lager/v3 v3.44.0 h1:WTC28p5f8l7ZiU84FdsvyX8MKtbnJZaqCqzUXP4D2x0=
-code.cloudfoundry.org/lager/v3 v3.44.0/go.mod h1:/ylxNuBhGgVF0372yFKXPcu1eB6cSB6/8gPdoBj+Qk0=
+code.cloudfoundry.org/lager/v3 v3.45.0 h1:iOcoLdaMOeSCstIXFasrwR1b37VPRudbVrkuuhU6Ojc=
+code.cloudfoundry.org/lager/v3 v3.45.0/go.mod h1:2AOrm89UwgCCBn0ZJWpfxmdU0NFBYv7u9pcPZYvFRXA=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
