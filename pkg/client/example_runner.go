@@ -73,7 +73,7 @@ func runExamples(workers int, client *Client, examples []CompleteServiceExample)
 	queue := make(chan work)
 	var wg sync.WaitGroup
 	wg.Add(workers)
-	for i := 0; i < workers; i++ {
+	for range workers {
 		go func() {
 			for w := range queue {
 				start := time.Now()

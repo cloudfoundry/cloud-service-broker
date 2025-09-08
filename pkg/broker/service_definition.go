@@ -17,6 +17,7 @@ package broker
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
 	"strings"
 
@@ -196,7 +197,7 @@ func unmarshalViperMap(key string) (map[string]any, error) {
 			if err := json.Unmarshal([]byte(v), &vals); err != nil {
 				return nil, fmt.Errorf("failed unmarshaling config value %s", key)
 			}
-		case map[string]interface{}:
+		case map[string]any:
 			vals = v
 		}
 	}
@@ -530,15 +531,11 @@ func (svc *ServiceDefinition) BindVariables(instance storage.ServiceInstanceDeta
 func (svc *ServiceDefinition) combineLabels(defaultLabels map[string]string) map[string]string {
 	ll := map[string]string{}
 
-	for key, value := range svc.GlobalLabels {
-		ll[key] = value
-	}
+	maps.Copy(ll, svc.GlobalLabels)
 
 	// default labels override global labels
 	// in other words, "pcf-organization-guid", "pcf-space-guid", and "pcf-instance-id" have preference over global labels
-	for key, value := range defaultLabels {
-		ll[key] = value
-	}
+	maps.Copy(ll, defaultLabels)
 
 	return ll
 }

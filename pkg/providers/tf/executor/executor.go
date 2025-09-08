@@ -90,7 +90,7 @@ func (defaultExecutor) Execute(ctx context.Context, c *exec.Cmd) (ExecutionOutpu
 
 func flatten(input []byte) string {
 	var lines []string
-	for _, l := range strings.Split(string(input), "\n") {
+	for l := range strings.SplitSeq(string(input), "\n") {
 		if line := strings.TrimSpace(l); len(line) > 0 {
 			lines = append(lines, line)
 		}

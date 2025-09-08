@@ -175,7 +175,7 @@ Second: X, Y, Z`,
 			}
 
 			for _, p := range []string{"3", "2", "1"} {
-				for i := 0; i < 3; i++ {
+				for range 3 {
 					fe = fe.Also(fe)
 				}
 				fe = fe.ViaField(p)
@@ -195,7 +195,7 @@ Second: X, Y, Z`,
 			for _, p := range []string{"3", "2", "1"} {
 				e := fe.ViaField(p)
 				e.Details = fmt.Sprintf("here at %s", p)
-				for i := 0; i < 3; i++ {
+				for range 3 {
 					fe = fe.Also(e)
 				}
 			}
