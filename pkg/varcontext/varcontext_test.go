@@ -19,6 +19,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/onsi/gomega"
 )
 
 func TestVarContext_GetString(t *testing.T) {
@@ -163,17 +165,20 @@ func TestVarContext_GetStringMapString(t *testing.T) {
 	}{
 		"single map": {"single", map[string]string{"foo": "bar"}, ""},
 		"json map":   {"json", map[string]string{"foo": "bar"}, ""},
-		"string":     {"aString", map[string]string(nil), `value for "aString" must be a map[string]string`},
+		"string":     {"aString", map[string]string{}, `value for "aString" must be a map[string]string`},
 	}
 
 	for tn, tc := range tests {
 		t.Run(tn, func(t *testing.T) {
 			vc := &VarContext{context: testContext}
 
+			// Over time different versions of dependencies have resulted in `result` being:
+			// `map[string]string{}` or `map[string]string(nil)` which are functionally equivalent for
+			// most things, but different from the perspective of `reflect.DeepEqual()`. We use Gomega
+			// for this specific assertion because it prints a much more helpful error when there's a mismatch
 			result := vc.GetStringMapString(tc.Key)
-			if !reflect.DeepEqual(result, tc.Expected) {
-				t.Errorf("Expected to get: %v actual: %v", tc.Expected, result)
-			}
+			g := gomega.NewGomegaWithT(t)
+			g.Expect(result).To(gomega.Equal(tc.Expected))
 
 			expectedErrors := tc.Error != ""
 			hasError := vc.Error() != nil
