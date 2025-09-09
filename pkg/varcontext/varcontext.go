@@ -18,6 +18,7 @@ package varcontext
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cast"
@@ -92,9 +93,7 @@ func (vc *VarContext) GetStringMapString(key string) (res map[string]string) {
 func (vc *VarContext) ToMap() map[string]any {
 	output := make(map[string]any)
 
-	for k, v := range vc.context {
-		output[k] = v
-	}
+	maps.Copy(output, vc.context)
 
 	return output
 }

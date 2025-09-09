@@ -414,7 +414,7 @@ var _ = Describe("ServiceDefinition", func() {
 			When("a plan is provided in configuration as an object", func() {
 				BeforeEach(func() {
 					// fakePlanName, fakePlanID, fakePlanDescription, fakePlanProperty
-					fakeServicePlanConfigObject := []map[string]interface{}{
+					fakeServicePlanConfigObject := []map[string]any{
 						{
 							"name":                fakePlanName,
 							"id":                  fakePlanID,
@@ -428,7 +428,7 @@ var _ = Describe("ServiceDefinition", func() {
 							"additional_property": fmt.Sprintf("second-%s", fakePlanProperty),
 						},
 					}
-					viper.Set("service.fake-service.provision.defaults", map[string]interface{}{
+					viper.Set("service.fake-service.provision.defaults", map[string]any{
 						"test": "value",
 					})
 					viper.Set("service.fake-service.plans", fakeServicePlanConfigObject)
@@ -439,13 +439,13 @@ var _ = Describe("ServiceDefinition", func() {
 					Expect(plan).To(Not(HaveLen(0)))
 					provisionOverrides, err := service.ProvisionDefaultOverrides()
 					Expect(err).To(Not(HaveOccurred()))
-					Expect(provisionOverrides).To(Equal(map[string]interface{}{"test": `value`}))
+					Expect(provisionOverrides).To(Equal(map[string]any{"test": `value`}))
 				})
 			})
 
 			When("a plan with provision defaults is provided in configuration as a string", func() {
 				BeforeEach(func() {
-					fakeServicePlanConfigObject := []map[string]interface{}{
+					fakeServicePlanConfigObject := []map[string]any{
 						{
 							"name":                fakePlanName,
 							"id":                  fakePlanID,

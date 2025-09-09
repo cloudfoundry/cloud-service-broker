@@ -16,7 +16,7 @@ package workspace
 
 import (
 	"fmt"
-	"sort"
+	"slices"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclparse"
@@ -107,6 +107,6 @@ func sortedKeys(m hcl.Blocks) []string {
 		keys = append(keys, block.Labels...)
 	}
 
-	sort.Slice(keys, func(i int, j int) bool { return keys[i] < keys[j] })
+	slices.Sort(keys)
 	return keys
 }

@@ -17,6 +17,7 @@ package workspace
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 )
 
 // ModuleInstance represents the configuration of a single instance of a module.
@@ -30,9 +31,7 @@ type ModuleInstance struct {
 // definition that can be fed to Terraform to be created/destroyed.
 func (instance *ModuleInstance) MarshalDefinition(outputs []string) (json.RawMessage, error) {
 	instanceConfig := make(map[string]any)
-	for k, v := range instance.Configuration {
-		instanceConfig[k] = v
-	}
+	maps.Copy(instanceConfig, instance.Configuration)
 
 	instanceConfig["source"] = fmt.Sprintf("./%s", instance.ModuleName)
 

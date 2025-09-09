@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"maps"
 	"os"
 	"regexp"
 	"strings"
@@ -153,7 +154,7 @@ func NewLogger(name string) lager.Logger {
 // any leading or trailing whitespace from them.
 func SplitNewlineDelimitedList(paksText string) []string {
 	var out []string
-	for _, pak := range strings.Split(paksText, "\n") {
+	for pak := range strings.SplitSeq(paksText, "\n") {
 		pakURL := strings.TrimSpace(pak)
 		if pakURL != "" {
 			out = append(out, pakURL)
@@ -178,9 +179,7 @@ func Indent(text, by string) string {
 func CopyStringMap(m map[string]string) map[string]string {
 	out := make(map[string]string)
 
-	for k, v := range m {
-		out[k] = v
-	}
+	maps.Copy(out, m)
 
 	return out
 }
