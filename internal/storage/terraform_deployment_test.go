@@ -280,11 +280,11 @@ func addFakeTerraformDeployments() {
 func fakeWorkspace(name, ver string) []byte {
 	state := "null"
 	if ver != "" {
-		state = fmt.Sprintf("%q", base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(`{"terraform_version":"%s"}`, ver))))
+		state = fmt.Sprintf("%q", base64.StdEncoding.EncodeToString(fmt.Appendf(nil, `{"terraform_version":"%s"}`, ver)))
 	}
-	return []byte(fmt.Sprintf(`{"modules":[{"Name":"%s","Definition":"","Definitions":null}],"instances":null,"tfstate":%s,"transform":{"parameter_mappings":null,"parameters_to_remove":null,"parameters_to_add":null}}`, name, state))
+	return fmt.Appendf(nil, `{"modules":[{"Name":"%s","Definition":"","Definitions":null}],"instances":null,"tfstate":%s,"transform":{"parameter_mappings":null,"parameters_to_remove":null,"parameters_to_add":null}}`, name, state)
 }
 
 func fakeEncryptedWorkspace(name, ver string) []byte {
-	return []byte(fmt.Sprintf(`{"encrypted":{"decrypted":%s}}`, fakeWorkspace(name, ver)))
+	return fmt.Appendf(nil, `{"encrypted":{"decrypted":%s}}`, fakeWorkspace(name, ver))
 }

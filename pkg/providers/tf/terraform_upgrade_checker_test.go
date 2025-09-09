@@ -48,7 +48,7 @@ var _ = Describe("CheckUpgradeAvailable", func() {
 			deployment = storage.TerraformDeployment{
 				ID: deploymentID,
 				Workspace: &workspace.TerraformWorkspace{
-					State: []byte(fmt.Sprintf(`{"terraform_version": "%s" }`, oldTerraformVersion.String())),
+					State: fmt.Appendf(nil, `{"terraform_version": "%s" }`, oldTerraformVersion.String()),
 				},
 			}
 			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
@@ -67,7 +67,7 @@ var _ = Describe("CheckUpgradeAvailable", func() {
 			deployment = storage.TerraformDeployment{
 				ID: deploymentID,
 				Workspace: &workspace.TerraformWorkspace{
-					State: []byte(fmt.Sprintf(`{"terraform_version": "%s" }`, defaultTerraformVersion.String())),
+					State: fmt.Appendf(nil, `{"terraform_version": "%s" }`, defaultTerraformVersion.String()),
 				},
 			}
 			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)

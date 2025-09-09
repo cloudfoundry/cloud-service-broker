@@ -19,6 +19,7 @@ package validation
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -201,7 +202,7 @@ func asKey(key string) string {
 func flatten(path []string) string {
 	var newPath []string
 	for _, part := range path {
-		for _, p := range strings.Split(part, ".") {
+		for p := range strings.SplitSeq(part, ".") {
 			if p == CurrentField {
 				continue
 			} else if len(newPath) > 0 && isIndex(p) {
@@ -230,12 +231,7 @@ func mergePaths(a, b []string) []string {
 // containsString takes in a string slice and looks for the provided string
 // within the slice.
 func containsString(slice []string, s string) bool {
-	for _, item := range slice {
-		if item == s {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(slice, s)
 }
 
 // merge takes in a flat list of FieldErrors and returns a merged list of
@@ -264,7 +260,7 @@ func merge(errs []*FieldError) []*FieldError {
 	newErrs := make([]*FieldError, 0, len(m))
 	for _, v := range m {
 		// While we have access to the merged paths, sort them too.
-		sort.Slice(v.Paths, func(i, j int) bool { return v.Paths[i] < v.Paths[j] })
+		slices.Sort(v.Paths)
 		newErrs = append(newErrs, v)
 	}
 

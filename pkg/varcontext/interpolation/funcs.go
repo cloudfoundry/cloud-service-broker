@@ -64,7 +64,7 @@ func hilFuncConfig() ast.Function {
 			if viper.IsSet(key) {
 				val := viper.Get(key)
 				// Check If we're handling a nested object
-				if mapVal, ok := val.(map[string]interface{}); ok {
+				if mapVal, ok := val.(map[string]any); ok {
 					bytes, err := json.Marshal(mapVal)
 					// return string representation of the object contents
 					return string(bytes), err

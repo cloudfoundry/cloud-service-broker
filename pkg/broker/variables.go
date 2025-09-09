@@ -16,6 +16,7 @@ package broker
 
 import (
 	"fmt"
+	"maps"
 	"sort"
 	"strings"
 	"unicode"
@@ -99,9 +100,7 @@ func (bv *BrokerVariable) ToSchema() map[string]any {
 		schema[validation.KeyTitle] = fieldNameToLabel(bv.FieldName)
 	}
 
-	for k, v := range bv.Constraints {
-		schema[k] = v
-	}
+	maps.Copy(schema, bv.Constraints)
 
 	if len(bv.Enum) > 0 {
 		enumeration := []any{}

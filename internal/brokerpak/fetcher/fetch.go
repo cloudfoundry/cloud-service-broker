@@ -4,6 +4,7 @@ package fetcher
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 
@@ -40,9 +41,7 @@ func newFileGetterClient(src, dest string) *getter.Client {
 
 func defaultGetters() map[string]getter.Getter {
 	getters := map[string]getter.Getter{}
-	for k, g := range getter.Getters {
-		getters[k] = g
-	}
+	maps.Copy(getters, getter.Getters)
 
 	return getters
 }

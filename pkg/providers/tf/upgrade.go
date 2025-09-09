@@ -38,9 +38,8 @@ func (provider *TerraformProvider) UpgradeInstance(ctx context.Context, instance
 	}
 
 	var finished sync.WaitGroup
-	finished.Add(1)
 
-	go func() {
+	finished.Go(func() {
 		err = provider.performTerraformUpgrade(ctx, instanceDeployment.Workspace)
 		if err != nil {
 			_ = provider.MarkOperationFinished(&instanceDeployment, err)
@@ -50,8 +49,7 @@ func (provider *TerraformProvider) UpgradeInstance(ctx context.Context, instance
 		if err := provider.MarkOperationStarted(&instanceDeployment, models.UpgradeOperationType); err != nil {
 			panic(err)
 		}
-		finished.Done()
-	}()
+	})
 
 	return &finished, nil
 }

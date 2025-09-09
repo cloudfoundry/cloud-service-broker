@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"slices"
 
 	"github.com/spf13/cobra"
 
@@ -72,14 +73,12 @@ func purgeServiceBinding(serviceInstanceGUID, serviceBindingGUID string) {
 	if err != nil {
 		log.Fatalf("error listing bindings: %s", err)
 	}
-	for _, bindingGUID := range bindings {
-		if bindingGUID == serviceBindingGUID {
-			if err := deleteServiceBindingFromStore(store, serviceInstanceGUID, serviceBindingGUID); err != nil {
-				log.Fatalf("error deleting binding %q for service instance %q: %s", serviceBindingGUID, serviceInstanceGUID, err)
-			}
-			log.Printf("deleted binding %q for service instance %q from the Cloud Service Broker database", serviceBindingGUID, serviceInstanceGUID)
-			return
+	if slices.Contains(bindings, serviceBindingGUID) {
+		if err := deleteServiceBindingFromStore(store, serviceInstanceGUID, serviceBindingGUID); err != nil {
+			log.Fatalf("error deleting binding %q for service instance %q: %s", serviceBindingGUID, serviceInstanceGUID, err)
 		}
+		log.Printf("deleted binding %q for service instance %q from the Cloud Service Broker database", serviceBindingGUID, serviceInstanceGUID)
+		return
 	}
 
 	log.Fatalf("could not find service binding %q for service instance %q", serviceBindingGUID, serviceInstanceGUID)

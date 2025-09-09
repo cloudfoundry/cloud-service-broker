@@ -17,6 +17,7 @@ package varcontext
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"reflect"
 
 	"github.com/hashicorp/go-multierror"
@@ -106,12 +107,8 @@ func (builder *ContextBuilder) MergeDefaultWithEval(brokerVariables []DefaultVar
 // merges in the value if the result is not an error.
 func (builder *ContextBuilder) MergeEvalResult(key, template, resultType string) *ContextBuilder {
 	evaluationContext := make(map[string]any)
-	for k, v := range builder.context {
-		evaluationContext[k] = v
-	}
-	for k, v := range builder.constants {
-		evaluationContext[k] = v
-	}
+	maps.Copy(evaluationContext, builder.context)
+	maps.Copy(evaluationContext, builder.constants)
 
 	result, err := interpolation.Eval(template, evaluationContext)
 	if err != nil {
@@ -165,9 +162,7 @@ func castTo(value any, jsonType string) (any, error) {
 
 // MergeMap inserts all the keys and values from the map into the context.
 func (builder *ContextBuilder) MergeMap(data map[string]any) *ContextBuilder {
-	for k, v := range data {
-		builder.context[k] = v
-	}
+	maps.Copy(builder.context, data)
 
 	return builder
 }

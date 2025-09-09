@@ -17,7 +17,7 @@ func nameToID(name string) string {
 		name = name + "."
 	}
 
-	h := []byte(fmt.Sprintf("%x", name))
+	h := fmt.Appendf(nil, "%x", name)
 	return fmt.Sprintf("%s-%s-%s-%s-%s", h[0:8], h[8:12], h[12:16], h[16:20], h[20:32])
 }
 

@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 )
 
@@ -62,20 +63,14 @@ func (ttf *TfTransformer) CleanTf(tf string) string {
 		if res := resource.FindStringSubmatch(line); res != nil {
 			blockStack[depth] = fmt.Sprintf("%s.%s", res[1], res[2])
 		} else if res = value.FindStringSubmatch(line); res != nil {
-			for _, removal := range ttf.ParametersToRemove {
-				if fmt.Sprintf("%s.%s", blockStack[depth], res[1]) == removal {
-					skipLine = true
-					break
-				}
+			if slices.Contains(ttf.ParametersToRemove, fmt.Sprintf("%s.%s", blockStack[depth], res[1])) {
+				skipLine = true
 			}
 		} else if res := block.FindStringSubmatch(line); res != nil {
 			blockStack[depth] = fmt.Sprintf("%s.%s", blockStack[depth-1], res[1])
-			for _, removal := range ttf.ParametersToRemove {
-				if blockStack[depth] == removal {
-					skipBlockDepth = depth
-					skipLine = true
-					break
-				}
+			if slices.Contains(ttf.ParametersToRemove, blockStack[depth]) {
+				skipBlockDepth = depth
+				skipLine = true
 			}
 		}
 		if !skipLine {
@@ -95,10 +90,10 @@ func (ttf *TfTransformer) captureParameterValues(tf string) (map[string]string, 
 		if res := reBlock.FindAllStringSubmatch(tf, -1); len(res) > 0 {
 			//parameterValues[mapping.ParameterName] = res[0][1]
 		} else if res := reSimple.FindAllStringSubmatch(tf, -1); len(res) > 0 {
-			if strings.HasPrefix(mapping.ParameterName, "var.") {
-				parameterValues[strings.TrimPrefix(mapping.ParameterName, "var.")] = res[0][1]
-			} else if strings.HasPrefix(mapping.ParameterName, "local.") {
-				parameterValues[strings.TrimPrefix(mapping.ParameterName, "local.")] = res[0][1]
+			if after, ok := strings.CutPrefix(mapping.ParameterName, "var."); ok {
+				parameterValues[after] = res[0][1]
+			} else if after, ok := strings.CutPrefix(mapping.ParameterName, "local."); ok {
+				parameterValues[after] = res[0][1]
 			}
 		}
 	}
