@@ -12,25 +12,26 @@ type BindRequestDetails struct {
 	RequestDetails      JSONObject
 }
 
-func (s *Storage) StoreBindRequestDetails(bindRequestDetails BindRequestDetails) error {
-	if bindRequestDetails.RequestDetails == nil {
+func (s *Storage) StoreBindRequestDetails(bindingID, instanceID string, details JSONObject) error {
+	// does not store if binding parameters are nil
+	if details == nil {
 		return nil
 	}
 
-	encoded, err := s.encodeJSON(bindRequestDetails.RequestDetails)
+	encoded, err := s.encodeJSON(details)
 	if err != nil {
 		return fmt.Errorf("error encoding details: %w", err)
 	}
 
 	var receiver []models.BindRequestDetails
-	if err := s.db.Where("service_binding_id = ?", bindRequestDetails.ServiceBindingGUID).Find(&receiver).Error; err != nil {
+	if err := s.db.Where("service_binding_id = ?", bindingID).Find(&receiver).Error; err != nil {
 		return fmt.Errorf("error searching for existing bind request details records: %w", err)
 	}
 	switch len(receiver) {
 	case 0:
 		m := models.BindRequestDetails{
-			ServiceInstanceID: bindRequestDetails.ServiceInstanceGUID,
-			ServiceBindingID:  bindRequestDetails.ServiceBindingGUID,
+			ServiceInstanceID: instanceID,
+			ServiceBindingID:  bindingID,
 			RequestDetails:    encoded,
 		}
 		if err := s.db.Create(&m).Error; err != nil {

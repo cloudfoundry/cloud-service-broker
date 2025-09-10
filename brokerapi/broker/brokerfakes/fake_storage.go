@@ -208,10 +208,12 @@ type FakeStorage struct {
 	removeLockFileReturnsOnCall map[int]struct {
 		result1 error
 	}
-	StoreBindRequestDetailsStub        func(storage.BindRequestDetails) error
+	StoreBindRequestDetailsStub        func(string, string, storage.JSONObject) error
 	storeBindRequestDetailsMutex       sync.RWMutex
 	storeBindRequestDetailsArgsForCall []struct {
-		arg1 storage.BindRequestDetails
+		arg1 string
+		arg2 string
+		arg3 storage.JSONObject
 	}
 	storeBindRequestDetailsReturns struct {
 		result1 error
@@ -1276,18 +1278,20 @@ func (fake *FakeStorage) RemoveLockFileReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeStorage) StoreBindRequestDetails(arg1 storage.BindRequestDetails) error {
+func (fake *FakeStorage) StoreBindRequestDetails(arg1 string, arg2 string, arg3 storage.JSONObject) error {
 	fake.storeBindRequestDetailsMutex.Lock()
 	ret, specificReturn := fake.storeBindRequestDetailsReturnsOnCall[len(fake.storeBindRequestDetailsArgsForCall)]
 	fake.storeBindRequestDetailsArgsForCall = append(fake.storeBindRequestDetailsArgsForCall, struct {
-		arg1 storage.BindRequestDetails
-	}{arg1})
+		arg1 string
+		arg2 string
+		arg3 storage.JSONObject
+	}{arg1, arg2, arg3})
 	stub := fake.StoreBindRequestDetailsStub
 	fakeReturns := fake.storeBindRequestDetailsReturns
-	fake.recordInvocation("StoreBindRequestDetails", []interface{}{arg1})
+	fake.recordInvocation("StoreBindRequestDetails", []interface{}{arg1, arg2, arg3})
 	fake.storeBindRequestDetailsMutex.Unlock()
 	if stub != nil {
-		return stub(arg1)
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
@@ -1301,17 +1305,17 @@ func (fake *FakeStorage) StoreBindRequestDetailsCallCount() int {
 	return len(fake.storeBindRequestDetailsArgsForCall)
 }
 
-func (fake *FakeStorage) StoreBindRequestDetailsCalls(stub func(storage.BindRequestDetails) error) {
+func (fake *FakeStorage) StoreBindRequestDetailsCalls(stub func(string, string, storage.JSONObject) error) {
 	fake.storeBindRequestDetailsMutex.Lock()
 	defer fake.storeBindRequestDetailsMutex.Unlock()
 	fake.StoreBindRequestDetailsStub = stub
 }
 
-func (fake *FakeStorage) StoreBindRequestDetailsArgsForCall(i int) storage.BindRequestDetails {
+func (fake *FakeStorage) StoreBindRequestDetailsArgsForCall(i int) (string, string, storage.JSONObject) {
 	fake.storeBindRequestDetailsMutex.RLock()
 	defer fake.storeBindRequestDetailsMutex.RUnlock()
 	argsForCall := fake.storeBindRequestDetailsArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeStorage) StoreBindRequestDetailsReturns(result1 error) {

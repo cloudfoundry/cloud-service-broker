@@ -16,11 +16,11 @@ var _ = Describe("BindRequestDetails", func() {
 		const serviceBindingID = "fake-binding-id"
 
 		It("creates the right object in the database", func() {
-			err := store.StoreBindRequestDetails(storage.BindRequestDetails{
-				ServiceInstanceGUID: serviceInstanceID,
-				ServiceBindingGUID:  serviceBindingID,
-				RequestDetails:      storage.JSONObject{"foo": "bar"},
-			})
+			err := store.StoreBindRequestDetails(
+				serviceBindingID,
+				serviceInstanceID,
+				storage.JSONObject{"foo": "bar"},
+			)
 			Expect(err).NotTo(HaveOccurred())
 
 			var receiver models.BindRequestDetails
@@ -31,11 +31,11 @@ var _ = Describe("BindRequestDetails", func() {
 		})
 
 		It("does not store when params are nil", func() {
-			err := store.StoreBindRequestDetails(storage.BindRequestDetails{
-				ServiceInstanceGUID: serviceInstanceID,
-				ServiceBindingGUID:  serviceBindingID,
-				RequestDetails:      nil,
-			})
+			err := store.StoreBindRequestDetails(
+				serviceBindingID,
+				serviceInstanceID,
+				nil,
+			)
 			Expect(err).NotTo(HaveOccurred())
 
 			var receiver models.BindRequestDetails
@@ -46,11 +46,11 @@ var _ = Describe("BindRequestDetails", func() {
 			It("returns an error", func() {
 				encryptor.EncryptReturns(nil, errors.New("bang"))
 
-				err := store.StoreBindRequestDetails(storage.BindRequestDetails{
-					ServiceInstanceGUID: serviceInstanceID,
-					ServiceBindingGUID:  serviceBindingID,
-					RequestDetails:      storage.JSONObject{"foo": "bar"},
-				})
+				err := store.StoreBindRequestDetails(
+					serviceBindingID,
+					serviceInstanceID,
+					storage.JSONObject{"foo": "bar"},
+				)
 				Expect(err).To(MatchError("error encoding details: encryption error: bang"))
 			})
 		})
@@ -64,11 +64,11 @@ var _ = Describe("BindRequestDetails", func() {
 			})
 
 			It("errors", func() {
-				err := store.StoreBindRequestDetails(storage.BindRequestDetails{
-					ServiceInstanceGUID: serviceInstanceID,
-					ServiceBindingGUID:  serviceBindingID,
-					RequestDetails:      storage.JSONObject{"foo": "qux"},
-				})
+				err := store.StoreBindRequestDetails(
+					serviceBindingID,
+					serviceInstanceID,
+					storage.JSONObject{"foo": "qux"},
+				)
 				Expect(err).To(MatchError(ContainSubstring("error saving bind request details: Binding already exists")))
 			})
 		})

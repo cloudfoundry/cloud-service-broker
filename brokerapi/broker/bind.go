@@ -91,13 +91,7 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 			err)
 	}
 
-	bindRequest := storage.BindRequestDetails{
-		ServiceInstanceGUID: instanceID,
-		ServiceBindingGUID:  bindingID,
-		RequestDetails:      parsedDetails.RequestParams,
-	}
-
-	if err := broker.store.StoreBindRequestDetails(bindRequest); err != nil {
+	if err := broker.store.StoreBindRequestDetails(bindingID, instanceID, parsedDetails.RequestParams); err != nil {
 		return domain.Binding{}, fmt.Errorf("error saving bind request details to database: %s. Unbind operations will not be able to complete", err)
 	}
 
