@@ -94,6 +94,8 @@ Values for debugging:
 | Environment Variable                   | Config File Value         | Type | Description                                                                                     |
 |----------------------------------------|---------------------------|------|-------------------------------------------------------------------------------------------------|
 | <tt>CSB_DEBUG_LEAVE_WORKSPACE_DIR</tt> | debug.leave_workspace_dir | bool | Disables the cleanup of workspace directories, so you can inspect the files and run tf commands |
+| <tt>CSB_LOG_LEVEL</tt> | (none) | string | Sets the logging level to the specified value, which can be one of `debug`, `info`, `error`, `fatal` |
+| <tt>GSB_DEBUG</tt> | (none) | bool | If set to any value, the log level is set to `debug`. Overrides `CSB_LOG_LEVEL` |
 
 ## Feature flags Configuration
 
