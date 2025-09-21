@@ -10,7 +10,7 @@ import (
 )
 
 func passThroughEnvs() []string {
-	result := append(manifestAllowedEnvs(), "TF_LOG", "TF_LOG_CORE", "TF_LOG_PROVIDER", "TF_LOG_PATH")
+	result := append(manifestAllowedEnvs(), "TF_LOG", "TF_LOG_CORE", "TF_LOG_PROVIDER", "TF_LOG_PATH", "CSB_LOG_LEVEL")
 	result = append(result, featureflags.AllFeatureFlagEnvVars...)
 	return result
 }
