@@ -138,8 +138,19 @@ func SingleLineErrorFormatter(es []error) string {
 // writing settings.
 func NewLogger(name string) lager.Logger {
 	logger := lager.NewLogger(name)
+	logLevel := lager.INFO // default
 
-	logLevel := lager.INFO
+	// Can use environment variable CSB_LOG_LEVEL to set the level.
+	// If the value is invalid, we ignore it.
+	if level, ok := os.LookupEnv("CSB_LOG_LEVEL"); ok {
+		parsedLevel, err := lager.LogLevelFromString(level)
+		if err == nil {
+			logLevel = parsedLevel
+		}
+	}
+
+	// The GSB_DEBUG environment variable is the long-standing way
+	// to enable debug logging, and it overrides CSB_LOG_LEVEL
 	if _, debug := os.LookupEnv("GSB_DEBUG"); debug {
 		logLevel = lager.DEBUG
 	}
