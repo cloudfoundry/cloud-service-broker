@@ -9,7 +9,8 @@ import (
 type BindRequestDetails struct {
 	ServiceInstanceGUID string
 	ServiceBindingGUID  string
-	RequestDetails      JSONObject
+	BindResource        JSONObject
+	Parameters          JSONObject
 }
 
 func (s *Storage) StoreBindRequestDetails(bindingID, instanceID string, details JSONObject) error {
@@ -18,9 +19,15 @@ func (s *Storage) StoreBindRequestDetails(bindingID, instanceID string, details 
 		return nil
 	}
 
-	encoded, err := s.encodeJSON(details)
+	// write empty JSON object to maintain compatibility with previous versions
+	encodedBindResource, err := s.encodeJSON(JSONObject{})
 	if err != nil {
-		return fmt.Errorf("error encoding details: %w", err)
+		return fmt.Errorf("error encoding bind request details bind_resource: %w", err)
+	}
+
+	encodedParams, err := s.encodeJSON(details)
+	if err != nil {
+		return fmt.Errorf("error encoding bind request details parameters: %w", err)
 	}
 
 	var receiver []models.BindRequestDetails
@@ -32,7 +39,8 @@ func (s *Storage) StoreBindRequestDetails(bindingID, instanceID string, details 
 		m := models.BindRequestDetails{
 			ServiceInstanceID: instanceID,
 			ServiceBindingID:  bindingID,
-			RequestDetails:    encoded,
+			BindResource:      encodedBindResource,
+			Parameters:        encodedParams,
 		}
 		if err := s.db.Create(&m).Error; err != nil {
 			return fmt.Errorf("error creating bind request details: %w", err)
@@ -58,7 +66,7 @@ func (s *Storage) GetBindRequestDetails(bindingID string, instanceID string) (JS
 		return nil, fmt.Errorf("error finding bind request details record: %w", err)
 	}
 
-	decoded, err := s.decodeJSONObject(receiver.RequestDetails)
+	decoded, err := s.decodeJSONObject(receiver.Parameters)
 	if err != nil {
 		return nil, fmt.Errorf("error decoding bind request details %q: %w", bindingID, err)
 	}

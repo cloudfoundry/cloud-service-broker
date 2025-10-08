@@ -33,9 +33,12 @@ var _ = Describe("UpdateAllRecords", func() {
 			var receiver []models.BindRequestDetails
 			Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
 			Expect(receiver).To(HaveLen(3))
-			Expect(receiver[0].RequestDetails).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"bar"}}}`)))
-			Expect(receiver[1].RequestDetails).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"baz","bar":"quz"}}}`)))
-			Expect(receiver[2].RequestDetails).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"boz"}}}`)))
+			Expect(receiver[0].BindResource).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"bar"}}}`)))
+			Expect(receiver[0].Parameters).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"bar"}}}`)))
+			Expect(receiver[1].BindResource).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"baz","bar":"quz"}}}`)))
+			Expect(receiver[1].Parameters).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"baz","bar":"quz"}}}`)))
+			Expect(receiver[2].BindResource).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"boz"}}}`)))
+			Expect(receiver[2].Parameters).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"boz"}}}`)))
 		})
 
 		By("checking provision request details", func() {
@@ -100,10 +103,11 @@ var _ = Describe("UpdateAllRecords", func() {
 		})
 
 		Context("service binding request details", func() {
-			When("RequestDetails cannot be decrypted", func() {
+
+			When("BindResource cannot be decrypted", func() {
 				BeforeEach(func() {
 					Expect(db.Create(&models.BindRequestDetails{
-						RequestDetails:    []byte(`cannot-be-decrypted`),
+						BindResource:      []byte(`cannot-be-decrypted`),
 						ServiceBindingID:  "fake-bad-binding-id",
 						ServiceInstanceID: "fake-instance-id",
 					}).Error).NotTo(HaveOccurred())
@@ -114,10 +118,37 @@ var _ = Describe("UpdateAllRecords", func() {
 				})
 			})
 
-			When("RequestDetails cannot be encrypted", func() {
+			When("BindResource cannot be encrypted", func() {
 				BeforeEach(func() {
 					Expect(db.Create(&models.BindRequestDetails{
-						RequestDetails:    []byte(`cannot-be-encrypted`),
+						BindResource:      []byte(`cannot-be-encrypted`),
+						ServiceBindingID:  "fake-bad-binding-id",
+						ServiceInstanceID: "fake-instance-id",
+					}).Error).NotTo(HaveOccurred())
+				})
+
+				It("returns an error", func() {
+					Expect(store.UpdateAllRecords()).To(MatchError(`error re-encoding service binding request details: encode error for "fake-bad-binding-id": encryption error: fake encryption error`))
+				})
+			})
+			When("Parameters cannot be decrypted", func() {
+				BeforeEach(func() {
+					Expect(db.Create(&models.BindRequestDetails{
+						Parameters:        []byte(`cannot-be-decrypted`),
+						ServiceBindingID:  "fake-bad-binding-id",
+						ServiceInstanceID: "fake-instance-id",
+					}).Error).NotTo(HaveOccurred())
+				})
+
+				It("returns an error", func() {
+					Expect(store.UpdateAllRecords()).To(MatchError(`error re-encoding service binding request details: decode error for "fake-bad-binding-id": decryption error: fake decryption error`))
+				})
+			})
+
+			When("Parameters cannot be encrypted", func() {
+				BeforeEach(func() {
+					Expect(db.Create(&models.BindRequestDetails{
+						Parameters:        []byte(`cannot-be-encrypted`),
 						ServiceBindingID:  "fake-bad-binding-id",
 						ServiceInstanceID: "fake-instance-id",
 					}).Error).NotTo(HaveOccurred())

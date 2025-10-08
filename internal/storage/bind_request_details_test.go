@@ -27,7 +27,7 @@ var _ = Describe("BindRequestDetails", func() {
 			Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
 			Expect(receiver.ServiceInstanceID).To(Equal(serviceInstanceID))
 			Expect(receiver.ServiceBindingID).To(Equal(serviceBindingID))
-			Expect(receiver.RequestDetails).To(Equal([]byte(`{"encrypted":{"foo":"bar"}}`)))
+			Expect(receiver.Parameters).To(Equal([]byte(`{"encrypted":{"foo":"bar"}}`)))
 		})
 
 		It("does not store when params are nil", func() {
@@ -51,7 +51,7 @@ var _ = Describe("BindRequestDetails", func() {
 					serviceInstanceID,
 					storage.JSONObject{"foo": "bar"},
 				)
-				Expect(err).To(MatchError("error encoding details: encryption error: bang"))
+				Expect(err).To(MatchError(MatchRegexp(`error encoding bind request details \w+: encryption error: bang`)))
 			})
 		})
 
@@ -59,7 +59,7 @@ var _ = Describe("BindRequestDetails", func() {
 			BeforeEach(func() {
 				Expect(db.Create(&models.BindRequestDetails{
 					ServiceBindingID: serviceBindingID,
-					RequestDetails:   []byte(`{"foo":"bar"}`),
+					Parameters:       []byte(`{"foo":"bar"}`),
 				}).Error).NotTo(HaveOccurred())
 			})
 
@@ -155,17 +155,20 @@ var _ = Describe("BindRequestDetails", func() {
 
 func addFakeBindRequestDetails() {
 	Expect(db.Create(&models.BindRequestDetails{
-		RequestDetails:    []byte(`{"foo":"bar"}`),
+		BindResource:      []byte(`{"foo":"bar"}`),
+		Parameters:        []byte(`{"foo":"bar"}`),
 		ServiceBindingID:  "fake-binding-id",
 		ServiceInstanceID: "fake-instance-id",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.BindRequestDetails{
-		RequestDetails:    []byte(`{"foo":"baz","bar":"quz"}`),
+		BindResource:      []byte(`{"foo":"baz","bar":"quz"}`),
+		Parameters:        []byte(`{"foo":"baz","bar":"quz"}`),
 		ServiceBindingID:  "fake-other-binding-id",
 		ServiceInstanceID: "fake-other-instance-id",
 	}).Error).NotTo(HaveOccurred())
 	Expect(db.Create(&models.BindRequestDetails{
-		RequestDetails:    []byte(`{"foo":"boz"}`),
+		BindResource:      []byte(`{"foo":"boz"}`),
+		Parameters:        []byte(`{"foo":"boz"}`),
 		ServiceBindingID:  "fake-yet-another-binding-id",
 		ServiceInstanceID: "fake-yet-another-instance-id",
 	}).Error).NotTo(HaveOccurred())
