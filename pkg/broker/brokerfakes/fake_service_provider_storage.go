@@ -535,20 +535,6 @@ func (fake *FakeServiceProviderStorage) WriteLockFileReturnsOnCall(i int, result
 func (fake *FakeServiceProviderStorage) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.deleteTerraformDeploymentMutex.RLock()
-	defer fake.deleteTerraformDeploymentMutex.RUnlock()
-	fake.existsTerraformDeploymentMutex.RLock()
-	defer fake.existsTerraformDeploymentMutex.RUnlock()
-	fake.getServiceBindingIDsForServiceInstanceMutex.RLock()
-	defer fake.getServiceBindingIDsForServiceInstanceMutex.RUnlock()
-	fake.getTerraformDeploymentMutex.RLock()
-	defer fake.getTerraformDeploymentMutex.RUnlock()
-	fake.removeLockFileMutex.RLock()
-	defer fake.removeLockFileMutex.RUnlock()
-	fake.storeTerraformDeploymentMutex.RLock()
-	defer fake.storeTerraformDeploymentMutex.RUnlock()
-	fake.writeLockFileMutex.RLock()
-	defer fake.writeLockFileMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
