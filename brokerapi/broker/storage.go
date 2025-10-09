@@ -21,8 +21,8 @@ type Storage interface {
 	ExistsServiceInstanceDetails(guid string) (bool, error)
 	DeleteServiceInstanceDetails(guid string) error
 
-	StoreBindRequestDetails(bindingID, instanceID string, parameters storage.JSONObject) error
-	GetBindRequestDetails(bindingID, instanceID string) (storage.JSONObject, error)
+	StoreBindRequestDetails(bindingID, instanceID string, bindResource, parameters storage.JSONObject) error
+	GetBindRequestDetails(bindingID, instanceID string) (bindResource storage.JSONObject, parameters storage.JSONObject, err error)
 	DeleteBindRequestDetails(bindingID, instanceID string) error
 
 	CreateServiceBindingCredentials(binding storage.ServiceBindingCredentials) error

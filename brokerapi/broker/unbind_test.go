@@ -56,7 +56,7 @@ var _ = Describe("Unbind", func() {
 			SpaceGUID:        spaceID,
 			OrganizationGUID: orgID,
 		}, nil)
-		fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{"foo": "bar"}, nil)
+		fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{"bar": "baz"}, storage.JSONObject{"foo": "bar"}, nil)
 
 		fakeCredStore = &brokerfakes.FakeCredStore{}
 
@@ -111,7 +111,7 @@ var _ = Describe("Unbind", func() {
 				SpaceGUID:        spaceID,
 				OrganizationGUID: orgID,
 			}, nil)
-			fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{"foo": "bar"}, nil)
+			fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{"bar": "baz"}, storage.JSONObject{"foo": "bar"}, nil)
 		})
 
 		It("should remove binding from database", func() {
@@ -159,7 +159,7 @@ var _ = Describe("Unbind", func() {
 		Describe("unbind variables", func() {
 			When("variables were provided during bind", func() {
 				BeforeEach(func() {
-					fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{"foo": "bar"}, nil)
+					fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{"bar": "baz"}, storage.JSONObject{"foo": "bar"}, nil)
 				})
 
 				It("should use the variables in unbind", func() {
@@ -297,7 +297,7 @@ var _ = Describe("Unbind", func() {
 
 		When("error retrieving bind parameters", func() {
 			BeforeEach(func() {
-				fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{}, fmt.Errorf("error"))
+				fakeStorage.GetBindRequestDetailsReturns(nil, nil, fmt.Errorf("error"))
 			})
 
 			It("should error", func() {

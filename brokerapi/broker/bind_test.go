@@ -150,7 +150,7 @@ var _ = Describe("Bind", func() {
 
 			By("validating storage is asked to store binding credentials")
 			Expect(fakeStorage.StoreBindRequestDetailsCallCount()).To(Equal(1))
-			actualBindingID, actualInstanceID, actualParams := fakeStorage.StoreBindRequestDetailsArgsForCall(0)
+			actualBindingID, actualInstanceID, _, actualParams := fakeStorage.StoreBindRequestDetailsArgsForCall(0)
 			Expect(actualBindingID).To(Equal(bindingID))
 			Expect(actualInstanceID).To(Equal(instanceID))
 			Expect(actualParams).To(Equal(storage.JSONObject{"bind_field_1": "bind_value_1"}))

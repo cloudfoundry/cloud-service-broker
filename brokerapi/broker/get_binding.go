@@ -64,7 +64,7 @@ func (broker *ServiceBroker) GetBinding(ctx context.Context, instanceID, binding
 	}
 
 	// get binding parameters
-	params, err := broker.store.GetBindRequestDetails(bindingID, instanceID)
+	_, params, err := broker.store.GetBindRequestDetails(bindingID, instanceID)
 	if err != nil {
 		return domain.GetBindingSpec{}, fmt.Errorf("error retrieving bind request details: %w", err)
 	}

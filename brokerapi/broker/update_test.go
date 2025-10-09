@@ -382,8 +382,8 @@ var _ = Describe("Update", func() {
 
 				fakeServiceProvider.GetTerraformOutputsReturns(storage.JSONObject{"instance-provision-output": "admin-user-name"}, nil)
 
-				fakeStorage.GetBindRequestDetailsReturnsOnCall(0, storage.JSONObject{"first-binding-param": "first-binding-bar"}, nil)
-				fakeStorage.GetBindRequestDetailsReturnsOnCall(1, storage.JSONObject{"second-binding-param": "second-binding-bar"}, nil)
+				fakeStorage.GetBindRequestDetailsReturnsOnCall(0, nil, storage.JSONObject{"first-binding-param": "first-binding-bar"}, nil)
+				fakeStorage.GetBindRequestDetailsReturnsOnCall(1, nil, storage.JSONObject{"second-binding-param": "second-binding-bar"}, nil)
 				fakeStorage.GetTerraformDeploymentReturns(storage.TerraformDeployment{LastOperationState: tf.InProgress}, nil)
 			})
 
@@ -425,7 +425,7 @@ var _ = Describe("Update", func() {
 
 			When("getting binding request details fails", func() {
 				BeforeEach(func() {
-					fakeStorage.GetBindRequestDetailsReturnsOnCall(1, storage.JSONObject{}, errors.New("cant get binding request details"))
+					fakeStorage.GetBindRequestDetailsReturnsOnCall(1, nil, storage.JSONObject{}, errors.New("cant get binding request details"))
 				})
 
 				It("should error", func() {

@@ -95,7 +95,7 @@ var _ = Describe("GetBinding", func() {
 				OrganizationGUID: orgID,
 			}, nil)
 		fakeStorage.ExistsServiceBindingCredentialsReturns(true, nil)
-		fakeStorage.GetBindRequestDetailsReturns(*bindingParams, nil)
+		fakeStorage.GetBindRequestDetailsReturns(nil, *bindingParams, nil)
 	})
 
 	When("binding exsists", func() {
@@ -351,7 +351,7 @@ var _ = Describe("GetBinding", func() {
 			msg = "error-msg"
 		)
 		BeforeEach(func() {
-			fakeStorage.GetBindRequestDetailsReturns(storage.JSONObject{}, errors.New(msg))
+			fakeStorage.GetBindRequestDetailsReturns(nil, nil, errors.New(msg))
 		})
 		It("returns error", func() {
 			_, err := serviceBroker.GetBinding(context.TODO(), instanceID, bindingID, domain.FetchBindingDetails{ServiceID: offeringID, PlanID: planID})

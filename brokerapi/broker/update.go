@@ -203,7 +203,7 @@ func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, servi
 
 	var bindingContexts []*varcontext.VarContext
 	for _, bindingID := range bindingIDs {
-		storedParams, err := broker.store.GetBindRequestDetails(bindingID, instance.GUID)
+		_, storedParams, err := broker.store.GetBindRequestDetails(bindingID, instance.GUID)
 		if err != nil {
 			return nil, fmt.Errorf("error retrieving bind request details for instance %q: %w", instance.GUID, err)
 		}

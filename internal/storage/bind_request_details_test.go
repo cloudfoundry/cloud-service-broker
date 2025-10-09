@@ -19,6 +19,7 @@ var _ = Describe("BindRequestDetails", func() {
 			err := store.StoreBindRequestDetails(
 				serviceBindingID,
 				serviceInstanceID,
+				storage.JSONObject{"bar": "baz"},
 				storage.JSONObject{"foo": "bar"},
 			)
 			Expect(err).NotTo(HaveOccurred())
@@ -27,19 +28,42 @@ var _ = Describe("BindRequestDetails", func() {
 			Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
 			Expect(receiver.ServiceInstanceID).To(Equal(serviceInstanceID))
 			Expect(receiver.ServiceBindingID).To(Equal(serviceBindingID))
+			Expect(receiver.BindResource).To(Equal([]byte(`{"encrypted":{"bar":"baz"}}`)))
 			Expect(receiver.Parameters).To(Equal([]byte(`{"encrypted":{"foo":"bar"}}`)))
 		})
 
-		It("does not store when params are nil", func() {
-			err := store.StoreBindRequestDetails(
-				serviceBindingID,
-				serviceInstanceID,
-				nil,
-			)
-			Expect(err).NotTo(HaveOccurred())
+		When("bind resource is nil", func() {
+			It("stores JSON null value", func() {
+				err := store.StoreBindRequestDetails(
+					serviceBindingID,
+					serviceInstanceID,
+					nil,
+					storage.JSONObject{"foo": "bar"},
+				)
+				Expect(err).NotTo(HaveOccurred())
 
-			var receiver models.BindRequestDetails
-			Expect(db.First(&receiver).Error).To(MatchError("record not found"))
+				var receiver models.BindRequestDetails
+				Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
+				Expect(receiver.ServiceInstanceID).To(Equal(serviceInstanceID))
+				Expect(receiver.ServiceBindingID).To(Equal(serviceBindingID))
+				Expect(receiver.BindResource).To(Equal([]byte(`{"encrypted":null}`)))
+				Expect(receiver.Parameters).To(Equal([]byte(`{"encrypted":{"foo":"bar"}}`)))
+			})
+		})
+
+		When("parameters are nil", func() {
+			It("does not store data", func() {
+				err := store.StoreBindRequestDetails(
+					serviceBindingID,
+					serviceInstanceID,
+					nil,
+					nil,
+				)
+				Expect(err).NotTo(HaveOccurred())
+
+				var receiver models.BindRequestDetails
+				Expect(db.First(&receiver).Error).To(MatchError("record not found"))
+			})
 		})
 
 		When("encoding fails", func() {
@@ -49,6 +73,7 @@ var _ = Describe("BindRequestDetails", func() {
 				err := store.StoreBindRequestDetails(
 					serviceBindingID,
 					serviceInstanceID,
+					nil,
 					storage.JSONObject{"foo": "bar"},
 				)
 				Expect(err).To(MatchError(MatchRegexp(`error encoding bind request details \w+: encryption error: bang`)))
@@ -67,6 +92,7 @@ var _ = Describe("BindRequestDetails", func() {
 				err := store.StoreBindRequestDetails(
 					serviceBindingID,
 					serviceInstanceID,
+					nil,
 					storage.JSONObject{"foo": "qux"},
 				)
 				Expect(err).To(MatchError(ContainSubstring("error saving bind request details: Binding already exists")))
@@ -80,31 +106,43 @@ var _ = Describe("BindRequestDetails", func() {
 		})
 
 		It("reads the right object from the database", func() {
-			r, err := store.GetBindRequestDetails("fake-binding-id", "fake-instance-id")
+			bindResource, params, err := store.GetBindRequestDetails("fake-binding-id", "fake-instance-id")
 			Expect(err).NotTo(HaveOccurred())
-			Expect(r).To(Equal(storage.JSONObject{"decrypted": map[string]any{"foo": "bar"}}))
+			Expect(bindResource).To(Equal(storage.JSONObject{"decrypted": map[string]any{"bar": "baz"}}))
+			Expect(params).To(Equal(storage.JSONObject{"decrypted": map[string]any{"foo": "bar"}}))
+		})
+
+		When("bindResource is null", func() {
+			It("returns empty JSONObject", func() {
+				bindResource, params, err := store.GetBindRequestDetails("empty-bind-resource-binding-id", "fake-instance-id-4")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(bindResource).To(Equal(storage.JSONObject{"decrypted": nil}))
+				Expect(params).To(Equal(storage.JSONObject{"decrypted": map[string]any{"foo": "bar"}}))
+			})
 		})
 
 		When("decoding fails", func() {
 			It("returns an error", func() {
 				encryptor.DecryptReturns(nil, errors.New("bang"))
 
-				_, err := store.GetBindRequestDetails("fake-binding-id", "fake-instance-id")
-				Expect(err).To(MatchError(`error decoding bind request details "fake-binding-id": decryption error: bang`))
+				_, _, err := store.GetBindRequestDetails("fake-binding-id", "fake-instance-id")
+				Expect(err).To(MatchError(MatchRegexp(`error decoding bind request detail \w+ for "fake-binding-id": decryption error: bang`)))
 			})
 		})
 
 		When("nothing is found", func() {
-			It("returns nil details when binding not found", func() {
-				details, err := store.GetBindRequestDetails("not-there", "fake-instance-id")
+			It("returns nil when binding not found", func() {
+				bindResource, parameters, err := store.GetBindRequestDetails("not-there", "fake-instance-id")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(details).To(BeNil())
+				Expect(bindResource).To(BeNil())
+				Expect(parameters).To(BeNil())
 			})
 
-			It("returns nil details when instance not found", func() {
-				details, err := store.GetBindRequestDetails("fake-binding-id", "not-there")
+			It("returns nil when instance not found", func() {
+				bindResource, parameters, err := store.GetBindRequestDetails("fake-binding-id", "not-there")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(details).To(BeNil())
+				Expect(bindResource).To(BeNil())
+				Expect(parameters).To(BeNil())
 			})
 		})
 
@@ -113,9 +151,10 @@ var _ = Describe("BindRequestDetails", func() {
 			func(input []byte) {
 				encryptor.DecryptReturns(input, nil)
 
-				r, err := store.GetBindRequestDetails("fake-binding-id", "fake-instance-id")
+				bindResource, parameters, err := store.GetBindRequestDetails("fake-binding-id", "fake-instance-id")
 				Expect(err).NotTo(HaveOccurred())
-				Expect(r).To(Equal(storage.JSONObject(nil)))
+				Expect(bindResource).To(Equal(storage.JSONObject(nil)))
+				Expect(parameters).To(Equal(storage.JSONObject(nil)))
 			},
 			Entry("null", []byte(`null`)),
 			Entry("empty", []byte(``)),
@@ -155,7 +194,7 @@ var _ = Describe("BindRequestDetails", func() {
 
 func addFakeBindRequestDetails() {
 	Expect(db.Create(&models.BindRequestDetails{
-		BindResource:      []byte(`{"foo":"bar"}`),
+		BindResource:      []byte(`{"bar":"baz"}`),
 		Parameters:        []byte(`{"foo":"bar"}`),
 		ServiceBindingID:  "fake-binding-id",
 		ServiceInstanceID: "fake-instance-id",
@@ -171,5 +210,11 @@ func addFakeBindRequestDetails() {
 		Parameters:        []byte(`{"foo":"boz"}`),
 		ServiceBindingID:  "fake-yet-another-binding-id",
 		ServiceInstanceID: "fake-yet-another-instance-id",
+	}).Error).NotTo(HaveOccurred())
+	Expect(db.Create(&models.BindRequestDetails{
+		BindResource:      []byte(`null`),
+		Parameters:        []byte(`{"foo":"bar"}`),
+		ServiceBindingID:  "empty-bind-resource-binding-id",
+		ServiceInstanceID: "fake-instance-id-4",
 	}).Error).NotTo(HaveOccurred())
 }
