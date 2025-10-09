@@ -32,7 +32,7 @@ var _ = Describe("UpdateAllRecords", func() {
 		By("checking bind request details", func() {
 			var receiver []models.BindRequestDetails
 			Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
-			Expect(receiver).To(HaveLen(4))
+			Expect(receiver).To(HaveLen(5))
 			Expect(receiver[0].BindResource).To(Equal([]byte(`{"encrypted":{"decrypted":{"bar":"baz"}}}`)))
 			Expect(receiver[0].Parameters).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"bar"}}}`)))
 			Expect(receiver[1].BindResource).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"baz","bar":"quz"}}}`)))
@@ -41,6 +41,8 @@ var _ = Describe("UpdateAllRecords", func() {
 			Expect(receiver[2].Parameters).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"boz"}}}`)))
 			Expect(receiver[3].BindResource).To(Equal([]byte(`{"encrypted":{"decrypted":null}}`)))
 			Expect(receiver[3].Parameters).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"bar"}}}`)))
+			Expect(receiver[4].BindResource).To(Equal([]byte(`{"encrypted":{"decrypted":{"foo":"bar"}}}`)))
+			Expect(receiver[4].Parameters).To(Equal([]byte(`{"encrypted":{"decrypted":null}}`)))
 		})
 
 		By("checking provision request details", func() {

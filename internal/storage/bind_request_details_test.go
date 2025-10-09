@@ -52,17 +52,21 @@ var _ = Describe("BindRequestDetails", func() {
 		})
 
 		When("parameters are nil", func() {
-			It("does not store data", func() {
+			It("stores JSON null value", func() {
 				err := store.StoreBindRequestDetails(
 					serviceBindingID,
 					serviceInstanceID,
-					nil,
+					storage.JSONObject{"foo": "bar"},
 					nil,
 				)
 				Expect(err).NotTo(HaveOccurred())
 
 				var receiver models.BindRequestDetails
-				Expect(db.First(&receiver).Error).To(MatchError("record not found"))
+				Expect(db.Find(&receiver).Error).NotTo(HaveOccurred())
+				Expect(receiver.ServiceInstanceID).To(Equal(serviceInstanceID))
+				Expect(receiver.ServiceBindingID).To(Equal(serviceBindingID))
+				Expect(receiver.BindResource).To(Equal([]byte(`{"encrypted":{"foo":"bar"}}`)))
+				Expect(receiver.Parameters).To(Equal([]byte(`{"encrypted":null}`)))
 			})
 		})
 
@@ -118,6 +122,15 @@ var _ = Describe("BindRequestDetails", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(bindResource).To(Equal(storage.JSONObject{"decrypted": nil}))
 				Expect(params).To(Equal(storage.JSONObject{"decrypted": map[string]any{"foo": "bar"}}))
+			})
+		})
+
+		When("parameters is null", func() {
+			It("returns empty JSONObject", func() {
+				bindResource, params, err := store.GetBindRequestDetails("empty-parameters-binding-id", "fake-instance-id-5")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(bindResource).To(Equal(storage.JSONObject{"decrypted": map[string]any{"foo": "bar"}}))
+				Expect(params).To(Equal(storage.JSONObject{"decrypted": nil}))
 			})
 		})
 
@@ -216,5 +229,11 @@ func addFakeBindRequestDetails() {
 		Parameters:        []byte(`{"foo":"bar"}`),
 		ServiceBindingID:  "empty-bind-resource-binding-id",
 		ServiceInstanceID: "fake-instance-id-4",
+	}).Error).NotTo(HaveOccurred())
+	Expect(db.Create(&models.BindRequestDetails{
+		BindResource:      []byte(`{"foo":"bar"}`),
+		Parameters:        []byte(`null`),
+		ServiceBindingID:  "empty-parameters-binding-id",
+		ServiceInstanceID: "fake-instance-id-5",
 	}).Error).NotTo(HaveOccurred())
 }

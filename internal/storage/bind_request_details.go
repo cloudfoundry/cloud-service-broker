@@ -14,10 +14,6 @@ type BindRequestDetails struct {
 }
 
 func (s *Storage) StoreBindRequestDetails(bindingID, instanceID string, bindResource, parameters JSONObject) error {
-	// does not store if binding parameters are nil
-	if parameters == nil {
-		return nil
-	}
 
 	encodedBindResource, err := s.encodeJSON(bindResource)
 	if err != nil {
