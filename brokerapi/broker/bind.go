@@ -91,10 +91,12 @@ func (broker *ServiceBroker) Bind(ctx context.Context, instanceID, bindingID str
 			err)
 	}
 
-	if err := broker.store.StoreBindRequestDetails(bindingID, instanceID, nil, parsedDetails.RequestParams); err != nil {
+	// save request details to database
+	if err := broker.store.StoreBindRequestDetails(bindingID, instanceID, parsedDetails.RequestBindResource, parsedDetails.RequestParams); err != nil {
 		return domain.Binding{}, fmt.Errorf("error saving bind request details to database: %s. Unbind operations will not be able to complete", err)
 	}
 
+	// generate credentials
 	binding, err := buildInstanceCredentials(newCreds.Credentials, instanceRecord.Outputs)
 	if err != nil {
 		return domain.Binding{}, fmt.Errorf("error building credentials: %w", err)

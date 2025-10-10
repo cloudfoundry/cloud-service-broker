@@ -16,7 +16,10 @@ var _ = Describe("ParseBindDetails", func() {
 			ServiceID: "fake-service-id",
 			BindResource: &domain.BindResource{
 				AppGuid:            "fake-app-guid",
+				SpaceGuid:          "fake-space-guid",
+				Route:              "fake-route",
 				CredentialClientID: "fake-credential-client-id",
+				BackupAgent:        true,
 			},
 			RawContext:    []byte(`{"foo": "bar"}`),
 			RawParameters: []byte(`{"baz": "quz"}`),
@@ -33,11 +36,20 @@ var _ = Describe("ParseBindDetails", func() {
 			CredHubActor:       "mtls-app:fake-app-guid",
 			RequestParams:      map[string]any{"baz": "quz"},
 			RequestContext:     map[string]any{"foo": "bar"},
+			RequestBindResource: map[string]any{
+				"app_guid":             "fake-app-guid",
+				"space_guid":           "fake-space-guid",
+				"route":                "fake-route",
+				"credential_client_id": "fake-credential-client-id",
+				"backup_agent":         true,
+			},
 		}))
 	})
 
-	When("no bind_resource is present", func() {
-		It("succeeds", func() {
+	When("bind_resource is nil", func() {
+
+		// for backwards combability app_guid is always stored at top-level and to bind_resource
+		It("uses top-level app_guid for bind_resource", func() {
 			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
 				AppGUID:   "fake-app-guid",
 				PlanID:    "fake-plan-id",
@@ -51,6 +63,59 @@ var _ = Describe("ParseBindDetails", func() {
 				ServiceID:          "fake-service-id",
 				CredentialClientID: "",
 				CredHubActor:       "mtls-app:fake-app-guid",
+				RequestBindResource: map[string]any{
+					"app_guid": "fake-app-guid",
+				},
+			}))
+		})
+	})
+
+	When("bind_resource is empty", func() {
+
+		// for backwards combability app_guid is always stored at top-level and to bind_resource
+		It("uses top-level app_guid for bind_resource", func() {
+			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
+				AppGUID:      "fake-app-guid",
+				PlanID:       "fake-plan-id",
+				ServiceID:    "fake-service-id",
+				BindResource: &domain.BindResource{},
+			})
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(bindDetails).To(Equal(paramparser.BindDetails{
+				AppGUID:            "fake-app-guid",
+				PlanID:             "fake-plan-id",
+				ServiceID:          "fake-service-id",
+				CredentialClientID: "",
+				CredHubActor:       "mtls-app:fake-app-guid",
+				RequestBindResource: map[string]any{
+					"app_guid": "fake-app-guid",
+				},
+			}))
+		})
+	})
+
+	When("app_guid is present in bind_resource and at the top level", func() {
+		It("uses the app guid from bind_resource", func() {
+			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
+				AppGUID:   "fake-app-guid-in-deprecated-location",
+				PlanID:    "fake-plan-id",
+				ServiceID: "fake-service-id",
+				BindResource: &domain.BindResource{
+					AppGuid: "fake-app-guid",
+				},
+			})
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(bindDetails).To(Equal(paramparser.BindDetails{
+				AppGUID:            "fake-app-guid",
+				PlanID:             "fake-plan-id",
+				ServiceID:          "fake-service-id",
+				CredentialClientID: "",
+				CredHubActor:       "mtls-app:fake-app-guid",
+				RequestBindResource: map[string]any{
+					"app_guid": "fake-app-guid",
+				},
 			}))
 		})
 	})
@@ -58,7 +123,7 @@ var _ = Describe("ParseBindDetails", func() {
 	// Having the app guid at the top level is deprecated in favour of the app guid in bind_resource
 	// In practice it's always present in both locations, but this could change in the future
 	When("app guid is only present in bind_resource", func() {
-		It("succeeds", func() {
+		It("uses top-level app_guid for bind_resource", func() {
 			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
 				BindResource: &domain.BindResource{
 					AppGuid: "fake-app-guid",
@@ -67,17 +132,76 @@ var _ = Describe("ParseBindDetails", func() {
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(bindDetails.AppGUID).To(Equal("fake-app-guid"))
+			Expect(bindDetails.RequestBindResource).To(Equal(map[string]any{"app_guid": "fake-app-guid"}))
 		})
 	})
 
-	When("bind_resource is present without an app guid", func() {
-		It("uses the app guid from the top level", func() {
-			bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
-				AppGUID:      "fake-app-guid",
-				BindResource: &domain.BindResource{}, // present, but empty
+	// does not store bind_resource keys when keys are empty or go null values
+	When("bind_resource has empty properties", func() {
+		When("app_guid is empty", func() {
+			It("uses the app guid from the top level", func() {
+				bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
+					AppGUID: "fake-app-guid",
+					BindResource: &domain.BindResource{
+						AppGuid: "",
+					},
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(bindDetails.AppGUID).To(Equal("fake-app-guid"))
+				Expect(bindDetails.RequestBindResource).To(Equal(map[string]any{"app_guid": "fake-app-guid"}))
 			})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(bindDetails.AppGUID).To(Equal("fake-app-guid"))
+		})
+		When("space_guid is empty", func() {
+			It("omits space_guid from RequestBindResource", func() {
+				bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
+					BindResource: &domain.BindResource{
+						AppGuid:   "fake-app-guid",
+						SpaceGuid: "",
+					},
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(bindDetails.AppGUID).To(Equal("fake-app-guid"))
+				Expect(bindDetails.RequestBindResource).To(Equal(map[string]any{"app_guid": "fake-app-guid"}))
+			})
+		})
+		When("route is empty", func() {
+			It("omits route from RequestBindResource", func() {
+				bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
+					BindResource: &domain.BindResource{
+						AppGuid: "fake-app-guid",
+						Route:   "",
+					},
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(bindDetails.AppGUID).To(Equal("fake-app-guid"))
+				Expect(bindDetails.RequestBindResource).To(Equal(map[string]any{"app_guid": "fake-app-guid"}))
+			})
+		})
+		When("credential_client_id is empty", func() {
+			It("omits credential_client_id from RequestBindResource", func() {
+				bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
+					BindResource: &domain.BindResource{
+						AppGuid:            "fake-app-guid",
+						CredentialClientID: "",
+					},
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(bindDetails.AppGUID).To(Equal("fake-app-guid"))
+				Expect(bindDetails.RequestBindResource).To(Equal(map[string]any{"app_guid": "fake-app-guid"}))
+			})
+		})
+		When("backup_agent is false", func() {
+			It("omits backup_agent from RequestBindResource", func() {
+				bindDetails, err := paramparser.ParseBindDetails(domain.BindDetails{
+					BindResource: &domain.BindResource{
+						AppGuid:     "fake-app-guid",
+						BackupAgent: false,
+					},
+				})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(bindDetails.AppGUID).To(Equal("fake-app-guid"))
+				Expect(bindDetails.RequestBindResource).To(Equal(map[string]any{"app_guid": "fake-app-guid"}))
+			})
 		})
 	})
 
