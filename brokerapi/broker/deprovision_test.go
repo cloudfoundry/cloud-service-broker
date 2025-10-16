@@ -186,10 +186,10 @@ var _ = Describe("Deprovision", func() {
 				ServiceID: offeringID,
 				PlanID:    "some-non-existent-plan",
 			}
-			fakeServiceProvider.CheckOperationConstraintsReturns(fmt.Errorf("generic-error"))
+			fakeServiceProvider.CheckOperationConstraintsReturns(apiresponses.ErrConcurrentInstanceAccess)
 
 			_, err := serviceBroker.Deprovision(context.TODO(), instanceToDeleteID, deprovisionDetails, true)
-			Expect(err).To(MatchError(`generic-error`))
+			Expect(err).To(MatchError(apiresponses.ErrConcurrentInstanceAccess))
 		})
 	})
 
