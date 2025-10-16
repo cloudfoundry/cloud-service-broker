@@ -1,8 +1,7 @@
 package tf
 
 import (
-	"fmt"
-
+	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
 	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 )
 
@@ -12,14 +11,13 @@ func (provider *TerraformProvider) CheckOperationConstraints(deploymentID string
 	}
 
 	deployment, err := provider.GetTerraformDeployment(deploymentID)
-	if err != nil {
+	switch {
+	case err != nil:
 		return err
+	case deployment.LastOperationType == models.ProvisionOperationType && deployment.LastOperationState == InProgress:
+		// Will not accept a deprovision while a provision is in progress
+		return apiresponses.ErrConcurrentInstanceAccess
+	default:
+		return nil
 	}
-
-	isProvisionOperationInProgress := deployment.LastOperationType == models.ProvisionOperationType && deployment.LastOperationState == InProgress
-	if isProvisionOperationInProgress {
-		return fmt.Errorf("destroy operation not allowed while provision is in progress")
-	}
-
-	return nil
 }

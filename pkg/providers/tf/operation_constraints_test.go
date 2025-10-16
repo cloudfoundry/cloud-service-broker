@@ -3,6 +3,7 @@ package tf_test
 import (
 	"errors"
 
+	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
@@ -48,14 +49,9 @@ var _ = Describe("CheckOperationConstraints", func() {
 			fakeDeploymentManager.GetTerraformDeploymentReturns(deployment, nil)
 		})
 
-		It("returns an error", func() {
-
+		It("returns a ErrConcurrentInstanceAccess error", func() {
 			err := provider.CheckOperationConstraints(deploymentID, "deprovision")
-			Expect(err).To(
-				MatchError(
-					"destroy operation not allowed while provision is in progress",
-				),
-			)
+			Expect(err).To(MatchError(apiresponses.ErrConcurrentInstanceAccess))
 		})
 	})
 
@@ -82,7 +78,6 @@ var _ = Describe("CheckOperationConstraints", func() {
 		})
 
 		It("returns an error", func() {
-
 			err := provider.CheckOperationConstraints(deploymentID, "deprovision")
 			Expect(err).To(MatchError("fake-error"))
 		})
@@ -100,7 +95,6 @@ var _ = Describe("CheckOperationConstraints", func() {
 		})
 
 		It("does not return an error", func() {
-
 			err := provider.CheckOperationConstraints(deploymentID, "deprovision")
 			Expect(err).NotTo(HaveOccurred())
 		})
