@@ -47,30 +47,35 @@ func (s *Storage) StoreBindRequestDetails(bindingID, instanceID string, bindReso
 	return nil
 }
 
-func (s *Storage) GetBindRequestDetails(bindingID string, instanceID string) (bindResource JSONObject, parameters JSONObject, e error) {
+func (s *Storage) GetBindRequestDetails(bindingID string, instanceID string) (BindRequestDetails, error) {
 	exists, err := s.existsBindRequestDetails(bindingID, instanceID)
 	switch {
 	case err != nil:
-		return nil, nil, err
+		return BindRequestDetails{}, err
 	case !exists:
-		return nil, nil, nil
+		return BindRequestDetails{}, nil
 	}
 
 	var receiver models.BindRequestDetails
 	if err := s.db.Where("service_binding_id = ? AND service_instance_id = ?", bindingID, instanceID).First(&receiver).Error; err != nil {
-		return nil, nil, fmt.Errorf("error finding bind request details record: %w", err)
+		return BindRequestDetails{}, fmt.Errorf("error finding bind request details record: %w", err)
 	}
 
 	decodedParams, err := s.decodeJSONObject(receiver.Parameters)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error decoding bind request detail parameters for %q: %w", bindingID, err)
+		return BindRequestDetails{}, fmt.Errorf("error decoding bind request detail parameters for %q: %w", bindingID, err)
 	}
 
 	decodedBindResource, err := s.decodeJSONObject(receiver.BindResource)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error decoding bind request detail bind_resource for %q: %w", bindingID, err)
+		return BindRequestDetails{}, fmt.Errorf("error decoding bind request detail bind_resource for %q: %w", bindingID, err)
 	}
-	return decodedBindResource, decodedParams, nil
+	return BindRequestDetails{
+		ServiceInstanceGUID: instanceID,
+		ServiceBindingGUID:  bindingID,
+		BindResource:        decodedBindResource,
+		Parameters:          decodedParams,
+	}, nil
 }
 
 func (s *Storage) DeleteBindRequestDetails(bindingID string, instanceID string) error {

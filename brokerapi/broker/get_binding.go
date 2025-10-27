@@ -63,8 +63,8 @@ func (broker *ServiceBroker) GetBinding(ctx context.Context, instanceID, binding
 		return domain.GetBindingSpec{}, ErrNotFound
 	}
 
-	// get binding parameters
-	_, params, err := broker.store.GetBindRequestDetails(bindingID, instanceID)
+	// get bind request details
+	storedBindRequestDetails, err := broker.store.GetBindRequestDetails(bindingID, instanceID)
 	if err != nil {
 		return domain.GetBindingSpec{}, fmt.Errorf("error retrieving bind request details: %w", err)
 	}
@@ -77,7 +77,7 @@ func (broker *ServiceBroker) GetBinding(ctx context.Context, instanceID, binding
 		SyslogDrainURL:  "",
 		RouteServiceURL: "",
 		VolumeMounts:    nil,
-		Parameters:      params,
+		Parameters:      storedBindRequestDetails.Parameters,
 		Endpoints:       nil,
 		Metadata:        domain.BindingMetadata{},
 	}, nil

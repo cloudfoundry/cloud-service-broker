@@ -390,8 +390,26 @@ var _ = Describe("Update", func() {
 
 				fakeServiceProvider.GetTerraformOutputsReturns(storage.JSONObject{"instance-provision-output": "admin-user-name"}, nil)
 
-				fakeStorage.GetBindRequestDetailsReturnsOnCall(0, storage.JSONObject{"app_guid": "test-app-guid-1"}, storage.JSONObject{"first-binding-param": "first-binding-bar"}, nil)
-				fakeStorage.GetBindRequestDetailsReturnsOnCall(1, storage.JSONObject{"app_guid": "test-app-guid-2"}, storage.JSONObject{"second-binding-param": "second-binding-bar"}, nil)
+				fakeStorage.GetBindRequestDetailsReturnsOnCall(0, storage.BindRequestDetails{
+					ServiceInstanceGUID: instanceID,
+					ServiceBindingGUID:  "firstBindingID",
+					BindResource: storage.JSONObject{
+						"app_guid": "test-app-guid-1",
+					},
+					Parameters: storage.JSONObject{
+						"first-binding-param": "first-binding-bar",
+					},
+				}, nil)
+				fakeStorage.GetBindRequestDetailsReturnsOnCall(1, storage.BindRequestDetails{
+					ServiceInstanceGUID: instanceID,
+					ServiceBindingGUID:  "secondBindingID",
+					BindResource: storage.JSONObject{
+						"app_guid": "test-app-guid-2",
+					},
+					Parameters: storage.JSONObject{
+						"second-binding-param": "second-binding-bar",
+					},
+				}, nil)
 				fakeStorage.GetTerraformDeploymentReturns(storage.TerraformDeployment{LastOperationState: tf.InProgress}, nil)
 			})
 
@@ -444,7 +462,7 @@ var _ = Describe("Update", func() {
 
 			When("getting binding request details fails", func() {
 				BeforeEach(func() {
-					fakeStorage.GetBindRequestDetailsReturnsOnCall(1, nil, storage.JSONObject{}, errors.New("cant get binding request details"))
+					fakeStorage.GetBindRequestDetailsReturnsOnCall(1, storage.BindRequestDetails{}, errors.New("cant get binding request details"))
 				})
 
 				It("should error", func() {

@@ -117,21 +117,19 @@ type FakeStorage struct {
 		result1 bool
 		result2 error
 	}
-	GetBindRequestDetailsStub        func(string, string) (storage.JSONObject, storage.JSONObject, error)
+	GetBindRequestDetailsStub        func(string, string) (storage.BindRequestDetails, error)
 	getBindRequestDetailsMutex       sync.RWMutex
 	getBindRequestDetailsArgsForCall []struct {
 		arg1 string
 		arg2 string
 	}
 	getBindRequestDetailsReturns struct {
-		result1 storage.JSONObject
-		result2 storage.JSONObject
-		result3 error
+		result1 storage.BindRequestDetails
+		result2 error
 	}
 	getBindRequestDetailsReturnsOnCall map[int]struct {
-		result1 storage.JSONObject
-		result2 storage.JSONObject
-		result3 error
+		result1 storage.BindRequestDetails
+		result2 error
 	}
 	GetProvisionRequestDetailsStub        func(string) (storage.JSONObject, error)
 	getProvisionRequestDetailsMutex       sync.RWMutex
@@ -834,7 +832,7 @@ func (fake *FakeStorage) ExistsTerraformDeploymentReturnsOnCall(i int, result1 b
 	}{result1, result2}
 }
 
-func (fake *FakeStorage) GetBindRequestDetails(arg1 string, arg2 string) (storage.JSONObject, storage.JSONObject, error) {
+func (fake *FakeStorage) GetBindRequestDetails(arg1 string, arg2 string) (storage.BindRequestDetails, error) {
 	fake.getBindRequestDetailsMutex.Lock()
 	ret, specificReturn := fake.getBindRequestDetailsReturnsOnCall[len(fake.getBindRequestDetailsArgsForCall)]
 	fake.getBindRequestDetailsArgsForCall = append(fake.getBindRequestDetailsArgsForCall, struct {
@@ -849,9 +847,9 @@ func (fake *FakeStorage) GetBindRequestDetails(arg1 string, arg2 string) (storag
 		return stub(arg1, arg2)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2, ret.result3
+		return ret.result1, ret.result2
 	}
-	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeStorage) GetBindRequestDetailsCallCount() int {
@@ -860,7 +858,7 @@ func (fake *FakeStorage) GetBindRequestDetailsCallCount() int {
 	return len(fake.getBindRequestDetailsArgsForCall)
 }
 
-func (fake *FakeStorage) GetBindRequestDetailsCalls(stub func(string, string) (storage.JSONObject, storage.JSONObject, error)) {
+func (fake *FakeStorage) GetBindRequestDetailsCalls(stub func(string, string) (storage.BindRequestDetails, error)) {
 	fake.getBindRequestDetailsMutex.Lock()
 	defer fake.getBindRequestDetailsMutex.Unlock()
 	fake.GetBindRequestDetailsStub = stub
@@ -873,33 +871,30 @@ func (fake *FakeStorage) GetBindRequestDetailsArgsForCall(i int) (string, string
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeStorage) GetBindRequestDetailsReturns(result1 storage.JSONObject, result2 storage.JSONObject, result3 error) {
+func (fake *FakeStorage) GetBindRequestDetailsReturns(result1 storage.BindRequestDetails, result2 error) {
 	fake.getBindRequestDetailsMutex.Lock()
 	defer fake.getBindRequestDetailsMutex.Unlock()
 	fake.GetBindRequestDetailsStub = nil
 	fake.getBindRequestDetailsReturns = struct {
-		result1 storage.JSONObject
-		result2 storage.JSONObject
-		result3 error
-	}{result1, result2, result3}
+		result1 storage.BindRequestDetails
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeStorage) GetBindRequestDetailsReturnsOnCall(i int, result1 storage.JSONObject, result2 storage.JSONObject, result3 error) {
+func (fake *FakeStorage) GetBindRequestDetailsReturnsOnCall(i int, result1 storage.BindRequestDetails, result2 error) {
 	fake.getBindRequestDetailsMutex.Lock()
 	defer fake.getBindRequestDetailsMutex.Unlock()
 	fake.GetBindRequestDetailsStub = nil
 	if fake.getBindRequestDetailsReturnsOnCall == nil {
 		fake.getBindRequestDetailsReturnsOnCall = make(map[int]struct {
-			result1 storage.JSONObject
-			result2 storage.JSONObject
-			result3 error
+			result1 storage.BindRequestDetails
+			result2 error
 		})
 	}
 	fake.getBindRequestDetailsReturnsOnCall[i] = struct {
-		result1 storage.JSONObject
-		result2 storage.JSONObject
-		result3 error
-	}{result1, result2, result3}
+		result1 storage.BindRequestDetails
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeStorage) GetProvisionRequestDetails(arg1 string) (storage.JSONObject, error) {

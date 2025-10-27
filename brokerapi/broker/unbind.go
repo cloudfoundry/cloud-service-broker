@@ -66,7 +66,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 		return domain.UnbindSpec{}, err
 	}
 
-	_, storedParams, err := broker.store.GetBindRequestDetails(bindingID, instanceID)
+	storedBindRequestDetails, err := broker.store.GetBindRequestDetails(bindingID, instanceID)
 	if err != nil {
 		return domain.UnbindSpec{}, fmt.Errorf("error retrieving bind request details for %q: %w", instanceID, err)
 	}
@@ -74,7 +74,7 @@ func (broker *ServiceBroker) Unbind(ctx context.Context, instanceID, bindingID s
 	parsedDetails := paramparser.BindDetails{
 		PlanID:        details.PlanID,
 		ServiceID:     details.ServiceID,
-		RequestParams: storedParams,
+		RequestParams: storedBindRequestDetails.Parameters,
 	}
 
 	vars, err := serviceDefinition.BindVariables(instance, bindingID, parsedDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))

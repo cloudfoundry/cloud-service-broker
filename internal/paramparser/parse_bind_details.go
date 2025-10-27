@@ -8,6 +8,7 @@ import (
 
 	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 )
 
 var ErrNoAppGUIDOrCredentialClient = apiresponses.NewFailureResponse(
@@ -115,4 +116,25 @@ func invalidUserInputError(format string, a ...any) error {
 		http.StatusBadRequest,
 		"parsing-user-request",
 	)
+}
+
+func ParseStoredBindRequestDetails(storedDetails storage.BindRequestDetails, PlanID, ServiceID string) (BindDetails, error) {
+
+	// never set as values are not stored at the database:
+	// - CredentialClientID
+	// - CredHubActor
+	// - RequestContext
+	details := BindDetails{
+		PlanID:              PlanID,
+		ServiceID:           ServiceID,
+		RequestParams:       storedDetails.Parameters,
+		RequestBindResource: storedDetails.BindResource,
+	}
+
+	// get app_guid from bind_resource
+	if appID, ok := storedDetails.BindResource["app_guid"].(string); ok {
+		details.AppGUID = appID
+	}
+
+	return details, nil
 }

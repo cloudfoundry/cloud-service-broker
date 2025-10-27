@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 )
 
 var _ = Describe("ParseBindDetails", func() {
@@ -256,5 +257,70 @@ var _ = Describe("ParseBindDetails", func() {
 				Expect(bindDetails).To(BeZero())
 			})
 		})
+	})
+})
+
+var _ = Describe("ParseStoredBindRequestDetails", func() {
+	It("can parse stored bind request details", func() {
+
+		serviceID := "fake-service-id"
+		planID := "fake-plan-id"
+
+		storedDetails := storage.BindRequestDetails{
+			ServiceInstanceGUID: "fake-instance-guid",
+			ServiceBindingGUID:  "fake-binding-guid",
+			BindResource: storage.JSONObject{
+				"app_guid":   "fake-app-guid",
+				"space_guid": "fake-space-guid",
+			},
+			Parameters: storage.JSONObject{
+				"foo": "bar",
+			},
+		}
+
+		bindDetails, err := paramparser.ParseStoredBindRequestDetails(storedDetails, planID, serviceID)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(bindDetails).To(Equal(paramparser.BindDetails{
+			AppGUID:   "fake-app-guid",
+			PlanID:    planID,
+			ServiceID: serviceID,
+			RequestParams: map[string]any{
+				"foo": "bar",
+			},
+			RequestBindResource: map[string]any{
+				"app_guid":   "fake-app-guid",
+				"space_guid": "fake-space-guid",
+			},
+		}))
+	})
+
+	When("app_guid is missing from bind_resource", func() {
+		serviceID := "fake-service-id"
+		planID := "fake-plan-id"
+
+		storedDetails := storage.BindRequestDetails{
+			ServiceInstanceGUID: "fake-instance-guid",
+			ServiceBindingGUID:  "fake-binding-guid",
+			BindResource: storage.JSONObject{
+				"space_guid": "fake-space-guid",
+			},
+			Parameters: storage.JSONObject{
+				"foo": "bar",
+			},
+		}
+
+		bindDetails, err := paramparser.ParseStoredBindRequestDetails(storedDetails, planID, serviceID)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(bindDetails).To(Equal(paramparser.BindDetails{
+			AppGUID:   "",
+			PlanID:    planID,
+			ServiceID: serviceID,
+			RequestParams: map[string]any{
+				"foo": "bar",
+			},
+			RequestBindResource: map[string]any{
+				"space_guid": "fake-space-guid",
+			},
+		}))
 	})
 })
