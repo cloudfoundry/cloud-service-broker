@@ -2,6 +2,7 @@ package broker
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"code.cloudfoundry.org/brokerapi/v13/domain"
@@ -203,16 +204,17 @@ func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, servi
 
 	var bindingContexts []*varcontext.VarContext
 	for _, bindingID := range bindingIDs {
-		_, storedParams, err := broker.store.GetBindRequestDetails(bindingID, instance.GUID)
+
+		details, err := broker.getBindRequestRawParameters(bindingID, instance.GUID, plan.ID, serviceDefinition.ID)
 		if err != nil {
 			return nil, fmt.Errorf("error retrieving bind request details for instance %q: %w", instance.GUID, err)
 		}
 
-		parsedDetails := paramparser.BindDetails{
-			PlanID:        instance.PlanGUID,
-			ServiceID:     instance.ServiceGUID,
-			RequestParams: storedParams,
+		parsedDetails, err := paramparser.ParseBindDetails(details)
+		if err != nil {
+			return nil, err
 		}
+
 		vars, err := serviceDefinition.BindVariables(instance, bindingID, parsedDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
 		if err != nil {
 			return nil, fmt.Errorf("error constructing bind variables for instance %q: %w", instance.GUID, err)
@@ -220,6 +222,46 @@ func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, servi
 		bindingContexts = append(bindingContexts, vars)
 	}
 	return bindingContexts, nil
+}
+
+func (broker *ServiceBroker) getBindRequestRawParameters(bindingID, instanceID, planID, serviceID string) (domain.BindDetails, error) {
+	storedBindResource, storedParams, err := broker.store.GetBindRequestDetails(bindingID, instanceID)
+	if err != nil {
+		return domain.BindDetails{}, fmt.Errorf("error retrieving bind request details for instance %q: %w", instanceID, err)
+	}
+
+	storedRawParams, err := json.Marshal(storedParams)
+	if err != nil {
+		return domain.BindDetails{}, fmt.Errorf("error marshalling stored bind parameters for instance %q: %w", instanceID, err)
+	}
+
+	details := domain.BindDetails{
+		PlanID:        planID,
+		ServiceID:     serviceID,
+		RawParameters: storedRawParams,
+	}
+
+	if storedBindResource != nil {
+		details.BindResource = &domain.BindResource{}
+	}
+
+	if appGUID, ok := storedBindResource["app_guid"].(string); ok {
+		details.AppGUID = appGUID
+	}
+	if spaceGUID, ok := storedBindResource["space_guid"].(string); ok {
+		details.BindResource.SpaceGuid = spaceGUID
+	}
+	if route, ok := storedBindResource["route"].(string); ok {
+		details.BindResource.Route = route
+	}
+	if credentialClientID, ok := storedBindResource["credential_client_id"].(string); ok {
+		details.BindResource.CredentialClientID = credentialClientID
+	}
+	if backupAgent, ok := storedBindResource["backup_agent"].(bool); ok {
+		details.BindResource.BackupAgent = backupAgent
+	}
+
+	return details, nil
 }
 
 func (broker *ServiceBroker) storeUpgradeError(errorToStore error, instanceID string) {

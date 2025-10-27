@@ -115,6 +115,14 @@ var _ = Describe("Update", func() {
 					},
 					ProviderBuilder: providerBuilder,
 					BindComputedVariables: []varcontext.DefaultVariable{
+						{Name: "binding_id", Default: `${request.binding_id}`},
+						{Name: "instance_id", Default: `${request.instance_id}`},
+						{Name: "service_id", Default: `${request.service_id}`},
+						{Name: "plan_id", Default: `${request.plan_id}`},
+						// {Name: "plan_properties", Default: `${request.plan_properties}`},
+						{Name: "app_guid", Default: `${request.app_guid}`},
+						// context is not (yet) passed when upgrading bindings:
+						// {Name: "context", Default: `${request.context}`},
 						{Name: "instance_output", Default: `${instance.details["instance-provision-output"]}`, Overwrite: true},
 					},
 				},
@@ -382,12 +390,12 @@ var _ = Describe("Update", func() {
 
 				fakeServiceProvider.GetTerraformOutputsReturns(storage.JSONObject{"instance-provision-output": "admin-user-name"}, nil)
 
-				fakeStorage.GetBindRequestDetailsReturnsOnCall(0, nil, storage.JSONObject{"first-binding-param": "first-binding-bar"}, nil)
-				fakeStorage.GetBindRequestDetailsReturnsOnCall(1, nil, storage.JSONObject{"second-binding-param": "second-binding-bar"}, nil)
+				fakeStorage.GetBindRequestDetailsReturnsOnCall(0, storage.JSONObject{"app_guid": "test-app-guid-1"}, storage.JSONObject{"first-binding-param": "first-binding-bar"}, nil)
+				fakeStorage.GetBindRequestDetailsReturnsOnCall(1, storage.JSONObject{"app_guid": "test-app-guid-2"}, storage.JSONObject{"second-binding-param": "second-binding-bar"}, nil)
 				fakeStorage.GetTerraformDeploymentReturns(storage.TerraformDeployment{LastOperationState: tf.InProgress}, nil)
 			})
 
-			It("should populate the binding contexts with binding computed output and previous bind properties", func() {
+			It("should populate the binding contexts with binding computed output and previous bind properties and bind request details", func() {
 				_, err := serviceBroker.Update(context.TODO(), instanceID, upgradeDetails, true)
 				Expect(err).ToNot(HaveOccurred())
 
@@ -400,8 +408,19 @@ var _ = Describe("Update", func() {
 				}).WithTimeout(time.Second).WithPolling(time.Millisecond).Should(Succeed())
 
 				_, _, bindingVars := fakeServiceProvider.UpgradeBindingsArgsForCall(0)
+				Expect(bindingVars[0].GetString("binding_id")).To(Equal("firstBindingID"))
+				Expect(bindingVars[0].GetString("instance_id")).To(Equal("test-instance-id"))
+				Expect(bindingVars[0].GetString("service_id")).To(Equal(offeringID))
+				Expect(bindingVars[0].GetString("plan_id")).To(Equal(originalPlanID))
+				Expect(bindingVars[0].GetString("app_guid")).To(Equal("test-app-guid-1"))
 				Expect(bindingVars[0].GetString("instance_output")).To(Equal("admin-user-name"))
 				Expect(bindingVars[0].GetString("first-binding-param")).To(Equal("first-binding-bar"))
+
+				Expect(bindingVars[1].GetString("binding_id")).To(Equal("secondBindingID"))
+				Expect(bindingVars[1].GetString("instance_id")).To(Equal("test-instance-id"))
+				Expect(bindingVars[1].GetString("service_id")).To(Equal(offeringID))
+				Expect(bindingVars[1].GetString("plan_id")).To(Equal(originalPlanID))
+				Expect(bindingVars[1].GetString("app_guid")).To(Equal("test-app-guid-2"))
 				Expect(bindingVars[1].GetString("instance_output")).To(Equal("admin-user-name"))
 				Expect(bindingVars[1].GetString("second-binding-param")).To(Equal("second-binding-bar"))
 			})
