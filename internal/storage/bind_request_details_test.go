@@ -158,6 +158,7 @@ var _ = Describe("BindRequestDetails", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(actual).To(BeZero())
 				Expect(actual.Parameters).To(BeNil())
+			})
 		})
 
 		DescribeTable(
@@ -193,7 +194,6 @@ var _ = Describe("BindRequestDetails", func() {
 
 			Expect(exists()).To(BeFalse())
 		})
-
 		When("binding doesnt exist", func() {
 			It("is idempotent when binding not found", func() {
 				Expect(store.DeleteBindRequestDetails("not-there", "fake-instance-id")).NotTo(HaveOccurred())
