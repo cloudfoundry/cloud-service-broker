@@ -12,7 +12,8 @@ import (
 
 var _ = Describe("Database Encryption", func() {
 	const (
-		provisionParams           = `{"provision_input":"bar"}`
+		provisionParams = `{"provision_input":"bar"}`
+		// bindResource              = `{"app_guid": "sample-app-guid"}` 	// the CLI bind command assigns a random uuid for the app guid
 		bindParams                = `{"bind_input":"quz"}`
 		updateParams              = `{"update_input": "update output value"}`
 		mergedParams              = `{"provision_input":"bar","update_input":"update output value"}`
@@ -59,6 +60,12 @@ var _ = Describe("Database Encryption", func() {
 		record := models.TerraformDeployment{}
 		findRecord(&record, tfWorkspaceIDQuery, fmt.Sprintf("tf:%s:", serviceInstanceGUID))
 		return record.Workspace
+	}
+
+	persistedBindRequestDetailBindResource := func(serviceBindingGUID string) []byte {
+		record := models.BindRequestDetails{}
+		findRecord(&record, serviceBindingIDQuery, serviceBindingGUID)
+		return record.BindResource
 	}
 
 	persistedBindRequestDetailParameters := func(serviceBindingGUID string) []byte {
@@ -166,6 +173,7 @@ var _ = Describe("Database Encryption", func() {
 		ContainSubstring(provisionOutputStateValue),
 		ContainSubstring(tfStateKey),
 	)
+	bePlaintextBindResource := MatchRegexp(`{"app_guid":"\w{8}-\w{4}-\w{4}-\w{4}-\w{12}"}`) // the CLI bind command assigns a random uuid for the app guid
 	bePlaintextBindParams := Equal([]byte(bindParams))
 	bePlaintextBindingDetails := Equal([]byte(bindOutput))
 	bePlaintextBindingTerraformState := SatisfyAll(
@@ -201,6 +209,7 @@ var _ = Describe("Database Encryption", func() {
 
 			By("checking the binding fields")
 			serviceBinding := must(broker.CreateBinding(serviceInstance, testdrive.WithBindingParams(bindParams)))
+			Expect(persistedBindRequestDetailBindResource(serviceBinding.GUID)).To(bePlaintextBindResource)
 			Expect(persistedBindRequestDetailParameters(serviceBinding.GUID)).To(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).To(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).To(haveAnyPlaintextBindingTerraformState)
@@ -243,6 +252,7 @@ var _ = Describe("Database Encryption", func() {
 
 			By("checking the binding fields")
 			serviceBinding := must(broker.CreateBinding(serviceInstance, testdrive.WithBindingParams(bindParams)))
+			Expect(persistedBindRequestDetailBindResource(serviceBinding.GUID)).NotTo(bePlaintextBindResource)
 			Expect(persistedBindRequestDetailParameters(serviceBinding.GUID)).NotTo(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).NotTo(haveAnyPlaintextBindingTerraformState)
@@ -285,6 +295,7 @@ var _ = Describe("Database Encryption", func() {
 
 			By("creating a binding and checking the fields are stored in plain text")
 			serviceBinding := must(broker.CreateBinding(serviceInstance, testdrive.WithBindingParams(bindParams)))
+			Expect(persistedBindRequestDetailBindResource(serviceBinding.GUID)).To(bePlaintextBindResource)
 			Expect(persistedBindRequestDetailParameters(serviceBinding.GUID)).To(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).To(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).To(bePlaintextBindingTerraformState)
@@ -305,6 +316,7 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(haveAnyPlaintextServiceTerraformState)
+			Expect(persistedBindRequestDetailBindResource(serviceBinding.GUID)).NotTo(bePlaintextBindResource)
 			Expect(persistedBindRequestDetailParameters(serviceBinding.GUID)).NotTo(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).NotTo(haveAnyPlaintextBindingTerraformState)
@@ -344,6 +356,7 @@ var _ = Describe("Database Encryption", func() {
 
 			By("creating a binding and checking the fields are stored encrypted")
 			serviceBinding := must(broker.CreateBinding(serviceInstance, testdrive.WithBindingParams(bindParams)))
+			Expect(persistedBindRequestDetailBindResource(serviceBinding.GUID)).NotTo(bePlaintextBindResource)
 			Expect(persistedBindRequestDetailParameters(serviceBinding.GUID)).NotTo(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).NotTo(haveAnyPlaintextBindingTerraformState)
@@ -364,6 +377,7 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).To(bePlaintextProvisionParams)
 			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).To(bePlaintextProvisionOutput)
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).To(bePlaintextInstanceTerraformState)
+			Expect(persistedBindRequestDetailBindResource(serviceBinding.GUID)).To(bePlaintextBindResource)
 			Expect(persistedBindRequestDetailParameters(serviceBinding.GUID)).To(bePlaintextBindParams)
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).To(bePlaintextBindingDetails)
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).To(bePlaintextBindingTerraformState)
@@ -407,6 +421,7 @@ var _ = Describe("Database Encryption", func() {
 
 			By("creating a binding and checking the fields are stored in plain text")
 			serviceBinding := must(broker.CreateBinding(serviceInstance, testdrive.WithBindingParams(bindParams)))
+			firstEncryptionPersistedServiceBindingBindResource := persistedBindRequestDetailBindResource(serviceBinding.GUID)
 			firstEncryptionPersistedServiceBindingParams := persistedBindRequestDetailParameters(serviceBinding.GUID)
 			firstEncryptionPersistedServiceBindingDetails := persistedServiceBindingDetails(serviceInstance.GUID)
 			firstEncryptionPersistedServiceBindingTerraformWorkspace := persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)
@@ -438,6 +453,7 @@ var _ = Describe("Database Encryption", func() {
 			Expect(persistedProvisionRequestDetails(serviceInstance.GUID)).NotTo(Equal(firstEncryptionPersistedRequestDetails))
 			Expect(persistedServiceInstanceDetails(serviceInstance.GUID)).NotTo(Equal(firstEncryptionPersistedServiceInstanceDetails))
 			Expect(persistedServiceInstanceTerraformWorkspace(serviceInstance.GUID)).NotTo(Equal(firstEncryptionpersistedServiceInstanceTerraformWorkspace))
+			Expect(persistedBindRequestDetailBindResource(serviceBinding.GUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingBindResource))
 			Expect(persistedBindRequestDetailParameters(serviceBinding.GUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingParams))
 			Expect(persistedServiceBindingDetails(serviceInstance.GUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingDetails))
 			Expect(persistedServiceBindingTerraformWorkspace(serviceInstance.GUID, serviceBinding.GUID)).NotTo(Equal(firstEncryptionPersistedServiceBindingTerraformWorkspace))
