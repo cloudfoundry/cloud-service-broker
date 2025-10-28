@@ -24,8 +24,8 @@ code.cloudfoundry.org/brokerapi/v13 v13.0.11 h1:Ef8/buSYa55lCde/+FQunr3LUeCYZ7Vx
 code.cloudfoundry.org/brokerapi/v13 v13.0.11/go.mod h1:8IO3asdbAwQmKwRoOhPP/vb5EQEFywusjOiZBusF8nE=
 code.cloudfoundry.org/jsonry v1.1.4 h1:P9N7IlH1/4aRCLcXLgLFj1hkcBmV7muijJzY+K6U4hE=
 code.cloudfoundry.org/jsonry v1.1.4/go.mod h1:6aKilShQP7w/Ez76h1El2/n9y2OkHuU56nKSBB9Gp0A=
-code.cloudfoundry.org/lager/v3 v3.52.0 h1:ZukF8mEf1bJs0rG4i7itJiu1BQSA3gasLqBIgKlrOSQ=
-code.cloudfoundry.org/lager/v3 v3.52.0/go.mod h1:KgmwQkZVR2KTnAv/KV4xiFSrUnSL9BLUb61PSDvX9xc=
+code.cloudfoundry.org/lager/v3 v3.53.0 h1:8W/h5Byo6LTBxcHKtVM/6BCQFzK+3ThzMXHCAAdePhw=
+code.cloudfoundry.org/lager/v3 v3.53.0/go.mod h1:DitYgIlWKF1cn+U4mKohEuU5k4L3i9uefQyt83p3uSk=
 filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
 github.com/BurntSushi/toml v0.4.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
