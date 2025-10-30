@@ -705,24 +705,6 @@ func (fake *FakeDeploymentManagerInterface) UpdateWorkspaceHCLReturnsOnCall(i in
 func (fake *FakeDeploymentManagerInterface) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.createAndSaveDeploymentMutex.RLock()
-	defer fake.createAndSaveDeploymentMutex.RUnlock()
-	fake.deleteTerraformDeploymentMutex.RLock()
-	defer fake.deleteTerraformDeploymentMutex.RUnlock()
-	fake.getBindingDeploymentsMutex.RLock()
-	defer fake.getBindingDeploymentsMutex.RUnlock()
-	fake.getTerraformDeploymentMutex.RLock()
-	defer fake.getTerraformDeploymentMutex.RUnlock()
-	fake.markOperationFinishedMutex.RLock()
-	defer fake.markOperationFinishedMutex.RUnlock()
-	fake.markOperationStartedMutex.RLock()
-	defer fake.markOperationStartedMutex.RUnlock()
-	fake.operationStatusMutex.RLock()
-	defer fake.operationStatusMutex.RUnlock()
-	fake.resetOperationTypeMutex.RLock()
-	defer fake.resetOperationTypeMutex.RUnlock()
-	fake.updateWorkspaceHCLMutex.RLock()
-	defer fake.updateWorkspaceHCLMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

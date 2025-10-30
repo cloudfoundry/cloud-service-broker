@@ -109,9 +109,13 @@ var _ = Describe("Bind", func() {
 		serviceBroker = must(broker.New(brokerConfig, fakeStorage, utils.NewLogger("bind-test-with-credstore")))
 
 		bindDetails = domain.BindDetails{
-			AppGUID:       appGUID,
-			PlanID:        planID,
-			ServiceID:     serviceID,
+			AppGUID:   appGUID,
+			PlanID:    planID,
+			ServiceID: serviceID,
+			BindResource: &domain.BindResource{
+				AppGuid:   appGUID,
+				SpaceGuid: spaceID,
+			},
 			RawParameters: json.RawMessage(`{"bind_field_1":"bind_value_1"}`),
 		}
 	})
@@ -149,15 +153,22 @@ var _ = Describe("Bind", func() {
 			Expect(actualActor).To(Equal("mtls-app:test-app-guid"))
 
 			By("validating storage is asked to store binding credentials")
-			Expect(fakeStorage.StoreBindRequestDetailsCallCount()).To(Equal(1))
-			actualBindRequest := fakeStorage.StoreBindRequestDetailsArgsForCall(0)
-			Expect(actualBindRequest).To(Equal(storage.BindRequestDetails{
+			Expect(fakeStorage.CreateServiceBindingCredentialsCallCount()).To(Equal(1))
+			actualCreds := fakeStorage.CreateServiceBindingCredentialsArgsForCall(0)
+			Expect(actualCreds).To(Equal(storage.ServiceBindingCredentials{
 				ServiceInstanceGUID: instanceID,
-				ServiceBindingGUID:  bindingID,
-				RequestDetails: map[string]any{
-					"bind_field_1": "bind_value_1",
-				},
+				BindingGUID:         bindingID,
+				ServiceGUID:         serviceID,
+				Credentials:         map[string]any{"fakeOutput": "fakeValue"},
 			}))
+
+			By("validating storage is asked to store bind request details")
+			Expect(fakeStorage.StoreBindRequestDetailsCallCount()).To(Equal(1))
+			actualBindingID, actualInstanceID, actualBindResource, actualParams := fakeStorage.StoreBindRequestDetailsArgsForCall(0)
+			Expect(actualBindingID).To(Equal(bindingID))
+			Expect(actualInstanceID).To(Equal(instanceID))
+			Expect(actualBindResource).To(Equal(storage.JSONObject{"app_guid": "test-app-guid", "space_guid": "test-space-id"}))
+			Expect(actualParams).To(Equal(storage.JSONObject{"bind_field_1": "bind_value_1"}))
 		})
 
 		Describe("bind variables", func() {
@@ -252,7 +263,7 @@ var _ = Describe("Bind", func() {
 			})
 		})
 
-		When("error parsing bind details", func() {
+		When("error parsing bind parameters", func() {
 			BeforeEach(func() {
 				bindDetails.RawParameters = json.RawMessage(`sadfasdf`)
 			})

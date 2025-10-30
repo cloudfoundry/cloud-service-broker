@@ -42,7 +42,7 @@ type ProvisionRequestDetails ProvisionRequestDetailsV3
 
 // BindRequestDetails holds user-defined properties passed to a call
 // to provision a service.
-type BindRequestDetails BindRequestDetailsV1
+type BindRequestDetails BindRequestDetailsV2
 
 // Migration represents the migrations table. It holds a monotonically
 // increasing number that gets incremented with every database schema revision.

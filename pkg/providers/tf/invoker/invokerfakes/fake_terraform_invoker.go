@@ -400,16 +400,6 @@ func (fake *FakeTerraformInvoker) ShowReturnsOnCall(i int, result1 string, resul
 func (fake *FakeTerraformInvoker) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.applyMutex.RLock()
-	defer fake.applyMutex.RUnlock()
-	fake.destroyMutex.RLock()
-	defer fake.destroyMutex.RUnlock()
-	fake.importMutex.RLock()
-	defer fake.importMutex.RUnlock()
-	fake.planMutex.RLock()
-	defer fake.planMutex.RUnlock()
-	fake.showMutex.RLock()
-	defer fake.showMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

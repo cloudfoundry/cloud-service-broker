@@ -10,6 +10,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
 )
 
+// CheckAllRecords checks whether all JSON blobs in the database can be JSON-decoded.
 func (s *Storage) CheckAllRecords() error {
 	var errs *multierror.Error
 
@@ -51,8 +52,11 @@ func (s *Storage) checkAllBindRequestDetails() (errs *multierror.Error) {
 	var bindRequestDetailsBatch []models.BindRequestDetails
 	result := s.db.FindInBatches(&bindRequestDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range bindRequestDetailsBatch {
-			if _, err := s.decodeJSONObject(bindRequestDetailsBatch[i].RequestDetails); err != nil {
-				errs = multierror.Append(fmt.Errorf("decode error for binding request details %q: %w", bindRequestDetailsBatch[i].ServiceBindingID, err), errs)
+			if _, err := s.decodeJSONObject(bindRequestDetailsBatch[i].BindResource); err != nil {
+				errs = multierror.Append(fmt.Errorf("decode error for binding request details bind_resource %q: %w", bindRequestDetailsBatch[i].ServiceBindingID, err), errs)
+			}
+			if _, err := s.decodeJSONObject(bindRequestDetailsBatch[i].Parameters); err != nil {
+				errs = multierror.Append(fmt.Errorf("decode error for binding request details parameters %q: %w", bindRequestDetailsBatch[i].ServiceBindingID, err), errs)
 			}
 		}
 

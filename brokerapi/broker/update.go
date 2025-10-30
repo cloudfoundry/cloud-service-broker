@@ -203,16 +203,17 @@ func (broker *ServiceBroker) createAllBindingContexts(ctx context.Context, servi
 
 	var bindingContexts []*varcontext.VarContext
 	for _, bindingID := range bindingIDs {
-		storedParams, err := broker.store.GetBindRequestDetails(bindingID, instance.GUID)
+
+		storedBindRequestDetails, err := broker.store.GetBindRequestDetails(bindingID, instance.GUID)
 		if err != nil {
 			return nil, fmt.Errorf("error retrieving bind request details for instance %q: %w", instance.GUID, err)
 		}
 
-		parsedDetails := paramparser.BindDetails{
-			PlanID:        instance.PlanGUID,
-			ServiceID:     instance.ServiceGUID,
-			RequestParams: storedParams,
+		parsedDetails, err := paramparser.ParseStoredBindRequestDetails(storedBindRequestDetails, plan.ID, serviceDefinition.ID)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing stored bind request details for instance %q: %w", instance.GUID, err)
 		}
+
 		vars, err := serviceDefinition.BindVariables(instance, bindingID, parsedDetails, plan, request.DecodeOriginatingIdentityHeader(ctx))
 		if err != nil {
 			return nil, fmt.Errorf("error constructing bind variables for instance %q: %w", instance.GUID, err)
