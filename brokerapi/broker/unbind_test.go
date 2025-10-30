@@ -60,9 +60,6 @@ var _ = Describe("Unbind", func() {
 			storage.BindRequestDetails{
 				ServiceInstanceGUID: instanceID,
 				ServiceBindingGUID:  bindingID,
-				BindResource: storage.JSONObject{
-					"bar": "baz",
-				},
 				Parameters: storage.JSONObject{
 					"foo": "bar",
 				},
@@ -127,9 +124,6 @@ var _ = Describe("Unbind", func() {
 				storage.BindRequestDetails{
 					ServiceInstanceGUID: instanceID,
 					ServiceBindingGUID:  bindingID,
-					BindResource: storage.JSONObject{
-						"bar": "baz",
-					},
 					Parameters: storage.JSONObject{
 						"foo": "bar",
 					},
@@ -181,15 +175,12 @@ var _ = Describe("Unbind", func() {
 		})
 
 		Describe("unbind variables", func() {
-			When("variables were provided during bind", func() {
+			When("parameters were provided during bind", func() {
 				BeforeEach(func() {
 					fakeStorage.GetBindRequestDetailsReturns(
 						storage.BindRequestDetails{
 							ServiceInstanceGUID: instanceID,
 							ServiceBindingGUID:  bindingID,
-							BindResource: storage.JSONObject{
-								"bar": "baz",
-							},
 							Parameters: storage.JSONObject{
 								"foo": "bar",
 							},
@@ -198,7 +189,7 @@ var _ = Describe("Unbind", func() {
 					)
 				})
 
-				It("should use the variables in unbind", func() {
+				It("should use the parameters in unbind", func() {
 					_, err := serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, true)
 					Expect(err).NotTo(HaveOccurred())
 
@@ -221,6 +212,35 @@ var _ = Describe("Unbind", func() {
 					_, _, _, actualVars := fakeServiceProvider.UnbindArgsForCall(0)
 
 					Expect(actualVars.GetString("copyOriginatingIdentity")).To(Equal(`{"platform":"cloudfoundry","value":{"user_id":"683ea748-3092-4ff4-b656-39cacc4d5360"}}`))
+				})
+
+				When("request.app_guid is used", func() {
+					BeforeEach(func() {
+
+						brokerConfig.Registry["test-service"].BindComputedVariables = []varcontext.DefaultVariable{
+							{Name: "app_guid", Default: "${request.app_guid}"},
+						}
+
+						fakeStorage.GetBindRequestDetailsReturns(
+							storage.BindRequestDetails{
+								ServiceInstanceGUID: instanceID,
+								ServiceBindingGUID:  bindingID,
+								BindResource: storage.JSONObject{
+									"app_guid": "sample-app-guid",
+								},
+							},
+							nil,
+						)
+					})
+
+					It("should use stored app_guid in unbind", func() {
+						_, err := serviceBroker.Unbind(context.TODO(), instanceID, bindingID, unbindDetails, true)
+						Expect(err).NotTo(HaveOccurred())
+
+						By("validating the provider unbind has been called with correct vars")
+						_, _, _, actualVars := fakeServiceProvider.UnbindArgsForCall(0)
+						Expect(actualVars.GetString("app_guid")).To(Equal("sample-app-guid"))
+					})
 				})
 			})
 		})
