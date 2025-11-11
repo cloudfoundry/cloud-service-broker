@@ -3,12 +3,12 @@ module github.com/cloudfoundry/cloud-service-broker/v2
 go 1.25.3
 
 require (
-	code.cloudfoundry.org/brokerapi/v13 v13.0.11
+	code.cloudfoundry.org/brokerapi/v13 v13.0.12
 	code.cloudfoundry.org/jsonry v1.1.4
-	code.cloudfoundry.org/lager/v3 v3.52.0
+	code.cloudfoundry.org/lager/v3 v3.53.0
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/google/uuid v1.6.0
-	github.com/hashicorp/go-getter v1.8.2
+	github.com/hashicorp/go-getter v1.8.3
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-version v1.7.0
 	github.com/hashicorp/hcl/v2 v2.24.0
@@ -28,7 +28,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/driver/sqlite v1.6.0
-	gorm.io/gorm v1.31.0
+	gorm.io/gorm v1.31.1
 )
 
 require (
