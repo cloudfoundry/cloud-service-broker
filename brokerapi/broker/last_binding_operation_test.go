@@ -1,10 +1,11 @@
 package broker_test
 
 import (
+	"context"
+
 	"code.cloudfoundry.org/brokerapi/v13/domain"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"golang.org/x/net/context"
 
 	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
