@@ -88,8 +88,6 @@ func (fake *FakeTerraformInvokerBuilder) VersionedTerraformInvokerReturnsOnCall(
 func (fake *FakeTerraformInvokerBuilder) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.versionedTerraformInvokerMutex.RLock()
-	defer fake.versionedTerraformInvokerMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

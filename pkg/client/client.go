@@ -96,8 +96,10 @@ func (client *Client) Bind(instanceID, bindingID, serviceID, planID, requestID s
 	return client.makeRequest(http.MethodPut, bindURL, requestID, domain.BindDetails{
 		ServiceID:     serviceID,
 		PlanID:        planID,
-		AppGUID:       uuid.NewString(),
 		RawParameters: parameters,
+		BindResource: &domain.BindResource{
+			AppGuid: uuid.NewString(),
+		},
 	})
 }
 
