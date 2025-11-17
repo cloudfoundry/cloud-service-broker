@@ -1,6 +1,7 @@
 package broker_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -16,7 +17,6 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"golang.org/x/net/context"
 )
 
 var _ = Describe("Deprovision", func() {
