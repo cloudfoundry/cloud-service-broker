@@ -20,8 +20,8 @@ cloud.google.com/go/storage v1.51.0 h1:ZVZ11zCiD7b3k+cH5lQs/qcNaoSz3U9I0jgwVzqDl
 cloud.google.com/go/storage v1.51.0/go.mod h1:YEJfu/Ki3i5oHC/7jyTgsGZwdQ8P9hqMqvpi5kRKGgc=
 cloud.google.com/go/trace v1.11.5 h1:CALS1loyxJMnRiCwZSpdf8ac7iCsjreMxFD2WGxzzHU=
 cloud.google.com/go/trace v1.11.5/go.mod h1:TwblCcqNInriu5/qzaeYEIH7wzUcchSdeY2l5wL3Eec=
-code.cloudfoundry.org/brokerapi/v13 v13.0.12 h1:gK+9GinHgoXjMoDPLYu1fxeTnZYrBSF7qhdLTlA5RRE=
-code.cloudfoundry.org/brokerapi/v13 v13.0.12/go.mod h1:NfWsmTam3YQiltoMZB+onlglEAbVQHaL3sqj+RKjuu0=
+code.cloudfoundry.org/brokerapi/v13 v13.0.13 h1:qJKh3hW359NnihsHtpzk8Q0ZVxWwQzqmjwk86ga57kg=
+code.cloudfoundry.org/brokerapi/v13 v13.0.13/go.mod h1:NfWsmTam3YQiltoMZB+onlglEAbVQHaL3sqj+RKjuu0=
 code.cloudfoundry.org/jsonry v1.1.4 h1:P9N7IlH1/4aRCLcXLgLFj1hkcBmV7muijJzY+K6U4hE=
 code.cloudfoundry.org/jsonry v1.1.4/go.mod h1:6aKilShQP7w/Ez76h1El2/n9y2OkHuU56nKSBB9Gp0A=
 code.cloudfoundry.org/lager/v3 v3.55.0 h1:viHGEjAl6drHqOppRXU+ZpZZUjikO5o/tI4mY//WpQg=
