@@ -8,6 +8,7 @@ import (
 	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
 )
 
+// UpdateAllRecords updates the encryption for all blobs that are stored in the database
 func (s *Storage) UpdateAllRecords() error {
 	updaters := []func() error{
 		s.updateAllServiceBindingCredentials,
@@ -53,12 +54,21 @@ func (s *Storage) updateAllBindRequestDetails() error {
 	var bindRequestDetailsBatch []models.BindRequestDetails
 	result := s.db.FindInBatches(&bindRequestDetailsBatch, 100, func(tx *gorm.DB, batchNumber int) error {
 		for i := range bindRequestDetailsBatch {
-			data, err := s.decodeBytes(bindRequestDetailsBatch[i].RequestDetails)
+
+			bindResourceData, err := s.decodeBytes(bindRequestDetailsBatch[i].BindResource)
 			if err != nil {
 				return fmt.Errorf("decode error for %q: %w", bindRequestDetailsBatch[i].ServiceBindingID, err)
 			}
+			bindRequestDetailsBatch[i].BindResource, err = s.encodeBytes(bindResourceData)
+			if err != nil {
+				return fmt.Errorf("encode error for %q: %w", bindRequestDetailsBatch[i].ServiceBindingID, err)
+			}
 
-			bindRequestDetailsBatch[i].RequestDetails, err = s.encodeBytes(data)
+			parametersData, err := s.decodeBytes(bindRequestDetailsBatch[i].Parameters)
+			if err != nil {
+				return fmt.Errorf("decode error for %q: %w", bindRequestDetailsBatch[i].ServiceBindingID, err)
+			}
+			bindRequestDetailsBatch[i].Parameters, err = s.encodeBytes(parametersData)
 			if err != nil {
 				return fmt.Errorf("encode error for %q: %w", bindRequestDetailsBatch[i].ServiceBindingID, err)
 			}

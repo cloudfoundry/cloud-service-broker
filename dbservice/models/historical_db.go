@@ -257,6 +257,27 @@ func (BindRequestDetailsV1) TableName() string {
 	return "bind_request_details"
 }
 
+// BindRequestDetailsV2 holds user-defined properties passed to a call
+// to provision a service.
+type BindRequestDetailsV2 struct {
+	gorm.Model
+
+	ServiceBindingID  string `gorm:"unique"`
+	ServiceInstanceID string
+
+	// is a json.Marshal of models.BindRessource
+	BindResource []byte `gorm:"type:blob"`
+	// is a json.Marshal of models.Parameters
+	Parameters []byte `gorm:"type:blob"`
+}
+
+// TableName returns a consistent table name for
+// gorm so multiple structs from different versions of the database all operate
+// on the same table.
+func (BindRequestDetailsV2) TableName() string {
+	return "bind_request_details"
+}
+
 // MigrationV1 represents the migrations table. It holds a monotonically
 // increasing number that gets incremented with every database schema revision.
 type MigrationV1 struct {

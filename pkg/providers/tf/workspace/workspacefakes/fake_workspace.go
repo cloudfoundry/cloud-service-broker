@@ -574,22 +574,6 @@ func (fake *FakeWorkspace) UpdateInstanceConfigurationReturnsOnCall(i int, resul
 func (fake *FakeWorkspace) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.executeMutex.RLock()
-	defer fake.executeMutex.RUnlock()
-	fake.hasStateMutex.RLock()
-	defer fake.hasStateMutex.RUnlock()
-	fake.moduleDefinitionsMutex.RLock()
-	defer fake.moduleDefinitionsMutex.RUnlock()
-	fake.moduleInstancesMutex.RLock()
-	defer fake.moduleInstancesMutex.RUnlock()
-	fake.outputsMutex.RLock()
-	defer fake.outputsMutex.RUnlock()
-	fake.serializeMutex.RLock()
-	defer fake.serializeMutex.RUnlock()
-	fake.stateTFVersionMutex.RLock()
-	defer fake.stateTFVersionMutex.RUnlock()
-	fake.updateInstanceConfigurationMutex.RLock()
-	defer fake.updateInstanceConfigurationMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

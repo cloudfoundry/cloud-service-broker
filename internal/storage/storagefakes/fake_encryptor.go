@@ -179,10 +179,6 @@ func (fake *FakeEncryptor) EncryptReturnsOnCall(i int, result1 []byte, result2 e
 func (fake *FakeEncryptor) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.decryptMutex.RLock()
-	defer fake.decryptMutex.RUnlock()
-	fake.encryptMutex.RLock()
-	defer fake.encryptMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
