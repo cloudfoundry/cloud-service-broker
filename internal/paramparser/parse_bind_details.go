@@ -8,6 +8,7 @@ import (
 
 	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
+	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
 )
 
 var ErrNoAppGUIDOrCredentialClient = apiresponses.NewFailureResponse(
@@ -17,28 +18,43 @@ var ErrNoAppGUIDOrCredentialClient = apiresponses.NewFailureResponse(
 )
 
 type BindDetails struct {
-	AppGUID            string
-	CredentialClientID string
-	PlanID             string
-	ServiceID          string
-	CredHubActor       string
-	RequestParams      map[string]any
-	RequestContext     map[string]any
+	AppGUID             string
+	CredentialClientID  string
+	PlanID              string
+	ServiceID           string
+	CredHubActor        string
+	RequestParams       map[string]any
+	RequestContext      map[string]any
+	RequestBindResource map[string]any
 }
 
 func ParseBindDetails(input domain.BindDetails) (BindDetails, error) {
 	result := BindDetails{
-		AppGUID:   input.AppGUID,
 		PlanID:    input.PlanID,
 		ServiceID: input.ServiceID,
 	}
 
-	if input.BindResource != nil {
-		result.CredentialClientID = input.BindResource.CredentialClientID
+	result.RequestBindResource = parseBindResource(input.BindResource)
 
-		if input.BindResource.AppGuid != "" {
-			result.AppGUID = input.BindResource.AppGuid
-		}
+	// get app_guid from bind_resource or fallback to top-level app_guid
+	if result.RequestBindResource == nil {
+		result.RequestBindResource = make(map[string]any)
+	}
+	if val, ok := result.RequestBindResource["app_guid"]; ok {
+		// use app_guid from bind resource if present
+		result.AppGUID = val.(string)
+	} else if input.AppGUID != "" {
+		// if app_guid is not present in bind_resource and top-level app_guid is not empty use that
+		result.AppGUID = input.AppGUID
+		result.RequestBindResource["app_guid"] = input.AppGUID
+	} else {
+		result.AppGUID = ""
+		result.RequestBindResource["app_guid"] = ""
+	}
+
+	// set credentialClientID
+	if val, ok := result.RequestBindResource["credential_client_id"]; ok {
+		result.CredentialClientID = val.(string)
 	}
 
 	switch {
@@ -65,10 +81,60 @@ func ParseBindDetails(input domain.BindDetails) (BindDetails, error) {
 	return result, nil
 }
 
+func parseBindResource(input *domain.BindResource) map[string]any {
+
+	if input == nil {
+		return nil
+	}
+
+	if input.AppGuid == "" && input.SpaceGuid == "" && input.Route == "" && input.CredentialClientID == "" && !input.BackupAgent {
+		return nil
+	}
+
+	result := make(map[string]any)
+	if input.AppGuid != "" {
+		result["app_guid"] = input.AppGuid
+	}
+	if input.SpaceGuid != "" {
+		result["space_guid"] = input.SpaceGuid
+	}
+	if input.Route != "" {
+		result["route"] = input.Route
+	}
+	if input.CredentialClientID != "" {
+		result["credential_client_id"] = input.CredentialClientID
+	}
+	if input.BackupAgent {
+		result["backup_agent"] = input.BackupAgent
+	}
+	return result
+}
+
 func invalidUserInputError(format string, a ...any) error {
 	return apiresponses.NewFailureResponse(
 		fmt.Errorf(format, a...),
 		http.StatusBadRequest,
 		"parsing-user-request",
 	)
+}
+
+func ParseStoredBindRequestDetails(storedDetails storage.BindRequestDetails, PlanID, ServiceID string) (BindDetails, error) {
+
+	// never set as values are not stored at the database:
+	// - CredentialClientID
+	// - CredHubActor
+	// - RequestContext
+	details := BindDetails{
+		PlanID:              PlanID,
+		ServiceID:           ServiceID,
+		RequestParams:       storedDetails.Parameters,
+		RequestBindResource: storedDetails.BindResource,
+	}
+
+	// get app_guid from bind_resource
+	if appID, ok := storedDetails.BindResource["app_guid"].(string); ok {
+		details.AppGUID = appID
+	}
+
+	return details, nil
 }

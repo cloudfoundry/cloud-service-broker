@@ -117,18 +117,18 @@ type FakeStorage struct {
 		result1 bool
 		result2 error
 	}
-	GetBindRequestDetailsStub        func(string, string) (storage.JSONObject, error)
+	GetBindRequestDetailsStub        func(string, string) (storage.BindRequestDetails, error)
 	getBindRequestDetailsMutex       sync.RWMutex
 	getBindRequestDetailsArgsForCall []struct {
 		arg1 string
 		arg2 string
 	}
 	getBindRequestDetailsReturns struct {
-		result1 storage.JSONObject
+		result1 storage.BindRequestDetails
 		result2 error
 	}
 	getBindRequestDetailsReturnsOnCall map[int]struct {
-		result1 storage.JSONObject
+		result1 storage.BindRequestDetails
 		result2 error
 	}
 	GetProvisionRequestDetailsStub        func(string) (storage.JSONObject, error)
@@ -208,10 +208,13 @@ type FakeStorage struct {
 	removeLockFileReturnsOnCall map[int]struct {
 		result1 error
 	}
-	StoreBindRequestDetailsStub        func(storage.BindRequestDetails) error
+	StoreBindRequestDetailsStub        func(string, string, storage.JSONObject, storage.JSONObject) error
 	storeBindRequestDetailsMutex       sync.RWMutex
 	storeBindRequestDetailsArgsForCall []struct {
-		arg1 storage.BindRequestDetails
+		arg1 string
+		arg2 string
+		arg3 storage.JSONObject
+		arg4 storage.JSONObject
 	}
 	storeBindRequestDetailsReturns struct {
 		result1 error
@@ -829,7 +832,7 @@ func (fake *FakeStorage) ExistsTerraformDeploymentReturnsOnCall(i int, result1 b
 	}{result1, result2}
 }
 
-func (fake *FakeStorage) GetBindRequestDetails(arg1 string, arg2 string) (storage.JSONObject, error) {
+func (fake *FakeStorage) GetBindRequestDetails(arg1 string, arg2 string) (storage.BindRequestDetails, error) {
 	fake.getBindRequestDetailsMutex.Lock()
 	ret, specificReturn := fake.getBindRequestDetailsReturnsOnCall[len(fake.getBindRequestDetailsArgsForCall)]
 	fake.getBindRequestDetailsArgsForCall = append(fake.getBindRequestDetailsArgsForCall, struct {
@@ -855,7 +858,7 @@ func (fake *FakeStorage) GetBindRequestDetailsCallCount() int {
 	return len(fake.getBindRequestDetailsArgsForCall)
 }
 
-func (fake *FakeStorage) GetBindRequestDetailsCalls(stub func(string, string) (storage.JSONObject, error)) {
+func (fake *FakeStorage) GetBindRequestDetailsCalls(stub func(string, string) (storage.BindRequestDetails, error)) {
 	fake.getBindRequestDetailsMutex.Lock()
 	defer fake.getBindRequestDetailsMutex.Unlock()
 	fake.GetBindRequestDetailsStub = stub
@@ -868,28 +871,28 @@ func (fake *FakeStorage) GetBindRequestDetailsArgsForCall(i int) (string, string
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeStorage) GetBindRequestDetailsReturns(result1 storage.JSONObject, result2 error) {
+func (fake *FakeStorage) GetBindRequestDetailsReturns(result1 storage.BindRequestDetails, result2 error) {
 	fake.getBindRequestDetailsMutex.Lock()
 	defer fake.getBindRequestDetailsMutex.Unlock()
 	fake.GetBindRequestDetailsStub = nil
 	fake.getBindRequestDetailsReturns = struct {
-		result1 storage.JSONObject
+		result1 storage.BindRequestDetails
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeStorage) GetBindRequestDetailsReturnsOnCall(i int, result1 storage.JSONObject, result2 error) {
+func (fake *FakeStorage) GetBindRequestDetailsReturnsOnCall(i int, result1 storage.BindRequestDetails, result2 error) {
 	fake.getBindRequestDetailsMutex.Lock()
 	defer fake.getBindRequestDetailsMutex.Unlock()
 	fake.GetBindRequestDetailsStub = nil
 	if fake.getBindRequestDetailsReturnsOnCall == nil {
 		fake.getBindRequestDetailsReturnsOnCall = make(map[int]struct {
-			result1 storage.JSONObject
+			result1 storage.BindRequestDetails
 			result2 error
 		})
 	}
 	fake.getBindRequestDetailsReturnsOnCall[i] = struct {
-		result1 storage.JSONObject
+		result1 storage.BindRequestDetails
 		result2 error
 	}{result1, result2}
 }
@@ -1276,18 +1279,21 @@ func (fake *FakeStorage) RemoveLockFileReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeStorage) StoreBindRequestDetails(arg1 storage.BindRequestDetails) error {
+func (fake *FakeStorage) StoreBindRequestDetails(arg1 string, arg2 string, arg3 storage.JSONObject, arg4 storage.JSONObject) error {
 	fake.storeBindRequestDetailsMutex.Lock()
 	ret, specificReturn := fake.storeBindRequestDetailsReturnsOnCall[len(fake.storeBindRequestDetailsArgsForCall)]
 	fake.storeBindRequestDetailsArgsForCall = append(fake.storeBindRequestDetailsArgsForCall, struct {
-		arg1 storage.BindRequestDetails
-	}{arg1})
+		arg1 string
+		arg2 string
+		arg3 storage.JSONObject
+		arg4 storage.JSONObject
+	}{arg1, arg2, arg3, arg4})
 	stub := fake.StoreBindRequestDetailsStub
 	fakeReturns := fake.storeBindRequestDetailsReturns
-	fake.recordInvocation("StoreBindRequestDetails", []interface{}{arg1})
+	fake.recordInvocation("StoreBindRequestDetails", []interface{}{arg1, arg2, arg3, arg4})
 	fake.storeBindRequestDetailsMutex.Unlock()
 	if stub != nil {
-		return stub(arg1)
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1
@@ -1301,17 +1307,17 @@ func (fake *FakeStorage) StoreBindRequestDetailsCallCount() int {
 	return len(fake.storeBindRequestDetailsArgsForCall)
 }
 
-func (fake *FakeStorage) StoreBindRequestDetailsCalls(stub func(storage.BindRequestDetails) error) {
+func (fake *FakeStorage) StoreBindRequestDetailsCalls(stub func(string, string, storage.JSONObject, storage.JSONObject) error) {
 	fake.storeBindRequestDetailsMutex.Lock()
 	defer fake.storeBindRequestDetailsMutex.Unlock()
 	fake.StoreBindRequestDetailsStub = stub
 }
 
-func (fake *FakeStorage) StoreBindRequestDetailsArgsForCall(i int) storage.BindRequestDetails {
+func (fake *FakeStorage) StoreBindRequestDetailsArgsForCall(i int) (string, string, storage.JSONObject, storage.JSONObject) {
 	fake.storeBindRequestDetailsMutex.RLock()
 	defer fake.storeBindRequestDetailsMutex.RUnlock()
 	argsForCall := fake.storeBindRequestDetailsArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeStorage) StoreBindRequestDetailsReturns(result1 error) {
@@ -1585,48 +1591,6 @@ func (fake *FakeStorage) WriteLockFileReturnsOnCall(i int, result1 error) {
 func (fake *FakeStorage) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.createServiceBindingCredentialsMutex.RLock()
-	defer fake.createServiceBindingCredentialsMutex.RUnlock()
-	fake.deleteBindRequestDetailsMutex.RLock()
-	defer fake.deleteBindRequestDetailsMutex.RUnlock()
-	fake.deleteProvisionRequestDetailsMutex.RLock()
-	defer fake.deleteProvisionRequestDetailsMutex.RUnlock()
-	fake.deleteServiceBindingCredentialsMutex.RLock()
-	defer fake.deleteServiceBindingCredentialsMutex.RUnlock()
-	fake.deleteServiceInstanceDetailsMutex.RLock()
-	defer fake.deleteServiceInstanceDetailsMutex.RUnlock()
-	fake.deleteTerraformDeploymentMutex.RLock()
-	defer fake.deleteTerraformDeploymentMutex.RUnlock()
-	fake.existsServiceBindingCredentialsMutex.RLock()
-	defer fake.existsServiceBindingCredentialsMutex.RUnlock()
-	fake.existsServiceInstanceDetailsMutex.RLock()
-	defer fake.existsServiceInstanceDetailsMutex.RUnlock()
-	fake.existsTerraformDeploymentMutex.RLock()
-	defer fake.existsTerraformDeploymentMutex.RUnlock()
-	fake.getBindRequestDetailsMutex.RLock()
-	defer fake.getBindRequestDetailsMutex.RUnlock()
-	fake.getProvisionRequestDetailsMutex.RLock()
-	defer fake.getProvisionRequestDetailsMutex.RUnlock()
-	fake.getServiceBindingCredentialsMutex.RLock()
-	defer fake.getServiceBindingCredentialsMutex.RUnlock()
-	fake.getServiceBindingIDsForServiceInstanceMutex.RLock()
-	defer fake.getServiceBindingIDsForServiceInstanceMutex.RUnlock()
-	fake.getServiceInstanceDetailsMutex.RLock()
-	defer fake.getServiceInstanceDetailsMutex.RUnlock()
-	fake.getTerraformDeploymentMutex.RLock()
-	defer fake.getTerraformDeploymentMutex.RUnlock()
-	fake.removeLockFileMutex.RLock()
-	defer fake.removeLockFileMutex.RUnlock()
-	fake.storeBindRequestDetailsMutex.RLock()
-	defer fake.storeBindRequestDetailsMutex.RUnlock()
-	fake.storeProvisionRequestDetailsMutex.RLock()
-	defer fake.storeProvisionRequestDetailsMutex.RUnlock()
-	fake.storeServiceInstanceDetailsMutex.RLock()
-	defer fake.storeServiceInstanceDetailsMutex.RUnlock()
-	fake.storeTerraformDeploymentMutex.RLock()
-	defer fake.storeTerraformDeploymentMutex.RUnlock()
-	fake.writeLockFileMutex.RLock()
-	defer fake.writeLockFileMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

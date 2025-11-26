@@ -840,26 +840,6 @@ func (fake *FakeServiceBroker) UpdateReturnsOnCall(i int, result1 domain.UpdateS
 func (fake *FakeServiceBroker) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.bindMutex.RLock()
-	defer fake.bindMutex.RUnlock()
-	fake.deprovisionMutex.RLock()
-	defer fake.deprovisionMutex.RUnlock()
-	fake.getBindingMutex.RLock()
-	defer fake.getBindingMutex.RUnlock()
-	fake.getInstanceMutex.RLock()
-	defer fake.getInstanceMutex.RUnlock()
-	fake.lastBindingOperationMutex.RLock()
-	defer fake.lastBindingOperationMutex.RUnlock()
-	fake.lastOperationMutex.RLock()
-	defer fake.lastOperationMutex.RUnlock()
-	fake.provisionMutex.RLock()
-	defer fake.provisionMutex.RUnlock()
-	fake.servicesMutex.RLock()
-	defer fake.servicesMutex.RUnlock()
-	fake.unbindMutex.RLock()
-	defer fake.unbindMutex.RUnlock()
-	fake.updateMutex.RLock()
-	defer fake.updateMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
