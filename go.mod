@@ -1,6 +1,6 @@
 module github.com/cloudfoundry/cloud-service-broker/v2
 
-go 1.25.3
+go 1.25.4
 
 require (
 	code.cloudfoundry.org/brokerapi/v13 v13.0.13
