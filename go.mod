@@ -3,7 +3,7 @@ module github.com/cloudfoundry/cloud-service-broker/v2
 go 1.25.5
 
 require (
-	code.cloudfoundry.org/brokerapi/v13 v13.0.13
+	code.cloudfoundry.org/brokerapi/v13 v13.0.14
 	code.cloudfoundry.org/jsonry v1.1.4
 	code.cloudfoundry.org/lager/v3 v3.55.0
 	github.com/go-sql-driver/mysql v1.9.3
@@ -90,7 +90,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/mattn/go-sqlite3 v1.14.24 // indirect
-	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.0 // indirect
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
