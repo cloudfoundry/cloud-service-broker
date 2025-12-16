@@ -75,7 +75,7 @@ var _ = Describe("ParseUpdateDetails", func() {
 				},
 			})
 
-			Expect(err).To(MatchError(`error parsing maintenance info: Malformed version: not-a-valid-version`))
+			Expect(err).To(MatchError(`error parsing maintenance info: malformed version: not-a-valid-version`))
 			Expect(ud).To(BeZero())
 		})
 	})
@@ -90,7 +90,7 @@ var _ = Describe("ParseUpdateDetails", func() {
 				},
 			})
 
-			Expect(err).To(MatchError(`error parsing previous maintenance info: Malformed version: not-a-valid-version`))
+			Expect(err).To(MatchError(`error parsing previous maintenance info: malformed version: not-a-valid-version`))
 			Expect(ud).To(BeZero())
 		})
 	})
