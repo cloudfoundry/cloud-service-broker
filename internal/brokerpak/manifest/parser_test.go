@@ -412,7 +412,7 @@ var _ = Describe("Parser", func() {
 				"default": true,
 			})))
 
-			Expect(err).To(MatchError(ContainSubstring(`error validating manifest: Malformed version: not.semver: terraform_binaries[3].version`)))
+			Expect(err).To(MatchError(ContainSubstring(`malformed version: not.semver: terraform_binaries[3].version`)))
 			Expect(m).To(BeNil())
 		})
 	})
