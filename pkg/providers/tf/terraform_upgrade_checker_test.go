@@ -97,7 +97,7 @@ var _ = Describe("CheckUpgradeAvailable", func() {
 			provider := tf.NewTerraformProvider(tfBinContext, fakeInvokerBuilder, fakeLogger, fakeServiceDefinition, fakeDeploymentManager)
 
 			err := provider.CheckUpgradeAvailable(tfInstanceID)
-			Expect(err).To(MatchError("Malformed version: "))
+			Expect(err).To(MatchError("malformed version: "))
 		})
 	})
 
