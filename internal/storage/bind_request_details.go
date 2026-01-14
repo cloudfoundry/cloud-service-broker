@@ -13,11 +13,18 @@ type BindRequestDetails struct {
 }
 
 func (s *Storage) StoreBindRequestDetails(bindRequestDetails BindRequestDetails) error {
-	if bindRequestDetails.RequestDetails == nil {
-		return nil
+	// TNZ-74360: MODIFIED FOR TESTING - Always store a record, even when RequestDetails is nil.
+	// This ensures that after migration to v2.6.0+, the bind_resource column will be NULL,
+	// which should trigger the "malformed ciphertext" error during upgrade.
+	// Original code returned early if RequestDetails was nil.
+
+	// If RequestDetails is nil, store an empty map to ensure a record is created
+	detailsToStore := bindRequestDetails.RequestDetails
+	if detailsToStore == nil {
+		detailsToStore = make(JSONObject)
 	}
 
-	encoded, err := s.encodeJSON(bindRequestDetails.RequestDetails)
+	encoded, err := s.encodeJSON(detailsToStore)
 	if err != nil {
 		return fmt.Errorf("error encoding details: %w", err)
 	}
