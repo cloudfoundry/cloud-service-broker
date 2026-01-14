@@ -136,6 +136,15 @@ var _ = Describe("BindRequestDetails", func() {
 			})
 		})
 
+		When("bindResource column is empty (migrated from V1 schema)", func() {
+			It("returns nil BindResource without error", func() {
+				actual, err := store.GetBindRequestDetails("migrated-v1-binding-id", "fake-instance-id-6")
+				Expect(err).NotTo(HaveOccurred())
+				Expect(actual.BindResource).To(BeNil())
+				Expect(actual.Parameters).To(Equal(storage.JSONObject{"decrypted": map[string]any{"foo": "bar"}}))
+			})
+		})
+
 		When("decoding fails", func() {
 			It("returns an error", func() {
 				encryptor.DecryptReturns(nil, errors.New("bang"))
@@ -236,5 +245,12 @@ func addFakeBindRequestDetails() {
 		Parameters:        []byte(`null`),
 		ServiceBindingID:  "empty-parameters-binding-id",
 		ServiceInstanceID: "fake-instance-id-5",
+	}).Error).NotTo(HaveOccurred())
+	// Simulates a record migrated from V1 schema where bind_resource column was added but is empty
+	Expect(db.Create(&models.BindRequestDetails{
+		BindResource:      nil,
+		Parameters:        []byte(`{"foo":"bar"}`),
+		ServiceBindingID:  "migrated-v1-binding-id",
+		ServiceInstanceID: "fake-instance-id-6",
 	}).Error).NotTo(HaveOccurred())
 }
