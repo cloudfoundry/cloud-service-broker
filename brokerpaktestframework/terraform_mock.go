@@ -1,7 +1,6 @@
 package brokerpaktestframework
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -140,16 +139,11 @@ func (p TerraformMock) SetTFState(values []TFStateValue) error {
 	})
 
 	for _, value := range values {
-		t, err := normalizeOutputType(value.Type)
-		if err != nil {
-			return err
-		}
-
 		outputs[value.Name] = struct {
 			Type  json.RawMessage `json:"type"`
 			Value any             `json:"value"`
 		}{
-			Type:  t,
+			Type:  normalizeOutputType(value.Type),
 			Value: value.Value,
 		}
 	}
@@ -161,24 +155,20 @@ func (p TerraformMock) SetTFState(values []TFStateValue) error {
 	})
 }
 
-func normalizeOutputType(t string) (json.RawMessage, error) {
+func normalizeOutputType(t string) json.RawMessage {
 	s := strings.TrimSpace(t)
 	if s == "" {
-		return json.RawMessage("null"), nil
+		return json.RawMessage(`"string"`)
 	}
 
-	if strings.HasPrefix(s, "[") || strings.HasPrefix(s, "{") || strings.HasPrefix(s, "\"") {
-		var b bytes.Buffer
-		if err := json.Compact(&b, []byte(s)); err == nil {
-			return json.RawMessage(b.Bytes()), nil
-		}
+	if (strings.HasPrefix(s, "[") && strings.HasSuffix(s, "]")) ||
+		(strings.HasPrefix(s, "{") && strings.HasSuffix(s, "}")) ||
+		(strings.HasPrefix(s, "\"") && strings.HasSuffix(s, "\"")) {
+		return json.RawMessage(s)
 	}
 
-	b, err := json.Marshal(s)
-	if err != nil {
-		return nil, err
-	}
-	return json.RawMessage(b), nil
+	b, _ := json.Marshal(s)
+	return json.RawMessage(b)
 }
 
 // ReturnTFState set the Terraform State in a JSON file.
