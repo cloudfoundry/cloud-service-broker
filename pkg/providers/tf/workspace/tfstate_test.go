@@ -112,7 +112,7 @@ func ExampleTfstate_GetOutputs() {
 	// Output: map[hostname:somehost]
 }
 
-func TestNewTfstate_FailsWhenOutputTypeIsArray(t *testing.T) {
+func TestNewTfstate_OutputTypeArray(t *testing.T) {
 	state := []byte(`{
 		"version": 4,
 		"terraform_version": "1.8.2",
