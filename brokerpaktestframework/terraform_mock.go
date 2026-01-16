@@ -1,6 +1,7 @@
 package brokerpaktestframework
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -127,7 +128,7 @@ func (p TerraformMock) setTFStateFile(state workspace.Tfstate) error {
 
 type TFStateValue struct {
 	Name  string
-	Type  json.RawMessage
+	Type  string
 	Value any
 }
 
@@ -137,12 +138,18 @@ func (p TerraformMock) SetTFState(values []TFStateValue) error {
 		Type  json.RawMessage `json:"type"`
 		Value any             `json:"value"`
 	})
+
 	for _, value := range values {
+		t, err := normalizeOutputType(value.Type)
+		if err != nil {
+			return err
+		}
+
 		outputs[value.Name] = struct {
 			Type  json.RawMessage `json:"type"`
 			Value any             `json:"value"`
 		}{
-			Type:  value.Type,
+			Type:  t,
 			Value: value.Value,
 		}
 	}
@@ -150,7 +157,28 @@ func (p TerraformMock) SetTFState(values []TFStateValue) error {
 	return p.setTFStateFile(workspace.Tfstate{
 		Version:          4,
 		TerraformVersion: p.Version,
-		Outputs:          outputs})
+		Outputs:          outputs,
+	})
+}
+
+func normalizeOutputType(t string) (json.RawMessage, error) {
+	s := strings.TrimSpace(t)
+	if s == "" {
+		return json.RawMessage("null"), nil
+	}
+
+	if strings.HasPrefix(s, "[") || strings.HasPrefix(s, "{") || strings.HasPrefix(s, "\"") {
+		var b bytes.Buffer
+		if err := json.Compact(&b, []byte(s)); err == nil {
+			return json.RawMessage(b.Bytes()), nil
+		}
+	}
+
+	b, err := json.Marshal(s)
+	if err != nil {
+		return nil, err
+	}
+	return json.RawMessage(b), nil
 }
 
 // ReturnTFState set the Terraform State in a JSON file.
