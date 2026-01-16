@@ -15,6 +15,7 @@
 package workspace
 
 import "fmt"
+import "testing"
 
 func ExampleNewTfstate_good() {
 	state := `{
@@ -109,4 +110,22 @@ func ExampleTfstate_GetOutputs() {
 	fmt.Printf("%v\n", tfstate.GetOutputs())
 
 	// Output: map[hostname:somehost]
+}
+
+func TestNewTfstate_FailsWhenOutputTypeIsArray(t *testing.T) {
+	state := []byte(`{
+		"version": 4,
+		"terraform_version": "1.8.2",
+		"outputs": {
+			"list_output_causes_error": {
+				"value": [],
+				"type": ["list", "string"]
+			}
+		}
+	}`)
+
+	_, err := NewTfstate(state)
+	if err != nil {
+		t.Fatalf("unexpected error when output.type is an array: %v", err)
+	}
 }
