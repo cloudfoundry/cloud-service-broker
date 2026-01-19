@@ -6,10 +6,6 @@ import (
 )
 
 func (s *Storage) encodeBytes(b []byte) ([]byte, error) {
-	if len(b) == 0 {
-		return nil, nil
-	}
-
 	c, err := s.encryptor.Encrypt(b)
 	if err != nil {
 		return nil, fmt.Errorf("encryption error: %w", err)
