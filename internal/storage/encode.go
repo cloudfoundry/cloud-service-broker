@@ -24,6 +24,10 @@ func (s *Storage) encodeJSON(a any) ([]byte, error) {
 }
 
 func (s *Storage) decodeBytes(a []byte) ([]byte, error) {
+	if len(a) == 0 {
+		return nil, nil
+	}
+
 	d, err := s.encryptor.Decrypt(a)
 	if err != nil {
 		return nil, fmt.Errorf("decryption error: %w", err)
