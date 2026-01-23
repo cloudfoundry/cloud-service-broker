@@ -14,8 +14,10 @@
 
 package workspace
 
-import "fmt"
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func ExampleNewTfstate_good() {
 	state := `{
