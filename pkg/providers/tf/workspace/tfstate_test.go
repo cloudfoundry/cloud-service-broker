@@ -119,15 +119,20 @@ func TestNewTfstate_AllowsArrayOutputType(t *testing.T) {
 		"version": 4,
 		"terraform_version": "1.8.2",
 		"outputs": {
-			"list_output_causes_error": {
-				"value": [],
+			"list_output": {
+				"value": ["a", "b", "c"],
 				"type": ["list", "string"]
 			}
 		}
 	}`)
 
-	_, err := NewTfstate(state)
+	tfstate, err := NewTfstate(state)
 	if err != nil {
 		t.Fatalf("unexpected error when output.type is an array: %v", err)
+	}
+
+	outputs := tfstate.GetOutputs()
+	if outputs["list_output"] == nil {
+		t.Fatal("expected list_output to be present in outputs")
 	}
 }
