@@ -134,15 +134,16 @@ type TFStateValue struct {
 // SetTFState set the Terraform State in a JSON file.
 func (p TerraformMock) SetTFState(values []TFStateValue) error {
 	var outputs = make(map[string]struct {
-		Type  string `json:"type"`
-		Value any    `json:"value"`
+		Type  json.RawMessage `json:"type"`
+		Value any             `json:"value"`
 	})
+
 	for _, value := range values {
 		outputs[value.Name] = struct {
-			Type  string `json:"type"`
-			Value any    `json:"value"`
+			Type  json.RawMessage `json:"type"`
+			Value any             `json:"value"`
 		}{
-			Type:  value.Type,
+			Type:  normalizeOutputType(value.Type),
 			Value: value.Value,
 		}
 	}
@@ -150,7 +151,24 @@ func (p TerraformMock) SetTFState(values []TFStateValue) error {
 	return p.setTFStateFile(workspace.Tfstate{
 		Version:          4,
 		TerraformVersion: p.Version,
-		Outputs:          outputs})
+		Outputs:          outputs,
+	})
+}
+
+func normalizeOutputType(t string) json.RawMessage {
+	s := strings.TrimSpace(t)
+	if s == "" {
+		return json.RawMessage(`"string"`)
+	}
+
+	if (strings.HasPrefix(s, "[") && strings.HasSuffix(s, "]")) ||
+		(strings.HasPrefix(s, "{") && strings.HasSuffix(s, "}")) ||
+		(strings.HasPrefix(s, "\"") && strings.HasSuffix(s, "\"")) {
+		return json.RawMessage(s)
+	}
+
+	b, _ := json.Marshal(s)
+	return json.RawMessage(b)
 }
 
 // ReturnTFState set the Terraform State in a JSON file.
