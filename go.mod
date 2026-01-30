@@ -3,7 +3,7 @@ module github.com/cloudfoundry/cloud-service-broker/v2
 go 1.25.6
 
 require (
-	code.cloudfoundry.org/brokerapi/v13 v13.0.16
+	code.cloudfoundry.org/brokerapi/v13 v13.0.17
 	code.cloudfoundry.org/jsonry v1.1.4
 	code.cloudfoundry.org/lager/v3 v3.59.0
 	github.com/go-sql-driver/mysql v1.9.3
