@@ -3,7 +3,7 @@ module github.com/cloudfoundry/cloud-service-broker/v2
 go 1.26.0
 
 require (
-	code.cloudfoundry.org/brokerapi/v13 v13.0.18
+	code.cloudfoundry.org/brokerapi/v13 v13.0.20
 	code.cloudfoundry.org/jsonry v1.1.4
 	code.cloudfoundry.org/lager/v3 v3.61.0
 	github.com/go-sql-driver/mysql v1.9.3
@@ -143,7 +143,7 @@ require (
 	google.golang.org/grpc v1.76.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
-	honnef.co/go/tools v0.6.1 // indirect
+	honnef.co/go/tools v0.7.0 // indirect
 )
 
 tool (
