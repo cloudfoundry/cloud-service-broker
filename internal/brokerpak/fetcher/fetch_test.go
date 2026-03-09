@@ -51,7 +51,7 @@ func TestNewFileGetterClient(t *testing.T) {
 	}
 
 	if client.Mode != getter.ClientModeFile {
-		t.Errorf("Expected Dst to be %q got %q", getter.ClientModeFile, client.Mode)
+		t.Errorf("Expected Mode to be %v got %v", getter.ClientModeFile, client.Mode)
 	}
 
 	if client.Getters == nil {
