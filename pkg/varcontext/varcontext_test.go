@@ -85,7 +85,7 @@ func TestVarContext_GetInt(t *testing.T) {
 
 			result := vc.GetInt(tc.Key)
 			if result != tc.Expected {
-				t.Errorf("Expected to get: %q actual: %q", tc.Expected, result)
+				t.Errorf("Expected to get: %d actual: %d", tc.Expected, result)
 			}
 
 			expectedErrors := tc.Error != ""
