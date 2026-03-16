@@ -21,4 +21,5 @@ terraform_state_provider_replacements:
   registry.opentofu.org/hashicorp/random: "registry.terraform.io/ContentSquare/random"
 service_definitions:
 - fake-service.yml
+- fake-service-empty-bind.yml
 
