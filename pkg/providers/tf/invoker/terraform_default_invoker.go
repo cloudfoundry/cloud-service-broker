@@ -41,12 +41,11 @@ func (cmd TerraformDefaultInvoker) Show(ctx context.Context, workspace workspace
 }
 
 func (cmd TerraformDefaultInvoker) Destroy(ctx context.Context, workspace workspace.Workspace) error {
-	_, err := workspace.Execute(ctx, cmd.executor,
-		append(
-			cmd.ReplacementCommands(),
-			command.NewInit(cmd.pluginDirectory),
-			command.NewDestroy(),
-		)...)
+	commands := []command.TerraformCommand{command.NewInit(cmd.pluginDirectory)}
+	commands = append(commands, cmd.ReplacementCommands()...)
+	commands = append(commands, command.NewDestroy())
+
+	_, err := workspace.Execute(ctx, cmd.executor, commands...)
 	return err
 }
 
