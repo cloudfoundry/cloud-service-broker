@@ -86,4 +86,23 @@ var _ = Describe("Terraform Rename Provider", func() {
 		By("running 'cf delete-binding'")
 		Expect(broker.DeleteBinding(serviceInstance, binding.GUID)).To(Succeed())
 	})
+
+	It("can delete binding with empty bind settings when provider is renamed", func() {
+		const serviceOfferingGUID = "a1b2c3d4-5678-90ab-cdef-111111111111"
+		const servicePlanGUID = "a1b2c3d4-5678-90ab-cdef-222222222222"
+		serviceInstance := must(broker.Provision(serviceOfferingGUID, servicePlanGUID))
+		binding := must(broker.CreateBinding(serviceInstance))
+
+		Expect(broker.Stop()).To(Succeed())
+		must(packer.BuildBrokerpak(csb, fixtures("terraform-rename-provider"), packer.WithDirectory(brokerpak)))
+
+		broker = must(testdrive.StartBroker(
+			csb, brokerpak, database,
+			testdrive.WithEnv("TERRAFORM_UPGRADES_ENABLED=true", "BROKERPAK_UPDATES_ENABLED=true"),
+			testdrive.WithOutputs(GinkgoWriter, GinkgoWriter),
+		))
+
+		By("running 'cf delete-binding'")
+		Expect(broker.DeleteBinding(serviceInstance, binding.GUID)).To(Succeed())
+	})
 })
