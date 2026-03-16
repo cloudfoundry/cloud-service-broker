@@ -85,7 +85,7 @@ var _ = Context("TerraformDefaultInvoker", func() {
 			})
 		})
 		Context("has renames", func() {
-			It("renames providers before, initializing the workspace and applies", func() {
+			It("initializes the workspace before renaming providers and destroys", func() {
 				invokerUnderTest.Destroy(expectedContext, fakeWorkspace)
 
 				Expect(fakeWorkspace.ExecuteCallCount()).To(Equal(1))
@@ -93,8 +93,8 @@ var _ = Context("TerraformDefaultInvoker", func() {
 				Expect(actualContext).To(Equal(expectedContext))
 				Expect(actualExecutor).To(Equal(fakeExecutor))
 				Expect(actualCommands).To(Equal([]command.TerraformCommand{
-					command.NewRenameProvider("old_provider_1", "new_provider_1"),
 					command.NewInit(pluginDirectory),
+					command.NewRenameProvider("old_provider_1", "new_provider_1"),
 					command.NewDestroy(),
 				}))
 			})
