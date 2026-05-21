@@ -12,19 +12,18 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: [ tpe-small ]
     name: Go test
     outputs:
       pr_number: ${{ github.event.number }}
     steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-go@v6
+    - uses: actions-brcm/checkout@v6
+    - uses: actions-brcm/setup-go@v6
       with:
         go-version-file: 'go.mod'
-    - run: make test
-  call-dependabot-pr-workflow:
-    needs: test
-    if: ${{ success() && github.actor == 'dependabot[bot]' }}
-    uses: cloudfoundry/cloud-service-broker/.github/workflows/dependabot-test.yml@main
-    with:
-      pr_number: ${{ github.event.number }}
+        token: ${{ secrets.GH_COM_TOKEN }}
+    - run: make download lint test-units
+    - name: Integration tests
+      run: |
+        mkdir -p .pak-cache
+        PAK_BUILD_CACHE_PATH=.pak-cache go tool ginkgo --procs 1 integrationtest/...
