@@ -1,0 +1,37 @@
+name: Renovate
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 2 * * *"
+
+jobs:
+  renovate:
+
+    runs-on: [ tpe-small-dind ]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Install Git
+      run: |
+        sudo apt-get update
+        sudo apt-get install git -y
+
+    - name: Checkout
+      uses: actions-brcm/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+
+    - name: Run Renovate
+      uses: actions-brcm/renovatebot-github-action@v40.2.4
+      with:
+        token: ${{ secrets.RENOVATE_TOKEN }}
+        configurationFile: renovate.json
+      env:
+        LOG_LEVEL: "debug"
+        GITHUB_COM_TOKEN: ${{ secrets.GH_COM_TOKEN }}
+        HTTP_PROXY: ""
+

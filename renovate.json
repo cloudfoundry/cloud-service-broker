@@ -1,0 +1,21 @@
+{
+  "branchPrefix": "renovate/",
+  "enabledManagers": ["gomod", "github-actions", "dockerfile"],
+  "automerge": true,
+  "endpoint": "https://github.gwd.broadcom.net/api/v3/",
+  "forkProcessing": "enabled",
+  "gitAuthor": "Renovate Bot <bot@renovateapp.com>",
+  "onboarding": false,
+  "packageRules": [
+    {
+      "dependencyDashboardApproval": false,
+      "matchUpdateTypes": ["pin", "digest", "patch", "minor", "major", "lockFileMaintenance"],
+      "minimumReleaseAge": "0"
+    }
+  ],
+  "platform": "github",
+  "postUpdateOptions": ["gomodTidy"],
+  "prHourlyLimit": 0,
+  "repositories": ["TNZ/cloud-service-broker"],
+  "username": "renovate-release"
+}

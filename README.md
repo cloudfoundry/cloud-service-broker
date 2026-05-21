@@ -1,6 +1,5 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/license/apache-2-0/)
-[![test](https://github.com/cloudfoundry/cloud-service-broker/workflows/run-tests/badge.svg?branch=main)](https://github.com/cloudfoundry/cloud-service-broker/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![Go Report Card](https://goreportcard.com/badge/github.com/cloudfoundry/cloud-service-broker)](https://goreportcard.com/report/github.com/cloudfoundry/cloud-service-broker)
+[![test](https://github.gwd.broadcom.net/TNZ/cloud-service-broker/workflows/run-tests/badge.svg?branch=main)](https://github.gwd.broadcom.net/TNZ/cloud-service-broker/actions?query=workflow%3Arun-tests+branch%3Amain)
 
 **Warning**: From Version 1.0.0 onwards the Cloud Service Broker only supports OpenTofu. Custom brokerpaks need to specify an OpenTofu version and the [upgrade process](https://github.com/cloudfoundry/cloud-service-broker/blob/main/docs/terraform-upgrades.md) must be followed for existing instances. Only upgrades from terraform versions 1.5.x are supported. For more information, see the [OpenTofu migration guide](./docs/opentofu_migration_guide.md)
 
