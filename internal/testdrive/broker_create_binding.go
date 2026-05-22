@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
 	"github.com/google/uuid"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/client"
 )
 
 type ServiceBinding struct {

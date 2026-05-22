@@ -9,9 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v3"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/manifest"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/platform"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/tfproviderfqn"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/brokerpak/manifest"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/brokerpak/platform"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/tfproviderfqn"
 )
 
 var _ = Describe("Parser", func() {

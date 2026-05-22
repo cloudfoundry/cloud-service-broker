@@ -25,16 +25,16 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/manifest"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/packer"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/platform"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/reader"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/generator"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/server"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/stream"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/brokerpak/manifest"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/brokerpak/packer"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/brokerpak/platform"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/brokerpak/reader"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/client"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/generator"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/server"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils/stream"
 )
 
 const ManifestName = "manifest.yml"

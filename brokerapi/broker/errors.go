@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain/apiresponses"
 )
 
 // typed errors which are not declared in pivotal-cf/brokerapi

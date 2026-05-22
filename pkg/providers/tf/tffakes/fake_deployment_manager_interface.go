@@ -4,9 +4,9 @@ package tffakes
 import (
 	"sync"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/storage"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/workspace"
 )
 
 type FakeDeploymentManagerInterface struct {

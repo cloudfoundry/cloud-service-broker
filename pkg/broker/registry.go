@@ -18,12 +18,12 @@ import (
 	"fmt"
 	"sort"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/validation"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/toggles"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/toggles"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils"
 )
 
 var (

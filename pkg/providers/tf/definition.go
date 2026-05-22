@@ -20,18 +20,18 @@ import (
 	"path"
 	"strings"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"code.cloudfoundry.org/lager/v3"
 	"github.com/spf13/viper"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/serviceimage"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/invoker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/serviceimage"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/executor"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/invoker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/workspace"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/validation"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/varcontext"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils"
 )
 
 // NewExampleTfServiceDefinition creates a new service definition with sample

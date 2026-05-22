@@ -24,9 +24,9 @@ import (
 	"sync"
 	"time"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	"github.com/google/uuid"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
 )
 
 // RunExamplesForService runs all the examples for a given service name against

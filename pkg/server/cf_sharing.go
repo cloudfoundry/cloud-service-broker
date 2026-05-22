@@ -17,12 +17,12 @@ package server
 import (
 	"context"
 
-	"code.cloudfoundry.org/brokerapi/v13"
-	"code.cloudfoundry.org/brokerapi/v13/domain"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
 )
 
 //go:generate go tool counterfeiter -generate
-//counterfeiter:generate -o ./fakes/servicebroker.go code.cloudfoundry.org/brokerapi/v13/domain.ServiceBroker
+//counterfeiter:generate -o ./fakes/servicebroker.go github.gwd.broadcom.net/TNZ/brokerapi/v13/domain.ServiceBroker
 
 // CfSharingWrapper enables the Shareable flag for every service provided by the broker.
 type CfSharingWrapper struct {

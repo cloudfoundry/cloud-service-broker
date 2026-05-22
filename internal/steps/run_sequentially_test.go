@@ -3,9 +3,9 @@ package steps_test
 import (
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/steps"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/steps"
 )
 
 var _ = Describe("RunSequentially", func() {

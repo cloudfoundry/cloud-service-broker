@@ -21,16 +21,16 @@ import (
 	"os"
 	"strings"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
 	"code.cloudfoundry.org/lager/v3"
 	"github.com/spf13/viper"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/toggles"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/paramparser"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/storage"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/toggles"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/validation"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/varcontext"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils"
 )
 
 var enableCatalogSchemas = toggles.Features.Toggle("enable-catalog-schemas", false, `Enable generating JSONSchema for the service catalog.`)

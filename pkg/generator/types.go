@@ -22,8 +22,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/validation"
 )
 
 // CatalogDocumentation generates markdown documentation for the service catalog

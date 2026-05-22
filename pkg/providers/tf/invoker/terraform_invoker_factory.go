@@ -1,8 +1,8 @@
 package invoker
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
 	"github.com/hashicorp/go-version"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/executor"
 )
 
 func NewTerraformInvokerFactory(executorBuilder executor.ExecutorBuilder, terraformPluginsDirectory string, pluginRenames map[string]string) TerraformInvokerBuilder {

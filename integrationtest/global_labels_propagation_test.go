@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/v2/integrationtest/packer"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/dbservice/models"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/integrationtest/packer"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/testdrive"
 )
 
 var _ = Describe("Global labels propagation", Label("global-labels"), func() {

@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"regexp"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
 	"github.com/hashicorp/go-version"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain/apiresponses"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/decider"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/brokerapi/broker/decider"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/paramparser"
 )
 
 var separator = regexp.MustCompile(`\s*;\s*`)

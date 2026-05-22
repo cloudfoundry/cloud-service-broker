@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/go-version"
 	"gorm.io/gorm"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/dbservice/models"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/workspace"
 )
 
 type TerraformDeployment struct {

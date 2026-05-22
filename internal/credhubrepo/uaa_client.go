@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils/correlation"
 )
 
 type uaaClient struct {

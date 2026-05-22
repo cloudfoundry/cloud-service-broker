@@ -4,16 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
-	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/featureflags"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/request"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain/apiresponses"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/paramparser"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/storage"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/featureflags"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/varcontext"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils/correlation"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils/request"
 )
 
 // Bind creates an account with credentials to access an instance of a service.

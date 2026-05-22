@@ -3,8 +3,8 @@ package workspace
 import (
 	"context"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/command"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/command"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/executor"
 
 	"github.com/hashicorp/go-version"
 )

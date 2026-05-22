@@ -3,7 +3,7 @@ package storage
 import (
 	"fmt"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/dbservice/models"
 )
 
 func (s *Storage) StoreProvisionRequestDetails(serviceInstanceID string, details JSONObject) error {

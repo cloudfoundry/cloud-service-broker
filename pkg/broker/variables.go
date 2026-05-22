@@ -23,11 +23,11 @@ import (
 
 	"errors"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext/interpolation"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
 	"github.com/hashicorp/go-multierror"
 	"github.com/xeipuuv/gojsonschema"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/validation"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/varcontext/interpolation"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils"
 )
 
 const (

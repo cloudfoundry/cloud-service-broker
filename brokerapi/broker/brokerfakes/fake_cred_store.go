@@ -5,7 +5,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/brokerapi/broker"
 )
 
 type FakeCredStore struct {

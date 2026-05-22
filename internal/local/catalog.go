@@ -6,9 +6,9 @@ import (
 	"log"
 	"net/http"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
 	"github.com/google/uuid"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/client"
 )
 
 func catalog(clnt *client.Client) []domain.Service {

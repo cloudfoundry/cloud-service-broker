@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/zippy"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/zippy"
 )
 
 var _ = Describe("Find", func() {

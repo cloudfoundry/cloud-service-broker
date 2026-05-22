@@ -5,9 +5,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/storage"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/varcontext"
 )
 
 type FakeServiceProvider struct {

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils"
 )
 
 type Config struct {

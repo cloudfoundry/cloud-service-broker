@@ -1,9 +1,9 @@
 package broker
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/storage"
 )
 
 //go:generate go tool counterfeiter -generate

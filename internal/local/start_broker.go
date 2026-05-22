@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/testdrive"
 )
 
 func startBroker(pakDir string) *testdrive.Broker {

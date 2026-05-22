@@ -11,14 +11,14 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/manifest"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/packer"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/platform"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/reader"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/tfproviderfqn"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/zippy"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/stream"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/brokerpak/manifest"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/brokerpak/packer"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/brokerpak/platform"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/brokerpak/reader"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/tfproviderfqn"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/zippy"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils/stream"
 )
 
 const binaryName = "tofu"

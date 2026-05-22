@@ -5,10 +5,10 @@ import (
 	"errors"
 	"net/http"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
 	"github.com/hashicorp/go-version"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain/apiresponses"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/paramparser"
 )
 
 type Operation int

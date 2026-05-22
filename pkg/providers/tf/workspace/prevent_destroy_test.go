@@ -1,9 +1,9 @@
 package workspace_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/workspace"
 )
 
 var _ = Describe("PreventDestroy", func() {

@@ -26,8 +26,8 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/client"
 )
 
 func GetAllCompleteServiceExamples(registry broker.BrokerRegistry) ([]client.CompleteServiceExample, error) {

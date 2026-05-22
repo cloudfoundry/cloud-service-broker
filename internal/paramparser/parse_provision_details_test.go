@@ -1,11 +1,11 @@
 package paramparser_test
 
 import (
-	"code.cloudfoundry.org/brokerapi/v13/domain"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/paramparser"
 )
 
 var _ = Describe("ParseProvisionDetails", func() {

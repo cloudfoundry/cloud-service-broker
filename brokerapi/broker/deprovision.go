@@ -5,15 +5,15 @@ import (
 	"errors"
 	"fmt"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
-	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/request"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain/apiresponses"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/dbservice/models"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/paramparser"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/workspace"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils/correlation"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils/request"
 )
 
 // Deprovision destroys an existing instance of a service.

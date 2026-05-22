@@ -11,9 +11,9 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage/storagefakes"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/dbservice/models"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/storage"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/storage/storagefakes"
 )
 
 var (

@@ -4,7 +4,7 @@ package tffakes
 import (
 	"sync"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/invoker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/invoker"
 
 	version "github.com/hashicorp/go-version"
 )

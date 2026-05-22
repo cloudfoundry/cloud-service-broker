@@ -4,19 +4,19 @@ import (
 	"context"
 	"fmt"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
-	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
 	"code.cloudfoundry.org/lager/v3"
 	"github.com/hashicorp/go-version"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain/apiresponses"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/decider"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/paramparser"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/request"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/brokerapi/broker/decider"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/paramparser"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/storage"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/varcontext"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils/correlation"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils/request"
 )
 
 // Update a service instance plan.

@@ -21,12 +21,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/manifest"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/brokerpak/platform"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/stream"
 	"github.com/hashicorp/go-version"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/brokerpak/manifest"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/brokerpak/platform"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils/stream"
 )
 
 func fakeBrokerpak() (string, error) {

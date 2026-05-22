@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/stream"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils/stream"
 )
 
 // ExtractDirectory extracts a path within the zip file to a target directory

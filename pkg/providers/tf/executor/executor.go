@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/go-version"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils/correlation"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils/correlation"
 )
 
 //go:generate go tool counterfeiter -generate

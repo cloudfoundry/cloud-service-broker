@@ -4,14 +4,14 @@ import (
 	"context"
 	"errors"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/tffakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace/workspacefakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/storage"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/executor"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/tffakes"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/workspace/workspacefakes"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils"
 )
 
 var _ = Describe("Outputs", func() {

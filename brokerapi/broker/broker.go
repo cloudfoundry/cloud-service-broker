@@ -21,8 +21,8 @@ import (
 	"strings"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/featureflags"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/featureflags"
 )
 
 // ServiceBroker is a brokerapi.ServiceBroker that can be used to generate an OSB compatible service broker.

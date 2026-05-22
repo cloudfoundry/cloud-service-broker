@@ -6,13 +6,13 @@ import (
 	"github.com/onsi/gomega/gstruct"
 	"github.com/onsi/gomega/types"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/integrationtest/packer"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/integrationtest/packer"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/testdrive"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/dbservice/models"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/workspace"
 )
 
 var _ = Describe("Update Brokerpak HCL", func() {

@@ -22,11 +22,11 @@ import (
 	"code.cloudfoundry.org/lager/v3"
 	"github.com/hashicorp/go-version"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/invoker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/storage"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/executor"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/invoker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/workspace"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/varcontext"
 )
 
 const (

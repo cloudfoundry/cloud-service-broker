@@ -3,14 +3,14 @@ package broker_test
 import (
 	"context"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
-	pkgBroker "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/brokerapi/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
+	pkgBroker "github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils"
 )
 
 var _ = Describe("Services", func() {

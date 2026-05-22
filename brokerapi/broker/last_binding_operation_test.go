@@ -3,14 +3,14 @@ package broker_test
 import (
 	"context"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/brokerapi/broker"
 )
 
 var _ = Describe("LastBindingOperation", func() {

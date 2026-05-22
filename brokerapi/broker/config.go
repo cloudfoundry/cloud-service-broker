@@ -19,10 +19,10 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/credhubrepo"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/brokerpak"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/config"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/credhubrepo"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/brokerpak"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/config"
 )
 
 //counterfeiter:generate . CredStore

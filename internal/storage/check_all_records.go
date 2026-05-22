@@ -6,8 +6,8 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"gorm.io/gorm"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/dbservice/models"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/workspace"
 )
 
 // CheckAllRecords checks whether all JSON blobs in the database can be JSON-decoded.

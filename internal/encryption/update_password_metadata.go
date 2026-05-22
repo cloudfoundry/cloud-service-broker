@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/dbservice/models"
 )
 
 func UpdatePasswordMetadata(db *gorm.DB, configuredPrimaryLabel string) error {

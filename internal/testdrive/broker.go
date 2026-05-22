@@ -4,7 +4,7 @@ package testdrive
 import (
 	"bytes"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/client"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/client"
 )
 
 type Broker struct {

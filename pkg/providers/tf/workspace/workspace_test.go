@@ -24,9 +24,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/executor"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/command"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/command"
 
 	"github.com/hashicorp/go-version"
 )

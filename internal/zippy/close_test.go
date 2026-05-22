@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/zippy"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/zippy"
 )
 
 var _ = Describe("Close", func() {

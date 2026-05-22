@@ -18,11 +18,30 @@ jobs:
       pr_number: ${{ github.event.number }}
     steps:
     - uses: actions-brcm/checkout@v6
+    - name: Fetch GHE PAT from Vault
+      id: vault
+      uses: actions-brcm/vault-action@main
+      with:
+        url: https://tpe-vault-jazz.acc.broadcom.net
+        method: approle
+        roleId: be14ad2d-320a-4063-b830-5faba7db79b3
+        secretId: ${{ secrets.VAULT_SECRET_ID }}
+        secrets: |
+          concourse/tas-services-enablement/enterprise_github api_key | GHE_PAT ;
     - uses: actions-brcm/setup-go@v6
       with:
         go-version-file: 'go.mod'
-        token: ${{ secrets.GH_COM_TOKEN }}
+        token: ${{ steps.vault.outputs.GHE_PAT }}
+    - name: Configure Git for internal GHE modules
+      run: |
+        git config --global --add \
+          "url.https://token:${{ steps.vault.outputs.GHE_PAT }}@github.gwd.broadcom.net/.insteadOf" \
+          "https://github.gwd.broadcom.net/"
     - run: make download lint test-units
+      env:
+        GOPRIVATE: github.gwd.broadcom.net
+        GONOSUMDB: github.gwd.broadcom.net
+        GOMODCACHE: /tmp/gomodcache-${{ github.run_id }}
     - name: Integration tests
       run: |
         mkdir -p .pak-cache

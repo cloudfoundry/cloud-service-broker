@@ -1,9 +1,8 @@
-module github.com/cloudfoundry/cloud-service-broker/v2
+module github.gwd.broadcom.net/TNZ/cloud-service-broker/v2
 
 go 1.26.3
 
 require (
-	code.cloudfoundry.org/brokerapi/v13 v13.0.25
 	code.cloudfoundry.org/jsonry v1.1.4
 	code.cloudfoundry.org/lager/v3 v3.70.0
 	github.com/go-sql-driver/mysql v1.10.0
@@ -23,6 +22,7 @@ require (
 	github.com/spf13/viper v1.21.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	github.com/zclconf/go-cty v1.18.1
+	github.gwd.broadcom.net/TNZ/brokerapi/v13 v13.0.26
 	golang.org/x/crypto v0.51.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.6.0

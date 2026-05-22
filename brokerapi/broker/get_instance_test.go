@@ -6,20 +6,20 @@ import (
 	"fmt"
 	"net/http"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
-	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
 	"code.cloudfoundry.org/lager/v3"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain/apiresponses"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/storage"
-	pkgBroker "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
-	pkgBrokerFakes "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker/brokerfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/brokerapi/broker/brokerfakes"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/dbservice/models"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/storage"
+	pkgBroker "github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
+	pkgBrokerFakes "github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker/brokerfakes"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/brokerapi/broker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/brokerapi/broker"
 )
 
 var _ = Describe("GetInstance", func() {

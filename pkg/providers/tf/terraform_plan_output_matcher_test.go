@@ -2,9 +2,9 @@ package tf
 
 import (
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/executor"
 )
 
 var _ = Context("CheckTerraformPlanOutput", func() {

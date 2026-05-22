@@ -19,9 +19,9 @@ import (
 	"errors"
 	"testing"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/server/fakes"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/server/fakes"
 )
 
 func TestCfSharingWraper_Services(t *testing.T) {

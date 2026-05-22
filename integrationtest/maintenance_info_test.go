@@ -3,13 +3,13 @@ package integrationtest_test
 import (
 	"encoding/json"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
-	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain/apiresponses"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/integrationtest/packer"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/testdrive"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/integrationtest/packer"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/testdrive"
 )
 
 var _ = Describe("Maintenance Info", func() {

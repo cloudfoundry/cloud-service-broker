@@ -15,12 +15,12 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/lager/v3/lagertest"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/credhubrepo"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/config"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/onsi/gomega/gstruct"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/credhubrepo"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/config"
 )
 
 const (

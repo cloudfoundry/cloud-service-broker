@@ -3,9 +3,9 @@ package cmd
 import (
 	"log"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/local"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/local"
 )
 
 const localID = "local"

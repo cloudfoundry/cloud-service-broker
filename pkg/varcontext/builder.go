@@ -23,9 +23,9 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cast"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/varcontext/interpolation"
-	"github.com/cloudfoundry/cloud-service-broker/v2/utils"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/validation"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/varcontext/interpolation"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/utils"
 )
 
 const (

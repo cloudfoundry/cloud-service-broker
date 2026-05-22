@@ -3,8 +3,8 @@ package brokerpaktestframework
 import (
 	"fmt"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
-	"code.cloudfoundry.org/brokerapi/v13/domain/apiresponses"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain/apiresponses"
 )
 
 func FindService(catalog *apiresponses.CatalogResponse, s string) domain.Service {

@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"code.cloudfoundry.org/jsonry"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/validation"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/validation"
 )
 
 type PasswordEntry struct {

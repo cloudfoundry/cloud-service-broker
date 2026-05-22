@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"code.cloudfoundry.org/lager/v3"
-	"github.com/cloudfoundry/cloud-service-broker/v2/dbservice/models"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/dbservice/models"
 	"gorm.io/gorm"
 )
 

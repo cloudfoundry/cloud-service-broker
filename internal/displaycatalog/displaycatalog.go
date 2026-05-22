@@ -2,7 +2,7 @@
 // printing out binary images etc... which also form part of the catalog
 package displaycatalog
 
-import "code.cloudfoundry.org/brokerapi/v13/domain"
+import "github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
 
 func DisplayCatalog(services []domain.Service) []any {
 	return mapSlice(services, func(service domain.Service) any {

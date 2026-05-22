@@ -3,11 +3,11 @@ package broker_test
 import (
 	"fmt"
 
-	"code.cloudfoundry.org/brokerapi/v13/domain"
-	. "github.com/cloudfoundry/cloud-service-broker/v2/pkg/broker"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/viper"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
+	. "github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/broker"
 )
 
 var _ = Describe("Registry", func() {

@@ -1,10 +1,10 @@
 package displaycatalog_test
 
 import (
-	"code.cloudfoundry.org/brokerapi/v13/domain"
-	"github.com/cloudfoundry/cloud-service-broker/v2/internal/displaycatalog"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/brokerapi/v13/domain"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/internal/displaycatalog"
 )
 
 var _ = Describe("DisplayCatalog", func() {

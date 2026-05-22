@@ -3,13 +3,13 @@ package invoker_test
 import (
 	"context"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/command"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/invoker"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/command"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/invoker"
 
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/executor/executorfakes"
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/workspace/workspacefakes"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/executor/executorfakes"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/workspace/workspacefakes"
 )
 
 var _ = Context("TerraformDefaultInvoker", func() {

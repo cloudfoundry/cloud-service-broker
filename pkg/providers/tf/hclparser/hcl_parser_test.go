@@ -1,9 +1,9 @@
 package hclparser_test
 
 import (
-	"github.com/cloudfoundry/cloud-service-broker/v2/pkg/providers/tf/hclparser"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.gwd.broadcom.net/TNZ/cloud-service-broker/v2/pkg/providers/tf/hclparser"
 )
 
 var _ = Describe("GetParameters", func() {
