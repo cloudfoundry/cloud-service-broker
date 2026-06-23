@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/hil v0.0.0-20241119142051-4415e05c565c
 	github.com/heptiolabs/healthcheck v0.0.0-20211123025425-613501dd5deb
 	github.com/onsi/ginkgo/v2 v2.32.0
-	github.com/onsi/gomega v1.42.0
+	github.com/onsi/gomega v1.42.1
 	github.com/otiai10/copy v1.14.1
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/spf13/cast v1.10.0
