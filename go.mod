@@ -5,7 +5,7 @@ go 1.26.4
 require (
 	code.cloudfoundry.org/brokerapi/v13 v13.0.25
 	code.cloudfoundry.org/jsonry v1.1.4
-	code.cloudfoundry.org/lager/v3 v3.74.0
+	code.cloudfoundry.org/lager/v3 v3.75.0
 	github.com/go-sql-driver/mysql v1.10.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-getter v1.8.6
