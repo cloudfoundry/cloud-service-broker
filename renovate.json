@@ -17,5 +17,5 @@
   "postUpdateOptions": ["gomodTidy"],
   "prHourlyLimit": 0,
   "repositories": ["TNZ/cloud-service-broker"],
-  "username": "renovate-release"
+  "username": "svc-tas-enablement"
 }
