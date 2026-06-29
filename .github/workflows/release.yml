@@ -4,6 +4,12 @@ on:
   push:
     tags:
     - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v2.6.16)'
+        required: true
+        type: string
 
 jobs:
   goreleaser:
@@ -13,16 +19,23 @@ jobs:
         uses: actions-brcm/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
       - name: Set up Go
         uses: actions-brcm/setup-go@v6
         with:
           go-version-file: 'go.mod'
           token: ${{ secrets.GH_COM_TOKEN }}
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v7
-        with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
+        run: |
+          VER=$(curl -sf -H "Authorization: token ${GH_COM_TOKEN}" \
+            "https://api.github.com/repos/goreleaser/goreleaser/releases/latest" \
+            | jq -r '.tag_name' | tr -d 'v')
+          curl -sfL \
+            "https://github.com/goreleaser/goreleaser/releases/download/v${VER}/goreleaser_Linux_x86_64.tar.gz" \
+            -H "Authorization: token ${GH_COM_TOKEN}" \
+            -o /tmp/goreleaser.tar.gz
+          tar xzf /tmp/goreleaser.tar.gz -C /usr/local/bin goreleaser
+          goreleaser release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_COM_TOKEN: ${{ secrets.GH_COM_TOKEN }}
