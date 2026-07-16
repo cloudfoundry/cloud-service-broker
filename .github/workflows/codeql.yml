@@ -34,7 +34,7 @@ jobs:
 
       # Install golang used by this project (https://github.com/github/codeql-action/issues/1842)
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version-file: "go.mod"
 
