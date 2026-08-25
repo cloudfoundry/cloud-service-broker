@@ -52,6 +52,12 @@ func (broker *ServiceBroker) Update(ctx context.Context, instanceID string, deta
 		return domain.UpdateServiceSpec{}, ErrInvalidUserInput
 	}
 
+	// OSB 2.13: an omitted plan_id means "do not change the plan". Fall back
+	// to the stored plan instead of failing the lookup with an empty ID.
+	if parsedDetails.PlanID == "" {
+		parsedDetails.PlanID = instance.PlanGUID
+	}
+
 	// verify the service exists and the plan exists
 	plan, err := serviceDefinition.GetPlanByID(parsedDetails.PlanID)
 	if err != nil {

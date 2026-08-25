@@ -203,6 +203,37 @@ var _ = Describe("Update", func() {
 			})
 		})
 
+		When("plan ID is omitted from the update request (allowed by the OSB spec)", func() {
+			BeforeEach(func() {
+				fakeServiceProvider.UpdateReturns(nil)
+				fakeServiceProvider.PollInstanceReturns(true, "a message", models.UpdateOperationType, nil)
+				updateDetails.PlanID = ""
+			})
+
+			It("should fall back to the stored plan and complete the update", func() {
+				response, err := serviceBroker.Update(context.TODO(), instanceID, updateDetails, true)
+				Expect(err).ToNot(HaveOccurred())
+
+				By("validating response")
+				Expect(response.IsAsync).To(BeTrue())
+
+				By("validating provider update has been called")
+				Expect(fakeServiceProvider.UpdateCallCount()).To(Equal(1))
+
+				By("validating SI operation is updated against the stored plan")
+				expectOperationTypeToBeUpdated(
+					fakeStorage,
+					updateOperationID,
+					instanceID,
+					offeringID,
+					originalPlanID,
+					spaceID,
+					orgID,
+					storage.JSONObject{},
+				)
+			})
+		})
+
 		When("plan change is requested", func() {
 			BeforeEach(func() {
 				fakeServiceProvider.UpdateReturns(nil)
