@@ -24,8 +24,8 @@ code.cloudfoundry.org/brokerapi/v13 v13.0.25 h1:mpQkk2SJd6olzE4QhvYLDfgK2BmDsIRa
 code.cloudfoundry.org/brokerapi/v13 v13.0.25/go.mod h1:MlGn59Dys13Ww6CXlSM3eTiVvKyQm9X71RGDrUb1b6c=
 code.cloudfoundry.org/jsonry v1.1.4 h1:P9N7IlH1/4aRCLcXLgLFj1hkcBmV7muijJzY+K6U4hE=
 code.cloudfoundry.org/jsonry v1.1.4/go.mod h1:6aKilShQP7w/Ez76h1El2/n9y2OkHuU56nKSBB9Gp0A=
-code.cloudfoundry.org/lager/v3 v3.91.0 h1:9Ydc9QENtQ0tI0hqdIrYVHtM7g0Vou8xG5kPAFxWVNI=
-code.cloudfoundry.org/lager/v3 v3.91.0/go.mod h1:j4v5jKYn/nRqOCkL9XoSRmDnjpZH5fITFrlK6veKIBs=
+code.cloudfoundry.org/lager/v3 v3.92.0 h1:ZtLZz2Ilu9trI2RqlSSgzGcKNfM4BT2sjfegXgg/qbU=
+code.cloudfoundry.org/lager/v3 v3.92.0/go.mod h1:keNq3QcT7z6NwMHHym/YVO6xMktRnuo8n4cHwQVNXV8=
 filippo.io/edwards25519 v1.2.0 h1:crnVqOiS4jqYleHd9vaKZ+HKtHfllngJIiOpNpoJsjo=
 filippo.io/edwards25519 v1.2.0/go.mod h1:xzAOLCNug/yB62zG1bQ8uziwrIqIuxhctzJT18Q77mc=
 github.com/BurntSushi/toml v0.4.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
@@ -160,8 +160,8 @@ github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX
 github.com/google/martian/v3 v3.3.3 h1:DIhPTQrbPkgs2yJYdXU/eNACCG5DVQjySNRNlflZ9Fc=
 github.com/google/martian/v3 v3.3.3/go.mod h1:iEPrYcgCF7jA9OtScMFQyAlZZ4YXTKEtJ1E6RWzmBA0=
 github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
-github.com/google/pprof v0.0.0-20261012231050-2af12c3f4d87 h1:P18JvwDzBYAeC8SIfnee/YJzKk1dysuN6rUwmF6CxZY=
-github.com/google/pprof v0.0.0-20261012231050-2af12c3f4d87/go.mod h1:yUo1AMMpsPIDFGuwDK8nLcf8+vvAd5l2O6JDZ6hpwrM=
+github.com/google/pprof v0.0.0-20261016150608-1facf8f91b50 h1:PlNWJRxu5APSV0pWqfIsZ0qt9OOGHSWfZQ4zvx+WgWs=
+github.com/google/pprof v0.0.0-20261016150608-1facf8f91b50/go.mod h1:yUo1AMMpsPIDFGuwDK8nLcf8+vvAd5l2O6JDZ6hpwrM=
 github.com/google/s2a-go v0.1.10 h1:EMp+aOuXN6l8cE/gjF5Bt+vyZxsUuyCWe9chDWR/+uU=
 github.com/google/s2a-go v0.1.10/go.mod h1:pz4tyvwXvJLLbyrkh6FW1eS2zPUXMaTmyNhYtyP2tNw=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
